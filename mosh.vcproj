@@ -92,7 +92,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="pre-compilation of mosh libraries"
-				CommandLine="scripts\pre-compile.bat moshd.exe"
+				CommandLine="misc\scripts\pre-compile.bat moshd.exe"
 			/>
 		</Configuration>
 		<Configuration
@@ -177,7 +177,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="pre-compilation of Mosh libraries"
-				CommandLine="scripts\pre-compile.bat mosh.exe"
+				CommandLine="misc\scripts\pre-compile.bat mosh.exe"
 			/>
 		</Configuration>
 		<Configuration
@@ -270,416 +270,348 @@
 	</References>
 	<Files>
 		<Filter
-			Name="ソース ファイル"
+			Name="src"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Arithmetic.cpp"
+				RelativePath=".\src\Arithmetic.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						FloatingPointModel="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						FloatingPointModel="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseT|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						FloatingPointModel="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\ArithmeticProcedures.cpp"
+				RelativePath=".\src\ArithmeticProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Bignum.cpp"
+				RelativePath=".\src\Bignum.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\BitwiseProcedures.cpp"
+				RelativePath=".\src\BitwiseProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\BufferedFileBinaryInputOutputPort.cpp"
+				RelativePath=".\src\BufferedFileBinaryInputOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\BufferedFileBinaryInputPort.cpp"
+				RelativePath=".\src\BufferedFileBinaryInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\BufferedFileBinaryOutputPort.cpp"
+				RelativePath=".\src\BufferedFileBinaryOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ByteArrayBinaryInputPort.cpp"
+				RelativePath=".\src\ByteArrayBinaryInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ByteArrayBinaryOutputPort.cpp"
+				RelativePath=".\src\ByteArrayBinaryOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ByteVectorProcedures.cpp"
+				RelativePath=".\src\ByteVectorProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Closure.cpp"
+				RelativePath=".\src\Closure.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CodeBuilder.cpp"
+				RelativePath=".\src\CodeBuilder.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Codec.cpp"
+				RelativePath=".\src\Codec.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CompilerProcedures.cpp"
+				RelativePath=".\src\CompilerProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Compnum.cpp"
+				RelativePath=".\src\Compnum.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CompoundCondition.cpp"
+				RelativePath=".\src\CustomBinaryInputOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ConditionProcedures.cpp"
+				RelativePath=".\src\CustomBinaryInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CustomBinaryInputOutputPort.cpp"
+				RelativePath=".\src\CustomBinaryOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CustomBinaryInputPort.cpp"
+				RelativePath=".\src\CustomTextualInputOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CustomBinaryOutputPort.cpp"
+				RelativePath=".\src\CustomTextualInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CustomTextualInputOutputPort.cpp"
+				RelativePath=".\src\CustomTextualOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CustomTextualInputPort.cpp"
+				RelativePath=".\src\EqHashTable.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CustomTextualOutputPort.cpp"
+				RelativePath=".\src\Equivalent.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\EqHashTable.cpp"
+				RelativePath=".\src\EqvHashTable.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Equivalent.cpp"
+				RelativePath=".\src\ErrorProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\EqvHashTable.cpp"
+				RelativePath=".\src\FaslReader.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ErrorProcedures.cpp"
+				RelativePath=".\src\FaslWriter.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Fasl.cpp"
+				RelativePath=".\src\FFI.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FFI.cpp"
+				RelativePath=".\src\FFIProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FFIProcedures.cpp"
+				RelativePath=".\src\FileBinaryInputOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FileBinaryInputOutputPort.cpp"
+				RelativePath=".\src\FileBinaryInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FileBinaryInputPort.cpp"
+				RelativePath=".\src\FileBinaryOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FileBinaryOutputPort.cpp"
+				RelativePath=".\src\Fixnum.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Fixnum.cpp"
+				RelativePath=".\src\FixnumProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FixnumProcedures.cpp"
+				RelativePath=".\src\Flonum.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Flonum.cpp"
+				RelativePath=".\src\FlonumProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FlonumProcedures.cpp"
+				RelativePath=".\src\GenericHashTable.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\GenericHashTable.cpp"
+				RelativePath=".\src\getoptU.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\getoptU.cpp"
+				RelativePath=".\src\HashTableProceduures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\HashTableProceduures.cpp"
+				RelativePath=".\src\Latin1Codec.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Latin1Codec.cpp"
+				RelativePath=".\src\ListProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ListProcedures.cpp"
+				RelativePath=".\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath=".\src\MultiVMProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MultiVMProcedures.cpp"
+				RelativePath=".\src\NumberReader.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MultiVMProcedures.h"
+				RelativePath=".\src\NumberReader.tab.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\NumberReader.cpp"
+				RelativePath=".\src\NumberScanner.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\NumberReader.tab.cpp"
+				RelativePath=".\src\Object.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\NumberScanner.cpp"
+				RelativePath=".\src\OSCompat.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Object.cpp"
+				RelativePath=".\src\OSCompatSocket.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\OSCompat.cpp"
+				RelativePath=".\src\OSCompatThread.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\OSCompatSocket.cpp"
+				RelativePath=".\src\PortProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\OSCompatSocket.h"
+				RelativePath=".\src\ProcessProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\OSCompatThread.cpp"
+				RelativePath=".\src\Ratnum.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\OSCompatThread.h"
+				RelativePath=".\src\Reader.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\PortProcedures.cpp"
+				RelativePath=".\src\Reader.tab.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ProcessProcedures.cpp"
+				RelativePath=".\src\Regexp.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Ratnum.cpp"
+				RelativePath=".\src\RegexpProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Reader.cpp"
+				RelativePath=".\src\Scanner.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Reader.tab.cpp"
+				RelativePath=".\src\ScannerHelper.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Record.cpp"
+				RelativePath=".\src\scheme.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\RecordConstructorDescriptor.cpp"
+				RelativePath=".\src\SocketBinaryInputOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\RecordProcedures.cpp"
+				RelativePath=".\src\SocketProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\RecordTypeDescriptor.cpp"
+				RelativePath=".\src\SString.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Regexp.cpp"
+				RelativePath=".\src\StringProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\RegexpProcedures.cpp"
+				RelativePath=".\src\StringTextualInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Scanner.cpp"
+				RelativePath=".\src\StringTextualOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ScannerHelper.cpp"
+				RelativePath=".\src\Symbol.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\scheme.cpp"
+				RelativePath=".\src\TestingSignalHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SocketBinaryInputOutputPort.cpp"
+				RelativePath=".\src\TestingVM.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SocketBinaryInputOutputPort.h"
+				RelativePath=".\src\TextualInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SocketProcedures.cpp"
+				RelativePath=".\src\TextualOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SocketProcedures.h"
+				RelativePath=".\src\TranscodedTextualInputOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SString.cpp"
+				RelativePath=".\src\TranscodedTextualInputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\StringProcedures.cpp"
+				RelativePath=".\src\TranscodedTextualOutputPort.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\StringTextualInputPort.cpp"
+				RelativePath=".\src\Transcoder.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\StringTextualOutputPort.cpp"
+				RelativePath=".\src\ucs4string.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Symbol.cpp"
+				RelativePath=".\src\UTF16Codec.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TestingSignalHandler.cpp"
+				RelativePath=".\src\UTF32Codec.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TestingVM.cpp"
+				RelativePath=".\src\UTF8Codec.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TextualInputPort.cpp"
+				RelativePath=".\src\UtilityProcedures.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TextualOutputPort.cpp"
+				RelativePath=".\src\Vector.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TranscodedTextualInputOutputPort.cpp"
+				RelativePath=".\src\VM-Profiler.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TranscodedTextualInputPort.cpp"
+				RelativePath=".\src\VM-Run.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TranscodedTextualOutputPort.cpp"
+				RelativePath=".\src\VM.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Transcoder.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ucs4string.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\UTF16Codec.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\UTF32Codec.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\UTF8Codec.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\UtilityProcedures.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Vector.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VM-Profiler.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VM-Run.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VM.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VMFactory.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VMFactory.h"
+				RelativePath=".\src\VMFactory.cpp"
 				>
 			</File>
 			<Filter
@@ -696,13 +628,509 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="ヘッダー ファイル"
+			Name="include"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\src\Arithmetic.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ArithmeticProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Bignum.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BinaryInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BinaryPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BitwiseProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BlockBufferedFileBinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BlockBufferedFileBinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Box.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BufferedFileBinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BufferedFileBinaryInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\BufferedFileBinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ByteArrayBinaryInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ByteArrayBinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ByteVector.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ByteVectorProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Callable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Closure.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Code.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CodeBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Codec.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\compiler-with-library.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CompilerProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Compnum.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Continuation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CProcedure.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CustomBinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CustomBinaryInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CustomBinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CustomTextualInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CustomTextualInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CustomTextualOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\EqHashTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Equivalent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\EqvHashTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ErrorProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ExecutableMemory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Fasl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FaslReader.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FaslWriter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FFI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FFIProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FileBinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FileBinaryInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FileBinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Fixnum.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FixnumProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Flonum.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FlonumProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\GenericHashTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\GenericMap.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\getoptU.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Gloc.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\HashTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\HashTableProceduures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\HeapObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Instruction.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Latin1Codec.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\LineBufferedFileBinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\LineBufferedFileBinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ListProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\MultiVMProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\NonGenerativeRTDs.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\NumberReader.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\NumberReader.tab.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\NumberScanner.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Object-accessors.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Object-inl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Object.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OSCompat.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OSCompatSocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OSCompatThread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OSConstants.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Pair-inl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Pair.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\pmatch.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Port.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\PortProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ProcedureMacro.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ProcessProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\psyntax.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Ratnum.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Reader.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Reader.tab.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Regexp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\RegexpProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Scanner.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ScannerHelper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\scheme.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\SharedReference.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\SimpleStruct.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\SocketBinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\SocketProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\SString.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Stack.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\StandardErrorPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\StandardInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\StandardOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\StringProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\StringTextualInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\StringTextualOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Symbol.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TestingFileBinaryInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TestingFileBinaryOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TestingVM.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TextualInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TextualOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TranscodedTextualInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TranscodedTextualInputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\TranscodedTextualOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Transcoder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\ucs4string.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\UTF16Codec.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\UTF32Codec.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\UTF8Codec.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\UtilityProcedures.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Vector.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\VM-inl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\VM-Run.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\VM.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\VMFactory.h"
+				>
+			</File>
 		</Filter>
 		<Filter
-			Name="リソース ファイル"
+			Name="res"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>

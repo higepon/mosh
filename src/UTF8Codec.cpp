@@ -41,6 +41,10 @@
 
 using namespace scheme;
 
+#ifdef _WIN32
+#define __func__ __FUNCTION__
+#endif
+
 int UTF8Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     // UTF8-1
