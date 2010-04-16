@@ -15,7 +15,7 @@ LicenseFile=..\..\COPYING
 OutputBaseFilename=setup_mosh_0.2.4
 Compression=lzma
 SolidCompression=yes
-SetupIconFile="..\..\logo\mosh.ico"
+SetupIconFile="..\..\misc\logo\mosh.ico"
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
@@ -26,14 +26,14 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 [Files]
 Source: "..\..\mosh.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\example\*"; DestDir: "{app}\example"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\misc\example\*"; DestDir: "{app}\misc\example"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\doc\html\*"; DestDir: "{app}\doc"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\mosh"; Filename: "{app}\mosh.exe"
 Name: "{group}\manual.html"; Filename: "{app}\doc\index.html"
-Name: "{group}\example"; Filename: "{app}\example"
+Name: "{group}\misc\example"; Filename: "{app}\misc\example"
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\mosh"; Filename: "{app}\mosh.exe"; Tasks: quicklaunchicon
 
 [Run]
