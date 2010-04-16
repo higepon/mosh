@@ -1,3 +1,57 @@
+Mosh 0.2.4 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://mosh.monaos.org/
+
+  Reference Manual:
+    http://mosh.monaos.org/
+
+  Developed by:
+    Higepon, kokosabu, herumi and .mjt.
+
+About This Release
+------------------
+Maintenance release.
+Please remove ~/.mosh before install.
+
+Changes
+
+    Replaced R6RS records implmentation.
+
+    Changed Fasl format to handle shared structures.
+
+    read/write handle shared structures with srfi-38 style.
+
+Bug fixes.
+
+    Fixed Issue 135: "problem with letrec* binding value from function argument, through define, too" reported by mrc.mgg.
+
+    Fixed Issue 133: "infinite loop in library serialisation" reported by mrc.mgg.
+
+    Fixed Issue 132: "bad record protocol handling with three-level inheritance hierarchy" reported by mrc.mgg.
+
+    Fixed Issue 130: "incorrect error message detail with syntax error" reported by mrc.mgg.
+
+    Fixed Issue 129: "incorrect handling of imported record types" reported by mrc.mgg.
+
+    Fixed Issue 101: "[request] optional reading of external representation with shared structure" reported by mrc.mgg.
+
+    Fixed Issue 97: "variable reference error on letrec*" reported by tabe.fixedpoint.
+
+    Fixed Issue 48: "	Extended syntax must raise exception in #!r6rs mode." reported by dico.leque.comicron.
+
+    Nongenerative rtds are shared between multiple VMs.
+
+    Fixed a bug on letrec* on backend reported by .mjt.
+
+    Fixed a bug on reading number by .mjt.
+
 Mosh 0.2.3 Release Note
 ============================
 

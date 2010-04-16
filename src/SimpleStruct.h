@@ -47,7 +47,7 @@ namespace scheme {
     public:
         SimpleStruct(Object name, int fieldCount) : name_(name), fieldCount_(fieldCount)
         {
-            MOSH_ASSERT(name_.isSymbol());
+//            MOSH_ASSERT(name_.isSymbol());
             MOSH_ASSERT(fieldCount_ >= 0);
             fields_ = Object::makeObjectArray(fieldCount_);
             for (int i = 0; i< fieldCount; i++) {

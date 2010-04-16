@@ -128,6 +128,9 @@ public:
     Object callClosure0(Object closure);
     Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
+    Object setAfterTrigger4(Object closure, Object arg1, Object arg2, Object arg3, Object arg4);
+    Object setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3);
+    Object setAfterTrigger2(Object closure, Object arg1, Object arg2);
     Object setAfterTrigger1(Object closure, Object arg1);
     Object setAfterTrigger0(Object closure);
     Object evalAfter(Object sexp);
@@ -177,9 +180,6 @@ public:
     void registerPort(Object obj);
     void unregisterPort(Object obj);
     virtual void flushAllPorts();
-
-    Object findGenerativeRtd(Object uid);
-    void addGenerativeRtd(Object uid, Object rtd);
 
     ReaderContext* readerContext() { return readerContext_; }
     NumberReaderContext* numberReaderContext() { return numberReaderContext_; }
@@ -296,7 +296,6 @@ protected:
     Ports activePorts_;
     ucs4string name_;
     Thread* thread_;
-    ObjectMap generativeRtds_;
     Object* cProcs_;
 
     // on the fly instructions array.
@@ -310,6 +309,10 @@ protected:
     Code* callClosure3Code_;
     Code* trigger0Code_;
     Code* trigger1Code_;
+    Code* trigger2Code_;
+    Code* trigger3Code_;
+    Code* trigger4Code_;
+
     Code* applyClosureCode_;
     Code* callClosureByNameCode_;
     Code* callCode_;
@@ -367,11 +370,11 @@ private:
     }
 
     void initializeDynamicCode();
-    Object evaluateSafe(Object* code, int codeSize);
+    Object evaluateSafe(Object* code, int codeSize, bool isCompiler = false);
     Object evaluateSafe(Code* code);
     Object evaluateSafe(Vector* code);
-    Object evaluateUnsafe(Object* code, int codeSize);
-    Object evaluateUnsafe(Vector* code);
+    Object evaluateUnsafe(Object* code, int codeSize, bool isCompiler = false);
+    Object evaluateUnsafe(Vector* code, bool isCompiler = false);
 
     void makeCallFrame(Object* pc)
     {
@@ -381,7 +384,7 @@ private:
         push(Object::makeObjectPointer(fp_));
     }
 
-    Object* getDirectThreadedCode(const Object* code, int length);
+    Object* getDirectThreadedCode(const Object* code, int length, bool isCompiler = false);
     Object runLoop(Object* code, jmp_buf returnPoint, bool returnTable = false);
 
 };

@@ -64,7 +64,8 @@ libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/i
 libmosh_a_SOURCES = \
 src/Time.h                                                             \
 src/JitStack.h                                                         \
-src/Code.h                                                             \
+src/Code.h  src/SharedReference.h                                      \
+src/NonGenerativeRTDs.h                                                \
 src/HeapObject.h                                                       \
 src/Object-inl.h                                                       \
 src/Object-accessors.h                                                 \
@@ -136,11 +137,6 @@ src/EqHashTable.h                  src/EqHashTable.cpp                 \
 src/SString.h                      src/SString.cpp                     \
 src/GenericHashTable.h             src/GenericHashTable.cpp            \
 src/Object.h                       src/Object.cpp                      \
-src/RecordTypeDescriptor.h         src/RecordTypeDescriptor.cpp        \
-src/RecordConstructorDescriptor.h  src/RecordConstructorDescriptor.cpp \
-src/Record.h                       src/Record.cpp                      \
-src/RecordProcedures.cpp           src/RecordProcedures.h              \
-src/ConditionProcedures.cpp        src/ConditionProcedures.h           \
 src/CompilerProcedures.cpp         src/CompilerProcedures.h            \
 src/HashTableProceduures.cpp       src/HashTableProceduures.h          \
 src/RegexpProcedures.cpp           src/RegexpProcedures.h              \
@@ -154,7 +150,6 @@ src/BitwiseProcedures.cpp          src/BitwiseProcedures.h             \
 src/ByteVectorProcedures.cpp       src/ByteVectorProcedures.h          \
 src/SocketProcedures.cpp           src/SocketProcedures.h              \
 src/Equivalent.h                   src/Equivalent.cpp                  \
-src/CompoundCondition.h            src/CompoundCondition.cpp           \
 src/ucs4string.h                   src/ucs4string.cpp                  \
 src/Vector.h                       src/Vector.cpp                      \
 src/Fasl.h \
@@ -450,10 +445,12 @@ CORE_LIBS =                 \
     lib/core/r5rs.scm       \
     lib/core/hashtable.scm
 
+CORE_INCLUDE_LIBS = lib/core/enum.scm lib/core/condition.scm lib/core/exception.scm lib/core/records.scm
+
 ./lib/mosh/jit/instructions.ss: src/instruction.scm
 	./mosh ./scripts/gen-insn-definitions.scm $(PWD)/$< > $@
 
-./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
+./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS) $(CORE_INCLUDE_LIBS)
 	cat $^ > $(PWD)/$@
 
 src/free-vars-decl.scm: src/free-vars.scm
@@ -515,7 +512,7 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh test/input-port.scm < test/input.txt
 	./mosh test/output-port.scm
 	./mosh test/shell.scm
-	./mosh test/record.scm
+	./mosh --loadpath="test/mylib" test/record.scm
 	./mosh test/condition.scm
 	./mosh test/exception.scm
 	./mosh test/unicode.scm
@@ -538,6 +535,15 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh test/jit-assembler.scm
 	./mosh test/jit-compiler.scm
 	./mosh test/jit-util.scm
+	! ./mosh --disable-acc --loadpath=test/mylib test/import_bad_regexp.scm 2>/dev/null
+	./mosh --disable-acc --loadpath=test/mylib test/import_good_regexp.scm
+	./mosh --disable-acc --loadpath=test/mylib test/import_both_regexp.scm
+	./mosh --disable-acc --loadpath=test/mylib test/shared.scm
+	! ./mosh --disable-acc --loadpath=test/mylib test/shared2.scm
+	./mosh --disable-acc --loadpath=test/mylib test/shared3.scm
+# test twice
+	./mosh --loadpath=test/mylib test/fasl.scm
+	./mosh --loadpath=test/mylib test/fasl.scm
 	$(MAKE) -C test/irregex
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 

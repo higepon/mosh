@@ -46,9 +46,6 @@ public:
 private:
     bool isInteresting(Object obj);
     void scanSharedObjects(Object obj);
-    void putSharedTable();
-//    void collectSymbolsAndStrings(Object obj);
-//    void putSymbolsAndStrings();
     void putList(Object list);
     void emitU8(uint8_t value);
     void emitU16(uint16_t value);
@@ -59,9 +56,10 @@ private:
     void putDatum(Object obj);
 
     EqHashTable* sharedObjects_;
-    EqHashTable* writtenShared_;
     ObjectVector sharedObjectVector_;
     BinaryOutputPort* outputPort_;
+
+    int uid_;
 };
 
 }; // namespace scheme

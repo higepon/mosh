@@ -36,7 +36,6 @@
 #include "Vector.h"
 #include "SString.h"
 #include "Closure.h"
-#include "Record.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Equivalent.h"
@@ -330,7 +329,16 @@ Object scheme::assqEx(VM* theVM, int argc, const Object* argv)
     const Object obj = argv[0];
     argumentCheckList(1, list);
 
+
     for (Object o = list; o != Object::Nil; o = o.cdr()) {
+//         if (o != Object::Nil && !o.car().isPair()) {
+//             LOG1("assq <<~a>>", list);
+//             return Object::False;
+//         }
+        if (o != Object::Nil && !o.car().isPair()) {
+            callAssertionViolationAfter(theVM, procedureName, "alist required", Pair::list1(list));
+            return Object::Undef;
+        }
         if (o.car().car() == obj) {
             return o.car();
         }

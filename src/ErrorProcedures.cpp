@@ -1,5 +1,5 @@
 /*
- * ViolationProcedures.cpp -
+ * ErrorProcedures.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -35,7 +35,6 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "Symbol.h"
-#include "RecordConstructorDescriptor.h"
 #include "Closure.h"
 #include "VM.h"
 #include "ErrorProcedures.h"
@@ -54,84 +53,95 @@ IOError scheme::ioError;
 bool scheme::isErrorBufInitialized = false;
 #endif
 
-static Object makeMessageCondition(VM* theVM, Object message);
-static Object makeIrritantsCondition(VM* theVM, Object irritants);
-static Object makeWhoCondition(VM* theVM, Object who);
-//static Object makeAssertionCondition();
-static Object makeCondition(VM* theVM, const ucs4char* rcdName);
-static Object makeCondition(VM* theVM, const ucs4char* rcdName, Object conent);
-static Object makeCondition2(VM* theVM, const ucs4char* rcdName, Object arg1, Object arg2);
-static Object raiseAfter(VM* theVM,
-                       const ucs4char* errorRcdName,
-                       const ucs4char* errorName,
-                       int argumentCount,
-                       Object who,
-                       Object message,
-                       Object irritants = Object::Nil);
-
-static Object raiseAfter1(VM* theVM,
-                        const ucs4char* errorRcdName,
-                        const ucs4char* errorName,
-                        Object argument1,
-                        Object who,
-                        Object message,
-                        Object irritants = Object::Nil);
-
-static Object raiseAfter2(VM* theVM,
-                        const ucs4char* errorRcdName,
-                        const ucs4char* errorName,
-                        Object argument1,
-                        Object argument2,
-                        Object who,
-                        Object message,
-                        Object irritants = Object::Nil);
-
-
-
-static Object raiseAfterB(VM* theVM,
-                const ucs4char* errorRcdName1,
-                const ucs4char* errorName1,
-                int argumentCount1,
-                const ucs4char* errorRcdName2,
-                const ucs4char* errorName2,
-                int argumentCount2,
-                Object who,
-                Object message,
-                Object irritants = Object::Nil);
-
-Object scheme::callIOPortErrorAfter(VM* theVM, Object port, Object who, Object message)
+static Object raiseAfter2(VM* theVM, const ucs4char* procName, Object who, Object message)
 {
-    return raiseAfter1(theVM, UC("&i/o-port-rcd"), UC("&i/o-port"), port, who, "port is closed");
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
+    Object condition = Object::Nil;
+    if (procedure.isFalse()) {
+        const Object content =  format(theVM, UC(" WARNING: Error occured before (~a ...) defined\n"), Pair::list1(procName));
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
+        const Object condition =  format(theVM,
+                                         UC(" Condition components:\n"
+                                            "    1. ~a\n"
+                                            "    2. &who: ~a\n"
+                                            "    3. &message: ~s\n"), Pair::list3(procName, who, message));
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger2(procedure, who, message);
+    }
+    return Object::Undef;
+}
+
+static Object raiseAfter3(VM* theVM, const ucs4char* procName, Object who, Object message, Object irritants)
+{
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
+    Object condition = Object::Nil;
+    if (procedure.isFalse()) {
+        const Object content =  format(theVM, UC(" WARNING: Error occured before (~a ...) defined\n"), Pair::list1(procName));
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
+        const Object condition =  format(theVM,
+                                         UC(" Condition components:\n"
+                                            "    1. ~a\n"
+                                            "    2. &who: ~a\n"
+                                            "    3. &message: ~s\n"
+                                            "    4. &irritants: ~a\n"), Pair::list4(procName, who, message, irritants));
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger3(procedure, who, message, irritants);
+    }
+    return Object::Undef;
+}
+
+static Object raiseAfter4(VM* theVM, const ucs4char* procName, Object who, Object message, Object irritant1, Object irritant2)
+{
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
+    Object condition = Object::Nil;
+    if (procedure.isFalse()) {
+        const Object content =  format(theVM, UC(" WARNING: Error occured before (~a ...) defined\n"), Pair::list1(procName));
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
+        const Object condition =  format(theVM,
+                                         UC(" Condition components:\n"
+                                            "    1. ~a\n"
+                                            "    2. &who: ~a\n"
+                                            "    3. &message: ~s\n"
+                                            "    4. &irritants: ~a\n"), Pair::list4(procName, who, message, Pair::list2(irritant1, irritant2)));
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger4(procedure, who, message, irritant1, irritant2);
+    }
+    return Object::Undef;
+}
+
+Object scheme::callIOReadErrorAfter(VM* theVM, Object who, Object message, Object port)
+{
+    return raiseAfter3(theVM, UC("raise-i/o-read-error"), who, message, port);
 }
 
 
 Object scheme::callIOErrorAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    return raiseAfter(theVM, UC("&i/o-rcd"), UC("&i/o-error"), 0, who, message, irritants);
-}
-
-
-// Alias for callIOErrorAfter now.
-Object scheme::callSocketErrorAfter(VM* theVM, Object who, Object message, Object irritants)
-{
-    return callIOErrorAfter(theVM, who, message, irritants);
+    return raiseAfter3(theVM, UC("raise-i/o-read-error"), who, message, irritants);
 }
 
 Object scheme::callIOErrorAfter(VM* theVM, IOError e)
 {
     switch(e.type) {
     case IOError::DECODE:
-        raiseAfter1(theVM, UC("&i/o-decoding-rcd"), UC("&i/o-decoding"), e.arg1, e.who, e.message, e.irritants);
-        break;
+    {
+        return raiseAfter3(theVM, UC("raise-i/o-decoding-error"), e.who, e.message, e.arg1);
+    }
     case IOError::ENCODE:
-        MOSH_ASSERT(e.irritants.isPair() && Pair::length(e.irritants) == 1);
-        raiseAfter2(theVM, UC("&i/o-encoding-rcd"), UC("&i/o-encoding"), e.arg1, e.irritants.car(), e.who, e.message, e.irritants);
-        break;
+    {
+        return raiseAfter4(theVM, UC("raise-i/o-encoding-error"), e.who, e.message, e.arg1, e.irritants);
+    }
     case IOError::READ:
-        raiseAfter(theVM, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, e.who, e.message, e.irritants);
+    {
+        return callIOReadErrorAfter(theVM, e.who, e.message, e.irritants);
+    }
     case IOError::WRITE:
-        raiseAfter(theVM, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, e.who, e.message, e.irritants);
-        break;
+    {
+        return raiseAfter3(theVM, UC("raise-i/o-write-error"), e.who, e.message, e.irritants);
+    }
     default:
         callAssertionViolationAfter(theVM, e.who, e.message, e.irritants);
         break;
@@ -139,7 +149,6 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
     }
     return Object::Undef;
 }
-
 
 Object scheme::throwIOError2(int type, Object message, Object irritants /* = Object::Nil */)
 {
@@ -204,29 +213,54 @@ void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Obj
                                        "    2. &who: ~a\n"
                                        "    3. &message: ~s\n"
                                        "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
     theVM->throwException(condition);
 }
 
 Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position)
 {
-    raiseAfter1(theVM, UC("&i/o-invalid-position-rcd"), UC("&i/o-invalid-position"), position, who, message, irritants);
-    return Object::Undef;
+    return raiseAfter4(theVM, UC("raise-i/o-invalid-position-error"), who, message, irritants, position);
 }
-
 
 Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
 //     LOG1("message=~a\n", message);
 //     LOG1("who=~a\n", who);
-//     LOG1("who=~a\n", irritants);
-    raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
+//     LOG1("irritants=~a\n", irritants);
+    if (theVM->isR6RSMode()) {
+        return raiseAfter3(theVM, UC("assertion-violation"), who, message, irritants);
+    } else {
+        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
+        // Error occured before (raise ...) is defined.
+        if (procedure.isFalse()) {
+            Object condition = format(theVM,
+                                  UC(
+                                      " Condition components:\n"
+                                      "    1. ~a\n"
+                                      "    2. &who: ~a\n"
+                                      "    3. &message: ~s\n"
+                                      "    4. &irritants: ~a\n"), Pair::list4("&assertion", who, message, irritants));
+
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
+            theVM->throwException(condition);
+        } else {
+            Object condition = format(theVM,
+                                  UC(
+                                      " Condition components:\n"
+                                      "    1. ~a\n"
+                                      "    2. &who: ~a\n"
+                                      "    3. &message: ~s\n"
+                                      "    4. &irritants: ~a\n"), Pair::list4("&assertion", who, message, irritants));
+
+            theVM->setAfterTrigger1(procedure, condition);
+        }
+    }
     return Object::Undef;
 }
 
-void scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
+Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message)
 {
-    raiseAfter(theVM, UC("&undefined-rcd"), UC("&undefined"), 0, who, message, irritants);
+    return raiseAfter2(theVM, UC("undefined-violation"), who, message);
 }
 
 // we can't catch this!
@@ -240,349 +274,46 @@ void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Objec
                                  "    2. &who: ~a\n"
                                  "    3. &message: ~s\n"
                                  "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (lexical ...) defined\n");
     theVM->throwException(condition);
 }
 
-void scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants)
+Object scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    raiseAfter(theVM, UC("&implementation-restriction-rcd"), UC("&implementation-restriction"), 0, who, message, irritants);
+    return raiseAfter3(theVM, UC("implementation-restriction-violation"), who, message, irritants);
 }
 
-Object scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants)
+Object scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message)
 {
-    return raiseAfterB(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
+    return raiseAfter2(theVM, UC("raise-lexical-violation-read-error"), who, message);
 }
 
-Object scheme::callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
+Object scheme::callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object filename)
 {
-    return raiseAfter1(theVM, UC("&i/o-filename-rcd"), UC("&i/o-filename"), filename, who, message, irritants);
+    return raiseAfter3(theVM, UC("raise-i/o-filename-error"), who, message, filename);
 }
 
-Object scheme::callIoFileNotExistAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
+Object scheme::callIoFileNotExistAfter(VM* theVM, Object who, Object message, Object filename)
 {
-    return raiseAfter1(theVM, UC("&i/o-file-does-not-exist-rcd"), UC("&i/o-file-does-not-exist"), filename, who, message, irritants);
+    return raiseAfter3(theVM, UC("raise-i/o-file-does-not-exist-error"), who, message, filename);
 }
 
-Object scheme::callIoFileAlreadyExistAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
+Object scheme::callIoFileAlreadyExistAfter(VM* theVM, Object who, Object message, Object filename)
 {
-    return raiseAfter1(theVM, UC("&i/o-file-already-exists-rcd"), UC("&i/o-file-already-exists"), filename, who, message, irritants);
+    return raiseAfter3(theVM, UC("raise-i/o-file-already-exists-error"), who, message, filename);
 }
 
-Object scheme::callIoFileProtectionAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
+Object scheme::callIoFileProtectionAfter(VM* theVM, Object who, Object message, Object filename)
 {
-    return raiseAfter1(theVM, UC("&i/o-file-protection-rcd"), UC("&i/o-file-protection"), filename, who, message, irritants);
+   return raiseAfter3(theVM, UC("raise-i/o-file-protection-error"), who, message, filename);
 }
 
-Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
+Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object who, Object message, Object filename)
 {
-    return raiseAfter1(theVM, UC("&i/o-file-is-read-only-rcd"), UC("&i/o-file-is-read-only"), filename, who, message, irritants);
+    return raiseAfter3(theVM, UC("raise-i/o-file-is-read-only-error"), who, message, filename);
 }
 
-
-void scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
+Object scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
-    raiseAfter(theVM, UC("&error-rcd"), UC("&error"), 0, who, message, irritants);
-}
-
-Object scheme::assertionViolationEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("assertion-violation");
-    checkArgumentLengthAtLeast(2);
-    const Object who = argv[0];
-    if (!who.isFalse() && !who.isString() && !who.isSymbol()) {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "symbol, string or #f", who);
-        return Object::Undef;
-    }
-    argumentCheckString(1, message);
-
-    Object irritants = Object::Nil;
-    for (int i = argc - 1; i >= 2; i--) {
-        irritants = Object::cons(argv[i], irritants);
-    }
-    callAssertionViolationAfter(theVM, who, message, irritants);
-    return Object::Undef;
-}
-
-Object scheme::errorEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("error");
-    checkArgumentLengthAtLeast(2);
-    const Object who = argv[0];
-    if (!who.isFalse() && !who.isString() && !who.isSymbol()) {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "symbol, string or #f", who);
-        return Object::Undef;
-    }
-    argumentCheckString(1, message);
-    Object irritants = Object::Nil;
-    for (int i = argc - 1; i >= 2; i--) {
-        irritants = Object::cons(argv[i], irritants);
-    }
-
-//     LOG1("message=~a\n", message);
-//     LOG1("who=~a\n", who);
-//     LOG1("who=~a\n", irritants);
-
-    callErrorAfter(theVM, who, message, irritants);
-    return Object::Undef;
-}
-
-// private
-Object makeWhoCondition(VM* theVM, Object who)
-{
-    return makeCondition(theVM, UC("&who-rcd"), who);
-}
-
-Object makeMessageCondition(VM* theVM, Object message)
-{
-    return makeCondition(theVM, UC("&message-rcd"), message);
-}
-
-Object makeIrritantsCondition(VM* theVM, Object irritants)
-{
-    return makeCondition(theVM, UC("&irritants-rcd"), irritants);
-}
-
-Object makeCondition(VM* theVM, const ucs4char* rcdName)
-{
-    const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
-    MOSH_ASSERT(!rcd.isFalse());
-    return theVM->callClosure0(rcd.toRecordConstructorDescriptor()->makeConstructor());
-}
-
-Object makeCondition(VM* theVM, const ucs4char* rcdName, Object content)
-{
-    const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
-    MOSH_ASSERT(!rcd.isFalse());
-    return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
-}
-
-Object makeCondition2(VM* theVM, const ucs4char* rcdName, Object content1, Object content2)
-{
-    const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
-    MOSH_ASSERT(!rcd.isFalse());
-    return theVM->callClosure2(rcd.toRecordConstructorDescriptor()->makeConstructor(), content1, content2);
-}
-
-Object raiseAfter1(VM* theVM,
-                const ucs4char* errorRcdName,
-                const ucs4char* errorName,
-                Object argument1,
-                Object who,
-                Object message,
-                Object irritants /* = Object::Nil */)
-{
-    MOSH_ASSERT(theVM);
-    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-    MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
-    if (theVM->isR6RSMode()) {
-        Object conditions = Object::Nil;
-
-        // even if irritants is nil, we create irritants condition.
-        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
-
-        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
-
-        if (!who.isFalse()) {
-            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
-        }
-
-        conditions = Object::cons(makeCondition(theVM, errorRcdName, argument1), conditions);
-        condition = Object::makeCompoundCondition(conditions);
-    } else {
-        condition = format(theVM,
-                           UC(
-                              " Condition components:\n"
-                              "    1. ~a\n"
-                              "    2. &who: ~a\n"
-                              "    3. &message: ~s\n"
-                              "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
-    }
-
-    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
-
-    // Error occured before (raise ...) is defined.
-    if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
-    } else {
-        theVM->setAfterTrigger1(raiseProcedure, condition);
-    }
-    return Object::Undef;
-}
-
-Object raiseAfter2(VM* theVM,
-                const ucs4char* errorRcdName,
-                const ucs4char* errorName,
-                Object argument1,
-                Object argument2,
-                Object who,
-                Object message,
-                Object irritants /* = Object::Nil */)
-{
-    MOSH_ASSERT(theVM);
-    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-    MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
-    if (theVM->isR6RSMode()) {
-        Object conditions = Object::Nil;
-
-        // even if irritants is nil, we create irritants condition.
-        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
-
-        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
-
-        if (!who.isFalse()) {
-            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
-        }
-
-        conditions = Object::cons(makeCondition2(theVM, errorRcdName, argument1, argument2), conditions);
-        condition = Object::makeCompoundCondition(conditions);
-    } else {
-        condition = format(theVM,
-                           UC(" Condition components:\n"
-                              "    1. ~a\n"
-                              "    2. &who: ~a\n"
-                              "    3. &message: ~s\n"
-                              "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
-    }
-
-    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
-
-    // Error occured before (raise ...) is defined.
-    if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
-    } else {
-        theVM->setAfterTrigger1(raiseProcedure, condition);
-    }
-    return Object::Undef;
-}
-
-
-Object raiseAfter(VM* theVM,
-                const ucs4char* errorRcdName,
-                const ucs4char* errorName,
-                int argumentCount,
-                Object who,
-                Object message,
-                Object irritants /* = Object::Nil */)
-{
-    MOSH_ASSERT(theVM);
-    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-    MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
-    if (theVM->isR6RSMode()) {
-        Object conditions = Object::Nil;
-
-        // even if irritants is nil, we create irritants condition.
-        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
-
-        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
-
-//         LOG1("message = ~a\n", message);
-//         LOG1("who = ~a\n", who);
-
-        if (!who.isFalse()) {
-            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
-        }
-
-        MOSH_ASSERT(argumentCount >= 0 && argumentCount <= 1);
-        if (0 == argumentCount) {
-            conditions = Object::cons(makeCondition(theVM, errorRcdName), conditions);
-        } else {
-            conditions = Object::cons(makeCondition(theVM, errorRcdName, Object::Nil), conditions);
-        }
-        condition = Object::makeCompoundCondition(conditions);
-    } else {
-        condition = format(theVM,
-                           UC(" Condition components:\n"
-                              "    1. ~a\n"
-                              "    2. &who: ~a\n"
-                              "    3. &message: ~s\n"
-                              "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
-    }
-
-    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
-    // Error occured before (raise ...) is defined.
-    if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
-    } else {
-        theVM->setAfterTrigger1(raiseProcedure, condition);
-    }
-    return Object::Undef;
-}
-
-Object raiseAfterB(VM* theVM,
-                const ucs4char* errorRcdName1,
-                const ucs4char* errorName1,
-                int argumentCount1,
-                const ucs4char* errorRcdName2,
-                const ucs4char* errorName2,
-                int argumentCount2,
-                Object who,
-                Object message,
-                Object irritants /* = Object::Nil */)
-{
-    MOSH_ASSERT(theVM);
-    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-    MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
-    if (theVM->isR6RSMode()) {
-        Object conditions = Object::Nil;
-
-        // even if irritants is nil, we create irritants condition.
-        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
-
-        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
-
-        if (!who.isFalse()) {
-            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
-        }
-
-        MOSH_ASSERT(argumentCount1 >= 0 && argumentCount1 <= 1);
-        if (0 == argumentCount1) {
-            conditions = Object::cons(makeCondition(theVM, errorRcdName1), conditions);
-        } else {
-            conditions = Object::cons(makeCondition(theVM, errorRcdName1, Object::Nil), conditions);
-        }
-
-        MOSH_ASSERT(argumentCount2 >= 0 && argumentCount2 <= 1);
-        if (0 == argumentCount2) {
-            conditions = Object::cons(makeCondition(theVM, errorRcdName2), conditions);
-        } else {
-            conditions = Object::cons(makeCondition(theVM, errorRcdName2, Object::Nil), conditions);
-        }
-
-        condition = Object::makeCompoundCondition(conditions);
-    } else {
-        condition = format(theVM,
-                           UC(" Condition components:\n"
-                              "    1. ~a\n"
-                              "    2. ~a\n"
-                              "    3. &who: ~a\n"
-                              "    4. &message: ~s\n"
-                              "    5. &irritants: ~a\n"), Pair::list5(Object::makeString(errorName1),
-                                                                      Object::makeString(errorName2),
-                                                                      who,
-                                                                      message,
-                                                                      irritants));
-    }
-
-    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
-
-    // Error occured before (raise ...) is defined.
-    if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
-    } else {
-        theVM->setAfterTrigger1(raiseProcedure, condition);
-    }
-    return Object::Undef;
+    return raiseAfter3(theVM, UC("error"), who, message, irritants);
 }

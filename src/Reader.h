@@ -1,5 +1,5 @@
 /*
- * reader.h - 
+ * reader.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -36,6 +36,7 @@
 #include "ucs4string.h"
 
 namespace scheme {
+    class EqHashTable;
 
     class ReaderContext EXTEND_GC
     {
@@ -54,13 +55,50 @@ namespace scheme {
         {
             parsed_ = parsed;
         }
+        void setIsStrictR6RSReader()
+        {
+            isStrictR6RSReader_ = true;
+        }
+        bool isStrictR6RSReader() const
+        {
+            return isStrictR6RSReader_;
+        }
         Object parsed()
         {
             return parsed_;
         }
+
+        bool isSharedStructureReader() const
+        {
+            return isSharedStructureReader_;
+        }
+
+        void setIsSharedStructureReader(bool isSharedStructureReader)
+        {
+            isSharedStructureReader_ = isSharedStructureReader;
+        }
+
+        void setIsSharedStructureFound()
+        {
+            isSharedStructureFound_ = true;
+        }
+
+        bool isSharedStructureFound() const
+        {
+            return isSharedStructureFound_;
+        }
+
+        void addShared(int index, Object obj);
+        Object getShared(int index);
+        void LinkShared(Object obj);
+
     private:
         Object parsed_;
         TextualInputPort* port_;
+        bool isStrictR6RSReader_;
+        bool isSharedStructureReader_;
+        bool isSharedStructureFound_;
+        EqHashTable sharedObjects_;
     };
 
     class ReaderHelper EXTEND_GC

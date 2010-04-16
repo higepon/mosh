@@ -52,7 +52,8 @@
        (pair-attribute-set! a 'source-info b)
        a]
      [else
-      a]))]
+      a]))
+  ]
  [vm-outer?
   (define dd (lambda a '()))
   (define pp (lambda a '()))
@@ -69,6 +70,12 @@
  (define (command-line) *command-line-args*)
  (define (get-command-line) *command-line-args*) ;; required for psyntax
  (define (errorf form . args) (error 'compiler (apply format form args)))
+
+ (include "./lib/core/records.scm")
+ (include "./lib/core/enum.scm")
+ (include "./lib/core/condition.scm")
+ (include "./lib/core/exception.scm")
+
   ])
 
 ;; inline map
@@ -529,13 +536,13 @@
   (let1 expanded-vars (fold-right (lambda (x y) (cons (list (first x) (pass1/expand (second x))) y)) '() vars)
     `(let ,expanded-vars ,@(imap pass1/expand body))))
 
-(define (let-internal-define->letrec sexp)
+(define (let-internal-define->letrec* sexp)
   (let* ([body (cddr sexp)]
          [args (second sexp)]
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
          [rest (second ret)]
-         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+         [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
                          ,@rest) sexp)])
     ($src `(let ,args
              ,letrec-body) sexp)))
@@ -557,12 +564,12 @@
        (if (let-is-named? sexp)
            (match sexp
              [('let loop vars ('define a . b) . more)
-              ($src (pass1/expand ($src (named-let-internal-define->letrec sexp) sexp)) sexp)]
+              ($src (pass1/expand ($src (named-let-internal-define->letrec* sexp) sexp)) sexp)]
              [else
               ($src (pass1/expand (named-let->letrec sexp)) sexp)])
            (match sexp
              [('let vars ('define a . b) . more)
-              ($src (pass1/expand ($src (let-internal-define->letrec sexp) sexp)) sexp)]
+              ($src (pass1/expand ($src (let-internal-define->letrec* sexp) sexp)) sexp)]
              [else
               ($src (expand-let (second sexp) (cddr sexp)) sexp)]))]
       [(let*)
@@ -574,7 +581,7 @@
 ;;        ($src (pass1/expand (cond->if sexp)) sexp)]
       [(lambda)
        (cond [(lambda-has-define? sexp)
-              ($src (pass1/expand ($src (internal-define->letrec sexp) sexp)) sexp)]
+              ($src (pass1/expand ($src (internal-define->letrec* sexp) sexp)) sexp)]
              [else
               ($src (append! (list 'lambda (cadr sexp)) (imap pass1/expand (cddr sexp))) sexp)])]
       [(when)
@@ -622,13 +629,13 @@
           [else
            (if (null? found) (list '() lst) (list found lst))])))
 
-(define (internal-define->letrec sexp)
+(define (internal-define->letrec* sexp)
   (let* ([body (cddr sexp)]
          [args (second sexp)]
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
          [rest (second ret)]
-         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+         [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
                          ,@rest) sexp)])
     ($src `(lambda ,args
              ,letrec-body) sexp)))
@@ -701,14 +708,14 @@
          (lambda-body ($src `(lambda ,vars ,@body) sexp)))
     ($src `(letrec ((,name ,lambda-body)) (,name ,@vals)) sexp)))
 
-(define (named-let-internal-define->letrec sexp)
+(define (named-let-internal-define->letrec* sexp)
   (let* ([body (cdddr sexp)]
          [name (second sexp)]
          [args (third sexp)]
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
          [rest (second ret)]
-         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+         [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
                          ,@rest) sexp)])
     ($src `(let ,name ,args
              ,letrec-body) sexp)))
@@ -1090,6 +1097,43 @@
               #f)
           ))))
 
+(define (pass1/letrec* vars vals body source-info lvars tail?)
+  (let* ([this-lvars (imap (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
+         [inits      (imap (lambda (x) (pass1/sexp->iform x (append this-lvars lvars) tail?)) vals)])
+    (for-each (lambda (lvar init)
+                ;; this name, used for error message.(etc. wrong number arguments)
+                ;; named let
+                (when (tag? init $LAMBDA)
+                  ;; set name to src-info
+                  (when (and ($lambda.src init) (pair? ($lambda.src init)) (pair? (cdr ($lambda.src init))))
+                    (set-car! (cdr ($lambda.src init)) ($lvar.sym lvar)))
+                  ($lambda.set-name! init ($lvar.sym lvar)))
+                ($lvar.set-init-val! lvar init))
+              this-lvars inits)
+    (let1 found-error
+        (let loop ([initialized* '()]
+                   [lvars this-lvars]
+                   [inits inits])
+          (cond
+           [(null? inits) #f]
+           [(and (tag? (car inits) $LOCAL-REF) (memq ($local-ref.lvar (car inits)) this-lvars) (not (memq ($local-ref.lvar (car inits)) initialized*)))
+            (car inits)]
+           [else
+            (loop (cons (car lvars) initialized*) (cdr lvars) (cdr inits))]))
+    ($let 'rec
+          this-lvars
+          inits
+          ;; the inner lvar comes first.
+          (pass1/body->iform (pass1/expand body) (append this-lvars lvars) tail?)
+          tail?
+          source-info
+          (if found-error (make-compile-error
+                           'letrec*
+                           "reference to uninitialized variable on letrec*"
+                           (ungensym ($lvar.sym ($local-ref.lvar found-error))))
+              #f))
+          )))
+
 (define (pass1/if test then more lvars tail?)
   ($if
    (pass1/sexp->iform (pass1/expand test) lvars #f) ;; N.B. test clause is NOT in tail-context.
@@ -1224,13 +1268,13 @@
                      body                ; body
                      (source-info sexp)  ; source-info
                      lvars tail?)]
-      ;;---------------------------- letrec ------------------------------------
-      [('letrec* var+val)
-       (pass1/letrec (imap car var+val)  ; vars
-                     (imap cadr var+val) ; vals
-                     body                ; body
-                     (source-info sexp)  ; source-info
-                     lvars tail?)]
+      ;;---------------------------- letrec* -----------------------------------
+      [('letrec* var+val . body)
+       (pass1/letrec* (imap car var+val)  ; vars
+                      (imap cadr var+val) ; vals
+                      body                ; body
+                      (source-info sexp)  ; source-info
+                      lvars tail?)]
       ;;---------------------------- set! --------------------------------------
       [('set! sym value)
        (pass1/assign sym                   ;; symbol
@@ -3172,7 +3216,7 @@
          [body ($let.body iform)]
          [frees-here (append
                       ($append-map1 (lambda (i) (pass3/find-free i vars
-(pass3/add-can-frees2 can-frees locals frees))) ($let.inits iform))
+                                                                 (pass3/add-can-frees2 can-frees locals frees))) ($let.inits iform))
                       (pass3/find-free body
                                        vars-sym
                                        (pass3/add-can-frees2 can-frees locals frees)))]

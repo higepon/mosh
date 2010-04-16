@@ -47,5 +47,19 @@
 (test-equal "\nCONSTANT #t \nSYMBOL_P \nRETURN 0 \n"
             (call-with-string-output-port (lambda (p)
                                             (disasm (lambda () (symbol? #t)) p))))
+(test-equal 1
+  (let ()
+    (define (f a)
+      (define b a)
+      b)
+    (f 1)))
+(test-equal 1
+  (let ()
+    (define (f a)
+      (letrec* ((b a))
+               b))
+    (f 1)))
+
+
 
 (test-results)

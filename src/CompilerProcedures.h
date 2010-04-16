@@ -73,6 +73,12 @@ namespace scheme {
     Object codeBuilderPutInsnArg1DEx(VM* theVM, int argc, const Object* argv);
     Object codeBuilderPutInsnArg2DEx(VM* theVM, int argc, const Object* argv);
 
+    Object simpleStructPEx(VM* theVM, int argc, const Object* argv);
+    Object simpleStructSetDEx(VM* theVM, int argc, const Object* argv);
+    Object simpleStructRefEx(VM* theVM, int argc, const Object* argv);
+    Object makeSimpleStructEx(VM* theVM, int argc, const Object* argv);
+    Object simpleStructNameEx(VM* theVM, int argc, const Object* argv);
+
     // psyntax
     Object sameMarksMulPEx(VM* theVM, int argc, const Object* argv);
     Object sameMarksPEx(VM* theVM, int argc, const Object* argv);

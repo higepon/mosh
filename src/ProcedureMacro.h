@@ -40,7 +40,7 @@
 
 #define checkPortIsOpen(port, obj) \
     if (port->isClosed()) { \
-        return callIOPortErrorAfter(theVM, obj, procedureName, "port is closed"); \
+        return callIOReadErrorAfter(theVM, obj, procedureName, "port is closed"); \
     }
 
 
@@ -209,9 +209,7 @@ inline const char* nth(int index) {
 #define argumentCheckNumber(index, variableName) checkType(index, variableName, isNumber, number)
 #define argumentCheckRational(index, variableName) checkType(index, variableName, isRational, rational number)
 #define argumentCheckReal(index, variableName) checkType(index, variableName, isReal, real)
-#define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
 #define argumentAsClosure(index, variableName) castArgument(index, variableName, isClosure, closure, Closure*, toClosure)
-#define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
 
 #define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
 
@@ -219,21 +217,14 @@ inline const char* nth(int index) {
 
 #define argumentCheckString(index, variableName) checkType(index, variableName, isString, string)
 #define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
+#define argumentCheckSimpleStruct(index, variableName) checkType(index, variableName, isSimpleStruct, simplestruct)
 #define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
 #define argumentCheckStringOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isString, string)
-#define argumentCheckRecordOrCompoundConditon(index, variableName) checkTypeOr(index, variableName, isRecord, isCompoundCondition, record, compound-condition)
 
 #define argumentCheckBoolean(index, variableName) checkType(index, variableName, isBoolean, boolean)
 #define argumentCheckClosure(index, variableName) checkType(index, variableName, isClosure, closure)
 #define argumentCheckClosureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isClosure, closure)
-#define argumentCheckRecordTypeDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
 
-#define argumentCheckRecordTypeDescriptor(index, variableName) checkType(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
-#define argumentAsRecordTypeDescriptor(index, variableName) castArgument(index, variableName, isRecordTypeDescriptor, record-type-descriptor, RecordTypeDescriptor*, toRecordTypeDescriptor)
-
-#define argumentAsRecordConstructorDescriptor(index, variableName) castArgument(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor, RecordConstructorDescriptor*, toRecordConstructorDescriptor)
-#define argumentCheckRecordConstructorDescriptor(index, variableName) checkType(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
-#define argumentCheckRecordConstructorDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
 
 //#define argumentAsPort(index, variableName) castArgument(index, variableName, isPort, port, Port*, toPort)
 #define argumentCheckPair(index, variableName) checkType(index, variableName, isPair, pair)

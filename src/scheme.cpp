@@ -159,6 +159,7 @@ static void setSignalHandler()
         exit(-1);
     }
 }
+extern void initNonGenerativeRtd();
 
 void mosh_init()
 {

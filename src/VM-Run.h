@@ -49,7 +49,6 @@
 #include "Box.h"
 #include "Vector.h"
 #include "Stack.h"
-#include "Record.h"
 #include "UtilityProcedures.h"
 #include "TextualInputPort.h"
 #include "Codec.h"

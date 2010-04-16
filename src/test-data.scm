@@ -3145,6 +3145,14 @@
        (letrec ([b aa]
                 [c xx])
          (loop (+ i b c) (+ j b)))))]
+[5
+(letrec*
+  ((p (lambda (x) (+ 1 (q (- x 1))))) 
+  (q (lambda (y) (if (zero? y) 0 (+ 1 (p (- y 1))))))
+  (x (p 5))
+  (y x)) y)]
+[1 (letrec* ((x 1) (y x)) y)]
+[error (letrec* ((y x) (x 1)) y)]
 [9
  (let loop ([i 1]
             [j 0])

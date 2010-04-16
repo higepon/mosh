@@ -40,7 +40,6 @@
 #include "Symbol.h"
 #include "Regexp.h"
 #include "ByteVector.h"
-#include "Record.h"
 #include "Codec.h"
 #include "Transcoder.h"
 #include "BinaryInputPort.h"
@@ -53,7 +52,6 @@
 #include "Bignum.h"
 #include "Compnum.h"
 #include "Arithmetic.h"
-#include "CompoundCondition.h"
 #include "BinaryOutputPort.h"
 #include "BinaryInputOutputPort.h"
 #include "OSCompatSocket.h"
@@ -257,8 +255,21 @@ bool TextualOutputPort::writeAbbreviated(Object obj)
     return false;
 }
 
-template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Object o)
+template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Object o, EqHashTable* seen)
 {
+    Object seenState = seen->ref(o, Object::False);
+    if (seenState.isTrue()) {
+        seen->set(o, Object::makeFixnum(sharedId_));
+        char buf[32];
+        snprintf(buf, 32, "#%d=", sharedId_);
+        putString(buf);
+        sharedId_++;
+    } else if (seenState.isFixnum()) {
+        char buf[32];
+        snprintf(buf, 32, "#%d#", (int)seenState.toFixnum());
+        putString(buf);
+        return;
+    }
     if (o.isTrue()) {
         putString(UC("#t"));
     } else if (o.isFalse()) {
@@ -424,34 +435,37 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         } else {
             putChar('(');
         }
-        bool head = true;
-        for (Object e = o; e != Object::Nil; e = e.cdr()) {
-            if (head) head = false;
-            else putChar(' ');
-            if (e.isPair()) {
-                if (e.car() == Symbol::UNQUOTE) {
-                    if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
-                        putString(". ,");
-                        print<isHumanReadable>(theVM, e.cdr().car());
-                        break;
-                    }
+        print<isHumanReadable>(theVM, o.car(), seen);
+        for (Object e = o.cdr(); ; e = e.cdr()) {
+            Object seenState2 = seen->ref(e, Object::False);
+
+            if (e.isPair() && e.car() == Symbol::UNQUOTE) {
+                if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
+                    putString(". ,");
+                    print<isHumanReadable>(theVM, e.cdr().car(), seen);
+                    return;
                 }
-                print<isHumanReadable>(theVM, e.car());
+            }
+            if (e.isPair() && seenState2.isFalse()) {
+                putChar(' ');
+                print<isHumanReadable>(theVM, e.car(), seen);
+            } else if (e.isNil()) {
+                break;
             } else {
-                putString(". ");
-                print<isHumanReadable>(theVM, e);
+                putString(" . ");
+                print<isHumanReadable>(theVM, e, seen);
                 break;
             }
         }
         if (!abbreviated) {
             putChar(')');
         }
-        return;
+
     } else if (o.isVector()) {
         Vector* v = o.toVector();
         putString(UC("#("));
         for (int i = 0; i < v->length(); i++) {
-            print<isHumanReadable>(theVM, v->ref(i));
+            print<isHumanReadable>(theVM, v->ref(i), seen);
             if (i != v->length() - 1) putChar(' ');
         }
         putString(UC(")"));
@@ -496,14 +510,14 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC("#<hashtable>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
-        print<isHumanReadable>(theVM, Object::makeFixnum(o.val));
+        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen);
         putString(UC(">"));
     } else if (o.isCProcedure()) {
 
         // Reader.y doesn't have VM instance.
         if (theVM != NULL) {
             putString(UC("#<subr "));
-            print<isHumanReadable>(theVM, theVM->getCProcedureName(o));
+            print<isHumanReadable>(theVM, theVM->getCProcedureName(o), seen);
             putString(UC(">"));
         } else {
             putString(UC("#<subr>"));
@@ -516,7 +530,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
             if (i != 0) {
                 putString(" ");
             }
-            print<isHumanReadable>(theVM, Object::makeFixnum(byteVector->u8Ref(i)));
+            print<isHumanReadable>(theVM, Object::makeFixnum(byteVector->u8Ref(i)), seen);
         }
         putString(UC(")"));
     } else if (o.isBox()) {
@@ -536,33 +550,14 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(o.toBinaryOutputPort()->toString().data());
     } else if (o.isBinaryInputOutputPort()) {
         putString(o.toBinaryInputOutputPort()->toString().data());
-    } else if (o.isRecordConstructorDescriptor()) {
-        putString(UC("#<record-constructor-descriptor>"));
-    } else if (o.isRecordTypeDescriptor()) {
-        putString(UC("#<record-type-descriptor>"));
-    } else if (o.isCompoundCondition()) {
-        putString(UC("#<compound-condition "));
-        CompoundCondition* const c = o.toCompoundCondition();
-        const ObjectVector& conditions = c->conditions();
-        for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
-            if (it != conditions.begin()) {
-                putString(UC(" "));
-            }
-            print<isHumanReadable>(theVM, *it);
-        }
-        putString(UC(">"));
-    } else if (o.isRecord()) {
-        Record* const record = o.toRecord();
-        putString(UC("#<record "));
-        print<isHumanReadable>(theVM, record->recordTypeDescriptor()->name());
-//         for (int i = 0; i < record->fieldsLength(); i++) {
-//             print<isHumanReadable>(record->fieldAt(i));
-//             putString(UC(" "));
-//         }
-        putString(UC(">"));
     } else if (o.isSimpleStruct()) {
         putString(UC("#<"));
-        print<isHumanReadable>(theVM, o.toSimpleStruct()->name());
+        print<isHumanReadable>(theVM, o.toSimpleStruct()->name(), seen);
+        for (int i = 0; i < o.toSimpleStruct()->fieldCount(); i++) {
+            print<isHumanReadable>(theVM, o.toSimpleStruct()->ref(i), seen);
+            putString(UC(" "));
+        }
+
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
@@ -585,27 +580,27 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         const Object real = c->real();
         const Object imag = c->imag();
         if (!Arithmetic::isExactZero(real)) {
-            print<isHumanReadable>(theVM, real);
+            print<isHumanReadable>(theVM, real, seen);
         }
         if (Arithmetic::ge(imag, Object::makeFixnum(0)) &&
             !(imag.isFlonum() && (imag.toFlonum()->isNegativeZero() || (imag.toFlonum()->isInfinite())))) {
             putString(UC("+"));
         } else {
         }
-        print<isHumanReadable>(theVM, imag);
+        print<isHumanReadable>(theVM, imag, seen);
         putString(UC("i"));
     } else if (o.isCodeBuilder()) {
         putString(UC("<code-builder "));
-        print<isHumanReadable>(theVM, Object::makeFixnum(o.val));
+        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen);
         putString(UC(">"));
     } else if (o.isTranscoder()) {
         Transcoder* transcoder = o.toTranscoder();
         putString(UC("<transcoder codec="));
-        print<isHumanReadable>(theVM, transcoder->codec());
+        print<isHumanReadable>(theVM, transcoder->codec(), seen);
         putString(UC(", eol-style="));
-        print<isHumanReadable>(theVM, transcoder->eolStyleSymbol());
+        print<isHumanReadable>(theVM, transcoder->eolStyleSymbol(), seen);
         putString(UC(", error-handling-mode="));
-        print<isHumanReadable>(theVM, transcoder->errorHandlingModeSymbol());
+        print<isHumanReadable>(theVM, transcoder->errorHandlingModeSymbol(), seen);
         putString(UC(">"));
     } else if (o.isPointer()) {
         putString(UC("#<pointer "));
@@ -617,17 +612,76 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC("#<continuation>"));
     } else if (o.isGloc()) {
         putString(UC("#<gloc>"));
+    } else if (o.isSharedReference()) {
+        putString(UC("#<shared reference>"));
     } else {
         putString(UC("#<unknown datum>"));
     }
 }
 
+bool TextualOutputPort::isInteresting(Object obj)
+{
+    return // obj.isString() || obj.isSymbol() || 
+        obj.isPair() || obj.isVector()
+        || obj.isSimpleStruct() || obj.isEqHashTable();
+}
+
+void TextualOutputPort::scan(Object obj, EqHashTable* seen)
+{
+loop:
+    if (!isInteresting(obj)) {
+        return;
+    }
+    const Object val = seen->ref(obj, Object::Ignore);
+    if (val.isFalse()) {
+        seen->set(obj, Object::True);
+        return;
+    } else if (val.isTrue()) {
+        return;
+    } else {
+        seen->set(obj, Object::False);
+        if (obj.isPair()) {
+            scan(obj.car(), seen);
+            obj = obj.cdr();
+            goto loop;
+        } else if (obj.isVector()) {
+            Vector* const v = obj.toVector();
+            for (int i = 0; i < v->length(); i++) {
+                scan(v->ref(i), seen);
+            }
+        } else if (obj.isEqHashTable()) {
+            EqHashTable* const ht = obj.toEqHashTable();
+            Vector* const keys = ht->keys().toVector();
+            const int length = keys->length();
+            for (int i = 0; i < length; i++) {
+                const Object key = keys->ref(i);
+                scan(key, seen);
+                scan(ht->ref(key, Object::False), seen);
+            }
+        } else if (obj.isSimpleStruct()) {
+            SimpleStruct* const record = obj.toSimpleStruct();
+            scan(record->name(), seen);
+            const int length = record->fieldCount();
+            for (int i = 0; i < length; i++) {
+                scan(record->ref(i), seen);
+            }
+        }
+    }
+}
+
+
 void TextualOutputPort::display(const VM* theVM, Object o)
 {
-    print<true>(theVM, o);
+    EqHashTable seen;
+    scan(o, &seen);
+    sharedId_ = 1;
+    print<true>(theVM, o, &seen);
 }
 
 void TextualOutputPort::putDatum(const VM* theVM, Object o)
 {
-    print<false>(theVM, o);
+    EqHashTable seen;
+    scan(o, &seen);
+    sharedId_ = 1;
+    print<false>(theVM, o, &seen);
 }

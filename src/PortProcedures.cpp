@@ -42,7 +42,6 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "SString.h"
-#include "Record.h"
 #include "Closure.h"
 #include "ByteVector.h"
 #include "PortProcedures.h"
@@ -119,32 +118,30 @@ char* scheme::utf32toUtf8(const ucs4string& s)
     return (char*)out.toByteVector()->data();
 }
 
-static bool isExistOption(Record* fileOptions, Object option)
+static bool isExistOption(SimpleStruct* fileOptions, Object option)
 {
-    MOSH_ASSERT(fileOptions->fieldsLength() == 2);
-    Object members = fileOptions->fieldAt(1);
+    Object members = fileOptions->ref(1);
     MOSH_ASSERT(members.isList());
     return !memq(option, members).isFalse();
 }
-static bool isNoFail(Record* fileOptions)
+static bool isNoFail(SimpleStruct* fileOptions)
 {
     return isExistOption(fileOptions, Symbol::NO_FAIL);
 }
 
-static bool isNoCreate(Record* fileOptions)
+static bool isNoCreate(SimpleStruct* fileOptions)
 {
     return isExistOption(fileOptions, Symbol::NO_CREATE);
 }
 
-static bool isNoTruncate(Record* fileOptions)
+static bool isNoTruncate(SimpleStruct* fileOptions)
 {
     return isExistOption(fileOptions, Symbol::NO_TRUNCATE);
 }
 
-static bool isEmpty(Record* fileOptions)
+static bool isEmpty(SimpleStruct* fileOptions)
 {
-    MOSH_ASSERT(fileOptions->fieldsLength() == 2);
-    return fileOptions->fieldAt(1).isNil();
+    return fileOptions->ref(1).isNil();
 }
 
 Object scheme::makeCustomTextualInputOutputPortEx(VM* theVM, int argc, const Object* argv)
@@ -220,13 +217,13 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 
     if (argc == 1) {
         if (isFileExist) {
-            return callIoFileAlreadyExistAfter(theVM, procedureName, argv[0], "file already exists", L1(argv[0]));
+            return callIoFileAlreadyExistAfter(theVM, procedureName, "file already exists", argv[0]);
         }
 
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
     } else {
-        argumentAsRecord(1, fileOptions);
+        argumentAsSimpleStruct(1, fileOptions);
 
         const bool emptyP = isEmpty(fileOptions);
         const bool noCreateP = isNoCreate(fileOptions);
@@ -236,16 +233,16 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 //        printf("emptyP=%d noCreateP=%d noTruncateP=%d noFailP=%d\n", emptyP, noCreateP, noTruncateP, noFailP);
 
         if (isFileExist && emptyP) {
-            return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file already exists", L1(argv[0]));
+            return callIoFileAlreadyExistAfter(theVM, procedureName, "file already exists", argv[0]);
         } else if (noCreateP && noTruncateP) {
             if (!isFileExist) {
-                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
+                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
             }
         } else if (noCreateP) {
             if (isFileExist) {
                 openFlags |= File::Truncate;
             } else {
-                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
+                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
@@ -255,7 +252,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             openFlags |= File::Truncate;
         } else if (noTruncateP) {
             if (isFileExist) {
-                return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
+                return callIoFileAlreadyExistAfter(theVM, procedureName, "file-options no-trucate: file already exists", argv[0]);
             } else {
                 openFlags |= File::Truncate;
             }
@@ -294,9 +291,9 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
     } else {
         if (port->getFile() && port->getFile()->isLastErrorAcessError()) {
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, procedureName, port->getLastErrorMessage(), argv[0]);
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, procedureName, port->getLastErrorMessage(), argv[0]);
             }
         } else {
             callErrorAfter(theVM, procedureName, port->getLastErrorMessage(), L1(argv[0]));
@@ -910,9 +907,9 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsString(0, text);
     if (-1 == unlink(text->data().ascii_c_str())) {
-        callIoFileNameErrorAfter(theVM, argv[0], procedureName,
+        callIoFileNameErrorAfter(theVM, procedureName,
                                  "can't delete file",
-                                 L1(argv[0]));
+                                 argv[0]);
         return Object::Undef;
     } else {
         return Object::Undef;
@@ -1101,9 +1098,6 @@ Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsBinaryInputPort(0, binaryInputPort);
     checkPortIsOpen(binaryInputPort, argv[0]);
-    if (binaryInputPort->isClosed()) {
-        return callIOPortErrorAfter(theVM, argv[0], procedureName, "port is closed");
-    }
     const int b = binaryInputPort->getU8();
     if (EOF == b) {
         return Object::Eof;
@@ -1504,12 +1498,12 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 
     if (argc == 1) {
         if (isFileExist) {
-            return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file already exists", L1(argv[0]));
+            return callIoFileAlreadyExistAfter(theVM, procedureName, "file already exists", argv[0]);
         }
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryOutputPort(path->data(), openFlags);
     } else {
-        argumentAsRecord(1, fileOptions);
+        argumentAsSimpleStruct(1, fileOptions);
 
         const bool emptyP = isEmpty(fileOptions);
         const bool noCreateP = isNoCreate(fileOptions);
@@ -1517,16 +1511,16 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
         const bool noFailP = isNoFail(fileOptions);
 
         if (isFileExist && emptyP) {
-            return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file already exists", L1(argv[0]));
+            return callIoFileAlreadyExistAfter(theVM,  procedureName, "file already exists",argv[0]);
         } else if (noCreateP && noTruncateP) {
             if (!isFileExist) {
-                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
+                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
             }
         } else if (noCreateP) {
             if (isFileExist) {
                 openFlags |= File::Truncate;
             } else {
-                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
+                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
@@ -1536,7 +1530,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             openFlags |= File::Truncate;
         } else if (noTruncateP) {
             if (isFileExist) {
-                return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
+                return callIoFileAlreadyExistAfter(theVM, procedureName, "file-options no-trucate: file already exists", argv[0]);
             } else {
                 openFlags |= File::Truncate;
             }
@@ -1579,9 +1573,9 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
     } else {
         if (port->getFile() && port->getFile()->isLastErrorAcessError()) {
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, procedureName, port->getLastErrorMessage(), argv[0]);
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, procedureName, port->getLastErrorMessage(), argv[0]);
             }
         } else {
             callErrorAfter(theVM, procedureName, port->getLastErrorMessage(), L1(argv[0]));
@@ -1604,12 +1598,13 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 2) {
         argumentAsString(0, path);
-        argumentCheckRecord(1, fileOptions);
+        argumentCheckSimpleStruct(1, fileOptions);
         // default buffer mode is Block
         in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 3) {
         argumentAsString(0, path);
-        argumentCheckRecord(1, fileOptions);
+
+        argumentCheckSimpleStruct(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
 
         // N.B. On Mosh, buffer mode BLOCK == LINE.
@@ -1623,7 +1618,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         }
     } else if (argc == 4) {
         argumentAsString(0, path);
-        argumentCheckRecord(1, fileOptions);
+        argumentCheckSimpleStruct(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
         // N.B. On Mosh, buffer mode BLOCK == LINE.
         if (bufferMode == Symbol::BLOCK || bufferMode == Symbol::LINE) {
@@ -1648,7 +1643,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         }
     } else {
         if (in->getFile() && in->getFile()->isLastErrorAcessError()) {
-            return callIoFileProtectionAfter(theVM, argv[0], procedureName, in->getLastErrorMessage(), L1(argv[0]));
+            return callIoFileProtectionAfter(theVM, procedureName, in->getLastErrorMessage(), argv[0]);
         } else {
             callErrorAfter(theVM, procedureName, in->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;

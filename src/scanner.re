@@ -34,6 +34,7 @@
 #include "StringProcedures.h"
 #include "TextualInputPort.h"
 #include "TextualOutputPort.h"
+#include "EqHashTable.h"
 #include "ucs4string.h"
 #include "ScannerHelper.h"
 #include "Scanner.h"
@@ -59,7 +60,6 @@ Scanner::Scanner() : eofP_(false), dummy_('Z'),  // for YYDEBUG
                      marker_(buffer_),
                      bufferSize_(32)
 {
-
 }
 
 Scanner::~Scanner()
@@ -221,7 +221,10 @@ int Scanner::scan(YYSTYPE* yylval)
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
+  R6RS_STRICT_READER_MODE = "#!r6rs";
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
+  DEFINING_SHARED        = "#" DIGIT+ "=";
+  DEFINED_SHARED         = "#" DIGIT+ "#";
 */
 
     int comment_count = 0;
@@ -229,11 +232,29 @@ int Scanner::scan(YYSTYPE* yylval)
     for(;;)
     {
 /*!re2c
+       R6RS_STRICT_READER_MODE DELMITER {
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            currentVM()->readerContext()->port()->setStrictR6RsReaderMode();
+            continue;
+       }
        "#"[tT] DELMITER {
             yylval->boolValue = true;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return SCHEME_BOOLEAN;
+        }
+        DEFINING_SHARED {
+            ucs4string n =  ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN - 1));
+            yylval->intValue = atoi(n.ascii_c_str());
+            YYTOKEN = YYCURSOR;
+            return DEFINING_SHARED;
+        }
+        DEFINED_SHARED {
+            ucs4string n =  ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN - 1));
+            yylval->intValue = atoi(n.ascii_c_str());
+            YYTOKEN = YYCURSOR;
+            return DEFINED_SHARED;
         }
         "#"[fF] DELMITER {
             yylval->boolValue = false;

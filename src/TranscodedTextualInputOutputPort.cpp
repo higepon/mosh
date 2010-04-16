@@ -40,7 +40,6 @@
 #include "Symbol.h"
 #include "Regexp.h"
 #include "ByteVector.h"
-#include "Record.h"
 #include "Codec.h"
 #include "Transcoder.h"
 #include "ProcedureMacro.h"
@@ -49,7 +48,6 @@
 #include "Bignum.h"
 #include "Compnum.h"
 #include "Arithmetic.h"
-#include "CompoundCondition.h"
 #include "TranscodedTextualInputOutputPort.h"
 
 using namespace scheme;

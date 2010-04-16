@@ -66,7 +66,7 @@ public:
         TAG_ASCII_SYMBOL, /* not used */
         TAG_MEDIUM_FIXNUM,
         TAG_RTD,
-        TAG_RECORD,
+        TAG_RECORD /* not used */,
         TAG_EQ_HASH_TABLE,
         TAG_BIGNUM,
         TAG_FIXNUM_0,
@@ -81,6 +81,7 @@ public:
         TAG_SHORT_ASCII_SYMBOL,
         TAG_SHORT_ASCII_UNINTERNED_SYMBOL,
         TAG_SHORT_ASCII_STRING,
+        TAG_DEFINING_SHARED,
         forbidden_comma
     };
 };

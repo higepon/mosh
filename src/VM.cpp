@@ -42,10 +42,8 @@
 #include "VM-inl.h"
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
-#include "RecordProcedures.h"
 #include "StringProcedures.h"
 #include "PortProcedures.h"
-#include "ConditionProcedures.h"
 #include "ErrorProcedures.h"
 #include "ListProcedures.h"
 #include "ArithmeticProcedures.h"
@@ -54,7 +52,6 @@
 #include "ProcessProcedures.h"
 #include "ByteVectorProcedures.h"
 #include "FFIProcedures.h"
-#include "Record.h"
 #include "Codec.h"
 #include "Ratnum.h"
 #include "Flonum.h"
@@ -237,6 +234,60 @@ void VM::initializeDynamicCode()
     trigger1Code_->push(Object::makeFixnum(0));
     trigger1Code_->push(Object::makeRaw(Instruction::HALT));
 
+    trigger2Code_ = new Code(13);
+    trigger2Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger2Code_->push(Object::Undef);
+    trigger2Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger2Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger2Code_->push(Object::Undef);
+    trigger2Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger2Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger2Code_->push(Object::Undef);
+    trigger2Code_->push(Object::makeRaw(Instruction::CALL));
+    trigger2Code_->push(Object::makeFixnum(2));
+    trigger2Code_->push(Object::makeRaw(Instruction::RETURN));
+    trigger2Code_->push(Object::makeFixnum(0));
+    trigger2Code_->push(Object::makeRaw(Instruction::HALT));
+
+    trigger3Code_ = new Code(16);
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::CALL));
+    trigger3Code_->push(Object::makeFixnum(3));
+    trigger3Code_->push(Object::makeRaw(Instruction::RETURN));
+    trigger3Code_->push(Object::makeFixnum(0));
+    trigger3Code_->push(Object::makeRaw(Instruction::HALT));
+
+    trigger4Code_ = new Code(19);
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::CALL));
+    trigger4Code_->push(Object::makeFixnum(4));
+    trigger4Code_->push(Object::makeRaw(Instruction::RETURN));
+    trigger4Code_->push(Object::makeFixnum(0));
+    trigger4Code_->push(Object::makeRaw(Instruction::HALT));
+
     applyClosureCode_ = new Code(5);
     applyClosureCode_->push(Object::makeRaw(Instruction::CALL));
     applyClosureCode_->push(Object::makeFixnum(0));
@@ -279,7 +330,7 @@ void VM::loadCompiler()
     }
 #endif
     TRY_VM {
-        evaluateUnsafe(libCompiler.toVector());
+        evaluateUnsafe(libCompiler.toVector(), true);
         const Object libMatch = FASL_GET(pmatch_image);
         evaluateUnsafe(libMatch.toVector());
         CATCH_VM
@@ -361,29 +412,29 @@ void VM::loadFileWithGuard(const ucs4string& file)
 }
 
 // Faster than evaluateUnsafe, used to load compiler, which won't raise error.
-Object VM::evaluateUnsafe(Object* code, int codeSize)
+Object VM::evaluateUnsafe(Object* code, int codeSize, bool isCompiler /* = false */)
 {
     closureForEvaluate_.toClosure()->pc = code;
     ac_ = closureForEvaluate_;
     dc_ = closureForEvaluate_;
     cl_ = closureForEvaluate_;
     fp_ = 0;
-    Object* const direct = getDirectThreadedCode(code, codeSize);
+    Object* const direct = getDirectThreadedCode(code, codeSize, isCompiler);
     return runLoop(direct, NULL);
 }
 
-Object VM::evaluateUnsafe(Vector* code)
+Object VM::evaluateUnsafe(Vector* code, bool isCompiler /* = false */)
 {
-    return evaluateUnsafe(code->data(), code->length());
+    return evaluateUnsafe(code->data(), code->length(), isCompiler);
 }
 
-Object VM::evaluateSafe(Object* code, int codeSize)
+Object VM::evaluateSafe(Object* code, int codeSize, bool isCompiler /* = false */)
 {
     Registers r;
     saveRegisters(&r);
     Object ret = Object::Undef;
     TRY_VM {
-        ret = evaluateUnsafe(code, codeSize);
+        ret = evaluateUnsafe(code, codeSize, isCompiler);
     CATCH_VM
         defaultExceptionHandler(errorObj_);
         this->exit(-1);
@@ -511,6 +562,40 @@ Object VM::setAfterTrigger1(Object closure, Object arg1)
     pc_[1]= arg1;
     return ac_;
 }
+
+Object VM::setAfterTrigger2(Object closure, Object arg1, Object arg2)
+{
+    makeCallFrame(pc_);
+    pc_ = getDirectThreadedCode(trigger2Code_->code(), trigger2Code_->size());
+    pc_[7] = closure;
+    pc_[4]= arg2;
+    pc_[1]= arg1;
+    return ac_;
+}
+
+Object VM::setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3)
+{
+    makeCallFrame(pc_);
+    pc_ = getDirectThreadedCode(trigger3Code_->code(), trigger3Code_->size());
+    pc_[10] = closure;
+    pc_[7]= arg3;
+    pc_[4]= arg2;
+    pc_[1]= arg1;
+    return ac_;
+}
+
+Object VM::setAfterTrigger4(Object closure, Object arg1, Object arg2, Object arg3, Object arg4)
+{
+    makeCallFrame(pc_);
+    pc_ = getDirectThreadedCode(trigger4Code_->code(), trigger4Code_->size());
+    pc_[13] = closure;
+    pc_[10]= arg4;
+    pc_[7]= arg3;
+    pc_[4]= arg2;
+    pc_[1]= arg1;
+    return ac_;
+}
+
 
 void VM::applyClosure(Object closure, Object args)
 {
@@ -923,22 +1008,6 @@ void VM::setThread(Thread* thread)
 Thread* VM::thread()
 {
     return thread_;
-}
-
-Object VM::findGenerativeRtd(Object uid)
-{
-    ObjectMap::const_iterator found = generativeRtds_.find(uid);
-    if (found == generativeRtds_.end()) {
-        return Object::False;
-    } else {
-        return found->second;
-
-    }
-}
-
-void VM::addGenerativeRtd(Object uid, Object rtd)
-{
-    generativeRtds_[uid] = rtd;
 }
 
 void VM::tryInvokeJitLibrary()

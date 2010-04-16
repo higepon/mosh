@@ -36,7 +36,6 @@
 #include "Vector.h"
 #include "SString.h"
 #include "Regexp.h"
-#include "Record.h"
 #include "CProcedure.h"
 #include "EqHashTable.h"
 #include "ByteVector.h"
