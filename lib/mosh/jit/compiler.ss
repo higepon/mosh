@@ -481,7 +481,7 @@
 (define (NULL_P)
   `(,@(trace-push! $NULL_P)
     (movl eax ,(obj->integer #f))
-    (cmpq ,(vm-register 'ac) 6)
+    (cmpq ,(vm-register 'ac) ,(obj->integer '()))
     (movl edx ,(obj->integer #t))
     (cmove rax rdx)
     (movq ,(vm-register 'ac) rax)))

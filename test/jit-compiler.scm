@@ -504,6 +504,10 @@
                        (if (null? lst)
                            '()
                            (cons #f #f))))])
+  (disasm (lambda (lst)
+                       (if (null? lst)
+                           '()
+                           (cons #f #f))))
   (test-equal '((1 2)) (proc 'a)))
 
 #;(compile (lambda ()

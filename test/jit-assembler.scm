@@ -143,9 +143,10 @@
 
 ;; je
 (let* ([label (gensym)]
-       [asm (assemble `((movq rax ,(vm-make-fixnum 2))
-                        (movq rbx ,(vm-make-fixnum 2))
-                        (cmpq rax rbx)
+       [asm (assemble `(
+                        (movq rax ,(vm-make-fixnum 2))
+                        (movq rcx ,(vm-make-fixnum 2))
+                        (cmpq rax rcx)
                         (je ,label)
                         (movq rax ,(vm-make-fixnum 3))
                         (label ,label)
@@ -186,8 +187,8 @@
                         (movq (& rbp 16) ,(vm-make-fixnum 3))
                         (callq rax)                           ;; 3.isNumber?
                         (movq rdi r10)                        ;; restore rdi
-                        (movq rbx 1)
-                        (cmpq rax rbx)
+                        (movq rcx 1)
+                        (cmpq rax rcx)
                         (je a)
                         (movq ,(vm-register 'ac) ,(vm-make-fixnum 0)) ;; refer rdi
                         (movq rax ,(vm-make-fixnum 0))
