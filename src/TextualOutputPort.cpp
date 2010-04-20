@@ -171,6 +171,28 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
             case '%':
                 display(theVM, Object::makeChar('\n'));
                 break;
+            case 'x':
+            case 'X':
+            {
+                if (args.isPair()) {
+                    Object n = args.car();
+                    if (n.isNumber()) {
+                        display(theVM, Arithmetic::numberToString(n, 16));
+                        args = args.cdr();
+                    } else {
+                        isErrorOccured_ = true;
+                        errorMessage_ = "~x : number expected";
+                        irritants_ = Pair::list2(Object::makeString(fmt), n);
+                        return;
+                    }
+                } else {
+                    isErrorOccured_ = true;
+                    errorMessage_ = "too few arguments for format string";
+                    irritants_ = Pair::list1(Object::makeString(fmt));
+                    return;
+                }
+                break;
+            }
             case 'a':
             case 'A':
             case 'd':
