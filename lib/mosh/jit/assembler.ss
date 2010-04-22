@@ -156,7 +156,7 @@
 ;                               (format #t "~a:~a<<<~a>>>" offset byte* (append (drop-right byte* 4) (imm32->u8* offset)))
                                (append (drop-right byte* 4) (imm32->u8* offset))]
                               [(imm8? offset)
-                               (format #t "<byte* #x~x:~a>" (car byte*) (append (drop-right byte* 1) (imm8->u8* offset)))
+;                               (format #t "<byte* #x~x:~a>" (car byte*) (append (drop-right byte* 1) (imm8->u8* offset)))
                                (append (drop-right byte* 1) (imm8->u8* offset))]
                               [else
                                (error 'assemble "offset out of range" offset)])))]

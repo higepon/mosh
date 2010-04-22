@@ -378,7 +378,8 @@ private:
 
     void makeCallFrame(Object* pc)
     {
-        push(Object::makeObjectPointer(pc));
+        const Object p = Object::makeObjectPointer(pc);
+        push(p);
         push(dc_);
         push(cl_);
         push(Object::makeObjectPointer(fp_));

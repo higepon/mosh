@@ -56,7 +56,7 @@
           (mosh jit assembler)
           (mosh)
           (rnrs mutable-pairs)
-          (only (srfi :1) reverse! split-at!)
+          (only (srfi :1) reverse! split-at! span)
           (only (srfi private include) include/resolve))
 
 (include/resolve ("mosh" "jit") "instructions.ss")
@@ -73,18 +73,18 @@
 ;;
 ;; x86-64 ABI : http://homepage1.nifty.com/herumi/prog/x64.html
 ;;
-;; ========================================================
+;; ==============================================================
 ;;                                             JIT
-;;     rdi            argument1       -        theVM
-;;     rsi            argument2       -        argc
-;;     rdx            argument3       -        argv
-;;     rcx            argument4       -          -
-;;     r8             argument5       -          -
-;;     r9             argument6       -          -
-;;     r10, r11           -           -          -
-;;     r12〜r15           -      callee saved    -
-;;     rbx, rbp, rsp      -      callee saved    -
-;; ========================================================
+;;     rdi            argument1  caller should save        theVM
+;;     rsi            argument2  caller should save        argc
+;;     rdx            argument3  caller should save        argv
+;;     rcx            argument4  caller should save          -
+;;     r8             argument5  caller should save          -
+;;     r9             argument6  caller should save          -
+;;     rax,r10, r11       -      caller should save          -
+;;     r12〜r15           -      callee should save          -
+;;     rbx, rbp, rsp      -      callee should save          -
+;; =============================================================
 
 ;; r64->number of r8-r15 over 2^3, so rex.prefix is used for one more bit
 
@@ -95,10 +95,14 @@
     (push rdx)
     (push rcx)
     (push r8)
-    (push r9)))
+    (push r9)
+    (push r10)
+    (push r11)))
 
 (define (call-epilogue)
-  `((pop r9)
+  `((pop r11)
+    (pop r10)
+    (pop r9)
     (pop r8)
     (pop rcx)
     (pop rdx)
@@ -810,18 +814,14 @@
        ,@(DEBUGGER 3199)
        (label ,is-not-gloc-case)
        ;; save arguments
-       (push rdi)
-       (push rsi)
-       (push rdx)
+       ,@(call-prologue)
        (movq rax ,(vm-register 'namespace)) ;; rax = namespace
        (movq rdx ,(vm-register 'not-found)) ;; arg3 not_found
        (movq rsi rbx)                       ;; arg2 id
        (movq rdi (& rax 8))                 ;; rdi = namespace.toEqHashTable
        (movq rax (& rdi))                   ;; rax EqHashTable::ref
        (callq (& rax 24))
-       (pop rdx)
-       (pop rsi)
-       (pop rdi)
+       ,@(call-epilogue)
        (cmpq ,(vm-register 'not-found) rax)
        (je ,not-found-case)
        (label ,get-gloc-value)
@@ -1272,7 +1272,6 @@
     (negq rdx)
     (addq rdx ,(vm-register 'sp)) ; rdx = sp - n
     (movq rax (& rdx -8))         ; fp = (sp - 8)
-;    ,@(DEBUGGER 1112)
     (movq ,(vm-register 'fp) rax)
     (movq rax (& rdx -16))
     (movq ,(vm-register 'cl) rax)
@@ -1311,7 +1310,6 @@
   `(,@(trace-push! $RETURN)
      ,@(RESTORE_REGISTERS n)
      (movq rax ,(vm-register 'ac)) ;; we need this.
-     ,@(DEBUGGER 9991)
      ,@(return-to-vm)))
 
 ;; (define (RETURN n) ;; pc いらん
@@ -1643,8 +1641,9 @@
              #f]) ;; JIT compile error returns #f to VM.
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])
- ;          (format #t "insn=~a labels*=~a" insn* label*)
+;          (format #t "insn=~a labels*=~a\n" insn* label*)
            (let1 insn* (insert-labels insn* label*)
+;          (format #t "insn=~a labels*=~a\n" insn* label*)
              (let1 asm* (map (lambda (insn)
                                (match (car insn)
                                  [('label . x) `((label . ,x))]
@@ -1652,7 +1651,7 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
-               (let1 compiled (u8-list->c-procedure (assemble `(,@(DEBUGGER 40) (push rbx) (push r12) (push r13) (push r14) (push r15)
+               (let1 compiled (u8-list->c-procedure (assemble `((push rbx) (push r12) (push r13) (push r14) (push r15)
                                                                 (push rbp)
                                                                 (movq rbp rsp)
                                                                 ,@(apply append (cons (trace-reset!) asm*)))))
@@ -1694,8 +1693,10 @@
         (error 'insert-labels "there are unresolved labels" labels))
         (reverse ret)]
      [(and (not (null? labels)) #;(format #t "(cdar labels)=~a (cdar lst)=~a\n" (cdar labels) (cdar lst)) (= (cdar labels) (cdar lst)))
-      ;; two labels may have same offset.
-      (loop (cdr labels) lst (append (list (car lst) (car labels)) ret))]
+      (let ([offset (cdar labels)])
+        (let-values (([same-offset-labels rest-labels] (span (lambda (label) (= (cdr label) offset)) labels)))
+          ;; two labels may have same offset.
+          (loop rest-labels (cdr lst) (append `(,(car lst) ,@same-offset-labels) ret))))]
      [else
       (loop labels (cdr lst) (cons (car lst) ret))])))
 
