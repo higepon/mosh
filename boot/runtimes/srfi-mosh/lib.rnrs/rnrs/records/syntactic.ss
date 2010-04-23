@@ -1,25 +1,6 @@
-;from Larceny's
-;modified for mosh
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; (rnrs records syntactic)
-;
-; This implementation extends the R6RS define-record-type as
-; outlined by William D Clinger in his essay on language design
-; that accompanied his vote against ratification of the R6RS:
-; http://www.r6rs.org/ratification/results.html#X101
-;
-; FIXME:  That means this implementation is R6RS-compatible but
-; not R6RS-conforming.  An R6RS-conforming implementation would
-; have to reject some perfectly sensible record type definitions
-; that this implementation accepts.
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+; from Larceny's record impl.
 (library (rnrs records syntactic helper)
-
-  (export preferred-cd preferred-cd-set!)
-
+  (export preferred-cd preferred-cd-set2!)
   (import (for (core primitives) run expand)
           (for (primitives make-hashtable hashtable-ref hashtable-set!
                            symbol-hash record-type-name)
@@ -43,23 +24,22 @@
           cd
           (make-record-constructor-descriptor rtd #f #f))))
 
-  (define (preferred-cd-set! rtd cd)
-    (hashtable-set! preferred-cd-table rtd cd))
+  (define (preferred-cd-set2! rtd cd)
+    (hashtable-set! preferred-cd-table rtd cd)
+    cd)
 )
 
-;MOSH: 
 (library (rnrs records syntactic helper counter)
-	 (export map/index1)
-	 (import (only (rnrs base) null? reverse cons car cdr + define if quote))
+         (export map/index1)
+         (import (only (rnrs base) null? reverse cons car cdr + define if quote))
 
       (define (map/index1 proc lst)
-	(define (itr ind cur rest)
-	  (if (null? rest)
-	    (reverse cur)
-	    (itr (+ ind 1) (cons (proc ind (car rest)) cur) (cdr rest))))
-	(itr 0 '() lst))
-)
-
+        (define (itr ind cur rest)
+          (if (null? rest)
+            (reverse cur)
+            (itr (+ ind 1) (cons (proc ind (car rest)) cur) (cdr rest))))
+        (itr 0 '() lst)))
+; R6RS wrapper for Ypsilon's record
 (library (rnrs records syntactic (6))
 
   (export define-record-type fields mutable immutable
@@ -70,16 +50,21 @@
           (for (rnrs base) run expand)
           (for (rnrs lists) run expand)
           (for (only (rnrs syntax-case) quasisyntax unsyntax) run expand)
-          (rnrs records procedural)
-          ;(err5rs records procedural) ;MOSH: Larceny's R6RS syntactic record library was built on ERR5RS procedural record
           (rnrs records syntactic helper)
-          (for (primitives ex:generate-guid make-record-type-descriptor) run expand)
-	  (for (rnrs records syntactic helper counter) expand) ; MOSH: Access fields by index number, not symbols.
+          (rnrs records procedural)
+          (for (rnrs records syntactic helper counter) run expand)
+          (for (primitives ex:generate-guid make-record-type-descriptor
+                           make-record-type ; from mosh 0.2.4
+                           record-type?
+                           record-type-rtd
+                           record-type-rcd
+                           ) run expand)
 	  )
 
 ;MOSH
 
 
+  ; from Larceny
   (define-syntax define-record-type
     (syntax-rules ()
      ((_ (rtd-name constructor-name predicate-name) clause ...)
@@ -92,7 +77,8 @@
   (define-syntax define-record-type-helper0
     (lambda (x)
       (define (construct-record-type-definitions
-               rtd-name constructor-name predicate-name      ; syntax objects
+               rt-name rtd-name rcd-name
+               constructor-name predicate-name      ; syntax objects
                type-name field-specs
                protocol sealed? opaque? uid
                parent parent-cd)
@@ -104,10 +90,12 @@
                   ((pair? x)
                    (cons (frob (car x)) (frob (cdr x))))
                   (else
-                   (datum->syntax rtd-name x))))
+                   (datum->syntax rt-name x))))
 
           #`(#,(frob #'define-record-type-helper1)
-             #,(frob rtd-name)
+             #,(frob rt-name)
+             #,(frob rtd-name) ; RTD-name
+             #,(frob rcd-name) ; RCD-name
              #,(frob constructor-name)
              #,(frob predicate-name)
              #,(frob type-name)
@@ -157,8 +145,8 @@
         (syntax-violation 'define-record-type "illegal syntax" x))
 
       (syntax-case x ()
-       ((_ explicit? rtd-name constructor-name predicate-name clause ...)
-        (let* ((type-name (syntax->datum #'rtd-name))
+       ((_ explicit? rt-name constructor-name predicate-name clause ...)
+        (let* ((type-name (syntax->datum #'rt-name))
 
 ;              (ignored (begin (display "got to here okay") (newline)))
 
@@ -241,14 +229,14 @@
                 (if (symbol? (syntax->datum #'constructor-name))
                     #'constructor-name
                     (datum->syntax
-                     #'rtd-name
+                     #'rt-name
                      (string->symbol
                       (string-append "make-" type-name-string)))))
                (pname
                 (if (symbol? (syntax->datum #'predicate-name))
                     #'predicate-name
                     (datum->syntax
-                     #'rtd-name
+                     #'rt-name
                      (string->symbol
                       (string-append type-name-string "?")))))
                (make-accessor-name
@@ -306,7 +294,9 @@
           (if (not okay?)
               (complain))
           (construct-record-type-definitions
-           #'rtd-name
+           #'rt-name
+           (ex:generate-guid 'rtd)
+           (ex:generate-guid 'rcd)
            cname
            pname
            type-name
@@ -329,80 +319,132 @@
 	   )
 	  )))))
 
+  (define-syntax rt-or-rtd->rtd
+    (syntax-rules ()
+      ((_ x)
+       (if (record-type? x)
+         (record-type-rtd x)
+         x ; RTD
+         ))))
   (define-syntax define-record-type-helper1
     (syntax-rules ()
-     ((_ rtd-name constructor-name predicate-name
+     ((_ rt-name rtd-name rcd-name constructor-name predicate-name
+         type-name params
+         protocol sealed? opaque? uid
+         #f parent-cd)
+      (define-record-type-helper15
+        rt-name
+        rtd-name
+        rcd-name
+        constructor-name
+        predicate-name
+        type-name
+        params
+        protocol
+        sealed?
+        opaque?
+        uid
+        #f
+        parent-cd))
+
+     ((_ rt-name rtd-name rcd-name constructor-name predicate-name
+         type-name params
+         protocol sealed? opaque? uid
+         parent parent-cd)
+      (define-record-type-helper15
+        rt-name
+        rtd-name
+        rcd-name
+        constructor-name
+        predicate-name
+        type-name
+        params
+        protocol
+        sealed?
+        opaque?
+        uid
+        (rt-or-rtd->rtd parent)
+        parent-cd))))
+
+  (define-syntax define-record-type-helper15
+    (syntax-rules ()
+     ((_ rt-name rtd-name rcd-name constructor-name predicate-name
          type-name ((count mutable? field-name accessor mutator) ...)
          protocol sealed? opaque? uid
          parent parent-cd)
-      (begin (def-rtd-name rtd-name type-name ((mutable? field-name) ...)
-                           parent sealed? opaque? uid)
-             (def-cd rtd-name type-name parent parent-cd protocol)
-             (def-constructor rtd-name constructor-name)
-             (def-predicate rtd-name predicate-name)
-             (def-accessor rtd-name count accessor) ;MOSH
-             ...
-             (def-mutator rtd-name count mutator)
-             ...))))
+      (begin 
+        (def-rtd rtd-name type-name ((mutable? field-name) ...) parent sealed? opaque? uid)
+        (def-rcd rcd-name rtd-name parent parent-cd protocol)
+        (def-constructor rcd-name constructor-name)
+        (def-predicate rtd-name predicate-name)
+        (def-accessor rtd-name count accessor) ;MOSH
+        ...
+        (def-mutator rtd-name count mutator)
+        ...
+        (define rt-name (make-record-type 'rt-name rtd-name rcd-name)) ;from mosh 0.2.4
+        ))))
 
-;MOSH
-  (define-syntax def-rtd-name
-    (syntax-rules ()
-     ((_ rtd-name type-name (fieldspec ...) parent sealed? opaque? #f)
-      (define rtd-name (make-record-type-descriptor 'type-name parent #f sealed? opaque? '#(fieldspec ...))))
-     ((_ rtd-name type-name (fieldspec ...) parent sealed? opaque? uid)
-      (define rtd-name (make-record-type-descriptor 'type-name parent 'uid sealed? opaque? '#(fieldspec ...))))))
+  ;MOSH
 
-  (define-syntax def-cd
+  (define-syntax def-rcd
     (syntax-rules ()
-     ((_ rtd-name type-name #f #f protocol)
-      (define %%RECORD-SYNTAX-IGNORED (preferred-cd-set! rtd-name (make-record-constructor-descriptor rtd-name #f protocol))))
-     ((_ rtd-name type-name parent #f protocol)
-      (define %%RECORD-SYNTAX-IGNORED (preferred-cd-set! rtd-name (make-record-constructor-descriptor rtd-name (preferred-cd parent) protocol))))
-     ((_ rtd-name type-name parent parent-cd protocol)
-      (define %%RECORD-SYNTAX-IGNORED (preferred-cd-set! rtd-name (make-record-constructor-descriptor rtd-name parent-cd protocol))))))
+      ((_ rcd-name rtd-name #f #f protocol)
+       (define rcd-name 
+         (preferred-cd-set2! rtd-name (make-record-constructor-descriptor rtd-name #f protocol))))
+      ((_ rcd-name rtd-name parent #f protocol)
+       (define rcd-name 
+         (preferred-cd-set2! rtd-name (make-record-constructor-descriptor rtd-name (preferred-cd parent) protocol))))
+      ((_ rcd-name rtd-name parent parent-cd protocol)
+       (define rcd-name 
+         (preferred-cd-set2! rtd-name (make-record-constructor-descriptor rtd-name parent-cd protocol))))))
+
+
+  (define-syntax def-rtd
+    (syntax-rules ()
+      ((_ rtd-name type-name (fieldspec ...) parent sealed? opaque? #f)
+       (define rtd-name (make-record-type-descriptor 'type-name parent #f sealed? opaque? '#(fieldspec ...))))
+      ((_ rtd-name type-name (fieldspec ...) parent sealed? opaque? uid)
+       (define rtd-name (make-record-type-descriptor 'type-name parent 'uid sealed? opaque? '#(fieldspec ...))))))
 
   (define-syntax def-constructor
     (syntax-rules ()
 
-     ((_ rtd-name #f)
+     ((_ rcd #f)
       (begin))
 
-     ((_ rtd-name constructor-name)
-      (define constructor-name (record-constructor (preferred-cd rtd-name))))))
+     ((_ rcd constructor-name)
+      (define constructor-name (record-constructor rcd)))))
 
   (define-syntax def-predicate
     (syntax-rules ()
 
-     ((_ rtd-name #f)
+     ((_ rtd #f)
       (begin))
 
-     ((_ rtd-name predicate-name)
-      (define predicate-name (record-predicate rtd-name))))) ;was rtd
+     ((_ rtd predicate-name)
+      (define predicate-name (record-predicate rtd))))) ;was rtd
 
   (define-syntax def-accessor
     (syntax-rules ()
 
-     ((_ rtd-name count #f)
+     ((_ rtd count #f)
       (begin))
 
-     ((_ rtd-name count accessor)
-      (define accessor (record-accessor rtd-name count))))) ;was rtd
+     ((_ rtd count accessor)
+      (define accessor (record-accessor rtd count))))) ;was rtd
 
   (define-syntax def-mutator
     (syntax-rules ()
-
-     ((_ rtd-name count #f)
+     ((_ rtd count #f)
       (begin))
+     ((_ rtd count mutator)
+      (define mutator (record-mutator rtd count))))) ;was rtd
 
-     ((_ rtd-name count mutator)
-      (define mutator (record-mutator rtd-name count))))) ;was rtd
+  (define (record-type-descriptor rt)
+    (record-type-rtd rt))
 
-  (define (record-type-descriptor rtd)
-    rtd)
-
-  (define (record-constructor-descriptor rtd)
-    (preferred-cd rtd))
+  (define (record-constructor-descriptor rt)
+    (record-type-rcd rt))
 
 (define-syntax fields (lambda (e) (syntax-violation 'fields "Invalid expression" e)))
 (define-syntax mutable (lambda (e) (syntax-violation 'mutable "Invalid expression" e)))

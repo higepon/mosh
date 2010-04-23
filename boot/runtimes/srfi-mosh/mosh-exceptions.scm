@@ -19,7 +19,10 @@
 	      (throw "     error in raise(NMOSH): returned from non-continuable exception\n"))))
   (if %nmosh-failproc
     (%nmosh-failproc c (%get-stack-trace-obj))
-    (throw (format "    error in raise(NMOSH): unhandled exception has occurred (and (nmosh startup) was not loaded)\n\n~a\n" (condition-printer c (current-error-port))))))
+    (throw (format "    error in raise(NMOSH): unhandled exception has occurred (and (nmosh startup) was not loaded)\n\n~a\n" 
+                   ;(condition-printer c (current-error-port))
+                   c
+                   ))))
 
 ;;------------------------------------------------
 ;; error reporting
@@ -34,6 +37,8 @@
 	 (c (if who (condition c0 c1 c2 c3) (condition c1 c2 c3))))
     (raise c)))
 
+#|
+;deprecated
 ;;------------------------------------------------
 ;; condition objects used by VM and C procs
 ;;------------------------------------------------
@@ -126,3 +131,4 @@
 (setsym &no-infinities-rcd)
 (setsym &no-nans-rtd)
 (setsym &no-nans-rcd)
+|#

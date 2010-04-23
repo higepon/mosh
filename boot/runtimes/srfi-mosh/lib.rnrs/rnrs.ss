@@ -243,6 +243,10 @@
     &i/o-port make-i/o-port-error i/o-port-error?  i/o-error-port &i/o-decoding
     make-i/o-decoding-error i/o-decoding-error?  &i/o-encoding make-i/o-encoding-error i/o-encoding-error?  i/o-encoding-error-char
     &no-infinities make-no-infinities-violation no-infinities-violation?  &no-nans make-no-nans-violation no-nans-violation?
+
+    ; deprecated 
+
+    #|
     &condition-rtd &condition-rcd &message-rtd &message-rcd
     &warning-rtd &warning-rcd &serious-rtd &serious-rcd
     &error-rtd &error-rcd &violation-rtd &violation-rcd
@@ -263,6 +267,7 @@
     &i/o-decoding-rtd &i/o-decoding-rcd &i/o-encoding-rtd
     &i/o-encoding-rcd &no-infinities-rtd &no-infinities-rcd
     &no-nans-rtd &no-nans-rcd
+    |#
 
     ;
     define-condition-type

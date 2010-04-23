@@ -317,7 +317,7 @@ void VM::loadCompiler()
 #endif
     TRY_VM {
         evaluateUnsafe(libCompiler.toVector(), true);
-        const Object libMatch = FASL_GET(pmatch_image);
+        const Object libMatch = FASL_GET(match_image);
         evaluateUnsafe(libMatch.toVector());
     CATCH_VM
         // call default error handler
