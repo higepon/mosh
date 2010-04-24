@@ -36,20 +36,17 @@ runtest:
 	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_bad_regexp.scm 2>/dev/null
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_both_regexp.scm
-	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared.scm
-	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared2.scm 2>/dev/null
-	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared3.scm
-# test twice
-	$(MOSH_TARGET) --loadpath=test/mylib test/fasl.scm
-	$(MOSH_TARGET) --loadpath=test/mylib test/fasl.scm
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
 
-# (mosh shell) is deprecated.
 runtest-mosh:
-#	$(MOSH_TARGET) test/shell.scm
+	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared.scm
+	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared2.scm 2>/dev/null
+	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared3.scm
+	# test twice
+	$(MOSH_TARGET) --loadpath=test/mylib test/fasl.scm
+	$(MOSH_TARGET) --loadpath=test/mylib test/fasl.scm
 
 runtest-nmosh:
-#	-$(MOSH_TARGET) test/shell.scm
 	$(MOSH_TARGET) test/nmosh.scm
