@@ -218,7 +218,7 @@ namespace scheme {
             }
 
             if (c->isJitCompiled()) {
-                //              VM_LOG1("calling ~a\n", c->sourceInfo);
+VM_LOG1("calling ~a\n", c->sourceInfo);
                 CProcedure* const cprocedure = c->toCProcedure();
                 VM_ASSERT(operand.isFixnum());
                 // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
@@ -226,7 +226,7 @@ namespace scheme {
                 // Not same as Cproc, JIT-compile CProc issues RETURN.
                 // So we don't use returnCode
                 ac_ = cprocedure->call(this, argLength, sp_ - argLength);
-//                VM_LOG1("called ~a\n", c->sourceInfo);
+                            VM_LOG1("called ~a\n", c->sourceInfo);
             } else {
                 if (c->maxStack + sp_ >= stackEnd_) {
                     expandStack(stackSize_ / 10);

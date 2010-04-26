@@ -299,6 +299,8 @@ public:
     }
 };
 
+void dump(Object obj);
+
 } // namespace scheme
 
 #endif // SCHEME_OBJECT_

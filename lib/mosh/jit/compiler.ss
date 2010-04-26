@@ -142,12 +142,16 @@
 
 (define (trace-push! insn)
   `((push rax) ;; we discard the return value
+    (push rax) ;; we discard the return value
     ,@(call1 (get-c-address 'jitStackPush) insn)
+    (pop rax)
     (pop rax)))
 
 (define (trace-reset!)
   `((push rax) ;; we discard the return value
+    (push rax) ;; we discard the return value
     ,@(call0 (get-c-address 'jitStackReset))
+    (pop rax)
     (pop rax)))
 
 (define (PUSH_FRAME)
@@ -1283,13 +1287,14 @@
     (movq ,(vm-register 'sp) rcx)))
 
 (define (return-to-vm)
-  `((movq rsp rbp)
+  `(;(movq rsp rbp)
 ;   ,@(DEBUGGER 9991)
     (pop rbp)
     (pop r15)
     (pop r14)
     (pop r13)
     (pop r12)
+    (pop rbx)
     (pop rbx)
     (retq)))
 
@@ -1651,9 +1656,11 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
-               (let1 compiled (u8-list->c-procedure (assemble `((push rbx) (push r12) (push r13) (push r14) (push r15)
+               (let1 compiled (u8-list->c-procedure (assemble `(
+                                                                (push rbx) ;; dummy
+                                                                (push rbx) (push r12) (push r13) (push r14) (push r15)
                                                                 (push rbp)
-                                                                (movq rbp rsp)
+;                                                                (movq rbp rsp)
                                                                 ,@(apply append (cons (trace-reset!) asm*)))))
                  (set-jit-compiled! closure compiled)
                  closure))))))

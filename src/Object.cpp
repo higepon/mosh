@@ -460,3 +460,8 @@ bool Object::isOctet() const
 {
     return (isFixnum() && ByteVector::isOctet(toFixnum()));
 }
+
+void dump(Object obj)
+{
+    fprintf(stderr, "%s", format(NULL, UC("<dumped=~a>"), Pair::list1(obj)).toString()->data().ascii_c_str());
+}
