@@ -71,10 +71,10 @@
  (define (get-command-line) *command-line-args*) ;; required for psyntax
  (define (errorf form . args) (error 'compiler (apply format form args)))
 
- (include "./lib/records.scm")
- (include "./lib/enum.scm")
- (include "./lib/condition.scm")
- (include "./lib/exception.scm")
+ (include "./baselib/records.scm")
+ (include "./baselib/enum.scm")
+ (include "./baselib/condition.scm")
+ (include "./baselib/exception.scm")
 
   ])
 

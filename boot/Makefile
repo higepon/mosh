@@ -1,20 +1,23 @@
+.PHONY: all bootstrap always
 SRC_DIR=../src
 SCRIPTS_DIR=../misc/scripts
 CORE_LIBS =                 \
-    lib/fixnum.scm     \
-    lib/flonum.scm     \
-    lib/bitwise.scm    \
-    lib/bytevector.scm \
-    lib/misc.scm       \
-    lib/r5rs.scm       \
-    lib/hashtable.scm
+    baselib/fixnum.scm     \
+    baselib/flonum.scm     \
+    baselib/bitwise.scm    \
+    baselib/bytevector.scm \
+    baselib/misc.scm       \
+    baselib/r5rs.scm       \
+    baselib/hashtable.scm
 
-CORE_INCLUDE_LIBS = lib/enum.scm lib/condition.scm lib/exception.scm lib/records.scm
-
+CORE_INCLUDE_LIBS = baselib/enum.scm baselib/condition.scm baselib/exception.scm baselib/records.scm
 
 TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp $(SRC_DIR)/nmosh_image.cpp
 
 all: bootstrap $(TARGET)
+
+always:
+	# always target
 
 $(SRC_DIR)/match.h: match.h
 	cp $< $@
@@ -28,7 +31,7 @@ $(SRC_DIR)/psyntax_mosh_image.cpp: psyntax_mosh_image.cpp
 $(SRC_DIR)/nmosh_image.cpp: runtimes/srfi-mosh/nmosh_image.cpp
 	cp $< $@
 
-runtimes/srfi-mosh/nmosh_image.cpp:
+runtimes/srfi-mosh/nmosh_image.cpp: always
 	make -C runtimes/srfi-mosh # Bootstrap using vanilla-mosh and psyntax-mosh
 
 compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm
@@ -50,7 +53,7 @@ psyntax-mosh-image.scmc: runtimes/psyntax-mosh/psyntax.scm compiler-vm.scm
 	gosh vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
-match.scmc: lib/match.scm compiler-vm.scm
+match.scmc: baselib/match.scm compiler-vm.scm
 	gosh vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
@@ -58,7 +61,7 @@ baselib.scmc: baselib.scm compiler-vm.scm
 	gosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
-baselib.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS) $(CORE_INCLUDE_LIBS)
+baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS) $(CORE_INCLUDE_LIBS)
 	cat $^ > $@
 
 free-vars-decl.scm: free-vars.scm
@@ -74,5 +77,5 @@ bootstrap:
 
 
 clean:
-	$(RM) *.scmc *.scmc.fasl match.h baselib.h baselib.scm compiler-vm-cpp.scm compiler-vm.scm free-vars-decl.scm
+	$(RM) *.scmc *.scmc-e *.scmc.fasl match.h baselib.h baselib.scm compiler-vm-cpp.scm compiler-vm.scm free-vars-decl.scm *image.cpp
 
