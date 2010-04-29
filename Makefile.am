@@ -44,7 +44,7 @@ mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ 
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
-nmosh_SOURCES = src/main.cpp src/nmosh_image.cpp src/nmosh_version.h
+nmosh_SOURCES = src/main.cpp src/nmosh_image.cpp
 
 nmosh_OPTS     = -D WITH_NMOSH_DEFAULTS -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
 nmosh_CFLAGS   = $(nmosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated 
@@ -339,12 +339,34 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR) -I$(top_srcdir)/src
 EXTRA_DIST     = \
-src/instruction.scm src/vm.scm boot/lib/base.scm boot/compiler.scm \
-boot/free-vars.scm misc/scripts boot/lib/match.scm src/test-data.scm doc \
-lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
+src/instruction.scm boot/vm.scm boot/baselib/base.scm boot/compiler.scm \
+boot/free-vars.scm misc/scripts boot/baselib/match.scm src/test-data.scm doc \
+boot/runtimes/psyntax-mosh/psyntax.scm \
+boot/runtimes/psyntax-mosh/psyntax \
+boot/runtimes/psyntax-mosh/Makefile \
+boot/runtimes/psyntax-mosh/print-prefix.ss \
+boot/runtimes/psyntax-mosh/psyntax-prefix.txt \
+doc/mosh.1 doc/mosh_config.1 \
 doc/RELNOTE lib src/cprocedures.cpp \
 src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
-src/ffitest.c win mosh.vcproj mosh.sln doc README.md misc
+src/ffitest.c win mosh.vcproj mosh.sln doc README.md misc \
+boot/runtimes/srfi-mosh/Makefile \
+boot/runtimes/srfi-mosh/README \
+boot/runtimes/srfi-mosh/bootstrap.common \
+boot/runtimes/srfi-mosh/bootstrap.vanilla-mosh \
+boot/runtimes/srfi-mosh/bootstrap.psyntax-mosh \
+boot/runtimes/srfi-mosh/build-run.ss \
+boot/runtimes/srfi-mosh/compat-mosh-run.scm \
+boot/runtimes/srfi-mosh/expander.scm \
+boot/runtimes/srfi-mosh/init.ss \
+boot/runtimes/srfi-mosh/init5.scm \
+boot/runtimes/srfi-mosh/layout.scm \
+boot/runtimes/srfi-mosh/lib \
+boot/runtimes/srfi-mosh/lib.boot \
+boot/runtimes/srfi-mosh/lib.rnrs \
+boot/runtimes/srfi-mosh/mosh-exceptions.scm \
+boot/runtimes/srfi-mosh/mosh-utils5.scm \
+gen-git-build.sh
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \

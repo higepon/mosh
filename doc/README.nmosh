@@ -1,0 +1,113 @@
+README.nmosh Apr-29-2010
+
+by OKUMURA Yuki <mjt@cltn.org>
+
+nmosh
+=====
+
+nmosh is mosh's new R6RS runtime.
+It is R6RS compatible but some feature of previous psyntax-based mosh
+is not included.
+
+Simply, you can use it as mosh.
+
+    nmosh some-script.ss
+
+compatibility notes
+-------------------
+ - nmosh is based on Andre van Tonder's R6RS macro and runtime implementation
+   see http://www.het.brown.edu/people/andre/macros/ .
+ - nmosh does not supports shared-structure notation.
+
+porting guide
+=============
+
+Unfortunately, your script not runs under nmosh (but runs under mosh)
+try following to fix them.
+
+"Attempt to use binding of [foo] in library () at invalid level 1."
+-------------------------------------------------------------------
+
+nmosh has more strict rule for library import levels. If you intended to use
+library function (other than from (rnrs)), specify import level in your script.
+
+e.g.)
+        change (import (some library)) to (import (for (some library) run expand))
+
+see R6RS section 7.2 for these syntax.
+
+Incorrect script behavior when ACC enabled
+------------------------------------------
+
+Compared with previous mosh, nmosh has more aggressive caching strategy.  If your 
+script runs correctly under nmosh --disable-acc, check following :
+
+ - Cleaning cache. (remove ~/.nmosh-cache/*)
+ - Simple gensym is not compatible with nmosh's cache. nmosh cache is NOT 
+   contains any runtime state. So you cannot use (gensym) in "expand" phase.
+ - Including other script such as R6RS section 12.6 will break when included 
+   file was changed. nmosh will not track external environment to detect
+   re-caching.
+ - Any side-effect during "expand" phase will ignored (will NOT re-played) 
+   when cache loading.
+
+You can disable ACC (Auto Compilation Cache) partially using ERR5RS load 
+(available in (rnrs load) library) . Note that you can load libraries via 
+load as R6RS programs.
+
+Future version of nmosh will provide cache-friendly version of (gensym)
+and (include ...).
+
+Runtime features
+================
+
+syntax trace
+------------
+
+When syntax error occurs in "expand" or "run" phase, nmosh will show syntax
+trace message. This feature originated from original Andre van Tonder's
+implementation.
+
+    prism:~ oku$ nmosh check.ss
+    launching debugger...
+    debugger not found.
+     Syntax error
+          who : define-invalid
+      message : Invalid form
+         form : (define-invalid x)
+       around : 
+        trace : 
+          (define-invalid x)
+
+minidebug
+---------
+
+When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke 
+(nmosh minidebug) to show stack trace.
+
+    prism:~ oku$ nmosh check.ss
+    launching debugger...
+    debugger not found.
+     Condition components:
+     1. &assertion
+     2. &who             who: "string=?"
+     3. &message         message: "string required, but got h"
+     4. &irritants       irritants: (())
+    TRACE :
+      1 :   cprc   <unknwon\x20;subr>
+      2 :   cprc   string=?
+      3 : ==USRP== (some-function) @ /Users/oku/check.ss:11
+      ^      ^      ^
+      |      |      +-------------- SOURCE FUNCTION
+      |      |       
+      |      +--------------------- FRAME ID
+      |              
+      +---------------------------- FRAME NUMBER
+
+       FRAME ID            origin
+         USRP         Library or User program
+       ==USRP==       Undermost user frame
+         DBGP         (internal symbol for debugging or loaded library)
+         mosh         Symbols from mosh runtime (boot/baselib or compiler.scm)
+         nmsh         nmosh Expander
+         cprc         cprocedure (mosh's internal function implemented in C++)
