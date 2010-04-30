@@ -339,17 +339,18 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR) -I$(top_srcdir)/src
 EXTRA_DIST     = \
-src/instruction.scm boot/vm.scm boot/baselib/base.scm boot/compiler.scm \
-boot/free-vars.scm misc/scripts boot/baselib/match.scm src/test-data.scm doc \
+boot/vm.scm boot/baselib boot/compiler.scm \
+boot/free-vars.scm misc/scripts boot/baselib/match.scm doc \
+boot/free-vars-decl.scm \
 boot/runtimes/psyntax-mosh/psyntax.scm \
 boot/runtimes/psyntax-mosh/psyntax \
 boot/runtimes/psyntax-mosh/Makefile \
 boot/runtimes/psyntax-mosh/print-prefix.ss \
 boot/runtimes/psyntax-mosh/psyntax-prefix.txt \
 doc/mosh.1 doc/mosh_config.1 \
-doc/RELNOTE lib src/cprocedures.cpp \
-src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
-src/ffitest.c win mosh.vcproj mosh.sln doc README.md misc \
+doc/RELNOTE lib src \
+test src/call.inc.cpp ${GTEST_DIR} \
+win mosh.vcproj mosh.sln doc README.md misc \
 boot/runtimes/srfi-mosh/Makefile \
 boot/runtimes/srfi-mosh/README \
 boot/runtimes/srfi-mosh/bootstrap.common \
