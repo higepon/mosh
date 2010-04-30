@@ -43,20 +43,19 @@ Compared with previous mosh, nmosh has more aggressive caching strategy.  If you
 script runs correctly under nmosh --disable-acc, check following :
 
  - Cleaning cache. (remove ~/.nmosh-cache/*)
- - Simple gensym is not compatible with nmosh's cache. nmosh cache is NOT 
-   contains any runtime state. So you cannot use (gensym) in "expand" phase.
  - Including other script such as R6RS section 12.6 will break when included 
    file was changed. nmosh will not track external environment to detect
    re-caching.
- - Any side-effect during "expand" phase will ignored (will NOT re-played) 
-   when cache loading.
+ - Simple gensym is not compatible with nmosh's cache mechanism. Since nmosh's cache
+   only contains expanded script. 
+ - Any side-effect during "expand" phase will be ignored (NOT replayed).
 
 You can disable ACC (Auto Compilation Cache) partially using ERR5RS load 
-(available in (rnrs load) library) . Note that you can load libraries via 
-load as R6RS programs.
+available in (rnrs load) library. Note that you can also load R6RS libraries with 
+this.
 
 Future version of nmosh will provide cache-friendly version of (gensym)
-and (include ...).
+and (include "...").
 
 Runtime features
 ================
@@ -109,5 +108,5 @@ When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke
        ==USRP==       Undermost user frame
          DBGP         (internal symbol for debugging or loaded library)
          mosh         Symbols from mosh runtime (boot/baselib or compiler.scm)
-         nmsh         nmosh Expander
+         nmsh         nmosh expander
          cprc         cprocedure (mosh's internal function implemented in C++)
