@@ -350,14 +350,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\CompoundCondition.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\ConditionProcedures.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\src\cprocedures.cpp"
 					>
 					<FileConfiguration
@@ -567,22 +559,6 @@
 				</File>
 				<File
 					RelativePath=".\src\Reader.tab.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Record.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\RecordConstructorDescriptor.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\RecordProcedures.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\RecordTypeDescriptor.cpp"
 					>
 				</File>
 				<File
@@ -812,10 +788,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\CompoundCondition.h"
-					>
-				</File>
-				<File
 					RelativePath=".\src\ConditionProcedures.h"
 					>
 				</File>
@@ -976,6 +948,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\NonGenerativeRTDs.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\NumberReader.h"
 					>
 				</File>
@@ -1056,22 +1032,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\Record.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\RecordConstructorDescriptor.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\RecordProcedures.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\RecordTypeDescriptor.h"
-					>
-				</File>
-				<File
 					RelativePath=".\src\Regexp.h"
 					>
 				</File>
@@ -1089,6 +1049,10 @@
 				</File>
 				<File
 					RelativePath=".\src\scheme.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\SharedReference.h"
 					>
 				</File>
 				<File

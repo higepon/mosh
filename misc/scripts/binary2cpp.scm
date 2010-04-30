@@ -13,7 +13,8 @@
 (define (main args)
   (call-with-port (open-file-output-port (caddr args) (file-options no-fail) (buffer-mode none) (native-transcoder))
     (lambda (out)
-      (display "#include <stdint.h>\n" out)
+      ;(display "#include <stdint.h>\n" out) ; MSVC9 is not supports stdint.h 
+      (display "typedef unsigned char uint8_t;\n" out)
       (format out "static const uint8_t ~a[] = {" (filename->arrayname (cadr args)))
       (call-with-port (open-file-input-port (cadr args) (file-options) (buffer-mode none))
         (lambda (port)
