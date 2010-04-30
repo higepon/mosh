@@ -151,10 +151,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\onig-5.7.0\alloca.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\onig-5.7.0\enc\ascii.c"
 				>
 			</File>
