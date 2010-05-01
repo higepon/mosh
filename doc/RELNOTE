@@ -24,7 +24,7 @@ and see doc/README.nmosh for details.
 
 Changes
     
-    configure script now supports out-of-tree building.
+    Configure script now supports out-of-tree building.
 
     updated library
           (irregex) : 0.8.1 (Alex Shinn's irregex library)
@@ -38,7 +38,7 @@ Changes
     Download MPIR from http://www.mpir.org and extract to win/mpir. mosh.sln
     will load and build them together.
     Note that building MPIR requires yasm installed. see
-    mpir/build.vc9/readme.txt for datail.
+    mpir/build.vc9/readme.txt for detail.
 
 
 Mosh 0.2.4 Release Note

@@ -16,8 +16,17 @@ Simply, you can use it as mosh.
 compatibility notes
 -------------------
  - nmosh is based on Andre van Tonder's R6RS macro and runtime implementation
-   see http://www.het.brown.edu/people/andre/macros/ .
- - nmosh does not supports shared-structure notation.
+   see http://www.het.brown.edu/people/andre/macros/ for more info.
+ - nmosh does not support following features included in psyntax-based mosh:
+   - shared structure notation(SRFI-38)
+   - shared namespace between "expand" and "run" phases
+   - syntax check with record-type
+   - all (psyntax) libraries
+   - (and more)
+ - nmosh has following extended feature compared to psyntax-based mosh:
+   - ERR5RS load in (rnrs load)
+   - multiple library in one source
+   - (and more)
 
 porting guide
 =============
@@ -45,14 +54,20 @@ script runs correctly under nmosh --disable-acc, check following :
  - Cleaning cache. (remove ~/.nmosh-cache/*)
  - Including other script such as R6RS section 12.6 will break when included 
    file was changed. nmosh will not track external environment to detect
-   re-caching.
+   cache invalidation.
  - Simple gensym is not compatible with nmosh's cache mechanism. Since nmosh's cache
    only contains expanded script. 
- - Any side-effect during "expand" phase will be ignored (NOT replayed).
+ - Any side-effect during "expand" phase will be ignored (NOT replayed when
+   caches are loading).
 
 You can disable ACC (Auto Compilation Cache) partially using ERR5RS load 
 available in (rnrs load) library. Note that you can also load R6RS libraries with 
-this.
+this procedure.
+
+e.g.)
+        change (import (some library)) to 
+         (load "some/library.sls")
+         (load "program.sps") ; (some library) available from here
 
 Future version of nmosh will provide cache-friendly version of (gensym)
 and (include "...").

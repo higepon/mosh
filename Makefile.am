@@ -367,6 +367,7 @@ boot/runtimes/srfi-mosh/lib.boot \
 boot/runtimes/srfi-mosh/lib.rnrs \
 boot/runtimes/srfi-mosh/mosh-exceptions.scm \
 boot/runtimes/srfi-mosh/mosh-utils5.scm \
+boot/runtimes/srfi-mosh/runtime.scm \
 gen-git-build.sh
 
 GENERATED = \
@@ -580,6 +581,9 @@ install-data-hook :
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
+
+dist-hook:
+	rm -f $(top_distdir)/lib/libffitest.so.1.0
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
