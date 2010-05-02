@@ -122,9 +122,9 @@
       (if (pair? rest)
 	(itr (cons "/" (cons (car rest) cur)) (cdr rest))
 	(reverse (cdr cur)))) ;drop last "/"
-    ;(PCK 'COMPOSING: l)
     (itr (list "/") l))
 
+  ;(PCK 'COMPOSING: l)
   (apply string-append (insert-slash (fold-dotdot (omit-dot (omit-zerolen l))))))
 
 (define (make-absolute-path pth)
@@ -371,6 +371,7 @@
       (cond
 	((not (pair? rest)) cur)
 	(else
+          ;(PCK 'append-prefix-itr (car rest))
 	  (itr (append cur (append-prefix-x l (car rest))) (cdr rest)))))
     (itr '() lstr))
 
@@ -380,12 +381,16 @@
     (append-prefix-x l (mosh-executable-path)))
   (define (append-prefix-stdlibpath l)
     (append-prefix-x l (standard-library-path)))
+  (define (append-prefix-loadpath l)
+    (let ((var (get-environment-variable "MOSH_LOADPATH")))
+      ;(PCK 'var var)
+      (append-prefix-l l (pathsep var))))
   (define (append-prefix l)
     (append
       (append-prefix-execpath l)
       (if %loadpath (append-prefix-l l (pathsep %loadpath)) '())
       (if (get-environment-variable "MOSH_LOADPATH")
-	(append-prefix-l l (get-environment-variable "MOSH_LOADPATH")) 
+        (append-prefix-loadpath l)
 	'())
       (append-prefix-curpath l)
       (append-prefix-stdlibpath l)
@@ -427,6 +432,7 @@
     (if (null? l)
       #f
       (begin
+        ;(PCK 'check-file (car l))
 	(if (file-exists? (car l))
 	  (car l)
 	  (check-files (cdr l))))))
