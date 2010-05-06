@@ -59,14 +59,12 @@ GIT_COMMIT_REVISION=$(shell git describe --always)$(GIT_IS_DIRTY)
 GIT_COMMIT_UNIXTIME=$(shell git cat-file commit HEAD|grep 'committer'|cut -d ' ' -f4)
 GIT_COMMIT_DATE=$(shell date -d "1970/01/01 09:00:00 $(GIT_COMMIT_UNIXTIME) seconds" "+%Y/%m/%d %H:%M:%S")
 mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+nmosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 else
 GIT_BRANCH=UNKNOWN
 GIT_COMMIT_REVISION=UNKNOWN
 GIT_COMMIT_DATE=UNKNOWN
 endif
-
-mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
-nmosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 
 if DEVELOPER
 DEBUG_FLAGS=-DDEBUG_VERSION
@@ -584,6 +582,7 @@ install-data-hook :
 
 dist-hook:
 	rm -f $(top_distdir)/lib/libffitest.so.1.0
+	rm -rf $(top_distdir)/misc/.mosh
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
