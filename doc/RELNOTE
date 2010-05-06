@@ -19,12 +19,26 @@ About This Release
 ------------------
 
 This release introduces "nmosh" another R6RS environment.
-nmosh is intended to drop-in replacement of current "mosh" 
-and see doc/README.nmosh for details.
+See doc/README.nmosh for details.
 
 Changes
+
+    Introduce nmosh by OKUMURA Yuki.
+    nmosh is port of Andre van Tonder's R6RS macro and runtime[1] and R6RS
+    record from Larceny[2] with additional expander-cache (ACC) and debugging 
+    feature such as runtime stack trace. 
+    Although nmosh is intended to drop-in replacement of previous psyntax
+    based mosh, it is still lacks some mosh specific enhancements against R6RS
+    standard such as SRFI-38, shared namespace with expand/run phases and more.
+    In this version, standard build process(./configure && make) and MSVC
+    solution build/install both binary which "mosh" is for previous psyntax based
+    runtime and "nmosh" is for nmosh runtime.
+    [1] http://www.het.brown.edu/people/andre/macros/
+    [2] http://www.larcenists.org/
     
-    Configure script now supports out-of-tree building.
+    Configure script now supports out-of-tree building. 
+    Since some GTEST based tests still not support out-of-tree building and 
+    testing, "make check" target will fail.
 
     updated library
           (irregex) : 0.8.1 (Alex Shinn's irregex library)
@@ -37,8 +51,8 @@ Changes
     MSVC build now depends on MPIR instead of GMP.
     Download MPIR from http://www.mpir.org and extract to win/mpir. mosh.sln
     will load and build them together.
-    Note that building MPIR requires yasm installed. see
-    mpir/build.vc9/readme.txt for detail.
+    Note that building MPIR will require yasm installed. see
+    MPIR's own document (mpir/build.vc9/readme.txt) for detail.
 
 
 Mosh 0.2.4 Release Note

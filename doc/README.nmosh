@@ -1,11 +1,11 @@
-README.nmosh Apr-29-2010
+README.nmosh 07-May-2010
 
 by OKUMURA Yuki <mjt@cltn.org>
 
 nmosh
 =====
 
-nmosh is mosh's new R6RS runtime.
+nmosh is mosh's new R6RS runtime by OKUMURA Yuki.
 It is R6RS compatible but some feature of previous psyntax-based mosh
 is not included.
 
@@ -28,10 +28,32 @@ compatibility notes
    - multiple library in one source
    - (and more)
 
+runtime features and restrictions
+---------------------------------
+ - DO NOT REDISTRIBUTE CACHES INSTALLED IN ~/.nmosh-cache. nmosh's cache will
+   include your private information such as username, paths and hostname. And
+   nmosh's cache is not compatible between any builds/releases.
+ - Do not use a library name starting with (nmosh), (rnrs) and (core). These
+   library name will be rejected in future release of nmosh runtime.
+ - Library search order is extended from psyntax-based mosh. And you can use
+   .nmosh.sls extension for nmosh-only libraries. See --verbose to check which
+   library actually loaded.
+    suffix order:
+     - .nmosh.sls
+     - .nmosh.ss
+     - .nmosh.scm
+     - .mosh.(ditto)
+     - .(ditto)
+ - Some libraries are included and auto-loaded with nmosh runtime. See
+   boot/runtimes/srfi-mosh/layout.scm for full listing. Note that import clause is 
+   still needed for auto-loaded libraries. (load is only means "library 
+   registration to system," not "import library symbols into current 
+   environment" which will be done with import clauses.)
+
 porting guide
 =============
 
-Unfortunately, your script not runs under nmosh (but runs under mosh)
+Unfortunately, your script do not work under nmosh (but works under mosh)
 try following to fix them.
 
 "Attempt to use binding of [foo] in library () at invalid level 1."
@@ -125,3 +147,5 @@ When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke
          mosh         Symbols from mosh runtime (boot/baselib or compiler.scm)
          nmsh         nmosh expander
          cprc         cprocedure (mosh's internal function implemented in C++)
+
+
