@@ -53,7 +53,7 @@ runtime features and restrictions
 porting guide
 =============
 
-Unfortunately, your script do not work under nmosh (but works under mosh)
+Unfortunately, your script does not work under nmosh (but works under mosh)
 try following to fix them.
 
 "Attempt to use binding of [foo] in library () at invalid level 1."
