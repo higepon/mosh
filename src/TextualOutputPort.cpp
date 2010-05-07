@@ -440,7 +440,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
 
             if (e.isPair() && e.car() == Symbol::UNQUOTE) {
                 if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
-                    putString(". ,");
+                    putString(" . ,");
                     print<isHumanReadable>(theVM, e.cdr().car(), seen);
                     putChar(')');
                     return;
