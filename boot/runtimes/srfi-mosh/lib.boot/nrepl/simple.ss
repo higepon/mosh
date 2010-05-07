@@ -52,8 +52,7 @@
 
 (define (nrepl)
   (display-banner)
-  (do-eval '(import (rnrs)))
-  (do-eval '(import (rnrs load)))
+  (do-eval '(import (nmosh)))
   (init)
   (startloop))
 )
