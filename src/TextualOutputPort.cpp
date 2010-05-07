@@ -442,6 +442,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                 if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
                     putString(". ,");
                     print<isHumanReadable>(theVM, e.cdr().car(), seen);
+                    putChar(')');
                     return;
                 }
             }
