@@ -533,6 +533,7 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh --loadpath=test/mylib test/fasl.scm
 	./mosh --loadpath=test/mylib test/fasl.scm
 	$(MAKE) -C test/irregex
+	./mosh test/shorten.scm
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 
 
