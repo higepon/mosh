@@ -40,6 +40,7 @@
     open-output-string
     %pipe
     %fork
+    %exec
     null-terminated-bytevector->string
     null-terminated-utf8->string
     %ffi-open
@@ -150,6 +151,7 @@
       open-output-string
       %pipe
       %fork
+      %exec
       null-terminated-bytevector->string
       null-terminated-utf8->string
       %ffi-open

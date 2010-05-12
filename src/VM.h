@@ -285,7 +285,7 @@ private:
         push(Object::makeObjectPointer(fp_));
     }
 
-    Object* getDirectThreadedCode(const Object* code, int length, bool isCompiler = false);
+    Object* getDirectThreadedCode(/*const*/ Object* code, int length, bool isCompiler = false);
     Object runLoop(Object* code, jmp_buf returnPoint, bool returnTable = false);
 
     Object ac_;  // accumulator     register

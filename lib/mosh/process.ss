@@ -40,8 +40,8 @@
     Process Management Library
 |#
 (library (mosh process)
-  (export (rename (%pipe pipe) (%fork fork) (%waitpid waitpid) (%spawn spawn)))
-  (import (only (system) %spawn %waitpid %pipe %fork))
+  (export (rename (%pipe pipe) (%fork fork) (%waitpid waitpid) (%spawn spawn) (%exec exec)))
+  (import (only (system) %spawn %waitpid %pipe %fork %exec))
 
   #|
       Function: fork
