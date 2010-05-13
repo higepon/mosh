@@ -33,6 +33,7 @@ runtest:
 	$(MOSH_TARGET) test/number.scm
 	$(MOSH_TARGET) test/cgi.scm
 	$(MOSH_TARGET) test/memcached.scm
+	$(MOSH_TARGET) test/shorten.scm
 	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_bad_regexp.scm 2>/dev/null
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_both_regexp.scm
