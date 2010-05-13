@@ -41,6 +41,10 @@
 
 using namespace scheme;
 
+#ifdef _WIN32
+#define __func__ __FUNCTION__
+#endif
+
 #ifndef __func__
 #define __func__ "(UTF8Codec.cpp func)"
 #endif
