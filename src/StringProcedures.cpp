@@ -148,7 +148,7 @@ Object scheme::stringSetDEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, text);
     argumentAsFixnum(1, index);
     argumentAsChar(2, ch);
-    if (index >= text->data().size()) {
+    if (index >= (int)text->data().size()) {
         callAssertionViolationAfter(theVM, procedureName, "index out of range");
     } else {
         text->data()[index] = ch;

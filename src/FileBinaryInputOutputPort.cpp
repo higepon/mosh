@@ -149,12 +149,20 @@ int FileBinaryInputOutputPort::lookaheadU8()
     const int64_t origPositon = file_->seek(0, File::Current);
     MOSH_ASSERT(origPositon >= 0);
     if (0 == file_->read(&c, 1)) {
+#ifdef DEBUG_VERSION
         const int64_t result = file_->seek(origPositon);
         MOSH_ASSERT(result >= 0);
+#else
+        file_->seek(origPositon);
+#endif
         return EOF;
     } else {
+#ifdef DEBUG_VERSION
         const int64_t result = file_->seek(origPositon);
         MOSH_ASSERT(result >= 0);
+#else
+        file_->seek(origPositon);
+#endif
         return c;
     }
 }

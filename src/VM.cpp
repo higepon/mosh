@@ -99,7 +99,6 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     dc_(Object::Nil),
     cl_(Object::Nil),
     pc_(NULL),
-    numValues_(0),
     stackSize_(stackSize),
     currentOutputPort_(outPort),
     currentErrorPort_(errorPort),
@@ -110,6 +109,7 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
 #endif
     isProfiler_(isProfiler),
     maxNumValues_(256),
+    numValues_(0),
     isR6RSMode_(false),
     name_(UC("")),
     thread_(NULL),
@@ -859,7 +859,8 @@ Object VM::activateR6RSMode(const uint8_t* image, unsigned int image_size, bool 
     CATCH_VM
             // call default error handler
             defaultExceptionHandler(errorObj_);
-        this->exit(-1);
+            this->exit(-1);
+            return Object::Undef;
     }
 }
 
