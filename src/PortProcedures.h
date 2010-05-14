@@ -92,6 +92,7 @@ namespace scheme {
     Object setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv);
     Object readCharEx(VM* theVM, int argc, const Object* argv);
     Object writeEx(VM* theVM, int argc, const Object* argv);
+    Object writeSsEx(VM* theVM, int argc, const Object* argv);
     Object sysPortSeekEx(VM* theVM, int argc, const Object* argv);
     Object makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv);
     Object makeCustomBinaryOutputPortEx(VM* theVM, int argc, const Object* argv);

@@ -17,5 +17,5 @@ ROOT_DIR= ../../..
 # 2. svn commit to branches/psyntax.[branchname]
 psyntax.scm: $(PSYNTAX_SOURCES)
 	MOSH_GENSYM_PREFIX=`$(ROOT_DIR)/mosh print-prefix.ss` $(ROOT_DIR)/mosh psyntax-buildscript-mosh.ss
-#	cp psyntax.scm $(SVN_REPOS_DIR)/psyntax.$(GIT_BRANCH_NAME)/
-#	svn ci -m "See http://github.com/higepon/mosh $(GIT_COMMIT_HEX)" $(SVN_REPOS_DIR)/psyntax.$(GIT_BRANCH_NAME)/
+	cp psyntax.scm $(SVN_REPOS_DIR)/psyntax.$(GIT_BRANCH_NAME)/
+	svn ci -m "See http://github.com/higepon/mosh $(GIT_COMMIT_HEX)" $(SVN_REPOS_DIR)/psyntax.$(GIT_BRANCH_NAME)/

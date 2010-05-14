@@ -680,4 +680,5 @@
   ;; for nmosh
   sexp-map
   sexp-map/debug
+  write/ss
   )

@@ -62,6 +62,7 @@
     ungensym
     read-line
     regexp?
+    write/ss
     symbol-value
     set-symbol-value!)
   (import
@@ -127,6 +128,7 @@
       read-line
       regexp?
       symbol-value
+      write/ss
       set-symbol-value!) run expand)
     (for (only (rnrs base) map car cadr caddr - lambda let* syntax-rules define-syntax list string-append define) expand run)
     )

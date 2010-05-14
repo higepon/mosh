@@ -1017,16 +1017,42 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write");
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
+    bool isSharedAware = false;
     TRY_WITHOUT_DSTR
         if (1 == argc) {
             TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(out, theVM->currentOutputPort());
-            out->putDatum(theVM, obj);
+            out->putDatum(theVM, obj, isSharedAware);
 
         } else {
             argumentAsTextualOutputPort(1, textualOutputPort);
             checkPortIsOpen(textualOutputPort, argv[1]);
-            textualOutputPort->putDatum(theVM, obj);
+            textualOutputPort->putDatum(theVM, obj, isSharedAware);
+        }
+        return Object::Undef;
+    CATCH(ioError)
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    END_TRY
+}
+
+Object scheme::writeSsEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("write/ss");
+    checkArgumentLengthBetween(1, 2);
+    bool isSharedAware = true;
+    const Object obj = argv[0];
+    TRY_WITHOUT_DSTR
+        if (1 == argc) {
+            TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
+            checkPortIsOpen(out, theVM->currentOutputPort());
+            out->putDatum(theVM, obj, isSharedAware);
+
+        } else {
+            argumentAsTextualOutputPort(1, textualOutputPort);
+            checkPortIsOpen(textualOutputPort, argv[1]);
+            textualOutputPort->putDatum(theVM, obj, isSharedAware);
         }
         return Object::Undef;
     CATCH(ioError)

@@ -89,15 +89,21 @@
 ;; pp can't handle circular structure!
 (test-print "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
                                 (set-cdr! x x)
-                                x) write)
-(test-print "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
-                                (set-cdr! x x)
-                                x) display)
+                                x) write/ss)
 
 (test-equal "+inf.0" (number->string +inf.0))
 (test-equal "-inf.0" (number->string -inf.0))
 (test-equal "+nan.0" (number->string +nan.0))
 
 (test-equal "\n" (format "~%"))
+
+;; write/ss
+(let* ([a '(1 2)]
+       [x `(,a ,a)])
+  (define (write-to-string write-proc obj)
+    (call-with-values open-string-output-port (lambda (port proc) (write-proc obj port) (proc))))
+  (test-equal "((1 2) (1 2))" (write-to-string write x))
+  (test-equal "(#1=(1 2) #1#)" (write-to-string write/ss x))
+)
 
 (test-results)

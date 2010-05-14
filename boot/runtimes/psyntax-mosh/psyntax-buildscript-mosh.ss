@@ -986,6 +986,7 @@
     (source-info                             mosh)
     (make-file-options                       mosh)
     (mosh-executable-path                    mosh)
+    (write/ss                                mosh interaction)
     (make-condition-variable                 mosh interaction)
     (condition-variable-wait!                mosh interaction)
     (condition-variable-notify!              mosh interaction)
