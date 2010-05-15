@@ -46,6 +46,7 @@
     (^b* body ...) => (lambda b* body ...)
     ...
     (^z* body ...) => (lambda z* body ...)
+    (^_* body ...) => (lambda _* body ...)
 
     (end code)
 
@@ -54,7 +55,7 @@
 
 (library (shorten)
          (export ^a ^b ^c ^d ^e ^f ^g ^h ^i ^j ^k ^l ^m ^n ^o ^p ^q ^r ^s ^t ^u ^v ^w ^x ^y ^z ^_ ^
-                 ^a* ^b* ^c* ^d* ^e* ^f* ^g* ^h* ^i* ^j* ^k* ^l* ^m* ^n* ^o* ^p* ^q* ^r* ^s* ^t* ^u* ^v* ^w* ^x* ^y* ^z*)
+                 ^a* ^b* ^c* ^d* ^e* ^f* ^g* ^h* ^i* ^j* ^k* ^l* ^m* ^n* ^o* ^p* ^q* ^r* ^s* ^t* ^u* ^v* ^w* ^x* ^y* ^z* ^_*)
          (import (rnrs) (for (shorten helper) expand))
 
 (define-syntax ^
@@ -95,6 +96,6 @@
   _ a b c d e f g h i j k l m n o p q r s t u v w x y z)
 
 (define-^*
-  a b c d e f g h i j k l m n o p q r s t u v w x y z)
+  _ a b c d e f g h i j k l m n o p q r s t u v w x y z)
 
 )
