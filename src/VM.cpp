@@ -906,9 +906,13 @@ void VM::setCurrentOutputPort(Object port)
 
 void VM::expandStack(int plusSize)
 {
-    fprintf(stderr, "Stack Expand stack=%p plusSize=%d\n", stack_, plusSize);
 
     const int nextStackSize = stackSize_ + plusSize;
+    const int WARN_STACK_SIZE_IN_MB = 48;
+    if  (nextStackSize * sizeof(intptr_t) > WARN_STACK_SIZE_IN_MB * 1024 * 1024) {
+        fprintf(stderr, "Waring: Stack is growing to %ld MB\n", nextStackSize * sizeof(intptr_t) / 1024 / 1024);
+    }
+
     Object* nextStack = Object::makeObjectArray(nextStackSize);
     if (NULL == nextStack) {
         // todo
