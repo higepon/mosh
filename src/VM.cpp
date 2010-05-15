@@ -910,7 +910,7 @@ void VM::expandStack(int plusSize)
     const int nextStackSize = stackSize_ + plusSize;
     const int WARN_STACK_SIZE_IN_MB = 48;
     if  (nextStackSize * sizeof(intptr_t) > WARN_STACK_SIZE_IN_MB * 1024 * 1024) {
-        fprintf(stderr, "Waring: Stack is growing to %ld MB\n", nextStackSize * sizeof(intptr_t) / 1024 / 1024);
+        fprintf(stderr, "Warning: Stack is growing to %ld MB\n", nextStackSize * sizeof(intptr_t) / 1024 / 1024);
     }
 
     Object* nextStack = Object::makeObjectArray(nextStackSize);
