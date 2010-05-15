@@ -149,7 +149,7 @@ void showUsage()
 #ifdef ENABLE_PROFILER
 void signal_handler(int signo)
 {
-    if (signo == SIGPROF) {
+    if (signo == SIGPROF && theVM != NULL) {
         theVM->collectProfile();
     }
 }
