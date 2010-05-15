@@ -575,14 +575,13 @@ test_thread_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
 	./mosh --clean-acc --disable-acc $(top_srcdir)/misc/empty.scm
-	$(INSTALL) -m 666 $(top_srcdir)/misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./src/mosh_config mosh-cache-dir`
+	$(INSTALL) -m 666 $(top_srcdir)/misc/dotmosh/prefix.txt `./mosh --clean-acc --disable-acc ./src/mosh_config mosh-cache-dir`
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
 
-# dist-hook:
-# 	rm -f $(top_distdir)/lib/libffitest.so.1.0
-# 	rm -rf $(top_distdir)/misc/.mosh
+dist-hook:
+	rm -f $(top_distdir)/lib/libffitest.so.1.0
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c

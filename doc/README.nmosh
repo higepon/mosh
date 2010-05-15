@@ -1,4 +1,4 @@
-README.nmosh 07-May-2010
+README.nmosh 15-May-2010
 
 by OKUMURA Yuki <mjt@cltn.org>
 
@@ -49,6 +49,49 @@ runtime features and restrictions
    still needed for auto-loaded libraries. (load is only means "library 
    registration to system," not "import library symbols into current 
    environment" which will be done with import clauses.)
+
+using nrepl: Nmosh Read Eval Print Loop
+=======================================
+nmosh has it's own repl called "nrepl." 
+
+Compared with psyntax based mosh, nrepl is more looks-alike traditional(R5RS) 
+scheme environment. You can load R6RS programs/libraries any time using nrepl.
+
+It is under active development and not intended to provide stable API/ABI/UI.
+
+default library
+---------------
+nrepl will load automatically (nmosh) library. (nmosh) contains :
+ - Standard R6RS libraries (rnrs)
+ - ERR5RS load (rnrs load)
+ - Gauche's short-name for lambda (shorten)
+   - ^  : (^(a b c) (+ a b c)) == (lambda (a b c) (+ a b c))
+   - ^x : (^a (+ a 1)) == (lambda (a) (+ a 1))
+
+You can use (nmosh) library in your program/library, but it is NOT RECOMMENDED
+because (nmosh) library contents will change in future versions.
+
+program loading
+---------------
+nmosh provides traditional "load" procedure and it can be used at nrepl.
+This feature is useful for library development.
+
+Don't forget to import load-ed library.. example:
+
+  nmosh> (load "your-library.sls")
+  nmosh> (import (your project your-library))
+
+When you load-ing a library contains define-syntax, you should import such
+library into "expand" level.
+
+  nmosh> (load "my-syntax.sls")
+  nmosh> (import (your project my-syntax) expand run)
+
+load-ing a program (or a file mixed program/library) is not recommended. 
+Something will go wrong when do so.
+
+Running nrepl via "nmosh --verbose" command-line will provide useful information
+to debug loadpath problems.
 
 porting guide
 =============
@@ -135,17 +178,15 @@ When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke
       3 : ==USRP== (some-function) @ /Users/oku/check.ss:11
       ^      ^      ^
       |      |      +-------------- SOURCE FUNCTION
-      |      |       
       |      +--------------------- FRAME ID
-      |              
       +---------------------------- FRAME NUMBER
 
        FRAME ID            origin
          USRP         Library or User program
        ==USRP==       Undermost user frame
+
+       FRAME ID            origin
          DBGP         (internal symbol for debugging or loaded library)
+         cprc         cprocedure (mosh's internal function implemented in C++)
          mosh         Symbols from mosh runtime (boot/baselib or compiler.scm)
          nmsh         nmosh expander
-         cprc         cprocedure (mosh's internal function implemented in C++)
-
-
