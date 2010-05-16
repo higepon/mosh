@@ -200,6 +200,21 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
                 }
                 break;
             }
+            case 'w':
+            case 'W':
+            {
+                if (args.isPair()) {
+                    bool isSharedAware = true;
+                    putDatum(theVM, args.car(), isSharedAware);
+                    args = args.cdr();
+                } else {
+                    isErrorOccured_ = true;
+                    errorMessage_ = "too few arguments for format string";
+                    irritants_ = Pair::list1(Object::makeString(fmt));
+                    return;
+                }
+                break;
+            }
             case '\0':
                 i--;
                 break;
