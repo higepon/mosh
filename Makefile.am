@@ -216,6 +216,8 @@ lib/match.ss \
 lib/irregex.ss \
 lib/memcached.ss \
 lib/lambda/wiki.ss    \
+lib/shorten/helper.ss \
+lib/shorten.ss \
 lib/mosh/queue.ss    \
 lib/mosh/ffi.ss    \
 lib/mosh/dbi.ss    \
