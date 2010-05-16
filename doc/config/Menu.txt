@@ -51,30 +51,22 @@ File: Download  (doc/text/Download.txt)
 Group: Mosh  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
-
-   Group: Lib  {
-
-      Group: Mosh  {
-
-         File: Configuration  (lib/mosh/config.ss)
-         File: Control  (lib/mosh/control.ss)
-         File: Database independent interface  (lib/mosh/dbi.ss)
-         File: Foreign Function Interface  (lib/mosh/ffi.ss)
-         File: Pretty Printing  (lib/mosh/pp.ss)
-         File: Process  (lib/mosh/process.ss)
-         File: Socket  (lib/mosh/socket.ss)
-         File: IRC Client  (lib/mosh/irc/client.ss)
-         File: Unit Testing  (lib/mosh/test.ss)
-         File: Concurrent  (lib/mosh/concurrent.ss)
-         File: File  (lib/mosh/file.ss)
-         }  # Group: Mosh
-
-      File: Pattern Match  (lib/match.ss)
-      File: Shorten  (lib/shorten.ss)
-      }  # Group: Lib
-
-   File: Regular Expressions  (doc/text/regexp.txt)
+   File: Configuration  (lib/mosh/config.ss)
+   File: Control  (lib/mosh/control.ss)
+   File: Database independent interface  (lib/mosh/dbi.ss)
+   File: Foreign Function Interface  (lib/mosh/ffi.ss)
+   File: Pretty Printing  (lib/mosh/pp.ss)
+   File: Process  (lib/mosh/process.ss)
+   File: Socket  (lib/mosh/socket.ss)
+   File: IRC Client  (lib/mosh/irc/client.ss)
+   File: Unit Testing  (lib/mosh/test.ss)
+   File: Concurrent  (lib/mosh/concurrent.ss)
+   File: File  (lib/mosh/file.ss)
    }  # Group: Mosh
+
+File: Pattern Match  (lib/match.ss)
+File: Shorten  (lib/shorten.ss)
+File: Regular Expressions  (doc/text/regexp.txt)
 
 Group: R6RS  {
 
