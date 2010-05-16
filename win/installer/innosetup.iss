@@ -24,8 +24,8 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\..\mosh.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\nmosh.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\Release\psyntax-mosh.exe"; DestDir: "{app}"; DestName: "mosh.exe"; Flags: ignoreversion
+;Source: "..\..\Release\nmosh.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\misc\example\*"; DestDir: "{app}\misc\example"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\doc\html\*"; DestDir: "{app}\doc"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -39,4 +39,5 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\mosh"; Filename: "
 
 [Run]
 Filename: "{app}\mosh.exe"; Description: "{cm:LaunchProgram,mosh}"; Flags: nowait postinstall skipifsilent
+
 
