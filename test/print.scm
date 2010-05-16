@@ -94,6 +94,11 @@
                                 (set-cdr! x x)
                                 (format "~w" x)))
 
+;; mosh only. Use display/ss
+(test-equal "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
+                                (set-cdr! x x)
+                                (format "~e" x)))
+
 (test-equal "+inf.0" (number->string +inf.0))
 (test-equal "-inf.0" (number->string -inf.0))
 (test-equal "+nan.0" (number->string +nan.0))

@@ -215,6 +215,22 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
                 }
                 break;
             }
+            // Mosh only
+            case 'e':
+            case 'E':
+            {
+                if (args.isPair()) {
+                    bool isSharedAware = true;
+                    display(theVM, args.car(), isSharedAware);
+                    args = args.cdr();
+                } else {
+                    isErrorOccured_ = true;
+                    errorMessage_ = "too few arguments for format string";
+                    irritants_ = Pair::list1(Object::makeString(fmt));
+                    return;
+                }
+                break;
+            }
             case '\0':
                 i--;
                 break;
@@ -708,9 +724,16 @@ loop:
 }
 
 
-void TextualOutputPort::display(const VM* theVM, Object o)
+void TextualOutputPort::display(const VM* theVM, Object o, bool isSharedAware)
 {
-    print<true>(theVM, o, NULL);
+    if (isSharedAware) {
+        EqHashTable seen;
+        scan(o, &seen);
+        sharedId_ = 1;
+        print<true>(theVM, o, &seen);
+    } else {
+        print<true>(theVM, o, NULL);
+    }
 }
 
 void TextualOutputPort::putDatum(const VM* theVM, Object o, bool isSharedAware)
