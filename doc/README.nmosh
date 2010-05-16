@@ -1,4 +1,4 @@
-README.nmosh 15-May-2010
+README.nmosh 16-May-2010
 
 by OKUMURA Yuki <mjt@cltn.org>
 
@@ -32,7 +32,7 @@ runtime features and restrictions
 ---------------------------------
  - DO NOT REDISTRIBUTE CACHES INSTALLED IN ~/.nmosh-cache. nmosh's cache will
    include your private information such as username, paths and hostname. And
-   nmosh's cache is not compatible between any builds/releases.
+   nmosh's cache is not compatible between any builds/releases. 
  - Do not use a library name starting with (nmosh), (rnrs) and (core). These
    library name will be rejected in future release of nmosh runtime.
  - Library search order is extended from psyntax-based mosh. And you can use
@@ -50,6 +50,24 @@ runtime features and restrictions
    registration to system," not "import library symbols into current 
    environment" which will be done with import clauses.)
 
+~/.nmosh-cache directory
+------------------------
+~/.nmosh-cache directory contatins some sort of cache files. These files are
+automatically updated.
+
+   file ext.     format    description
+ ------------  ---------  ----------------------------------------------
+ .nmosh-cache  mosh FASL   Precompiled library/program for mosh VM
+ .ndbg         mosh FASL   Debug information file for nmosh debugger
+  (no ext.)                Temporary files
+
+To save your diskspace, you can delete these files as you need.
+You can delete .ndbg only and leave corresponding .nmosh-cache alone.
+To make rebuilt .ndbg again, delete corresponding .nmosh-cache and run your
+script again.
+
+There is no way to disable building .ndbg in current release.
+
 using nrepl: Nmosh Read Eval Print Loop
 =======================================
 nmosh has it's own repl called "nrepl." 
@@ -61,7 +79,7 @@ It is under active development and not intended to provide stable API/ABI/UI.
 
 default library
 ---------------
-nrepl will load automatically (nmosh) library. (nmosh) contains :
+nrepl will load (nmosh) library by default. (nmosh) contains :
  - Standard R6RS libraries (rnrs)
  - ERR5RS load (rnrs load)
  - Gauche's short-name for lambda (shorten)
@@ -70,6 +88,9 @@ nrepl will load automatically (nmosh) library. (nmosh) contains :
 
 You can use (nmosh) library in your program/library, but it is NOT RECOMMENDED
 because (nmosh) library contents will change in future versions.
+
+current deletion canditate:
+ - (rnrs records)
 
 program loading
 ---------------
