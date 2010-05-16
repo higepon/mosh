@@ -148,8 +148,6 @@ trace message. This feature originated from original Andre van Tonder's
 implementation.
 
     prism:~ oku$ nmosh check.ss
-    launching debugger...
-    debugger not found.
      Syntax error
           who : define-invalid
       message : Invalid form
@@ -165,8 +163,6 @@ When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke
 (nmosh minidebug) to show stack trace.
 
     prism:~ oku$ nmosh check.ss
-    launching debugger...
-    debugger not found.
      Condition components:
      1. &assertion
      2. &who             who: "string=?"
