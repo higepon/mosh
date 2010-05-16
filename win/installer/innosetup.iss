@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=Mosh
-AppVerName=mosh 0.2.4
+AppVerName=mosh 0.2.5
 AppPublisher=higepon
 AppPublisherURL=http://code.google.com/p/mosh-scheme/
 AppSupportURL=http://code.google.com/p/mosh-scheme/
@@ -12,7 +12,7 @@ DefaultDirName={pf}\Mosh
 DefaultGroupName=Mosh
 AllowNoIcons=yes
 LicenseFile=..\..\COPYING
-OutputBaseFilename=setup_mosh_0.2.4
+OutputBaseFilename=setup_mosh_0.2.5
 Compression=lzma
 SolidCompression=yes
 SetupIconFile="..\..\misc\logo\mosh.ico"
@@ -25,6 +25,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 [Files]
 Source: "..\..\mosh.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\nmosh.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\misc\example\*"; DestDir: "{app}\misc\example"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\doc\html\*"; DestDir: "{app}\doc"; Flags: ignoreversion recursesubdirs createallsubdirs
