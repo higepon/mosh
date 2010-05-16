@@ -581,7 +581,8 @@ install-data-hook :
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
 
 dist-hook:
-	rm -f $(top_distdir)/lib/libffitest.so.1.0
+	-rm -f $(top_distdir)/lib/libffitest.so.1.0
+	-rm -f $(top_distdir)/src/config.h*
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
