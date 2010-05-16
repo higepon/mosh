@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=Mosh
-AppVerName=mosh 0.2.4
+AppVerName=mosh 0.2.5
 AppPublisher=higepon
 AppPublisherURL=http://code.google.com/p/mosh-scheme/
 AppSupportURL=http://code.google.com/p/mosh-scheme/
@@ -12,7 +12,7 @@ DefaultDirName={pf}\Mosh
 DefaultGroupName=Mosh
 AllowNoIcons=yes
 LicenseFile=..\..\COPYING
-OutputBaseFilename=setup_mosh_0.2.4
+OutputBaseFilename=setup_mosh_0.2.5
 Compression=lzma
 SolidCompression=yes
 SetupIconFile="..\..\misc\logo\mosh.ico"
@@ -24,7 +24,8 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\..\mosh.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\Release\psyntax-mosh.exe"; DestDir: "{app}"; DestName: "mosh.exe"; Flags: ignoreversion
+;Source: "..\..\Release\nmosh.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\misc\example\*"; DestDir: "{app}\misc\example"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\doc\html\*"; DestDir: "{app}\doc"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -38,4 +39,5 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\mosh"; Filename: "
 
 [Run]
 Filename: "{app}\mosh.exe"; Description: "{cm:LaunchProgram,mosh}"; Flags: nowait postinstall skipifsilent
+
 
