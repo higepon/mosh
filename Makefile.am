@@ -582,7 +582,7 @@ install-data-hook :
 
 dist-hook:
 	-rm -f $(top_distdir)/lib/libffitest.so.1.0
-	-rm -f $(top_distdir)/src/config.h*
+	-rm -f $(top_distdir)/src/config.h
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
