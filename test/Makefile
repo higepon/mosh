@@ -37,6 +37,7 @@ runtest:
 	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_bad_regexp.scm 2>/dev/null
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_both_regexp.scm
+	! $(MOSH_TARGET) test/error-with-circular.scm 2>/dev/null
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
