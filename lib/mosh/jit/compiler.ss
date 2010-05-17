@@ -815,6 +815,7 @@
        (jmp ,get-gloc-value)
        ;; END
        (label ,not-found-case)
+       ;; On JIT and R6RS mode, REFER_GLOBAL never returns NOT_FOUND.
        ,@(DEBUGGER 3199)
        (label ,is-not-gloc-case)
        ;; save arguments
