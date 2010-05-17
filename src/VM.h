@@ -225,6 +225,7 @@ public:
     void raiseVectorRequiredError(int op, Object obj);
     void raiseVectorInvalidIndexError(int op);
     void callOp(Object operand);
+    void numberAddOp();
     Object call(Object n);
     Object tailCall(Object n, Object diff);
 

@@ -505,18 +505,8 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(NUMBER_ADD)
         {
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() + ac_.toFixnum();
-                ac_ = Bignum::makeInteger(val);
-            } else {
-                const Object v = ac_;
-                ac_ = Arithmetic::add(n, v);
-                if (ac_.isFalse()) {
-                    callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, v));
-                }
-            }
+            // should be inlined.
+            numberAddOp();
             NEXT1;
         }
         CASE(NUMBER_EQUAL)
@@ -626,18 +616,8 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(NUMBER_ADD_PUSH)
         {
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() + ac_.toFixnum();
-                ac_ = Bignum::makeInteger(val);
-            } else {
-                ac_ = Arithmetic::add(n, ac_);
-                if (ac_.isFalse()) {
-                    callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
-                    NEXT1;
-                }
-            }
+            // should be inlined
+            numberAddOp();
             push(ac_);
             NEXT1;
         }

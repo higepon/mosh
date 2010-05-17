@@ -143,8 +143,24 @@
 #endif
 
 namespace scheme {
-    // This function should be inlined on VM Run loop.
+    // These  function should be inlined on VM Run loop.
     // And should be callable from JIT.
+    inline void VM::numberAddOp()
+    {
+        const Object n = pop();
+        // short cut for Fixnum. Benmarks tell me this is strongly required.
+        if (n.isFixnum() && ac_.isFixnum()) {
+            const int32_t val = n.toFixnum() + ac_.toFixnum();
+            ac_ = Bignum::makeInteger(val);
+        } else {
+            const Object v = ac_;
+            ac_ = Arithmetic::add(n, v);
+            if (ac_.isFalse()) {
+                callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, v));
+            }
+        }
+    }
+
     inline void VM::callOp(Object operand)
     {
         if (ac_.isCProcedure()) {
