@@ -1,4 +1,4 @@
-MOSH=../../mosh --enable-jit
+MOSH=../../mosh #--enable-jit
 
 test:
 	$(MOSH) tests/r6rs/run/io/ports.sps
