@@ -583,35 +583,15 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(NUMBER_SUB)
         {
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() - ac_.toFixnum();
-                ac_ = Bignum::makeInteger(val);
-            } else {
-                ac_ = Arithmetic::sub(n, ac_);
-                if (ac_.isFalse()) {
-                    callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
-                }
-            }
+            // should be inlined
+            numberSubOp();
             NEXT1;
         }
         CASE(NUMBER_SUB_PUSH)
         {
-            asm volatile(" \t # -- NUMBER_SUB_PUSH start");
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() - ac_.toFixnum();
-                ac_ = Bignum::makeInteger(val);
-            } else {
-                ac_ = Arithmetic::sub(n, ac_);
-            }
-            if (ac_.isFalse()) {
-                callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
-            }
+            // should be inlined
+            numberSubOp();
             push(ac_);
-            asm volatile(" \t # -- NUMBER_END_PUSH start");
             NEXT1;
         }
         CASE(NUMBER_ADD_PUSH)

@@ -897,93 +897,97 @@
 ;;  movq    %rax, 40(%rcx)
 
 (define (NUMBER_ADD)
+  `(,@(trace-push! $NUMBER_ADD)
+    ,@(call0 (get-c-address 'VM::numberAddOp))))
+
+;;   (let ([label1 (gensym)]
+;;         [label2 (gensym)]
+;;         [label3 (gensym)]
+;;         )
+;;   `(,@(trace-push! $NUMBER_ADD)
+;;     (movq rax ,(vm-register 'sp)) ; rax = sp
+;;     (leaq rdx (& rax -8))         ; rdx = sp - 8
+;;     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
+;;     (movq rcx (& rax -8))         ; rbp = *(sp - 8) == POP
+;;     (movl eax ecx)                ; eax = (32bit)ebp
+;;     (andl eax 3)                  ; eax.isFixnum
+;;     (subb al 1)                   ;
+;;     (je ,label1)
+;;    ,@(DEBUGGER 3020) ;; stack arg is not Fixnum
+;;     (label ,label2)
+;;    ,@(DEBUGGER 3021) ;; ac arg is not Fixnum
+;;     (label ,label3)
+;;    ,@(DEBUGGER 3022) ;; add result is Bignum
+;;     (label ,label1) ;; eax.isFixnum
+;;     (movq rdx ,(vm-register 'ac)) ; ac.isFixnum?
+;;     (movl eax edx)
+;;     (andl eax 3)
+;;     (subb al 1)
+;;     (jne ,label2)
+;;     ;; both are fixnum
+;;     (movq rax rcx)
+;;     (sarq rdx 2) ;; ac.toFixnum
+;;     (sarq rax 2) ;; arg.toFixnum
+;; ;   ,@(DEBUGGER)
+;;     (addl eax edx) ;; arg + ac
+;; ;   ,@(DEBUGGER)
+;;  ;  ,@(DEBUGGER)
+;;     (movslq r12 eax) ;; r12 = (32bit)arg1
+;; ;   ,@(DEBUGGER)
+;;     (leaq rax (& r12 536870912)) ;; rax = r12 + max-fixnum
+;;     (leaq rdx (& 1 (* r12 4))) ;; rdx = makeFixnum(r12)
+;;     (cmpq rax 1073741823)
+;;     (ja ,label3) ;; jump if rax > 1073741823 => Bignum
+;;     (movq ,(vm-register 'ac) rdx) ;; ac = result of addition
+;;     (movq rax rdx) ;; ac = result of addition
+;;     )
+;))
+
+(define (NUMBER_SUB)
   (let ([label1 (gensym)]
         [label2 (gensym)]
         [label3 (gensym)]
         )
-  `(,@(trace-push! $NUMBER_ADD)
-    (movq rax ,(vm-register 'sp)) ; rax = sp
-    (leaq rdx (& rax -8))         ; rdx = sp - 8
-    (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
-    (movq rcx (& rax -8))         ; rbp = *(sp - 8) == POP
-    (movl eax ecx)                ; eax = (32bit)ebp
-    (andl eax 3)                  ; eax.isFixnum
-    (subb al 1)                   ;
-    (je ,label1)
-   ,@(DEBUGGER 3020) ;; stack arg is not Fixnum
-    (label ,label2)
-   ,@(DEBUGGER 3021) ;; ac arg is not Fixnum
-    (label ,label3)
-   ,@(DEBUGGER 3022) ;; add result is Bignum
-    (label ,label1) ;; eax.isFixnum
-    (movq rdx ,(vm-register 'ac)) ; ac.isFixnum?
-    (movl eax edx)
-    (andl eax 3)
-    (subb al 1)
-    (jne ,label2)
-    ;; both are fixnum
-    (movq rax rcx)
-    (sarq rdx 2) ;; ac.toFixnum
-    (sarq rax 2) ;; arg.toFixnum
-;   ,@(DEBUGGER)
-    (addl eax edx) ;; arg + ac
-;   ,@(DEBUGGER)
- ;  ,@(DEBUGGER)
-    (movslq r12 eax) ;; r12 = (32bit)arg1
-;   ,@(DEBUGGER)
-    (leaq rax (& r12 536870912)) ;; rax = r12 + max-fixnum
-    (leaq rdx (& 1 (* r12 4))) ;; rdx = makeFixnum(r12)
-    (cmpq rax 1073741823)
-    (ja ,label3) ;; jump if rax > 1073741823 => Bignum
-    (movq ,(vm-register 'ac) rdx) ;; ac = result of addition
-    (movq rax rdx) ;; ac = result of addition
-    )
-))
-
+    `(,@(trace-push! $NUMBER_SUB)
+      ,@(call0 (get-c-address 'VM::numberSubOp)))))
+;;       (movq rax ,(vm-register 'sp)) ; rax = sp
+;;       (leaq rdx (& rax -8))         ; rdx = sp - 8
+;;       (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
+;;       (movq rcx (& rax -8))         ; rbp = *(sp - 8) == POP
+;;       (movl eax ecx)                ; eax = (32bit)ebp
+;;                                         ;    ,@(DEBUGGER 3029)
+;;       (andl eax 3)                  ; eax.isFixnum
+;;       (subb al 1)                   ;
+;;       (je ,label1)
+;;       ,@(DEBUGGER 3030) ;; stack arg is not Fixnum
+;;       (label ,label2)
+;;       ,@(DEBUGGER) ;; ac arg is not Fixnum
+;;       (label ,label3)
+;;       ,@(DEBUGGER 3031) ;; sub result is Bignum
+;;       (label ,label1) ;; eax.isFixnum
+;;       (movq rdx ,(vm-register 'ac)) ; ac.isFixnum?
+;;       (movl eax edx)
+;;       (andl eax 3)
+;;       (subb al 1)
+;;       (jne ,label2)
+;;       ;; both are fixnum
+;;       (movq rax rcx)
+;;       (sarq rdx 2) ;; ac.toFixnum
+;;       (sarq rax 2) ;; arg.toFixnum
+;;       (subl eax edx) ;; arg - ac
+;;       (movslq r12 eax) ;; r12 = (32bit)arg1
+;;       (leaq rax (& r12 536870912)) ;; rax = r12 + max-fixnum
+;;       (leaq rdx (& 1 (* r12 4))) ;; rdx = makeFixnum(r12)
+;;       (cmpq rax 1073741823)
+;;       (ja ,label3) ;; jump if rax > 1073741823 => Bignum
+;;       (movq ,(vm-register 'ac) rdx) ;; ac = result of subtraction
+;;      )))
 
 (define (NUMBER_SUB_PUSH)
-  (let ([label1 (gensym)]
-        [label2 (gensym)]
-        [label3 (gensym)]
-        )
   `(,@(trace-push! $NUMBER_SUB_PUSH)
-    (movq rax ,(vm-register 'sp)) ; rax = sp
-    (leaq rdx (& rax -8))         ; rdx = sp - 8
-    (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
-    (movq rcx (& rax -8))         ; rbp = *(sp - 8) == POP
-    (movl eax ecx)                ; eax = (32bit)ebp
-;    ,@(DEBUGGER 3029)
-    (andl eax 3)                  ; eax.isFixnum
-    (subb al 1)                   ;
-    (je ,label1)
-   ,@(DEBUGGER 3030) ;; stack arg is not Fixnum
-    (label ,label2)
-   ,@(DEBUGGER) ;; ac arg is not Fixnum
-    (label ,label3)
-   ,@(DEBUGGER 3031) ;; sub result is Bignum
-    (label ,label1) ;; eax.isFixnum
-    (movq rdx ,(vm-register 'ac)) ; ac.isFixnum?
-    (movl eax edx)
-    (andl eax 3)
-    (subb al 1)
-    (jne ,label2)
-    ;; both are fixnum
-    (movq rax rcx)
-    (sarq rdx 2) ;; ac.toFixnum
-    (sarq rax 2) ;; arg.toFixnum
-    (subl eax edx) ;; arg - ac
-    (movslq r12 eax) ;; r12 = (32bit)arg1
-    (leaq rax (& r12 536870912)) ;; rax = r12 + max-fixnum
-    (leaq rdx (& 1 (* r12 4))) ;; rdx = makeFixnum(r12)
-    (cmpq rax 1073741823)
-    (ja ,label3) ;; jump if rax > 1073741823 => Bignum
-    (movq ,(vm-register 'ac) rdx) ;; ac = result of subtraction
-    (movq rax ,(vm-register 'sp)) ;; PUSH
-    (movq (& rax) rdx)
-    (addq rax 8)
-    (movq ,(vm-register 'sp) rax)
-    )
-))
+    ,@(NUMBER_SUB)
+    ,@(PUSH)
+    ))
 
 ;;  .L1231:
 ;;  movq    8(%rcx), %rdx ;; rdx = ac
