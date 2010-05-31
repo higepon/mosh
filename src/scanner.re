@@ -221,7 +221,7 @@ int Scanner::scan(YYSTYPE* yylval)
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
-  R6RS_STRICT_READER_MODE = "#!r6rs";
+  SHEBANG                = "#!" [^\n\X0000]* (LINE_ENDING | EOS);
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
   DEFINING_SHARED        = "#" DIGIT+ "=";
   DEFINED_SHARED         = "#" DIGIT+ "#";
@@ -232,10 +232,15 @@ int Scanner::scan(YYSTYPE* yylval)
     for(;;)
     {
 /*!re2c
-       R6RS_STRICT_READER_MODE DELMITER {
+       SHEBANG DELMITER {
             YYCURSOR--;
+            ucs4string shebang(YYTOKEN, YYCURSOR - YYTOKEN - 1);
+            if (shebang == ucs4string(UC("#!r6rs"))) {
+                currentVM()->readerContext()->port()->setStrictR6RsReaderMode();
+            } else {
+                 // just ignore the shebang.
+            }
             YYTOKEN = YYCURSOR;
-            currentVM()->readerContext()->port()->setStrictR6RsReaderMode();
             continue;
        }
        "#"[tT] DELMITER {
