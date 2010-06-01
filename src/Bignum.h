@@ -404,6 +404,14 @@ public:
         return makeInteger(ret);
     }
 
+    static Object pow(unsigned int n1, unsigned int n2)
+    {
+        mpz_t ret;
+        mpz_init_set_ui(ret, n1);
+        mpz_pow_ui(ret, ret, n2);
+        return makeInteger(ret);
+    }
+
     static Object mul(int n1, Bignum* n2)
     {
         mpz_t ret;
