@@ -427,7 +427,10 @@ Object Arithmetic::log(Object n)
         return n.toCompnum()->log();
     } else {
         const double value = realToDouble(n);
-        if (value >= 0) {
+        if (isinf(value) && n.isBignum() && Arithmetic::gt(n, Object::makeFixnum(0))) {
+            Object ret = n.toBignum()->sqrt();
+            return Arithmetic::add(Arithmetic::log(ret), Arithmetic::log(ret));
+        } else if (value >= 0) {
             return Object::makeFlonum(::log(realToDouble(n)));
         } else {
             return Object::makeCompnum(Object::makeFlonum(::log(-value)), Object::makeFlonum(::atan2(0.0, value)));
