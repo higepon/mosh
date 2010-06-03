@@ -72,7 +72,7 @@ arguments_done:
 
 SYM(c_callback_stub_double):
 #if APPLE_PIC
-    movq        SYM(c_callback_double)(%rip), %r11
+    movq        SYM(c_callback_double)@GOTPCREL(%rip), %r11
 #else
     movq        $SYM(c_callback_double), %r11
 #endif
@@ -80,7 +80,7 @@ SYM(c_callback_stub_double):
 
 SYM(c_callback_stub_float):
 #if APPLE_PIC
-    movq        SYM(c_callback_float)(%rip), %r11
+    movq        SYM(c_callback_float)@GOTPCREL(%rip), %r11
 #else
     movq        $SYM(c_callback_float), %r11
 #endif
@@ -88,7 +88,7 @@ SYM(c_callback_stub_float):
 
 SYM(c_callback_stub_intptr):
 #if APPLE_PIC
-    movq        SYM(c_callback_intptr)(%rip), %r11
+    movq        SYM(c_callback_intptr)@GOTPCREL(%rip), %r11
 #else
     movq        $SYM(c_callback_intptr), %r11
 #endif
