@@ -284,10 +284,12 @@ i[[3456]]86|pentium)
 	arch=x86_64
         case "$target_os" in
 		*darwin*)
+                AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
 		AC_MSG_RESULT([x86_64])
+		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
 		MOSH_OPTS="-O3"
 		AM_CONDITIONAL(FFI_I386, false)
-		AM_CONDITIONAL(FFI_X86_64, false)
+		AM_CONDITIONAL(FFI_X86_64, true)
 		;;
 		*)
 		MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
