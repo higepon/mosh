@@ -3346,9 +3346,9 @@
        (display #;; 1
         2 3 port)
        (proc)))
-("2" (receive (port proc) (open-string-output-port)
-       (display #;#!r6rs 1 2 port)
-       (proc)))
+;; ("2" (receive (port proc) (open-string-output-port)
+;;        (display #;#!r6rs 1 2 port)
+;;        (proc)))
 
 ;; record is sealed
 (error (let* ([prtd (make-record-type-descriptor 'a #f #f #t #f '#())]
