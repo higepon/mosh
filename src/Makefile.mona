@@ -7,7 +7,7 @@ INSTDIR = $(BINDIR)/SERVERS
 
 INSTDIR    = $(BINDIR)/APPS
 ADDLINK    = -lpci -lmonalibc-imp --enable-auto-import
-ADDCFLAGS  =
+ADDCFLAGS  = -D HAVE_CONFIG_H
 ADDINCLUDE =
 
 SHAREDIR   = $(MONADIR)/share

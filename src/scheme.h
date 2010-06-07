@@ -63,8 +63,10 @@
 #pragma warning(push)
 #pragma warning(disable : 4146) // convert from signed to unsigned (this may be not necessary if gmp is latest version)
 #endif
+#ifndef MONA
 #include <cstdio>
 #include <gmp.h>
+#endif
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
