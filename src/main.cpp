@@ -33,10 +33,6 @@
 #include <signal.h>
 #ifdef _WIN32
 #else
-#ifndef MONA
-#include <sys/time.h>
-#include <sys/resource.h>
-#endif // MONA
 #endif // NOT _WIN32
 
 #include "Object.h"

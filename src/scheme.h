@@ -34,7 +34,7 @@
 
 #ifdef HAVE_CONFIG_H
 #  ifdef MONA
-#    include "config_mona.h"
+//#    include "config_mona.h"
 #  else
 #    include "config.h"
 #  endif

@@ -8,7 +8,7 @@ INSTDIR = $(BINDIR)/SERVERS
 INSTDIR    = $(BINDIR)/APPS
 ADDLINK    = -lpci -lmonalibc-imp --enable-auto-import
 ADDCFLAGS  = -D HAVE_CONFIG_H
-ADDINCLUDE =
+ADDINCLUDE = -I ../onig-5.7.0
 
 SHAREDIR   = $(MONADIR)/share
 ifneq ($(BUILD_TARGET),ELF)
