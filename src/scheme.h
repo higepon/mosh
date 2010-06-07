@@ -33,13 +33,13 @@
 #define SCHEME_SCHEME_H_
 
 #ifdef HAVE_CONFIG_H
+#    include "config.h"
+#else
 #  ifdef MONA
 //#    include "config_mona.h"
 #  else
-#    include "config.h"
+#    error "config.h not found"
 #  endif
-#else
-#  error "config.h not found"
 #endif
 
 #ifdef _WIN32

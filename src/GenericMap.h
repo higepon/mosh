@@ -32,7 +32,9 @@
 #ifndef SCHEME_GENERIC_MAP_
 #define SCHEME_GENERIC_MAP_
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if HAVE_EXT_HASHES
 #include <ext/hash_map>

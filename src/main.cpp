@@ -250,7 +250,8 @@ int main(int argc, char *argv[])
     // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
 //    signal(SIGINT, SIG_IGN);
 
-#ifndef _WIN32
+#if defined(_WIN32) || defined(MONA)
+#else
     signal(SIGPIPE, SIG_IGN);
 #endif
 

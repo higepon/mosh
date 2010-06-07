@@ -39,7 +39,6 @@
 
 namespace scheme {
 
-
     Object whereisEx(VM* theVM, int argc, const Object* argv);
     Object registerEx(VM* theVM, int argc, const Object* argv);
     Object vmSelfEx(VM* theVM, int argc, const Object* argv);
