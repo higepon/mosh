@@ -32,9 +32,28 @@
 #ifndef SCHEME_MULTI_VM_PROCEDURES_
 #define SCHEME_MULTI_VM_PROCEDURES_
 
-#ifndef MONA
-
 #include "scheme.h"
+
+#ifdef MONA
+
+extern scheme::VM* theVM;
+
+namespace scheme {
+
+    inline VM* currentVM()
+    {
+        return theVM;
+    }
+
+    inline bool setCurrentVM(VM* vm)
+    {
+        theVM = vm;
+    }
+};
+
+
+#else
+
 #include "OSCompatThread.h"
 
 namespace scheme {
