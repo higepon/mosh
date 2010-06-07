@@ -32,6 +32,8 @@
 #ifndef SCHEME_MULTI_VM_PROCEDURES_
 #define SCHEME_MULTI_VM_PROCEDURES_
 
+#ifndef MONA
+
 #include "scheme.h"
 #include "OSCompatThread.h"
 
@@ -77,5 +79,7 @@ namespace scheme {
     }
 
 }; // namespace scheme
+
+#endif // MONA
 
 #endif // SCHEME_MULTI_VM_PROCEDURES_

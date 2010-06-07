@@ -32,6 +32,7 @@
 #ifndef SCHEME_OSCOMPAT_THREAD_
 #define SCHEME_OSCOMPAT_THREAD_
 
+#ifndef MONA
 
 #if defined(__APPLE__) || defined(__CYGWIN__)
 #define pthread_yield sched_yield
@@ -541,5 +542,7 @@ namespace scheme {
     };
 
 }; // namespace scheme
+
+#endif // MONA
 
 #endif // SCHEME_OSCOMPAT_THREAD_
