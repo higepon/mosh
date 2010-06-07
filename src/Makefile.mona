@@ -7,8 +7,8 @@ INSTDIR = $(BINDIR)/SERVERS
 
 INSTDIR    = $(BINDIR)/APPS
 ADDLINK    = -lpci -lmonalibc-imp --enable-auto-import
-ADDCFLAGS  = -D HAVE_CONFIG_H
-ADDINCLUDE = -I ../onig-5.7.0
+ADDCFLAGS  = -D HAVE_CONFIG_H -D USE_BOEHM_GC
+ADDINCLUDE = -I ../onig-5.7.0 -I ../gc-7.1/include
 
 SHAREDIR   = $(MONADIR)/share
 ifneq ($(BUILD_TARGET),ELF)
