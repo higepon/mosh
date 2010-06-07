@@ -33,7 +33,11 @@
 #define SCHEME_SCHEME_H_
 
 #ifdef HAVE_CONFIG_H
-#  include "config.h"
+#  ifdef MONA
+#    include "config_mona.h"
+#  else
+#    include "config.h"
+#  endif
 #else
 #  error "config.h not found"
 #endif
