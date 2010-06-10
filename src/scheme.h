@@ -36,6 +36,7 @@
 #    include "config.h"
 #else
 #  ifdef MONA
+#include <monapi.h>
 //#    include "config_mona.h"
 #  else
 #    error "config.h not found"

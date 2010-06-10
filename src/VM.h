@@ -34,6 +34,7 @@
 
 #include "scheme.h"
 #include <setjmp.h>
+#include <stdio.h>
 #include "Instruction.h"
 #include "EqHashTable.h"
 
