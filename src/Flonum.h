@@ -62,14 +62,8 @@
     }
     static inline double round(double x) { if (x >= 0) { return floor(x + 0.5); } else { return ceil(x - 0.5); } }
     static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
-
-#endif
-#ifdef MONA
-    static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
 #endif
 /*~C99 isnan/isinf */
-
-
 
 
 namespace scheme {
@@ -298,13 +292,12 @@ public:
         return n1->toDouble() symbol n2->value();\
     }
 
-#ifndef MONA
+
     MAKE_RATIONAL_COMPARE_FUNC(gt, >)
     MAKE_RATIONAL_COMPARE_FUNC(ge, >=)
     MAKE_RATIONAL_COMPARE_FUNC(lt, <)
     MAKE_RATIONAL_COMPARE_FUNC(le, <=)
     MAKE_RATIONAL_COMPARE_FUNC(eq, ==)
-#endif
 
 #define MAKE_FIXNUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(Flonum* n1, int n2)\
@@ -322,21 +315,6 @@ public:
     MAKE_FIXNUM_COMPARE_FUNC(le, <=)
     MAKE_FIXNUM_COMPARE_FUNC(eq, ==)
 
-#ifdef MONA
-#define MAKE_FLONUM_OP_FUNC(op, symbol) \
-    static Object op(Flonum* n1, int n2)\
-    {\
-        return Object::makeFlonum(n1->value() symbol static_cast<double>(n2));\
-    }\
-    static Object op(int n1, Flonum* n2)\
-    {\
-        return Object::makeFlonum(static_cast<double>(n1) symbol n2->value());\
-    }\
-    static Object op(Flonum* n1, Flonum* n2)\
-    {\
-        return Object::makeFlonum(n1->value() symbol n2->value());\
-    }
-#else
 #define MAKE_FLONUM_OP_FUNC(op, symbol) \
     static Object op(Flonum* n1, int n2)\
     {\
@@ -358,7 +336,6 @@ public:
     {\
         return Object::makeFlonum(n1->value() symbol n2->toDouble());\
     }
-#endif
 
     MAKE_FLONUM_OP_FUNC(add, +);
     MAKE_FLONUM_OP_FUNC(sub, -);
@@ -375,14 +352,12 @@ static Object op(Flonum* n1, Bignum* n2)\
     return Object::makeFlonum(n1->value() symbol n2->toDouble());\
 }
 
-#ifndef MONA
-
 MAKE_LOCAL_OP_F(add, +)
 MAKE_LOCAL_OP_F(sub, -)
 MAKE_LOCAL_OP_F(div, /)
 MAKE_LOCAL_OP_F(mul, *)
 
-#endif
+
 
     static void initialize();
     static Object NEGATIVE_INF;

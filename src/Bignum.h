@@ -53,8 +53,6 @@
 
 namespace scheme {
 
-#ifndef MONA
-
 // N.B.
 //   Since we want to reduce memory allocation,
 //   we pass mpz_t to makeIntger() function.
@@ -720,8 +718,6 @@ inline Object Object::makeBignum(Bignum* b)
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Bignum,
                                                         reinterpret_cast<intptr_t>(b))));
 }
-
-#endif // MONA
 
 } // namespace scheme
 

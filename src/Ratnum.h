@@ -37,8 +37,6 @@
 
 namespace scheme {
 
-#ifndef MONA
-
 class Ratnum : public gc_cleanup
 {
 private:
@@ -294,8 +292,6 @@ public:
         }
     }
 };
-
-#endif
 
 } // namespace scheme
 
