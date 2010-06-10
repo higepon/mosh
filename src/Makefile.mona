@@ -104,7 +104,7 @@ INSTDIR = $(BINDIR)/SERVERS
 
 INSTDIR    = $(BINDIR)/APPS
 ADDLINK    = -lpci -lmonalibc-imp --enable-auto-import
-ADDCFLAGS  = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\""
+ADDCFLAGS  = -D USE_BOEHM_GC -D PACKAGE_VERSION "0.2.6"
 ADDINCLUDE = -I ../onig-5.7.0 -I ../gc-7.1/include
 
 SHAREDIR   = $(MONADIR)/share
