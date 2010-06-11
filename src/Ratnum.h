@@ -37,6 +37,163 @@
 
 namespace scheme {
 
+#ifdef MONA
+
+typedef intptr_t* mpq_t;
+
+class Ratnum : public gc_cleanup
+{
+private:
+    mpq_t value;
+
+    Ratnum(mpq_t rational)
+    {
+        MOSH_ASSERT(false);
+    }
+
+    Object sqrtUnsigned(const mpq_t r) const;
+
+public:
+    Ratnum()
+    {
+        MOSH_ASSERT(false);
+    }
+
+    Ratnum(int numerator, int denominator)
+    {
+        MOSH_ASSERT(false);
+    }
+
+    virtual ~Ratnum()
+    {
+        MOSH_ASSERT(false);
+    }
+
+    Object sqrt() const;
+    Object floor() const;
+    Object ceiling() const;
+    Object round() const;
+    Object truncate() const;
+
+    Object abs() const
+    {
+        MOSH_ASSERT(false);
+    }
+
+    Object numerator() const
+    {
+        MOSH_ASSERT(false);
+    }
+
+    Object denominator() const
+    {
+        MOSH_ASSERT(false);
+    }
+
+    char* toString(int radix = 10) const
+    {
+        MOSH_ASSERT(false);
+    }
+
+    double toDouble() const
+    {
+        MOSH_ASSERT(false);
+    }
+
+    bool equal(int number)
+    {
+        MOSH_ASSERT(false);
+    }
+
+    bool equal(Ratnum* number)
+    {
+        MOSH_ASSERT(false);
+    }
+
+    static Object div(int n1, Bignum* n2)
+    {
+        MOSH_ASSERT(false);
+    }
+
+    static Object div(Bignum* n1, int n2)
+    {
+        MOSH_ASSERT(false);
+    }
+
+    static Object div(Bignum* n1, Bignum* n2)
+    {
+        MOSH_ASSERT(false);
+    }
+
+
+#define MAKE_RATNUM_OP(op)\
+    static Object op(Ratnum* number1, Ratnum* number2)\
+    {\
+         MOSH_ASSERT(false);\
+    }\
+    static Object op(Ratnum* number1, Bignum* number2)\
+    {\
+         MOSH_ASSERT(false);\
+    }\
+    static Object op(Bignum* number1, Ratnum* number2)\
+    {\
+         MOSH_ASSERT(false);\
+    }\
+    static Object op(Ratnum* number1, int number2)\
+    {\
+        MOSH_ASSERT(false);\
+    }\
+    static Object op(int number1, Ratnum* number2)\
+    {\
+        MOSH_ASSERT(false);\
+    }
+
+    MAKE_RATNUM_OP(add)
+    MAKE_RATNUM_OP(sub)
+    MAKE_RATNUM_OP(mul)
+    MAKE_RATNUM_OP(div)
+
+#define MAKE_RATNUM_COMPARE(compare, symbol)\
+    static bool compare(const Ratnum* number1, const Ratnum* number2)\
+    {\
+        MOSH_ASSERT(false);\
+    }\
+    static bool compare(const Ratnum* number1, const Bignum* number2)\
+    {\
+        MOSH_ASSERT(false);\
+    }\
+    static bool compare(Bignum* number1, Ratnum* number2)\
+    {\
+        MOSH_ASSERT(false);\
+    }\
+    static bool compare(Ratnum* number1, int number2)\
+    {\
+        MOSH_ASSERT(false);\
+    }\
+    static bool compare(int number1, Ratnum* number2)\
+    {\
+        MOSH_ASSERT(false);\
+    }
+
+    MAKE_RATNUM_COMPARE(gt, >0);
+    MAKE_RATNUM_COMPARE(ge, >=0);
+    MAKE_RATNUM_COMPARE(lt, <0);
+    MAKE_RATNUM_COMPARE(le, <=0);
+    MAKE_RATNUM_COMPARE(eq, ==0);
+
+    static Object makeNumber(double v)
+    {
+        MOSH_ASSERT(false);
+    }
+
+    static Object makeNumber(mpq_t r)
+    {
+        MOSH_ASSERT(false);
+    }
+};
+
+#else
+
 class Ratnum : public gc_cleanup
 {
 private:
@@ -292,6 +449,8 @@ public:
         }
     }
 };
+
+#endif // MONA
 
 } // namespace scheme
 

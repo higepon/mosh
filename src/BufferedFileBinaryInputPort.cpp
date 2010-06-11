@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h> // memcpy
+#include <stdio.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "HeapObject.h"
