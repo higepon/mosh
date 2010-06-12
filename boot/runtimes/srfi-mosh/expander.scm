@@ -355,7 +355,11 @@
          (*programs* '())
          ;; 
          (*current-program* "<user program>")
-         ;; wheter to install current library
+         ;; additional depenents
+         (*cache-depfiles* '())
+         ;; whether to save cache file
+         (*cache-save?* #t)
+         ;; whether to install current library
          (*library-install?* #t)
          ;; save debug symbol?
          (*DBG?* #f)
@@ -1191,7 +1195,16 @@
                                      (lambda (forms no-syntax-definitions bound-variables)
                                        `(letrec* ,expanded-bindings
                                           ,@(emit-body forms 'define)))))))))
-
+    
+    ;;; Cache-control
+    (define (control-acc-adddep exp)
+      (match exp
+             ((- filename)
+              (set! *cache-depfiles* (cons filename *cache-depfiles*))
+              #f
+              )))
+    (define (control-acc-disable exp)
+      (set! *cache-save?* #f))
 
     ;;=========================================================================
     ;;
@@ -2508,10 +2521,12 @@
       (fluid-let
         ((*DBG?* #t)
          (*DBG-SYMS* '())
+         (*cache-save?* #t)
+         (*cache-depfiles* '()) ; it will converted absolute path in mosh-utils5
          (*library-install?* install?))
         (let* ((r (expand-sequence l))
                (d *DBG-SYMS*))
-          (cons r d))))
+          (list r d *cache-save?* *cache-depfiles*)))) 
 
     (define (expand-sequence-r5rs/debug l env)
       (fluid-let
@@ -2519,7 +2534,7 @@
          (*DBG-SYMS* '()))
         (let* ((r (expand-sequence-r5rs l env))
                (d *DBG-SYMS*))
-          (cons r d))))
+          (list r d))))
 
     ;; This approximates the common r5rs behaviour of
     ;; expanding a toplevel file but treating unbound identifiers
@@ -2695,6 +2710,34 @@
               )))
        (ex:make-library
         '(core nmosh primitive-macros)
+        ;; envs
+        (lambda () '())
+        ;; exports
+        (map (lambda (mapping)
+               (cons (car mapping) (make-binding 'macro (car mapping) '(0) #f '())))
+             primitive-macro-mapping)
+        ;; imported-libraries
+        '()
+        ;; builds
+        '()
+        ;; visit
+        (lambda ()
+          (for-each (lambda (mapping)
+                      (register-macro! (car mapping) (make-expander (cdr mapping))))
+                    primitive-macro-mapping)
+          (values))
+        ;; invoke
+        (lambda () (values))
+        ;; build
+        'system)))
+
+    ; MOSH: nmosh control lib.
+    (ex:register-library!
+     (let ((primitive-macro-mapping
+             `((%acc-disable . ,control-acc-disable)
+               (%acc-adddep . ,control-acc-adddep))))
+       (ex:make-library
+        '(core nmosh cache-control)
         ;; envs
         (lambda () '())
         ;; exports
