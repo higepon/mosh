@@ -5,7 +5,7 @@
   (set! *SYMS* (cons (list
 		       (cons 'DBG-SOURCE (car r))
 		       (cons 'DBG-FILENAME fn)
-		       (cons 'DBG-SYMS (cdr r))) *SYMS*))
+		       (cons 'DBG-SYMS (cadr r))) *SYMS*))
   (car r))
 
 (define (ex-6 fn)

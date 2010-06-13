@@ -38,7 +38,7 @@ dnl if test "$GOSH" != "gosh"
 dnl     then AC_MSG_ERROR([gosh not found. Gauche (http://practical-scheme.net/gauche/) is required to build.])
 dnl fi
 AC_CHECK_LIB(gmp, __gmpz_init, ,
-  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/."For OSX, install GNU MP with "CFLAGS+=-m32 ./configure ABI=32 && make"])])
+  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])
 
 
 AC_ARG_ENABLE(profiler, [  --enable-profiler turn off profiler [default=yes]], ,[enable_profiler=yes])
@@ -284,10 +284,12 @@ i[[3456]]86|pentium)
 	arch=x86_64
         case "$target_os" in
 		*darwin*)
+                AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
 		AC_MSG_RESULT([x86_64])
+		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
 		MOSH_OPTS="-O3"
 		AM_CONDITIONAL(FFI_I386, false)
-		AM_CONDITIONAL(FFI_X86_64, false)
+		AM_CONDITIONAL(FFI_X86_64, true)
 		;;
 		*)
 		MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"

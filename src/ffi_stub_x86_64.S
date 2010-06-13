@@ -4,21 +4,27 @@
     See license.txt for terms and conditions of use
 */
 
-    .file   "ffi_stub_x86_64.s"
+#ifdef __APPLE__
+#define APPLE_PIC 1
+#define SYM(x) _ ## x
+#else
+#define SYM(x) x
+#endif
+    .file   "ffi_stub_x86_64.S"
 
     .text
 
     .align  4,0x90
 
-    .globl  c_callback_stub_intptr
-    .globl  c_callback_stub_float
-    .globl  c_callback_stub_double
-    .globl  c_func_stub_intptr_x64
-    .globl  c_func_stub_double_x64
+    .globl  SYM(c_callback_stub_intptr)
+    .globl  SYM(c_callback_stub_float)
+    .globl  SYM(c_callback_stub_double)
+    .globl  SYM(c_func_stub_intptr_x64)
+    .globl  SYM(c_func_stub_double_x64)
 
 // c_func_stub_intptr_x64(intptr_t func<rdi>, intptr_t reg<rsi>, intptr_t stack<rdx>, intptr_t stack_count_bytes<rcx>, intptr_t xmm<r8>)
-c_func_stub_double_x64:
-c_func_stub_intptr_x64:
+SYM(c_func_stub_double_x64):
+SYM(c_func_stub_intptr_x64):
         push %r12 // r12-15 are callee saved
         push %r13
         push %r14
@@ -64,16 +70,28 @@ arguments_done:
         pop %r12
         ret
 
-c_callback_stub_double:
-    movq        $c_callback_double, %r11
+SYM(c_callback_stub_double):
+#if APPLE_PIC
+    movq        SYM(c_callback_double)@GOTPCREL(%rip), %r11
+#else
+    movq        $SYM(c_callback_double), %r11
+#endif
     jmp         callback_stub_common
 
-c_callback_stub_float:
-    movq        $c_callback_float, %r11
+SYM(c_callback_stub_float):
+#if APPLE_PIC
+    movq        SYM(c_callback_float)@GOTPCREL(%rip), %r11
+#else
+    movq        $SYM(c_callback_float), %r11
+#endif
     jmp         callback_stub_common
 
-c_callback_stub_intptr:
-    movq        $c_callback_intptr, %r11
+SYM(c_callback_stub_intptr):
+#if APPLE_PIC
+    movq        SYM(c_callback_intptr)@GOTPCREL(%rip), %r11
+#else
+    movq        $SYM(c_callback_intptr), %r11
+#endif
     jmp         callback_stub_common
 
 callback_stub_common:
@@ -111,4 +129,6 @@ no_sse:
     popq        %rbp
     ret
 
+#ifndef __APPLE__
 .section .note.GNU-stack,"",%progbits
+#endif

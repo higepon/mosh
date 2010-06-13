@@ -141,7 +141,7 @@
  (let ((error (lambda () 
                 (assertion-violation 
                  'runtime.scm
-                 "Attempt to use runtime instance of (core primitive-macros) for expansion.  Make sure expander.scm is loaded after runtime.scm."))))
+                 "Attempt to use runtime instance of (core nmosh primitive-macros) for expansion.  Make sure expander.scm is loaded after runtime.scm."))))
    (ex:make-library
     '(core nmosh primitive-macros)
     ;; envs
@@ -158,4 +158,27 @@
     (lambda () (values))
     ;; build
     'system)))
+
+(ex:register-library! 
+ (let ((error (lambda () 
+                (assertion-violation 
+                 'runtime.scm
+                 "Attempt to use runtime instance of (core nmosh cache-control) for expansion.  Make sure expander.scm is loaded after runtime.scm."))))
+   (ex:make-library
+    '(core nmosh cache-control)
+    ;; envs
+    error
+    ;; exports
+    '()
+    ;; imported-libraries
+    '()
+    ;; builds
+    '()
+    ;; visiter
+    error
+    ;; invoker
+    (lambda () (values))
+    ;; build
+    'system)))
+
 

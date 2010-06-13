@@ -4,6 +4,7 @@
 		 with-condition-printer with-condition-printer/raise)
 	 (import (rnrs) (nmosh conditions)
 		 (only (mosh) format)
+                 (nmosh pathutils)
 		 (primitives id-name id-debug id-maybe-library)) 
 
 ; almost as syntax->datum but allows symbol in l
@@ -25,7 +26,7 @@
 	  (let loop ((cur '())
 		     (s (cddr r)))
 	    (if (char=? #\space (car s))
-	      (list->string cur)
+	      (make-simple-path (list->string cur))
 	      (loop (cons (car s) cur) (cdr s))))
 	  name))))
   (cond
@@ -33,7 +34,7 @@
      (let ((name (car debug))
 	   (line (cadr debug)))
        (format "~a:~d" (if (string? name) 
-			 (extract-name name) 
+			 (extract-name name)
 			 "INVALID")
 			 line)))
     (else #f)))
@@ -86,6 +87,19 @@
   (guard (c (#t #f))
 	 (condition-who e)))
 
+(define (ptake x l) ;; permissive SRFI-1 take
+  ;; (ptake N #f) => #f
+  ;; (ptake N x) => '()
+  (cond
+    ((not l)
+     #f)
+    ((not (pair? x))
+     '())
+    ((= x 1)
+     (car x))
+    (else
+      (cons (car x) (ptake (- x 1) (cdr l))))))
+
 (define (syntax-trace-printer e port)
   (define (tab)
     (display "      " port))
@@ -93,7 +107,7 @@
 	(message (condition-message e))
 	(form (syntax-violation-form e))
 	(subform (syntax-violation-subform e))
-	(trace (condition-syntax-trace e)))
+	(trace (ptake 5 (condition-syntax-trace e))))
     (display " Syntax error")
     (newline port)
     (display "      who : " port)
