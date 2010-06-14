@@ -31,6 +31,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#elif defined(MONA)
 #else
 #include <dlfcn.h>
 #endif
@@ -59,6 +60,8 @@ void* FFI::open(const char* name)
 {
 #ifdef _WIN32
     return (void *)LoadLibraryA(name); // FIXME : handle MBCS path
+#elif defined(MONA)
+    return 0;
 #else
     return dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
 #endif
@@ -68,6 +71,8 @@ void* FFI::lookup(void* handle, const char* symbol)
 {
 #ifdef _WIN32
     return (void *)GetProcAddress((HMODULE)handle,symbol);
+#elif defined(MONA)
+    return 0;
 #else
     return dlsym(handle, symbol);
 #endif
@@ -77,6 +82,8 @@ int FFI::close(void* handle)
 {
 #ifdef _WIN32
     return FreeLibrary((HMODULE)handle);
+#elif defined(MONA)
+    return 0;
 #else
     return dlclose(handle);
 #endif
@@ -86,6 +93,8 @@ const char* FFI::lastError()
 {
 #ifdef _WIN32
     return "win32 error"; //FIXME : stub
+#elif defined(MONA)
+    return 0;
 #else
     return dlerror();
 #endif

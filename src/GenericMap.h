@@ -41,6 +41,8 @@
 #else
 #ifdef _WIN32
 #include <unordered_map>
+#elif defined MONA
+#include <map>
 #else
 #include <tr1/unordered_map>
 #endif
@@ -68,7 +70,12 @@ struct generic_equal_to
     }
 };
 
-#if HAVE_EXT_HASHES
+#ifdef MONA
+typedef std::map<scheme::Object,
+                 generic_hash_func,
+                 generic_equal_to,
+                 gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
+#elif defined(HAVE_EXT_HASHES)
 typedef __gnu_cxx::hash_map<scheme::Object,
                             scheme::Object,
                             generic_hash_func,
