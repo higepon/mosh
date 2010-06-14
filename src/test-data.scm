@@ -3299,7 +3299,7 @@
       (set! x #f)
       |#
       x))
-(#t #!r6rs #t)
+;(#t #!r6rs #t)
 
 ;; reader error
 [definition
