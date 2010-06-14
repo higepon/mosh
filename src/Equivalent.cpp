@@ -398,6 +398,13 @@ Object Equal::preP(Object x, Object y, Object k)
 
 #ifdef _WIN32
 #define random rand
+#elif defined(MONA)
+#include <monapi/Random.h>
+static int random()
+{
+    static MonAPI::Random r;
+    return r.nextInt();
+}
 #endif
 //       (define (e? x y k)
 //         (if (<= k 0)
