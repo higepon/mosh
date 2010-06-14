@@ -2,6 +2,16 @@ SRCTOP=../../..
 include $(SRCTOP)/Makefile.inc
 
 TARGET  = MOSH
+TEST_SOURCES = FFITest.cpp \
+          FaslTest.cpp \
+          OSCompatTest.cpp \
+          OSCompatThreadTest.cpp \
+          ObjectTest.cpp \
+          PortTest.cpp \
+          TestingSignalHandler.cpp \
+          TestingVM.cpp \
+          VMTest.cpp \
+          getoptUTest.cpp
 SOURCES = main.cpp \
           Arithmetic.cpp \
           ArithmeticProcedures.cpp \
@@ -30,9 +40,7 @@ SOURCES = main.cpp \
           ErrorProcedures.cpp \
           FFI.cpp \
           FFIProcedures.cpp \
-          FFITest.cpp \
           FaslReader.cpp \
-          FaslTest.cpp \
           FaslWriter.cpp \
           FileBinaryInputOutputPort.cpp \
           FileBinaryInputPort.cpp \
@@ -51,13 +59,9 @@ SOURCES = main.cpp \
           NumberScanner.cpp \
           OSCompat.cpp \
           OSCompatSocket.cpp \
-          OSCompatTest.cpp \
           OSCompatThread.cpp \
-          OSCompatThreadTest.cpp \
           Object.cpp \
-          ObjectTest.cpp \
           PortProcedures.cpp \
-          PortTest.cpp \
           ProcessProcedures.cpp \
           Ratnum.cpp \
           Reader.cpp \
@@ -72,8 +76,6 @@ SOURCES = main.cpp \
           StringTextualInputPort.cpp \
           StringTextualOutputPort.cpp \
           Symbol.cpp \
-          TestingSignalHandler.cpp \
-          TestingVM.cpp \
           TextualInputPort.cpp \
           TextualOutputPort.cpp \
           TranscodedTextualInputOutputPort.cpp \
@@ -88,12 +90,10 @@ SOURCES = main.cpp \
           VM-Run.cpp \
           VM.cpp \
           VMFactory.cpp \
-          VMTest.cpp \
           Vector.cpp \
           call.inc.cpp \
           cprocedures.cpp \
           getoptU.cpp \
-          getoptUTest.cpp \
           labels.cpp \
           main.cpp \
           nmosh_image.cpp \
