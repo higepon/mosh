@@ -71,9 +71,18 @@ struct generic_equal_to
 };
 
 #ifdef MONA
+
+struct LtObject
+{
+  bool operator()(const scheme::Object s1, const scheme::Object s2) const
+  {
+      return callHashFunction(genericHashFunction, s1) < callHashFunction(genericHashFunction, s2);
+  }
+};
+
 typedef std::map<scheme::Object,
-                 generic_hash_func,
-                 generic_equal_to,
+                 scheme::Object,
+                 LtObject,
                  gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
 #elif defined(HAVE_EXT_HASHES)
 typedef __gnu_cxx::hash_map<scheme::Object,
