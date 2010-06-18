@@ -31,7 +31,7 @@
   (do-eval (read-one)))
 
 (define (loop) ; the no-guard strategy (we need this for make VM call %nmosh-failproc)
-  (display (eval-one))(newline)
+  (write (eval-one))(newline)
   (loop))
 
 (define (show-traces c trace)
