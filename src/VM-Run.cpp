@@ -478,8 +478,12 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         CASE(MAKE_VECTOR)
         {
             const Object n = pop();
-            VM_ASSERT(n.isFixnum());
-            ac_ = Object::makeVector(n.toFixnum(), ac_);
+            if (n.isFixnum()) {
+                VM_ASSERT(n.isFixnum());
+                ac_ = Object::makeVector(n.toFixnum(), ac_);
+            } else {
+                callWrongTypeOfArgumentViolationAfter(this, "make-vector", "fixnum", L1(n));
+            }
             NEXT1;
         }
         CASE(NOP)
