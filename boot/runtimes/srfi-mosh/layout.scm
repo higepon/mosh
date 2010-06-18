@@ -23,6 +23,7 @@
         (nmosh)
 	(nmosh minidebug) 
 	(nmosh startup)
+        (nmosh gensym)
 	(nrepl simple) 
 	)
   (r5rs "mosh-exceptions.scm" (rnrs) (nmosh conditions))
