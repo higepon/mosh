@@ -1,5 +1,4 @@
-(import (rnrs)
-	(rnrs load)
+(import (nmosh)
         (mosh test)
 	(primitives ex:expand-sequence/debug ex:repl))
 

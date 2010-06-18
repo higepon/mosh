@@ -24,6 +24,7 @@
 	(nmosh minidebug) 
 	(nmosh startup)
         (nmosh gensym)
+        (nrepl simple io)
 	(nrepl simple) 
 	)
   (r5rs "mosh-exceptions.scm" (rnrs) (nmosh conditions))

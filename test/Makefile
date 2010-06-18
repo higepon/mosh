@@ -52,3 +52,4 @@ runtest-mosh:
 
 runtest-nmosh:
 	$(MOSH_TARGET) test/nmosh.scm
+	$(MOSH_TARGET) test/nrepl.scm
