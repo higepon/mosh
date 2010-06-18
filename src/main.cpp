@@ -122,7 +122,11 @@ Object activateR6RSMode(VM* theVM, bool isDebugExpand)
 void showUsage()
 {
     fprintf(stderr,
+#ifndef WITH_NMOSH_DEFAULTS
             "Usage: mosh <options> [file]\n"
+#else
+            "Usage: nmosh <options> [file]\n"
+#endif
             "options:\n"
             "  -5                Run with safe mode (Almost R5RS).\n"
             "  -V                Prints version and exits.\n"
