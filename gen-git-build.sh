@@ -1,4 +1,4 @@
 #!/bin/sh
 autoreconf -ifv && \
-./configure --enable-developer "$@" && \
-make bootstrap
+make -C boot bootstrap && \
+make -C boot

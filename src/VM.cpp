@@ -307,9 +307,9 @@ void VM::initializeDynamicCode()
 
 void VM::loadCompiler()
 {
-#   include "pmatch.h"
-#   include "compiler-with-library.h"
-    const Object libCompiler = FASL_GET(compiler_with_library_image);
+#   include "match.h"
+#   include "baselib.h"
+    const Object libCompiler = FASL_GET(baselib_image);
 #ifdef ENABLE_PROFILER
     if (isProfiler_) {
         initProfiler();
@@ -317,9 +317,9 @@ void VM::loadCompiler()
 #endif
     TRY_VM {
         evaluateUnsafe(libCompiler.toVector(), true);
-        const Object libMatch = FASL_GET(pmatch_image);
+        const Object libMatch = FASL_GET(match_image);
         evaluateUnsafe(libMatch.toVector());
-        CATCH_VM
+    CATCH_VM
         // call default error handler
         defaultExceptionHandler(errorObj_);
         this->exit(-1);
@@ -634,6 +634,81 @@ Object VM::compile(Object code)
     return compiled;
 }
 
+Object VM::getStackTraceObj()
+{
+    //const int MAX_DEPTH = 20;
+    const int FP_OFFSET_IN_FRAME = 1;
+    const int CLOSURE_OFFSET_IN_FRAME = 2;
+
+    Object r = Object::Nil;
+    Object cur = Object::Nil;
+    Object* fp = fp_;
+    Object* cl = &cl_;
+    for (int i = 0;;) {
+        if (cl->isClosure()) {
+            Object src = cl->toClosure()->sourceInfo;
+            if (src.isPair()) {
+                const Object procedure = src.cdr();
+                const Object location  = src.car();
+		r = L3(Symbol::intern(UC("*proc*")),procedure,location);
+            }else{
+		r = L1(Symbol::intern(UC("*unknown-proc*")));
+	    }
+	    i++;
+        } else if (cl->isCProcedure()) {
+	    r = L2(Symbol::intern(UC("*cproc*")),getClosureName(*cl));
+            i++;
+        } else if (cl->isRegMatch()) {
+	    r = L2(Symbol::intern(UC("*reg-match*")),*cl);
+            i++;
+        } else if (cl->isRegexp()) {
+	    r = L2(Symbol::intern(UC("*regexp*")),*cl);
+            i++;
+        } else {
+            MOSH_ASSERT(false);
+        }
+	cur = Object::cons(Object::cons(Object::makeFixnum(i),r),cur);
+#if 0
+        if (i > MAX_DEPTH) {
+            port->display(this, UC("      ... (more stack dump truncated)\n"));
+            break;
+        }
+#endif
+
+        VM_ASSERT(!(*cl).isObjectPointer());
+        VM_ASSERT((*cl).isClosure() || (*cl).isCProcedure() );
+        if (fp > stack_) {
+            cl = fp - CLOSURE_OFFSET_IN_FRAME;
+
+            // N.B. We must check whether cl is Object pointer or not.
+            // If so, we can't touch them. (touching may cause crash)
+            if (mayBeStackPointer(cl)) {
+                break;
+            }
+            if (!((*cl).isClosure()) && !((*cl).isCProcedure())) {
+                break;
+            }
+            // next fp is Object pointer, so 4byte aligned.
+            // if it is not Object pointer, may be tail call
+            Object* nextFp = fp - FP_OFFSET_IN_FRAME;
+            if (!(nextFp->isRawPointer())) {
+                break;
+            }
+
+            if (!mayBeStackPointer(nextFp)) {
+//                getOutputPort().toTextualOutputPort()->format(UC("[[[[~a]]]]"), *nextFp);
+                break;
+            }
+
+            VM_ASSERT(nextFp->isObjectPointer());
+            fp = nextFp->toObjectPointer();
+        } else {
+            break;
+        }
+    }
+    return cur;
+}
+
 Object VM::getStackTrace()
 {
     const int MAX_DEPTH = 20;
@@ -773,13 +848,20 @@ bool VM::isR6RSMode() const
     return isR6RSMode_;
 }
 
-Object VM::activateR6RSMode(bool isDebugExpand)
+Object VM::activateR6RSMode(const uint8_t* image, unsigned int image_size, bool isDebugExpand)
 {
-#   include "psyntax.h"
     isR6RSMode_ = true;
     setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
-    const Object libPsyntax = FASL_GET(psyntax_image);
-    return evaluateSafe(libPsyntax.toVector());
+    const Object code = FASL_GET_WITH_SIZE(image, image_size);
+    TRY_VM {
+        Vector* v = code.toVector();
+        return evaluateSafe(v->data(), v->length());
+    CATCH_VM
+            // call default error handler
+            defaultExceptionHandler(errorObj_);
+            this->exit(-1);
+            return Object::Undef;
+    }
 }
 
 Object VM::getGlobalValueOrFalse(Object id)
@@ -824,9 +906,13 @@ void VM::setCurrentOutputPort(Object port)
 
 void VM::expandStack(int plusSize)
 {
-    printf("ex stack=%p plusSize=%d\n", stack_, plusSize);
 
     const int nextStackSize = stackSize_ + plusSize;
+    const int WARN_STACK_SIZE_IN_MB = 48;
+    if  (nextStackSize * sizeof(intptr_t) > WARN_STACK_SIZE_IN_MB * 1024 * 1024) {
+        fprintf(stderr, "Warning: Stack is growing to %ld MB\n", nextStackSize * sizeof(intptr_t) / 1024 / 1024);
+    }
+
     Object* nextStack = Object::makeObjectArray(nextStackSize);
     if (NULL == nextStack) {
         // todo

@@ -52,5 +52,4 @@
   
    (include/resolve ("srfi" "27") "random.ss")
   )
- )
 

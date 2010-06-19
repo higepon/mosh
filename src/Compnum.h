@@ -67,7 +67,7 @@ public:
             } else {
                 bool isDiv0Error = false;
                 Object ret = Object::makeFixnum(1);
-                for (intptr_t i = 0; i < n; i++) {
+                for (intptr_t i = 0; i < -n; i++) {
                     ret = Arithmetic::div(ret, z1, isDiv0Error);
                 }
                 MOSH_ASSERT(!isDiv0Error);

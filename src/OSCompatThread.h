@@ -41,7 +41,9 @@
 #ifdef _WIN32
     #include <windows.h>
     //#include <process.h>
+#ifdef _MSC_VER
     #pragma warning(disable : 4127)
+#endif
 #else
     #include <sys/time.h> // gettimeofday
 #endif

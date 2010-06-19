@@ -54,12 +54,42 @@
 #include "Closure.h"
 #include "VM-inl.h"
 
+#ifdef WITH_NMOSH_DEFAULTS
+#include "Bignum.h"
+#include "ByteArrayBinaryInputPort.h"
+#include "BinaryInputPort.h"
+#include "SimpleStruct.h"
+#include "FaslReader.h"
+#include "ProcedureMacro.h"
+#endif
+
 bool debug_on;
 using namespace scheme;
 
 static VM* theVM;
 
+#ifdef WITH_NMOSH_DEFAULTS
+extern "C" const uint8_t* nmosh_dbg_image_ptr;
+extern "C" unsigned int nmosh_dbg_image_size;
+extern "C" const uint8_t* nmosh_image_ptr;
+extern "C" const unsigned int nmosh_image_size;
+#else
+extern "C" const uint8_t* psyntax_mosh_image_ptr;
+extern "C" unsigned int psyntax_mosh_image_size;
+#endif
 
+#ifdef WITH_NMOSH_DEFAULTS
+Object
+internalGetStackTraceObj(VM* theVM,int argc,const Object* argv){
+	//DeclareProcedureName("%get-stack-trace-obj");
+	return theVM->getStackTraceObj();
+}
+Object
+internalGetNmoshDbgImage(VM* theVM,int argc,const Object* argv){
+    //DeclareProcedureName("%get-nmosh-dbg-image");
+    return FaslReader(theVM, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
+}
+#endif
 
 Object argsToList(int argc, int optind, ucs4char** argvU)
 {
@@ -78,6 +108,15 @@ void showVersion()
     printf("Mosh R6RS scheme interpreter, version %s\n", PACKAGE_VERSION);
 #endif
     exit(0);
+}
+
+Object activateR6RSMode(VM* theVM, bool isDebugExpand)
+{
+#ifdef WITH_NMOSH_DEFAULTS
+    return theVM->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, isDebugExpand);
+#else
+    return theVM->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, isDebugExpand);
+#endif
 }
 
 void showUsage()
@@ -110,7 +149,9 @@ void showUsage()
 #ifdef ENABLE_PROFILER
 void signal_handler(int signo)
 {
-    theVM->collectProfile();
+    if (signo == SIGPROF && theVM != NULL) {
+        theVM->collectProfile();
+    }
 }
 #endif
 
@@ -229,6 +270,10 @@ int main(int argc, char *argv[])
     }
 
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
+#ifdef WITH_NMOSH_DEFAULTS
+    theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
+    theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
+#endif
 
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
@@ -252,7 +297,7 @@ int main(int argc, char *argv[])
         theVM->setValueString(UC("%verbose"), Object::makeBool(verbose));
         theVM->setValueString(UC("%disable-acc"), Object::makeBool(disableAcc));
         theVM->setValueString(UC("%clean-acc"), Object::makeBool(cleanAcc));
-        theVM->activateR6RSMode(isDebugExpand);
+        activateR6RSMode(theVM, isDebugExpand);
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
         theVM->loadFileWithGuard(Object::makeString(argvU[optindU]).toString()->data());

@@ -200,6 +200,37 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
                 }
                 break;
             }
+            case 'w':
+            case 'W':
+            {
+                if (args.isPair()) {
+                    bool isSharedAware = true;
+                    putDatum(theVM, args.car(), isSharedAware);
+                    args = args.cdr();
+                } else {
+                    isErrorOccured_ = true;
+                    errorMessage_ = "too few arguments for format string";
+                    irritants_ = Pair::list1(Object::makeString(fmt));
+                    return;
+                }
+                break;
+            }
+            // Mosh only
+            case 'e':
+            case 'E':
+            {
+                if (args.isPair()) {
+                    bool isSharedAware = true;
+                    display(theVM, args.car(), isSharedAware);
+                    args = args.cdr();
+                } else {
+                    isErrorOccured_ = true;
+                    errorMessage_ = "too few arguments for format string";
+                    irritants_ = Pair::list1(Object::makeString(fmt));
+                    return;
+                }
+                break;
+            }
             case '\0':
                 i--;
                 break;
@@ -256,18 +287,20 @@ bool TextualOutputPort::writeAbbreviated(Object obj)
 
 template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Object o, EqHashTable* seen)
 {
-    Object seenState = seen->ref(o, Object::False);
-    if (seenState.isTrue()) {
-        seen->set(o, Object::makeFixnum(sharedId_));
-        char buf[32];
-        snprintf(buf, 32, "#%d=", sharedId_);
-        putString(buf);
-        sharedId_++;
-    } else if (seenState.isFixnum()) {
-        char buf[32];
-        snprintf(buf, 32, "#%d#", (int)seenState.toFixnum());
-        putString(buf);
-        return;
+    if (seen != NULL) {
+        Object seenState = seen->ref(o, Object::False);
+        if (seenState.isTrue()) {
+            seen->set(o, Object::makeFixnum(sharedId_));
+            char buf[32];
+            snprintf(buf, 32, "#%d=", sharedId_);
+            putString(buf);
+            sharedId_++;
+        } else if (seenState.isFixnum()) {
+            char buf[32];
+            snprintf(buf, 32, "#%d#", (int)seenState.toFixnum());
+            putString(buf);
+            return;
+        }
     }
     if (o.isTrue()) {
         putString(UC("#t"));
@@ -435,25 +468,49 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
             putChar('(');
         }
         print<isHumanReadable>(theVM, o.car(), seen);
-        for (Object e = o.cdr(); ; e = e.cdr()) {
-            Object seenState2 = seen->ref(e, Object::False);
-
-            if (e.isPair() && e.car() == Symbol::UNQUOTE) {
-                if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
-                    putString(". ,");
-                    print<isHumanReadable>(theVM, e.cdr().car(), seen);
-                    return;
+        if (seen == NULL) {
+            for (Object e = o.cdr(); ; e = e.cdr()) {
+                if (e.isPair() && e.car() == Symbol::UNQUOTE) {
+                    if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
+                        putString(" . ,");
+                        print<isHumanReadable>(theVM, e.cdr().car(), seen);
+                        putChar(')');
+                        return;
+                    }
+                }
+                if (e.isPair()) {
+                    putChar(' ');
+                    print<isHumanReadable>(theVM, e.car(), seen);
+                } else if (e.isNil()) {
+                    break;
+                } else {
+                    putString(" . ");
+                    print<isHumanReadable>(theVM, e, seen);
+                    break;
                 }
             }
-            if (e.isPair() && seenState2.isFalse()) {
-                putChar(' ');
-                print<isHumanReadable>(theVM, e.car(), seen);
-            } else if (e.isNil()) {
-                break;
-            } else {
-                putString(" . ");
-                print<isHumanReadable>(theVM, e, seen);
-                break;
+        } else {
+            for (Object e = o.cdr(); ; e = e.cdr()) {
+                Object seenState2 = seen->ref(e, Object::False);
+
+                if (e.isPair() && e.car() == Symbol::UNQUOTE) {
+                    if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
+                        putString(" . ,");
+                        print<isHumanReadable>(theVM, e.cdr().car(), seen);
+                        putChar(')');
+                        return;
+                    }
+                }
+                if (e.isPair() && seenState2.isFalse()) {
+                    putChar(' ');
+                    print<isHumanReadable>(theVM, e.car(), seen);
+                } else if (e.isNil()) {
+                    break;
+                } else {
+                    putString(" . ");
+                    print<isHumanReadable>(theVM, e, seen);
+                    break;
+                }
             }
         }
         if (!abbreviated) {
@@ -667,18 +724,26 @@ loop:
 }
 
 
-void TextualOutputPort::display(const VM* theVM, Object o)
+void TextualOutputPort::display(const VM* theVM, Object o, bool isSharedAware)
 {
-    EqHashTable seen;
-    scan(o, &seen);
-    sharedId_ = 1;
-    print<true>(theVM, o, &seen);
+    if (isSharedAware) {
+        EqHashTable seen;
+        scan(o, &seen);
+        sharedId_ = 1;
+        print<true>(theVM, o, &seen);
+    } else {
+        print<true>(theVM, o, NULL);
+    }
 }
 
-void TextualOutputPort::putDatum(const VM* theVM, Object o)
+void TextualOutputPort::putDatum(const VM* theVM, Object o, bool isSharedAware)
 {
-    EqHashTable seen;
-    scan(o, &seen);
-    sharedId_ = 1;
-    print<false>(theVM, o, &seen);
+    if (isSharedAware) {
+        EqHashTable seen;
+        scan(o, &seen);
+        sharedId_ = 1;
+        print<false>(theVM, o, &seen);
+    } else {
+        print<false>(theVM, o, NULL);
+    }
 }

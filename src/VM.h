@@ -51,6 +51,7 @@ typedef gc_vector<Object> Ports;
 
 
 #define FASL_GET(image) FaslReader(this, new ByteArrayBinaryInputPort(image, sizeof(image))).get()
+#define FASL_GET_WITH_SIZE(image,size) FaslReader(this, new ByteArrayBinaryInputPort(image, size)).get()
 
 #ifdef DEBUG_VERSION
 #define VM_ASSERT(condition) { if (!(condition)) { \
@@ -89,7 +90,7 @@ public:
         ucs4string ret = UC("#<vm ");
         ret += name_;
         char buf[32];
-        snprintf(buf, sizeof(buf), " %lx", (uintptr_t)this);
+        snprintf(buf, sizeof(buf), " %lx", (unsigned long int)(uintptr_t)this);
         ret += ucs4string::from_c_str(buf);
         ret += UC(">");
         return ret;
@@ -149,6 +150,7 @@ public:
     Object currentErrorPort() const;
     Object currentInputPort() const;
     Object getStackTrace();
+    Object getStackTraceObj();
     void setCurrentOutputPort(Object port);
     void setCurrentInputPort(Object port);
 
@@ -159,7 +161,7 @@ public:
     Object getGlobalValueOrFalse(Object id);
     Object getGlobalValueOrFalse(const ucs4char* id);
     bool isR6RSMode() const;
-    Object activateR6RSMode(bool isDebugExpand);
+    Object activateR6RSMode(const uint8_t* image, unsigned int image_size, bool isDebugExpand);
     Object* disasm(Object* code, int length);
     Object* disasm(Closure* closure);
 #ifdef ENABLE_PROFILER
@@ -283,7 +285,7 @@ private:
         push(Object::makeObjectPointer(fp_));
     }
 
-    Object* getDirectThreadedCode(const Object* code, int length, bool isCompiler = false);
+    Object* getDirectThreadedCode(/*const*/ Object* code, int length, bool isCompiler = false);
     Object runLoop(Object* code, jmp_buf returnPoint, bool returnTable = false);
 
     Object ac_;  // accumulator     register

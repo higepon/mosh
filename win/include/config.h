@@ -128,13 +128,13 @@
 #define PACKAGE_NAME "mosh"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "mosh 0.2.1"
+#define PACKAGE_STRING "mosh 0.2.5"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "mosh"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.2.1"
+#define PACKAGE_VERSION "0.2.5"
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
@@ -151,7 +151,7 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "0.2.1"
+#define VERSION "0.2.5"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

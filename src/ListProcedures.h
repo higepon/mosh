@@ -127,6 +127,10 @@ namespace scheme {
 
     Object listTovectorEx(VM* theVM, int argc, const Object* argv);
 
+    // for nmosh
+    Object sexpMapDebugEx(VM* theVM, int argc, const Object* argv);
+    Object sexpMapEx(VM* theVM, int argc, const Object* argv);
+
 
 } // namespace scheme
 

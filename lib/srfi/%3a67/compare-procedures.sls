@@ -28,7 +28,7 @@
            >/>=? >/>? >=/>=? >=/>? >=? >?
            boolean-compare chain<=? chain<? chain=? chain>=? chain>?
            char-compare char-compare-ci
-           compare-by< compare-by<= compare-by=/< compare-by=/> compare-by> 
+           compare-by< compare-by<= compare-by=/< compare-by=/> compare-by>
            compare-by>= complex-compare cond-compare
            debug-compare default-compare
            if-not=? if3 if<=? if<? if=? if>=? if>? integer-compare
@@ -36,9 +36,9 @@
            max-compare min-compare not=? number-compare
            pair-compare pair-compare-car pair-compare-cdr
            pairwise-not=? rational-compare real-compare
-           refine-compare select-compare string-compare string-compare-ci 
+           refine-compare select-compare string-compare string-compare-ci
            symbol-compare vector-compare vector-compare-as-list)
-  
+
   (import
 (only (rnrs) ... _ define begin define-syntax syntax-rules apply for-each lambda case-lambda case else if procedure? let null? car cdr < and let* length + cons quote list-ref = <= not integer? exact? cond - boolean? string-append char? eq? char=? char<? char-ci=? char-ci<? string? string=? string<? string-ci=? string-ci<? symbol? symbol->string rational? real? complex? imag-part real-part number? pair? vector-length vector-ref min vector? zero? list? map * set! or eqv? list eq?)
 (only (rnrs r5rs) modulo)
@@ -47,16 +47,11 @@
 (only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
 (only (srfi private include) include/resolve)
 )
-  
+
   (define (error . args)
-    (parameterize ([ER:error-who 
+    (parameterize ([ER:error-who
                     "(library (srfi :67 compare-procedures))"])
       (apply ER:error args)))
-  
-  (include/resolve ("srfi" "67") "compare.ss")  
-  )
-compare.ss")  
-  )
-mpare.ss")  
-  )
 
+  (include/resolve ("srfi" "67") "compare.ss")
+  )

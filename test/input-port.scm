@@ -241,6 +241,13 @@
   (test-equal "abcdefghijklmnopqrstuvwxyz" (get-datum p))
   (close-port p))
 
+
+(let ([p (open-string-input-port
+           "(\"ciao\". 1)")])
+  (test-equal '("ciao" . 1) (get-datum p))
+  (close-port p))
+
+
 ;; read from stdin and output to stdout
 (test-eq 16 (read))
 (display 'a)

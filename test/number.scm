@@ -60,6 +60,7 @@
 ;; expt
 (test-equal +2i (expt 1+i 2))
 (test-equal -9+46i (expt 3+2i 3))
+(test-equal 1/5-2/5i (expt 1+2i -1))
 
 (test-true (fixnum? (/ 4 2)))
 

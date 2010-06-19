@@ -1,3 +1,73 @@
+Mosh 0.2.5 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://mosh.monaos.org/
+
+  Reference Manual:
+    http://mosh.monaos.org/
+
+  Developed by:
+    Higepon, kokosabu, herumi and OKUMURA Yuki.
+
+About This Release
+------------------
+
+This release introduces "nmosh" another R6RS environment.
+See doc/README.nmosh for details.
+
+Changes
+
+    Introduce nmosh by OKUMURA Yuki.
+     nmosh is a port of Andre van Tonder's R6RS macro and runtime[1] and R6RS
+    record from Larceny[2] with additional expander-cache (ACC) and debugging 
+    feature such as runtime stack trace. 
+     Although nmosh is intended to a drop-in replacement of previous psyntax
+    based mosh, it is still lacks some mosh specific enhancements against R6RS
+    standard such as SRFI-38, shared namespace with expand/run phases and more.
+     In this version, standard build process(./configure && make) and MSVC
+    solution build both binary which "mosh" is for previous psyntax based 
+    runtime and "nmosh" is for nmosh runtime.
+    [1] http://www.het.brown.edu/people/andre/macros/
+    [2] http://www.larcenists.org/
+    
+    Configure script now supports out-of-tree building. 
+     Since some GTEST based tests still not support out-of-tree building and 
+    testing, "make check" target will fail (in out-of-tree build only, in-tree
+    builds should pass it.)
+
+    updated library
+          (irregex) : 0.8.1 (Alex Shinn's irregex library)
+     (mosh process) : add "exec"
+
+    new library
+          (shorten) : the shorten formed lambda like Gauche
+                      (^a (+ 1 a)) == (lambda (a) (+ 1 a)) etc.
+        (rnrs load) : ERR5RS load (nmosh only)
+
+    BoehmGC: MIPS32 processor support.
+
+    MSVC build now depends on MPIR instead of GMP.
+     Download MPIR from http://www.mpir.org and extract to win/mpir. mosh.sln
+    will load and build them together.
+     Note that building MPIR will require yasm installed. see
+    MPIR's own document (mpir/build.vc9/readme.txt) for detail.
+
+Bug fixes.
+
+    Fixed Issue 141 reported by mrc.mgg: 
+        Profiler(-p) no longer causes sporadic SEGVs while startup.
+    Fixed Issue 140 reported by mrc.mgg: 
+        R6RS write now uses normal write procedure instead of SRFI-38 printer introduced 
+        in 0.2.4.
+    Fixed Issue 136 reported by Will.Donnelly:
+        (mosh process) library now exports exec procedure among its friends.
+
 Mosh 0.2.4 Release Note
 ============================
 

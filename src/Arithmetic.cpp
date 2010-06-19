@@ -140,11 +140,7 @@ Object Arithmetic::expt(Object n1, Object n2)
         if (n2.isFixnum()) {
             const int fn2 = n2.toFixnum();
             if (fn2 > 0) {
-                Object ret = n1;
-                for (int i = 0; i < fn2 - 1; i++) {
-                    ret = Arithmetic::mul(ret, n1);
-                }
-                return ret;
+                return Bignum::pow(n1.toFixnum(), fn2);
             } else if (fn2 == 0) {
                 return Object::makeFixnum(1);
             } else {
@@ -431,7 +427,10 @@ Object Arithmetic::log(Object n)
         return n.toCompnum()->log();
     } else {
         const double value = realToDouble(n);
-        if (value >= 0) {
+        if (isinf(value) && n.isBignum() && Arithmetic::gt(n, Object::makeFixnum(0))) {
+            Object ret = n.toBignum()->sqrt();
+            return Arithmetic::add(Arithmetic::log(ret), Arithmetic::log(ret));
+        } else if (value >= 0) {
             return Object::makeFlonum(::log(realToDouble(n)));
         } else {
             return Object::makeCompnum(Object::makeFlonum(::log(-value)), Object::makeFlonum(::atan2(0.0, value)));

@@ -267,8 +267,12 @@ int64_t BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int64_t
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
+#ifdef DEBUG_VERSION
     const int64_t result = file_->seek(position_ - bufferIndex_);
     MOSH_ASSERT(result >= 0);
+#else
+    file_->seek(position_ - bufferIndex_);
+#endif
     internalFlush();
 }
 
@@ -339,8 +343,12 @@ int64_t BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int64_t
             bufferIndex_ += restSize;
             // unwind postion
             if (needUnwind) {
+#ifdef DEBUG_VERSION
                 const int64_t result = file_->seek(origPositon);
                 MOSH_ASSERT(result >= 0);
+#else
+                file_->seek(origPositon);
+#endif
             }
             // done
             return requestSize;
@@ -354,8 +362,12 @@ int64_t BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int64_t
             // EOF
             if (0 == bufferSize_) {
                 if (needUnwind) {
+#ifdef DEBUG_VERSION
                     const int64_t result = file_->seek(origPositon);
                     MOSH_ASSERT(result >= 0);
+#else
+                    file_->seek(origPositon);
+#endif
                 }
                 return readSize;
             }
@@ -372,8 +384,12 @@ void BufferedFileBinaryInputOutputPort::invalidateBuffer()
 void BufferedFileBinaryInputOutputPort::forwardPosition(int64_t offset)
 {
     position_ += offset;
+#ifdef DEBUG_VERSION
     const int64_t currentPosition = file_->seek(position_);
     MOSH_ASSERT(position_ == currentPosition);
+#else
+    file_->seek(position_);
+#endif
 }
 
 File* BufferedFileBinaryInputOutputPort::getFile()

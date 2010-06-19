@@ -58,12 +58,12 @@ static Object raiseAfter2(VM* theVM, const ucs4char* procName, Object who, Objec
     const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
     Object condition = Object::Nil;
     if (procedure.isFalse()) {
-        const Object content =  format(theVM, UC(" WARNING: Error occured before (~a ...) defined\n"), Pair::list1(procName));
+        const Object content =  format(theVM, UC(" WARNING: Error occured before (~e ...) defined\n"), Pair::list1(procName));
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
         const Object condition =  format(theVM,
                                          UC(" Condition components:\n"
-                                            "    1. ~a\n"
-                                            "    2. &who: ~a\n"
+                                            "    1. ~e\n"
+                                            "    2. &who: ~e\n"
                                             "    3. &message: ~s\n"), Pair::list3(procName, who, message));
         theVM->throwException(condition);
     } else {
@@ -77,14 +77,14 @@ static Object raiseAfter3(VM* theVM, const ucs4char* procName, Object who, Objec
     const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
     Object condition = Object::Nil;
     if (procedure.isFalse()) {
-        const Object content =  format(theVM, UC(" WARNING: Error occured before (~a ...) defined\n"), Pair::list1(procName));
+        const Object content =  format(theVM, UC(" WARNING: Error occured before (~e ...) defined\n"), Pair::list1(procName));
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
         const Object condition =  format(theVM,
                                          UC(" Condition components:\n"
-                                            "    1. ~a\n"
-                                            "    2. &who: ~a\n"
+                                            "    1. ~e\n"
+                                            "    2. &who: ~e\n"
                                             "    3. &message: ~s\n"
-                                            "    4. &irritants: ~a\n"), Pair::list4(procName, who, message, irritants));
+                                            "    4. &irritants: ~e\n"), Pair::list4(procName, who, message, irritants));
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger3(procedure, who, message, irritants);
@@ -97,14 +97,14 @@ static Object raiseAfter4(VM* theVM, const ucs4char* procName, Object who, Objec
     const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
     Object condition = Object::Nil;
     if (procedure.isFalse()) {
-        const Object content =  format(theVM, UC(" WARNING: Error occured before (~a ...) defined\n"), Pair::list1(procName));
+        const Object content =  format(theVM, UC(" WARNING: Error occured before (~e ...) defined\n"), Pair::list1(procName));
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
         const Object condition =  format(theVM,
                                          UC(" Condition components:\n"
-                                            "    1. ~a\n"
-                                            "    2. &who: ~a\n"
+                                            "    1. ~e\n"
+                                            "    2. &who: ~e\n"
                                             "    3. &message: ~s\n"
-                                            "    4. &irritants: ~a\n"), Pair::list4(procName, who, message, Pair::list2(irritant1, irritant2)));
+                                            "    4. &irritants: ~e\n"), Pair::list4(procName, who, message, Pair::list2(irritant1, irritant2)));
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger4(procedure, who, message, irritant1, irritant2);
@@ -173,7 +173,7 @@ void scheme::callNotImplementedAssertionViolationAfter(VM* theVM, Object who, Ob
 
 void scheme::callWrongTypeOfArgumentViolationAfter(VM* theVM, Object who, Object requiredType, Object gotValue, Object irritants /* = Object::Nil */)
 {
-    const Object message = format(theVM, UC("~a required, but got ~a"),
+    const Object message = format(theVM, UC("~e required, but got ~e"),
                                   Pair::list2(requiredType, gotValue));
     callAssertionViolationAfter(theVM, who, message, irritants);
 }
@@ -210,9 +210,9 @@ void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Obj
     const Object condition =  format(theVM,
                                     UC(" Condition components:\n"
                                        "    1. &assertion\n"
-                                       "    2. &who: ~a\n"
+                                       "    2. &who: ~e\n"
                                        "    3. &message: ~s\n"
-                                       "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+                                       "    4. &irritants: ~e\n"), Pair::list3(who, message, irritants));
     theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
     theVM->throwException(condition);
 }
@@ -224,9 +224,9 @@ Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message,
 
 Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
-//     LOG1("message=~a\n", message);
-//     LOG1("who=~a\n", who);
-//     LOG1("irritants=~a\n", irritants);
+//     LOG1("message=~e\n", message);
+//     LOG1("who=~e\n", who);
+//     LOG1("irritants=~e\n", irritants);
     if (theVM->isR6RSMode()) {
         return raiseAfter3(theVM, UC("assertion-violation"), who, message, irritants);
     } else {
@@ -236,10 +236,10 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
             Object condition = format(theVM,
                                   UC(
                                       " Condition components:\n"
-                                      "    1. ~a\n"
-                                      "    2. &who: ~a\n"
+                                      "    1. ~e\n"
+                                      "    2. &who: ~e\n"
                                       "    3. &message: ~s\n"
-                                      "    4. &irritants: ~a\n"), Pair::list4("&assertion", who, message, irritants));
+                                      "    4. &irritants: ~e\n"), Pair::list4("&assertion", who, message, irritants));
 
             theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
             theVM->throwException(condition);
@@ -247,10 +247,10 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
             Object condition = format(theVM,
                                   UC(
                                       " Condition components:\n"
-                                      "    1. ~a\n"
-                                      "    2. &who: ~a\n"
+                                      "    1. ~e\n"
+                                      "    2. &who: ~e\n"
                                       "    3. &message: ~s\n"
-                                      "    4. &irritants: ~a\n"), Pair::list4("&assertion", who, message, irritants));
+                                      "    4. &irritants: ~e\n"), Pair::list4("&assertion", who, message, irritants));
 
             theVM->setAfterTrigger1(procedure, condition);
         }
@@ -271,9 +271,9 @@ void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Objec
                               UC(
                                  " Condition components:\n"
                                  "    1. &lexical\n"
-                                 "    2. &who: ~a\n"
+                                 "    2. &who: ~e\n"
                                  "    3. &message: ~s\n"
-                                 "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+                                 "    4. &irritants: ~e\n"), Pair::list3(who, message, irritants));
     theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (lexical ...) defined\n");
     theVM->throwException(condition);
 }

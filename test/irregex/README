@@ -1,12 +1,14 @@
 IrRegular Expressions library
 
-version 0.7.5, slightly modified for mosh.
+version 0.8.1.
+
+this directory contains tests for (irregex).
 
 --
 
 Original copyright statement:
 
-Copyright (c) 2005-2009 Alex Shinn All rights reserved.
+Copyright (c) 2005-2010 Alex Shinn All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

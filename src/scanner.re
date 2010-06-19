@@ -163,7 +163,7 @@ int Scanner::scan(YYSTYPE* yylval)
   UNICODE_ZS             = "\X0020" | "\X00A0" | "\X1680" | "\X180E" | [\X2000-\X200A] | "\X202F" | "\X205F" | "\X3000";
   LINE_ENDING            = LINE_FEED | CARRIGE_RETURN | (CARRIGE_RETURN LINE_FEED) | NEXT_LINE | (CARRIGE_RETURN NEXT_LINE) | LINE_SEPARATOR;
   WHITE_SPACE            = CHARACTER_TABULATION | LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP| UNICODE_ZS;
-  DELMITER               = [\(\)\[\]\";#]|EOS|WHITE_SPACE;
+  DELMITER               = [\(\)\[\]\";#]|EOS|WHITE_SPACE|".";
   ANY_CHARACTER          = [^];
   DIGIT                  = [0-9];
   HEX_DIGIT              = DIGIT | [a-f] | [A-F];
@@ -221,7 +221,7 @@ int Scanner::scan(YYSTYPE* yylval)
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
-  R6RS_STRICT_READER_MODE = "#!r6rs";
+  SHEBANG                = "#!" [^\n\X0000]* (LINE_ENDING | EOS);
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
   DEFINING_SHARED        = "#" DIGIT+ "=";
   DEFINED_SHARED         = "#" DIGIT+ "#";
@@ -232,10 +232,15 @@ int Scanner::scan(YYSTYPE* yylval)
     for(;;)
     {
 /*!re2c
-       R6RS_STRICT_READER_MODE DELMITER {
+       SHEBANG DELMITER {
             YYCURSOR--;
+            ucs4string shebang(YYTOKEN, YYCURSOR - YYTOKEN - 1);
+            if (shebang == ucs4string(UC("#!r6rs"))) {
+                currentVM()->readerContext()->port()->setStrictR6RsReaderMode();
+            } else {
+                 // just ignore the shebang.
+            }
             YYTOKEN = YYCURSOR;
-            currentVM()->readerContext()->port()->setStrictR6RsReaderMode();
             continue;
        }
        "#"[tT] DELMITER {

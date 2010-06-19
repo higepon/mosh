@@ -59,26 +59,26 @@ extern int number_yyerror(const char *);
 //#define YYDEBUG 1
 // yydebug = 1
 
-static int ucs4stringToInt(const ucs4string& text)
-{
-    int ret = strtol(text.ascii_c_str(), NULL, 10);
-    if (errno == ERANGE) {
-        MOSH_FATAL("reader suffix");
-    }
-    return ret;
-}
+/* static int ucs4stringToInt(const ucs4string& text) */
+/* { */
+/*     int ret = strtol(text.ascii_c_str(), NULL, 10); */
+/*     if (errno == ERANGE) { */
+/*         MOSH_FATAL("reader suffix"); */
+/*     } */
+/*     return ret; */
+/* } */
 
 // e1000 => 1000 e+100 => 100, e-100 =>-100
-static int suffix(const ucs4string& text)
-{
-    MOSH_ASSERT(text.size() > 0);
-    const char* p = text.ascii_c_str();
-    int ret = strtol(p + 1, NULL, 10);
-    if (errno == ERANGE) {
-        MOSH_FATAL("reader suffix");
-    }
-    return ret;
-}
+/* static int suffix(const ucs4string& text) */
+/* { */
+/*     MOSH_ASSERT(text.size() > 0); */
+/*     const char* p = text.ascii_c_str(); */
+/*     int ret = strtol(p + 1, NULL, 10); */
+/*     if (errno == ERANGE) { */
+/*         MOSH_FATAL("reader suffix"); */
+/*     } */
+/*     return ret; */
+/* } */
 
 // text => "e100", "e+100" or "e-100" style
 static Object suffixToNumberOld(const ucs4string& text)

@@ -525,16 +525,18 @@ bool File::isReadable(const ucs4string& path)
     return wrapped_access(path, R_OK);
 }
 
+#ifdef _WIN32
 static bool endsWith(const ucs4string& str, const ucs4string& key)
 {
-    size_t keylen = key.length();
-    size_t slen = str.length();
-    if(keylen <= slen) {
-        return std::equal(str.begin() + str.size() - key.size(), str.end(), key.begin());
-    } else {
-        return false;
-    }
+     size_t keylen = key.length();
+     size_t slen = str.length();
+     if(keylen <= slen) {
+         return std::equal(str.begin() + str.size() - key.size(), str.end(), key.begin());
+     } else {
+         return false;
+     }
 }
+#endif
 
 bool File::isRegular(const ucs4string& path)
 {
@@ -807,7 +809,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     }
     isErrorOccured = true;
     return UC("");
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__CYGWIN__)
     char path[4096];
     int ret = readlink("/proc/self/exe", path, sizeof(path));
     if (ret != -1) {

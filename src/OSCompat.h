@@ -40,7 +40,9 @@
 #include <shlwapi.h>
 #include <tchar.h>
 #include <sys/types.h>
+#ifdef _MSC_VER
 #pragma comment(lib, "shlwapi.lib")
+#endif
 
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;

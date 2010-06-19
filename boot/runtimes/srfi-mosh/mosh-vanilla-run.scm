@@ -1,0 +1,16 @@
+(define %loadpath "lib.rnrs:lib.boot:../../../lib")
+(define %true-command-line (command-line))
+(define (command-line)
+  (cdr %true-command-line))
+(define %verbose #t)
+(define %disable-acc #t)
+
+(load "compat-mosh-run.scm")
+(load "runtime.scm")
+(load "mosh-utils5.scm")
+(load "bootstrap.exp")
+(load "init5.scm")
+(ex:load "lib.boot/mosh.nmosh.ss")
+(ex:load "lib.boot/system.nmosh.ss")
+(ex:load "init.ss")
+

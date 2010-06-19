@@ -1,0 +1,32 @@
+(import (rnrs) (mosh pp))
+(define fn "../../../lib/psyntax/psyntax-buildscript-mosh.ss")
+
+(define (proc)
+  (define (all cur)
+    (let ((d (read)))
+      (if (eof-object? d)
+	(reverse cur)
+	(all (cons d cur)))))
+  (define (pred e)
+    (and (pair? e)
+	 (eq? (car e) 'define)
+	 (eq? (cadr e) 'identifier->library-map)))
+  
+  (car (cdaddr (find pred (all '()))))
+  )
+
+(define (mklist libname syms)
+  `(library ,libname (export ,@syms) (import (primitives ,@syms))))
+
+(define (mkimp fn libname sym l)
+  (define (proc)
+    (define (check e) (memq sym e))
+    (let ((t (map car (filter check l))))
+      (pp (mklist libname t))))
+  (when (file-exists? fn) (delete-file fn))
+  (display l)(newline)
+  (with-output-to-file fn proc))
+
+(let ((l (with-input-from-file fn proc)))
+  (mkimp "mosh.generated.ss" '(mosh) 'mosh l)
+  (mkimp "system.generated.ss" '(system) 'sys l))

@@ -1,0 +1,209 @@
+README.nmosh 16-May-2010
+
+by OKUMURA Yuki <mjt@cltn.org>
+
+nmosh
+=====
+
+nmosh is mosh's new R6RS runtime by OKUMURA Yuki.
+It is R6RS compatible but some feature of previous psyntax-based mosh
+is not included.
+
+Simply, you can use it as mosh.
+
+    nmosh some-script.ss
+
+compatibility notes
+-------------------
+ - nmosh is based on Andre van Tonder's R6RS macro and runtime implementation
+   see http://www.het.brown.edu/people/andre/macros/ for more info.
+ - nmosh does not support following features included in psyntax-based mosh:
+   - shared structure notation(SRFI-38)
+   - shared namespace between "expand" and "run" phases
+   - syntax check with record-type
+   - all (psyntax) libraries
+   - (and more)
+ - nmosh has following extended feature compared to psyntax-based mosh:
+   - ERR5RS load in (rnrs load)
+   - multiple library in one source
+   - (and more)
+
+runtime features and restrictions
+---------------------------------
+ - DO NOT REDISTRIBUTE CACHES INSTALLED IN ~/.nmosh-cache. nmosh's cache will
+   include your private information such as username, paths and hostname. And
+   nmosh's cache is not compatible between any builds/releases. 
+ - Do not use a library name starting with (nmosh), (rnrs) and (core). These
+   library name will be rejected in future release of nmosh runtime.
+ - Library search order is extended from psyntax-based mosh. And you can use
+   .nmosh.sls extension for nmosh-only libraries. See --verbose to check which
+   library actually loaded.
+    suffix order:
+     - .nmosh.sls
+     - .nmosh.ss
+     - .nmosh.scm
+     - .mosh.(ditto)
+     - .(ditto)
+ - Some libraries are included and auto-loaded with nmosh runtime. See
+   boot/runtimes/srfi-mosh/layout.scm for full listing. Note that import clause is 
+   still needed for auto-loaded libraries. (load is only means "library 
+   registration to system," not "import library symbols into current 
+   environment" which will be done with import clauses.)
+
+~/.nmosh-cache directory
+------------------------
+~/.nmosh-cache directory contatins some sort of cache files. These files are
+automatically updated.
+
+   file ext.     format    description
+ ------------  ---------  ----------------------------------------------
+ .nmosh-cache  mosh FASL   Precompiled library/program for mosh VM
+ .ndbg         mosh FASL   Debug information file for nmosh debugger
+  (no ext.)                Temporary files
+
+To save your diskspace, you can delete these files as you need.
+You can delete .ndbg only and leave corresponding .nmosh-cache alone.
+To make rebuilt .ndbg again, delete corresponding .nmosh-cache and run your
+script again.
+
+There is no way to disable building .ndbg in current release.
+
+using nrepl: Nmosh Read Eval Print Loop
+=======================================
+nmosh has it's own repl called "nrepl." 
+
+Compared with psyntax based mosh, nrepl is more looks-alike traditional(R5RS) 
+scheme environment. You can load R6RS programs/libraries any time using nrepl.
+
+It is under active development and not intended to provide stable API/ABI/UI.
+
+default library
+---------------
+nrepl will load (nmosh) library by default. (nmosh) contains :
+ - Standard R6RS libraries (rnrs)
+ - ERR5RS load (rnrs load)
+ - Gauche's short-name for lambda (shorten)
+   - ^  : (^(a b c) (+ a b c)) == (lambda (a b c) (+ a b c))
+   - ^x : (^a (+ a 1)) == (lambda (a) (+ a 1))
+
+You can use (nmosh) library in your program/library, but it is NOT RECOMMENDED
+because (nmosh) library contents will change in future versions.
+
+current deletion canditate:
+ - (rnrs records)
+
+program loading
+---------------
+nmosh provides traditional "load" procedure and it can be used at nrepl.
+This feature is useful for library development.
+
+Don't forget to import load-ed library.. example:
+
+  nmosh> (load "your-library.sls")
+  nmosh> (import (your project your-library))
+
+When you load-ing a library contains define-syntax, you should import such
+library into "expand" level.
+
+  nmosh> (load "my-syntax.sls")
+  nmosh> (import (your project my-syntax) expand run)
+
+load-ing a program (or a file mixed program/library) is not recommended. 
+Something will go wrong when do so.
+
+Running nrepl via "nmosh --verbose" command-line will provide useful information
+to debug loadpath problems.
+
+porting guide
+=============
+
+Unfortunately, your script does not work under nmosh (but works under mosh)
+try following to fix them.
+
+"Attempt to use binding of [foo] in library () at invalid level 1."
+-------------------------------------------------------------------
+
+nmosh has more strict rule for library import levels. If you intended to use
+library function (other than from (rnrs)), specify import level in your script.
+
+e.g.)
+        change (import (some library)) to (import (for (some library) run expand))
+
+see R6RS section 7.2 for these syntax.
+
+Incorrect script behavior when ACC enabled
+------------------------------------------
+
+Compared with previous mosh, nmosh has more aggressive caching strategy.  If your 
+script runs correctly under nmosh --disable-acc, check following :
+
+ - Cleaning cache. (remove ~/.nmosh-cache/*)
+ - Including other script such as R6RS section 12.6 will break when included 
+   file was changed. nmosh will not track external environment to detect
+   cache invalidation.
+ - Simple gensym is not compatible with nmosh's cache mechanism. Since nmosh's cache
+   only contains expanded script. 
+ - Any side-effect during "expand" phase will be ignored (NOT replayed when
+   caches are loading).
+
+You can disable ACC (Auto Compilation Cache) partially using ERR5RS load 
+available in (rnrs load) library. Note that you can also load R6RS libraries with 
+this procedure.
+
+e.g.)
+        change (import (some library)) to 
+         (load "some/library.sls")
+         (load "program.sps") ; (some library) available from here
+
+Future version of nmosh will provide cache-friendly version of (gensym)
+and (include "...").
+
+Runtime features
+================
+
+syntax trace
+------------
+
+When syntax error occurs in "expand" or "run" phase, nmosh will show syntax
+trace message. This feature originated from original Andre van Tonder's
+implementation.
+
+    prism:~ oku$ nmosh check.ss
+     Syntax error
+          who : define-invalid
+      message : Invalid form
+         form : (define-invalid x)
+       around : 
+        trace : 
+          (define-invalid x)
+
+minidebug
+---------
+
+When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke 
+(nmosh minidebug) to show stack trace.
+
+    prism:~ oku$ nmosh check.ss
+     Condition components:
+     1. &assertion
+     2. &who             who: "string=?"
+     3. &message         message: "string required, but got h"
+     4. &irritants       irritants: (())
+    TRACE :
+      1 :   cprc   <unknwon\x20;subr>
+      2 :   cprc   string=?
+      3 : ==USRP== (some-function) @ /Users/oku/check.ss:11
+      ^      ^      ^
+      |      |      +-------------- SOURCE FUNCTION
+      |      +--------------------- FRAME ID
+      +---------------------------- FRAME NUMBER
+
+       FRAME ID            origin
+         USRP         Library or User program
+       ==USRP==       Undermost user frame
+
+       FRAME ID            origin
+         DBGP         (internal symbol for debugging or loaded library)
+         cprc         cprocedure (mosh's internal function implemented in C++)
+         mosh         Symbols from mosh runtime (boot/baselib or compiler.scm)
+         nmsh         nmosh expander

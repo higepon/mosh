@@ -2,10 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
-AC_INIT(mosh, 0.2.4, higepon@users.sourceforge.jp)
+AC_INIT(mosh, 0.2.5, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
-AM_INIT_AUTOMAKE(foreign)
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/VM.h])
 AC_CONFIG_HEADER([src/config.h])
 
@@ -38,7 +38,7 @@ dnl if test "$GOSH" != "gosh"
 dnl     then AC_MSG_ERROR([gosh not found. Gauche (http://practical-scheme.net/gauche/) is required to build.])
 dnl fi
 AC_CHECK_LIB(gmp, __gmpz_init, ,
-  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/."For OSX, install GNU MP with "CFLAGS+=-m32 ./configure ABI=32 && make"])])
+  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])
 
 
 AC_ARG_ENABLE(profiler, [  --enable-profiler turn off profiler [default=yes]], ,[enable_profiler=yes])
@@ -176,6 +176,9 @@ case "$target_os" in
   *mingw*)
     AC_DEFINE([MOSH_HOST_OS], ["win32"], [define operating-system])
     ;;
+  *cygwin*)
+    AC_DEFINE([MOSH_HOST_OS], ["cygwin"], [define operating-system])
+    ;;
   *)
     AC_DEFINE([MOSH_HOST_OS], ["unknown"], [define operating-system])
     ;;
@@ -259,9 +262,14 @@ i[[3456]]86|pentium)
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *mingw*)
-         MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc" #forcing WinXP & Gcc > 4.2
+         MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc -static-libstdc++  -fwide-exec-charset=ucs-4le" #forcing WinXP & Gcc >= 4.5
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
          ;;
+       *cygwin*)
+         MOSH_OPTS="$MOSH_INTEL_OPTS -mtune=generic -fwide-exec-charset=ucs-4le"
+         MOSH_LDADD_ARCH="-ldl -lpthread"
+	 ;;
+
         *)
           MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
           ;;
@@ -272,15 +280,27 @@ i[[3456]]86|pentium)
         AM_CONDITIONAL(FFI_I386, true)
         AM_CONDITIONAL(FFI_X86_64, false)
         ;;
-x86?64*)
-        arch=x86_64
-        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
-        AC_MSG_RESULT([x86_64])
-        AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
-        AM_CONDITIONAL(FFI_I386, false)
-        AM_CONDITIONAL(FFI_X86_64, true)
-        ;;
-*)
+	x86?64*) 
+	arch=x86_64
+        case "$target_os" in
+		*darwin*)
+                AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
+		AC_MSG_RESULT([x86_64])
+		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
+		MOSH_OPTS="-O3"
+		AM_CONDITIONAL(FFI_I386, false)
+		AM_CONDITIONAL(FFI_X86_64, true)
+		;;
+		*)
+		MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
+		AC_MSG_RESULT([x86_64])
+		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
+		AM_CONDITIONAL(FFI_I386, false)
+		AM_CONDITIONAL(FFI_X86_64, true)
+		;;
+	esac
+	;;
+	*)
         AC_MSG_RESULT([$host_cpu])
         MOSH_OPTS="-O3"
         AC_MSG_WARN([architecture $host_cpu is not supported, but may work other than FFI])
@@ -288,7 +308,7 @@ x86?64*)
         AM_CONDITIONAL(FFI_I386, false)
         AM_CONDITIONAL(FFI_X86_64, false)
         ;;
-esac
+	esac
 
 AC_MSG_CHECKING([whether to enable MinGW support])
 case "$host_os" in
@@ -350,7 +370,7 @@ AC_CHECK_FUNCS([gettimeofday memmove memset strtol])
 # Check system type
 # todo: added another system type
 case "$target_in" in
-    cygwin* | mingw* | amigados* | msdos* | rdos*)
+    *cygwin* | *mingw* | amigados* | msdos* | rdos*)
         AC_DEFINE(LINE_FEED_CODE_CRLF, 1, system line feed code is CRLF)
         ;;
     mac*)

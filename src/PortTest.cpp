@@ -68,6 +68,19 @@ bool scheme::portIsClosed = false;
 
 using namespace scheme;
 
+Object activateR6RSMode(VM* theVM, bool isDebugExpand)
+{
+#ifdef WITH_NMOSH_DEFAULTS
+    extern const uint8_t* nmosh_image_ptr;
+    extern const unsigned int nmosh_image_size;
+    return theVM->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, isDebugExpand);
+#else
+    extern const uint8_t* psyntax_mosh_image_ptr;
+    extern unsigned int psyntax_mosh_image_size;
+    return theVM->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, isDebugExpand);
+#endif
+}
+
 class PortTest : public testing::Test {
 protected:
     VM* theVM_;

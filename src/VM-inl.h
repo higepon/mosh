@@ -168,11 +168,11 @@ inline Object* VM::disasm(Object* code, int length)
     }
     return ret;
 #else
-    return code;
+    return (Object *)code;
 #endif
 }
 
-    inline Object* VM::getDirectThreadedCode(const Object* code, int length, bool isCompiler /* = false */)
+    inline Object* VM::getDirectThreadedCode(/*const*/ Object* code, int length, bool isCompiler /* = false */)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* direct = Object::makeObjectArray(length);
@@ -212,7 +212,7 @@ inline Object* VM::disasm(Object* code, int length)
     }
     return direct;
 #else
-    return code;
+    return (Object *)code;
 #endif
 }
 

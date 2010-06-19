@@ -258,12 +258,14 @@ Object scheme::mutexPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isMutex());
 }
 
+extern Object activateR6RSMode(VM* theVM, bool isDebugExpand);
+
 // thread start stub
 void* vmEntry(void* param)
 {
     VM* vm = (VM*)param;
     setCurrentVM(vm);
-    const Object ret = vm->activateR6RSMode(false);
+    Object ret = activateR6RSMode(vm, false);
 //    Thread::exit();
     return new Object(ret);
 }

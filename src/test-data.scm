@@ -3299,7 +3299,7 @@
       (set! x #f)
       |#
       x))
-(#t #!r6rs #t)
+;(#t #!r6rs #t)
 
 ;; reader error
 [definition
@@ -3309,7 +3309,10 @@
    read))
 ]
 [definition
-  (define mosh (if (string=? (host-os) "win32") ".\\mosh.exe" "./mosh"))
+  (define mosh 
+    (string-append
+      (mosh-executable-path)
+      (if (string=? (host-os) "win32") ".\\mosh.exe" "./mosh")))
 ]
 ;; with-input-from-file and current-input-port
 (#f (let ([org (current-input-port)])
@@ -3343,9 +3346,9 @@
        (display #;; 1
         2 3 port)
        (proc)))
-("2" (receive (port proc) (open-string-output-port)
-       (display #;#!r6rs 1 2 port)
-       (proc)))
+;; ("2" (receive (port proc) (open-string-output-port)
+;;        (display #;#!r6rs 1 2 port)
+;;        (proc)))
 
 ;; record is sealed
 (error (let* ([prtd (make-record-type-descriptor 'a #f #f #t #f '#())]

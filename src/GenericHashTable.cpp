@@ -34,6 +34,7 @@
 #include "GenericHashTable.h"
 #include "Vector.h"
 #include "VM.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -44,9 +45,13 @@ static VM* theVM = NULL; // todo multi thread
 int callHashFunction(Object hashFunction, Object key)
 {
     const Object hashValue =  theVM->callClosure1(hashFunction, key);
-    MOSH_ASSERT(hashValue.isFixnum());
-    const int r = hashValue.toFixnum();;
-    return r;
+    MOSH_ASSERT(hashValue.isFixnum() || hashValue.isBignum());
+    if (hashValue.isFixnum()) {
+        return hashValue.toFixnum();
+    } else if (hashValue.isBignum()) {
+        return (int)hashValue.toBignum()->toS64();
+    }
+    return -1;
 }
 
 bool callEquivalenceFunction(Object equivalenceFunction, Object o1, Object o2)

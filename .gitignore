@@ -41,6 +41,7 @@ mosh_config
 /Makefile
 /doc/text/Download.txt
 /mosh
+/nmosh
 /lib/mosh/config.ss
 /lib/mosh/mysql.ss
 Instruction.h
@@ -59,6 +60,16 @@ pmatch.h
 psyntax.h
 psyntax.scm
 cprocedures.cpp
+
+# mosh bootstrap
+boot/baselib.h
+boot/baselib.scm
+boot/free-vars-decl.scm
+boot/match.h
+boot/*.scmc
+boot/*.scmc-e
+boot/psyntax_mosh_image.cpp
+boot/runtimes/psyntax-mosh/psyntax.*/*
  
 # mosh(re2c)
 *.tab.cpp
@@ -107,10 +118,17 @@ onig-5.7.0/testp
 *.core
 *.stackdump
 
+# OS specific
+.DS_Store
+
 lib/psyntax/psyntax.master/
 src/OSConstants.h
 src/Object-accessors.h
 src/free-vars-decl.scm
+src/baselib.h
+src/match.h
+src/nmosh_image.cpp
+src/psyntax_mosh_image.cpp
 test/test.txt.temp
 test/utf16.txt.temp
 test_compat
@@ -158,3 +176,23 @@ GRTAGS
 GSYMS
 GTAGS
 work.scm
+
+# test
+nmosh-cache
+/cache
+
+# msvc things
+Debug/*
+Release/*
+/win/*/Debug/*
+/win/*/Release/*
+/win/mpir/*
+*.vcproj.*.user
+*.pdb
+*.ilk
+*.ncb
+*.exp
+*.suo
+*.aps
+/mosh.lib
+/moshd.lib
