@@ -140,6 +140,9 @@ void showUsage()
             "  --disable-acc     disables auto-compile-cache.\n"
             "  --clean-acc       cleans auto-compile-cache.\n"
             "  --verbose         Show library serialisation messages.\n"
+#ifdef WITH_NMOSH_DEFAULTS
+            "  --guru-mode       Provide guru-mediation for nmosh developer.\n"
+#endif
             "  --loadpath=<path> Add library loadpath.\n\n"
             " MOSH_LOADPATH\n"
             "  You can add library loadpath by using environment variable MOSH_LOADPATH, with \':\'(use \';\' for Windows) separated paths.\n\n"
@@ -179,6 +182,9 @@ int main(int argc, char *argv[])
     bool verbose = false;
     bool cleanAcc = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
+#ifdef WITH_NMOSH_DEFAULTS
+    bool isGuruMode = false;
+#endif
     ucs4char* initFile = NULL;
     ucs4char* loadPath = NULL;
 
@@ -188,6 +194,9 @@ int main(int argc, char *argv[])
        {UC("disable-acc"), 0, 0, 'd'},
        {UC("clean-acc"), 0, 0, 'C'},
        {UC("verbose"), 0, 0, 'a'},
+#ifdef WITH_NMOSH_DEFAULTS
+       {UC("guru-mode"), 0, 0, 'G'},
+#endif
        {0, 0, 0, 0}
    };
 
@@ -238,6 +247,11 @@ int main(int argc, char *argv[])
         case '5':
             isR6RSBatchMode = false;
             break;
+#ifdef WITH_NMOSH_DEFAULTS
+        case 'G':
+            isGuruMode = true;
+            break;
+#endif
         default:
             fprintf(stderr, "invalid option %c", opt);
             showUsage();
@@ -277,6 +291,7 @@ int main(int argc, char *argv[])
 #ifdef WITH_NMOSH_DEFAULTS
     theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
+    theVM->setValueString(UC("%nmosh-guru-mode"),Object::makeBool(isGuruMode));
 #endif
 
     if (isTestOption) {
