@@ -29,11 +29,11 @@
 ;;------------------------------------------------
 
 ;from Larceny
-(define (raise-syntax-violation form subform who message trace)
+(define (raise-syntax-violation form subform who message syntax-form syntax-subform trace)
   (let* ((c0 (make-who-condition who))
 	 (c1 (make-message-condition message))
 	 (c2 (make-syntax-violation form subform))
-	 (c3 (make-syntax-trace-condition trace)) ; MOSH
+	 (c3 (make-syntax-trace-condition syntax-form syntax-subform trace)) ; MOSH
 	 (c (if who (condition c0 c1 c2 c3) (condition c1 c2 c3))))
     (raise c)))
 
