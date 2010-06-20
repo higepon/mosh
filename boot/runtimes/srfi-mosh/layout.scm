@@ -17,6 +17,7 @@
     (r5rs) )
   (r6rs (mosh) (system) 
         (nmosh pathutils)
+        (nmosh global-flags)
         (nmosh conditions) (nmosh condition-printer) (nmosh runlib) 
         (shorten helper)
         (shorten)
