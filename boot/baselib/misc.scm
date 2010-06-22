@@ -3,7 +3,7 @@
            (map string->list str2)))
 
 (define (exact-non-negative-integer? x)
-  (and (integer? k) (>= k 0)))
+  (and (integer? k) (exact? k) (>= k 0)))
 
 (define (exact-integer-sqrt k)
   (unless (exact-non-negative-integer? k)
