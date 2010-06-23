@@ -89,7 +89,7 @@ Object scheme::setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%fork");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
     callAssertionViolationAfter(theVM, procedureName, "can't fork");
     return Object::makeString(UC("<not-supported>"));
 #else
@@ -112,7 +112,7 @@ Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%waitpid");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
     callAssertionViolationAfter(theVM, procedureName, "failed");
     return Object::makeString(UC("<not-supported>"));
 #else
@@ -140,7 +140,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%pipe");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
     callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
     return Object::makeString(UC("<not-supported>"));
 #else
@@ -165,7 +165,10 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(5);
     argumentAsString(0, command);
     argumentCheckList(1, args);
-
+#if defined(_WIN32) || defined(MONA)
+    callAssertionViolationAfter(theVM, procedureName, "exec() failed");
+    return Object::makeString(UC("<not-supported>"));
+#else
     const Object in  = argv[2];
     const Object out = argv[3];
     const Object err = argv[4];
@@ -227,4 +230,5 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
 
     // this procedure doesn't return
     return Object::Undef;
+#endif
 }

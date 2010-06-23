@@ -42,6 +42,9 @@
 #include <string.h>
 #endif /* __APPLE__ */
 
+#ifdef MONA
+#include <monapi.h>
+#endif
 #ifdef __FreeBSD__
 #include <dlfcn.h>
 extern int main(int argc, char *argv[]);
@@ -247,6 +250,8 @@ bool File::open(const ucs4string& file, int flags)
         MOSH_ASSERT(0);
     }
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
+#elif defined(MONA)
+    desc_ = monapi_file_open(utf32toUtf8(file), flags & Create);
 #else
     int mode = 0;
     if ((flags & Read) && (flags & Write)) {
@@ -277,6 +282,8 @@ bool File::dup(File& target)
     MOSH_ASSERT(isOpen());
     // TODO windows
     return false;
+#elif defined(MONA)
+    return false;
 #else
     MOSH_ASSERT(isOpen());
     return dup2(desc_, target.desc_) != -1;
@@ -295,6 +302,8 @@ bool File::close()
     if (isOpen()) {
 #ifdef _WIN32
         const bool isOK = CloseHandle(desc_) != 0;
+#elif defined(MONA)
+        const bool isOK = monapi_file_close(desc_) != MONA_FAILURE;
 #else
         const bool isOK = ::close(desc_) != 0;
 #endif
@@ -322,6 +331,8 @@ int64_t File::size()
     } else {
         return -1;
     }
+#elif defined(MONA)
+    return monapi_file_get_file_size(desc_);
 #else
     struct stat st;
     const int result = fstat(desc_, &st);
@@ -381,6 +392,15 @@ int64_t File::write(uint8_t* buf, int64_t _size)
     } else {
         return -1;
     }
+#elif defined(MONA)
+
+    monapi_cmemoryinfo* buffer = new monapi_cmemoryinfo();
+    monapi_cmemoryinfo_create(buffer, _size, 0);
+    memcpy(buffer->Data, buf, buffer->Size);
+    intptr_t sizeWritten = monapi_file_write(desc_, buffer, buffer->Size);
+    monapi_cmemoryinfo_dispose(buffer);
+    monapi_cmemoryinfo_delete(buffer);
+    return sizeWritten;
 #else
     MOSH_ASSERT(isOpen());
     int64_t result;
@@ -431,6 +451,17 @@ int64_t File::read(uint8_t* buf, int64_t _size)
     } else {
         return -1;
     }
+#elif defined(MONA)
+    monapi_cmemoryinfo* cmi = monapi_file_read(desc_, _size);
+    if (cmi == NULL) {
+        return 0;
+    }
+    MOSH_ASSERT(cmi->Size <= _size);
+    memcpy(buf, cmi->Data, cmi->Size);
+    intptr_t sizeRead = cmi->Size;
+    monapi_cmemoryinfo_dispose(cmi);
+    monapi_cmemoryinfo_delete(cmi);
+    return sizeRead;
 #else
     MOSH_ASSERT(isOpen());
     int64_t result;
@@ -470,6 +501,8 @@ int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
     } else {
         return -1;
     }
+#elif defined(MONA)
+    return monapi_file_seek(desc_, offset, whence);
 #else
     // Don't use lseek64.
     // We handle 64bit offset With -D _FILE_OFFSET_BITS=64 and lseek.
@@ -492,10 +525,12 @@ int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
 #endif
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
     #define F_OK 0
+    #define X_OK 1
     #define W_OK 2
     #define R_OK 4
+
 #endif
 
 namespace {
@@ -504,6 +539,8 @@ bool wrapped_access(const ucs4string& path, int mode)
 {
 #ifdef _WIN32
     return _waccess(utf32ToUtf16(path), mode) == 0;
+#elif defined(MONA)
+    return true;
 #else
     return access(utf32toUtf8(path), mode) == 0;
 #endif
@@ -549,6 +586,8 @@ bool File::isRegular(const ucs4string& path)
         return (type == FILE_TYPE_DISK);
     }
     return false;
+#elif defined(MONA)
+    return true;
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -567,6 +606,8 @@ bool File::isSymbolicLink(const ucs4string& path)
         return false;
     }
     return (attr & FILE_ATTRIBUTE_REPARSE_POINT);
+#elif defined(MONA)
+    return false;
 #else
     struct stat st;
     if (lstat(utf32toUtf8(path), &st) == 0) {
@@ -598,6 +639,8 @@ bool File::deleteFileOrDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
     return DeleteFileW(utf32ToUtf16(path));
+#elif defined(MONA)
+    return false;
 #else
     return remove(utf32toUtf8(path)) == 0;
 #endif
@@ -607,6 +650,8 @@ bool File::rename(const ucs4string& oldPath, const ucs4string& newPath)
 {
 #ifdef _WIN32
     return MoveFileExW(utf32ToUtf16(oldPath), utf32ToUtf16(newPath), MOVEFILE_REPLACE_EXISTING);
+#elif defined(MONA)
+    return false;
 #else
     return ::rename(utf32toUtf8(oldPath), utf32toUtf8(newPath)) == 0;
 #endif
@@ -629,6 +674,8 @@ bool File::createSymbolicLink(const ucs4string& oldPath, const ucs4string& newPa
         }
     }
     return false;
+#elif defined(MONA)
+    return false;
 #else
     return symlink(utf32toUtf8(oldPath), utf32toUtf8(newPath)) == 0;
 #endif
@@ -648,6 +695,9 @@ Object File::modifyTime(const ucs4string& path)
         }
         CloseHandle(fd);
     }
+    return Object::Undef;
+#elif defined(MONA)
+    MOSH_ASSERT(false);
     return Object::Undef;
 #else
     struct stat st;
@@ -683,6 +733,9 @@ Object File::accessTime(const ucs4string& path)
         }
         CloseHandle(fd);
     }
+    return Object::Undef;
+#elif defined(MONA)
+    MOSH_ASSERT(false);
     return Object::Undef;
 #else
     struct stat st;
@@ -720,6 +773,8 @@ Object File::changeTime(const ucs4string& path)
         CloseHandle(fd);
     }
     return Object::Undef;
+#elif defined(MONA)
+    return Object::Undef;
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -753,6 +808,15 @@ Object File::size(const ucs4string& path)
         CloseHandle(fd);
     }
     return Object::Undef;
+#elif defined(MONA)
+    File file;
+    if (file.open(path, 0)) {
+        int64_t ret = file.size();
+        file.close();
+        return Bignum::makeIntegerFromS64(ret);
+    } else {
+        return Object::Undef;
+    }
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -871,7 +935,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 
 void scheme::setEnv(const ucs4string& key, const ucs4string& value)
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
 #else
     setenv(utf32toUtf8(key), utf32toUtf8(value), 1);
 #endif
@@ -1009,6 +1073,8 @@ Object scheme::getCurrentDirectory()
     } else {
         return Object::False;
     }
+#elif defined(MONA)
+    return "/";
 #else
     char buf[PATH_MAX];
     if (getcwd(buf, PATH_MAX) == NULL) {
@@ -1023,6 +1089,8 @@ bool scheme::setCurrentDirectory(const ucs4string& dir)
 {
 #ifdef _WIN32
     return SetCurrentDirectoryW(utf32ToUtf16(dir)) != 0;
+#elif defined(MONA)
+    return false;
 #else
     return (-1 != chdir(utf32toUtf8(dir)));
 #endif
@@ -1032,6 +1100,8 @@ bool scheme::createDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
     return CreateDirectoryW(utf32ToUtf16(path), NULL);
+#elif defined(MONA)
+    return false;
 #else
     return mkdir(utf32toUtf8(path), S_IRWXU | S_IRWXG | S_IRWXO) == 0;
 #endif
@@ -1042,6 +1112,9 @@ bool scheme::isDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
     return PathIsDirectoryW(utf32ToUtf16(path));
+#elif defined(MONA)
+    MOSH_ASSERT(false);
+    return false;
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {

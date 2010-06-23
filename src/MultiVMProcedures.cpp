@@ -333,15 +333,16 @@ Object scheme::vmPEx(VM* theVM, int argc, const Object* argv)
 Object scheme::vmStartDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("vm-start!");
-    checkArgumentLength(1);
-    argumentAsVM(0, vm);
-    Thread* thread = new Thread;
-    vm->setThread(thread);
+    MOSH_ASSERT(false);
+//     checkArgumentLength(1);
+//     argumentAsVM(0, vm);
+//     Thread* thread = new Thread;
+//     vm->setThread(thread);
 
-    // N.B.
-    // We store the VM instance in thread specific storage.
-    // Used for storing yylex and re2c which has only global interfaces.
-    thread->create(vmEntry, vm);
+//     // N.B.
+//     // We store the VM instance in thread specific storage.
+//     // Used for storing yylex and re2c which has only global interfaces.
+//     thread->create(vmEntry, vm);
     return Object::Undef;
 }
 
@@ -360,11 +361,12 @@ Object scheme::vmSetValueDEx(VM* theVM, int argc, const Object* argv)
 Object scheme::vmJoinDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("vm-join!");
-    checkArgumentLength(1);
-    argumentAsVM(0, vm);
-    Object* ret;
-    vm->thread()->join((void**)&ret);
-    return *ret;
+//     checkArgumentLength(1);
+//     argumentAsVM(0, vm);
+//     Object* ret;
+//     vm->thread()->join((void**)&ret);
+//     return *ret;
+    MOSH_ASSERT(false);
 }
 
 
@@ -393,83 +395,91 @@ Object scheme::makeVmEx(VM* theVM, int argc, const Object* argv)
 Object scheme::makeConditionVariableEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-condition-variable");
-    checkArgumentLengthBetween(0, 1);
-    if (argc == 0) {
-        return Object::makeConditionVariable(new ConditionVariable);
-    } else {
-        argumentAsString(0, name);
-        return Object::makeConditionVariable(new ConditionVariable(name->data()));
-    }
+//     checkArgumentLengthBetween(0, 1);
+//     if (argc == 0) {
+//         return Object::makeConditionVariable(new ConditionVariable);
+//     } else {
+//         argumentAsString(0, name);
+//         return Object::makeConditionVariable(new ConditionVariable(name->data()));
+//     }
+    MOSH_ASSERT(false);
 }
 
 // (condition-variable-notify-all! c) => boolean
 Object scheme::conditionVariableNotifyAllDEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("condition-variable-notify-all!");
-    checkArgumentLength(1);
-    argumentAsConditionVariable(0, c);
-    return Object::makeBool(c->notifyAll());
+//     DeclareProcedureName("condition-variable-notify-all!");
+//     checkArgumentLength(1);
+//     argumentAsConditionVariable(0, c);
+//     return Object::makeBool(c->notifyAll());
+    MOSH_ASSERT(false);
 }
 
 // (condition-variable-notify! c) => boolean
 Object scheme::conditionVariableNotifyDEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("condition-variable-notify!");
-    checkArgumentLength(1);
-    argumentAsConditionVariable(0, c);
-    return Object::makeBool(c->notify());
+//     DeclareProcedureName("condition-variable-notify!");
+//     checkArgumentLength(1);
+//     argumentAsConditionVariable(0, c);
+//     return Object::makeBool(c->notify());
+    MOSH_ASSERT(false);
 }
 
 // (condition-variable-wait c mutex . timeout-msec) => boolean (returns false when timeout)
 Object scheme::conditionVariableWaitDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-variable-wait!");
-    checkArgumentLengthBetween(2, 3);
-    argumentAsConditionVariable(0, c);
-    argumentAsMutex(1, mutex);
-    if (2 == argc) {
-        return Object::makeBool(c->wait(mutex));
-    } else {
-        argumentAsFixnum(2, timeout);
-        return Object::makeBool(c->waitWithTimeout(mutex, timeout));
-    }
+//     checkArgumentLengthBetween(2, 3);
+//     argumentAsConditionVariable(0, c);
+//     argumentAsMutex(1, mutex);
+//     if (2 == argc) {
+//         return Object::makeBool(c->wait(mutex));
+//     } else {
+//         argumentAsFixnum(2, timeout);
+//         return Object::makeBool(c->waitWithTimeout(mutex, timeout));
+//     }
+    MOSH_ASSERT(false);
 }
 
 // (mutex-unlock! mutex) => undef
 Object scheme::mutexUnlockDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("mutex-unlock!");
-    checkArgumentLength(1);
-    argumentAsMutex(0, mutex);
-    mutex->unlock();
-    return Object::Undef;
+//     checkArgumentLength(1);
+//     argumentAsMutex(0, mutex);
+//     mutex->unlock();
+//     return Object::Undef;
+    MOSH_ASSERT(false);
 }
 
 // (mutex-try-lock! mutex) => boolean
 Object scheme::mutexTryLockDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("mutex-try-lock!");
-    checkArgumentLength(1);
-    argumentAsMutex(0, mutex);
-    return Object::makeBool(mutex->tryLock());
+//     checkArgumentLength(1);
+//     argumentAsMutex(0, mutex);
+//     return Object::makeBool(mutex->tryLock());
+    MOSH_ASSERT(false);
 }
 
 // (mutex-lock! mutex) => undef
 Object scheme::mutexLockDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("mutex-lock!");
-    checkArgumentLength(1);
-    argumentAsMutex(0, mutex);
-    mutex->lock();
-    return Object::Undef;
+//     checkArgumentLength(1);
+//     argumentAsMutex(0, mutex);
+//     mutex->lock();
+//     return Object::Undef;
+    MOSH_ASSERT(false);
 }
 
 // (make-mutex) => #<mutex>
 Object scheme::makeMutexEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-mutex");
-    checkArgumentLength(0);
-    return Object::makeMutex(new Mutex);
+//     checkArgumentLength(0);
+//     return Object::makeMutex(new Mutex);
+    MOSH_ASSERT(false);
 }
 
 // (mutex? obj) => boolean

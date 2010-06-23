@@ -52,7 +52,11 @@ Socket::Socket(int fd, enum Type type, const ucs4string& address) :
 Socket* Socket::accept()
 {
     MOSH_ASSERT(isOpen());
+#ifdef MONA
+    struct sockaddr_in addr;
+#else
     struct sockaddr_storage addr;
+#endif
     socklen_t addrlen = sizeof(addr);
 
     int fd = -1;
@@ -94,7 +98,7 @@ void Socket::close()
     ::shutdown(socket_, SD_SEND);
     ::closesocket(socket_);
 #else
-    ::close(socket_);
+    ::closesocket(socket_);
 #endif
     socket_ = -1;
 
@@ -210,6 +214,8 @@ Socket* Socket::createClientSocket(const char* node,
         isErrorOccured = true;
 #ifdef _WIN32
         errorMessage = getLastErrorMessageInternal(WSAGetLastError());
+#elif defined(MONA)
+        errorMessage = ucs4string::from_c_str("should be port lwip_strerr");
 #else
         errorMessage = ucs4string::from_c_str(gai_strerror(ret));
 #endif
@@ -242,6 +248,8 @@ Socket* Socket::createClientSocket(const char* node,
 #ifdef _WIN32
             ::shutdown(fd, SD_SEND);
             ::closesocket(fd);
+#elif defined(MONA)
+            ::closesocket(fd);
 #else
             ::close(fd);
 #endif
@@ -252,7 +260,7 @@ Socket* Socket::createClientSocket(const char* node,
     errorMessage = getLastErrorMessageInternal(lastError);
     return NULL;
 }
-#ifndef __CYGWIN__
+#if not defined(__CYGWIN__) && not defined(MONA)
 extern ucs4string my_utf16ToUtf32(const std::wstring& s);
 #endif
 Socket* Socket::createServerSocket(const char* service,
@@ -266,7 +274,9 @@ Socket* Socket::createServerSocket(const char* service,
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = ai_family;
     hints.ai_socktype = ai_socktype;
+#ifndef MONA
     hints.ai_flags = AI_PASSIVE;
+#endif
     hints.ai_protocol = ai_protocol;
     hints.ai_canonname = NULL;
     hints.ai_addr = NULL;
@@ -284,6 +294,8 @@ Socket* Socket::createServerSocket(const char* service,
         isErrorOccured = true;
 #ifdef _WIN32
         errorMessage = my_utf16ToUtf32(gai_strerror(ret));
+#elif defined(MONA)
+        errorMessage = ucs4string::from_c_str("should be port lwip_strerr");
 #else
         errorMessage = ucs4string::from_c_str(gai_strerror(ret));
 #endif
@@ -305,6 +317,9 @@ Socket* Socket::createServerSocket(const char* service,
             ::shutdown(fd, SD_SEND);
             ::closesocket(fd);
             lastError = WSAGetLastError();
+#elif defined(MONA)
+            ::closesocket(fd);
+            lastError = errno;
 #else
             ::close(fd);
             lastError = errno;
@@ -318,6 +333,9 @@ Socket* Socket::createServerSocket(const char* service,
             ::shutdown(fd, SD_SEND);
             ::closesocket(fd);
             lastError = WSAGetLastError();
+#elif defined(MONA)
+            ::closesocket(fd);
+            lastError = errno;
 #else
             ::close(fd);
             lastError = errno;
@@ -333,6 +351,9 @@ Socket* Socket::createServerSocket(const char* service,
                 ::shutdown(fd, SD_SEND);
                 ::closesocket(fd);
                 lastError = WSAGetLastError();
+#elif defined(MONA)
+            ::closesocket(fd);
+            lastError = errno;
 #else
                 ::close(fd);
                 lastError = errno;
@@ -354,6 +375,9 @@ Socket* Socket::createServerSocket(const char* service,
 
 ucs4string Socket::getAddressString(const struct sockaddr* addr, socklen_t addrlen)
 {
+#ifdef MONA
+    return ucs4string::from_c_str("getAddressString not supported");
+#else
     int ret;
     char host[NI_MAXHOST];
     char serv[NI_MAXSERV];
@@ -366,6 +390,7 @@ ucs4string Socket::getAddressString(const struct sockaddr* addr, socklen_t addrl
     char name[NI_MAXSERV + NI_MAXHOST + 1];
     snprintf(name, sizeof(name), "%s:%s", host, serv);
     return ucs4string::from_c_str(name);
+#endif
 }
 ucs4string Socket::getAddressString(const struct addrinfo* addr)
 {

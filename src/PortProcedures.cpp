@@ -706,7 +706,11 @@ Object scheme::standardLibraryPathEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("standard-library-path");
     checkArgumentLength(0);
+#ifdef MONA
+    return Object::makeString(UC("/APPS/MOSH/LIB"));
+#else
     return Object::makeString(UC(MOSH_LIB_PATH));
+#endif
 }
 
 Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
@@ -906,6 +910,11 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("delete-file");
     checkArgumentLength(1);
     argumentAsString(0, text);
+#ifdef MONA
+    callIoFileNameErrorAfter(theVM, procedureName,
+                             "can't delete file, not supported",
+                             argv[0]);
+#else
     if (-1 == unlink(text->data().ascii_c_str())) {
         callIoFileNameErrorAfter(theVM, procedureName,
                                  "can't delete file",
@@ -914,6 +923,7 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
     } else {
         return Object::Undef;
     }
+#endif
 }
 
 Object scheme::fileExistsPEx(VM* theVM, int argc, const Object* argv)

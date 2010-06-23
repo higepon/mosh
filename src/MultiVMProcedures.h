@@ -33,6 +33,7 @@
 #define SCHEME_MULTI_VM_PROCEDURES_
 
 #include "scheme.h"
+#include "OSCompatThread.h"
 
 #ifdef MONA
 
@@ -48,8 +49,8 @@ namespace scheme {
     inline bool setCurrentVM(VM* vm)
     {
         theVM = vm;
+        return true;
     }
-};
 
     Object whereisEx(VM* theVM, int argc, const Object* argv);
     Object registerEx(VM* theVM, int argc, const Object* argv);
@@ -72,10 +73,9 @@ namespace scheme {
     Object mutexLockDEx(VM* theVM, int argc, const Object* argv);
     Object makeMutexEx(VM* theVM, int argc, const Object* argv);
 
+};
 
 #else
-
-#include "OSCompatThread.h"
 
 namespace scheme {
 
