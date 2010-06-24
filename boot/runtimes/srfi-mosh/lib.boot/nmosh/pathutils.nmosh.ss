@@ -1,6 +1,8 @@
 (library (nmosh pathutils)
          (export absolute-path?
-                 make-simple-path)
+                 make-simple-path
+                 path-append
+                 expand-loadpath)
          (import (rnrs) (mosh))
 
 ;; from mosh-utils5.scm
@@ -94,6 +96,12 @@
 
 (define (path->list pth)
   (strsep (pathfilter pth) #\/))
+
+(define (expand-loadpath lp)
+  (strsep lp CHR-ENVPATHSEP))
+
+(define (path-append dir name) ;;FIXME: need canon.
+  (string-append dir "/" name))
 
 (define (absolute-path? pth)
   (do-absolute-path? (path->list pth)))
