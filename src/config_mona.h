@@ -125,7 +125,7 @@
 #define LINE_FEED_CODE_LF 1
 
 /* define operating-system */
-#define MOSH_HOST_OS "linux"
+#define MOSH_HOST_OS "mona"
 
 /* Name of package */
 #define PACKAGE "mosh"
