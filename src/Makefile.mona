@@ -91,10 +91,7 @@ SOURCES = main.cpp \
           VM.cpp \
           VMFactory.cpp \
           Vector.cpp \
-          call.inc.cpp \
-          cprocedures.cpp \
           getoptU.cpp \
-          labels.cpp \
           main.cpp \
           nmosh_image.cpp \
           psyntax_mosh_image.cpp \

@@ -65,6 +65,7 @@
  *  $Id: getopt.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <stdio.h>
 #include "getoptU.h"
 
 using namespace scheme;
