@@ -40,7 +40,9 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "OSCompat.h"
+#ifndef MONA
 #include <gmp.h>
+#endif
 #include "OSCompatThread.h"
 
 using namespace scheme;
@@ -101,7 +103,7 @@ BOOL WINAPI handler(DWORD ctrlChar)
 #endif
 
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
 #define srandom srand
 #endif
 
@@ -117,7 +119,9 @@ void mosh_init()
     // Since GNU MP mpz makes many many "false pointer",
     // we allocate gmp buffers by malloc not GC_malloc.
     // Allocated memory are freed on Bignum's destructor.
+#ifndef MONA
     mp_set_memory_functions(gmp_alloc, gmp_realloc, gmp_free);
+#endif
 #endif
 // moved to VM constructor
 //    initCprocedures();
