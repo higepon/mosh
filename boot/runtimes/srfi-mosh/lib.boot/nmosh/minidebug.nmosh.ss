@@ -150,7 +150,7 @@
       (case id
         ((*proc*)
          (user-proc? param))
-        ((*cproc*) #t)
+        ((*cproc*) #f)
         (else #f))))
   (define (printer t)
     (define (itr i cur)
@@ -173,7 +173,8 @@
       ((guru-mode?) t)
       (else
         (do-strip t))))
-  (let ((disp-t (cdr (reverse (strip trace)))))
+  (let* ((disp-a (reverse (strip trace)))
+         (disp-t (if (pair? disp-a) (cdr disp-a) '())))
     (unless (= 0 (length disp-t))
       (display "TRACE :\n" p)
       (printer disp-t))))
