@@ -34,15 +34,23 @@
       cpath
       (if (run-win32-np?) 
 	(string-append (pathfilter (mosh-executable-path)) "cache") 
-	(string-append (get-environment-variable "HOME") "/.nmosh-cache")))))
+        (let ((h (get-environment-variable "HOME")))
+          (if h
+            (string-append h "/.nmosh-cache")
+            #f))))))
 
 (define mosh-cache-dir nmosh-cache-dir)
 
 (define (nmosh-cache-path) 
-  (string-append (nmosh-cache-dir) "/"))
+  (let ((c (nmosh-cache-dir)))
+    (if c
+      (string-append c "/")
+      #f)))
 
 (define CACHEPATH (nmosh-cache-path))
 (define CACHEDIR (nmosh-cache-dir))
+
+(define has-cachepath? (and CACHEPATH CACHEDIR))
 
 (define absolute-path? 
   (if (run-win32-np?) ;FIXME: support UNC pathes
@@ -374,7 +382,7 @@
 
 (define (ca-load fn recompile? name)
   (cond
-    (%disable-acc 
+    ((or (not has-cachepath?) %disable-acc)
       (ca-load/disable-cache fn))
     (else (ca-load/cache fn recompile? name))))
 
