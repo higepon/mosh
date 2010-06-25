@@ -213,6 +213,7 @@ BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/
 
 mosh_core_libraries = \
 lib/match.ss \
+lib/uri.ss \
 lib/irregex.ss \
 lib/packrat.ss \
 lib/json.ss \
