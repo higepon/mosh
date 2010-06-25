@@ -150,3 +150,8 @@ void mosh_init()
 //     }
 }
 
+
+
+extern "C" void dont_free(void* p)
+{
+}

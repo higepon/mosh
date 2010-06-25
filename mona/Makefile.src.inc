@@ -1,18 +1,4 @@
-SRCTOP=../../..
-include $(SRCTOP)/Makefile.inc
-
-TARGET  = MOSH
-TEST_SOURCES = FFITest.cpp \
-          FaslTest.cpp \
-          OSCompatTest.cpp \
-          OSCompatThreadTest.cpp \
-          ObjectTest.cpp \
-          PortTest.cpp \
-          TestingSignalHandler.cpp \
-          TestingVM.cpp \
-          VMTest.cpp \
-          getoptUTest.cpp
-SOURCES = main.cpp \
+MOSH_SOURCES = main.cpp \
           Arithmetic.cpp \
           ArithmeticProcedures.cpp \
           Bignum.cpp \
@@ -70,6 +56,7 @@ SOURCES = main.cpp \
           RegexpProcedures.cpp \
           SString.cpp \
           ScannerHelper.cpp \
+          Scanner.cpp \
           SocketBinaryInputOutputPort.cpp \
           SocketProcedures.cpp \
           StringProcedures.cpp \
@@ -92,26 +79,9 @@ SOURCES = main.cpp \
           VMFactory.cpp \
           Vector.cpp \
           getoptU.cpp \
-          main.cpp \
           nmosh_image.cpp \
           psyntax_mosh_image.cpp \
           scheme.cpp \
           ucs4string.cpp
-INSTDIR = $(BINDIR)/SERVERS
 
-INSTDIR    = $(BINDIR)/APPS
-ADDLINK    = -lpci -lmonalibc-imp --enable-auto-import
-ADDCFLAGS  = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\"" -DMOSH_LIB_PATH="\"/APPS/MOSH/LIB\""
-ADDINCLUDE = -I ../onig-5.7.0 -I ../gc-7.1/include
-
-SHAREDIR   = $(MONADIR)/share
-ifneq ($(BUILD_TARGET),ELF)
-include $(SHAREDIR)/configs/monapi-ex5.inc
-else
-include $(SHAREDIR)/configs/monapi-el5.inc
-endif
-
-check-syntax:
-	LANG=C $(CXX) -o nul $(CXXFLAGS) $(INCLUDE) -S ${CHK_SOURCES}
-
--include dependencies
+SOURCES=$(patsubst %.cpp, src/%.cpp, $(MOSH_SOURCES))

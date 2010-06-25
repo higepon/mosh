@@ -1,2 +1,54 @@
-all:
-	(cd src && $(MAKE) -f Makefile.mona)
+SRCTOP=../..
+include $(SRCTOP)/Makefile.inc
+
+TARGET  = MOSH
+INSTDIR = $(BINDIR)/SERVERS
+include mona/Makefile.src.inc
+include mona/Makefile.gc.inc
+include mona/Makefile.onig.inc
+
+# TARGET_LIBS = lib/interact.scm lib/batch.scm lib/danny.scm lib/unittest.scm lib/core.scm lib/shell.scm lib/mona.scm lib/conf.scm lib/fib.scm lib/demo.scm
+# TEST_FILES  = test/char.scm test/closure.scm test/cont.scm test/generate.scm \
+#               test/number.scm test/pair.scm test/port.scm test/string.scm test/symbol.scm \
+#               test/test.scm test/util.scm test/vector.scm test/dir.scm test/shell.scm test/regexp.scm
+# ADDCFLAGS    = $(GC_CFLAGS) -U__CYGWIN32__ -O3 -mno-stack-arg-probe
+
+# ADDINCLUDE   = -I $(MONADIR)/include/monalibc -I . -I ./onig/onig-5.7.0
+# ADDLINK      =  main.o $(LIBCONT_OBJECTS) $(GC_OBJECTS) $(ONIG_OBJECTS) -lmonalibc-imp --enable-auto-import #-lgui-imp
+# ADDLINKDEP   =  $(LIBCONT_OBJECTS) $(GC_OBJECTS) $(ONIG_OBJECTS) $(MONADIR)/lib/libmonalibc-imp.a main.o #$(MONADIR)/lib/libgui-imp.a main.o
+# ADDTARGETDEP =  $(ONIG_DIR) $(BOEHM_GC_DIR) $(REGISTERS_INC) $(PROCEDURES_H) $(TARGET_LIBS) test/test.scm test/port.scm test/dir.scm test/shell.scm
+
+ADDTARGETDEP = $(ONIG_DIR) $(BOEHM_GC_DIR)
+ADDLINKDEP   = $(ONIG_OBJECTS) $(GC_OBJECTS)
+ADDLINK      = $(ONIG_OBJECTS) $(GC_OBJECTS) -lmonalibc-imp --enable-auto-import
+ADDCFLAGS    = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\"" -DMOSH_LIB_PATH="\"/APPS/MOSH/LIB\"" -U__CYGWIN32__ -mno-stack-arg-probe
+ADDINCLUDE   = -I ./onig-5.7.0 -I $(BOEHM_GC_DIR)/include
+CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS)
+
+ONIG_OBJECTS = $(ONIG_SOURCES:.c=.o)
+
+include $(SHAREDIR)/configs/monapi-ex5.inc
+
+$(ONIG_OBJECTS) : $(ONIG_DIR)/config.h
+
+$(ONIG_DIR)/config.h : mona/onig_config.h
+	cp $< $@
+
+
+# install:all
+# 	mkdir -p $(INSTDIR)
+# 	$(INSTALL) -pd $(BINDIR)/LIBS/SCHEME
+# 	$(INSTALL) -pd $(INSTDIR)/TEST
+# 	$(INSTALL) -p $(TARGET).EX5 $(INSTDIR)
+# 	$(INSTALL) -p  $(TEST_FILES) $(INSTDIR)/TEST
+# 	$(INSTALL) -p $(TARGET_LIBS) $(BINDIR)/LIBS/SCHEME
+
+# .SUFFIXES: .scm.in .scm
+# .scm.in.scm:
+# 	sed -e 's|<IF_MONA>||g' $< | sed -e 's|<IF_LINUX>|;|g' | sed -e 's|<LIBDIR>|/LIBS/SCHEME|g' | sed -e 's|<TESTDIR>|/SERVERS/TEST|g' > $@
+
+# .SUFFIXES: .cc .o
+# .cc.o:
+# 	$(CXX) -c -o $@ $(CXXFLAGS) $(INCLUDE) $<
+
+-include dependencies
