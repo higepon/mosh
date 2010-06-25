@@ -963,9 +963,12 @@ ucs4char* scheme::getEnv(const ucs4string& key)
 #ifdef _WIN32
 #include <stdlib.h>
 #define environ _environ
+#elif defined(MONA)
+char** environ = NULL;
 #else
-extern char** environ;
+extern  char** environ;
 #endif
+
 
 Object scheme::getEnvAlist()
 {

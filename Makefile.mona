@@ -2,7 +2,7 @@ SRCTOP=../..
 include $(SRCTOP)/Makefile.inc
 
 TARGET  = MOSH
-INSTDIR = $(BINDIR)/SERVERS
+INSTDIR = $(BINDIR)/APPS
 include mona/Makefile.src.inc
 include mona/Makefile.gc.inc
 include mona/Makefile.onig.inc
