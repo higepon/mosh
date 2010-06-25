@@ -218,7 +218,9 @@
                           (loop (cdr chars) p0 p1)]))))
                (define (eval-string-print text)
                  (unless (or (string=? "\n" text) (= 0 (string-length text)))
-                   (write (eval-top-level (call-with-port (open-string-input-port text) read)))))
+                   (call-with-values (lambda () (eval-top-level (call-with-port (open-string-input-port text) read)))
+                     (lambda out* (for-each (lambda (out) (write out) (newline)) out*)
+                     ))))
                (if (eof-object? line)
                    (begin
                      (eval-string-print accum)

@@ -16,6 +16,7 @@ runtest:
 	$(MOSH_TARGET) test/output-port.scm
 	$(MOSH_TARGET) --loadpath="test/mylib" test/record.scm
 	$(MOSH_TARGET) test/condition.scm
+	$(MOSH_TARGET) test/rbtree-test.scm
 	$(MOSH_TARGET) test/exception.scm
 	$(MOSH_TARGET) test/unicode.scm
 	$(MOSH_TARGET) test/srfi8.scm
@@ -52,3 +53,4 @@ runtest-mosh:
 
 runtest-nmosh:
 	$(MOSH_TARGET) test/nmosh.scm
+	$(MOSH_TARGET) test/nrepl.scm

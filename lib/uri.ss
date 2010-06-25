@@ -27,7 +27,15 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (uri)
+<<<<<<< HEAD
   (export uri-encode uri-decode)
+=======
+<<<<<<< HEAD
+  (export uri-encode uri-decode)
+=======
+  (export uri-encode)
+>>>>>>> a6b2fe524d13a03d9c01eb859a9cc3bd10cd5039
+>>>>>>> b663672666b8c3e4ec37c3b4e37e61f17f5c177c
   (import (rnrs))
 
 ;; This library is undocumented. APIs is subject to change without notice.
@@ -54,6 +62,10 @@
                  (display "%" p)
                  (display (number->string sv 16) p))))
         svs)))))
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> b663672666b8c3e4ec37c3b4e37e61f17f5c177c
 
 
 (define (uri-decode str)
@@ -101,4 +113,9 @@
     (lambda (in)
       (call-with-string-output-port
         (lambda (out) (filter in out))))))
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> a6b2fe524d13a03d9c01eb859a9cc3bd10cd5039
+>>>>>>> b663672666b8c3e4ec37c3b4e37e61f17f5c177c
 )

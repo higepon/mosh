@@ -2,9 +2,12 @@
   (apply for-each proc (string->list str1)
            (map string->list str2)))
 
+(define (exact-non-negative-integer? x)
+  (and (integer? k) (exact? k) (>= k 0)))
+
 (define (exact-integer-sqrt k)
-  (unless (and (integer? k) (>= k 0))
-    (assertion-violation 'exact-integer-sqrt "exact integer number required" (list k)))
+  (unless (exact-non-negative-integer? k)
+    (assertion-violation 'exact-integer-sqrt "exact non-negative integer required" (list k)))
   (let* ([s (exact (truncate (sqrt k)))]
          [r (- k (* s s))])
     (values s r)))
