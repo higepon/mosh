@@ -33,6 +33,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h> // for socklen_t
 #endif
+#include <stdio.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
@@ -42,6 +43,8 @@
 #include "OSCompat.h"
 #ifndef MONA
 #include <gmp.h>
+#else
+#include <sys/error.h>
 #endif
 #include "OSCompatThread.h"
 
@@ -113,6 +116,15 @@ void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.
     srandom(time(NULL));
+
+#ifdef MONA
+    const char* MAP_FILE_PATH = "/APPS/MOSH.MAP";
+    uint32_t pid = syscall_get_pid();
+    if (!syscall_stack_trace_enable(pid, MAP_FILE_PATH)) {
+        fprintf(stderr, "map file not found\n");
+        exit(-1);
+    }
+#endif // MONA
 #ifdef USE_BOEHM_GC
     GC_INIT();
     // N.B
