@@ -28,7 +28,7 @@ CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS)
 ONIG_OBJECTS = $(ONIG_SOURCES:.c=.o)
 INSTFILES    = MOSH.map
 
-include $(SHAREDIR)/configs/monapi-ex5.inc
+include $(SHAREDIR)/configs/monapi-exe.inc
 
 $(ONIG_OBJECTS) : $(ONIG_DIR)/config.h
 
