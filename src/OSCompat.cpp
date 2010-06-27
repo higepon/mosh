@@ -401,7 +401,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
     memcpy(buffer->Data, buf, buffer->Size);
     intptr_t sizeWritten = monapi_file_write(desc_, buffer, buffer->Size);
     monapi_cmemoryinfo_dispose(buffer);
-    monapi_cmemoryinfo_delete(buffer);
+//    monapi_cmemoryinfo_delete(buffer);
     return sizeWritten;
 #else
     MOSH_ASSERT(isOpen());
