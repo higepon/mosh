@@ -393,7 +393,9 @@ int64_t File::write(uint8_t* buf, int64_t _size)
         return -1;
     }
 #elif defined(MONA)
-
+    for (int i = 0; i < _size; i++) {
+        logprintf("%c", buf[i]);
+    }
     monapi_cmemoryinfo* buffer = new monapi_cmemoryinfo();
     monapi_cmemoryinfo_create(buffer, _size, 0);
     memcpy(buffer->Data, buf, buffer->Size);
