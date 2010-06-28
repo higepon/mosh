@@ -2,7 +2,7 @@
   (apply for-each proc (string->list str1)
            (map string->list str2)))
 
-(define (exact-non-negative-integer? x)
+(define (exact-non-negative-integer? k)
   (and (integer? k) (exact? k) (>= k 0)))
 
 (define (exact-integer-sqrt k)
