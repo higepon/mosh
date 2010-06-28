@@ -632,7 +632,11 @@ static float callStubFloat(Pointer* func, CStack* cstack)
                      "movq 32(%%r10), %%r8 ;"   // register argument 5
                      "movq 40(%%r10), %%r9 ;"   // register argument 6
                      "call *%%rax ;"
+#ifndef __APPLE__
                      "movq %%xmm0, %%rax ;"
+#else /* Apple's assembler doesn't support movq in that style . */
+                     "movd %%xmm0, %%rax ;"
+#endif
                      : "=a" (ret)
                      : "0" (func->pointer()), "S" (cstack->reg()), "D"(cstack->xmm())
                      : "memory"
@@ -669,7 +673,11 @@ static float callStubFloat(Pointer* func, CStack* cstack)
             "jmp 1b;"
             "2:   ;"
             "call *%%rax ;"
+#ifndef __APPLE__
             "movq %%xmm0, %%rax ;"
+#else
+            "movd %%xmm0, %%rax ;" /* Apple's assembler doesn't support that movq*/
+#endif
             : "=a" (ret)
             : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
             : "memory"
