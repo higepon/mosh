@@ -478,8 +478,10 @@ public:
 
     static Object makeInteger(const ucs4string& text)
     {
-        MOSH_ASSERT(false);
-        return Object::Undef;
+        long val = atoi(text.ascii_c_str());
+//        MOSH_ASSERT(false);
+        logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
+        return Object::makeFixnum(val);
     }
 };
 
