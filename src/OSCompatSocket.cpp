@@ -202,7 +202,9 @@ Socket* Socket::createClientSocket(const char* node,
     int ret;
 
     // TODO server socket?
+#ifndef MONA
     MOSH_ASSERT(!((ai_flags & AI_PASSIVE) && node == NULL));
+#endif
 
     // check temporary failure
     do {
