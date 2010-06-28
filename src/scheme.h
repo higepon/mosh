@@ -47,6 +47,7 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+#include <stdio.h>
 
 #ifdef _WIN32
     typedef unsigned char uint8_t;
