@@ -1221,7 +1221,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                     callAssertionViolationAfter(this,
                                                 "simple-struct-ref",
                                                 "index out of range",
-                                                L1(ac_));
+                                                L2(obj, ac_));
                 }
             } else {
                 callAssertionViolationAfter(this,
