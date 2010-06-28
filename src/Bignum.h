@@ -456,8 +456,12 @@ public:
 
     static Object makeInteger(long n)
     {
-        MOSH_ASSERT(false);
-        return Object::Undef;
+        if (Fixnum::canFit(n)) {
+            return Object::makeFixnum(n);
+        } else {
+            MOSH_ASSERT(false);
+            return Object::Undef;
+        }
     }
 
     template <typename T> static Object makeIntegerFromSigned(T val)
