@@ -59,9 +59,9 @@ extern YYSTYPE number_yylval;
 using namespace scheme;
 extern VM* theVM;
 
-NumberScanner::NumberScanner() : dummy_('Z'),  // for YYDEBUG
+NumberScanner::NumberScanner() :
                      buffer_(NULL),
-                     cursor_(&dummy_),
+                     cursor_(buffer_),
                      token_(buffer_),
                      limit_(buffer_),
                      marker_(buffer_),
