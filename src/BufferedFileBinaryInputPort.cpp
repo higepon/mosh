@@ -80,11 +80,9 @@ BufferedFileBinaryInputPort::~BufferedFileBinaryInputPort()
 int BufferedFileBinaryInputPort::open()
 {
     if (file_->isOpen()) {
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
         return MOSH_SUCCESS;
 
     } else {
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
         return MOSH_FAILURE;
     }
 }
@@ -99,7 +97,6 @@ ucs4string BufferedFileBinaryInputPort::toString()
 
 int BufferedFileBinaryInputPort::getU8()
 {
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     uint8_t c;
     position_++;
     if (0 == readFromBuffer(&c, 1)) {
@@ -111,7 +108,6 @@ int BufferedFileBinaryInputPort::getU8()
 
 int BufferedFileBinaryInputPort::lookaheadU8()
 {
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     uint8_t c;
     if (0 == readFromBuffer(&c, 1)) {
         return EOF;
