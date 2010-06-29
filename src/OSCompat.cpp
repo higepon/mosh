@@ -463,16 +463,25 @@ int64_t File::read(uint8_t* buf, int64_t _size)
         return -1;
     }
 #elif defined(MONA)
-    monapi_cmemoryinfo* cmi = monapi_file_read(desc_, _size);
-    if (cmi == NULL) {
-        return 0;
+    if (this == &File::STANDARD_IN) {
+        MOSH_ASSERT(false);
+    } else {
+        monapi_cmemoryinfo* cmi = monapi_file_read(desc_, _size);
+        if (cmi == NULL) {
+            return 0;
+        }
+        logprintf("monapi read");
+//         for (int i = 0; i < cmi->Size; i++) {
+//             logprintf("<%c>", ((char*)(cmi->Data))[i]);
+//         }
+        logprintf("monapi read done _size=%x cmi->Size=%x",cmi->Size,  _size);
+        MOSH_ASSERT(cmi->Size <= _size);
+        memcpy(buf, cmi->Data, cmi->Size);
+        intptr_t sizeRead = cmi->Size;
+        monapi_cmemoryinfo_dispose(cmi);
+        monapi_cmemoryinfo_delete(cmi);
+        return sizeRead;
     }
-    MOSH_ASSERT(cmi->Size <= _size);
-    memcpy(buf, cmi->Data, cmi->Size);
-    intptr_t sizeRead = cmi->Size;
-    monapi_cmemoryinfo_dispose(cmi);
-    monapi_cmemoryinfo_delete(cmi);
-    return sizeRead;
 #else
     MOSH_ASSERT(isOpen());
     int64_t result;
