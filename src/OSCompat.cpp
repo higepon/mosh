@@ -393,16 +393,25 @@ int64_t File::write(uint8_t* buf, int64_t _size)
         return -1;
     }
 #elif defined(MONA)
-    for (int i = 0; i < _size; i++) {
-        logprintf("%c", buf[i]);
-    }
-    monapi_cmemoryinfo* buffer = new monapi_cmemoryinfo();
-    monapi_cmemoryinfo_create(buffer, _size, 0);
-    memcpy(buffer->Data, buf, buffer->Size);
-    intptr_t sizeWritten = monapi_file_write(desc_, buffer, buffer->Size);
-    monapi_cmemoryinfo_dispose(buffer);
+    if (this == &File::STANDARD_OUT) {
+        logprintf("write to stdout");
+        int ret = monapi_stdout_write(buf,  _size);
+        logprintf("sizeWritten=%d", ret);
+        return ret;
+    } else {
+        MOSH_ASSERT(desc_ > 3);
+        for (int i = 0; i < _size; i++) {
+            logprintf("[%c]", buf[i]);
+        }
+        monapi_cmemoryinfo* buffer = new monapi_cmemoryinfo();
+        monapi_cmemoryinfo_create(buffer, _size, 0);
+        memcpy(buffer->Data, buf, buffer->Size);
+        intptr_t sizeWritten = monapi_file_write(desc_, buffer, buffer->Size);
+        logprintf("monapi_file_write buffer->Size=%d, sizeWritten=%d", buffer->Size, sizeWritten);
+        monapi_cmemoryinfo_dispose(buffer);
 //    monapi_cmemoryinfo_delete(buffer);
-    return sizeWritten;
+        return sizeWritten;
+    }
 #else
     MOSH_ASSERT(isOpen());
     int64_t result;
