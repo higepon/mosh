@@ -170,5 +170,6 @@ Object TextualInputPort::error() const
 
 Object TextualInputPort::getDatum(bool& errorOccured)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     return currentVM()->readerContext()->read(this, errorOccured);
 }

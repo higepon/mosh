@@ -52,20 +52,28 @@ using namespace scheme;
 
 BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(File* file) : file_(file), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     initializeBuffer();
 }
 
 BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     file_->open(fileName_, File::Read);
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     initializeBuffer();
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
 }
 
 BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(const char* file) : file_(new File), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     fileName_ = ucs4string::from_c_str(file);
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     file_->open(fileName_, File::Read);
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     initializeBuffer();
+    logprintf("%s %s:%d %d\n", __func__, __FILE__, __LINE__, file_->isOpen());
 }
 
 BufferedFileBinaryInputPort::~BufferedFileBinaryInputPort()

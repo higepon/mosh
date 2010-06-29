@@ -361,10 +361,14 @@ void VM::dumpCompiledCode(Object code) const
 // N.B. If you call loadFileUnsafe, be sure that this code is inside the TRY_VM/CATCH_VM
 void VM::loadFileUnsafe(const ucs4string& file)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     Registers r;
     saveRegisters(&r);
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     const Object loadPort = Object::makeTextualInputFilePort(file.ascii_c_str());
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     TextualInputPort* p = loadPort.toTextualInputPort();
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     bool readErrorOccured = false;
     for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
         if (readErrorOccured) {
@@ -377,11 +381,16 @@ void VM::loadFileUnsafe(const ucs4string& file)
 
 void VM::loadFileWithGuard(const ucs4string& file)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     TRY_VM {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
         ucs4string moshLibPath(UC(MOSH_LIB_PATH));
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
         moshLibPath += UC("/") + file;
         if (File::isExist(file)) {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
             loadFileUnsafe(file);
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
         } else if (File::isExist(moshLibPath)) {
             loadFileUnsafe(moshLibPath);
         } else {

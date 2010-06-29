@@ -61,13 +61,18 @@ FileBinaryInputPort::FileBinaryInputPort(File* file) : file_(file), fileName_(UC
 
 FileBinaryInputPort::FileBinaryInputPort(const ucs4string& file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     file_->open(file, File::Read);
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
 }
 
 FileBinaryInputPort::FileBinaryInputPort(const char* file) : file_(new File), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     fileName_ = ucs4string::from_c_str(file);
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     file_->open(fileName_, File::Read);
+
 }
 
 FileBinaryInputPort::~FileBinaryInputPort()
@@ -78,8 +83,10 @@ FileBinaryInputPort::~FileBinaryInputPort()
 int FileBinaryInputPort::open()
 {
     if (file_->isOpen()) {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
         return MOSH_SUCCESS;
     } else {
+    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
         return MOSH_FAILURE;
     }
 }
