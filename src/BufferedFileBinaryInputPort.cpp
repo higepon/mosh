@@ -186,11 +186,11 @@ void BufferedFileBinaryInputPort::fillBuffer()
     }
     bufLen_ = readSize;
     bufIdx_ = 0;
+    logprintf("fillbuffer end %s %s:%d\n", __func__, __FILE__, __LINE__);
 }
 
 int64_t BufferedFileBinaryInputPort::readFromBuffer(uint8_t* dest, int64_t reqSize)
 {
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     int64_t readSize = 0;
     while (readSize < reqSize) {
         const int64_t bufDiff = bufLen_ - bufIdx_;
