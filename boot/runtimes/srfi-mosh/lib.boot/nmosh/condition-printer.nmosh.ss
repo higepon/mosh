@@ -41,7 +41,7 @@
        (format "~a:~d" (if (string? name) 
 			 (extract-name name)
 			 "INVALID")
-			 line)))
+			 (- line 1))))
     (else #f)))
 
 ; STUB!
