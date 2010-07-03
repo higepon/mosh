@@ -27,7 +27,15 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (uri)
+<<<<<<< HEAD
+  (export uri-encode uri-decode)
+=======
+<<<<<<< HEAD
+  (export uri-encode uri-decode)
+=======
   (export uri-encode)
+>>>>>>> a6b2fe524d13a03d9c01eb859a9cc3bd10cd5039
+>>>>>>> b663672666b8c3e4ec37c3b4e37e61f17f5c177c
   (import (rnrs))
 
 ;; This library is undocumented. APIs is subject to change without notice.
@@ -54,4 +62,60 @@
                  (display "%" p)
                  (display (number->string sv 16) p))))
         svs)))))
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> b663672666b8c3e4ec37c3b4e37e61f17f5c177c
+
+
+(define (uri-decode str)
+  (define digit->integer
+    (lambda (c)
+      (cond
+        ((char<=? #\0 c #\9) (- (char->integer c) (char->integer #\0)))
+        ((char<=? #\a c #\f) (+ 10 (- (char->integer c) (char->integer #\a))))
+        ((char<=? #\A c #\F) (+ 10 (- (char->integer c) (char->integer #\A))))
+        (else #f))))
+  (define percent-filter
+    (lambda (in out err)
+      (let loop ((c (peek-char in)))
+        (and (not (eof-object? c)) (char=? c #\%)
+          (let* ((cp (get-char in)) (c1 (get-char in)) (c2 (get-char in)))
+            (cond
+              ((eof-object? c1) (put-char err cp))
+              ((eof-object? c2) (put-char err cp) (put-char err c1))
+              (else
+                (let ((i1 (digit->integer c1)) (i2 (digit->integer c2)))
+                  (cond
+                    ((and i1 i2)
+                      (put-u8 out (+ (* 16 (digit->integer c1)) (digit->integer c2)))
+                      (loop (peek-char in)))
+                    (else
+                      (put-char err cp)
+                      (put-char err c1)
+                      (put-char err c2)))))))))))
+  (define filter
+    (lambda (in out)
+      (let loop ((c (peek-char in)))
+        (when (not (eof-object? c))
+          (if (char=? c #\%)
+            (put-string out
+              (bytevector->string
+                (call-with-bytevector-output-port
+                  (lambda (op) (percent-filter in op out)))
+                (make-transcoder (utf-8-codec))))
+            (let ((c (get-char in)))
+              (cond
+                ((char=? c #\+) (put-char out #\space))
+                (else (put-char out c)))))
+          (loop (peek-char in))))))
+  (call-with-port (open-string-input-port str)
+    (lambda (in)
+      (call-with-string-output-port
+        (lambda (out) (filter in out))))))
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> a6b2fe524d13a03d9c01eb859a9cc3bd10cd5039
+>>>>>>> b663672666b8c3e4ec37c3b4e37e61f17f5c177c
 )

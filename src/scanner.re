@@ -52,9 +52,9 @@
 
 using namespace scheme;
 
-Scanner::Scanner() : eofP_(false), dummy_('Z'),  // for YYDEBUG
+Scanner::Scanner() : eofP_(false),
                      buffer_(NULL),
-                     cursor_(&dummy_),
+                     cursor_(buffer_),
                      token_(buffer_),
                      limit_(buffer_),
                      marker_(buffer_),

@@ -34,10 +34,10 @@ $(SRC_DIR)/nmosh_image.cpp: runtimes/srfi-mosh/nmosh_image.cpp
 runtimes/srfi-mosh/nmosh_image.cpp: always
 	make -C runtimes/srfi-mosh # Bootstrap using vanilla-mosh and psyntax-mosh
 
-compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm
+compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
 	gosh -A $(SCRIPTS_DIR) $(SCRIPTS_DIR)/gen-compiler.scm $< "mosh" > $@
 
-compiler-vm.scm: compiler.scm free-vars-decl.scm
+compiler-vm.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
 	gosh -A $(SCRIPTS_DIR) $(SCRIPTS_DIR)/gen-compiler.scm $< "vm?" > $@
 
 .SUFFIXES: .scmc .h
@@ -61,7 +61,7 @@ baselib.scmc: baselib.scm compiler-vm.scm
 	gosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
-baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS) $(CORE_INCLUDE_LIBS)
+baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $@
 
 free-vars-decl.scm: free-vars.scm

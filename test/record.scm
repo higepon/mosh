@@ -186,5 +186,8 @@
     (fields (immutable b)))
   (make-<alpha> 1))
 
+(let ()
+  (make-record-type-descriptor 'one #f 'the-one #f #t '#((mutable a)))
+  (test-error assertion-violation? (make-record-type-descriptor 'one #f 'the-one #f #f '#((mutable a)))))
 
 (test-results)
