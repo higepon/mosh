@@ -207,7 +207,7 @@ cygwin)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
   # gc-7.1 fix
-  ac_configure_args="$ac_configure_args --disable-shared CFLAGS=-DGC_THREADS win32_threads=true"
+  ac_configure_args="$ac_configure_args --disable-shared CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
   ;;
 
 mingw*)
@@ -316,7 +316,7 @@ case "$host_os" in
         mingw32=true
         AC_MSG_RESULT([yes])
 	AC_CHECK_TOOL(WINDRES, windres)
-	ac_configure_args="$ac_configure_args --disable-shared --enable-threads=win32 CFLAGS=-DGC_THREADS win32_threads=true"
+	ac_configure_args="$ac_configure_args --disable-shared --enable-threads=win32 CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
 
 	;;
 *)
