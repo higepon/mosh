@@ -2281,7 +2281,7 @@
     ;; MOSH: moved to ListProcedures.cpp
     (define (sexp-map/debug dbg f s)
       (define (update x)
-        (let ((inf (debug-source-info x))) (if dbg dbg inf)))
+        (let ((inf (debug-source-info x))) (if inf inf dbg)))
       (cond ((null? s) '())
             ((pair? s) (cons (sexp-map/debug (update s) f (car s))
                              (sexp-map/debug (update s) f (cdr s))))

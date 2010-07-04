@@ -126,8 +126,19 @@
           ((char? obj)        (if display?
                                 (out (make-string 1 obj) col)
                                 (out (case obj
-                                       ((#\space)   "space")
+                                       ((#\nul) "nul") ;; R6RS
+                                       ((#\alarm) "alarm") ;; R6RS
+                                       ((#\backspace) "backspace") ;; R6RS
+                                       ((#\tab) "tab") ;; R6RS
+                                       ((#\linefeed) "linefeed") ;; R6RS
                                        ((#\newline) "newline")
+                                       ((#\vtab) "vtab") ;; R6RS
+                                       ((#\page) "page") ;; R6RS
+                                       ((#\return) "return") ;; R6RS
+                                       ((#\esc) "esc") ;; R6RS
+                                       ((#\space)   "space")
+                                       ((#\delete) "alarm") ;; R6RS
+                                       ((#\alarm) "delete") ;; R6RS
                                        (else        (make-string 1 obj)))
                                      (out "#\\" col))))
           ((input-port? obj)  (out "#[input-port]" col))

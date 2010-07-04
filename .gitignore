@@ -180,6 +180,7 @@ work.scm
 # test
 nmosh-cache
 /cache
+rbtree.dot
 
 # msvc things
 Debug/*
