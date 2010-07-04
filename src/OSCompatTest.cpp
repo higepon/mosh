@@ -133,7 +133,6 @@ TEST_F(MoshTest, SymbolicLink) {
 }
 
 TEST_F(MoshTest, ShortNames) {
-    ucs4string orig = UC("all-tests.scm");
-    const char* expected = "all_test.scm";
-    EXPECT_STREQ(expected, File::toShortName(orig).ascii_c_str());
+    EXPECT_STREQ("hige.scm", File::toShortName(UC("hige.scm")).ascii_c_str());
+    EXPECT_STREQ("all_test.scm", File::toShortName(UC("all-tests.scm")).ascii_c_str());
 }
