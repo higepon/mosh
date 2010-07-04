@@ -177,6 +177,7 @@
                   (set-symbol-value! (string->symbol (string-append (symbol->string name) "-rtd")) current)
                   (if (and (eqv? uid (rtd-uid current))
                            (eqv? parent (rtd-parent current))
+                           (equal? fields (rtd-fields current))
                            (eq? sealed? (rtd-sealed? current))
                            (eq? opaque? (rtd-opaque? current)))
                       current
