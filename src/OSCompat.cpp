@@ -740,6 +740,33 @@ Object File::changeTime(const ucs4string& path)
 #endif
 }
 
+ucs4string File::toShortName(const ucs4string& file)
+{
+    // 8.3
+    if (file.size() <= 12) {
+        return file;
+    }
+
+    gc_vector<ucs4string> v;
+    file.split('.', v);
+    MOSH_ASSERT(v.size() == 2);
+    const ucs4string& prefix = v[0];
+    const ucs4string& ext = v[1];
+
+    MOSH_ASSERT(ext.size() == 3);
+    ucs4string shortname;
+    for (ucs4string::size_type i = 0; i < 8 && i < prefix.size(); i++) {
+        if (prefix[i] == '-') {
+            shortname += '_';
+        } else {
+            shortname += prefix[i];
+        }
+    }
+    shortname += UC(".");
+    shortname += ext;
+    return shortname;
+}
+
 Object File::size(const ucs4string& path)
 {
 #ifdef _WIN32
