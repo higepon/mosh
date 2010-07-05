@@ -341,8 +341,13 @@ Object scheme::assocEx(VM* theVM, int argc, const Object* argv)
 
     Equal e;
     for (Object o = list; o != Object::Nil; o = o.cdr()) {
-        if (e.equal(o.car().car(), obj)) {
-            return o.car();
+        if (o.isPair() && o.car().isPair()) {
+            if (e.equal(o.car().car(), obj)) {
+                return o.car();
+            }
+        } else {
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "assoc requires chain of pairs", L1(o));
+            return Object::Undef;
         }
     }
     return Object::False;
