@@ -822,7 +822,6 @@ Object File::changeTime(const ucs4string& path)
 
 ucs4string File::toShortName(const ucs4string& file)
 {
-<<<<<<< HEAD
     gc_vector<ucs4string> dirs;
     file.split('/', dirs);
     MOSH_ASSERT(dirs.size() > 0);
