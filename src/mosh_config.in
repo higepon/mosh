@@ -14,6 +14,7 @@
        (format (current-error-port) "    ~a: ~a\n" (car x) (cadr x)))
      (get-configs))]
    [else
-    (display (get-config (cadr args)))]))
+    (display (get-config (cadr args)))
+    (newline)]))
 
 (main (command-line))

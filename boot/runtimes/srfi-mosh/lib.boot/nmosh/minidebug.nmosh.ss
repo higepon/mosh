@@ -1,12 +1,15 @@
 (library (nmosh minidebug)
 	 (export load-symbols minidebug stacktrace-printer show-profile)
-	 (import (rnrs) (nmosh condition-printer) (nmosh conditions) (only (mosh) format)
+	 (import (rnrs) (nmosh global-flags)
+                 (nmosh condition-printer) (nmosh conditions) (only (mosh) format)
 		 (primitives dbg-files dbg-syms fasl-read %get-nmosh-dbg-image
 			     ; for show-profile
 			     hashtable-map lpad rpad string-chop
 			     get-closure-name summerize-samples
 			     ))
 
+(define (guru-mode?)
+  (get-global-flag '%nmosh-guru-mode))
 
 (define libsyms '())
 
@@ -17,7 +20,10 @@
 
 (define (get-symfile fn)
   (guard
-    (c (#t #f))
+    (c (#t 
+        (when (guru-mode?)
+          (display (format "Cannot load ~a\n" fn) (current-error-port)))
+        #f))
     (call-with-port (open-file-input-port fn) fasl-read)))
 
 (define (load-symfiles)
@@ -62,6 +68,7 @@
       sym)))
 
 (define (fallback-trace-printer p trace)
+
   (define (cprocprint h)
     (let ((proc (car h)))
       (display "  cprc   " p)
@@ -110,7 +117,7 @@
     (when (< i 100)
       (display " " p))
     (display i p)
-    (display " : "))
+    (display " : " p))
 
   (define (print num e)
     (let ((id (cadr e))
@@ -124,6 +131,27 @@
 	 (cprocprint param))
 	(else 'ok)))
     (newline p))
+  (define (user-code? e)
+    (define (step cur e)
+      (cond
+	((assq e libsyms) #t)
+	((assq e dbg-syms) #t)
+	((assq e intsyms) #f)
+	(else cur)))
+    (define (find-dbginfo-for-user prc)
+      (fold-left step #f prc))
+    (define (user-proc? h)
+      (let ((loc (cadr h)))
+        (cond
+          (loc #f) ; mosh baselib
+          (else (find-dbginfo-for-user (car h))))))
+    (let ((id (cadr e))
+          (param (cddr e)))
+      (case id
+        ((*proc*)
+         (user-proc? param))
+        ((*cproc*) #f)
+        (else #f))))
   (define (printer t)
     (define (itr i cur)
       (when (pair? cur)
@@ -134,9 +162,22 @@
 	    (print i (car cur))
 	    (itr (+ i 1) (cdr cur))))))
     (itr 1 t))
-
-  (display "TRACE :\n" p)
-  (printer (reverse trace)))
+  (define (strip t)
+    (define (do-strip cur)
+      (if (pair? cur)
+        (if (user-code? (car cur))
+          cur
+          (do-strip (cdr cur)))
+        '()))
+    (cond
+      ((guru-mode?) t)
+      (else
+        (do-strip t))))
+  (let* ((disp-a (reverse (strip trace)))
+         (disp-t (if (pair? disp-a) (cdr disp-a) '())))
+    (unless (= 0 (length disp-t))
+      (display "TRACE :\n" p)
+      (printer disp-t))))
 
 (define minidebug-key #f)
 
@@ -147,8 +188,6 @@
 (define (load-symbols)
   (set! intsyms (load-intsyms))
   (set! libsyms (load-symfiles)))
-
-
 
 (define (minidebug p c trace)
   (condition-printer c p)

@@ -131,3 +131,8 @@ TEST_F(MoshTest, SymbolicLink) {
     EXPECT_TRUE(File::isSymbolicLink(file));
     ASSERT_TRUE(File::deleteFileOrDirectory(file));
 }
+
+TEST_F(MoshTest, ShortNames) {
+    EXPECT_STREQ("hige.scm", File::toShortName(UC("hige.scm")).ascii_c_str());
+    EXPECT_STREQ("all_test.scm", File::toShortName(UC("all-tests.scm")).ascii_c_str());
+}

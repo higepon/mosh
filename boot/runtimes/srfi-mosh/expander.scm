@@ -2176,6 +2176,8 @@
                                 (if subform (syntax-debug subform) #f)
                                 who
                                 message
+                                form
+                                subform
                                 *trace*)))
 
     ;;==========================================================================

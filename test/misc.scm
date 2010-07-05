@@ -48,6 +48,6 @@
                b))
     (f 1)))
 
-
+(test-error assertion-violation? (make-vector 1.0))
 
 (test-results)

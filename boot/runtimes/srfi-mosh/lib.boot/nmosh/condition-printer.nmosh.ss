@@ -4,8 +4,13 @@
 		 with-condition-printer with-condition-printer/raise)
 	 (import (rnrs) (nmosh conditions)
 		 (only (mosh) format)
+                 (nmosh global-flags)
                  (nmosh pathutils)
 		 (primitives id-name id-debug id-maybe-library)) 
+
+
+(define (guru-mode?)
+  (get-global-flag '%nmosh-guru-mode))
 
 ; almost as syntax->datum but allows symbol in l
 (define (strip l)
@@ -36,7 +41,7 @@
        (format "~a:~d" (if (string? name) 
 			 (extract-name name)
 			 "INVALID")
-			 line)))
+			 (- line 1))))
     (else #f)))
 
 ; STUB!
@@ -59,7 +64,9 @@
       ((vector? e) (fold-left itr cur (vector->list e)))
       ((identifier? e) (next cur (id->debuginfo e)))
       (else cur)))
-  (fold-left itr '() l))
+  (if (list? l)
+    (fold-left itr '() l)
+    (itr '() l)))
 
 (define-syntax with-condition-printer/raise
   (syntax-rules ()
@@ -107,8 +114,12 @@
 	(message (condition-message e))
 	(form (syntax-violation-form e))
 	(subform (syntax-violation-subform e))
-	(trace (ptake 5 (condition-syntax-trace e))))
-    (display " Syntax error")
+	(trace (if (guru-mode?)
+                 (condition-syntax-trace e)
+                 (ptake 5 (condition-syntax-trace e))))
+        (syntax-form (condition-syntax-form e))
+        (syntax-subform (condition-syntax-subform e)))
+    (display " Syntax error" port)
     (newline port)
     (display "      who : " port)
     (display who port)
@@ -116,13 +127,30 @@
     (display "  message : " port)
     (display message port)
     (newline port)
-    (when form
-      (display "     form : " port)
-      (display form port)
-      (newline port))
+    (cond
+      ((and (not (guru-mode?))
+            ;FIXME move the blacklist proper place..
+            (member message 
+                    '("Unbound export" "Attempt to export mutable variable"))) 
+       'do-nothing)
+      (else
+        (when form
+          (display "     form : " port)
+          (display form port)
+          (when syntax-form
+            (let ((l (gather syntax-form)))
+              (when (< 0 (length l))
+                (display " " port)
+                (display l port))))
+          (newline port))))
     (when subform
       (display "  subform : " port)
       (display subform port)
+      (when syntax-subform
+        (let ((l (gather syntax-subform)))
+          (when (< 0 (length l))
+            (display " " port)
+            (display l port))))
       (newline port))
     (when (pair? trace)
       (display "   around : " port)
@@ -209,8 +237,8 @@
 		(unless first
 		  (display (rpad "" " " (+ 4 max-condition-len)) port))
 		(display "       " port)
-		(display (car field) port)
-		(display ": " port)
+		;(display (car field) port)
+		;(display ": " port)
 		(write (cdr field) port)
 		(newline port)
 		(loop #f (cdr fields-alist)))
