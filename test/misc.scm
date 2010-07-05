@@ -50,4 +50,9 @@
 
 (test-error assertion-violation? (make-vector 1.0))
 
+(test-error assertion-violation? (assoc 'a '(x)))
+(test-error assertion-violation? (assoc 'a '#f))
+(test-error assertion-violation? (assoc 'a '((x . y) y (a . v))))
+(test-equal '(a . v) (assoc 'a '((x . y) (a . v) y)))
+(test-error assertion-violation? (assoc 0 '(1)))
 (test-results)
