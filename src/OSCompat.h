@@ -134,7 +134,11 @@ namespace scheme {
 
         bool isOpen() const
         {
+#ifdef MONA
+            return desc_ > 0;
+#else
             return desc_ != INVALID_HANDLE_VALUE;
+#endif
         }
         bool close();
         bool isUTF16Console() const;
@@ -147,6 +151,7 @@ namespace scheme {
         ucs4string getLastErrorMessage() const;
         bool isLastErrorAcessError() const;
 
+        static ucs4string toShortName(const ucs4string& file);
         static Object size(const ucs4string& path);
         static bool isExist(const ucs4string& path);
         static bool isWritable(const ucs4string& path);

@@ -251,7 +251,8 @@ bool File::open(const ucs4string& file, int flags)
     }
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
 #elif defined(MONA)
-    desc_ = monapi_file_open(utf32toUtf8(file), flags & Create);
+    // long name -> short name
+    desc_ = monapi_file_open(utf32toUtf8(toShortName(file)), flags & Create);
 #else
     int mode = 0;
     if ((flags & Read) && (flags & Write)) {
@@ -393,21 +394,17 @@ int64_t File::write(uint8_t* buf, int64_t _size)
         return -1;
     }
 #elif defined(MONA)
-    if (this == &File::STANDARD_OUT) {
-        logprintf("write to stdout");
+    if (this == &File::STANDARD_OUT || this == &File::STANDARD_ERR) {
         int ret = monapi_stdout_write(buf,  _size);
-        logprintf("sizeWritten=%d", ret);
+        for (int i = 0; i < _size; i++) {
+            logprintf("%c", buf[i]);
+        }
         return ret;
     } else {
-        MOSH_ASSERT(desc_ > 3);
-        for (int i = 0; i < _size; i++) {
-            logprintf("[%c]", buf[i]);
-        }
         monapi_cmemoryinfo* buffer = new monapi_cmemoryinfo();
         monapi_cmemoryinfo_create(buffer, _size, 0);
         memcpy(buffer->Data, buf, buffer->Size);
         intptr_t sizeWritten = monapi_file_write(desc_, buffer, buffer->Size);
-        logprintf("monapi_file_write buffer->Size=%d, sizeWritten=%d", buffer->Size, sizeWritten);
         monapi_cmemoryinfo_dispose(buffer);
 //    monapi_cmemoryinfo_delete(buffer);
         return sizeWritten;
@@ -464,7 +461,7 @@ int64_t File::read(uint8_t* buf, int64_t _size)
     }
 #elif defined(MONA)
     if (this == &File::STANDARD_IN) {
-        MOSH_ASSERT(false);
+        return monapi_stdin_read(buf, _size);
     } else {
         monapi_cmemoryinfo* cmi = monapi_file_read(desc_, _size);
         if (cmi == NULL) {
@@ -560,7 +557,9 @@ bool wrapped_access(const ucs4string& path, int mode)
 #ifdef _WIN32
     return _waccess(utf32ToUtf16(path), mode) == 0;
 #elif defined(MONA)
-    return true;
+    File file;
+    file.open(path, 0);
+    return file.isOpen();
 #else
     return access(utf32toUtf8(path), mode) == 0;
 #endif
@@ -813,6 +812,48 @@ Object File::changeTime(const ucs4string& path)
     }
     return Object::Undef;
 #endif
+}
+
+ucs4string File::toShortName(const ucs4string& file)
+{
+    gc_vector<ucs4string> dirs;
+    file.split('/', dirs);
+    MOSH_ASSERT(dirs.size() > 0);
+    ucs4string filename = dirs[dirs.size() - 1];
+
+    ucs4string shortname;
+    // 8.3
+    if (filename.size() > 12) {
+
+        gc_vector<ucs4string> v;
+        filename.split('.', v);
+        MOSH_ASSERT(v.size() == 2);
+        const ucs4string& prefix = v[0];
+        const ucs4string& ext = v[1];
+
+        MOSH_ASSERT(ext.size() == 3);
+
+        for (ucs4string::size_type i = 0; i < 8 && i < prefix.size(); i++) {
+            if (prefix[i] == '-') {
+                shortname += '_';
+            } else {
+                shortname += prefix[i];
+            }
+        }
+        shortname += UC(".");
+        shortname += ext;
+        filename = shortname;
+        ucs4string ret;
+        for (gc_vector<ucs4string>::size_type i = 0; i < dirs.size() - 1; i++) {
+            ret += dirs[i];
+            ret += '/';
+        }
+        ret += shortname;
+        printf("<ret =%s>", ret.ascii_c_str());
+        return ret;
+    } else {
+        return file;
+    }
 }
 
 Object File::size(const ucs4string& path)

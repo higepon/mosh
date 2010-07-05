@@ -61,7 +61,7 @@ extern VM* theVM;
 
 NumberScanner::NumberScanner() :
                      buffer_(NULL),
-                     cursor_(buffer__),
+                     cursor_(buffer_),
                      token_(buffer_),
                      limit_(buffer_),
                      marker_(buffer_),
