@@ -52,4 +52,8 @@ $(ONIG_DIR)/config.h : mona/onig_config.h
 # .cc.o:
 # 	$(CXX) -c -o $@ $(CXXFLAGS) $(INCLUDE) $<
 
+depend dependencies:
+	$(CXX) -MM $(INCLUDE) $(CXXFLAGS) $(SOURCES) >> dependencies
+	sed -i 's/^.*:/src\/&/' ./dependencies 
+
 -include dependencies
