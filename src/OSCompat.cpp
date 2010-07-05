@@ -195,6 +195,12 @@ ucs4string scheme::getLastErrorMessageInternal(DWORD e)
     }
     return my_utf16ToUtf32(msg);
 }
+#elif defined(MONA)
+ucs4string scheme::getLastErrorMessageInternal(int e)
+{
+    fprintf(stderr, "getLastErrorMessageInternal=%d\n", e);
+    return UC("getLastErrorMessageInternal not supported");
+}
 #else
 ucs4string scheme::getLastErrorMessageInternal(int e)
 {
@@ -876,6 +882,7 @@ Object File::size(const ucs4string& path)
         file.close();
         return Bignum::makeIntegerFromS64(ret);
     } else {
+        MOSH_ASSERT(false);
         return Object::Undef;
     }
 #else
@@ -883,6 +890,7 @@ Object File::size(const ucs4string& path)
     if (stat(utf32toUtf8(path), &st) == 0) {
         return Bignum::makeIntegerFromS64(st.st_size);
     } else {
+        MOSH_ASSERT(false);
         return Object::Undef;
     }
 #endif
@@ -891,7 +899,7 @@ Object File::size(const ucs4string& path)
 bool File::isLastErrorAcessError() const
 {
     // TODO: Windows
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
     return false;
 #else
     return lastError_ == EACCES;
