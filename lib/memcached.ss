@@ -124,7 +124,7 @@
 
 (define (memcached-bv-set! conn key flags expiry bv-value)
   (let ([socket (random-socket conn)])
-    (memcached-send socket (format "set ~a 0 0 ~d\r\n" key (bytevector-length bv-value)))
+    (memcached-send socket (format "set ~a ~d ~d ~d\r\n" key flags expiry (bytevector-length bv-value)))
     (memcached-send-bv socket bv-value)
     (memcached-send socket "\r\n")
     (memcached-recv socket)))
