@@ -65,6 +65,7 @@
 (test-true (fixnum? (/ 4 2)))
 
 (test-error assertion-violation? (exact-integer-sqrt 0.0))
-
+(test-error assertion-violation? (-))
+(test-error assertion-violation? (apply - '()))
 
 (test-results)
