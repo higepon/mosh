@@ -1295,6 +1295,7 @@
       [('quote val) ($const val)]
       [('append . args) (pass1/asm-n-args 'APPEND2 'append args lvars)]
       [('+ . args)      (pass1/asm-n-args 'NUMBER_ADD '+ args lvars)]
+      [('-) ($asm 'MINUS-ERROR '())]
       [('- . args)
        (if (for-all number? args)
            (pass1/asm-n-args 'NUMBER_ADD   '+  (cdr (sub->add sexp))    lvars)
@@ -2810,6 +2811,7 @@
 (define (pass3/$asm cb iform locals frees can-frees sets tail depth display-count)
   (let1 args ($asm.args iform)
     (case ($asm.insn iform)
+      [(MINUS-ERROR)       (raise-compile-error cb '- "at least one argument required" '(-)) 0]
       [(APPEND2)           (pass3/$asm-2-arg cb  'APPEND2         (first args) (second args) locals frees can-frees sets depth display-count)]
       [(NUMBER_ADD)        (pass3/$asm-2-arg cb  'NUMBER_ADD      (first args) (second args) locals frees can-frees sets depth display-count)]
       [(NUMBER_SUB)        (pass3/$asm-2-arg cb  'NUMBER_SUB      (first args) (second args) locals frees can-frees sets depth display-count)]
