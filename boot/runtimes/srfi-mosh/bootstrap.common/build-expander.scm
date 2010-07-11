@@ -24,10 +24,10 @@
 	((library)
 	 (display " library ")
 	 (display name) (newline)
-	 (add-debug! fn (ex:expand-sequence/debug (list l) #t)))
+	 (add-debug! fn (ex:expand-sequence/debug fn (list l) #t)))
 	((program)
 	 (display " program")(newline)
-	 (add-debug! fn (ex:expand-sequence/debug (cdr l) #t)))
+	 (add-debug! fn (ex:expand-sequence/debug fn (cdr l) #t)))
 	(else
 	  (assertion-violation 'ex-6 "invalid expression" l)))))
   (display "expanding(R6RS) ")

@@ -1,6 +1,7 @@
 (library (nmosh pathutils)
          (export absolute-path?
-                 make-simple-path
+                 relative-path?
+                 simplify-path
                  path-append
                  expand-loadpath)
          (import (rnrs) (mosh))
@@ -106,7 +107,9 @@
 (define (absolute-path? pth)
   (do-absolute-path? (path->list pth)))
 
-(define (make-simple-path pth)
+(define (relative-path? pth) (not (absolute-path? pth)))
+
+(define (simplify-path pth)
   (define (make-simple base l)
     (define (chop-itr base-cur l-cur)
       (if (and (pair? base-cur) (pair? l-cur)

@@ -186,6 +186,7 @@
 (define ex:expand-sequence           #f) ;NMOSH
 (define ex:expand-sequence-r5rs      #f) ;NMOSH
 (define ex:expand-sequence/debug     #f) ;NMOSH
+(define ex:current-program           #f)
 (define ex:expand-sequence-r5rs/debug #f);NMOSH
 (define ex:generate-guid             #f) ;NMOSH
 (define ex:interaction-environment   #f) ;NMOSH
@@ -355,6 +356,7 @@
          (*programs* '())
          ;; 
          (*current-program* "<user program>")
+         (*current-program-valid?* #f)
          ;; additional depenents
          (*cache-depfiles* '())
          ;; whether to save cache file
@@ -2519,16 +2521,19 @@
                              (expand-toplevel-sequence l)))))))
 
 
-    (define (expand-sequence/debug l install?)
+    (define (expand-sequence/debug fn l install?)
       (fluid-let
         ((*DBG?* #t)
          (*DBG-SYMS* '())
          (*cache-save?* #t)
+         (*current-program-valid?* #t)
+         (*current-program* fn)
          (*cache-depfiles* '()) ; it will converted absolute path in mosh-utils5
          (*library-install?* install?))
         (let* ((r (expand-sequence l))
                (d *DBG-SYMS*))
           (list r d *cache-save?* *cache-depfiles*)))) 
+    (define (current-program) (and *current-program-valid?* *current-program*))
 
     (define (expand-sequence-r5rs/debug l env)
       (fluid-let
@@ -2796,6 +2801,7 @@
     (set! ex:expand-sequence           expand-sequence)
     (set! ex:expand-sequence-r5rs      expand-sequence-r5rs)
     (set! ex:expand-sequence/debug     expand-sequence/debug)
+    (set! ex:current-program           current-program)
     (set! ex:expand-sequence-r5rs/debug expand-sequence-r5rs/debug)
     (set! ex:interaction-environment   r6rs-interaction-environment) ;NMOSH
     (set! ex:current-environment       r6rs-current-environment) ;NMOSH

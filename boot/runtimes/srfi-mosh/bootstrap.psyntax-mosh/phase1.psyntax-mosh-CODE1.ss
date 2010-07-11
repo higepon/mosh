@@ -3,6 +3,7 @@
 (let* ((core (ex:expand-sequence core-src))
        (expander (ex:expand-sequence-r5rs expander-src (ex:environment '(rnrs base))))
        (code (append core expander)))
+  (newline)
   (display "writing BOOT1.exp")(newline)
   (call-with-output-file "BOOT1.exp"
                          (lambda (p)
