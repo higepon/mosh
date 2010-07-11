@@ -1,4 +1,6 @@
 #!/bin/sh
+MYMAKE=`which gmake 2>&1 > /dev/null && echo -n gmake || echo -n make`
+echo $MYMAKE
 autoreconf -ifv && \
-make -C boot bootstrap && \
-make -C boot
+$MYMAKE -C boot bootstrap && \
+$MYMAKE -C boot
