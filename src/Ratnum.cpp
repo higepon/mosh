@@ -36,45 +36,6 @@
 
 using namespace scheme;
 
-#ifdef MONA
-
-Object Ratnum::sqrt() const
-{
-    MOSH_ASSERT(false);
-    return Object::Undef;
-}
-
-Object Ratnum::sqrtUnsigned(const mpq_t r) const
-{
-    MOSH_ASSERT(false);
-    return Object::Undef;
-}
-
-Object Ratnum::floor() const
-{
-    MOSH_ASSERT(false);
-    return Object::Undef;
-}
-
-Object Ratnum::ceiling() const
-{
-    MOSH_ASSERT(false);
-    return Object::Undef;
-}
-
-Object Ratnum::truncate() const
-{
-    MOSH_ASSERT(false);
-    return Object::Undef;
-}
-
-Object Ratnum::round() const
-{
-    MOSH_ASSERT(false);
-    return Object::Undef;
-}
-
-#else
 Object Ratnum::sqrt() const
 {
     if (mpq_sgn(value) >= 0) {
@@ -149,5 +110,3 @@ Object Ratnum::round() const
         }
     }
 }
-
-#endif

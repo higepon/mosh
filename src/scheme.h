@@ -70,8 +70,10 @@
 #endif
 #ifndef MONA
 #include <cstdio>
-#include <gmp.h>
 #endif
+extern "C" {
+#include <gmp.h>
+}
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif

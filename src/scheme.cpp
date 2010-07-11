@@ -41,9 +41,11 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "OSCompat.h"
-#ifndef MONA
+extern "C" {
 #include <gmp.h>
-#else
+}
+
+#ifdef MONA
 #include <sys/error.h>
 #endif
 #include "OSCompatThread.h"
