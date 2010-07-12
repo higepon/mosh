@@ -421,6 +421,7 @@ private:
 // for better performance
 inline Object Object::makeFlonum(double value)
 {
+    _printf("<<%d>>", value == 0.0);
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Flonum,
                                                         reinterpret_cast<intptr_t>(new Flonum(value)))));
 }

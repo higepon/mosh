@@ -996,6 +996,8 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     }
     isErrorOccured = true;
     return UC("");
+#elif defined(MONA)
+    return UC("/APPS");
 #else
     isErrorOccured = true;
     return UC("");

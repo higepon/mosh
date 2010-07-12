@@ -49,11 +49,16 @@ Object Flonum::POSITIVE_INF;
 Object Flonum::NEGATIVE_INF;
 Object Flonum::NOT_A_NUMBER;
 
+double flonum_zero()
+{
+    return 0.0;
+}
+
 void Flonum::initialize()
 {
 #ifdef MONA
-    double inf = 1.0 / 0.0;
-    double nan = 0.0 / 0.0;
+    double inf = 1.0 / flonum_zero();
+    double nan = 0.0 / flonum_zero();
     POSITIVE_INF = Object::makeFlonum(inf);
     NEGATIVE_INF = Object::makeFlonum(-inf);
     NOT_A_NUMBER = Object::makeFlonum(nan);
