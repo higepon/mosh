@@ -26,7 +26,7 @@ ADDINCLUDE   = -I ./onig-5.7.0 -I $(BOEHM_GC_DIR)/include
 CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS)
 
 ONIG_OBJECTS = $(ONIG_SOURCES:.c=.o)
-INSTFILES    = MOSH.map src/all-tests.scm
+INSTFILES    = MOSH.map mona/all-tests.scm
 
 include $(SHAREDIR)/configs/monapi-exe.inc
 

@@ -47,7 +47,7 @@ mosh_config
 Instruction.h
 NumberScanner.cpp
 Scanner.cpp
-all-tests.scm
+src/all-tests.scm
 compiler-vm-cpp.scm
 compiler-vm.scm
 compiler-with-library.h
