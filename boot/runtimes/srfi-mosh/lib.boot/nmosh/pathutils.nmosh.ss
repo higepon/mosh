@@ -3,7 +3,10 @@
                  relative-path?
                  simplify-path
                  path-append
-                 expand-loadpath)
+                 expand-loadpath
+                 path-basename
+                 path-dirname
+                 )
          (import (rnrs) (mosh))
 
 ;; from mosh-utils5.scm
@@ -132,6 +135,25 @@
            pth
            r))))
     (else pth)))
+    
+
+(define (split-dir+base pth)
+  (define (itr cur rest)
+    (if (pair? rest)
+      (if (char=? (car rest) #\/)
+        (cons
+          (list->string (reverse rest))
+          (list->string cur)) ;basename
+        (itr (cons (car rest) cur) (cdr rest)))
+      (cons "" pth)))
+  (let ((p (pathfilter pth)))
+    (itr '() (reverse  (string->list p)))))
+
+(define (path-basename pth)
+  (cdr (split-dir+base pth)))
+
+(define (path-dirname pth)
+  (car (split-dir+base pth)))
 
 )
 
