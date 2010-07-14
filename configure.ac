@@ -280,7 +280,7 @@ i[[3456]]86|pentium)
         AM_CONDITIONAL(FFI_I386, true)
         AM_CONDITIONAL(FFI_X86_64, false)
         ;;
-	x86?64*) 
+	x86?64*|amd64) 
 	arch=x86_64
         case "$target_os" in
 		*darwin*)
@@ -291,6 +291,14 @@ i[[3456]]86|pentium)
 		AM_CONDITIONAL(FFI_I386, false)
 		AM_CONDITIONAL(FFI_X86_64, true)
 		;;
+                *freebsd*)
+                AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
+		AC_MSG_RESULT([x86_64(amd64)])
+                MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+                MOSH_LDADD_ARCH="-lpthread"
+		AM_CONDITIONAL(FFI_I386, false)
+		AM_CONDITIONAL(FFI_X86_64, true)
+                ;;
 		*)
 		MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
 		AC_MSG_RESULT([x86_64])
