@@ -4,6 +4,7 @@
 
 (define (case1)
   (ex:expand-sequence/debug
+    "my test-case"
     '(
       (import (rnrs))
       (define a 10)
