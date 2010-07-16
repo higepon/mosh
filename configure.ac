@@ -295,7 +295,7 @@ i[[3456]]86|pentium)
                 AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
                 AC_MSG_RESULT([x86_64(FreeBSD amd64)])
                 AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
-                MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+                MOSH_OPTS="$MOSH_INTEL_OPTS"
                 MOSH_LDADD_ARCH="-lpthread"
                 AM_CONDITIONAL(FFI_I386, false)
                 AM_CONDITIONAL(FFI_X86_64, true)
