@@ -1,8 +1,11 @@
+# -*- Mode: Makefile ; Coding: utf-8 -*-
+
 SRCTOP=../..
 include $(SRCTOP)/Makefile.inc
 
 TARGET  = MOSH
 INSTDIR = $(BINDIR)/APPS
+INSTDIR = $(BINDIR)/APPS/$(TARGET).APP
 include mona/Makefile.src.inc
 include mona/Makefile.gc.inc
 include mona/Makefile.onig.inc
@@ -21,12 +24,12 @@ include mona/Makefile.onig.inc
 ADDTARGETDEP = $(ONIG_DIR) $(BOEHM_GC_DIR)
 ADDLINKDEP   = $(ONIG_OBJECTS) $(GC_OBJECTS)
 ADDLINK      = $(ONIG_OBJECTS) $(GC_OBJECTS) -lgmp-imp -l monalibc-imp --enable-auto-import
-ADDCFLAGS    = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\"" -DMOSH_LIB_PATH="\"/APPS/MOSH/LIB\"" -U__CYGWIN32__ -mno-stack-arg-probe -DDEBUG_VERSION -DLINE_FEED_CODE_CRLF=1
+ADDCFLAGS    = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\"" -DMOSH_LIB_PATH="\"/LIBS/MOSH\"" -U__CYGWIN32__ -mno-stack-arg-probe -DDEBUG_VERSION -DLINE_FEED_CODE_CRLF=1
 ADDINCLUDE   = -I ./onig-5.7.0 -I $(BOEHM_GC_DIR)/include
 CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS)
 
 ONIG_OBJECTS = $(ONIG_SOURCES:.c=.o)
-INSTFILES    = MOSH.map mona/all-tests.scm
+INSTFILES    = MOSH.map mona/all-tests.scm test/misc.scm
 
 include $(SHAREDIR)/configs/monapi-exe.inc
 
@@ -36,13 +39,11 @@ $(ONIG_DIR)/config.h : mona/onig_config.h
 	cp $< $@
 
 
-# install:all
-# 	mkdir -p $(INSTDIR)
-# 	$(INSTALL) -pd $(BINDIR)/LIBS/SCHEME
-# 	$(INSTALL) -pd $(INSTDIR)/TEST
-# 	$(INSTALL) -p $(TARGET).EX5 $(INSTDIR)
-# 	$(INSTALL) -p  $(TEST_FILES) $(INSTDIR)/TEST
-# 	$(INSTALL) -p $(TARGET_LIBS) $(BINDIR)/LIBS/SCHEME
+install:all
+	mkdir -p $(INSTDIR)
+	$(INSTALL) $(TARGET).EXE $(INSTFILES) $(INSTDIR)
+	rm -rf $(BINDIR)/LIBS/MOSH
+	cp -r ./lib/ $(BINDIR)/LIBS/MOSH
 
 # .SUFFIXES: .scm.in .scm
 # .scm.in.scm:
@@ -57,3 +58,4 @@ depend dependencies:
 	sed -i 's/^.*:/src\/&/' ./dependencies 
 
 -include dependencies
+

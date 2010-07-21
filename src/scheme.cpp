@@ -120,7 +120,7 @@ void mosh_init()
     srandom(time(NULL));
 
 #ifdef MONA
-    const char* MAP_FILE_PATH = "/APPS/MOSH.MAP";
+    const char* MAP_FILE_PATH = "/APPS/MOSH.APP/MOSH.MAP";
     uint32_t pid = syscall_get_pid();
     intptr_t ret = syscall_stack_trace_enable(pid, MAP_FILE_PATH);
     if (ret != M_OK) {
