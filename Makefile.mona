@@ -10,27 +10,17 @@ include mona/Makefile.src.inc
 include mona/Makefile.gc.inc
 include mona/Makefile.onig.inc
 
-# TARGET_LIBS = lib/interact.scm lib/batch.scm lib/danny.scm lib/unittest.scm lib/core.scm lib/shell.scm lib/mona.scm lib/conf.scm lib/fib.scm lib/demo.scm
-# TEST_FILES  = test/char.scm test/closure.scm test/cont.scm test/generate.scm \
-#               test/number.scm test/pair.scm test/port.scm test/string.scm test/symbol.scm \
-#               test/test.scm test/util.scm test/vector.scm test/dir.scm test/shell.scm test/regexp.scm
-# ADDCFLAGS    = $(GC_CFLAGS) -U__CYGWIN32__ -O3 -mno-stack-arg-probe
-
-# ADDINCLUDE   = -I $(MONADIR)/include/monalibc -I . -I ./onig/onig-5.7.0
-# ADDLINK      =  main.o $(LIBCONT_OBJECTS) $(GC_OBJECTS) $(ONIG_OBJECTS) -lmonalibc-imp --enable-auto-import #-lgui-imp
-# ADDLINKDEP   =  $(LIBCONT_OBJECTS) $(GC_OBJECTS) $(ONIG_OBJECTS) $(MONADIR)/lib/libmonalibc-imp.a main.o #$(MONADIR)/lib/libgui-imp.a main.o
-# ADDTARGETDEP =  $(ONIG_DIR) $(BOEHM_GC_DIR) $(REGISTERS_INC) $(PROCEDURES_H) $(TARGET_LIBS) test/test.scm test/port.scm test/dir.scm test/shell.scm
-
 ADDTARGETDEP = $(ONIG_DIR) $(BOEHM_GC_DIR)
 ADDLINKDEP   = $(ONIG_OBJECTS) $(GC_OBJECTS)
 ADDLINK      = $(ONIG_OBJECTS) $(GC_OBJECTS) -lgmp-imp -l monalibc-imp --enable-auto-import
 ADDCFLAGS    = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\"" -DMOSH_LIB_PATH="\"/LIBS/MOSH\"" -U__CYGWIN32__ -mno-stack-arg-probe -DDEBUG_VERSION -DLINE_FEED_CODE_CRLF=1
 ADDINCLUDE   = -I ./onig-5.7.0 -I $(BOEHM_GC_DIR)/include
-CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS)
+CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS) .BOOT
 
 ONIG_OBJECTS = $(ONIG_SOURCES:.c=.o)
 INSTFILES    = MOSH.map mona/all-tests.scm test/misc.scm
-
+top_srcdir = "."
+FIRSTDEP = gen
 include $(SHAREDIR)/configs/monapi-exe.inc
 
 $(ONIG_OBJECTS) : $(ONIG_DIR)/config.h
@@ -38,20 +28,54 @@ $(ONIG_OBJECTS) : $(ONIG_DIR)/config.h
 $(ONIG_DIR)/config.h : mona/onig_config.h
 	cp $< $@
 
+gen: .BOOT src/Instruction.h src/labels.cpp src/Object-accessors.h src/OSConstants.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Scanner.cpp src/NumberScanner.cpp
+
+.BOOT:
+	@if [ ! -f $@ ]; then touch $@; ./gen-git-build.sh; fi
+
+src/Instruction.h: src/instruction.scm
+	mosh $(top_srcdir)/misc/scripts/gen-insn.scm $< $@
+
+src/main.cpp: src/psyntax_mosh_image.cpp src/baselib.h src/match.h
+
+src/labels.cpp: src/instruction.scm
+	mosh $(top_srcdir)/misc/scripts/gen-label.scm $< $@
+
+src/cprocedures.cpp: boot/free-vars-decl.scm 
+	mosh $(top_srcdir)/misc/scripts/gen-cproc.scm $< $@
+
+src/all-tests.scm: src/test-data.scm
+	(cd $(top_srcdir) && mosh -5 misc/scripts/gen-test.scm src/test-data.scm src/all-tests.scm)
+#	echo 'run -5 misc/scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
+
+src/Object-accessors.h: src/accessors.scm
+	(cd $(top_srcdir) && mosh misc/scripts/gen-accessors.scm) > $@
+
+src/OSConstants.h: src/os-constants.scm
+	(cd $(top_srcdir) && mosh misc/scripts/gen-os-constants.scm) > $@
+
+# READER 
+src/Reader.tab.hpp: src/Reader.tab.cpp src/Reader.y
+
+src/NumberReader.tab.hpp: src/NumberReader.tab.cpp src/NumberReader.y
+
+src/Reader.tab.cpp: src/Reader.y
+	bison -d $< -o $@
+
+src/NumberReader.tab.cpp: src/NumberReader.y
+	bison -p "number_yy" -d $< -o $@
+
+src/Scanner.cpp : src/scanner.re
+	re2c -u $< > $@ # -d is debug option
+
+src/NumberScanner.cpp : src/NumberScanner.re
+	re2c -cu $< > $@ # -d is debug option
 
 install:all
 	mkdir -p $(INSTDIR)
 	$(INSTALL) $(TARGET).EXE $(INSTFILES) $(INSTDIR)
 	rm -rf $(BINDIR)/LIBS/MOSH
 	cp -r ./lib/ $(BINDIR)/LIBS/MOSH
-
-# .SUFFIXES: .scm.in .scm
-# .scm.in.scm:
-# 	sed -e 's|<IF_MONA>||g' $< | sed -e 's|<IF_LINUX>|;|g' | sed -e 's|<LIBDIR>|/LIBS/SCHEME|g' | sed -e 's|<TESTDIR>|/SERVERS/TEST|g' > $@
-
-# .SUFFIXES: .cc .o
-# .cc.o:
-# 	$(CXX) -c -o $@ $(CXXFLAGS) $(INCLUDE) $<
 
 depend dependencies:
 	$(CXX) -MM $(INCLUDE) $(CXXFLAGS) $(SOURCES) >> dependencies
