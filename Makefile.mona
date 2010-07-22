@@ -28,7 +28,11 @@ $(ONIG_OBJECTS) : $(ONIG_DIR)/config.h
 $(ONIG_DIR)/config.h : mona/onig_config.h
 	cp $< $@
 
-gen: .BOOT src/Instruction.h src/labels.cpp src/Object-accessors.h src/OSConstants.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Scanner.cpp src/NumberScanner.cpp
+GEN_FILES = src/Instruction.h src/labels.cpp src/Object-accessors.h src/OSConstants.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Scanner.cpp src/NumberScanner.cpp src/cprocedures.cpp
+
+gen: .BOOT $(GEN_FILES)
+
+$(SOURCES): $(GEN_FILES)
 
 .BOOT:
 	@if [ ! -f $@ ]; then touch $@; ./gen-git-build.sh; fi
