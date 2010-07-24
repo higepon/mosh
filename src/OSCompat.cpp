@@ -257,8 +257,7 @@ bool File::open(const ucs4string& file, int flags)
     }
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
 #elif defined(MONA)
-    // long name -> short name
-    desc_ = monapi_file_open(utf32toUtf8(toShortName(file)), flags & Create);
+    desc_ = monapi_file_open(utf32toUtf8(file), flags & Create);
 #else
     int mode = 0;
     if ((flags & Read) && (flags & Write)) {
@@ -818,48 +817,6 @@ Object File::changeTime(const ucs4string& path)
     }
     return Object::Undef;
 #endif
-}
-
-ucs4string File::toShortName(const ucs4string& file)
-{
-    gc_vector<ucs4string> dirs;
-    file.split('/', dirs);
-    MOSH_ASSERT(dirs.size() > 0);
-    ucs4string filename = dirs[dirs.size() - 1];
-
-    ucs4string shortname;
-    // 8.3
-    if (filename.size() > 12) {
-
-        gc_vector<ucs4string> v;
-        filename.split('.', v);
-        MOSH_ASSERT(v.size() == 2);
-        const ucs4string& prefix = v[0];
-        const ucs4string& ext = v[1];
-
-        MOSH_ASSERT(ext.size() == 3);
-
-        for (ucs4string::size_type i = 0; i < 8 && i < prefix.size(); i++) {
-            if (prefix[i] == '-') {
-                shortname += '_';
-            } else {
-                shortname += prefix[i];
-            }
-        }
-        shortname += UC(".");
-        shortname += ext;
-        filename = shortname;
-        ucs4string ret;
-        for (gc_vector<ucs4string>::size_type i = 0; i < dirs.size() - 1; i++) {
-            ret += dirs[i];
-            ret += '/';
-        }
-        ret += shortname;
-        printf("<ret =%s>", ret.ascii_c_str());
-        return ret;
-    } else {
-        return file;
-    }
 }
 
 Object File::size(const ucs4string& path)
