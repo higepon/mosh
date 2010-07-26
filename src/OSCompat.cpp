@@ -562,9 +562,7 @@ bool wrapped_access(const ucs4string& path, int mode)
 #ifdef _WIN32
     return _waccess(utf32ToUtf16(path), mode) == 0;
 #elif defined(MONA)
-    File file;
-    file.open(path, 0);
-    return file.isOpen();
+    return monapi_file_exists(path.ascii_c_str()) == MONAPI_TRUE;
 #else
     return access(utf32toUtf8(path), mode) == 0;
 #endif

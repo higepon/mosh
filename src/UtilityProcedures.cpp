@@ -974,8 +974,10 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
     }
     return Object::makeString(UC("<not-supported>"));
 #elif defined(MONA)
-    callAssertionViolationAfter(theVM, procedureName, "not implmented", L1(argv[0]));
-    return Object::Undef;
+    uint64_t msec = MonAPI::Date::nowInMsec();
+    return Pair::list3(Object::makeFlonum((double)msec / 1000.0),
+                       Object::makeFlonum(0.0),
+                       Object::makeFlonum(0.0));
 
 #else
     checkArgumentLength(0);
