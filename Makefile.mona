@@ -78,8 +78,8 @@ src/NumberScanner.cpp : src/NumberScanner.re
 install:all
 	mkdir -p $(INSTDIR)
 	$(INSTALL) $(TARGET).EXE $(INSTFILES) $(INSTDIR)
-	rm -rf $(BINDIR)/LIBS/MOSH
-	cp -r ./lib/ $(BINDIR)/LIBS/MOSH
+	mkdir -p $(BINDIR)/LIBS/MOSH
+	cp -r ./lib/ $(BINDIR)/LIBS/MOSH/
 
 depend dependencies:
 	$(CXX) -MM $(INCLUDE) $(CXXFLAGS) $(SOURCES) >> dependencies

@@ -228,6 +228,7 @@ bool File::open(const ucs4string& file, int flags)
     if (isOpen()) {
         return false;
     }
+    logprintf("mosh open file = %s\n", file.ascii_c_str());
 #ifdef _WIN32
     DWORD access = 0, disposition = 0;
     DWORD share = FILE_SHARE_READ | FILE_SHARE_WRITE;
@@ -258,6 +259,7 @@ bool File::open(const ucs4string& file, int flags)
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
 #elif defined(MONA)
     desc_ = monapi_file_open(utf32toUtf8(file), flags & Create);
+    logprintf("mosh open = %x\n", desc_);
 #else
     int mode = 0;
     if ((flags & Read) && (flags & Write)) {
@@ -468,15 +470,20 @@ int64_t File::read(uint8_t* buf, int64_t _size)
     if (this == &File::STANDARD_IN) {
         return monapi_stdin_read(buf, _size);
     } else {
+        logprintf("mosh read = %x\n", desc_);
         monapi_cmemoryinfo* cmi = monapi_file_read(desc_, _size);
         if (cmi == NULL) {
             return 0;
         }
-        logprintf("monapi read");
-//         for (int i = 0; i < cmi->Size; i++) {
-//             logprintf("<%c>", ((char*)(cmi->Data))[i]);
-//         }
-        logprintf("monapi read done _size=%x cmi->Size=%x",cmi->Size,  _size);
+        logprintf("OSCompat cmi->Data=%x\n", cmi->Data);
+        logprintf("OSCompat cmi->Handle=%d\n", cmi->Handle);
+        logprintf("monapi read _size = %d Data=%x\n", _size, cmi->Data);
+        for (int i = 0; i < cmi->Size; i++) {
+            char c = cmi->Data[i];
+            logprintf("<%c>", c < 128 ? c : '?');
+        }
+        
+        logprintf("monapi read done _size=%d cmi->Size=%d",cmi->Size,  _size);
         MOSH_ASSERT(cmi->Size <= _size);
         memcpy(buf, cmi->Data, cmi->Size);
         intptr_t sizeRead = cmi->Size;
