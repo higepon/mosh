@@ -9,10 +9,6 @@ AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/VM.h])
 AC_CONFIG_HEADER([src/config.h])
 
-
-AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh/$PACKAGE_VERSION")
-
-
 # we don't like default CFLAGS(-O2 -g).
 AC_SUBST(CFLAGS)
 if test "" = "$CFLAGS"; then
@@ -24,6 +20,8 @@ if test "" = "$CXXFLAGS"; then
     CXXFLAGS=" "
 fi
 
+AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh/$PACKAGE_VERSION")
+
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES
 dnl AC_LIBTOOL_DLOPEN # use dlopen
@@ -33,23 +31,26 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-dnl AC_CHECK_PROG(GOSH, gosh, gosh, no)
-dnl if test "$GOSH" != "gosh"
-dnl     then AC_MSG_ERROR([gosh not found. Gauche (http://practical-scheme.net/gauche/) is required to build.])
-dnl fi
 AC_CHECK_LIB(gmp, __gmpz_init, ,
   [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])
 
-
-AC_ARG_ENABLE(profiler, [  --enable-profiler turn off profiler [default=yes]], ,[enable_profiler=yes])
+AC_ARG_ENABLE(profiler, [  --enable-profiler Build with profiler feature [default=yes]], ,[enable_profiler=yes])
 AC_MSG_CHECKING(whether to enable profiler)
 if test "$enable_profiler" = "yes"; then
-  AC_DEFINE(ENABLE_PROFILER, 1, enable -p option for profiling)
+    case $host in
+        *mingw*)
+        AC_MSG_ERROR([Profiling is not supported on MinGW hosts])
+        ;;
+        *)
+        AC_DEFINE(ENABLE_PROFILER, 1, enable -p option for profiling)
+        ;;
+    esac
 fi
+AC_MSG_RESULT([$enable_profiler])
 
-AC_MSG_RESULT([$host_os])
-AC_MSG_RESULT([$host])
-AC_MSG_RESULT([$target])
+dnl AC_MSG_RESULT([$host_os])
+dnl AC_MSG_RESULT([$host])
+dnl AC_MSG_RESULT([$target])
 
 case $host in
   *darwin*)
@@ -184,40 +185,38 @@ case "$target_os" in
     ;;
 esac
 
-#MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
 MOSH_GENERIC_OPTS="-O3"
 MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-pointer"
 
-#MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -pg"
-
 # Checks for threads
-AC_MSG_CHECKING([check threads])
-case "$target_os" in
-*darwin*)
-  AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
-  ;;
-*linux*)
-  AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
-  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-  ;;
-freebsd*)
-  AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
-  ;;
-cygwin)
-  AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
-  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-  # gc-7.1 fix
-  ac_configure_args="$ac_configure_args --disable-shared CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
-  ;;
-
-mingw*)
-  AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
-  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
-  ;;
-*)
-  AC_MSG_ERROR([Please modify configure.ac for $target_os])
-  ;;
-esac
+# 
+# AC_MSG_CHECKING([check threads])
+# case "$target_os" in
+# *darwin*)
+#   AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
+#   ;;
+# *linux*)
+#   AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
+#   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+#   ;;
+# freebsd*)
+#   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
+#   ;;
+# cygwin)
+#   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
+#   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+#   # gc-7.1 fix
+#   ac_configure_args="$ac_configure_args --disable-shared CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
+#   ;;
+# 
+# mingw*)
+#   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
+#   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
+#   ;;
+# *)
+#   AC_MSG_ERROR([Please modify configure.ac for $target_os])
+#   ;;
+# esac
 
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
@@ -282,30 +281,24 @@ i[[3456]]86|pentium)
         ;;
 	x86?64*|amd64) 
 	arch=x86_64
+        AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
+        AM_CONDITIONAL(FFI_I386, false)
+        AM_CONDITIONAL(FFI_X86_64, true)
         case "$target_os" in
                 *darwin*)
                 AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
                 AC_MSG_RESULT([x86_64])
-                AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
                 MOSH_OPTS="-O3"
-                AM_CONDITIONAL(FFI_I386, false)
-                AM_CONDITIONAL(FFI_X86_64, true)
                 ;;
                 *freebsd*)
                 AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
                 AC_MSG_RESULT([x86_64(FreeBSD amd64)])
-                AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
                 MOSH_OPTS="$MOSH_INTEL_OPTS"
                 MOSH_LDADD_ARCH="-lpthread"
-                AM_CONDITIONAL(FFI_I386, false)
-                AM_CONDITIONAL(FFI_X86_64, true)
                 ;;
                 *)
 		MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
 		AC_MSG_RESULT([x86_64])
-		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
-		AM_CONDITIONAL(FFI_I386, false)
-		AM_CONDITIONAL(FFI_X86_64, true)
 		;;
 	esac
 	;;
