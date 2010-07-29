@@ -41,10 +41,13 @@
 
     Example:
     (start code)
+    (import (rnrs)
+            (mosh ffi))
+
     ;; use mysql client library
     (let* ([libmysqlclient (open-shared-library "libmysqlclient.so.15")]
            [mysql-init     (c-function libmysqlclient void* mysql_init void*)])
-      (display (mysql-init 0)))
+      (display (mysql-init pointer-null)))
     (end code)
 
     (start code)
@@ -93,7 +96,7 @@
                                                                        (pointer-ref-c-uint8 y 0)) 1 0)))])
         (qsort array (bytevector-length array) 1 compare)
         (display array)
-        (free-c-callback qsort))
+        (free-c-callback compare))
     (end code)
 
 
