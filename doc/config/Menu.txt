@@ -64,9 +64,13 @@ Group: Mosh  {
    File: File  (lib/mosh/file.ss)
    }  # Group: Mosh
 
-File: Pattern Match  (lib/match.ss)
-File: Shorten  (lib/shorten.ss)
-File: Regular Expressions  (doc/text/regexp.txt)
+Group: Lib  {
+
+   File: Pattern Match  (lib/match.ss)
+   File: Red-Black tree  (lib/rbtree.ss)
+   File: Shorten  (lib/shorten.ss)
+   File: Regular Expressions  (doc/text/regexp.txt)
+   }  # Group: Lib
 
 Group: R6RS  {
 

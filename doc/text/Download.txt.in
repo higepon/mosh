@@ -51,6 +51,6 @@ Hello, World
 or
 > % mosh --help
 
-Subversion Repository:
+Repository:
 
-http://code.google.com/p/mosh-scheme/source/checkout
+http://github.com/higepon/mona
