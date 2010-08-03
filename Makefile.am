@@ -402,11 +402,6 @@ MAINTAINERCLEANFILES = $(GENERATED)
 
 # update: lib/mosh/queue.ss.mosh-fasl
 
-# when you release comment out start
-if DEVELOPER
-# when you release comment out end
-endif
-
 doc:
 	mosh misc/scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
