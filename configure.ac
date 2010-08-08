@@ -188,35 +188,35 @@ esac
 MOSH_GENERIC_OPTS="-O3"
 MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-pointer"
 
-# Checks for threads
-# 
-# AC_MSG_CHECKING([check threads])
-# case "$target_os" in
-# *darwin*)
-#   AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
-#   ;;
-# *linux*)
-#   AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
-#   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-#   ;;
-# freebsd*)
-#   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
-#   ;;
-# cygwin)
-#   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
-#   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-#   # gc-7.1 fix
-#   ac_configure_args="$ac_configure_args --disable-shared CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
-#   ;;
-# 
-# mingw*)
-#   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
-#   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
-#   ;;
-# *)
-#   AC_MSG_ERROR([Please modify configure.ac for $target_os])
-#   ;;
-# esac
+# Checks for O/S specific features
+
+AC_MSG_CHECKING([check threads])
+case "$target_os" in
+*darwin*)
+  AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
+  ;;
+*linux*)
+  AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
+  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+  ;;
+freebsd*)
+  AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
+  ;;
+cygwin)
+  AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
+  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+  # gc-7.1 fix
+  ac_configure_args="$ac_configure_args --disable-shared CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
+  ;;
+
+mingw*)
+  AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
+  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
+  ;;
+*)
+  AC_MSG_ERROR([Please modify configure.ac for $target_os])
+  ;;
+esac
 
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
@@ -226,7 +226,6 @@ i[[3456]]86|pentium)
         arch=i386
         case "$target_os" in
         *darwin*)
-          AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
           if test -n "`system_profiler |grep 'Intel Core 2'`" ; then
              MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse2 -mfpmath=sse"
           else
@@ -234,9 +233,6 @@ i[[3456]]86|pentium)
           fi
           ;;
         *linux*)
-          AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
-          AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-
           if test -n "`grep 'Core(TM)2 CPU' /proc/cpuinfo`" ; then
              MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse3 -mfpmath=sse"
           else
@@ -256,7 +252,6 @@ i[[3456]]86|pentium)
           fi
           ;;
        *freebsd*)
-         AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
          MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
@@ -286,12 +281,10 @@ i[[3456]]86|pentium)
         AM_CONDITIONAL(FFI_X86_64, true)
         case "$target_os" in
                 *darwin*)
-                AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
                 AC_MSG_RESULT([x86_64])
                 MOSH_OPTS="-O3"
                 ;;
                 *freebsd*)
-                AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
                 AC_MSG_RESULT([x86_64(FreeBSD amd64)])
                 MOSH_OPTS="$MOSH_INTEL_OPTS"
                 MOSH_LDADD_ARCH="-lpthread"
