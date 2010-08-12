@@ -80,7 +80,9 @@ extern int main(int argc, char *argv[]);
     #define SHUT_RD SD_RECEIVE
     #define SHUT_WR SD_SEND
     #define SHUT_RDWR SD_BOTH
+#ifndef PATH_MAX //MinGW has PATH_MAX
     #define PATH_MAX _MAX_PATH
+#endif
     #define dup2 _dup2
     #ifdef _MSC_VER
 #define IPPROTO_UDP 17
@@ -351,7 +353,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
 // But WriteConsole can't be redirected to a file.
 // So we use WideCharToMultiByte and GetConsoleOutputCP.
 #if 1
-        int destSize = 0;
+        unsigned int destSize = 0;
         if ((destSize = WideCharToMultiByte(GetConsoleOutputCP() , 0,(const wchar_t *)buf, _size / 2, (LPSTR)NULL, 0, NULL, NULL)) == 0) {
             throwIOError2(IOError::WRITE, getLastErrorMessage());
             return 0;
@@ -582,7 +584,7 @@ bool File::isExecutable(const ucs4string& path)
     if (isExist(path)) {
         const ucs4char* extensions[] = { UC(".COM"), UC(".EXE"), UC(".BAT"), UC(".VBS"), UC("VBE"),
                                          UC(".JS"), UC(".JSE"), UC(".WSF"), UC(".WSH"), UC(".MSC")};
-        for (int i = 0; i < sizeof(extensions); i++) {
+        for (unsigned int i = 0; i < sizeof(extensions); i++) {
             if (endsWith(path, extensions[i])) {
                 return true;
             }
@@ -933,10 +935,15 @@ extern char** environ;
 Object scheme::getEnvAlist()
 {
 #ifdef _WIN32
+#ifdef _MSC_VER
+    const wchar_t equ = L'=';
+#else
+    const wchar_t equ = 61; // L'=' eqv.
+#endif
     Object ret = Object::Nil;
     const wchar_t *env = GetEnvironmentStringsW();
     for (;;) {
-        const wchar_t *p = wcschr(env + (*env == L'=' ? 1 : 0), L'=');
+        const wchar_t *p = wcschr(env + (*env == equ ? 1 : 0), equ);
         if (p) {
             ucs4string key = my_utf16ToUtf32(std::wstring(env, p));
             size_t len = wcslen(p + 1);
