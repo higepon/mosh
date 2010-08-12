@@ -11,12 +11,9 @@ ONIG_DIR   = onig-5.7.0
 REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 
 # for GTEST
-GTEST_DIR     = $(top_srcdir)/gtest-1.2.1
+GTEST_DIR     = $(top_srcdir)/gtest
 USER_DIR      = .
 TESTS         = # used later
-GTEST_HEADERS_ = $(GTEST_DIR)/include/gtest/*.h \
-                $(GTEST_DIR)/include/gtest/internal/*.h
-GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
@@ -39,14 +36,14 @@ bin_SCRIPTS = src/mosh_config
 # -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
 mosh_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
-mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
+mosh_OPTS     = -D ONIG_ESCAPE_REGEX_T_COLLISION -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
 mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated # temp -Wno-deprecated
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
 nmosh_SOURCES = src/main.cpp src/nmosh_image.cpp
 
-nmosh_OPTS     = -D WITH_NMOSH_DEFAULTS -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
+nmosh_OPTS     = -D ONIG_ESCAPE_REGEX_T_COLLISION -D WITH_NMOSH_DEFAULTS -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
 nmosh_CFLAGS   = $(nmosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated 
 nmosh_CXXFLAGS = $(nmosh_CFLAGS)
 nmosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
@@ -492,19 +489,17 @@ ntestR:
 
 # Builds gtest.a and gtest_main.a.
 
-# Usually you shouldn't tweak such internal variables, indicated by a
-# trailing _.
-GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS_)
+GTEST_CPPFLAGS_ = -I$(GTEST_DIR)
 
 # For simplicity and to avoid depending on Google Test's
 # implementation details, the dependencies specified below are
 # conservative and not optimized.  This is fine as Google Test
 # compiles fast and for ordinary users its source rarely changes.
-gtest-all.o : $(GTEST_SRCS_)
-	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest-all.cc
+gtest-all.o : $(GTEST_DIR)/gtest/gtest-all.cc
+	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -o $@ -c $<
 
-gtest_main.o : $(GTEST_SRCS_)
-	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest_main.cc
+gtest_main.o : $(GTEST_DIR)/gtest/gtest_main.cc
+	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -o $@ -c $<
 
 gtest.a : gtest-all.o
 	$(AR) $(ARFLAGS) $@ $^
@@ -514,7 +509,7 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(RANLIB) $@
 
 check_PROGRAMS=
-TEST_CXXFLAGS_     = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+TEST_CXXFLAGS_     = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0
 TEST_LDADD_        = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
 TEST_DEPENDENCIES_ = libmosh.a gtest_main.a
 

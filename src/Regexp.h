@@ -57,7 +57,7 @@ private:
     OnigRegion* matchInternal(const ucs4string& text);
 
     ucs4string pattern_;
-    regex_t* regexp_;
+    OnigRegexType* regexp_; // do not use regex_t..
     OnigErrorInfo einfo_;
     bool isErrorOccured_;
     Object errorMessage_;
