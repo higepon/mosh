@@ -1,6 +1,15 @@
 # GLOBAL CFLAGS
 
-GLOBAL_CFLAGS =  -D ONIG_ESCAPE_REGEX_T_COLLISION -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir) -g -D_FILE_OFFSET_BITS=64 -Wall -pipe $(DEBUG_FLAGS) -Wno-deprecated @MOSH_OPTS@ # temp -Wno-deprecated
+GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
+		 -g \
+		 -Wall -Wno-deprecated \
+		 -I src -I $(includedir) \
+		 -D MONA_SCHEME -D USE_BOEHM_GC \
+		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \
+		 -D_FILE_OFFSET_BITS=64 -Wall -pipe $(DEBUG_FLAGS) \
+		 @MOSH_OPTS@ # temp -Wno-deprecated
+
+LIBS += @ONIG_LIBS@
 
 if DEVELOPER
 GIT_BRANCH=$(shell git symbolic-ref HEAD|cut -d'/' -f3)
@@ -26,16 +35,17 @@ AM_CXXFLAGS = $(GLOBAL_CFLAGS)
 BOEHM_GC_DIR = gc-7.1
 GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 
-# Regexp library oniguruma
-ONIG_DIR   = onig-5.7.0
-REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
+## Regexp library oniguruma
+#ONIG_DIR   = onig-5.7.0
+#REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 
 # for GTEST
 GTEST_DIR     = $(top_srcdir)/gtest
 USER_DIR      = .
 TESTS         = # used later
 
-SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
+#SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
+SUBDIRS = $(BOEHM_GC_DIR) .
 
 man_MANS = doc/mosh.1 doc/mosh_config.1
 
@@ -342,7 +352,7 @@ datadir = @MOSH_LIB_PATH@
 data_DATA = src/all-tests.scm
 nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
-INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR) -I$(top_srcdir)/src
+INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I$(top_srcdir)/src
 EXTRA_DIST     = \
 boot/vm.scm boot/baselib boot/compiler.scm \
 boot/free-vars.scm misc/scripts boot/baselib/match.scm doc \
@@ -472,7 +482,7 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(RANLIB) $@
 
 check_PROGRAMS=
-TEST_CXXFLAGS_     = $(GLOBAL_CFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0
+TEST_CXXFLAGS_     = $(GLOBAL_CFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0 -D ONIG_ESCAPE_REGEX_T_COLLISION 
 TEST_LDADD_        = libmosh_core_for_test.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
 TEST_DEPENDENCIES_ = libmosh_core_for_test.a gtest_main.a
 

@@ -31,8 +31,37 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
+# Prerequisites
+
+### GMP or MPIR(gmp API)
+
 AC_CHECK_LIB(gmp, __gmpz_init, ,
   [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])
+
+### Oniguruma 5
+## we need oniguruma 5.x for unicode support
+
+# option0: look for source-tree
+
+# option1: use onig-config in PATH
+AC_PATH_PROG(ONIGCONFIG,onig-config,not found)
+if test "not-found" = "$ONIGCONFIG"; then
+    # put some warning here..
+    ONIG_CFLAGS=""
+    ONIG_LIBS=""
+else
+    ONIG_CFLAGS=`$ONIGCONFIG --cflags`
+    ONIG_LIBS=`$ONIGCONFIG --libs`
+fi
+
+if test "" = ONIG_LIBS; then
+    AC_MSG_ERROR([oniguruma not found, mosh requires oniguruma 5.x])
+fi
+
+AC_SUBST(ONIG_CFLAGS)
+AC_SUBST(ONIG_LIBS)
+
+## ~prereq.
 
 AC_ARG_ENABLE(profiler, [  --enable-profiler Build with profiler feature [default=yes]], ,[enable_profiler=yes])
 AC_MSG_CHECKING(whether to enable profiler)
@@ -311,5 +340,5 @@ case "$target_in" in
 esac
 
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SUBDIRS([gc-7.1 onig-5.7.0])
+AC_CONFIG_SUBDIRS([gc-7.1])
 AC_OUTPUT(src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)
