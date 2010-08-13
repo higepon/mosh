@@ -1,9 +1,4 @@
-FIXME: this document does not reflect recent changes.
-use Cygwin or MSVC9 for Windows build.
-
---
-
-README.MINGW 02-Aug-2009
+README.MINGW 14-Aug-2010
 
 by OKUMURA Yuki <mjt@cltn.org>
 
@@ -11,11 +6,7 @@ WARNING
 -------
 
 This is port of Mosh for mingw32msvc, and it's still an _experimental_ port.
-If you just wish to use Mosh under win32 environment, use MSVC port instead.
-I also recommend Cygwin port.
-
-Please consider using svn trunk :
-  http://code.google.com/p/mosh-scheme/source/checkout
+Please consider using Cygwin port which is more feature complete.
 
 STATUS
 ------
@@ -28,10 +19,10 @@ NOT supported :
 PREREQUISITES
 -------------
 
-- MinGW + MSYS (tested by 4.4.0)
+- MinGW + MSYS (tested by 4.5.0)
 - bash
 - MSYS make
-- gnu MP library
+- gnu MP library 
 
 
 CONFIGURATION & BUILD
@@ -44,7 +35,7 @@ As usual product, run the configure script and make.
 INSTALL
 -------
 
-Copy mosh.exe and lib/.
+Copy nmosh.exe and lib/.
 
 Current version of Mosh won't use Windows' registry, unless you installed Mosh
 with binary distribution installer.
@@ -52,11 +43,7 @@ with binary distribution installer.
 AUTO-COMPILE-CACHE (ACC)
 ------------------------
 
-Mosh caches parsed script into following directory :
-
-- %HOME%\.mosh
-- %LOCALAPPDATA%\.mosh
-- %APPDATA%\.mosh
+Mosh caches parsed script into "cache" directory.
 
 This is called "ACC (Auto-Compile-Cache)" and you can disable it with
  --disable-acc commandline option.
