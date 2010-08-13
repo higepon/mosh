@@ -29,6 +29,7 @@
  *  $Id: TestingVM.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <gtest/gtest.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
