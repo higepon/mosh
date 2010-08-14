@@ -33,7 +33,7 @@ AC_PROG_RANLIB
 
 # Prerequisites
 
-LOCAL_CONFIGURE_ARGS = "--host=$host --build=$build"
+LOCAL_CONFIGURE_ARGS="--host=$host --build=$build"
 
 ### GMP or MPIR(gmp API)
 
@@ -67,7 +67,13 @@ if test $have_onig = no; then
     else
         ONIG_CFLAGS=`$ONIGCONFIG --cflags`
         ONIG_LIBS=`$ONIGCONFIG --libs`
-        have_onig=yes
+        saved_cflags=$CFLAGS
+        saved_libs=$LIBS
+        CFLAGS="$CFLAGS $ONIG_CFLAGS"
+        LIBS="$LIBS $ONIG_LIBS"
+        AC_CHECK_LIB([onig],[regexec],have_onig=yes,have_onig=no)
+        CFLAGS=$saved_cflags
+        LIBS=$saved_libs
     fi
 fi
 
