@@ -225,7 +225,7 @@ endif
 if BUILD_LOCAL_ONIG
 $(top_builddir)/onig/Makefile:
 	mkdir -p onig
-	(cd onig && $(top_srcdir)/onig/configure --disable-shared)
+	(cd onig && $(top_srcdir)/onig/configure @LOCAL_CONFIGURE_ARGS@ --disable-shared)
 
 local_oniguruma_tree: $(top_builddir)/onig/Makefile
 

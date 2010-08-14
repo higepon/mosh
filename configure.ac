@@ -33,6 +33,8 @@ AC_PROG_RANLIB
 
 # Prerequisites
 
+LOCAL_CONFIGURE_ARGS = "--host=$host --build=$build"
+
 ### GMP or MPIR(gmp API)
 
 AC_CHECK_LIB(gmp, __gmpz_init, ,
@@ -83,6 +85,8 @@ AC_SUBST(LOCAL_ONIG)
 
 AC_SUBST(ONIG_CFLAGS)
 AC_SUBST(ONIG_LIBS)
+
+AC_SUBST(LOCAL_CONFIGURE_ARGS)
 
 ## ~prereq.
 
