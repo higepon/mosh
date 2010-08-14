@@ -41,22 +41,45 @@ AC_CHECK_LIB(gmp, __gmpz_init, ,
 ### Oniguruma 5
 ## we need oniguruma 5.x for unicode support
 
-# option0: look for source-tree
+have_onig=no
+local_onig_build=no
+LOCAL_ONIG=""
+
+# option0: check for source-tree
+if test -d ${srcdir}/onig; then
+    have_onig=yes
+    local_onig_build=yes
+    ONIG_CFLAGS="-I${srcdir}/onig"
+    ONIG_LIBS="./onig/.libs/libonig.a"
+    LOCAL_ONIG=$ONIG_LIBS
+fi
 
 # option1: use onig-config in PATH
-AC_PATH_PROG(ONIGCONFIG,onig-config,not found)
-if test "not-found" = "$ONIGCONFIG"; then
-    # put some warning here..
-    ONIG_CFLAGS=""
-    ONIG_LIBS=""
-else
-    ONIG_CFLAGS=`$ONIGCONFIG --cflags`
-    ONIG_LIBS=`$ONIGCONFIG --libs`
+if test $have_onig = no; then
+    ONIGCONFIG=""
+    AC_PATH_PROG(ONIGCONFIG,onig-config)
+    if test "" = "$ONIGCONFIG"; then
+        # put some warning here..
+        ONIG_CFLAGS=""
+        ONIG_LIBS=""
+    else
+        ONIG_CFLAGS=`$ONIGCONFIG --cflags`
+        ONIG_LIBS=`$ONIGCONFIG --libs`
+        have_onig=yes
+    fi
 fi
 
-if test "" = ONIG_LIBS; then
+# option2: try to link with current configuration
+if test $have_onig = "no" ; then
+    AC_CHECK_LIB([onig],[regexec],[LIBS="$LIBS -lonig" have_onig="yes"])
+fi
+
+if test $have_onig = "no" ; then
     AC_MSG_ERROR([oniguruma not found, mosh requires oniguruma 5.x])
 fi
+
+AM_CONDITIONAL(BUILD_LOCAL_ONIG,test $local_onig_build = "yes")
+AC_SUBST(LOCAL_ONIG)
 
 AC_SUBST(ONIG_CFLAGS)
 AC_SUBST(ONIG_LIBS)

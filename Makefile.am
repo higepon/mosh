@@ -202,13 +202,16 @@ noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 libmosh_main_a_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
 mosh_SOURCES = $(MOSH_CORE_SRCS)
 mosh_LDADD = libmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+mosh_DEPENDENCIES = @LOCAL_ONIG@
 
 libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp
 libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) -D WITH_NMOSH_DEFAULTS
 nmosh_SOURCES = $(MOSH_CORE_SRCS)
 nmosh_LDADD = libnmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+nmosh_DEPENDENCIES = @LOCAL_ONIG@
 
 libmosh_core_for_test_a_SOURCES = $(MOSH_CORE_SRCS)
+libmosh_core_for_test_a_DEPENDENCIES = @LOCAL_ONIG@
 
 
 if MINGW32
@@ -219,6 +222,16 @@ mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
 	$(WINDRES) $< -o mosh-icon.o
 endif 
 
+if BUILD_LOCAL_ONIG
+$(top_builddir)/onig/Makefile:
+	mkdir -p onig
+	(cd onig && $(top_srcdir)/onig/configure --disable-shared)
+
+local_oniguruma_tree: $(top_builddir)/onig/Makefile
+
+@LOCAL_ONIG@: local_oniguruma_tree
+	$(MAKE) -C onig
+endif
 
 BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Reader.tab.cpp src/NumberReader.tab.cpp src/Scanner.cpp src/NumberScanner.cpp src/cprocedures.cpp src/labels.cpp src/OSConstants.h
 
