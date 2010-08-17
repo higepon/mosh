@@ -320,13 +320,13 @@
 
 
 (test-error i/o-invalid-position-error?
-            (let ([port (open-file-input-port "./test/invalid-utf8.txt"
+            (let ([port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
                                               (file-options no-truncate no-fail)
                                               (buffer-mode none))])
               (set-port-position! port -1)))
 
 ;; file-is-read-only
-(unless (or (string=? (host-os) "win32") (string=? (host-os) "cygwin"))
+(unless (or (string=? (host-os) "win32") (string=? (host-os) "cygwin") (string=? (host-os) "mona"))
   (let ()
   (test-error i/o-file-is-read-only-error?
                   (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))

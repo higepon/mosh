@@ -531,7 +531,19 @@ int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
         return -1;
     }
 #elif defined(MONA)
-    return monapi_file_seek(desc_, offset, whence);
+    int origin = SEEK_SET;
+    switch (whence) {
+    case Begin:
+        origin = SEEK_SET;
+        break;
+    case Current:
+        origin = SEEK_CUR;
+        break;
+    case End:
+        origin = SEEK_END;
+        break;
+    }
+    return monapi_file_seek(desc_, offset, origin);
 #else
     // Don't use lseek64.
     // We handle 64bit offset With -D _FILE_OFFSET_BITS=64 and lseek.
