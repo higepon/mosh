@@ -343,7 +343,7 @@
                   (get-u8 binary-port) ;; port is already closed!
                   (display (read-char text-port))))
 
-(unless (string=? (host-os) "win32")
+(when (string=? (host-os) "linux")
 (let ()
   (define (text-pipe)
     ;; Binary ports here
