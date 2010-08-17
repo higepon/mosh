@@ -34,9 +34,7 @@
 
 #include <setjmp.h>
 #include "HeapObject.h"
-#define re_registers onig_re_registers /* these may conflict POSIX regex */
-#define re_pattern_buffer onig_re_pattern_buffer
-#include "oniguruma.h"
+#include "oniguruma_compat.h"
 
 namespace scheme {
 

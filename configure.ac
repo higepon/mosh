@@ -95,9 +95,6 @@ AC_SUBST(ONIG_LIBS)
 # gtest requires POSIX regexp and this will conflict oniguruma
 # We will define  -D ONIG_ESCAPE_REGEX_T_COLLISION for this
 
-AC_CHECK_HEADER(regex.h,ONIG_REGEX_H_COMPAT="-D ONIG_ESCAPE_REGEX_T_COLLISION",ONIG_REGEX_H_COMPAT=)
-AC_SUBST(ONIG_REGEX_H_COMPAT)
-
 AC_SUBST(LOCAL_CONFIGURE_ARGS)
 
 ## ~prereq.
