@@ -258,7 +258,7 @@ bool File::open(const ucs4string& file, int flags)
     }
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
 #elif defined(MONA)
-    desc_ = monapi_file_open(utf32toUtf8(file), flags & Create);
+    desc_ = monapi_file_open(utf32toUtf8(file), (flags & Create) ? MONAPI_TRUE : MONAPI_FALSE);
     logprintf("mosh open = %x\n", desc_);
 #else
     int mode = 0;
