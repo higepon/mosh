@@ -42,6 +42,10 @@
 #  endif
 #endif
 
+#ifdef MONA
+#include <monapi.h>
+#endif
+
 #ifdef _WIN32
 #else
 #include <unistd.h>
