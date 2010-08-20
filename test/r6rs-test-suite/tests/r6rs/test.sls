@@ -13,7 +13,9 @@
           test/output/unspec
           run-test
           report-test-results)
-  (import (rnrs))
+  (import (rnrs) (mosh))
+
+  (define tmp-catch-out (if (string=? "mona" (host-os)) "/MEM/tmp-catch-out" "tmp-catch-out"))
 
   (define-record-type err
     (fields err-c))
@@ -146,19 +148,19 @@
   (define failures '())
 
   (define (capture-output thunk)
-    (if (file-exists? "tmp-catch-out")
-        (delete-file "tmp-catch-out"))
+    (if (file-exists? tmp-catch-out)
+        (delete-file tmp-catch-out))
     (dynamic-wind
         (lambda () 'nothing)
         (lambda ()
-          (with-output-to-file "tmp-catch-out"
+          (with-output-to-file tmp-catch-out
             thunk)
-          (call-with-input-file "tmp-catch-out"
+          (call-with-input-file tmp-catch-out
             (lambda (p)
               (get-string-n p 1024))))
         (lambda ()
-          (if (file-exists? "tmp-catch-out")
-              (delete-file "tmp-catch-out")))))
+          (if (file-exists? tmp-catch-out)
+              (delete-file tmp-catch-out)))))
   
   (define (same-result? got expected)
     (cond

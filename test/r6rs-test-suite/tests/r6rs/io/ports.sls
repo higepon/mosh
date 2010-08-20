@@ -3,8 +3,11 @@
 (library (tests r6rs io ports)
   (export run-io-ports-tests)
   (import (rnrs)
+          (mosh)
           (rnrs mutable-strings (6))
           (tests r6rs test))
+
+  (define tmp-file (if (string=? "mona" (host-os)) "/MEM/io-tmp1" tmp-file))
 
   (define-syntax test-transcoders
     (syntax-rules ()
@@ -171,26 +174,26 @@
     ;; Check file creation and truncation:
 
     (test/unspec
-     (if (file-exists? "io-tmp1")
-         (delete-file "io-tmp1")))
+     (if (file-exists? tmp-file)
+         (delete-file tmp-file)))
 
     ;; Don't create if 'no-create:
-    (test/exn (open-file-output-port "io-tmp1"
+    (test/exn (open-file-output-port tmp-file
                                      (file-options no-create))
               &i/o-file-does-not-exist)
-    (test/exn (open-file-output-port "io-tmp1"
+    (test/exn (open-file-output-port tmp-file
                                      (file-options no-create no-fail))
               &i/o-file-does-not-exist)
-    (test/exn (open-file-output-port "io-tmp1"
+    (test/exn (open-file-output-port tmp-file
                                      (file-options no-create no-truncate))
               &i/o-file-does-not-exist)
-    (test/exn (open-file-output-port "io-tmp1"
+    (test/exn (open-file-output-port tmp-file
                                      (file-options no-create no-fail no-truncate))
               &i/o-file-does-not-exist)
 
     ;; Create:
-    (let ([p (open-file-output-port "io-tmp1")])
-      (test (file-exists? "io-tmp1") #t)
+    (let ([p (open-file-output-port tmp-file)])
+      (test (file-exists? tmp-file) #t)
       (test (port? p) #t)
       (test (binary-port? p) #t)
       (test (textual-port? p) #f)
@@ -200,34 +203,34 @@
       (test/unspec (close-port p)))
 
     ;; Don't re-create:
-    (test/exn (open-file-output-port "io-tmp1")
+    (test/exn (open-file-output-port tmp-file)
               &i/o-file-already-exists)
-    (test/exn (open-file-output-port "io-tmp1" (file-options no-truncate))
+    (test/exn (open-file-output-port tmp-file (file-options no-truncate))
               &i/o-file-already-exists)
 
     ;; Re-open if 'no-create is specified:
-    (let ([p (open-file-output-port "io-tmp1"
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-create))])
       (test/unspec (close-port p)))
     
     ;; Re-open if 'no-fail is specified:
-    (let ([p (open-file-output-port "io-tmp1"
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-fail))])
       (test/unspec (close-port p)))
 
     ;; Create if 'no-fail is specified and it doesn't exist:
-    (test/unspec (delete-file "io-tmp1"))
-    (let ([p (open-file-output-port "io-tmp1"
+    (test/unspec (delete-file tmp-file))
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-fail no-truncate))])
       (test/unspec (close-port p)))
-    (test/unspec (delete-file "io-tmp1"))
-    (let ([p (open-file-output-port "io-tmp1"
+    (test/unspec (delete-file tmp-file))
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-fail))])
       (test/unspec (put-bytevector p #vu8(99 101 98 100)))
       (test/unspec (close-port p)))
 
     ;; Check content:
-    (let ([p (open-file-input-port "io-tmp1")])
+    (let ([p (open-file-input-port tmp-file)])
       (test (port? p) #t)
       (test (binary-port? p) #t)
       (test (textual-port? p) #f)
@@ -238,21 +241,21 @@
       (test/unspec (close-port p)))
 
     ;; Check that 'no-truncate doesn't truncate:
-    (let ([p (open-file-output-port "io-tmp1"
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-fail no-truncate))])
       (test/unspec (put-bytevector p #vu8(97)))
       (test/unspec (close-port p)))
-    (let ([p (open-file-input-port "io-tmp1")])
+    (let ([p (open-file-input-port tmp-file)])
       (test (get-bytevector-n p 5) #vu8(97 101 98 100))
       (test/unspec (close-port p)))
-    (let ([p (open-file-output-port "io-tmp1"
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-create no-truncate))])
       (test/unspec (put-bytevector p #vu8(96)))
       (test/unspec (close-port p)))
-    (let ([p (open-file-input-port "io-tmp1")])
+    (let ([p (open-file-input-port tmp-file)])
       (test (get-bytevector-n p 5) #vu8(96 101 98 100))
       (test/unspec (close-port p)))
-    (let ([p (open-file-output-port "io-tmp1"
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-create no-truncate))])
       (test (port-has-port-position? p) #t)
       (test (port-has-set-port-position!? p) #t)
@@ -261,44 +264,44 @@
       (test (port-position p) 6)
       (test/unspec (put-bytevector p #vu8(102)))
       (test/unspec (close-port p)))
-    (let ([p (open-file-input-port "io-tmp1")])
+    (let ([p (open-file-input-port tmp-file)])
       (test (get-bytevector-n p 4) #vu8(96 101 98 100))
       (test/unspec (get-bytevector-n p 2))
       (test (get-bytevector-n p 2) #vu8(102))
       (test/unspec (close-port p)))
 
     ;; Otherwise, truncate:
-    (let ([p (open-file-output-port "io-tmp1"
+    (let ([p (open-file-output-port tmp-file
                                     (file-options no-fail))])
       (test/unspec (close-port p)))
-    (let ([p (open-file-input-port "io-tmp1")])
+    (let ([p (open-file-input-port tmp-file)])
       (test (port-eof? p) #t)
       (test/unspec (close-port p)))
 
     ;; ----------------------------------------
     ;; Check buffer modes? Just make sure they're accepted:
 
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 'line)])
+    (let ([p (open-file-output-port tmp-file (file-options no-create) 'line)])
       (test (output-port-buffer-mode p) 'line)
       (close-port p))
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 'block)])
+    (let ([p (open-file-output-port tmp-file (file-options no-create) 'block)])
       (test (output-port-buffer-mode p) 'block)
       (close-port p))
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 'none)])
+    (let ([p (open-file-output-port tmp-file (file-options no-create) 'none)])
       (test (output-port-buffer-mode p) 'none)
       (close-port p))
 
-    (let ([p (open-file-input-port "io-tmp1" (file-options) 'line)])
+    (let ([p (open-file-input-port tmp-file (file-options) 'line)])
       (close-port p))
-    (let ([p (open-file-input-port "io-tmp1" (file-options) 'block)])
+    (let ([p (open-file-input-port tmp-file (file-options) 'block)])
       (close-port p))
-    (let ([p (open-file-input-port "io-tmp1" (file-options) 'none)])
+    (let ([p (open-file-input-port tmp-file (file-options) 'none)])
       (close-port p))
     
     ;; ----------------------------------------
     ;; Transcoders
 
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 
+    (let ([p (open-file-output-port tmp-file (file-options no-create) 
                                     'block (make-transcoder (latin-1-codec)))])
       (when (port-has-port-position? p)
         (test/unspec (port-position p))
@@ -312,7 +315,7 @@
       (test/unspec (put-string p "berry" 1 1))
       (close-port p))
 
-    (let ([p (open-file-input-port "io-tmp1" (file-options)
+    (let ([p (open-file-input-port tmp-file (file-options)
                                    'block (make-transcoder (latin-1-codec)))])
       (test (binary-port? p) #f)
       (test (textual-port? p) #t)
@@ -323,24 +326,24 @@
       (test (get-char p) (eof-object))
       (close-port p))
 
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 
+    (let ([p (open-file-output-port tmp-file (file-options no-create) 
                                     'block (make-transcoder (utf-8-codec)))])
       (test/unspec (put-string p "app\x3BB;e"))
       (close-port p))
-    (let ([p (open-file-input-port "io-tmp1" (file-options)
+    (let ([p (open-file-input-port tmp-file (file-options)
                                    'block (make-transcoder (latin-1-codec)))])
       (test (get-string-n p 20) "app\xCE;\xBB;e")
       (close-port p))
     
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 
+    (let ([p (open-file-output-port tmp-file (file-options no-create) 
                                     'block (make-transcoder (utf-16-codec)))])
       (test/unspec (put-string p "app\x3BB;e"))
       (close-port p))
-    (let ([p (open-file-input-port "io-tmp1" (file-options)
+    (let ([p (open-file-input-port tmp-file (file-options)
                                    'block (make-transcoder (utf-16-codec)))])
       (test (get-string-n p 20) "app\x3BB;e")
       (close-port p))
-    (let ([p (open-file-input-port "io-tmp1")])
+    (let ([p (open-file-input-port tmp-file)])
       (let ([b1 (get-u8 p)])
         (cond
         [(equal? b1 #xFE)
@@ -359,23 +362,23 @@
 
     (let ([bytevector->string-via-file
            (lambda (bv tr)
-             (let ([p (open-file-output-port "io-tmp1" (file-options no-create))])
+             (let ([p (open-file-output-port tmp-file (file-options no-create))])
                (put-bytevector p bv)
                (close-port p))
-             (let ([p (open-file-input-port "io-tmp1" (file-options) 'block tr)])
+             (let ([p (open-file-input-port tmp-file (file-options) 'block tr)])
                (dynamic-wind
                    (lambda () 'ok)
                    (lambda () (get-string-all p))
                    (lambda () (close-port p)))))]
           [string->bytevector-via-file
            (lambda (str tr)
-             (let ([p (open-file-output-port "io-tmp1" (file-options no-create)
+             (let ([p (open-file-output-port tmp-file (file-options no-create)
                                              'block tr)])
                (dynamic-wind
                    (lambda () 'ok)
                    (lambda () (put-string p str) (flush-output-port p))
                    (lambda () (close-port p))))
-             (let ([p (open-file-input-port "io-tmp1")])
+             (let ([p (open-file-input-port tmp-file)])
                (let ([v (get-bytevector-all p)])
                  (close-port p)
                  v)))])
@@ -384,7 +387,7 @@
 
     (let ([test-i+o
            (lambda (buf)
-             (let ([p (open-file-input/output-port "io-tmp1"
+             (let ([p (open-file-input/output-port tmp-file
                                                    (file-options no-fail)
                                                    buf)])
                (if (and (port-has-port-position? p)
@@ -411,27 +414,27 @@
       (test-i+o 'block)
       (test-i+o 'none))
 
-    (let ([p (open-file-input/output-port "io-tmp1"
+    (let ([p (open-file-input/output-port tmp-file
                                           (file-options no-fail)
                                           'none
                                           (make-transcoder (latin-1-codec)))])
       (test/unspec (put-string p "berry"))
       (test/unspec (close-port p)))
-    (let ([p (open-file-input/output-port "io-tmp1"
+    (let ([p (open-file-input/output-port tmp-file
                                           (file-options no-fail no-truncate)
                                           'none
                                           (make-transcoder (latin-1-codec)))])
       (test (get-string-n p 4) "berr")
       (test/unspec (put-string p "apple"))
       (test/unspec (close-port p)))
-    (let ([p (open-file-input/output-port "io-tmp1"
+    (let ([p (open-file-input/output-port tmp-file
                                           (file-options no-fail no-truncate)
                                           'none
                                           (make-transcoder (latin-1-codec)))])
       (test (get-string-n p 10) "berrapple")
       (test/unspec (close-port p)))
 
-    (test/unspec (delete-file "io-tmp1"))
+    (test/unspec (delete-file tmp-file))
     
     ;; ----------------------------------------
     ;; bytevector ports

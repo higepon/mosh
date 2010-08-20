@@ -911,9 +911,14 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsString(0, text);
 #ifdef MONA
-    callIoFileNameErrorAfter(theVM, procedureName,
-                             "can't delete file, not supported",
-                             argv[0]);
+    if (monapi_file_delete(text->data().ascii_c_str()) != MONA_SUCCESS) {
+        callIoFileNameErrorAfter(theVM, procedureName,
+                                 "can't delete file",
+                                 argv[0]);
+        return Object::Undef;
+    } else {
+        return Object::Undef;
+    }
 #else
     if (-1 == unlink(text->data().ascii_c_str())) {
         callIoFileNameErrorAfter(theVM, procedureName,
