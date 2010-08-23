@@ -746,8 +746,8 @@ Object File::modifyTime(const ucs4string& path)
     }
     return Object::Undef;
 #elif defined(MONA)
-    MOSH_ASSERT(false);
-    return Object::Undef;
+    monapi_warn("modifyTime returns always zero");
+    return Object::makeFixnum(0);
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
