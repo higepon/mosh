@@ -3,7 +3,6 @@
         (clos core)
         (mosh)
         (mosh test))
-
 (define-class <person> () name age)
 
 (define person1 (make <person>))
