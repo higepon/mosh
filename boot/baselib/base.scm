@@ -3775,7 +3775,7 @@
               )))
 
 (define (file-newer? a b)
-  (> (file-stat-mtime a) (file-stat-mtime b)))
+  (>= (file-stat-mtime a) (file-stat-mtime b)))
 
 ;; psyntax things start
 (define fasl-write! fasl-write)
