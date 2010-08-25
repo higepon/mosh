@@ -200,7 +200,6 @@ Socket* Socket::createClientSocket(const char* node,
     hints.ai_next = NULL;
     struct addrinfo* result;
     int ret;
-
     // TODO server socket?
 #ifndef MONA
     MOSH_ASSERT(!((ai_flags & AI_PASSIVE) && node == NULL));
@@ -211,13 +210,14 @@ Socket* Socket::createClientSocket(const char* node,
         ret = getaddrinfo(node, service, &hints, &result);
     } while (EAI_AGAIN == ret);
 
-
     if (ret != 0) {
         isErrorOccured = true;
 #ifdef _WIN32
         errorMessage = getLastErrorMessageInternal(WSAGetLastError());
 #elif defined(MONA)
-        errorMessage = ucs4string::from_c_str("should be port lwip_strerr");
+        char buf[128];
+        snprintf(buf, 128, "getaddrinfo returns %d", ret);
+        errorMessage = ucs4string::from_c_str(buf);
 #else
         errorMessage = ucs4string::from_c_str(gai_strerror(ret));
 #endif
@@ -291,7 +291,6 @@ Socket* Socket::createServerSocket(const char* service,
         ret = getaddrinfo(NULL, service, &hints, &result);
     } while (EAI_AGAIN == ret);
 
-
     if (ret != 0) {
         isErrorOccured = true;
 #ifdef _WIN32
@@ -301,10 +300,8 @@ Socket* Socket::createServerSocket(const char* service,
 #else
         errorMessage = ucs4string::from_c_str(gai_strerror(ret));
 #endif
-            printf("here%d", __LINE__);
         return NULL;
     }
-
     // there may be many addresses for one host
     int lastError = 0;
     for (struct addrinfo* p = result; p != NULL; p = p->ai_next) {
@@ -313,22 +310,21 @@ Socket* Socket::createServerSocket(const char* service,
             lastError = errno;
             continue;
         }
+// Mona's lwip doesn't support SO_REUSEADDR.
+#ifndef MONA
         int optValue = 1;
         if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&optValue, sizeof(optValue)) == -1) {
 #ifdef _WIN32
             ::shutdown(fd, SD_SEND);
             ::closesocket(fd);
             lastError = WSAGetLastError();
-#elif defined(MONA)
-            ::closesocket(fd);
-            lastError = errno;
 #else
             ::close(fd);
             lastError = errno;
 #endif
-
             continue;
         }
+#endif
 
         if (bind(fd, p->ai_addr, p->ai_addrlen) == -1) {
 #ifdef _WIN32
@@ -342,10 +338,8 @@ Socket* Socket::createServerSocket(const char* service,
             ::close(fd);
             lastError = errno;
 #endif
-
             continue;
         }
-
         const int TRADITIONAL_BACKLOG = 5;
         if (p->ai_socktype == SOCK_STREAM ) {
             if (listen(fd, TRADITIONAL_BACKLOG) == -1) {
@@ -364,7 +358,6 @@ Socket* Socket::createServerSocket(const char* service,
                 continue;
             }
         }
-
         ucs4string addressString = getAddressString(p);
         freeaddrinfo(result);
         return new Socket(fd, Socket::SERVER, addressString);
