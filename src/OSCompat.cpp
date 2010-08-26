@@ -198,8 +198,9 @@ ucs4string scheme::getLastErrorMessageInternal(DWORD e)
 #elif defined(MONA)
 ucs4string scheme::getLastErrorMessageInternal(int e)
 {
-    monapi_warn("getLastErrorMessageInternal=%d\n", e);
-    return UC("getLastErrorMessageInternal not supported");
+    char buf[128];
+    snprintf(buf, 128, "error code %d", e);
+    return ucs4string::from_c_str(buf).data();
 }
 #else
 ucs4string scheme::getLastErrorMessageInternal(int e)
