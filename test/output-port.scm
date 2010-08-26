@@ -34,13 +34,13 @@
         (mosh shell)
         (mosh process))
 
-;; test utilitiy
-;; (def-command rm)
-;; (define (cp from to)
-;;   (let-values  ([(pid cin cout cerr) (spawn "cp" (list from to) (list #f #f #f))])
-;;     (waitpid pid)
-;;     #f))
-;; N.B rm and cp should be written in pure scheme
+(define (mona?) (string=? (host-os) "mona"))
+
+(define test-txt (if (mona?) "/APPS/MOSH.APP/test/test.txt" "./test/test.txt"))
+(define test-txt-tmp (if (mona?) "/MEM/test.txt.temp" "./test/test.txt.temp"))
+(define test-utf16 (if (mona?) "/MEM/utf16.txt" "./test/utf16.txt"))
+(define not-exist (if (mona?) "/MEM/not-exist" "./not-exist"))
+
 (define (rm file-name)
   (when (file-exists? file-name)
     (delete-file file-name)))
@@ -56,7 +56,9 @@
             (close-port in)
             (close-port out)))))))
 
-(cp "./test/test.txt" "./test/test.txt.temp")
+(cp test-txt test-txt-tmp)
+(when (mona?)
+  (cp "/APPS/MOSH.APP/test/utf16.txt" test-utf16))
 
 (define (with-all-buffer-mode file proc)
   (let ([tmp-file (format "~a.temp" file)])
@@ -182,12 +184,12 @@
   (test-equal (port-position port) 0)
 )
 
-(let ([port (open-file-output-port "./test/test.txt.temp" (file-options no-fail))])
+(let ([port (open-file-output-port test-txt-tmp (file-options no-fail))])
       (set-port-position! port 4000)
           (put-bytevector port (make-bytevector 9000 #x13))
               (close-port port))
 
-(let ([port (open-file-input-port "./test/test.txt.temp" (file-options no-fail))])
+(let ([port (open-file-input-port test-txt-tmp (file-options no-fail))])
       (set-port-position! port 4000)
           (let ([bv (get-bytevector-n port 9000)])
                         (test-true (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))))
@@ -200,48 +202,48 @@
 |#
 
 (test-error i/o-file-already-exists-error?
-                (open-file-output-port "./test/utf16.txt"))
+                (open-file-output-port test-utf16))
 
 (test-error i/o-file-already-exists-error?
-                (open-file-output-port "./test/utf16.txt" (file-options)))
+                (open-file-output-port test-utf16 (file-options)))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-already-exists-error?
-                   (open-file-output-port "./test/utf16.txt" (file-options) mode))))
+                   (open-file-output-port test-utf16 (file-options) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-already-exists-error?
-                   (open-file-output-port "./test/utf16.txt" (file-options) mode (make-transcoder (utf-16-codec))))))
+                   (open-file-output-port test-utf16 (file-options) mode (make-transcoder (utf-16-codec))))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists")])
+   (let ([port (open-file-output-port not-exist)])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options))])
+   (let ([port (open-file-output-port not-exist (file-options))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options) mode)])
+   (let ([port (open-file-output-port not-exist (file-options) mode)])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options) mode (make-transcoder (utf-16-codec)))])
+   (let ([port (open-file-output-port not-exist (file-options) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 
 #|
@@ -250,19 +252,19 @@
       If does not exist:  raise &file-does-not-exist
 |#
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create))])
      (close-port port)
      (test-true (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create) mode)])
      (close-port port)
      (test-true (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
@@ -271,17 +273,17 @@
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create)))))
+                   (open-file-output-port not-exist (file-options no-create)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create) mode))))
+                   (open-file-output-port not-exist (file-options no-create) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create) mode (make-transcoder (utf-16-codec))))))
+                   (open-file-output-port not-exist (file-options no-create) mode (make-transcoder (utf-16-codec))))))
 
 #|
     (file-options no-fail)
@@ -289,19 +291,19 @@
       If does not exist:  create new file
 |#
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-fail))])
      (close-port port)
      (test-true (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-fail) mode)])
      (close-port port)
      (test-true (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
@@ -309,24 +311,24 @@
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-fail))])
+   (let ([port (open-file-output-port not-exist (file-options no-fail))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-fail) mode)])
+   (let ([port (open-file-output-port not-exist (file-options no-fail) mode)])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-fail) mode (make-transcoder (utf-16-codec)))])
+   (let ([port (open-file-output-port not-exist (file-options no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 #|
     (file-options no-truncate)
@@ -335,57 +337,57 @@
 |#
 
 (test-error i/o-file-already-exists-error?
-                (open-file-output-port "./test/utf16.txt" (file-options no-truncate)))
+                (open-file-output-port test-utf16 (file-options no-truncate)))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-already-exists-error?
-                   (open-file-output-port "./test/utf16.txt" (file-options no-truncate) mode))))
+                   (open-file-output-port test-utf16 (file-options no-truncate) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-already-exists-error?
-                   (open-file-output-port "./test/utf16.txt" (file-options no-truncate) mode (make-transcoder (utf-16-codec))))))
+                   (open-file-output-port test-utf16 (file-options no-truncate) mode (make-transcoder (utf-16-codec))))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-truncate))])
+   (let ([port (open-file-output-port not-exist (file-options no-truncate))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-truncate) mode)])
+   (let ([port (open-file-output-port not-exist (file-options no-truncate) mode)])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-truncate) mode (make-transcoder (utf-16-codec)))])
+   (let ([port (open-file-output-port not-exist (file-options no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 #|
     (file-options no-create no-fail)
       If file exists:     truncate
       If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
 |#
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-fail))])
      (close-port port)
      (test-true (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-fail) mode)])
      (close-port port)
      (test-true (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
@@ -394,17 +396,17 @@
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-fail)))))
+                   (open-file-output-port not-exist (file-options no-create no-fail)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-fail) mode))))
+                   (open-file-output-port not-exist (file-options no-create no-fail) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-fail) mode (make-transcoder (utf-16-codec))))))
+                   (open-file-output-port not-exist (file-options no-create no-fail) mode (make-transcoder (utf-16-codec))))))
 
 #|
     (file-options no-fail no-truncate)
@@ -412,19 +414,19 @@
       If does not exist:  create new file
 |#
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-fail no-truncate))])
      (close-port port)
      (test-false (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-fail no-truncate) mode)])
      (close-port port)
      (test-false (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-fail no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
@@ -432,24 +434,24 @@
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-fail no-truncate))])
+   (let ([port (open-file-output-port not-exist (file-options no-fail no-truncate))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-fail no-truncate) mode)])
+   (let ([port (open-file-output-port not-exist (file-options no-fail no-truncate) mode)])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (let ([port (open-file-output-port "./not-exists" (file-options no-fail no-truncate) mode (make-transcoder (utf-16-codec)))])
+   (let ([port (open-file-output-port not-exist (file-options no-fail no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test-true (empty-file-exists? "./not-exists"))
-     (rm "./not-exists"))))
+     (test-true (empty-file-exists? not-exist))
+     (rm not-exist))))
 
 
 #|
@@ -458,19 +460,19 @@
       If does not exist:  raise &file-does-not-exist
 |#
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-truncate))])
      (close-port port)
      (test-false (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-truncate) mode)])
      (close-port port)
      (test-false (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
@@ -479,17 +481,17 @@
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-truncate)))))
+                   (open-file-output-port not-exist (file-options no-create no-truncate)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-truncate) mode))))
+                   (open-file-output-port not-exist (file-options no-create no-truncate) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-truncate) mode (make-transcoder (utf-16-codec))))))
+                   (open-file-output-port not-exist (file-options no-create no-truncate) mode (make-transcoder (utf-16-codec))))))
 
 #|
     (file-options no-create no-fail no-truncate)
@@ -497,19 +499,19 @@
       If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
 |#
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-truncate no-fail))])
      (close-port port)
      (test-false (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-truncate no-fail) mode)])
      (close-port port)
      (test-false (empty-file-exists? file)))))
 
-(with-all-buffer-mode "test/utf16.txt"
+(with-all-buffer-mode test-utf16
  (lambda (mode file)
    (let ([port (open-file-output-port file (file-options no-create no-truncate no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
@@ -518,28 +520,28 @@
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-fail no-truncate)))))
+                   (open-file-output-port not-exist (file-options no-create no-fail no-truncate)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-fail no-truncate) mode))))
+                   (open-file-output-port not-exist (file-options no-create no-fail no-truncate) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (test-error i/o-file-does-not-exist-error?
-                   (open-file-output-port "./not-exists" (file-options no-create no-fail no-truncate) mode (make-transcoder (utf-16-codec))))))
+                   (open-file-output-port not-exist (file-options no-create no-fail no-truncate) mode (make-transcoder (utf-16-codec))))))
 
 ;; ----------------------------------------
 ;; Check buffer modes? Just make sure they're accepted:
 
-(let ([p (open-file-output-port "./test/test.txt.temp" (file-options no-create) 'line)])
+(let ([p (open-file-output-port test-txt-tmp (file-options no-create) 'line)])
   (test-equal (output-port-buffer-mode p) 'line)
   (close-port p))
-(let ([p (open-file-output-port "./test/test.txt.temp" (file-options no-create) 'block)])
+(let ([p (open-file-output-port test-txt-tmp (file-options no-create) 'block)])
   (test-equal (output-port-buffer-mode p) 'block)
   (close-port p))
-(let ([p (open-file-output-port "./test/test.txt.temp" (file-options no-create) 'none)])
+(let ([p (open-file-output-port test-txt-tmp (file-options no-create) 'none)])
   (test-equal (output-port-buffer-mode p) 'none)
   (close-port p))
 
