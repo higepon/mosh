@@ -198,9 +198,7 @@ ucs4string scheme::getLastErrorMessageInternal(DWORD e)
 #elif defined(MONA)
 ucs4string scheme::getLastErrorMessageInternal(int e)
 {
-    char buf[128];
-    snprintf(buf, 128, "error code %d", e);
-    return ucs4string::from_c_str(buf).data();
+    return ucs4string::from_c_str(monapi_error_string(e));
 }
 #else
 ucs4string scheme::getLastErrorMessageInternal(int e)
@@ -286,7 +284,12 @@ bool File::open(const ucs4string& file, int flags)
     }
     desc_ = ::open(utf32toUtf8(file), mode, 0644);
 #endif
+
+#ifdef MONA
+    setLastError(desc_);
+#else
     setLastError();
+#endif
     return isOpen();
 }
 

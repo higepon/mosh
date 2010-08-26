@@ -102,6 +102,12 @@ namespace scheme {
             lastError_ = errno;
 #endif
         }
+
+        void setLastError(int e)
+        {
+            lastError_ = e;
+        }
+
         void operator=(const File&);
         File(const File& rhs);
     public:
