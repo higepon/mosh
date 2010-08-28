@@ -3797,6 +3797,7 @@
   (or (try-create (get-environment-variable "HOME"))
       (try-create (get-environment-variable "LOCALAPPDATA")) ;; Vista
       (try-create (get-environment-variable "APPDATA")) ;; XP
+      (and (string=? (host-os) "mona") "/MEM")
       (try-create "/tmp")))
 
 
