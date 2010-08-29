@@ -33,7 +33,7 @@
 #define SCHEME_FLONUM_
 
 #include <stdlib.h>
-#include <math.h> // isnan
+#include <cmath> // isnan
 #include "scheme.h"
 #include "Bignum.h"
 
