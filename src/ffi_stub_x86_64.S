@@ -5,7 +5,6 @@
 */
 
 #ifdef __APPLE__
-#define APPLE_PIC 1
 #define SYM(x) _ ## x
 #else
 #define SYM(x) x
@@ -71,7 +70,7 @@ arguments_done:
         ret
 
 SYM(c_callback_stub_double):
-#if APPLE_PIC
+#ifdef __PIC__
     movq        SYM(c_callback_double)@GOTPCREL(%rip), %r11
 #else
     movq        $SYM(c_callback_double), %r11
@@ -79,7 +78,7 @@ SYM(c_callback_stub_double):
     jmp         callback_stub_common
 
 SYM(c_callback_stub_float):
-#if APPLE_PIC
+#ifdef __PIC__
     movq        SYM(c_callback_float)@GOTPCREL(%rip), %r11
 #else
     movq        $SYM(c_callback_float), %r11
@@ -87,7 +86,7 @@ SYM(c_callback_stub_float):
     jmp         callback_stub_common
 
 SYM(c_callback_stub_intptr):
-#if APPLE_PIC
+#ifdef __PIC__
     movq        SYM(c_callback_intptr)@GOTPCREL(%rip), %r11
 #else
     movq        $SYM(c_callback_intptr), %r11
