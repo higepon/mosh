@@ -31,7 +31,7 @@
 	  (let loop ((cur '())
 		     (s (cddr r)))
 	    (if (char=? #\space (car s))
-	      (make-simple-path (list->string cur))
+	      (simplify-path (list->string cur))
 	      (loop (cons (car s) cur) (cdr s))))
 	  name))))
   (cond

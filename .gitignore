@@ -95,21 +95,7 @@ gc-7.1/middletest
 gc-7.1/smashtest
 gc-7.1/threadleaktest
  
-onig-5.7.0/Makefile
-onig-5.7.0/config.h
-onig-5.7.0/libtool
-onig-5.7.0/onig-config
-onig-5.7.0/sample/Makefile
-onig-5.7.0/sample/encode
-onig-5.7.0/sample/listcap
-onig-5.7.0/sample/names
-onig-5.7.0/sample/posix
-onig-5.7.0/sample/simple
-onig-5.7.0/sample/sql
-onig-5.7.0/sample/syntax
-onig-5.7.0/testc
-onig-5.7.0/testcu
-onig-5.7.0/testp
+onig
  
 # editor temporals
 *.swp

@@ -34,7 +34,7 @@
 
 #include <setjmp.h>
 #include "HeapObject.h"
-#include "oniguruma.h"
+#include "oniguruma_compat.h"
 
 namespace scheme {
 

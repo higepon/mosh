@@ -244,7 +244,7 @@
 (define (ca-expand/compile-for-cache fn)
   (define (step save? run? code cur-code cur-compiled-code cur-syms cur-deps)
     (PCK "Expanding..")
-    (let* ((ex (ex:expand-sequence/debug code #f))
+    (let* ((ex (ex:expand-sequence/debug fn code #f))
 	   (ex-code (car ex))
 	   (ex-syms (cadr ex))
            (ex-save? (caddr ex))

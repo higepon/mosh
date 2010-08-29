@@ -30,7 +30,7 @@
 (define (output p)
   (display "load & expanding runtime..")(newline)
   (let ((outfile (layout-build layout)))
-    (dumpdbg)
+    ;(dumpdbg)
     ;(dumpsrc outfile)
     (display "compile...")(newline)
     (let ((vec (compile-to-codevector/toplevel outfile)))

@@ -1,17 +1,13 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.63)
+AC_PREREQ(2.62)
 AC_INIT(mosh, 0.2.5, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/VM.h])
 AC_CONFIG_HEADER([src/config.h])
-
-
-AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh/$PACKAGE_VERSION")
-
 
 # we don't like default CFLAGS(-O2 -g).
 AC_SUBST(CFLAGS)
@@ -24,6 +20,8 @@ if test "" = "$CXXFLAGS"; then
     CXXFLAGS=" "
 fi
 
+AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh/$PACKAGE_VERSION")
+
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES
 dnl AC_LIBTOOL_DLOPEN # use dlopen
@@ -33,23 +31,91 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
-dnl AC_CHECK_PROG(GOSH, gosh, gosh, no)
-dnl if test "$GOSH" != "gosh"
-dnl     then AC_MSG_ERROR([gosh not found. Gauche (http://practical-scheme.net/gauche/) is required to build.])
-dnl fi
+# Prerequisites
+
+LOCAL_CONFIGURE_ARGS="--host=$host --build=$build"
+
+### GMP or MPIR(gmp API)
+
 AC_CHECK_LIB(gmp, __gmpz_init, ,
   [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])
 
+### Oniguruma 5
+## we need oniguruma 5.x for unicode support
 
-AC_ARG_ENABLE(profiler, [  --enable-profiler turn off profiler [default=yes]], ,[enable_profiler=yes])
-AC_MSG_CHECKING(whether to enable profiler)
-if test "$enable_profiler" = "yes"; then
-  AC_DEFINE(ENABLE_PROFILER, 1, enable -p option for profiling)
+have_onig=no
+local_onig_build=no
+LOCAL_ONIG=""
+
+# option0: check for source-tree
+if test -d ${srcdir}/onig; then
+    have_onig=yes
+    local_onig_build=yes
+    ONIG_CFLAGS="-I${srcdir}/onig"
+    ONIG_LIBS="./onig/.libs/libonig.a"
+    LOCAL_ONIG=$ONIG_LIBS
 fi
 
-AC_MSG_RESULT([$host_os])
-AC_MSG_RESULT([$host])
-AC_MSG_RESULT([$target])
+# option1: use onig-config in PATH
+if test $have_onig = no; then
+    ONIGCONFIG=""
+    AC_PATH_PROG(ONIGCONFIG,onig-config)
+    if test "" = "$ONIGCONFIG"; then
+        # put some warning here..
+        ONIG_CFLAGS=""
+        ONIG_LIBS=""
+    else
+        ONIG_CFLAGS=`$ONIGCONFIG --cflags`
+        ONIG_LIBS=`$ONIGCONFIG --libs`
+        saved_cflags=$CFLAGS
+        saved_libs=$LIBS
+        CFLAGS="$CFLAGS $ONIG_CFLAGS"
+        LIBS="$LIBS $ONIG_LIBS"
+        AC_CHECK_LIB([onig],[regexec],have_onig=yes,have_onig=no)
+        CFLAGS=$saved_cflags
+        LIBS=$saved_libs
+    fi
+fi
+
+# option2: try to link with current configuration
+if test $have_onig = "no" ; then
+    AC_CHECK_LIB([onig],[regexec],[LIBS="$LIBS -lonig" have_onig="yes"])
+fi
+
+if test $have_onig = "no" ; then
+    AC_MSG_ERROR([oniguruma not found, mosh requires oniguruma 5.x])
+fi
+
+AM_CONDITIONAL(BUILD_LOCAL_ONIG,test $local_onig_build = "yes")
+AC_SUBST(LOCAL_ONIG)
+
+AC_SUBST(ONIG_CFLAGS)
+AC_SUBST(ONIG_LIBS)
+
+# gtest requires POSIX regexp and this will conflict oniguruma
+# We will define  -D ONIG_ESCAPE_REGEX_T_COLLISION for this
+
+AC_SUBST(LOCAL_CONFIGURE_ARGS)
+
+## ~prereq.
+
+AC_ARG_ENABLE(profiler, [  --enable-profiler Build with profiler feature [default=yes]], ,[enable_profiler=yes])
+AC_MSG_CHECKING(whether to enable profiler)
+if test "$enable_profiler" = "yes"; then
+    case $host in
+        *mingw*)
+        AC_MSG_ERROR([Profiling is not supported on MinGW hosts])
+        ;;
+        *)
+        AC_DEFINE(ENABLE_PROFILER, 1, enable -p option for profiling)
+        ;;
+    esac
+fi
+AC_MSG_RESULT([$enable_profiler])
+
+dnl AC_MSG_RESULT([$host_os])
+dnl AC_MSG_RESULT([$host])
+dnl AC_MSG_RESULT([$target])
 
 case $host in
   *darwin*)
@@ -89,72 +155,6 @@ int main(int, char **)
 [have_ext_hashes=0])
 AC_MSG_RESULT([$have_ext_hashes])
 
-dnl AC_MSG_CHECKING([sse])
-dnl AC_COMPILE_IFELSE([
-dnl #include <xmmintrin.h>
-dnl int main(int, char **)
-dnl {
-dnl     __m128 v;v=_mm_sub_ss(v,v);
-dnl }
-dnl ],
-dnl [have_sse=1],
-dnl [have_sse=0])
-
-dnl if test x$have_sse = x1; then
-dnl   AC_MSG_RESULT(yes)
-dnl else
-dnl   AC_MSG_RESULT(no)
-dnl fi
-
-dnl AC_MSG_CHECKING([sse2])
-dnl AC_COMPILE_IFELSE([
-dnl #include <emmintrin.h>
-dnl int main(int, char **)
-dnl {
-dnl    __m128i v;v=_mm_add_epi32(v,v);
-dnl }
-dnl ],
-dnl [have_sse2=1],
-dnl [have_sse2=0])
-
-dnl if test x$have_sse2 = x1; then
-dnl   AC_MSG_RESULT(yes)
-dnl else
-dnl   AC_MSG_RESULT(no)
-dnl fi
-
-dnl AC_MSG_CHECKING([sse3])
-dnl AC_COMPILE_IFELSE([
-dnl #include <emmintrin.h>
-dnl int main(int, char **)
-dnl {
-dnl     __m128d v;v=_mm_addsub_pd(v,v);
-dnl }
-dnl ],
-dnl [have_sse3=1],
-dnl [have_sse3=0])
-
-dnl if test x$have_sse3 = x1; then
-dnl   AC_MSG_RESULT(yes)
-dnl else
-dnl   AC_MSG_RESULT(no)
-dnl fi
-
-dnl if test x$have_sse3 = x1; then
-dnl     MOSH_SSE_OPTS=" -msse3"
-dnl else
-dnl if test x$have_sse2 = x1; then
-dnl     MOSH_SSE_OPTS=" -msse2"
-dnl else
-dnl if test x$have_sse = x1; then
-dnl     MOSH_SSE_OPTS=" -msse"
-dnl else
-dnl     MOSH_SSE_OPTS=""
-dnl fi
-dnl fi
-dnl fi
-
-
 HAVE_TR1_HASHES=$have_tr1_hashes
 AC_DEFINE_UNQUOTED([HAVE_TR1_HASHES], $have_tr1_hashes, [Do we have std::tr1:: hashes?])
 AC_SUBST([HAVE_TR1_HASHES])
@@ -184,13 +184,11 @@ case "$target_os" in
     ;;
 esac
 
-#MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
 MOSH_GENERIC_OPTS="-O3"
 MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-pointer"
 
-#MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -pg"
+# Checks for O/S specific features
 
-# Checks for threads
 AC_MSG_CHECKING([check threads])
 case "$target_os" in
 *darwin*)
@@ -227,7 +225,6 @@ i[[3456]]86|pentium)
         arch=i386
         case "$target_os" in
         *darwin*)
-          AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
           if test -n "`system_profiler |grep 'Intel Core 2'`" ; then
              MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse2 -mfpmath=sse"
           else
@@ -235,9 +232,6 @@ i[[3456]]86|pentium)
           fi
           ;;
         *linux*)
-          AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
-          AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-
           if test -n "`grep 'Core(TM)2 CPU' /proc/cpuinfo`" ; then
              MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse3 -mfpmath=sse"
           else
@@ -257,7 +251,6 @@ i[[3456]]86|pentium)
           fi
           ;;
        *freebsd*)
-         AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
          MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
@@ -280,23 +273,24 @@ i[[3456]]86|pentium)
         AM_CONDITIONAL(FFI_I386, true)
         AM_CONDITIONAL(FFI_X86_64, false)
         ;;
-	x86?64*) 
+	x86?64*|amd64) 
 	arch=x86_64
+        AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
+        AM_CONDITIONAL(FFI_I386, false)
+        AM_CONDITIONAL(FFI_X86_64, true)
         case "$target_os" in
-		*darwin*)
-                AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
-		AC_MSG_RESULT([x86_64])
-		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
-		MOSH_OPTS="-O3"
-		AM_CONDITIONAL(FFI_I386, false)
-		AM_CONDITIONAL(FFI_X86_64, true)
-		;;
-		*)
+                *darwin*)
+                AC_MSG_RESULT([x86_64])
+                MOSH_OPTS="-O3"
+                ;;
+                *freebsd*)
+                AC_MSG_RESULT([x86_64(FreeBSD amd64)])
+                MOSH_OPTS="$MOSH_INTEL_OPTS"
+                MOSH_LDADD_ARCH="-lpthread"
+                ;;
+                *)
 		MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
 		AC_MSG_RESULT([x86_64])
-		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
-		AM_CONDITIONAL(FFI_I386, false)
-		AM_CONDITIONAL(FFI_X86_64, true)
 		;;
 	esac
 	;;
@@ -382,5 +376,5 @@ case "$target_in" in
 esac
 
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SUBDIRS([gc-7.1 onig-5.7.0])
+AC_CONFIG_SUBDIRS([gc-7.1])
 AC_OUTPUT(src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)

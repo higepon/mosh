@@ -1,24 +1,51 @@
 # GLOBAL CFLAGS
-AM_CFLAGS   = @MOSH_OPTS@
-AM_CXXFLAGS = $(CFLAGS)
+
+GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
+		 -g \
+		 -Wall -Wno-deprecated \
+		 -I src -I $(includedir) \
+		 -D MONA_SCHEME -D USE_BOEHM_GC \
+		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \
+		 -D_FILE_OFFSET_BITS=64 -Wall -pipe $(DEBUG_FLAGS) \
+		 @MOSH_OPTS@ # temp -Wno-deprecated
+
+LIBS += @ONIG_LIBS@
+
+if DEVELOPER
+GIT_BRANCH=$(shell git symbolic-ref HEAD|cut -d'/' -f3)
+GIT_IS_DIRTY=$(shell git diff --quiet HEAD || echo "dirty")
+GIT_COMMIT_REVISION=$(shell git describe --always)$(GIT_IS_DIRTY)
+GIT_COMMIT_UNIXTIME=$(shell git cat-file commit HEAD|grep 'committer'|  awk '{ print $$(NF-1); }')
+GIT_COMMIT_DATE=$(shell date -d "1970/01/01 09:00:00 $(GIT_COMMIT_UNIXTIME) seconds" "+%Y/%m/%d %H:%M:%S")
+GLOBAL_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+else
+GIT_BRANCH=UNKNOWN
+GIT_COMMIT_REVISION=UNKNOWN
+GIT_COMMIT_DATE=UNKNOWN
+endif
+
+if DEVELOPER
+DEBUG_FLAGS=-DDEBUG_VERSION
+endif
+
+AM_CFLAGS   = $(GLOBAL_CFLAGS)
+AM_CXXFLAGS = $(GLOBAL_CFLAGS)
 
 # Boehm GC
 BOEHM_GC_DIR = gc-7.1
 GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 
-# Regexp library oniguruma
-ONIG_DIR   = onig-5.7.0
-REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
+## Regexp library oniguruma
+#ONIG_DIR   = onig-5.7.0
+#REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 
 # for GTEST
-GTEST_DIR     = $(top_srcdir)/gtest-1.2.1
+GTEST_DIR     = $(top_srcdir)/gtest
 USER_DIR      = .
 TESTS         = # used later
-GTEST_HEADERS_ = $(GTEST_DIR)/include/gtest/*.h \
-                $(GTEST_DIR)/include/gtest/internal/*.h
-GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
-SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
+#SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
+SUBDIRS = $(BOEHM_GC_DIR) .
 
 man_MANS = doc/mosh.1 doc/mosh_config.1
 
@@ -35,52 +62,10 @@ endif
 
 bin_SCRIPTS = src/mosh_config
 
-# mosh
-# -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
-# see http://d.hatena.ne.jp/higepon/20081114/1226645373
-mosh_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
-mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
-mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated # temp -Wno-deprecated
-mosh_CXXFLAGS = $(mosh_CFLAGS)
-mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
-nmosh_SOURCES = src/main.cpp src/nmosh_image.cpp
+# mosh core sources
 
-nmosh_OPTS     = -D WITH_NMOSH_DEFAULTS -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
-nmosh_CFLAGS   = $(nmosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated 
-nmosh_CXXFLAGS = $(nmosh_CFLAGS)
-nmosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
-
-
-if DEVELOPER
-GIT_BRANCH=$(shell git symbolic-ref HEAD|cut -d'/' -f3)
-GIT_IS_DIRTY=$(shell git diff --quiet HEAD || echo "dirty")
-GIT_COMMIT_REVISION=$(shell git describe --always)$(GIT_IS_DIRTY)
-GIT_COMMIT_UNIXTIME=$(shell git cat-file commit HEAD|grep 'committer'|  awk '{ print $$(NF-1); }')
-GIT_COMMIT_DATE=$(shell date -d "1970/01/01 09:00:00 $(GIT_COMMIT_UNIXTIME) seconds" "+%Y/%m/%d %H:%M:%S")
-mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
-nmosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
-else
-GIT_BRANCH=UNKNOWN
-GIT_COMMIT_REVISION=UNKNOWN
-GIT_COMMIT_DATE=UNKNOWN
-endif
-
-if DEVELOPER
-DEBUG_FLAGS=-DDEBUG_VERSION
-endif
-
-if MINGW32
-nmosh_LDADD += mosh-icon.o
-mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
-	-mkdir -p $(top_builddir)/misc/logo
-	-cp -p $(top_srcdir)/misc/logo/mosh.ico $(top_builddir)/misc/logo
-	$(WINDRES) $< -o mosh-icon.o
-endif 
-
-noinst_LIBRARIES   = libmosh.a
-libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
-libmosh_a_SOURCES = \
+MOSH_CORE_SRCS = \
 src/Code.h  src/SharedReference.h                                      \
 src/NonGenerativeRTDs.h                                                \
 src/HeapObject.h                                                       \
@@ -202,11 +187,51 @@ src/SimpleStruct.h \
 src/OSCompat.h src/OSCompat.cpp
 
 if FFI_I386
-libmosh_a_SOURCES += src/ffi_stub_i386.S
+MOSH_CORE_SRCS += src/ffi_stub_i386.S
 endif
 
 if FFI_X86_64
-libmosh_a_SOURCES += src/ffi_stub_x86_64.S
+MOSH_CORE_SRCS += src/ffi_stub_x86_64.S
+endif
+
+noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
+
+# mosh
+# -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
+# see http://d.hatena.ne.jp/higepon/20081114/1226645373
+libmosh_main_a_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
+mosh_SOURCES = $(MOSH_CORE_SRCS)
+mosh_LDADD = libmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+mosh_DEPENDENCIES = @LOCAL_ONIG@
+
+libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp
+libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) -D WITH_NMOSH_DEFAULTS
+nmosh_SOURCES = $(MOSH_CORE_SRCS)
+nmosh_LDADD = libnmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+nmosh_DEPENDENCIES = @LOCAL_ONIG@
+
+libmosh_core_for_test_a_SOURCES = $(MOSH_CORE_SRCS)
+libmosh_core_for_test_a_DEPENDENCIES = @LOCAL_ONIG@
+
+
+if MINGW32
+nmosh_LDADD += mosh-icon.o
+nmosh_DEPENDENCIES += mosh-icon.o
+mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
+	-mkdir -p $(top_builddir)/misc/logo
+	-cp -p $(top_srcdir)/misc/logo/mosh.ico $(top_builddir)/misc/logo
+	$(WINDRES) $< -o mosh-icon.o
+endif 
+
+if BUILD_LOCAL_ONIG
+$(top_builddir)/onig/Makefile:
+	mkdir -p onig
+	(cd onig && $(top_srcdir)/onig/configure @LOCAL_CONFIGURE_ARGS@ --disable-shared)
+
+local_oniguruma_tree: $(top_builddir)/onig/Makefile
+
+@LOCAL_ONIG@: local_oniguruma_tree
+	$(MAKE) -C onig
 endif
 
 BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Reader.tab.cpp src/NumberReader.tab.cpp src/Scanner.cpp src/NumberScanner.cpp src/cprocedures.cpp src/labels.cpp src/OSConstants.h
@@ -341,7 +366,7 @@ datadir = @MOSH_LIB_PATH@
 data_DATA = src/all-tests.scm
 nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
-INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR) -I$(top_srcdir)/src
+INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I$(top_srcdir)/src
 EXTRA_DIST     = \
 boot/vm.scm boot/baselib boot/compiler.scm \
 boot/free-vars.scm misc/scripts boot/baselib/match.scm doc \
@@ -402,11 +427,6 @@ MAINTAINERCLEANFILES = $(GENERATED)
 
 # update: lib/mosh/queue.ss.mosh-fasl
 
-# when you release comment out start
-if DEVELOPER
-# when you release comment out end
-endif
-
 doc:
 	mosh misc/scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
@@ -417,48 +437,7 @@ bench:
 #	@GOSH@ ./misc/scripts/bench.scm > /dev/null
 	LANG=C gosh ./misc/scripts/bench2.scm
 
-#### Instruction.h
-
-src/Instruction.h: src/instruction.scm
-	mosh $(top_srcdir)/misc/scripts/gen-insn.scm $< $@
-
-src/main.cpp: src/psyntax_mosh_image.cpp src/baselib.h src/match.h
-
-src/labels.cpp: src/instruction.scm
-	mosh $(top_srcdir)/misc/scripts/gen-label.scm $< $@
-
-src/cprocedures.cpp: boot/free-vars-decl.scm 
-	mosh $(top_srcdir)/misc/scripts/gen-cproc.scm $< $@
-
-src/all-tests.scm: src/test-data.scm
-	(cd $(top_srcdir) && mosh -5 misc/scripts/gen-test.scm src/test-data.scm src/all-tests.scm)
-#	echo 'run -5 misc/scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
-
-src/Object-accessors.h: src/accessors.scm
-	(cd $(top_srcdir) && mosh misc/scripts/gen-accessors.scm) > $@
-
-src/OSConstants.h: src/os-constants.scm
-	(cd $(top_srcdir) && mosh misc/scripts/gen-os-constants.scm) > $@
-
-# READER 
-src/Reader.tab.hpp: src/Reader.tab.cpp src/Reader.y
-
-src/NumberReader.tab.hpp: src/NumberReader.tab.cpp src/NumberReader.y
-
-src/Reader.tab.cpp: src/Reader.y
-	bison -d $< -o $@
-
-src/NumberReader.tab.cpp: src/NumberReader.y
-	bison -p "number_yy" -d $< -o $@
-
-src/Scanner.cpp : src/scanner.re
-	re2c -u $< > $@ # -d is debug option
-
-src/NumberScanner.cpp : src/NumberScanner.re
-	re2c -cu $< > $@ # -d is debug option
-
-## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
-##      for " \ " yen mark, -g causes infinite loop
+include Generate.mk
 
 #### test
 check: test ntest
@@ -497,19 +476,17 @@ ntestR:
 
 # Builds gtest.a and gtest_main.a.
 
-# Usually you shouldn't tweak such internal variables, indicated by a
-# trailing _.
-GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS_)
+GTEST_CPPFLAGS_ = -I$(GTEST_DIR)
 
 # For simplicity and to avoid depending on Google Test's
 # implementation details, the dependencies specified below are
 # conservative and not optimized.  This is fine as Google Test
 # compiles fast and for ordinary users its source rarely changes.
-gtest-all.o : $(GTEST_SRCS_)
-	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest-all.cc
+gtest-all.o : $(GTEST_DIR)/gtest/gtest-all.cc
+	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -o $@ -c $<
 
-gtest_main.o : $(GTEST_SRCS_)
-	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest_main.cc
+gtest_main.o : $(GTEST_DIR)/gtest/gtest_main.cc
+	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -o $@ -c $<
 
 gtest.a : gtest-all.o
 	$(AR) $(ARFLAGS) $@ $^
@@ -519,9 +496,9 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(RANLIB) $@
 
 check_PROGRAMS=
-TEST_CXXFLAGS_     = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
-TEST_LDADD_        = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
-TEST_DEPENDENCIES_ = libmosh.a gtest_main.a
+TEST_CXXFLAGS_     = $(GLOBAL_CFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0 
+TEST_LDADD_        = libmosh_core_for_test.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
+TEST_DEPENDENCIES_ = libmosh_core_for_test.a gtest_main.a
 
 TESTS += test_object
 check_PROGRAMS += test_object
@@ -597,4 +574,4 @@ lib/libffitest.so.1.0: src/ffitest.c
 
 # for flymake
 check-syntax:
-	$(CXX) -o nul $(mosh_CXXFLAGS) $(INCLUDES) $(DEFAULT_INCLUDES) -DHAVE_CONFIG_H -S ${CHK_SOURCES}
+	$(CXX) -o nul $(GLOBAL_CFLAGS) $(INCLUDES) $(DEFAULT_INCLUDES) -DHAVE_CONFIG_H -S ${CHK_SOURCES}

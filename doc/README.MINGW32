@@ -1,0 +1,50 @@
+README.MINGW 14-Aug-2010
+
+by OKUMURA Yuki <mjt@cltn.org>
+
+WARNING
+-------
+
+This is port of Mosh for mingw32msvc, and it's still an _experimental_ port.
+Please consider using Cygwin port which is more feature complete.
+
+STATUS
+------
+
+NOT supported :
+- "make check"
+- profiler
+- unix process functions (fork, waitpid, ...)
+
+PREREQUISITES
+-------------
+
+- MinGW + MSYS (tested by 4.5.0)
+- bash
+- MSYS make
+- gnu MP library 
+
+
+CONFIGURATION & BUILD
+---------------------
+
+As usual product, run the configure script and make.
+
+ ./configure --disable-profiler && make
+
+INSTALL
+-------
+
+Copy nmosh.exe and lib/.
+
+Current version of Mosh won't use Windows' registry, unless you installed Mosh
+with binary distribution installer.
+
+AUTO-COMPILE-CACHE (ACC)
+------------------------
+
+Mosh caches parsed script into "cache" directory.
+
+This is called "ACC (Auto-Compile-Cache)" and you can disable it with
+ --disable-acc commandline option.
+
