@@ -168,6 +168,9 @@ nmosh-cache
 /cache
 rbtree.dot
 
+# GMP things
+GMP.framework
+
 # msvc things
 Debug/*
 Release/*

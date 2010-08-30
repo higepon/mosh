@@ -1,0 +1,29 @@
+#cmakedefine HAVE_ALLOCA_H
+#cmakedefine HAVE_FCNTL_H
+#cmakedefine HAVE_INTTYPES_H
+#cmakedefine HAVE_MEMORY_H
+#cmakedefine HAVE_STDBOOL_H
+#cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_STDLIB_H
+#cmakedefine HAVE_STRING_H
+#cmakedefine HAVE_SYS_STAT_H
+#cmakedefine HAVE_SYS_TIME_H
+#cmakedefine HAVE_SYS_WAIT_H
+#cmakedefine HAVE_UNISTD_H
+#cmakedefine HAVE_UTMP_H
+
+#cmakedefine HAVE_ALLOCA
+#cmakedefine HAVE_GETTIMEOFDAY
+#cmakedefine HAVE_MEMMOVE
+#cmakedefine HAVE_MEMSET
+#cmakedefine HAVE_STRTOL
+
+#cmakedefine SIZEOF_INT @SIZEOF_INT@
+#cmakedefine SIZEOF_SHORT @SIZEOF_SHORT@
+#cmakedefine SIZEOF_LONG @SIZEOF_LONG@
+#cmakedefine SIZEOF_LONG_LONG @SIZEOF_LONG_LONG@
+#cmakedefine SIZEOF___INT64 @SIZEOF___INT64@
+#cmakedefine SIZEOF_OFF_T @SIZEOF_OFF_T@
+#cmakedefine SIZEOF_VOIDP @SIZEOF_VOIDP@
+#cmakedefine SIZEOF_FLOAT @SIZEOF_FLOAT@
+#cmakedefine SIZEOF_DOUBLE @SIZEOF_DOUBLE@
