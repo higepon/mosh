@@ -5,6 +5,8 @@ include(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
 include(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 include(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
 
+ENABLE_TESTING()
+
 set(TARGET_FLAVOR mosh)
 
 add_definitions(-DHAVE_CONFIG_H
@@ -22,6 +24,12 @@ add_definitions(-DHAVE_CONFIG_H
     -DLARGE_CONFIG=1
     -DTHREAD_LOCAL_ALLOC=1
     -DHAS_X86_THREAD_STATE64___RAX=1
+    -DATOMIC_UNCOLLECTABLE=1
+    -DNO_EXECUTE_PERMISSION=1
+    -DALL_INTERIOR_POINTERS=1
+    -DGC_GCJ_SUPPORT=1
+    -DJAVA_FINALIZATION=1
+    -DUSE_I686_PREFETCH
     )
 
 # OS Settings
@@ -227,7 +235,7 @@ onig/enc/cp1251.c
 
 # mosh
 
-include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} onig ${ARCH_INCLUDE})
+include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} onig ${ARCH_INCLUDE} gtest)
 
 
 set(mosh_core_srcs
@@ -320,13 +328,13 @@ ${mosh_core_srcs}
 win/win.cpp)
 endif(MSVC)
 
-set(nmosh_srcs
-src/main.cpp
+set(nmosh_runtime_srcs
 src/nmosh_image.cpp)
 
-set(mosh_srcs
-src/main.cpp
+set(psyntax_mosh_runtime_srcs
 src/psyntax_mosh_image.cpp)
+
+set(mosh_runtime_srcs ${psyntax_mosh_runtime_srcs})
 
 configure_file(cmake/config-cmake.h.in
     ${PROJECT_BINARY_DIR}/cmake/config.h)
@@ -335,7 +343,51 @@ add_executable(${TARGET_FLAVOR}
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
-    ${mosh_srcs})
+    ${mosh_runtime_srcs}
+    src/main.cpp)
 
 target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY})
+
+# tests
+
+add_library(testingmosh 
+    ${mosh_core_srcs}
+    ${PROJECT_SOURCE_DIR}/gtest/gtest/gtest-all.cc
+    ${psyntax_mosh_runtime_srcs} ${onig_srcs} ${gc_srcs}
+    src/TestingSignalHandler.cpp
+    src/TestingVM.cpp)
+
+# GC tests
+macro(add_gctest testname)
+add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname})
+target_link_libraries(gctest${testname} testingmosh)
+add_test(gctest-${testname} gctest${testname})
+endmacro(add_gctest)
+
+add_gctest(test.c)
+add_gctest(leak_test.c)
+add_gctest(middle.c)
+add_gctest(smash_test.c)
+add_gctest(huge_test.c)
+#add_gctest(trace_test.c)
+add_gctest(thread_leak_test.c)
+#add_gctest(test_cpp.cc)
+
+# mosh base tests
+set(gtest_srcs ${PROJECT_SOURCE_DIR}/gtest/gtest/gtest_main.cc)
+
+macro(add_moshtest testname)
+add_executable(moshtest${testname} ${gtest_srcs} src/${testname}.cpp)
+target_link_libraries(moshtest${testname} testingmosh ${GMP_LIBRARY})
+add_test(mosh-${testname} moshtest${testname})
+endmacro(add_moshtest)
+
+add_moshtest(ObjectTest)
+add_moshtest(VMTest)
+add_moshtest(PortTest)
+add_moshtest(FaslTest)
+add_moshtest(FFITest)
+add_moshtest(OSCompatTest)
+add_moshtest(getoptUTest)
+add_moshtest(OSCompatThreadTest)
 
