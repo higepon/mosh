@@ -116,9 +116,10 @@ extern void initNonGenerativeRtd();
 
 void mosh_init()
 {
+    uint64_t s1 = MonAPI::Date::nowInMsec();
     // MOSH_GENSYM_PREFIX and equal? need this.
     srandom(time(NULL));
-
+    uint64_t s2 = MonAPI::Date::nowInMsec();
 #ifdef MONA
     const char* MAP_FILE_PATH = "/APPS/MOSH.APP/MOSH.MAP";
     uint32_t pid = syscall_get_pid();
@@ -128,12 +129,14 @@ void mosh_init()
         exit(-1);
     }
 #endif // MONA
+    uint64_t s3 = MonAPI::Date::nowInMsec();
 #ifdef USE_BOEHM_GC
     GC_INIT();
     // N.B
     // Since GNU MP mpz makes many many "false pointer",
     // we allocate gmp buffers by malloc not GC_malloc.
     // Allocated memory are freed on Bignum's destructor.
+    uint64_t s4 = MonAPI::Date::nowInMsec();
 #ifndef MONA
     mp_set_memory_functions(gmp_alloc, gmp_realloc, gmp_free);
 #endif
@@ -153,7 +156,9 @@ void mosh_init()
 #ifdef _MSC_VER
     ::SetConsoleCtrlHandler(handler, TRUE);
 #endif
+    uint64_t s5 = MonAPI::Date::nowInMsec();
     initOSConstants();
+    uint64_t s6 = MonAPI::Date::nowInMsec();
 
 //     // psyntax pre-compilation requires MOSH_GENSYM_PREFIX
 //     if (NULL == getEnv(UC("MOSH_GENSYM_PREFIX"))) {
@@ -163,6 +168,8 @@ void mosh_init()
 // //        printf("[%c]", prefix);
 //         setEnv(UC("MOSH_GENSYM_PREFIX"), &prefix);
 //     }
+    logprintf("init %d %d %d %d %d\n", (int)(s2 - s1), (int)(s3 -s2), (int)(s4 - s3), (int)(s5 - s4), (int)(s6 - s5));
+
 }
 
 

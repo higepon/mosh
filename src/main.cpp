@@ -171,9 +171,11 @@ void signal_handler(int signo)
 
 int main(int argc, char *argv[])
 {
+    uint64_t s1 = MonAPI::Date::nowInMsec();
     // call this before any allocation.
     mosh_init();
 
+    uint64_t s11 = MonAPI::Date::nowInMsec();
     ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;
@@ -279,7 +281,7 @@ int main(int argc, char *argv[])
 
     VMFactory factory;
     const int INITIAL_STACK_SIZE = 10000;
-
+    uint64_t s2 = MonAPI::Date::nowInMsec();
     // N.B.
     // We store the VM instance in thread specific storage.
     // Used for storing yylex and re2c which has only global interfaces.
@@ -296,7 +298,7 @@ int main(int argc, char *argv[])
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
     theVM->setValueString(UC("%nmosh-guru-mode"),Object::makeBool(isGuruMode));
 #endif
-
+    uint64_t s3 = MonAPI::Date::nowInMsec();
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
 //     } else if (isCompileString) {
@@ -333,7 +335,8 @@ int main(int argc, char *argv[])
     }
 #endif
     theVM->flushAllPorts();
-
+    uint64_t s4 = MonAPI::Date::nowInMsec();
+    logprintf("Mosh %d %d %d %d\n", (int)(s11 - s1), (int)(s2-s11), (int)(s3 - s2), (int)(s4 - s3));
     // N.B.
     // static destructor will be called.
     // this means that static member *can be freed*.
