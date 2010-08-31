@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 2.6)
+
 PROJECT(mosh)
 include(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
 include(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 include(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
 
-add_definitions(-DHAVE_CONFIG_H -DMOSH_HOST_OS=\"unknown\" 
+set(TARGET_FLAVOR mosh)
+
+add_definitions(-DHAVE_CONFIG_H
     -D_XOPEN_SOURCE
-    -DWITH_NMOSH_DEFAULTS
     -DMOSH_LIB_PATH=\"bogus\"
     -DPACKAGE=\"mosh\"
     -DPACKAGE_BUGREPORT=\"bogus\" 
@@ -16,10 +18,31 @@ add_definitions(-DHAVE_CONFIG_H -DMOSH_HOST_OS=\"unknown\"
     -DLINE_FEED_CODE_LF=1
     -DUSE_BOEHM_GC
     -DGC_THREADS
+    -D_REENTRANT
     -DLARGE_CONFIG=1
     -DTHREAD_LOCAL_ALLOC=1
     -DHAS_X86_THREAD_STATE64___RAX=1
     )
+
+# OS Settings
+if(WIN32)
+    add_definitions(-DMOSH_HOST_OS=\"win32\")
+elseif(APPLE)
+    add_definitions(-DMOSH_HOST_OS=\"darwin\")
+else(WIN32)
+    add_definitions(-DMOSH_HOST_OS=\"unknown\")
+endif(WIN32)
+if(WIN32)
+add_definitions(
+    -DWINVER=0x501
+    -DWIN32_LEAN_AND_MEAN
+    -DGC_NOT_DLL
+    -DONIG_EXTERN=extern
+    -DUNICODE
+    -D_UNICODE
+    )
+set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/win/include")
+endif(WIN32)
 
 # includes
 CHECK_INCLUDE_FILE(alloca.h HAVE_ALLOCA_H)
@@ -61,11 +84,13 @@ CHECK_TYPE_SIZE(double SIZEOF_DOUBLE)
 
 set(GMP_SEARCH true)
 if(CMAKE_HOST_APPLE)
-# use GMP.framework
-set(CMAKE_FRAMEWORK_PATH .)
-
+    # use GMP.framework
+    set(CMAKE_FRAMEWORK_PATH .)
 elseif(MSVC)
-set(GMP_SEARCH false)
+    set(GMP_DIR CACHE PATH "path to MPIR library")
+    set(GMP_INCLUDE_DIR ${GMP_DIR})
+    set(GMP_LIBRARY ${GMP_DIR}/mpir.lib)
+    set(GMP_SEARCH false)
 endif(CMAKE_HOST_APPLE)
 
 if(GMP_SEARCH)
@@ -82,6 +107,7 @@ else (GMP_FOUND)
     message(FATAL_ERROR "GMP not found..")
 endif (GMP_FOUND)
 endif(GMP_SEARCH)
+
 
 # GC things
 # => gc_srcs
@@ -125,12 +151,27 @@ gc-7.1/pthread_stop_world.c
 set(gc_darwin_srcs
 gc-7.1/darwin_stop_world.c
 )
+set(gc_win32_srcs
+gc-7.1/win32_threads.c
+)
 
+if(WIN32)
+set(gc_srcs
+${gc_core_srcs}
+${gc_win32_srcs}
+)
+elseif(APPLE)
 set(gc_srcs
 ${gc_core_srcs}
 ${gc_pthread_srcs}
 ${gc_darwin_srcs}
 )
+else(WIN32)
+set(gc_srcs
+${gc_core_srcs}
+${gc_pthread_srcs}
+)
+endif(WIN32)
 
 # Onigruma things
 
@@ -186,7 +227,7 @@ onig/enc/cp1251.c
 
 # mosh
 
-include_directories(gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} onig ${PROJECT_BINARY_DIR}/cmake)
+include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} onig ${ARCH_INCLUDE})
 
 
 set(mosh_core_srcs
@@ -273,12 +314,28 @@ src/OSCompatThread.cpp
 src/VMFactory.cpp
 src/OSCompat.cpp)
 
+if(MSVC)
+set(mosh_core_srcs 
+${mosh_core_srcs}
+win/win.cpp)
+endif(MSVC)
+
 set(nmosh_srcs
 src/main.cpp
 src/nmosh_image.cpp)
 
+set(mosh_srcs
+src/main.cpp
+src/psyntax_mosh_image.cpp)
+
 configure_file(cmake/config-cmake.h.in
     ${PROJECT_BINARY_DIR}/cmake/config.h)
 
-add_executable(nmosh ${onig_srcs} ${gc_srcs} ${mosh_core_srcs} ${nmosh_srcs})
-target_link_libraries(nmosh ${GMP_LIBRARY})
+add_executable(${TARGET_FLAVOR} 
+    ${onig_srcs} 
+    ${gc_srcs} 
+    ${mosh_core_srcs} 
+    ${mosh_srcs})
+
+target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY})
+

@@ -39,7 +39,7 @@
 #endif
 #ifdef _MSC_VER
     #include <windows.h> // for FILETIME
-    #include "../include/gettimeofday.h"
+    #include "gettimeofday.h"
 #else
 #include <sys/time.h>
 #endif
