@@ -7,10 +7,25 @@ include(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
 
 ENABLE_TESTING()
 
-set(TARGET_FLAVOR mosh)
+# mosh/nmosh select
+option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
+
+set(nmosh_runtime_srcs
+src/nmosh_image.cpp)
+
+set(psyntax_mosh_runtime_srcs
+src/psyntax_mosh_image.cpp)
+
+if(MOSH_WITH_NMOSH)
+    set(TARGET_FLAVOR nmosh)
+    add_definitions(-DWITH_NMOSH_DEFAULTS)
+    set(mosh_runtime_srcs ${nmosh_runtime_srcs})
+else(MOSH_WITH_NMOSH)
+    set(TARGET_FLAVOR mosh)
+    set(mosh_runtime_srcs ${psyntax_mosh_runtime_srcs})
+endif(MOSH_WITH_NMOSH)
 
 add_definitions(-DHAVE_CONFIG_H
-    -D_XOPEN_SOURCE
     -DMOSH_LIB_PATH=\"bogus\"
     -DPACKAGE=\"mosh\"
     -DPACKAGE_BUGREPORT=\"bogus\" 
@@ -35,19 +50,18 @@ add_definitions(-DHAVE_CONFIG_H
 # OS Settings
 if(WIN32)
     add_definitions(-DMOSH_HOST_OS=\"win32\")
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS) #nasty
 elseif(APPLE)
     add_definitions(-DMOSH_HOST_OS=\"darwin\")
+    add_definitions(-D_XOPEN_SOURCE)
 else(WIN32)
     add_definitions(-DMOSH_HOST_OS=\"unknown\")
 endif(WIN32)
 if(WIN32)
 add_definitions(
     -DWINVER=0x501
-    -DWIN32_LEAN_AND_MEAN
     -DGC_NOT_DLL
     -DONIG_EXTERN=extern
-    -DUNICODE
-    -D_UNICODE
     )
 set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/win/include")
 endif(WIN32)
@@ -95,9 +109,9 @@ if(CMAKE_HOST_APPLE)
     # use GMP.framework
     set(CMAKE_FRAMEWORK_PATH .)
 elseif(MSVC)
-    set(GMP_DIR CACHE PATH "path to MPIR library")
-    set(GMP_INCLUDE_DIR ${GMP_DIR})
-    set(GMP_LIBRARY ${GMP_DIR}/mpir.lib)
+    set(MOSH_GMP_DIR CACHE PATH "path to MPIR library (mpir/build.vcX/[lib|dll]/Win32/[Debug|Release])")
+    set(GMP_INCLUDE_DIR ${MOSH_GMP_DIR})
+    set(GMP_LIBRARY ${MOSH_GMP_DIR}/mpir.lib)
     set(GMP_SEARCH false)
 endif(CMAKE_HOST_APPLE)
 
@@ -322,23 +336,22 @@ src/OSCompatThread.cpp
 src/VMFactory.cpp
 src/OSCompat.cpp)
 
-if(MSVC)
+if(WIN32)
 set(mosh_core_srcs 
 ${mosh_core_srcs}
 win/win.cpp)
-endif(MSVC)
-
-set(nmosh_runtime_srcs
-src/nmosh_image.cpp)
-
-set(psyntax_mosh_runtime_srcs
-src/psyntax_mosh_image.cpp)
-
-set(mosh_runtime_srcs ${psyntax_mosh_runtime_srcs})
+set_source_files_properties(${mosh_core_srcs}
+    PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
+endif(WIN32)
 
 configure_file(cmake/config-cmake.h.in
     ${PROJECT_BINARY_DIR}/cmake/config.h)
 
+if(WIN32)
+set_source_files_properties(src/main.cpp src/TestingSignalHandler.cpp
+    src/TestingVM.cpp
+    PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
+endif(WIN32)
 add_executable(${TARGET_FLAVOR} 
     ${onig_srcs} 
     ${gc_srcs} 
@@ -350,17 +363,23 @@ target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY})
 
 # tests
 
+add_library(testinggc
+    ${gc_srcs})
 add_library(testingmosh 
     ${mosh_core_srcs}
     ${PROJECT_SOURCE_DIR}/gtest/gtest/gtest-all.cc
-    ${psyntax_mosh_runtime_srcs} ${onig_srcs} ${gc_srcs}
+    ${mosh_runtime_srcs} ${onig_srcs} 
     src/TestingSignalHandler.cpp
     src/TestingVM.cpp)
 
 # GC tests
 macro(add_gctest testname)
+if(MSVC)
+add_executable(gctest${testname} WIN32 ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname})
+else(MSVC)
 add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname})
-target_link_libraries(gctest${testname} testingmosh)
+endif(MSVC)
+target_link_libraries(gctest${testname} testinggc)
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
 
@@ -370,24 +389,39 @@ add_gctest(middle.c)
 add_gctest(smash_test.c)
 add_gctest(huge_test.c)
 #add_gctest(trace_test.c)
+if(NOT WIN32)
 add_gctest(thread_leak_test.c)
+endif(NOT WIN32)
 #add_gctest(test_cpp.cc)
 
 # mosh base tests
 set(gtest_srcs ${PROJECT_SOURCE_DIR}/gtest/gtest/gtest_main.cc)
 
-macro(add_moshtest testname)
+macro(add_moshcoretest testname)
+if(WIN32)
+set_source_files_properties(src/${testname}
+    PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
+endif(WIN32)
 add_executable(moshtest${testname} ${gtest_srcs} src/${testname}.cpp)
-target_link_libraries(moshtest${testname} testingmosh ${GMP_LIBRARY})
+target_link_libraries(moshtest${testname} testinggc testingmosh ${GMP_LIBRARY})
 add_test(mosh-${testname} moshtest${testname})
-endmacro(add_moshtest)
+endmacro(add_moshcoretest)
 
-add_moshtest(ObjectTest)
-add_moshtest(VMTest)
-add_moshtest(PortTest)
-add_moshtest(FaslTest)
-add_moshtest(FFITest)
-add_moshtest(OSCompatTest)
-add_moshtest(getoptUTest)
-add_moshtest(OSCompatThreadTest)
+add_moshcoretest(ObjectTest)
+if(NOT MOSH_WITH_NMOSH)
+add_moshcoretest(VMTest)
+endif(NOT MOSH_WITH_NMOSH)
+add_moshcoretest(PortTest)
+add_moshcoretest(FaslTest)
+add_moshcoretest(FFITest)
+add_moshcoretest(OSCompatTest)
+if(NOT MSVC)
+add_moshcoretest(getoptUTest)
+endif(NOT MSVC)
+add_moshcoretest(OSCompatThreadTest)
+
+file(COPY ${PROJECT_SOURCE_DIR}/lib DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/test DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/src/all-tests.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
+file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
 

@@ -59,6 +59,11 @@
 #include "BlockBufferedFileBinaryInputOutputPort.h"
 #include "MultiVMProcedures.h"
 
+
+#ifdef WITH_NMOSH_DEFAULTS
+extern "C" const uint8_t* nmosh_image_ptr;
+extern "C" const unsigned int nmosh_image_size;
+#endif
 using namespace scheme;
 
 class VMTest : public testing::Test {
@@ -121,9 +126,13 @@ TEST_F(VMTest, StackTrace1) {
 
 TEST_F(VMTest, StackTrace2) {
     theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
+#ifdef WITH_NMOSH_DEFAULTS
+    theVM_->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, false);
+#else
     extern const uint8_t* psyntax_mosh_image_ptr;
     extern unsigned int psyntax_mosh_image_size;
     theVM_->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, false);
+#endif
     EXPECT_STREQ("     error in raise: returned from non-continuable exception\n"
                  "\n"
                  " Stack trace:\n"
