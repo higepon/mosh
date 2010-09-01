@@ -418,7 +418,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
         return ret;
     } else {
         monapi_cmemoryinfo* buffer = new monapi_cmemoryinfo();
-        monapi_cmemoryinfo_create(buffer, _size, 0);
+        monapi_cmemoryinfo_create(buffer, _size, 0, 1);
 
         memcpy(buffer->Data, buf, buffer->Size);
         intptr_t sizeWritten = monapi_file_write(desc_, buffer, buffer->Size);
