@@ -25,14 +25,18 @@ else(MOSH_WITH_NMOSH)
     set(mosh_runtime_srcs ${psyntax_mosh_runtime_srcs})
 endif(MOSH_WITH_NMOSH)
 
+set(MOSH_VERSION "0.2.6" CACHE STRING "mosh release version string")
+set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
+set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
+set(MOSH_LIB_PATH "bogus" CACHE STRING "default mosh library path")
+
+mark_as_advanced(MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
+
 add_definitions(-DHAVE_CONFIG_H
-    -DMOSH_LIB_PATH=\"bogus\"
-    -DPACKAGE=\"mosh\"
-    -DPACKAGE_BUGREPORT=\"bogus\" 
-    -DPACKAGE_VERSION=\"bogus\"
-    -DHAVE_TR1_HASHES=1
-    -DHAVE_TR1_UNORDERED_MAP=1
-    -DLINE_FEED_CODE_LF=1
+    -DMOSH_LIB_PATH=\"${MOSH_LIB_PATH}\"
+    -DPACKAGE=\"${MOSH_NAME}\"
+    -DPACKAGE_BUGREPORT=\"${MOSH_BUGREPORT}\" 
+    -DPACKAGE_VERSION=\"${MOSH_VERSION}\"
     -DUSE_BOEHM_GC
     -DGC_THREADS
     -D_REENTRANT
@@ -47,15 +51,27 @@ add_definitions(-DHAVE_CONFIG_H
     -DUSE_I686_PREFETCH
     )
 
+# Hash implementation select
+if(XCODE_VERSION)
+    add_definitions(-DHAVE_EXT_HASHES=1)
+else(XCODE_VERSION)
+    add_definitions(-DHAVE_TR1_HASHES=1)
+    add_definitions(-DHAVE_TR1_UNORDERED_MAP=1)
+endif(XCODE_VERSION)
+
 # OS Settings
 if(WIN32)
     add_definitions(-DMOSH_HOST_OS=\"win32\")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS) #nasty
+    add_definitions(-DLINE_FEED_CODE_CRLF=1)
 elseif(APPLE)
     add_definitions(-DMOSH_HOST_OS=\"darwin\")
+    set_source_files_properties(gc-7.1/mach-dep.c COMPILE_FLAGS "-D_XOPEN_SOURCE")
     add_definitions(-D_XOPEN_SOURCE)
-else(WIN32)
+    add_definitions(-DLINE_FEED_CODE_LF=1)
+else(WIN32) # so it is UNIX
     add_definitions(-DMOSH_HOST_OS=\"unknown\")
+    add_definitions(-DLINE_FEED_CODE_LF=1)
 endif(WIN32)
 if(WIN32)
 add_definitions(
@@ -128,6 +144,13 @@ if (GMP_FOUND)
 else (GMP_FOUND)
     message(FATAL_ERROR "GMP not found..")
 endif (GMP_FOUND)
+else (GMP_SEARCH)
+# check gmp.h in GMP_INCLUDE_DIR
+set(RESULT "bogus" CACHE INTERNAL "bogus" FORCE)
+find_path(RESULT gmp.h PATHS ${GMP_INCLUDE_DIR} NO_DEFAULT_PATH)
+if(NOT RESULT)
+    message(FATAL_ERROR "MPIR/GMP is not installed at ${GMP_INCLUDE_DIR}.. (gmp.h could not found. please build MPIR(http://www.mpir.org) first and specify mpir/build.vc[9|10]/[lib|dll]/Win32/[Debug|Release] to MOSH_GMP_DIR.")
+endif(NOT RESULT)
 endif(GMP_SEARCH)
 
 
@@ -188,7 +211,7 @@ ${gc_core_srcs}
 ${gc_pthread_srcs}
 ${gc_darwin_srcs}
 )
-else(WIN32)
+else(WIN32) # it's UNIX!!
 set(gc_srcs
 ${gc_core_srcs}
 ${gc_pthread_srcs}
@@ -373,24 +396,29 @@ add_library(testingmosh
     src/TestingVM.cpp)
 
 # GC tests
-macro(add_gctest testname)
+macro(add_gcguitest testname)
 if(MSVC)
-add_executable(gctest${testname} WIN32 ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname})
+add_executable(gctest${testname} WIN32 ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
 else(MSVC)
-add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname})
+add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
 endif(MSVC)
+target_link_libraries(gctest${testname} testinggc)
+add_test(gctest-${testname} gctest${testname})
+endmacro(add_gcguitest)
+macro(add_gctest testname)
+add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
 target_link_libraries(gctest${testname} testinggc)
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
 
-add_gctest(test.c)
-add_gctest(leak_test.c)
-add_gctest(middle.c)
-add_gctest(smash_test.c)
-add_gctest(huge_test.c)
-#add_gctest(trace_test.c)
+add_gcguitest(test) # gctest is GUI app in win32.. some historical reason
+add_gctest(leak_test)
+add_gctest(middle)
+add_gctest(smash_test)
+add_gctest(huge_test)
+#add_gctest(trace_test)
 if(NOT WIN32)
-add_gctest(thread_leak_test.c)
+add_gctest(thread_leak_test)
 endif(NOT WIN32)
 #add_gctest(test_cpp.cc)
 
@@ -408,16 +436,20 @@ add_test(mosh-${testname} moshtest${testname})
 endmacro(add_moshcoretest)
 
 add_moshcoretest(ObjectTest)
-if(NOT MOSH_WITH_NMOSH)
+if(MOSH_WITH_NMOSH)
+message(STATUS "VMTest is not ported to nmosh")
+else(MOSH_WITH_NMOSH)
 add_moshcoretest(VMTest)
-endif(NOT MOSH_WITH_NMOSH)
+endif(MOSH_WITH_NMOSH)
 add_moshcoretest(PortTest)
 add_moshcoretest(FaslTest)
 add_moshcoretest(FFITest)
 add_moshcoretest(OSCompatTest)
-if(NOT MSVC)
+if(MSVC)
+message(STATUS "getoptUTest is not compatible with MSVC(UTF-16) builds")
+else(MSVC)
 add_moshcoretest(getoptUTest)
-endif(NOT MSVC)
+endif(MSVC)
 add_moshcoretest(OSCompatThreadTest)
 
 file(COPY ${PROJECT_SOURCE_DIR}/lib DESTINATION ${PROJECT_BINARY_DIR})
