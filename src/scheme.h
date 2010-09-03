@@ -139,7 +139,9 @@ const ucs4char* UC(const char *str);
 
 #ifdef __GNUC__
 #define ALWAYS_INLINE  __attribute__((always_inline))
+#ifndef USE_XCODE // set by CMakeLists.txt
 #define USE_DIRECT_THREADED_CODE
+#endif /* USE_XCODE */
 #else
 #define ALWAYS_INLINE
 #endif

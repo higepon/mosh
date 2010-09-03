@@ -54,6 +54,7 @@ add_definitions(-DHAVE_CONFIG_H
 # Hash implementation select
 if(XCODE_VERSION)
     add_definitions(-DHAVE_EXT_HASHES=1)
+    add_definitions(-DUSE_XCODE) # to disable direct-threaded code in XCode 3.x
 else(XCODE_VERSION)
     add_definitions(-DHAVE_TR1_HASHES=1)
     add_definitions(-DHAVE_TR1_UNORDERED_MAP=1)
