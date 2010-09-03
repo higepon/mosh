@@ -1,3 +1,5 @@
+# please check doc/HACKING.CMAKE for instructions
+
 cmake_minimum_required(VERSION 2.6)
 
 PROJECT(mosh)
@@ -24,6 +26,13 @@ else(MOSH_WITH_NMOSH)
     set(TARGET_FLAVOR mosh)
     set(mosh_runtime_srcs ${psyntax_mosh_runtime_srcs})
 endif(MOSH_WITH_NMOSH)
+
+
+# sanity check
+
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_srcs})
+    message(FATAL_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
+endif()
 
 set(MOSH_VERSION "0.2.6" CACHE STRING "mosh release version string")
 set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
@@ -124,7 +133,7 @@ CHECK_TYPE_SIZE(double SIZEOF_DOUBLE)
 set(GMP_SEARCH true)
 if(CMAKE_HOST_APPLE)
     # use GMP.framework
-    set(CMAKE_FRAMEWORK_PATH .)
+    # set(CMAKE_FRAMEWORK_PATH .)
 elseif(MSVC)
     set(MOSH_GMP_DIR CACHE PATH "path to MPIR library (mpir/build.vcX/[lib|dll]/Win32/[Debug|Release])")
     set(GMP_INCLUDE_DIR ${MOSH_GMP_DIR})
@@ -147,11 +156,10 @@ else (GMP_FOUND)
 endif (GMP_FOUND)
 else (GMP_SEARCH)
 # check gmp.h in GMP_INCLUDE_DIR
-set(RESULT "bogus" CACHE INTERNAL "bogus" FORCE)
 find_path(RESULT gmp.h PATHS ${GMP_INCLUDE_DIR} NO_DEFAULT_PATH)
-if(NOT RESULT)
+if(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
     message(FATAL_ERROR "MPIR/GMP is not installed at ${GMP_INCLUDE_DIR}.. (gmp.h could not found. please build MPIR(http://www.mpir.org) first and specify mpir/build.vc[9|10]/[lib|dll]/Win32/[Debug|Release] to MOSH_GMP_DIR.")
-endif(NOT RESULT)
+endif(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
 endif(GMP_SEARCH)
 
 
