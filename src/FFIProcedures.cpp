@@ -1387,12 +1387,12 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("malloc");
     checkArgumentLength(1);
     argumentCheckExactInteger(0, size);
-    if (!Arithmetic::fitsU64(size)) {
+    if (!Arithmetic::fitsU64(size)) { // FIXME: malloc cannot allocate full-64bit size (evenif we were on 64bit-os)
         callAssertionViolationAfter(theVM, procedureName, "size out of range", L1(argv[0]));
         return Object::Undef;
     }
     const uint64_t u64Size = Arithmetic::toU64(size);
-    return Object::makePointer(malloc(u64Size));
+    return Object::makePointer(malloc((size_t)u64Size));
 }
 
 #define CALLBACK_RETURN_TYPE_INTPTR     0x0000

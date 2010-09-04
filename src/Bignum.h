@@ -554,7 +554,7 @@ public:
         mpz_t ret;
         mpz_init_set_si(ret, n >> 32);
         mpz_mul_2exp(ret, ret, 32);
-        const int64_t val = n & 0xffffffff;
+        const unsigned int val = n & 0xffffffff;
         mpz_add_ui(ret, ret, val);
         return makeInteger(ret);
     }
