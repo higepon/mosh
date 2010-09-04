@@ -261,4 +261,22 @@
 
 (test-error i/o-read-error? (call-with-port (open-string-input-port "(;") read))
 
+;; custom port
+(let ()
+  (define done #f)
+
+  (define test-port
+    (make-custom-textual-input-port "TEST"
+                                    (lambda (string start count)
+                                      0)
+                                    #f
+                                    #f
+                                    (lambda ()
+                                      (display "closing...\n")
+                                      (set! done #t))))
+
+  (test-true (eof-object? (get-string-n test-port 5)))
+  (test-true (begin (close-port test-port) done))
+  (check-report))
+
 (test-results)
