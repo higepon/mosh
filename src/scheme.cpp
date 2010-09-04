@@ -110,7 +110,7 @@ extern void initNonGenerativeRtd();
 void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.
-    srandom(time(NULL));
+    srandom((unsigned int)time(NULL));
 #ifdef USE_BOEHM_GC
     GC_INIT();
     // N.B
