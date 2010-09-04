@@ -121,6 +121,7 @@ void mosh_init()
     srandom(time(NULL));
     uint64_t s2 = MonAPI::Date::nowInMsec();
 #ifdef MONA
+#if 0
     const char* MAP_FILE_PATH = "/APPS/MOSH.APP/MOSH.MAP";
     uint32_t pid = syscall_get_pid();
     intptr_t ret = syscall_stack_trace_enable(pid, MAP_FILE_PATH);
@@ -128,6 +129,7 @@ void mosh_init()
         fprintf(stderr, "syscall_stack_trace_enable error %d\n", ret);
         exit(-1);
     }
+#endif
 #endif // MONA
     uint64_t s3 = MonAPI::Date::nowInMsec();
 #ifdef USE_BOEHM_GC
