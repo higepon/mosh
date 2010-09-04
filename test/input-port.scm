@@ -276,7 +276,15 @@
                                       (set! done #t))))
 
   (test-true (eof-object? (get-string-n test-port 5)))
-  (test-true (begin (close-port test-port) done))
-  (check-report))
+  (test-true (begin (close-port test-port) done)))
+
+(let ()
+  (define i1 (open-bytevector-input-port #vu8(102 111 111)))
+  (define i2 (open-string-input-port "foo"))
+  (define i3 (make-custom-textual-input-port "i3" (lambda (s x t) (display "foo\n") 0) #f #f #f))
+
+  (test-equal #vu8() (get-bytevector-n i1 0))
+  (test-equal "" (get-string-n i2 0))
+  (test-equal "" (get-string-n i3 0)))
 
 (test-results)
