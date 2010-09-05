@@ -80,7 +80,12 @@ elseif(APPLE)
     add_definitions(-D_XOPEN_SOURCE)
     add_definitions(-DLINE_FEED_CODE_LF=1)
 else(WIN32) # so it is UNIX
-    add_definitions(-DMOSH_HOST_OS=\"unknown\")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_definitions(-DMOSH_HOST_OS=\"linux\")
+        set(arch_libs ${arch_libs} pthread dl)
+    else()
+        add_definitions(-DMOSH_HOST_OS=\"unknown\")
+    endif()
     add_definitions(-DLINE_FEED_CODE_LF=1)
 endif(WIN32)
 if(WIN32)
@@ -98,6 +103,7 @@ CHECK_INCLUDE_FILE(fcntl.h HAVE_FCNTL_H)
 CHECK_INCLUDE_FILE(inttypes.h HAVE_INTTYPES_H)
 CHECK_INCLUDE_FILE(memory.h HAVE_MEMORY_H)
 CHECK_INCLUDE_FILE(stdbool.h HAVE_STDBOOL_H)
+CHECK_INCLUDE_FILE(stdarg.h HAVE_STDARG_H)
 CHECK_INCLUDE_FILE(stdint.h HAVE_STDINT_H)
 CHECK_INCLUDE_FILE(stdlib.h HAVE_STDLIB_H)
 CHECK_INCLUDE_FILE(string.h HAVE_STRING_H)
@@ -125,6 +131,10 @@ CHECK_TYPE_SIZE(off_t SIZEOF_OFF_T)
 CHECK_TYPE_SIZE(void* SIZEOF_VOIDP)
 CHECK_TYPE_SIZE(float SIZEOF_FLOAT)
 CHECK_TYPE_SIZE(double SIZEOF_DOUBLE)
+
+if(HAVE_STDARG_H)
+    add_definitions(-DHAVE_STDARG_PROTOTYPES)
+endif(HAVE_STDARG_H)
 
 
 # GMP things
@@ -391,7 +401,7 @@ add_executable(${TARGET_FLAVOR}
     ${mosh_runtime_srcs}
     src/main.cpp)
 
-target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY})
+target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
 
 # tests
 
@@ -411,12 +421,12 @@ add_executable(gctest${testname} WIN32 ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${test
 else(MSVC)
 add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
 endif(MSVC)
-target_link_libraries(gctest${testname} testinggc)
+target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gcguitest)
 macro(add_gctest testname)
 add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
-target_link_libraries(gctest${testname} testinggc)
+target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
 
@@ -440,7 +450,7 @@ set_source_files_properties(src/${testname}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(WIN32)
 add_executable(moshtest${testname} ${gtest_srcs} src/${testname}.cpp)
-target_link_libraries(moshtest${testname} testinggc testingmosh ${GMP_LIBRARY})
+target_link_libraries(moshtest${testname} testinggc testingmosh ${GMP_LIBRARY} ${arch_libs})
 add_test(mosh-${testname} moshtest${testname})
 endmacro(add_moshcoretest)
 
