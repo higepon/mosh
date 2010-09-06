@@ -337,6 +337,17 @@ int main(int argc, char *argv[])
     theVM->flushAllPorts();
     uint64_t s4 = MonAPI::Date::nowInMsec();
     logprintf("Mosh %d %d %d %d\n", (int)(s11 - s1), (int)(s2-s11), (int)(s3 - s2), (int)(s4 - s3));
+
+        union {
+            struct {
+                uint32_t l;
+                uint32_t h;
+            } u32;
+            uint64_t u64;
+        } n;
+
+    n.u64 = MonAPI::Date::nowInMsec();
+    logprintf("exit start %x:%x\n", n.u32.h, n.u32.l);
     // N.B.
     // static destructor will be called.
     // this means that static member *can be freed*.
