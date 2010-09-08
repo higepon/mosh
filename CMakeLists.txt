@@ -72,13 +72,21 @@ endif(XCODE_VERSION)
 # OS Settings
 if(WIN32)
     add_definitions(-DMOSH_HOST_OS=\"win32\")
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS) #nasty
     add_definitions(-DLINE_FEED_CODE_CRLF=1)
+    # we set ARCH_* here. (Win32 only. when at other O/S, these flags are
+    # guessed.)
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86") 
+        add_definitions(-DARCH_IA32)
+    endif()
+    if(MSVC)
+        add_definitions(-D_CRT_SECURE_NO_WARNINGS) #nasty
+    endif(MSVC)
 elseif(APPLE)
     add_definitions(-DMOSH_HOST_OS=\"darwin\")
     set_source_files_properties(gc-7.1/mach-dep.c COMPILE_FLAGS "-D_XOPEN_SOURCE")
     add_definitions(-D_XOPEN_SOURCE)
     add_definitions(-DLINE_FEED_CODE_LF=1)
+    # do not set arch here 
 else(WIN32) # so it is UNIX
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_definitions(-DMOSH_HOST_OS=\"linux\")
@@ -293,6 +301,12 @@ onig/enc/cp1251.c
 
 include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} onig ${ARCH_INCLUDE} gtest)
 
+if(CMAKE_COMPILER_IS_GNUC)
+    set(ffi_stub cmake/ffi_stub.S)
+else()
+    message(status "FFI stub was disabled (build without call-back support)")
+    add_definitions(-DWITHOUT_FFI_STUB)
+endif(CMAKE_COMPILER_IS_GNUC)
 
 set(mosh_core_srcs
 src/Transcoder.cpp
@@ -376,7 +390,9 @@ src/MultiVMProcedures.cpp
 src/OSCompatSocket.cpp
 src/OSCompatThread.cpp
 src/VMFactory.cpp
-src/OSCompat.cpp)
+src/OSCompat.cpp
+${ffi_stub}
+)
 
 if(WIN32)
 set(mosh_core_srcs 

@@ -50,3 +50,15 @@
     #define UINTPTR_MIN         _UI32_MIN
     #define UINTPTR_MAX         _UI32_MAX
 #endif
+
+#ifndef _WIN32 // FIXME: 
+
+// guess processor archtecture
+
+#if defined(__i386__) || defined(i386)
+    #define ARCH_IA32
+#elif defined(__x86_64__) // standard ABI
+    #define ARCH_X86_64
+#endif
+
+#endif

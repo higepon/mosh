@@ -102,7 +102,7 @@ extern "C" void        c_callback_stub_int64();
 extern "C" void        c_callback_stub_double();
 extern "C" void        c_callback_stub_intptr_x64();
 
-#if defined(ARCH_IA32) && !defined(_MSC_VER)
+#if defined(ARCH_IA32) && !defined(WITHOUT_FFI_STUB)
 Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
 {
     VM* vm = currentVM();
@@ -273,7 +273,7 @@ public:
     }
 } __attribute__((packed));
 
-#elif defined(ARCH_X86_64) && !defined(_MSC_VER)
+#elif defined(ARCH_X86_64) && !defined(WITHOUT_FFI_STUB)
 
 Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
 {
@@ -569,7 +569,7 @@ static double callStubDouble(Pointer* func, CStack* cstack)
         FSTP   dret
     }
     return dret;
-#elif defined ARCH_X86_64
+#elif defined(ARCH_X86_64) && !defined(WITHOUT_FFI_STUB)
         const int stackArgSizeInBytes = (cstack->count()) * 8;
         return c_func_stub_double_x64(func->pointer(), cstack->reg(), cstack->frame(), stackArgSizeInBytes, cstack->xmm());
 #else
@@ -725,7 +725,7 @@ static intptr_t callStubIntptr_t(Pointer* func, CStack* cstack)
         MOV    temp,EAX
     }
     return temp;
-#elif defined ARCH_X86_64
+#elif defined(ARCH_X86_64) && !defined(WITHOUT_FFI_STUB)
     const int stackArgSizeInBytes = (cstack->count()) * 8;
     return c_func_stub_intptr_x64(func->pointer(), cstack->reg(), cstack->frame(), stackArgSizeInBytes, cstack->xmm());
 #else
@@ -1408,7 +1408,7 @@ Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const O
 {
     DeclareProcedureName("free-c-callback-trampoline");
 
-#if defined(FFI_SUPPORTED) && !defined(_MSC_VER)
+#if defined(FFI_SUPPORTED) && !defined(WITHOUT_FFI_STUB)
     checkArgumentLength(1);
     argumentAsPointer(0, callback);
     CallBackTrampoline* trampoline = (CallBackTrampoline*)callback->pointer();
@@ -1428,7 +1428,7 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
 {
     DeclareProcedureName("make-c-callback-trampoline");
 
-#if defined(FFI_SUPPORTED) && !defined(_MSC_VER)
+#if defined(FFI_SUPPORTED) && !defined(WITHOUT_FFI_STUB)
     checkArgumentLength(3);
     argumentAsFixnum(0, type);
     argumentAsString(1, signatures);

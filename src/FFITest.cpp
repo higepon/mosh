@@ -197,7 +197,7 @@ TEST_F(FFITest, CStackTooManyArgument) {
     EXPECT_STREQ("too many ffi arguments", err.ascii_c_str());
 }
 
-#elif ARCH_X86_64
+#elif defined(ARCH_X86_64)
 TEST_F(FFITest, CStackWithFixnum) {
     CStack cstack;
     EXPECT_TRUE(cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT));
