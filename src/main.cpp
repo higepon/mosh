@@ -141,6 +141,7 @@ void showUsage()
             "  --clean-acc       cleans auto-compile-cache.\n"
             "  --verbose         Show library serialisation messages.\n"
 #ifdef WITH_NMOSH_DEFAULTS
+            "  --applet (-T)     Invokes nmosh applet.\n"
             "  --guru-mode       Provide guru-mediation for nmosh developer.\n"
 #endif
             "  --loadpath=<path> Add library loadpath.\n\n"
@@ -183,6 +184,7 @@ int main(int argc, char *argv[])
     bool cleanAcc = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
 #ifdef WITH_NMOSH_DEFAULTS
+    bool invokeApplet = false;
     bool isGuruMode = false;
 #endif
     ucs4char* initFile = NULL;
@@ -195,6 +197,7 @@ int main(int argc, char *argv[])
        {UC("clean-acc"), 0, 0, 'C'},
        {UC("verbose"), 0, 0, 'a'},
 #ifdef WITH_NMOSH_DEFAULTS
+       {UC("applet"), 0, 0, 'X'},
        {UC("guru-mode"), 0, 0, 'G'},
 #endif
        {0, 0, 0, 0}
@@ -202,7 +205,12 @@ int main(int argc, char *argv[])
 
    ucs4char** argvU = getCommandLine(argc, argv);
 
-   while ((opt = getopt_longU(argc, argvU, UC("htvpVcl:5rze"), long_options, &optionIndex)) != -1) {
+#ifdef WITH_NMOSH_DEFAULTS
+#define NMOSH_APPEND_OPTIONS "T"
+#else
+#define NMOSH_APPEND_OPTIONS
+#endif
+   while ((opt = getopt_longU(argc, argvU, UC("htvpVcl:5rze" NMOSH_APPEND_OPTIONS), long_options, &optionIndex)) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
@@ -248,6 +256,9 @@ int main(int argc, char *argv[])
             isR6RSBatchMode = false;
             break;
 #ifdef WITH_NMOSH_DEFAULTS
+        case 'T':
+            invokeApplet = true;
+            break;
         case 'G':
             isGuruMode = true;
             break;
@@ -291,6 +302,7 @@ int main(int argc, char *argv[])
 #ifdef WITH_NMOSH_DEFAULTS
     theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
+    theVM->setValueString(UC("%invoke-applet"),Object::makeBool(invokeApplet));
     theVM->setValueString(UC("%nmosh-guru-mode"),Object::makeBool(isGuruMode));
 #endif
 
