@@ -34,6 +34,11 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_srcs})
     message(FATAL_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
 endif()
 
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/onig)
+    message(FATAL_ERROR "Oniguruma source-tree is missing. Please extract oniguruma(http://www.geocities.jp/kosako3/oniguruma/) as ${PROJECT_SOURCE_DIR}/onig . ")
+endif()
+
+
 set(MOSH_VERSION "0.2.6" CACHE STRING "mosh release version string")
 set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
 set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
@@ -304,7 +309,7 @@ include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_
 if(CMAKE_COMPILER_IS_GNUC)
     set(ffi_stub cmake/ffi_stub.S)
 else()
-    message(status "FFI stub was disabled (build without call-back support)")
+    message(STATUS "FFI stub was disabled (build without call-back support)")
     add_definitions(-DWITHOUT_FFI_STUB)
 endif(CMAKE_COMPILER_IS_GNUC)
 
