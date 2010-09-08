@@ -4,6 +4,7 @@
 		 (nmosh runlib)
 		 (nmosh condition-printer)
 		 (nmosh minidebug)
+                 (nmosh global-flags)
 		 (primitives ca-load ca-load/disable-cache set-symbol-value!))
 
 (define (startup)
@@ -12,7 +13,10 @@
   (let ((cl (command-line)))
     (cond
       ((<= 1 (length cl))
-       (ca-load (car cl) #f '(nmosh PROGRAM-FROM-NMOSH-STARTUP)))
+       (if (get-global-flag '%invoke-applet)
+         (let ((name (string->symbol (car cl))))
+           (runlib `((nmosh applet ,name)) name))
+         (ca-load (car cl) #f '(nmosh PROGRAM-FROM-NMOSH-STARTUP))))
       (else 
 	(runlib '((nrepl simple)) 'nrepl)))))
 
