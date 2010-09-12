@@ -179,7 +179,6 @@ else (GMP_FOUND)
 endif (GMP_FOUND)
 else (GMP_SEARCH)
 # check gmp.h in GMP_INCLUDE_DIR
-find_path(RESULT gmp.h PATHS ${GMP_INCLUDE_DIR} NO_DEFAULT_PATH)
 if(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
     message(FATAL_ERROR "MPIR/GMP is not installed at ${GMP_INCLUDE_DIR}.. (gmp.h could not found. please build MPIR(http://www.mpir.org) first and specify mpir/build.vc[9|10]/[lib|dll]/Win32/[Debug|Release] to MOSH_GMP_DIR.")
 endif(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
@@ -497,3 +496,10 @@ file(COPY ${PROJECT_SOURCE_DIR}/test DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/src/all-tests.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
 file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
 
+
+install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
+    DESTINATION share/mosh/${MOSH_VERSION})
+if(EXISTS ${MOSH_GMP_DIR}/gmp.dll)
+    install(FILE ${MOSH_GMP_DIR}/gmp.dll DESTINATION bin)
+endif()
