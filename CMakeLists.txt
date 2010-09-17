@@ -27,15 +27,18 @@ else(MOSH_WITH_NMOSH)
     set(mosh_runtime_srcs ${psyntax_mosh_runtime_srcs})
 endif(MOSH_WITH_NMOSH)
 
+# external libraries
+# MOSH_GMP_DIR is MSVC only
+set(MOSH_ONIG_DIR CACHE PATH "path to oniguruma(http://www.geocities.jp/kosako3/oniguruma/)")
 
 # sanity check
 
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_srcs})
-    message(FATAL_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
+    message(SEND_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
 endif()
 
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/onig)
-    message(FATAL_ERROR "Oniguruma source-tree is missing. Please extract oniguruma(http://www.geocities.jp/kosako3/oniguruma/) as ${PROJECT_SOURCE_DIR}/onig . ")
+if(NOT EXISTS ${MOSH_ONIG_DIR})
+    message(SEND_ERROR "Oniguruma source-tree is missing. Please extract oniguruma(http://www.geocities.jp/kosako3/oniguruma/) as ${MOSH_ONIG_DIR} . ")
 endif()
 
 
@@ -65,17 +68,9 @@ add_definitions(-DHAVE_CONFIG_H
     -DUSE_I686_PREFETCH
     )
 
-# Hash implementation select
-if(XCODE_VERSION)
-    add_definitions(-DHAVE_EXT_HASHES=1)
-    add_definitions(-DUSE_XCODE) # to disable direct-threaded code in XCode 3.x
-else(XCODE_VERSION)
-    add_definitions(-DHAVE_TR1_HASHES=1)
-    add_definitions(-DHAVE_TR1_UNORDERED_MAP=1)
-endif(XCODE_VERSION)
 
 # OS Settings
-if(WIN32)
+if(CMAKE_HOST_WIN32)
     add_definitions(-DMOSH_HOST_OS=\"win32\")
     add_definitions(-DLINE_FEED_CODE_CRLF=1)
     # we set ARCH_* here. (Win32 only. when at other O/S, these flags are
@@ -84,15 +79,31 @@ if(WIN32)
         add_definitions(-DARCH_IA32)
     endif()
     if(MSVC)
+        add_definitions(-DHAVE_TR1_HASHES=1)
+        add_definitions(-DHAVE_TR1_UNORDERED_MAP=1)
         add_definitions(-D_CRT_SECURE_NO_WARNINGS) #nasty
+    else() # MayBE MinGW
+        set(arch_libs ${arch_libs} shlwapi ws2_32)
+        add_definitions(-static-libgcc)
+        #add_definitions(-static-libstdc++)
+        add_definitions(-Wno-deprecated)
+        add_definitions(-fwide-exec-charset=ucs-4le)
+        add_definitions(-DMOSH_MINGW32)
+        add_definitions(-DHAVE_EXT_HASHES=1)
     endif(MSVC)
 elseif(APPLE)
+    if(XCODE_VERSION)
+        add_definitions(-DHAVE_EXT_HASHES=1)
+        add_definitions(-DUSE_XCODE) # to disable direct-threaded code in XCode 3.x
+    endif(XCODE_VERSION)
+
     add_definitions(-DMOSH_HOST_OS=\"darwin\")
     set_source_files_properties(gc-7.1/mach-dep.c COMPILE_FLAGS "-D_XOPEN_SOURCE")
-    add_definitions(-D_XOPEN_SOURCE)
     add_definitions(-DLINE_FEED_CODE_LF=1)
     # do not set arch here 
-else(WIN32) # so it is UNIX
+else() # so it is UNIX
+    add_definitions(-DHAVE_TR1_HASHES=1)
+    add_definitions(-DHAVE_TR1_UNORDERED_MAP=1)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_definitions(-DMOSH_HOST_OS=\"linux\")
         set(arch_libs ${arch_libs} pthread dl)
@@ -100,15 +111,16 @@ else(WIN32) # so it is UNIX
         add_definitions(-DMOSH_HOST_OS=\"unknown\")
     endif()
     add_definitions(-DLINE_FEED_CODE_LF=1)
-endif(WIN32)
-if(WIN32)
+endif()
+
+if(CMAKE_HOST_WIN32)
 add_definitions(
     -DWINVER=0x501
     -DGC_NOT_DLL
     -DONIG_EXTERN=extern
     )
 set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/win/include")
-endif(WIN32)
+endif(CMAKE_HOST_WIN32)
 
 # includes
 CHECK_INCLUDE_FILE(alloca.h HAVE_ALLOCA_H)
@@ -175,12 +187,12 @@ endif (GMP_INCLUDE_DIR AND GMP_LIBRARY)
 if (GMP_FOUND)
     message(STATUS "using GMP from : ${GMP_INCLUDE_DIR}, ${GMP_LIBRARY}")
 else (GMP_FOUND)
-    message(FATAL_ERROR "GMP not found..")
+    message(SEND_ERROR "GMP not found..")
 endif (GMP_FOUND)
 else (GMP_SEARCH)
 # check gmp.h in GMP_INCLUDE_DIR
 if(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
-    message(FATAL_ERROR "MPIR/GMP is not installed at ${GMP_INCLUDE_DIR}.. (gmp.h could not found. please build MPIR(http://www.mpir.org) first and specify mpir/build.vc[9|10]/[lib|dll]/Win32/[Debug|Release] to MOSH_GMP_DIR.")
+    message(SEND_ERROR "MPIR/GMP is not installed at ${GMP_INCLUDE_DIR}.. (gmp.h could not found. please build MPIR(http://www.mpir.org) first and specify mpir/build.vc[9|10]/[lib|dll]/Win32/[Debug|Release] to MOSH_GMP_DIR.")
 endif(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
 endif(GMP_SEARCH)
 
@@ -252,58 +264,58 @@ endif(WIN32)
 # Onigruma things
 
 set(onig_srcs
-onig/regint.h
-onig/regparse.h
-onig/regenc.h
-onig/st.h
-onig/regerror.c
-onig/regparse.c
-onig/regext.c
-onig/regcomp.c
-onig/regexec.c
-onig/reggnu.c
-onig/regenc.c
-onig/regsyntax.c
-onig/regtrav.c
-onig/regversion.c
-onig/st.c
-onig/regposix.c
-onig/regposerr.c
-onig/enc/unicode.c
-onig/enc/ascii.c
-onig/enc/utf8.c
-onig/enc/utf16_be.c
-onig/enc/utf16_le.c
-onig/enc/utf32_be.c
-onig/enc/utf32_le.c
-onig/enc/euc_jp.c
-onig/enc/sjis.c
-onig/enc/iso8859_1.c
-onig/enc/iso8859_2.c
-onig/enc/iso8859_3.c
-onig/enc/iso8859_4.c
-onig/enc/iso8859_5.c
-onig/enc/iso8859_6.c
-onig/enc/iso8859_7.c
-onig/enc/iso8859_8.c
-onig/enc/iso8859_9.c
-onig/enc/iso8859_10.c
-onig/enc/iso8859_11.c
-onig/enc/iso8859_13.c
-onig/enc/iso8859_14.c
-onig/enc/iso8859_15.c
-onig/enc/iso8859_16.c
-onig/enc/euc_tw.c
-onig/enc/euc_kr.c
-onig/enc/big5.c
-onig/enc/gb18030.c
-onig/enc/koi8_r.c
-onig/enc/cp1251.c
+${MOSH_ONIG_DIR}/regint.h
+${MOSH_ONIG_DIR}/regparse.h
+${MOSH_ONIG_DIR}/regenc.h
+${MOSH_ONIG_DIR}/st.h
+${MOSH_ONIG_DIR}/regerror.c
+${MOSH_ONIG_DIR}/regparse.c
+${MOSH_ONIG_DIR}/regext.c
+${MOSH_ONIG_DIR}/regcomp.c
+${MOSH_ONIG_DIR}/regexec.c
+${MOSH_ONIG_DIR}/reggnu.c
+${MOSH_ONIG_DIR}/regenc.c
+${MOSH_ONIG_DIR}/regsyntax.c
+${MOSH_ONIG_DIR}/regtrav.c
+${MOSH_ONIG_DIR}/regversion.c
+${MOSH_ONIG_DIR}/st.c
+${MOSH_ONIG_DIR}/regposix.c
+${MOSH_ONIG_DIR}/regposerr.c
+${MOSH_ONIG_DIR}/enc/unicode.c
+${MOSH_ONIG_DIR}/enc/ascii.c
+${MOSH_ONIG_DIR}/enc/utf8.c
+${MOSH_ONIG_DIR}/enc/utf16_be.c
+${MOSH_ONIG_DIR}/enc/utf16_le.c
+${MOSH_ONIG_DIR}/enc/utf32_be.c
+${MOSH_ONIG_DIR}/enc/utf32_le.c
+${MOSH_ONIG_DIR}/enc/euc_jp.c
+${MOSH_ONIG_DIR}/enc/sjis.c
+${MOSH_ONIG_DIR}/enc/iso8859_1.c
+${MOSH_ONIG_DIR}/enc/iso8859_2.c
+${MOSH_ONIG_DIR}/enc/iso8859_3.c
+${MOSH_ONIG_DIR}/enc/iso8859_4.c
+${MOSH_ONIG_DIR}/enc/iso8859_5.c
+${MOSH_ONIG_DIR}/enc/iso8859_6.c
+${MOSH_ONIG_DIR}/enc/iso8859_7.c
+${MOSH_ONIG_DIR}/enc/iso8859_8.c
+${MOSH_ONIG_DIR}/enc/iso8859_9.c
+${MOSH_ONIG_DIR}/enc/iso8859_10.c
+${MOSH_ONIG_DIR}/enc/iso8859_11.c
+${MOSH_ONIG_DIR}/enc/iso8859_13.c
+${MOSH_ONIG_DIR}/enc/iso8859_14.c
+${MOSH_ONIG_DIR}/enc/iso8859_15.c
+${MOSH_ONIG_DIR}/enc/iso8859_16.c
+${MOSH_ONIG_DIR}/enc/euc_tw.c
+${MOSH_ONIG_DIR}/enc/euc_kr.c
+${MOSH_ONIG_DIR}/enc/big5.c
+${MOSH_ONIG_DIR}/enc/gb18030.c
+${MOSH_ONIG_DIR}/enc/koi8_r.c
+${MOSH_ONIG_DIR}/enc/cp1251.c
 )
 
 # mosh
 
-include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} onig ${ARCH_INCLUDE} gtest)
+include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest)
 
 if(CMAKE_COMPILER_IS_GNUC)
     set(ffi_stub cmake/ffi_stub.S)
@@ -398,13 +410,13 @@ src/OSCompat.cpp
 ${ffi_stub}
 )
 
-if(WIN32)
+if(CMAKE_HOST_WIN32)
 set(mosh_core_srcs 
 ${mosh_core_srcs}
 win/win.cpp)
 set_source_files_properties(${mosh_core_srcs}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
-endif(WIN32)
+endif(CMAKE_HOST_WIN32)
 
 configure_file(cmake/config-cmake.h.in
     ${PROJECT_BINARY_DIR}/cmake/config.h)

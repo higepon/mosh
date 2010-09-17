@@ -26,6 +26,7 @@
 // 	}
 // }
 
+#ifndef MOSH_MINGW32
 #include "include/gettimeofday.h"
 #include <sys/timeb.h>
 
@@ -38,3 +39,4 @@ int gettimeofday(struct timeval *tv, struct timezone *)
 #pragma message("tz is not supported in gettimeofday")
 	return 0;
 }
+#endif
