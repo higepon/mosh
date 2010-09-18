@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.62)
-AC_INIT(mosh, 0.2.5, higepon@users.sourceforge.jp)
+AC_INIT(mosh, 0.2.6, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE([foreign])
