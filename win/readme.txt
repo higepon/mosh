@@ -1,10 +1,8 @@
 this document is now deprecated.. (oku)
 
-- precompiled library was removed
+MSVC build was migrated to CMake.
 
-1. Download MPIR and uncompress as directory "mpir"
-2. open ../mosh.sln
-3. build
+use CMake to build mosh under VisualStudio 2008/2010, MinGW
 
 --
 
