@@ -144,7 +144,7 @@ ucs4string CustomTextualInputPort::toString()
 
 int CustomTextualInputPort::close()
 {
-    if (closeProc_.isCallable()) {
+    if (closeProc_.isProcedure()) {
         theVM_->callClosure0(closeProc_);
     }
     isClosed_ = true;

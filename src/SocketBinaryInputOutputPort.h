@@ -76,7 +76,7 @@ private:
     uint8_t getLastU8()
     {
         MOSH_ASSERT(hasLastU8());
-        const uint8_t ret = lastU8_;
+        const uint8_t ret = (uint8_t) lastU8_;
         lastU8_ = 0xffff;
         return ret;
     }

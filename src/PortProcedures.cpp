@@ -433,6 +433,11 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     argumentAsTextualInputPort(0, inputPort);
     checkPortIsOpen(inputPort, argv[0]);
     argumentAsNonNegativeFixnum(1, size);
+
+    if (size == 0) {
+        return "";
+    }
+
     TRY_WITHOUT_DSTR
         ucs4string text = inputPort->getString(size);
 
@@ -1160,6 +1165,11 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
     }
 
     const uint32_t u32Count = Arithmetic::toU32(count);
+
+    if (u32Count == 0) {
+        return Object::makeByteVector(0);
+    }
+
     uint8_t* buffer = allocatePointerFreeU8Array(u32Count);
     bool isErrorOccured = false;
     const uint32_t ret = static_cast<uint32_t>(binaryInputPort->readBytes(buffer, u32Count, isErrorOccured));

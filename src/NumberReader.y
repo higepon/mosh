@@ -98,7 +98,7 @@ static Object suffixToNumberOld(const ucs4string& text)
         exponent = Arithmetic::negate(exponent);
     }
     MOSH_ASSERT(!exponent.isBignum());
-    return Arithmetic::expt(Object::makeFixnum(10), exponent);
+    return Arithmetic::expt(Object::makeFlonum(10), exponent);
 }
 
 static Object suffixToNumber(const ucs4string& text)

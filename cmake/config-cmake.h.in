@@ -1,0 +1,64 @@
+#cmakedefine HAVE_ALLOCA_H
+#cmakedefine HAVE_FCNTL_H
+#cmakedefine HAVE_INTTYPES_H
+#cmakedefine HAVE_MEMORY_H
+#cmakedefine HAVE_STDBOOL_H
+#cmakedefine HAVE_STDINT_H
+#cmakedefine HAVE_STDLIB_H
+#cmakedefine HAVE_STRING_H
+#cmakedefine HAVE_SYS_STAT_H
+#cmakedefine HAVE_SYS_TIME_H
+#cmakedefine HAVE_SYS_WAIT_H
+#cmakedefine HAVE_UNISTD_H
+#cmakedefine HAVE_UTMP_H
+
+#cmakedefine HAVE_ALLOCA
+#cmakedefine HAVE_GETTIMEOFDAY
+#cmakedefine HAVE_MEMMOVE
+#cmakedefine HAVE_MEMSET
+#cmakedefine HAVE_STRTOL
+
+#cmakedefine SIZEOF_INT @SIZEOF_INT@
+#cmakedefine SIZEOF_SHORT @SIZEOF_SHORT@
+#cmakedefine SIZEOF_LONG @SIZEOF_LONG@
+#cmakedefine SIZEOF_LONG_LONG @SIZEOF_LONG_LONG@
+#cmakedefine SIZEOF___INT64 @SIZEOF___INT64@
+#cmakedefine SIZEOF_OFF_T @SIZEOF_OFF_T@
+#cmakedefine SIZEOF_VOIDP @SIZEOF_VOIDP@
+#cmakedefine SIZEOF_FLOAT @SIZEOF_FLOAT@
+#cmakedefine SIZEOF_DOUBLE @SIZEOF_DOUBLE@
+
+#ifdef _MSC_VER
+    #define INT8_MIN            _I8_MIN
+    #define INT8_MAX            _I8_MAX
+    #define INT16_MIN           _I16_MIN
+    #define INT16_MAX           _I16_MAX
+    #define INT32_MIN           _I32_MIN
+    #define INT32_MAX           _I32_MAX
+    #define INT64_MIN           _I64_MIN
+    #define INT64_MAX           _I64_MAX
+    #define INTPTR_MIN          _I32_MIN
+    #define INTPTR_MAX          _I32_MAX
+    #define UINT8_MIN           _UI8_MIN
+    #define UINT8_MAX           _UI8_MAX
+    #define UINT16_MIN          _UI16_MIN
+    #define UINT16_MAX          _UI16_MAX
+    #define UINT32_MIN          _UI32_MIN
+    #define UINT32_MAX          _UI32_MAX
+    #define UINT64_MIN          _UI64_MIN
+    #define UINT64_MAX          _UI64_MAX
+    #define UINTPTR_MIN         _UI32_MIN
+    #define UINTPTR_MAX         _UI32_MAX
+#endif
+
+#ifndef _WIN32 // FIXME: 
+
+// guess processor archtecture
+
+#if defined(__i386__) || defined(i386)
+    #define ARCH_IA32
+#elif defined(__x86_64__) // standard ABI
+    #define ARCH_X86_64
+#endif
+
+#endif
