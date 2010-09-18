@@ -482,7 +482,7 @@ set_source_files_properties(src/${testname}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(WIN32)
 add_executable(moshtest${testname} ${gtest_srcs} src/${testname}.cpp)
-target_link_libraries(moshtest${testname} testinggc testingmosh ${GMP_LIBRARY} ${arch_libs})
+target_link_libraries(moshtest${testname} testingmosh testinggc ${GMP_LIBRARY} ${arch_libs})
 add_test(mosh-${testname} moshtest${testname})
 endmacro(add_moshcoretest)
 
