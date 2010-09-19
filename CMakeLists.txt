@@ -106,6 +106,7 @@ else() # so it is UNIX
     add_definitions(-DHAVE_TR1_UNORDERED_MAP=1)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_definitions(-DMOSH_HOST_OS=\"linux\")
+        add_definitions(-DGTEST_HAS_PTHREAD=0) # for GC
         set(arch_libs ${arch_libs} pthread dl)
     else()
         add_definitions(-DMOSH_HOST_OS=\"unknown\")
