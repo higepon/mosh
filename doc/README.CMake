@@ -6,20 +6,18 @@ Building MOSH/NMOSH with CMake
 LIMITATIONS
 -----------
 
-- it is experimental port.
-- Performance is _NOT_ optimal when compared with standard build.
-- Not every mosh features are supported. (eg. FFI)
-- You cannot install CMake built mosh/nmosh. "make install" is not implemented
-  yet.
+- This is experimental port.
+- Performance may _NOT_ optimal when compared with standard build.
+- Not every mosh features are supported. (eg. FFI call-back)
 - we recommend standard (autotools) build (ie. ./configure && make) for
   system-installed (ie. /usr/local/mosh) mosh.
 
 0. Supported platform
 ---------------------
 
-- Apple Xcode 3.x and Mac OS X 10.5
+- Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Microsoft Visual Studio 2008, 2010 (i386 only)
-- Eclipse CDT4 with GCC/G++ 4.3 or later
+- Unix Makefile with GCC/G++ 4.3 or later
 
 other CMake generators are not tested.
 
@@ -27,7 +25,7 @@ other CMake generators are not tested.
 --------------------
 
 - (run gen-git-build.sh if you cloned from our git repository.)
-- extract onig-5.x.x.tar.gz and copy it as "onig" directory.
+- extract onig-5.x.x.tar.gz
 
 setup GMP:
 - MacOS X: copy GMP.framework to DYLD default path like ~/Library/Frameworks 
@@ -38,7 +36,8 @@ setup GMP:
 2. Configulation
 ----------------
 
-(same as standard CMake projects)
+- Specify oniguruma source tree location to MOSH_ONIG_DIR variable
+- Specify GMP library location to MOSH_GMP_DIR
 
 3. Build
 --------
