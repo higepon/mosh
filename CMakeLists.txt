@@ -1,6 +1,6 @@
 # please check doc/HACKING.CMAKE for instructions
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 
 PROJECT(mosh)
 include(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
@@ -513,6 +513,6 @@ file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_D
 install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
     DESTINATION share/mosh/${MOSH_VERSION})
-if(EXISTS ${MOSH_GMP_DIR}/gmp.dll)
-    install(FILE ${MOSH_GMP_DIR}/gmp.dll DESTINATION bin)
+if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
+    install(FILE ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
 endif()
