@@ -5,9 +5,11 @@ mosh on FreeBSD
 ----------
 
 - Install following ports:
+  devel/gmake
   devel/oniguruma5
   math/gmp
-- ./configure && make
+- ./configure CFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib
+- gmake
 
 2. Limitations
 --------------
