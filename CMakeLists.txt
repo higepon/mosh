@@ -34,7 +34,7 @@ set(MOSH_ONIG_DIR CACHE PATH "path to oniguruma(http://www.geocities.jp/kosako3/
 # sanity check
 
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_srcs})
-    message(SEND_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
+    message(FATAL_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
 endif()
 
 if(NOT EXISTS ${MOSH_ONIG_DIR})
@@ -43,9 +43,9 @@ endif()
 
 
 set(MOSH_VERSION "0.2.6" CACHE STRING "mosh release version string")
-set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
+# set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
 set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
-set(MOSH_LIB_PATH "bogus" CACHE STRING "default mosh library path")
+set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
 
 mark_as_advanced(MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
 
@@ -414,7 +414,8 @@ ${ffi_stub}
 if(CMAKE_HOST_WIN32)
 set(mosh_core_srcs 
 ${mosh_core_srcs}
-win/win.cpp)
+win/win.cpp
+win/mosh.rc)
 set_source_files_properties(${mosh_core_srcs}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(CMAKE_HOST_WIN32)
@@ -506,6 +507,9 @@ add_moshcoretest(OSCompatThreadTest)
 
 file(COPY ${PROJECT_SOURCE_DIR}/lib DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/test DESTINATION ${PROJECT_BINARY_DIR})
+if(WIN32)
+file(COPY ${PROJECT_SOURCE_DIR}/misc/logo/mosh.ico DESTINATION ${PROJECT_BINARY_DIR}/misc/logo)
+endif(WIN32)
 file(COPY ${PROJECT_SOURCE_DIR}/src/all-tests.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
 file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
 
@@ -514,5 +518,5 @@ install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
     DESTINATION share/mosh/${MOSH_VERSION})
 if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
-    install(FILE ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
+    install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
 endif()
