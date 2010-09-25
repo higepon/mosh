@@ -1,12 +1,5 @@
-README.MINGW 14-Aug-2010
-
-by OKUMURA Yuki <mjt@cltn.org>
-
-WARNING
--------
-
-This is port of Mosh for mingw32msvc, and it's still an _experimental_ port.
-Please consider using Cygwin port which is more feature complete.
+mosh on MinGW
+=============
 
 STATUS
 ------
@@ -19,10 +12,10 @@ NOT supported :
 PREREQUISITES
 -------------
 
-- MinGW + MSYS (tested by 4.5.1)
+- MinGW + MSYS (tested by 4.5.1 TDM)
 - bash
-- MSYS make
-- gnu MP library 
+- gnu MP library
+- oniguruma-5.x.x
 
 
 CONFIGURATION & BUILD
@@ -31,6 +24,9 @@ CONFIGURATION & BUILD
 As usual product, run the configure script and make.
 
  ./configure --disable-profiler && make
+
+Alternatively, you may use CMake to build mosh. See doc/README.CMake for
+details.
 
 INSTALL
 -------
