@@ -556,12 +556,14 @@ test_thread_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp src/psyntax_mosh_image.cpp
 test_thread_LDADD = $(TEST_LDADD_)
 
+if PSYNTAX_MOSH_POSTINSTALL
 install-data-hook :
 	./mosh --clean-acc --disable-acc $(top_srcdir)/misc/empty.scm
 	$(INSTALL) -m 666 $(top_srcdir)/misc/dotmosh/prefix.txt `./mosh --clean-acc --disable-acc ./src/mosh_config mosh-cache-dir`
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
+endif
 
 dist-hook:
 	-rm -f $(top_distdir)/lib/libffitest.so.1.0

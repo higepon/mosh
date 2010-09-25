@@ -335,10 +335,13 @@ AC_ARG_WITH(mysql,
 )
 
 AC_ARG_ENABLE(developer, AS_HELP_STRING([--enable-developer],
-                                        [Flags are enabled for Mosh Developer])
-             , [enable_developer=true], [enable_developer=false])
+                                        [Flags are enabled for Mosh Developer]) ,
+                                        [enable_developer=true], [enable_developer=false])
 AM_CONDITIONAL(DEVELOPER, test x$enable_developer = xtrue)
 
+AC_ARG_ENABLE(pmoshpost, [  --disable-psyntax-mosh-postinstall    Disable psyntax-mosh postinstall phase.] ,
+              [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, FALSE)] ,
+              [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, TRUE)])
 
 # Checks for header files.
 AC_HEADER_STDC
