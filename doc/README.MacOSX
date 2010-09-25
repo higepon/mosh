@@ -5,11 +5,10 @@ mosh on MacOS X
 ----------
 
 - Install following using MacPorts:
-  gmake
   oniguruma5
   gmp
 - ./configure CFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
-- gmake
+- make
 
 Alternatively, you can use CMake and XCode. See README.CMake for details.
 
