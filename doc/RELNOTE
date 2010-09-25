@@ -1,3 +1,84 @@
+Mosh 0.2.6 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://mosh.monaos.org/
+
+  Reference Manual:
+    http://mosh.monaos.org/
+
+  Developed by:
+    Higepon, kokosabu, herumi and OKUMURA Yuki.
+
+About This Release
+------------------
+
+Maintenace release.
+Starting from this release, Visual Studio builds are migrated to CMake.
+See doc/README.CMake for details.
+
+Changes:
+
+    New platform support includes FFI support:
+        - Darwin x86_64
+        - FreeBSD amd64
+
+    New build environment support:
+       - Visual Studio 2010 i386 (using CMake)
+
+    Oniguruma library is unbundled from mosh distribution. Configure script will
+    search oniguruma with following order; 1) using `onig-config' 2) using
+    -lonig gcc option and user specified CFLAGS 3) if oniguruma source
+    distribution is found in a subdir as named `onig' it will be build together.
+
+    Now mosh REPL handles multiple-values like Gauche. When a procedure return
+    multiple values, REPL will show each values unlike previous version (which
+    discarded values other than the first.)
+
+Bug fixes:
+
+    (rnrs):
+        exact-non-negative-integer? had retuned incorrect value.
+        Fixed expt procedure bug reported by Eduardo Cavazos.
+        Fixed Issue 147 reported by mrc.mgg: 
+            log procedure was returning incorrect value.
+        Fixed Issue 148 reported by mrc.mgg: 
+            expt procedure is now much more faster than previous release.
+        Fixed Issue 149 reported by mrc.mgg: 
+            Reader now handles the "."(period) charactor collectly.
+        Fixed Issue 154 reported by tabe.fixedpoint: 
+            exact-integer-sqrt procedure now raises error when an inexact 
+            integer given.
+        Fixed Issue 159:
+            assoc procedure now checks argments are list of pairs.
+        Fixed Issue 161 reported by tabe.fixedpoint:
+            -(minus) procedure was returned 0 insted of raises an error.
+        Fixed Issue 169 reported by ianprice90:
+            Reading 0 elements from port was resulting in an eof-object.
+        Fixed Issue 170 reported by ianprice90:
+            Custom binary/text port's close procedure not called.
+
+    (mosh memcached):
+        memcached-set! procedure now collectly sends flags and expiry arguments.
+
+    (srfi :98):
+        get-environment-variable and get-environment-variables had returned
+        incollect results at MinGW/Cygwin environment.
+
+    Core:
+        Fixed shebang handling bug reported by Eduardo Cavazos.
+        Fixed Issue 158: 
+            nmosh was not started when $HOME is not set or has wrong value.
+        
+    Documentation:
+        Fixed Issue 167 reported by amoebae:
+            (mosh ffi) example was incorrect.
+
 Mosh 0.2.5 Release Note
 ============================
 

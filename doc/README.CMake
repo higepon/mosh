@@ -6,7 +6,6 @@ Building MOSH/NMOSH with CMake
 LIMITATIONS
 -----------
 
-- This is experimental port.
 - Performance may _NOT_ optimal when compared with standard build.
 - Not every mosh features are supported. (eg. FFI call-back)
 - we recommend standard (autotools) build (ie. ./configure && make) for
@@ -15,8 +14,8 @@ LIMITATIONS
 0. Supported platform
 ---------------------
 
-- Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Microsoft Visual Studio 2008, 2010 (i386 only)
+- Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Unix Makefile with GCC/G++ 4.3 or later
 
 other CMake generators are not tested.
@@ -31,13 +30,13 @@ setup GMP:
 - MacOS X: copy GMP.framework to DYLD default path like ~/Library/Frameworks 
 -    MSVC: download MPIR 2.x from http://www.mpir.org and build with MSVC
            then set MOSH_GMP_DIR to this
-           (c:\XXXXXX\mpir-2.x.x\build.vc10\lib\Win32\Debug)
+           (c:\XXXXXX\mpir-2.x.x\build.vc10\lib\Win32\Relase)
 
 2. Configulation
 ----------------
 
 - Specify oniguruma source tree location to MOSH_ONIG_DIR variable
-- Specify GMP library location to MOSH_GMP_DIR
+- Specify GMP library location to MOSH_GMP_DIR (Win32 only)
 
 3. Build
 --------

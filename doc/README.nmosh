@@ -177,6 +177,12 @@ implementation.
         trace : 
           (define-invalid x)
 
+guru-mode (trace suppression)
+-----------------------------
+
+By default, stack trace and syntax trace are slightly suppressed. To disable
+this, specify --guru-mode option.
+
 minidebug
 ---------
 
@@ -200,7 +206,7 @@ When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke
 
        FRAME ID            origin
          USRP         Library or User program
-       ==USRP==       Undermost user frame
+       ==USRP==       User frame which has debugging info.
 
        FRAME ID            origin
          DBGP         (internal symbol for debugging or loaded library)
