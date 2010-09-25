@@ -141,7 +141,7 @@ void showUsage()
             "  --clean-acc       cleans auto-compile-cache.\n"
             "  --verbose         Show library serialisation messages.\n"
 #ifdef WITH_NMOSH_DEFAULTS
-            "  --applet (-T)     Invokes nmosh applet.\n"
+//            "  --applet (-T)     Invokes nmosh applet.\n"
             "  --guru-mode       Provide guru-mediation for nmosh developer.\n"
 #endif
             "  --loadpath=<path> Add library loadpath.\n\n"
