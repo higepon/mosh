@@ -21,10 +21,6 @@ Additional Software:
 
 GMP - Mosh uses the GNU Multiple Precision Arithmetic Library (GMP) for some bignum arithmetic operations. To build Mosh , GMP version 4.2 or better must be installed along with the required header files. Pre-built GMP packages are available for most operating systems. Alternatively, GMP can be downloaded from http://gmplib.org/.
 
-On OSX you need to build GMP *32bit* version like following.
-> % CFLAGS+=-m32  ./configure ABI=32 && make
-> % sudo make install
-
 Install:
 
 (start code)
@@ -53,4 +49,4 @@ or
 
 Repository:
 
-http://github.com/higepon/mona
+http://github.com/higepon/mosh

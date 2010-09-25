@@ -19,7 +19,7 @@ NOT supported :
 PREREQUISITES
 -------------
 
-- MinGW + MSYS (tested by 4.5.0)
+- MinGW + MSYS (tested by 4.5.1)
 - bash
 - MSYS make
 - gnu MP library 
