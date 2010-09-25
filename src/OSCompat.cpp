@@ -320,7 +320,7 @@ bool File::close()
 #ifdef _WIN32
         const bool isOK = CloseHandle(desc_) != 0;
 #elif defined(MONA)
-        const bool isOK = monapi_file_close(desc_) != MONA_FAILURE;
+        const bool isOK = monapi_file_close(desc_) == M_OK;
 #else
         const bool isOK = ::close(desc_) != 0;
 #endif
