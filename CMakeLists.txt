@@ -98,7 +98,6 @@ elseif(APPLE)
     endif(XCODE_VERSION)
 
     add_definitions(-DMOSH_HOST_OS=\"darwin\")
-    add_definitions(-D_XOPEN_SOURCE) # for gc-7.1/mach_dep.c
     add_definitions(-DLINE_FEED_CODE_LF=1)
     # do not set arch here 
 else() # so it is UNIX
