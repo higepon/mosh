@@ -107,6 +107,9 @@ else() # so it is UNIX
         add_definitions(-DMOSH_HOST_OS=\"linux\")
         add_definitions(-DGTEST_HAS_PTHREAD=0) # for GC
         set(arch_libs ${arch_libs} pthread dl)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+        add_definitions(-DMOSH_HOST_OS=\"bsd\")
+        set(arch_libs ${arch_libs} pthread)
     else()
         add_definitions(-DMOSH_HOST_OS=\"unknown\")
     endif()
