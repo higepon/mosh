@@ -46,9 +46,10 @@ Bug fixes:
         exact-non-negative-integer? had retuned incorrect value.
         Fixed expt procedure bug reported by Eduardo Cavazos.
         Fixed Issue 147 reported by mrc.mgg: 
-            log procedure was returning incorrect value.
+            log procedure had returned incorrect value.
         Fixed Issue 148 reported by mrc.mgg: 
             expt procedure is now much more faster than previous release.
+            Now it uses GMP mpz_pow_ui when operands are fixnums.
         Fixed Issue 149 reported by mrc.mgg: 
             Reader now handles the "."(period) charactor collectly.
         Fixed Issue 154 reported by tabe.fixedpoint: 
@@ -56,12 +57,14 @@ Bug fixes:
             integer given.
         Fixed Issue 159:
             assoc procedure now checks argments are list of pairs.
+            (assoc '(0)) no longer causes SEGV.
         Fixed Issue 161 reported by tabe.fixedpoint:
-            -(minus) procedure was returned 0 insted of raises an error.
+            -(minus) procedure was returned 0 insted of raises an error when
+            applied with 0 argument. Now (-) raises an &assertion error.
         Fixed Issue 169 reported by ianprice90:
-            Reading 0 elements from port was resulting in an eof-object.
+            Reading 0 elements from a port was resulting in an eof-object.
         Fixed Issue 170 reported by ianprice90:
-            Custom binary/text port's close procedure not called.
+            Custom binary/text port's close procedure was not called.
 
     (mosh memcached):
         memcached-set! procedure now collectly sends flags and expiry arguments.
