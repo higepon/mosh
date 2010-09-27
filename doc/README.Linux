@@ -1,0 +1,29 @@
+mosh on Linux
+=============
+
+1. Install (Ubuntu, Debian)
+---------------------------
+
+- Install following ports:
+  libgmp3-dev
+  libonig-dev or libonig2-dev
+- ./configure 
+- make
+
+1. Install (Other distributions)
+--------------------------------
+
+- Install following libraries:
+  GMP or MPIR with GMP compatibility (see http://gmplib.org)
+  Oniguruma 5.7 or later (see http://www.geocities.jp/kosako3/oniguruma/)
+- ./configure && make
+  When configure script couldn't find GMP libraries, you should specify CFLAGS
+  and CXXFLAGS. 
+  (e.g. ./configure CFLAGS="-I/usr/local/include -L/usr/local/lib")
+
+2. Limitations
+--------------
+
+- mosh is currently only tested at i386, x86_64 and PowerPC architecture.
+- FFI features are only available at i386 or x86_64 architecture.
+
