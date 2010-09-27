@@ -681,7 +681,7 @@ bool File::deleteFileOrDirectory(const ucs4string& path)
 #ifdef _WIN32
     return DeleteFileW(utf32ToUtf16(path));
 #elif defined(MONA)
-    return monapi_file_delete(utf32toUtf8(path)) == MONA_SUCCESS;
+    return monapi_file_delete(utf32toUtf8(path)) == M_OK;
 #else
     return remove(utf32toUtf8(path)) == 0;
 #endif
