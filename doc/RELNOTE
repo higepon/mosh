@@ -29,7 +29,7 @@ Changes:
         - FreeBSD amd64
 
     New platform support WITHOUT FFI support:
-        - Windows amd64 (Visual Studio Only, using CMake)
+        - Windows amd64 (Experimental, Visual Studio Only, using CMake)
 
     New build environment support:
         - Visual Studio 2010 i386 (using CMake)
