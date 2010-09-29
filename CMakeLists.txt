@@ -76,7 +76,11 @@ if(CMAKE_HOST_WIN32)
     # we set ARCH_* here. (Win32 only. when at other O/S, these flags are
     # guessed.)
     if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86") 
-        add_definitions(-DARCH_IA32)
+        if(CMAKE_CL_64)
+            # FFI not supported
+        else(CMAKE_CL_64)
+            add_definitions(-DARCH_IA32)
+        endif(CMAKE_CL_64)
     endif()
     if(MSVC)
         add_definitions(-DHAVE_TR1_HASHES=1)

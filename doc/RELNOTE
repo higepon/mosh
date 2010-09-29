@@ -28,8 +28,11 @@ Changes:
         - Darwin x86_64
         - FreeBSD amd64
 
+    New platform support WITHOUT FFI support:
+        - Windows amd64 (Visual Studio Only, using CMake)
+
     New build environment support:
-       - Visual Studio 2010 i386 (using CMake)
+        - Visual Studio 2010 i386 (using CMake)
 
     Oniguruma library is unbundled from mosh distribution. Configure script will
     search oniguruma with following order; 1) using `onig-config' 2) using
