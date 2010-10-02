@@ -1,4 +1,4 @@
-# please check doc/HACKING.CMAKE for instructions
+# please check doc/README.CMake for instructions
 
 cmake_minimum_required(VERSION 2.8)
 
