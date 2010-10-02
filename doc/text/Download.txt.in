@@ -14,12 +14,14 @@ Just run mosh-setup.exe and follow the wizard.
 
 or
 
-Build on Visual C++ 2008 (See win/readme.txt)
+Build on Visual C++ 2008 SP1 or 2010 (See doc/README.CMake)
 
 
 Additional Software:
 
 GMP - Mosh uses the GNU Multiple Precision Arithmetic Library (GMP) for some bignum arithmetic operations. To build Mosh , GMP version 4.2 or better must be installed along with the required header files. Pre-built GMP packages are available for most operating systems. Alternatively, GMP can be downloaded from http://gmplib.org/.
+
+Oniguruma - Mosh uses the Oniguruma regular-expression library for RE implementation. Oniguruma can be downloaded from http://www.geocities.jp/kosako3/oniguruma/.
 
 Install:
 

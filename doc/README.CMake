@@ -14,7 +14,7 @@ LIMITATIONS
 0. Supported platform
 ---------------------
 
-- Microsoft Visual Studio 2008, 2010
+- Microsoft Visual Studio 2008 SP1, 2010
 - Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Unix Makefile with GCC/G++ 4.3 or later
 
