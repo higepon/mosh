@@ -55,13 +55,7 @@ else
 bin_PROGRAMS = mosh nmosh
 endif
 
-# FIXME! use extra_PROGRAMS
-if MINGW32
-bin_PROGRAMS = nmosh
-endif
-
 bin_SCRIPTS = src/mosh_config
-
 
 # mosh core sources
 
@@ -397,7 +391,8 @@ boot/runtimes/srfi-mosh/lib.rnrs \
 boot/runtimes/srfi-mosh/mosh-exceptions.scm \
 boot/runtimes/srfi-mosh/mosh-utils5.scm \
 boot/runtimes/srfi-mosh/runtime.scm \
-gen-git-build.sh
+gen-git-build.sh \
+CMakeLists.txt cmake
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \
