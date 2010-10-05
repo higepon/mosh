@@ -331,7 +331,7 @@ else()
     add_definitions(-DWITHOUT_FFI_STUB)
 endif(CMAKE_COMPILER_IS_GNUC)
 
-set(mosh_core_srcs
+set(mosh_core_hdrs
 src/Code.h
 src/SharedReference.h
 src/NonGenerativeRTDs.h
@@ -454,6 +454,9 @@ src/OSCompatSocket.h
 src/OSCompatThread.h
 src/VMFactory.h
 src/SimpleStruct.h
+)
+
+set(mosh_core_srcs
 src/OSCompat.h
 src/Transcoder.cpp
 src/EqvHashTable.cpp
@@ -557,10 +560,13 @@ set_source_files_properties(src/main.cpp src/TestingSignalHandler.cpp
     src/TestingVM.cpp
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(WIN32)
+source_group(gc FILES ${gc_srcs})
+source_group(oniguruma FILES ${onig_srcs})
 add_executable(${TARGET_FLAVOR} 
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
+    ${mosh_core_hdrs}
     ${mosh_runtime_srcs}
     src/main.cpp)
 
