@@ -1,6 +1,6 @@
 (library (nrepl simple)
 	 (export nrepl)
-	 (import (nmosh)
+	 (import (rnrs)
                  (nrepl simple io)
 		 (only (mosh) set-symbol-value!)
 		 (nmosh condition-printer)
@@ -27,7 +27,7 @@
   (display-prompt)
   (let ((continue?
           (nrepl-loop-step
-            (^[] (nrepl-read-one (current-input-port))) ; reader
+            (lambda () (nrepl-read-one (current-input-port))) ; reader
             do-eval
             nrepl-result-writer)))
     (when (not continue?)
@@ -45,14 +45,18 @@
 
 (define (startloop)
   (call-with-current-continuation
-    (^k (set! init-k k)
+    (lambda (k) (set! init-k k)
         (loop)))
   (startloop))
 
 (define (nrepl)
   (display-banner)
-  (do-eval '(import (nmosh)))
   (init)
+  (do-eval '(import (rnrs)))
+  (do-eval '(import (rnrs load)))
+  (call-with-current-continuation
+    (lambda (k) (set! init-k k)
+      (do-eval '(import (nmosh)))))
   (startloop))
 )
 

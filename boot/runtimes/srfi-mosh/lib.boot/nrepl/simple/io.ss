@@ -1,6 +1,6 @@
 (library (nrepl simple io)
 	 (export nrepl-read-one nrepl-loop-step nrepl-result-writer)
-	 (import (nmosh))
+	 (import (rnrs))
 
 ;-------------------------------------------------------------------------
 ; simple REPL (standard I/O routines)
@@ -40,11 +40,11 @@
           (loop (readline) (string-append current " ")))))))
 
 (define (nrepl-result-writer . results)
-  (for-each (^e (write e)(newline)) results))
+  (for-each (lambda (e) (write e)(newline)) results))
 
 (define (nrepl-loop-step reader evaluator result-writer) ; the no-guard strategy (we need this for make VM call %nmosh-failproc)
   (define (nrepl-standard-loop-step lis continue?)
-    (call-with-values (^[] (evaluator lis)) result-writer)
+    (call-with-values (lambda () (evaluator lis)) result-writer)
     continue?)
   (call-with-values reader nrepl-standard-loop-step))
 )
