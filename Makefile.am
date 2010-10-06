@@ -202,13 +202,13 @@ noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 libmosh_main_a_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
 mosh_SOURCES = $(MOSH_CORE_SRCS)
 mosh_LDADD = libmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
-mosh_DEPENDENCIES = @LOCAL_ONIG@
+mosh_DEPENDENCIES = @LOCAL_ONIG@ libmosh_main.a
 
 libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp
 libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) -D WITH_NMOSH_DEFAULTS
 nmosh_SOURCES = $(MOSH_CORE_SRCS)
 nmosh_LDADD = libnmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
-nmosh_DEPENDENCIES = @LOCAL_ONIG@
+nmosh_DEPENDENCIES = @LOCAL_ONIG@ libnmosh_main.a
 
 libmosh_core_for_test_a_SOURCES = $(MOSH_CORE_SRCS)
 libmosh_core_for_test_a_DEPENDENCIES = @LOCAL_ONIG@
