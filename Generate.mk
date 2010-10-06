@@ -32,15 +32,12 @@ src/OSConstants.h: src/os-constants.scm
 	(cd $(top_srcdir) && mosh misc/scripts/gen-os-constants.scm) > $@
 
 # READER 
-src/Reader.tab.hpp: src/Reader.tab.cpp src/Reader.y
 
-src/NumberReader.tab.hpp: src/NumberReader.tab.cpp src/NumberReader.y
+src/Reader.tab.cpp src/Reader.tab.hpp: src/Reader.y
+	bison -d $< -o src/Reader.tab.cpp
 
-src/Reader.tab.cpp: src/Reader.y
-	bison -d $< -o $@
-
-src/NumberReader.tab.cpp: src/NumberReader.y
-	bison -p "number_yy" -d $< -o $@
+src/NumberReader.tab.cpp src/NumberReader.tab.hpp: src/NumberReader.y
+	bison -p "number_yy" -d $< -o src/NumberReader.tab.cpp
 
 src/Scanner.cpp : src/scanner.re
 	re2c -u $< > $@ # -d is debug option
