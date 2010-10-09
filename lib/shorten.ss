@@ -56,7 +56,12 @@
 (library (shorten)
          (export ^a ^b ^c ^d ^e ^f ^g ^h ^i ^j ^k ^l ^m ^n ^o ^p ^q ^r ^s ^t ^u ^v ^w ^x ^y ^z ^_ ^
                  ^a* ^b* ^c* ^d* ^e* ^f* ^g* ^h* ^i* ^j* ^k* ^l* ^m* ^n* ^o* ^p* ^q* ^r* ^s* ^t* ^u* ^v* ^w* ^x* ^y* ^z* ^_*)
-         (import (rnrs) (for (shorten helper) expand))
+         (import 
+           (only (rnrs) define-syntax lambda syntax-case define let begin with-syntax
+                 symbol->string string->symbol string-append cons map cdr syntax
+                 quote quasiquote unquote
+                 datum->syntax)
+           (for (shorten helper) expand))
 
 (define-syntax ^
   (lambda (x)
