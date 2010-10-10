@@ -55,4 +55,6 @@
 (test-error assertion-violation? (assoc 'a '((x . y) y (a . v))))
 (test-equal '(a . v) (assoc 'a '((x . y) (a . v) y)))
 (test-error assertion-violation? (assoc 0 '(1)))
+
+(test-eq #f (string->number ""))
 (test-results)
