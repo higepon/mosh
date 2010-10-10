@@ -183,7 +183,7 @@ Object stringToNumber(const ucs4string& text)
     bool isErrorOccured = false;
     const Object number = currentVM()->numberReaderContext()->read(text, isErrorOccured);
 
-    if (isErrorOccured) {
+    if (isErrorOccured || number.isEof()) {
         return Object::False;
     } else {
         return number;
