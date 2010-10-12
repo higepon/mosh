@@ -754,7 +754,7 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
             checkPortIsOpen(textualOutputPort, argv[1]);
             textualOutputPort->display(theVM, obj);
             // todo
-            textualOutputPort->flush();
+//            textualOutputPort->flush();
         }
         return Object::Undef;
     CATCH(ioError)
