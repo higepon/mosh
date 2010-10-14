@@ -58,6 +58,7 @@
                  ^a* ^b* ^c* ^d* ^e* ^f* ^g* ^h* ^i* ^j* ^k* ^l* ^m* ^n* ^o* ^p* ^q* ^r* ^s* ^t* ^u* ^v* ^w* ^x* ^y* ^z* ^_*)
          (import 
            (only (rnrs) define-syntax lambda syntax-case define let begin with-syntax
+                 ...
                  symbol->string string->symbol string-append cons map cdr syntax
                  quote quasiquote unquote
                  datum->syntax)
