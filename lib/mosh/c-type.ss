@@ -70,7 +70,7 @@
                        [constructor (datum->syntax #'name (string->symbol (string-append "make-" (symbol->string (syntax->datum #'name)))))])
            #'(begin
                (define size-getter (lambda () struct-size))
-               (define constructor (lambda () (make-bytevector struct-size))))]))))
+               (define constructor (lambda () (make-bytevector struct-size)))))])))
 
 (define-syntax define-c-struct-accessor*
   (lambda (x)
@@ -92,7 +92,7 @@
            #`(begin
                (define-c-struct-accessor* #,@#'f*)
                (define size-getter (lambda () struct-size))
-               (define constructor (lambda () (make-bytevector struct-size))))])))))
+               (define constructor (lambda () (make-bytevector struct-size))))))])))
 
 (define (c-type-test)
   (test-begin "c-type tests")

@@ -44,6 +44,8 @@
 
 #ifdef __FreeBSD__
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 extern int main(int argc, char *argv[]);
 #endif /* __FreeBSD__ */
 #include <sys/stat.h>
@@ -852,14 +854,17 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     isErrorOccured = true;
     return UC("");
 #elif defined(__FreeBSD__)
-    char path[4096];
-    int ret = readlink("/proc/curproc/file", path, sizeof(path));
-    if (ret != -1) {
-        std::string chop(path, ret);
+    char path[PATH_MAX];
+    size_t len = PATH_MAX;
+    // read kern.proc.pathname.-1
+    int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+    int ret = sysctl(mib, 4, path, &len, NULL, 0);
+    if ((ret == 0 /* success sysctl */) && (strlen(path) /* lookup*/)){
+        std::string chop(path);
         int pos = chop.find_last_of('/');
         if (pos > 0) {
-            const char* v = chop.substr(0, pos + 1).c_str();
-            return ucs4string::from_c_str(v);
+            const char* execPath = chop.substr(0, pos + 1).c_str();
+            return ucs4string::from_c_str(execPath);
         }
     }
     isErrorOccured = true;

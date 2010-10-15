@@ -12,11 +12,12 @@ NOT supported :
 PREREQUISITES
 -------------
 
-- MinGW + MSYS (tested by 4.5.1 TDM)
-- bash
+- MinGW (tested by 4.5.1 TDM)
+- bash (MSYS or Cygwin)
 - gnu MP library
 - oniguruma-5.x.x
 
+TDM-GCC (http://tdm-gcc.tdragon.net/) is recommended.
 
 CONFIGURATION & BUILD
 ---------------------
@@ -27,6 +28,11 @@ As usual product, run the configure script and make.
 
 Alternatively, you may use CMake to build mosh. See doc/README.CMake for
 details.
+
+LIMITATIONS
+-----------
+
+- MinGW port is experimental. Some features are not available.
 
 INSTALL
 -------

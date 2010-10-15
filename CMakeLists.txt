@@ -1,4 +1,4 @@
-# please check doc/HACKING.CMAKE for instructions
+# please check doc/README.CMake for instructions
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -52,7 +52,7 @@ mark_as_advanced(MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
 add_definitions(-DHAVE_CONFIG_H
     -DMOSH_LIB_PATH=\"${MOSH_LIB_PATH}\"
     -DPACKAGE=\"${MOSH_NAME}\"
-    -DPACKAGE_BUGREPORT=\"${MOSH_BUGREPORT}\" 
+#   -DPACKAGE_BUGREPORT=\"${MOSH_BUGREPORT}\" 
     -DPACKAGE_VERSION=\"${MOSH_VERSION}\"
     -DUSE_BOEHM_GC
     -DGC_THREADS
@@ -76,7 +76,11 @@ if(CMAKE_HOST_WIN32)
     # we set ARCH_* here. (Win32 only. when at other O/S, these flags are
     # guessed.)
     if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86") 
-        add_definitions(-DARCH_IA32)
+        if(CMAKE_CL_64)
+            # FFI not supported
+        else(CMAKE_CL_64)
+            add_definitions(-DARCH_IA32)
+        endif(CMAKE_CL_64)
     endif()
     if(MSVC)
         add_definitions(-DHAVE_TR1_HASHES=1)
@@ -107,6 +111,9 @@ else() # so it is UNIX
         add_definitions(-DMOSH_HOST_OS=\"linux\")
         add_definitions(-DGTEST_HAS_PTHREAD=0) # for GC
         set(arch_libs ${arch_libs} pthread dl)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+        add_definitions(-DMOSH_HOST_OS=\"bsd\")
+        set(arch_libs ${arch_libs} pthread)
     else()
         add_definitions(-DMOSH_HOST_OS=\"unknown\")
     endif()
@@ -229,7 +236,7 @@ gc-7.1/stubborn.c
 gc-7.1/typd_mlc.c
 gc-7.1/backgraph.c
 gc-7.1/thread_local_alloc.c
-gc-7.1/atomic_ops.c
+gc-7.1/libatomic_ops-1.2/src/atomic_ops.c
 )
 
 set(gc_pthread_srcs
@@ -324,7 +331,133 @@ else()
     add_definitions(-DWITHOUT_FFI_STUB)
 endif(CMAKE_COMPILER_IS_GNUC)
 
+set(mosh_core_hdrs
+src/Code.h
+src/SharedReference.h
+src/NonGenerativeRTDs.h
+src/HeapObject.h
+src/Object-inl.h
+src/Object-accessors.h
+src/Pair-inl.h
+src/VM-inl.h
+src/match.h
+src/baselib.h
+src/CProcedure.h
+src/Instruction.h
+src/Callable.h
+src/GenericMap.h
+src/BinaryInputPort.h
+src/BinaryOutputPort.h
+src/scheme.h
+src/ByteVector.h
+src/HashTable.h
+src/Pair.h
+src/ExecutableMemory.h
+src/LineBufferedFileBinaryOutputPort.h
+src/Stack.h
+src/Gloc.h
+src/BinaryInputOutputPort.h
+src/Box.h
+src/Port.h
+src/BinaryPort.h
+src/OutputPort.h
+src/Codec.h
+src/Transcoder.h
+src/ProcedureMacro.h
+src/EqvHashTable.h
+src/Compnum.h
+src/Fixnum.h
+src/Closure.h
+src/UtilityProcedures.h
+src/ProcessProcedures.h
+src/Reader.h
+src/NumberReader.h
+src/scheme.h
+src/Regexp.h
+src/Symbol.h
+src/VM.h
+src/VM-Run.h
+src/Continuation.h
+src/Scanner.h
+src/NumberScanner.h
+src/ByteArrayBinaryInputPort.h
+src/ByteArrayBinaryOutputPort.h
+src/ScannerHelper.h
+src/FileBinaryInputPort.h
+src/BufferedFileBinaryInputPort.h
+src/FileBinaryOutputPort.h
+src/BufferedFileBinaryOutputPort.h
+src/CustomBinaryInputPort.h
+src/CustomTextualInputPort.h
+src/CustomTextualOutputPort.h
+src/CustomTextualInputOutputPort.h
+src/CustomBinaryInputOutputPort.h
+src/TextualOutputPort.h
+src/TextualInputPort.h
+src/TranscodedTextualInputPort.h
+src/TranscodedTextualOutputPort.h
+src/StringTextualOutputPort.h
+src/StringTextualInputPort.h
+src/Codec.h
+src/UTF8Codec.h
+src/UTF16Codec.h
+src/UTF32Codec.h
+src/EqHashTable.h
+src/SString.h
+src/GenericHashTable.h
+src/Object.h
+src/CompilerProcedures.h
+src/HashTableProceduures.h
+src/RegexpProcedures.h
+src/StringProcedures.h
+src/PortProcedures.h
+src/ListProcedures.h
+src/ErrorProcedures.h
+src/ArithmeticProcedures.h
+src/FlonumProcedures.h
+src/BitwiseProcedures.h
+src/ByteVectorProcedures.h
+src/SocketProcedures.h
+src/Equivalent.h
+src/ucs4string.h
+src/Vector.h
+src/Fasl.h
+src/FaslReader.h
+src/FaslWriter.h
+src/Arithmetic.h
+src/Ratnum.h
+src/Bignum.h
+src/Flonum.h
+src/CodeBuilder.h
+src/FixnumProcedures.h
+src/Latin1Codec.h
+src/FFI.h
+src/FFIProcedures.h
+src/CustomBinaryOutputPort.h
+src/FileBinaryInputOutputPort.h
+src/SocketBinaryInputOutputPort.h
+src/TranscodedTextualInputOutputPort.h
+src/BufferedFileBinaryInputOutputPort.h
+src/TestingFileBinaryOutputPort.h
+src/TestingFileBinaryInputPort.h
+src/TestingVM.h
+src/OSConstants.h
+src/getoptU.h
+src/StandardOutputPort.h
+src/StandardErrorPort.h
+src/StandardInputPort.h
+src/BlockBufferedFileBinaryOutputPort.h
+src/BlockBufferedFileBinaryInputOutputPort.h
+src/LineBufferedFileBinaryInputOutputPort.h
+src/MultiVMProcedures.h
+src/OSCompatSocket.h
+src/OSCompatThread.h
+src/VMFactory.h
+src/SimpleStruct.h
+)
+
 set(mosh_core_srcs
+src/OSCompat.h
 src/Transcoder.cpp
 src/EqvHashTable.cpp
 src/Compnum.cpp
@@ -427,10 +560,13 @@ set_source_files_properties(src/main.cpp src/TestingSignalHandler.cpp
     src/TestingVM.cpp
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(WIN32)
+source_group(gc FILES ${gc_srcs})
+source_group(oniguruma FILES ${onig_srcs})
 add_executable(${TARGET_FLAVOR} 
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
+    ${mosh_core_hdrs}
     ${mosh_runtime_srcs}
     src/main.cpp)
 

@@ -14,7 +14,7 @@ LIMITATIONS
 0. Supported platform
 ---------------------
 
-- Microsoft Visual Studio 2008, 2010 (i386 only)
+- Microsoft Visual Studio 2008 SP1, 2010
 - Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Unix Makefile with GCC/G++ 4.3 or later
 
@@ -28,9 +28,10 @@ other CMake generators are not tested.
 
 setup GMP:
 - MacOS X: copy GMP.framework to DYLD default path like ~/Library/Frameworks 
+           You can build GMP.framework with misc/dist/mac/build-framework.sh
 -    MSVC: download MPIR 2.x from http://www.mpir.org and build with MSVC
            then set MOSH_GMP_DIR to this
-           (c:\XXXXXX\mpir-2.x.x\build.vc10\lib\Win32\Relase)
+           (c:\XXXXXX\mpir-2.x.x\build.vc10\lib\Win32\Release)
 
 2. Configulation
 ----------------
