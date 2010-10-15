@@ -339,9 +339,11 @@ AC_ARG_ENABLE(developer, AS_HELP_STRING([--enable-developer],
                                         [enable_developer=true], [enable_developer=false])
 AM_CONDITIONAL(DEVELOPER, test x$enable_developer = xtrue)
 
-AC_ARG_ENABLE(pmoshpost, [  --disable-psyntax-mosh-postinstall    Disable psyntax-mosh postinstall phase.] ,
-              [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, FALSE)] ,
-              [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, TRUE)])
+dnl AC_ARG_ENABLE(pmoshpost, [  --disable-psyntax-mosh-postinstall    Disable psyntax-mosh postinstall phase.] ,
+dnl               [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, FALSE)] ,
+dnl               [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, TRUE)])
+
+AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, TRUE)
 
 # Checks for header files.
 AC_HEADER_STDC
