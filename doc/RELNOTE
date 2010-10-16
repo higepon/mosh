@@ -48,6 +48,9 @@ Changes:
     multiple values, REPL will show each values unlike previous version (which
     discarded values other than the first.)
 
+    FreeBSD:
+        Use sysctl(3) to implement (mosh-executable-path) instead of procfs.
+
 Bug fixes:
 
     (rnrs):
