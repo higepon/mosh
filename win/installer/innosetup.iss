@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=Mosh
-AppVerName=mosh 0.2.5
+AppVerName=mosh 0.2.6
 AppPublisher=higepon
 AppPublisherURL=http://code.google.com/p/mosh-scheme/
 AppSupportURL=http://code.google.com/p/mosh-scheme/
@@ -12,7 +12,7 @@ DefaultDirName={pf}\Mosh
 DefaultGroupName=Mosh
 AllowNoIcons=yes
 LicenseFile=..\..\COPYING
-OutputBaseFilename=setup_mosh_0.2.5
+OutputBaseFilename=setup_mosh_0.2.6
 Compression=lzma
 SolidCompression=yes
 SetupIconFile="..\..\misc\logo\mosh.ico"
@@ -24,7 +24,7 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\..\Release\psyntax-mosh.exe"; DestDir: "{app}"; DestName: "mosh.exe"; Flags: ignoreversion
+Source: "dist\mosh.exe"; DestDir: "{app}"; DestName: "mosh.exe"; Flags: ignoreversion
 ;Source: "..\..\Release\nmosh.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\misc\example\*"; DestDir: "{app}\misc\example"; Flags: ignoreversion recursesubdirs createallsubdirs
