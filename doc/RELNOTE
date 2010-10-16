@@ -1,8 +1,8 @@
 Mosh 0.2.6 Release Note
-============================
+=======================
 
 What's Mosh
-----------------
+-----------
 
 Mosh is A Fast R6RS Scheme interpreter.
 
@@ -99,6 +99,26 @@ Bug fixes:
 Known issues:
 
     See http://code.google.com/p/mosh-scheme/issues/list for full list.
+
+    - configure script will complain about
+        configure: WARNING: no configuration information is in libatomic_ops
+    - #t.BLAHBLAH... read as #t instead of raising error.
+
+    Win32/64 Host:
+        - Win64 host support is experimental and lacks FFI support.
+        - "make check" or "make test" tests are not work properly.
+        - Visual Studio builds are suboptimal for performance due to absense 
+          of char32 support and the "computed goto"(used for direct-threading
+          feature.)
+        - Visual Studio sometimes won't finish their compilation when 
+          both link-time code generation(/LTCG) and /Ox are enabled.
+        - mosh/nmosh cannot build using MinGW64.
+
+    MacOS X Host:
+        - mosh/nmosh cannot build as an universal binary.
+        - Direct-threading is disabled on XCode builds. This will reduce
+          runtime performance. Use ./configure builds for performance.
+        
 
 Mosh 0.2.5 Release Note
 ============================
