@@ -343,7 +343,7 @@ dnl AC_ARG_ENABLE(pmoshpost, [  --disable-psyntax-mosh-postinstall    Disable ps
 dnl               [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, FALSE)] ,
 dnl               [AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, TRUE)])
 
-AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, TRUE)
+AM_CONDITIONAL(PSYNTAX_MOSH_POSTINSTALL, true)
 
 # Checks for header files.
 AC_HEADER_STDC
