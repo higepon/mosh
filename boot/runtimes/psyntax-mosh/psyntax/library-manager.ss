@@ -28,7 +28,7 @@
   (import (except (rnrs) library equal?)
           (psyntax compat) (rnrs r5rs)
           (rename (except (mosh) library-path make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
-          
+
           )
 
   (define (make-collection)
@@ -255,9 +255,9 @@
                       [else
                        (when verbose?
                          (format (current-error-port)
-                          "WARNING: library ~s has an inconsistent dependency \
-                           on library ~s; file ~s will be recompiled from \
-                           source. l=~a label=~a (library-id l)=~a\n"
+                          "WARNING: library ~e has an inconsistent dependency \
+                           on library ~e; file ~e will be recompiled from \
+                           source. l=~e label=~e (library-id l)=~e\n"
                          name dname filename l label (library-id l)))
                        #f]))))]))]
         [others #f])))
