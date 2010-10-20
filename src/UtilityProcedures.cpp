@@ -638,6 +638,8 @@ Object scheme::applyEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::valuesEx(VM* theVM, int argc, const Object* argv)
 {
+    // We don't use DeclareProcedureName here,
+    // since we can't call theVM->setNumValues1 here.
     return theVM->values(argc, argv);
 }
 

@@ -122,7 +122,6 @@
                 pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
                 pc_[1] = operand;
                 ac_ = ac_.toCallable()->call(this, argc, sp_ - argc);
-
 //                 returnCode_[1] = operand;
 //                pc_  = returnCode_;
 //                goto return_entry;
