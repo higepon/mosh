@@ -6,13 +6,20 @@ PROJECT(mosh)
 include(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
 include(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 include(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
-
 ENABLE_TESTING()
+
+
 
 # mosh/nmosh select
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
 option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
 option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
+option(MOSH_WITH_NMOSH_GUI "build nmosh-gui version of mosh interpreter" ON)
+
+if(MOSH_WITH_NMOSH_GUI)
+    find_package(wxWidgets REQUIRED)
+    include( ${wxWidgets_USE_FILE} )
+endif(MOSH_WITH_NMOSH_GUI)
 
 # only ONE runtime source will be allowed.
 set(nmosh_runtime_src
@@ -589,6 +596,21 @@ add_executable(${TARGET_FLAVOR}
     src/main.cpp)
 
 target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
+
+if(MOSH_WITH_NMOSH_GUI)
+add_executable(nmosh-gui
+    ${onig_srcs} 
+    ${gc_srcs} 
+    ${mosh_core_srcs} 
+    ${mosh_core_hdrs}
+    ${mosh_runtime_srcs}
+    src/wx/stubs.cpp
+    src/wx/resources.cpp
+    src/wx/main.cpp)
+
+#see Ticket #12573
+target_link_libraries(nmosh-gui ${GMP_LIBRARY} ${arch_libs} ${wxWidgets_LIBRARIES} expat)
+endif(MOSH_WITH_NMOSH_GUI)
 
 # tests
 
