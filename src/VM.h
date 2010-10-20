@@ -79,6 +79,7 @@ public:
 
     static void copyOptions(VM* destVM, VM* srcVM);
 
+    void setNumValues1() { numValues_ = 1 ; }
 
     bool isMainThread() const
     {

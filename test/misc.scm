@@ -15,6 +15,14 @@
   (let ([port (open-bytevector-input-port bv)])
     (fasl-read port)))
 
+(define (hurtme string)
+ (values)
+ (let-values (((len)           (string-length string))
+              ((port getter)   (open-string-output-port)))
+   #f))
+
+(test-false (hurtme "ciao"))
+
 (test-equal "ABC\x0;ABC" (fasl->obj (obj->fasl (utf8->string #vu8(65 66 67 0 65 66 67)))))
 
 
@@ -57,4 +65,5 @@
 (test-error assertion-violation? (assoc 0 '(1)))
 
 (test-eq #f (string->number ""))
+
 (test-results)
