@@ -11,9 +11,10 @@ mosh on FreeBSD
 - ./configure CFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib
 - gmake
 
+mosh cannot build using BSD "make".
+
 2. Limitations
 --------------
 
 - mosh is currently only tested at i386 and amd64 architecture.
-- mosh needs procfs. This will be fixed in future release.
 

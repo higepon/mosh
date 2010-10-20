@@ -17,6 +17,7 @@ LIMITATIONS
 - Microsoft Visual Studio 2008 SP1, 2010
 - Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Unix Makefile with GCC/G++ 4.3 or later
+- MinGW Makefile with TDM-GCC 4.5 or later
 
 other CMake generators are not tested.
 

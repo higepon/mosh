@@ -42,7 +42,8 @@ Changes:
         - Windows amd64 (Experimental)
 
     New build environment support:
-        - Visual Studio 2010 i386 (using CMake)
+        - Visual Studio 2010 i386/amd64 (using CMake, experimental)
+        - XCode 3.x amd64 (using CMake, experimental)
 
     Now mosh REPL handles multiple-values like Gauche. When a procedure return
     multiple values, REPL will show each values unlike previous version (which
@@ -91,6 +92,9 @@ Bug fixes:
         Fixed shebang handling bug reported by Eduardo Cavazos.
         Fixed Issue 158: 
             nmosh was not started when $HOME is not set or has wrong value.
+        Fixed Issue 175 reported by marcomaggi:
+            C procedures (DeclareProcedureName macro) was not set returning 
+            values count properly. 
         
     Documentation:
         Fixed Issue 167 reported by amoebae:
@@ -110,8 +114,8 @@ Known issues:
         - Visual Studio builds are suboptimal for performance due to absense 
           of char32 support and the "computed goto"(used for direct-threading
           feature.)
-        - Visual Studio sometimes won't finish their compilation when 
-          both link-time code generation(/LTCG) and /Ox are enabled.
+        - Visual Studio 2008 SP1 sometimes won't finish their compilation
+          when both link-time code generation(/LTCG) and /Ox are enabled.
         - mosh/nmosh cannot build using MinGW64.
 
     MacOS X Host:
