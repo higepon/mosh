@@ -197,6 +197,9 @@ IMPLEMENT_APP(skyMosh)
 //int main(int argc, char *argv[])
 bool skyMosh::OnInit()
 {
+	// wxWidgets
+	int argc = skyMosh::argc;
+	char** argv = skyMosh::argv;
     // call this before any allocation.
     mosh_init();
 
@@ -229,7 +232,6 @@ bool skyMosh::OnInit()
 #endif
        {0, 0, 0, 0}
    };
-#if 0
    ucs4char** argvU = getCommandLine(argc, argv);
 
 #ifdef WITH_NMOSH_DEFAULTS
@@ -302,7 +304,6 @@ bool skyMosh::OnInit()
         showUsage();
         exit(EXIT_FAILURE);
     }
-#endif
 
     // for Shell mode.
     // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
@@ -325,12 +326,7 @@ bool skyMosh::OnInit()
         exit(-1);
     }
 
-#if 0
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
-#else
-    //theVM->setValueString(UC("*command-line-args*"), Pair::list1(Object::False));
-    theVM->setValueString(UC("*command-line-args*"), Object::Nil);
-#endif
 #ifdef WITH_NMOSH_DEFAULTS
     theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
@@ -362,11 +358,9 @@ bool skyMosh::OnInit()
         theVM->setValueString(UC("%clean-acc"), Object::makeBool(cleanAcc));
         wx_register_stubs(theVM);
         activateR6RSMode(theVM, isDebugExpand);
-#if 0
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
         theVM->loadFileWithGuard(Object::makeString(argvU[optindU]).toString()->data());
-#endif
     } else {
         showUsage();
     }

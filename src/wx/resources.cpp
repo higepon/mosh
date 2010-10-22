@@ -8,8 +8,8 @@
 #ifndef WX_PRECOMP
     // Include your minimal set of headers here, or wx.h
 #include <wx/wx.h>
-#include <wx/xrc/xmlres.h>
 #endif
+#include <wx/xrc/xmlres.h>
 
 #include "Object.h"
 #include "Object-inl.h"

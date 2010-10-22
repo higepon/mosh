@@ -17,7 +17,7 @@ option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
 option(MOSH_WITH_NMOSH_GUI "build nmosh-gui version of mosh interpreter" ON)
 
 if(MOSH_WITH_NMOSH_GUI)
-    find_package(wxWidgets REQUIRED)
+    find_package(wxWidgets COMPONENTS base core adv html xml xrc gl REQUIRED)
     include( ${wxWidgets_USE_FILE} )
 endif(MOSH_WITH_NMOSH_GUI)
 
@@ -587,7 +587,7 @@ set_source_files_properties(src/main.cpp src/TestingSignalHandler.cpp
 endif(WIN32)
 source_group(gc FILES ${gc_srcs})
 source_group(oniguruma FILES ${onig_srcs})
-add_executable(${TARGET_FLAVOR} 
+add_executable(${TARGET_FLAVOR}
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
@@ -598,7 +598,7 @@ add_executable(${TARGET_FLAVOR}
 target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
 
 if(MOSH_WITH_NMOSH_GUI)
-add_executable(nmosh-gui
+add_executable(nmosh-gui WIN32
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
@@ -609,7 +609,7 @@ add_executable(nmosh-gui
     src/wx/main.cpp)
 
 #see Ticket #12573
-target_link_libraries(nmosh-gui ${GMP_LIBRARY} ${arch_libs} ${wxWidgets_LIBRARIES} expat)
+target_link_libraries(nmosh-gui ${GMP_LIBRARY} ${arch_libs} ${wxWidgets_LIBRARIES})
 endif(MOSH_WITH_NMOSH_GUI)
 
 # tests
