@@ -31,6 +31,7 @@
   (import (rnrs)
           (mosh)
           (mosh control)
+          (irregex)
           (mosh socket)
           )
 
@@ -40,33 +41,40 @@
 ;;   http-get->bytevector
 ;;   Now utf-8 only
 
-(define (read-header port)
-  (let loop ([line (get-line port)]
+(define (get-content-length header*)
+  (let loop ([header* header*])
+    (cond
+     [(null? header*) #f]
+     [(irregex-search "^Content-Length: ([0-9]+)" (car header*)) =>
+      (lambda (m) (string->number (irregex-match-substring m 1)))]
+     [else
+      (loop (cdr header*))])))
+
+(define (read-header p)
+  (let loop ([c1 (get-u8 p)]
+             [c2 (get-u8 p)]
+             [header '()]
              [header* '()])
     (cond
-     [(eof-object? line) (reverse header*)]
-     [(zero? (string-length line))
-      (reverse header*)]
+     [(and (null? header) (and (= c1 #x0d) (= c2 #x0a)))
+      header*]
+     [(and (= c1 #x0d) (= c2 #x0a))
+      (loop (get-u8 p) (get-u8 p) '() (cons (utf8->string (u8-list->bytevector (reverse header))) header*))]
+     [(= c2 #x0d)
+      (loop c2 (get-u8 p) (cons c1 header) header*)]
      [else
-      (loop (get-line port) (cons line header*))])))
-
-(define (read-body port)
-  (let loop ([line (get-line port)]
-             [line* '()])
-    (cond
-     [(eof-object? line) (apply string-append (reverse line*))]
-     [else
-      (loop (get-line port) (cons line line*))])))
+      (loop (get-u8 p) (get-u8 p) (cons c2 (cons c1 header)) header*)])))
 
 (define (http-get host port path)
-  (let ([p
-         (transcoded-port (socket-port (make-client-socket host port))
-                          (make-transcoder (utf-8-codec)))])
-    (display (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host) p)
-    (read-header p)
-    (let1 body (read-body p)
-      (values body 200) ;; todo
-      (close-port p)
-      body)))
-
+  (let ([p (socket-port (make-client-socket host port))])
+    (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+    (let1 header* (read-header p)
+      (let1 content-length (get-content-length header*)
+        (let loop ([i 0]
+                   [body* '()])
+          (cond
+           [(= i content-length)
+            (utf8->string (u8-list->bytevector (reverse body*)))]
+           [else
+            (loop (+ i 1) (cons (get-u8 p) body*))]))))))
 )
