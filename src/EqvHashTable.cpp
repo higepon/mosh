@@ -38,7 +38,7 @@
 #include "EqvHashTable.h"
 #include "VM.h"
 #include "UtilityProcedures.h"
-#include "HashTableProceduures.h"
+#include "HashTableProcedures.h"
 
 using namespace scheme;
 

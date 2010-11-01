@@ -41,7 +41,7 @@
 #include "Gloc.h"
 #include "VM-inl.h"
 #include "CompilerProcedures.h"
-#include "HashTableProceduures.h"
+#include "HashTableProcedures.h"
 #include "StringProcedures.h"
 #include "PortProcedures.h"
 #include "ErrorProcedures.h"

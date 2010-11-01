@@ -378,7 +378,7 @@ src/SString.cpp
 src/GenericHashTable.cpp
 src/Object.cpp
 src/CompilerProcedures.cpp
-src/HashTableProceduures.cpp
+src/HashTableProcedures.cpp
 src/RegexpProcedures.cpp
 src/StringProcedures.cpp
 src/PortProcedures.cpp
