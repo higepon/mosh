@@ -1724,7 +1724,7 @@ Object scheme::setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv)
 Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     static const Object port = Object::makeBinaryInputPort(new StandardInputPort());
-    DeclareProcedureName("starndard-input-port");
+    DeclareProcedureName("standard-input-port");
     checkArgumentLength(0);
     return port;
 }
@@ -1732,7 +1732,7 @@ Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     static const Object port = Object::makeBinaryOutputPort(new StandardOutputPort());
-    DeclareProcedureName("starndard-output-port");
+    DeclareProcedureName("standard-output-port");
     checkArgumentLength(0);
     return port;
 }
@@ -1740,7 +1740,7 @@ Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
 {
     static const Object port = Object::makeBinaryOutputPort(new StandardErrorPort());
-    DeclareProcedureName("starndard-error-port");
+    DeclareProcedureName("standard-error-port");
     checkArgumentLength(0);
     return port;
 }

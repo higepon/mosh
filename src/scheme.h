@@ -139,7 +139,9 @@ const ucs4char* UC(const char *str);
 
 #ifdef __GNUC__
 #define ALWAYS_INLINE  __attribute__((always_inline))
-#ifndef USE_XCODE // set by CMakeLists.txt
+// FIXME: disable DIRECT_THREADED_CODE for XCode and Clang builds
+// USE_XCODE: set by CMakeLists.txt
+#if !defined(USE_XCODE) && !defined(__clang__)  
 #define USE_DIRECT_THREADED_CODE
 #endif /* USE_XCODE */
 #else

@@ -133,7 +133,7 @@ src/SString.h                      src/SString.cpp                     \
 src/GenericHashTable.h             src/GenericHashTable.cpp            \
 src/Object.h                       src/Object.cpp                      \
 src/CompilerProcedures.cpp         src/CompilerProcedures.h            \
-src/HashTableProceduures.cpp       src/HashTableProceduures.h          \
+src/HashTableProcedures.cpp        src/HashTableProcedures.h           \
 src/RegexpProcedures.cpp           src/RegexpProcedures.h              \
 src/StringProcedures.cpp           src/StringProcedures.h              \
 src/PortProcedures.cpp             src/PortProcedures.h                \

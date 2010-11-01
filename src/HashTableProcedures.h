@@ -1,5 +1,5 @@
 /*
- * HashTableProceduures.h - Procedures written in C++ for compiler.
+ * HashTableProcedures.h - Procedures written in C++ for compiler.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
