@@ -112,6 +112,7 @@
     gensym-prefix-set!)
   (import
     (primitives
+      dynamic-bind ; defined in base.scm
       socket?
       socket-accept
       make-client-socket
@@ -123,7 +124,7 @@
       socket-shutdown
       socket-port
       make-parameter
-      parameterize
+      ;parameterize
       disasm
       same-marks*?
       same-marks?
@@ -220,4 +221,13 @@
       file->string
       file->list
       write-to-file
-      gensym-prefix-set!)))
+      gensym-prefix-set!)
+    (only (rnrs) lambda define-syntax syntax-rules ... list)
+    )
+(define-syntax parameterize
+  (syntax-rules ()
+    ((_ ((expr1 expr2) ...) body ...)
+     (dynamic-bind (list expr1 ...) (list expr2 ...) (lambda () body ...)))))
+     
+
+)
