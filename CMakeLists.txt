@@ -407,7 +407,7 @@ src/SString.h
 src/GenericHashTable.h
 src/Object.h
 src/CompilerProcedures.h
-src/HashTableProceduures.h
+src/HashTableProcedures.h
 src/RegexpProcedures.h
 src/StringProcedures.h
 src/PortProcedures.h
