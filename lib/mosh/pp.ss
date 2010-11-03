@@ -113,14 +113,58 @@
                                 (let loop ((i 0) (j 0) (col (out "\"" col)))
                                   (if (and col (< j (string-length obj)))
                                     (let ((c (string-ref obj j)))
-                                      (if (or (char=? c #\\)
-                                              (char=? c #\"))
-                                        (loop j
-                                              (+ j 1)
-                                              (out "\\"
-                                                   (out (substring obj i j)
-                                                        col)))
-                                        (loop i (+ j 1) col)))
+                                      (cond
+                                        ((char=? c #\linefeed) ;; R6RS
+                                         (loop (+ j 1) (+ j 1)
+                                               (out "n" 
+                                                    (out "\\" 
+                                                         (out 
+                                                           (substring obj i j) 
+                                                           col)))))
+                                        ((char=? c #\return) ;; R6RS
+                                         (loop (+ j 1) (+ j 1)
+                                               (out "r" 
+                                                    (out "\\" 
+                                                         (out 
+                                                           (substring obj i j) 
+                                                           col)))))
+                                        ((char=? c #\alarm) ;; R6RS
+                                         (loop (+ j 1) (+ j 1)
+                                               (out "a" 
+                                                    (out "\\" 
+                                                         (out 
+                                                           (substring obj i j) 
+                                                           col)))))
+                                        ((char=? c #\tab) ;; R6RS
+                                         (loop (+ j 1) (+ j 1)
+                                               (out "t" 
+                                                    (out "\\" 
+                                                         (out 
+                                                           (substring obj i j) 
+                                                           col)))))
+                                        ((char=? c #\vtab) ;; R6RS
+                                         (loop (+ j 1) (+ j 1)
+                                               (out "v" 
+                                                    (out "\\" 
+                                                         (out 
+                                                           (substring obj i j) 
+                                                           col)))))
+                                        ((char=? c #\xc) ;; R6RS (formfeed)
+                                         (loop (+ j 1) (+ j 1)
+                                               (out "f" 
+                                                    (out "\\" 
+                                                         (out 
+                                                           (substring obj i j) 
+                                                           col)))))
+                                        ((or (char=? c #\\)
+                                             (char=? c #\"))
+                                         (loop j
+                                               (+ j 1)
+                                               (out "\\"
+                                                    (out (substring obj i j)
+                                                         col))))
+                                        (else
+                                          (loop i (+ j 1) col))))
                                     (out "\""
                                          (out (substring obj i j) col))))))
           ((char? obj)        (if display?

@@ -107,12 +107,24 @@ BOOL WINAPI handler(DWORD ctrlChar)
 
 extern void initNonGenerativeRtd();
 
+#ifdef _WIN32
+// nothing to do here..
+void null_gc_warn_proc(char* msg, GC_word arg){
+    (void)msg;
+    (void)arg;
+}
+#endif
+
 void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.
     srandom((unsigned int)time(NULL));
 #ifdef USE_BOEHM_GC
     GC_INIT();
+#ifdef _WIN32
+    // override default GC warn proc
+    GC_set_warn_proc(null_gc_warn_proc); 
+#endif
     // N.B
     // Since GNU MP mpz makes many many "false pointer",
     // we allocate gmp buffers by malloc not GC_malloc.

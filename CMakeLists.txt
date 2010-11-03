@@ -574,9 +574,9 @@ target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
 
 # tests
 
-add_library(testinggc
+add_library(testinggc EXCLUDE_FROM_ALL
     ${gc_srcs})
-add_library(testingmosh 
+add_library(testingmosh EXCLUDE_FROM_ALL
     ${mosh_core_srcs}
     ${PROJECT_SOURCE_DIR}/gtest/gtest/gtest-all.cc
     ${mosh_runtime_srcs} ${onig_srcs} 
@@ -586,15 +586,15 @@ add_library(testingmosh
 # GC tests
 macro(add_gcguitest testname)
 if(MSVC)
-add_executable(gctest${testname} WIN32 ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL WIN32 ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
 else(MSVC)
-add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
 endif(MSVC)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gcguitest)
 macro(add_gctest testname)
-add_executable(gctest${testname} ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
@@ -618,7 +618,7 @@ if(WIN32)
 set_source_files_properties(src/${testname}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(WIN32)
-add_executable(moshtest${testname} ${gtest_srcs} src/${testname}.cpp)
+add_executable(moshtest${testname} EXCLUDE_FROM_ALL ${gtest_srcs} src/${testname}.cpp)
 target_link_libraries(moshtest${testname} testingmosh testinggc ${GMP_LIBRARY} ${arch_libs})
 add_test(mosh-${testname} moshtest${testname})
 endmacro(add_moshcoretest)
