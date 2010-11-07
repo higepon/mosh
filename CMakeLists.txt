@@ -348,8 +348,6 @@ elseif(WIN32)
     if(CMAKE_CL_64)
         message(STATUS "FFI stub was disabled (build without call-back support)")
         add_definitions(-DWITHOUT_FFI_STUB)
-    else()
-        set(ffi_stub src/ffi_stub_i386.asm)
     endif()
 endif(CMAKE_COMPILER_IS_GNUC)
 
