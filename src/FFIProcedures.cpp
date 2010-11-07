@@ -229,7 +229,9 @@ extern "C" int64_t c_callback_int64(uintptr_t uid, intptr_t signatures, intptr_t
     }
 }
 
-struct CallBackTrampoline
+#ifndef _MSC_VER
+
+struct CallBackTrampoline // gcc version
 {
     uint8_t     mov_ecx_imm32;  // B9           : mov ecx, imm16/32
     uint32_t    imm32_uid;      // 00 00 00 00
@@ -273,6 +275,78 @@ public:
         return static_cast<void*>(ex->address());
     }
 } __attribute__((packed));
+
+#else // defined _MSC_VER
+
+#pragma pack(push, 1)
+
+struct CallBackTrampolineWithStub // gcc version
+{
+#define CODE_SIZE 48
+#define STUBCODE_SIZE 40
+#define OFF_UID 1
+#define OFF_STUB 6
+#define STUBOFF_STUB 1
+    unsigned char code[CODE_SIZE];
+    intptr_t    stub;
+    intptr_t    uid;
+    intptr_t    signatures;
+    char        signatures_buffer[CStack::MAX_ARGC];
+
+public:
+    CallBackTrampolineWithStub(intptr_t stub, Object closure, const char* sig)
+    {
+        unsigned char thecode[CODE_SIZE] = {
+           0xb9,                    /* change below */
+           0x00, 0x00, 0x00, 0x00,  /* mov    UID,%ecx */
+           0xba,                    /* change below */
+           0x00, 0x00, 0x00, 0x00,  /* mov    FUNC_ADDR,%edx */
+           0x55,                    /* push   %ebp */
+           0x89, 0xe5,              /* mov    %esp,%ebp */
+           0x83, 0xec, 0x18,        /* sub    $0x18,%esp */
+           0x8b, 0x01,              /* mov    (%ecx),%eax */
+           0x89, 0x04, 0x24,        /* mov    %eax,(%esp) */
+           0x8b, 0x41, 0x04,        /* mov    0x4(%ecx),%eax */
+           0x89, 0x44, 0x24, 0x04,  /* mov    %eax,0x4(%esp) */
+           0x8d, 0x45, 0x08,        /* lea    0x8(%ebp),%eax */
+           0x89, 0x44, 0x24, 0x08,  /* mov    %eax,0x8(%esp) */
+           0xff, 0xd2,              /* call   *%edx */
+           0x89, 0xec,              /* mov    %ebp,%esp */
+           0x5d,                    /* pop    %ebp */
+           0xc3,                    /* ret */
+           0x0f, 0x0b,              /* UD2: generated code ends here */
+           0x90, 0x90, 0x90, 0x90,  /* padding */
+           0x90
+        };
+        strncpy(signatures_buffer, sig, sizeof(signatures_buffer));
+        memcpy(&this->code,thecode,CODE_SIZE);
+        this->signatures = reinterpret_cast<intptr_t>(&signatures_buffer[0]);
+        this->stub = stub;//reinterpret_cast<intptr_t>(&stubcode);
+        MOSH_ASSERT(closure.isProcedure());
+        *reinterpret_cast<uint32_t*>(&this->code[OFF_UID])
+            = reinterpret_cast<uint32_t>(&uid);
+        *reinterpret_cast<intptr_t*>(&this->code[OFF_STUB])
+            = stub;
+        uid = currentVM()->registerCallBackTrampoline(closure);
+        memoryStoreFence();
+    }
+
+    ~CallBackTrampolineWithStub()
+    {
+        currentVM()->unregisterCallBackTrampoline(uid);
+    }
+
+    static void* operator new(size_t size)
+    {
+        ExecutableMemory* ex = ::new ExecutableMemory(size);
+        ex->allocate();
+        return static_cast<void*>(ex->address());
+    }
+};
+
+#pragma pack(pop)
+
+#endif
 
 #elif defined(ARCH_X86_64) && !defined(WITHOUT_FFI_STUB)
 
@@ -1423,7 +1497,11 @@ Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const O
 #if defined(FFI_SUPPORTED) && !defined(WITHOUT_FFI_STUB)
     checkArgumentLength(1);
     argumentAsPointer(0, callback);
+#ifndef _MSC_VER
     CallBackTrampoline* trampoline = (CallBackTrampoline*)callback->pointer();
+#else
+    CallBackTrampolineWithStub* trampoline = (CallBackTrampolineWithStub*)callback->pointer();
+#endif
 #ifndef MOSH_MINGW32
     delete trampoline;
 #else
@@ -1446,16 +1524,29 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
     argumentAsString(1, signatures);
     argumentCheckProcedure(2, closure);
 
+#ifndef _MSC_VER
     CallBackTrampoline* thunk;
+#else
+    CallBackTrampolineWithStub* thunk;
+#endif
     switch (type & CALLBACK_RETURN_TYPE_MASK) {
 // 32bit
 #ifdef ARCH_IA32
+#ifndef _MSC_VER
     case CALLBACK_RETURN_TYPE_INTPTR:
         thunk = new CallBackTrampoline((intptr_t)c_callback_stub_intptr, closure, signatures->data().ascii_c_str());
         break;
     case CALLBACK_RETURN_TYPE_INT64_T:
         thunk = new CallBackTrampoline((intptr_t)c_callback_stub_int64, closure, signatures->data().ascii_c_str());
         break;
+#else
+    case CALLBACK_RETURN_TYPE_INTPTR:
+        thunk = new CallBackTrampolineWithStub((intptr_t)c_callback_intptr, closure, signatures->data().ascii_c_str());
+        break;
+    case CALLBACK_RETURN_TYPE_INT64_T:
+        thunk = new CallBackTrampolineWithStub((intptr_t)c_callback_int64, closure, signatures->data().ascii_c_str());
+        break;
+#endif
 // 64bit
 #else
     case CALLBACK_RETURN_TYPE_INTPTR:
@@ -1463,10 +1554,17 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
         thunk = new CallBackTrampoline((intptr_t)c_callback_stub_intptr, closure, signatures->data().ascii_c_str());
         break;
 #endif
+#ifndef _MSC_VER
     case CALLBACK_RETURN_TYPE_FLOAT:
     case CALLBACK_RETURN_TYPE_DOUBLE:
         thunk = new CallBackTrampoline((intptr_t)c_callback_stub_double, closure, signatures->data().ascii_c_str());
         break;
+#else
+    case CALLBACK_RETURN_TYPE_FLOAT:
+    case CALLBACK_RETURN_TYPE_DOUBLE:
+        thunk = new CallBackTrampolineWithStub((intptr_t)c_callback_double, closure, signatures->data().ascii_c_str());
+        break;
+#endif
     default:
         callAssertionViolationAfter(theVM, procedureName, "invalid callback type specifier", L1(argv[1]));
         return Object::Undef;

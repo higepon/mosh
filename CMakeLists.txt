@@ -344,9 +344,13 @@ include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-7.1/include extlibs/g
 
 if(CMAKE_COMPILER_IS_GNUC)
     set(ffi_stub cmake/ffi_stub.S)
-else()
-    message(STATUS "FFI stub was disabled (build without call-back support)")
-    add_definitions(-DWITHOUT_FFI_STUB)
+elseif(WIN32)
+    if(CMAKE_CL_64)
+        message(STATUS "FFI stub was disabled (build without call-back support)")
+        add_definitions(-DWITHOUT_FFI_STUB)
+    else()
+        set(ffi_stub src/ffi_stub_i386.asm)
+    endif()
 endif(CMAKE_COMPILER_IS_GNUC)
 
 set(mosh_core_hdrs
