@@ -600,15 +600,23 @@ add_executable(${TARGET_FLAVOR}
 target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
 
 if(MOSH_WITH_NMOSH_GUI)
+set(wx_srcs
+    src/wx/stubs.cpp
+    src/wx/resources.cpp
+    src/wx/main.cpp)
+if(WIN32)
+    add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
+    set_source_files_properties(${wx_srcs}
+        PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
+endif(WIN32)
+
 add_executable(nmosh-gui WIN32
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
     ${mosh_core_hdrs}
     ${mosh_runtime_srcs}
-    src/wx/stubs.cpp
-    src/wx/resources.cpp
-    src/wx/main.cpp)
+    ${wx_srcs})
 
 #see Ticket #12573
 target_link_libraries(nmosh-gui ${GMP_LIBRARY} ${arch_libs} ${wxWidgets_LIBRARIES})

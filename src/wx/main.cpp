@@ -200,6 +200,9 @@ bool skyMosh::OnInit()
 	// wxWidgets
 	int argc = skyMosh::argc;
 	char** argv = skyMosh::argv;
+#ifdef WIN32
+	AllocConsole();
+#endif
     // call this before any allocation.
     mosh_init();
 
