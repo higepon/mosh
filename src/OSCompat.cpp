@@ -418,13 +418,17 @@ int64_t File::write(uint8_t* buf, int64_t _size)
         }
         return ret;
     } else {
-        monapi_cmemoryinfo* buffer = monapi_cmemoryinfo_new();
-        monapi_cmemoryinfo_create(buffer, _size, 0, 1);
-
-        memcpy(buffer->Data, buf, buffer->Size);
-        intptr_t sizeWritten = monapi_file_write(desc_, buffer, buffer->Size);
-        monapi_cmemoryinfo_dispose(buffer);
-        monapi_cmemoryinfo_delete(buffer);
+        MonAPI::SharedMemory shm(_size);
+        if (shm.map(true) != M_OK) {
+            monapi_warn("shm map error");
+            return 0;
+        }
+        memcpy(shm.data(), buf, shm.size());
+        intptr_t sizeWritten = monapi_file_write(desc_, shm, shm.size());
+        if (shm.unmap() != M_OK) {
+            monapi_warn("shm unmap error");
+            return 0;
+        }
         return sizeWritten;
     }
 #else
@@ -481,15 +485,14 @@ int64_t File::read(uint8_t* buf, int64_t _size)
     if (this == &File::STANDARD_IN) {
         return monapi_stdin_read(buf, _size);
     } else {
-        monapi_cmemoryinfo* cmi = monapi_file_read(desc_, _size);
-        if (cmi == NULL) {
+        MonAPI::scoped_ptr<MonAPI::SharedMemory> shm(monapi_file_read(desc_, _size));
+        if (shm.get() == NULL) {
             return 0;
         }
-        MOSH_ASSERT(cmi->Size <= _size);
-        memcpy(buf, cmi->Data, cmi->Size);
-        intptr_t sizeRead = cmi->Size;
-        monapi_cmemoryinfo_dispose(cmi);
-        monapi_cmemoryinfo_delete(cmi);
+        MOSH_ASSERT(shm->size() <= _size);
+        memcpy(buf, shm->data(), shm->size());
+        intptr_t sizeRead = shm->size();
+        shm->unmap();
         return sizeRead;
     }
 #else
