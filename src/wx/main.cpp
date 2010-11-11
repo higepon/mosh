@@ -42,7 +42,8 @@
     // Include your minimal set of headers here, or wx.h
 #include <wx/wx.h>
 #endif
-
+#include <wx/apptrait.h>
+#include <wx/evtloop.h>
 // ~wxWidgets
 
 #include <time.h>
@@ -85,12 +86,46 @@ using namespace scheme;
 
 static VM* theVM;
 
-class skyMosh : public wxApp {
-    public: virtual bool OnInit();
+class moshEventLoop : public wxGUIEventLoop {
+public:
+	moshEventLoop(wxEventLoopBase* loop){myloop = loop;};
+	virtual int Run();
+	wxEventLoopBase* myloop;
 };
+
+class skyTraits : public wxGUIAppTraits {
+public:
+	skyTraits() : wxGUIAppTraits(){}; // TODO
+	wxEventLoopBase* CreateEventLoop(){
+		me = new moshEventLoop(wxGUIAppTraits::CreateEventLoop());
+		return me;
+	};
+
+	moshEventLoop* me;
+};
+
+class skyMosh : public wxApp {
+public: 
+	virtual bool OnInit();
+	virtual wxAppTraits* CreateTraits(){
+		return &S;
+	};
+	skyTraits S;
+};
+
+static skyMosh* myapp; // FIXME: use DECLARE...
 
 /// stubs
 void wx_register_stubs(VM*);
+
+Object
+stub_wx_dispatch(VM* theVM,int argc,const Object* argv){
+	DeclareProcedureName("%wx_dispatch");
+	checkArgumentLength(0);
+	myapp->S.me->Dispatch();
+	return Object::True;
+}
+
 #ifdef WITH_NMOSH_DEFAULTS
 extern "C" const uint8_t* nmosh_dbg_image_ptr;
 extern "C" unsigned int nmosh_dbg_image_size;
@@ -193,6 +228,7 @@ void signal_handler(int signo)
 
 // wxWidgets Application decl.
 IMPLEMENT_APP(skyMosh)
+
 
 //int main(int argc, char *argv[])
 bool skyMosh::OnInit()
@@ -359,14 +395,20 @@ bool skyMosh::OnInit()
         theVM->setValueString(UC("%verbose"), Object::makeBool(verbose));
         theVM->setValueString(UC("%disable-acc"), Object::makeBool(disableAcc));
         theVM->setValueString(UC("%clean-acc"), Object::makeBool(cleanAcc));
+
+		myapp = this;
+		theVM->setValueString(UC("%wx_dispatch"), Object::makeCProcedure(stub_wx_dispatch));
         wx_register_stubs(theVM);
-        activateR6RSMode(theVM, isDebugExpand);
+        //activateR6RSMode(theVM, isDebugExpand);
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
         theVM->loadFileWithGuard(Object::makeString(argvU[optindU]).toString()->data());
     } else {
         showUsage();
     }
+
+	return true;
+#if 0
 #ifdef ENABLE_PROFILER
     if (isProfilerOn) {
         const Object result = theVM->getProfileResult();
@@ -380,5 +422,16 @@ bool skyMosh::OnInit()
     // this means that static member *can be freed*.
     // Don't rely on static initializer and destructor on multithreads.
     // See Symbol::symbols for more detailed information.
-    exit(EXIT_SUCCESS);
+    //exit(EXIT_SUCCESS);
+#endif
 }
+
+
+int
+moshEventLoop::Run(){
+	activateR6RSMode(theVM, false);
+	return 0;
+}
+
+
+

@@ -603,7 +603,9 @@ if(MOSH_WITH_NMOSH_GUI)
 set(wx_srcs
     src/wx/stubs.cpp
     src/wx/resources.cpp
+    src/wx/frames.cpp
     src/wx/main.cpp)
+source_group(wxmosh FILES ${wx_srcs})
 if(WIN32)
     add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
     set_source_files_properties(${wx_srcs}
