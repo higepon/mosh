@@ -604,6 +604,7 @@ set(wx_srcs
     src/wx/stubs.cpp
     src/wx/resources.cpp
     src/wx/frames.cpp
+    src/wx/dc.cpp
     src/wx/main.cpp)
 source_group(wxmosh FILES ${wx_srcs})
 if(WIN32)

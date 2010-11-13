@@ -9,7 +9,6 @@
     // Include your minimal set of headers here, or wx.h
 #include <wx/wx.h>
 #endif
-#include <wx/xrc/xmlres.h>
 
 #include "Object.h"
 #include "Object-inl.h"
@@ -38,13 +37,55 @@
 
 using namespace scheme;
 
+class skyFrame : public wxFrame {
+public:
+	skyFrame(VM* creatorVM):wxFrame(NULL,-1,"skyMosh",wxDefaultPosition,wxDefaultSize,wxDEFAULT_FRAME_STYLE,"skyframe"){
+		// TODO: Default handlers??
+		theVM = creatorVM;
+		sizeEventListener = Object::False;
+	};
+
+	// Listeners
+	Object sizeEventListener;
+
+
+	void OnSize(wxSizeEvent& e){
+		if(sizeEventListener != Object::False){
+			wxSize s = e.GetSize();
+			int x = s.GetWidth();
+			int y = s.GetHeight();
+			theVM->apply(sizeEventListener,Pair::list2(Object::makeFixnum(x),Object::makeFixnum(y)));
+		}
+	};
+
+	DECLARE_EVENT_TABLE();
+
+private:
+	VM* theVM;
+};
+
+BEGIN_EVENT_TABLE(skyFrame, wxFrame)
+	EVT_SIZE(skyFrame::OnSize)
+END_EVENT_TABLE()
+
+Object
+stub_wx_frame_setlistener_size(VM* theVM, int argc, const Object* argv){
+    DeclareProcedureName("%wx_setlistener_size");
+    checkArgumentLength(2);
+	argumentAsPointer(0,p);
+	argumentCheckProcedure(1,cls);
+	skyFrame* sf = (skyFrame *)p->pointer();
+	sf->sizeEventListener = cls;
+	return Object::True;
+}
+
 Object
 stub_wx_frame_new(VM* theVM, int argc, const Object* argv){
     DeclareProcedureName("%wx_frame_new");
     checkArgumentLength(0);
-    wxFrame* wf;
-	wf = new wxFrame(NULL,-1,"skyMosh",wxDefaultPosition,wxDefaultSize,wxDEFAULT_FRAME_STYLE,"skyframe");
-    return Object::makePointer(wf);
+    skyFrame* sf;
+	sf = new skyFrame(theVM);
+    return Object::makePointer(sf);
 }
 
 Object
@@ -52,7 +93,7 @@ stub_wx_frame_delete(VM* theVM, int argc, const Object* argv){
     DeclareProcedureName("%wx_frame_delete");
     checkArgumentLength(1);
     argumentAsPointer(0,p);
-    delete (wxFrame *)p->pointer();
+    delete (skyFrame *)p->pointer();
     return Object::True;
 }
 
@@ -61,9 +102,9 @@ stub_wx_frame_show(VM* theVM, int argc, const Object* argv){
     DeclareProcedureName("%wx_frame_show");
     checkArgumentLength(1);
     argumentAsPointer(0,p);
-    wxFrame* wf;
-	wf = (wxFrame *)p->pointer();
-	wf->Show();
+    skyFrame* sf;
+	sf = (skyFrame *)p->pointer();
+	sf->Show();
     return Object::True;
 }
 
@@ -72,8 +113,9 @@ stub_wx_frame_raise(VM* theVM, int argc, const Object* argv){
     DeclareProcedureName("%wx_frame_raise");
     checkArgumentLength(1);
     argumentAsPointer(0,p);
-    wxFrame* wf;
-	wf = (wxFrame *)p->pointer();
-	wf->Raise();
+    skyFrame* sf;
+	sf = (skyFrame *)p->pointer();
+	sf->Raise();
     return Object::True;
 }
+

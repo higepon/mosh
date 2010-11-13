@@ -35,6 +35,7 @@ Object stub_wx_frame_new(VM* theVM, int argc, const Object* argv);
 Object stub_wx_frame_delete(VM* theVM, int argc, const Object* argv);
 Object stub_wx_frame_show(VM* theVM, int argc, const Object* argv);
 Object stub_wx_frame_raise(VM* theVM, int argc, const Object* argv);
+Object stub_wx_frame_setlistener_size(VM* theVM, int argc, const Object* argv);
 
 void
 wx_register_stubs(VM* theVM){
@@ -48,4 +49,5 @@ wx_register_stubs(VM* theVM){
 	theVM->setValueString(UC("%wx_frame_delete"),Object::makeCProcedure(stub_wx_frame_delete));
 	theVM->setValueString(UC("%wx_frame_show"),Object::makeCProcedure(stub_wx_frame_show));
 	theVM->setValueString(UC("%wx_frame_raise"),Object::makeCProcedure(stub_wx_frame_raise));
+	theVM->setValueString(UC("%wx_frame_setlistener_size"),Object::makeCProcedure(stub_wx_frame_setlistener_size));
 }
