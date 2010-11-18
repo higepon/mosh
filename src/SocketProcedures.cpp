@@ -43,6 +43,24 @@
 
 using namespace scheme;
 
+// (monapi-send dest header arg1 arg2 arg3 str)
+Object scheme::monapiSendEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-send");
+    argumentAsFixnum(0, dest);
+    argumentAsFixnum(1, header);
+    argumentAsFixnum(2, arg1);
+    argumentAsFixnum(3, arg2);
+    argumentAsFixnum(4, arg3);
+    argumentAsByteVector(5, str);
+    int ret = MonAPI::Message::send(dest, header, arg1, arg2, arg3, (const char*)str->data());
+    if (ret == M_OK) {
+        return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
+    }
+}
+
 // (socket-port socket)
 Object scheme::socketPortEx(VM* theVM, int argc, const Object* argv)
 {
