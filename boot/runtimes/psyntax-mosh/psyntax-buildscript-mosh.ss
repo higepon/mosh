@@ -1118,7 +1118,7 @@
     (write-to-file sys)
     (stat-mtime mosh)
     (file-newer?  mosh)
-    (monapi-send mosh)
+    (%monapi-message-send sys)
     (standard-library-path mosh)
     (library-path mosh) ; for srfi system
     (host-os mosh) ; for srfi-system

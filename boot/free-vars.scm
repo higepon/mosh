@@ -683,5 +683,5 @@
   write/ss
 
   ;; for Mona
-  monapi-send
+  %monapi-message-send
   )

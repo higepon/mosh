@@ -43,8 +43,8 @@
 
 using namespace scheme;
 
-// (monapi-send dest header arg1 arg2 arg3 str)
-Object scheme::monapiSendEx(VM* theVM, int argc, const Object* argv)
+// (%monapi-message-send dest header arg1 arg2 arg3 str)
+Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("monapi-send");
     argumentAsFixnum(0, dest);
