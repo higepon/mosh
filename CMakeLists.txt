@@ -540,12 +540,18 @@ src/OSCompatSocket.cpp
 src/OSCompatThread.cpp
 src/VMFactory.cpp
 src/OSCompat.cpp
+src/stubs.cpp
 ${ffi_stub}
 )
 
 if(CMAKE_HOST_WIN32)
+set(mosh_win32_srcs
+src/win32/process.c
+src/win32/process_stub.cpp)
+source_group(win32 FILES ${mosh_win32_srcs})
 set(mosh_core_srcs 
 ${mosh_core_srcs}
+${mosh_win32_srcs}
 win/win.cpp
 win/mosh.rc)
 set_source_files_properties(${mosh_core_srcs}

@@ -48,6 +48,8 @@
 
 using namespace scheme;
 
+void register_stubs(VM* theVM);
+
 VM* VMFactory::create(int initialStackSize, bool isProfilerOn)
 {
     // At first, we shared the standard ports between VMs.
@@ -65,5 +67,6 @@ VM* VMFactory::create(int initialStackSize, bool isProfilerOn)
     VM* vm = new VM(initialStackSize, outPort, errorPort, inPort, isProfilerOn);
     vm->registerPort(outPort);
     vm->loadCompiler();
+	register_stubs(vm);
     return vm;
 }
