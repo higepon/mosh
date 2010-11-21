@@ -7,6 +7,7 @@
                  process-stdout-string
                  process-stderr-string)
          (import (nmosh process win32)
+                 (nmosh process mosh)
                  (only (mosh) host-os)
                  (rnrs))
 
@@ -19,21 +20,20 @@
          std)))))
 
 (define-if process-launch
-           #f
+           process-launch/mosh
            process-launch/win32)
 (define-if process-wait
-           #f
+           process-wait/mosh
            process-wait/win32)
 (define-if process-result
-           #f
+           process-result/mosh
            process-result/win32)
 (define-if process-stdout
-           #f
+           process-stdout/mosh
            process-stdout/win32)
 (define-if process-stderr
-           #f
+           process-stderr/mosh
            process-stderr/win32)
-
 
 (define (return-string proc x)
   (define bv (proc x))
@@ -43,6 +43,7 @@
 
 (define (process-stdout-string x)
   (return-string process-stdout x))
+
 (define (process-stderr-string x)
   (return-string process-stderr x))
 
