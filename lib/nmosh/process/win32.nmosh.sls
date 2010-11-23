@@ -30,7 +30,7 @@
 (define (string->utf16-bv str)
   (define str-bv (string->bytevector str (make-transcoder (utf-16-codec))))
   (define len (bytevector-length str-bv))
-  (define ret (make-bytevector len 0))
+  (define ret (make-bytevector (+ len 2) 0))
   (bytevector-copy! str-bv 0 ret 0 len)
   (byteswap! ret))
 
