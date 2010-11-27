@@ -37,6 +37,7 @@
 namespace scheme {
 
     Object internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv);
+    Object internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv);
     Object socketPortEx(VM* theVM, int argc, const Object* argv);
     Object socketPEx(VM* theVM, int argc, const Object* argv);
     Object socketAcceptEx(VM* theVM, int argc, const Object* argv);

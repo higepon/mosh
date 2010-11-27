@@ -39,7 +39,7 @@
     MonAPI Library
 |#
 (library (monapi)
-  (export (rename (%monapi-message-send monapi-message-send))
+  (export (rename (%monapi-message-send monapi-message-send) (%monapi-name-whereis monapi-name-whereis))
           MSG_OK
           MSG_STARTED
           MSG_INTERRUPTED
@@ -67,6 +67,21 @@
       bv - message str as bytevector, should be less than equal 128 byte.
 
 |#
+
+#|
+    Function: monapi-name-whereis
+
+    Wrapper of monapi_name_whereis API.
+
+    Prototype:
+    > (monapi-name-whereis name)
+
+    Parameters:
+
+      name - name of server
+
+|#
+
 
 #|
     Constant: MSG_OK
