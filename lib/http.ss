@@ -74,7 +74,7 @@
                    [body* '()])
           (cond
            [(= i content-length)
-            (close-port socket-port)
+            (close-port p)
             (utf8->string (u8-list->bytevector (reverse body*)))]
            [else
             (loop (+ i 1) (cons (get-u8 p) body*))]))))))
