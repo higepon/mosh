@@ -65,5 +65,5 @@
 (test-error assertion-violation? (assoc 0 '(1)))
 
 (test-eq #f (string->number ""))
-
+(test-eq 1  (expt -1 (/ 4 2)))
 (test-results)
