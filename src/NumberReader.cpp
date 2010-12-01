@@ -40,11 +40,11 @@
 #include "NumberReader.h"
 #include "NumberScanner.h"
 
+extern int number_yyparse ();
 using namespace scheme;
 
 Object NumberReaderContext::read(TextualInputPort* port, bool& errorOccured)
 {
-    extern int number_yyparse ();
     MOSH_ASSERT(port);
     port_ = port;
     const bool isParseError = number_yyparse() == 1;

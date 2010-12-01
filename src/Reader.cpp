@@ -44,6 +44,7 @@
 #include "Vector.h"
 #include "SharedReference.h"
 
+extern int yyparse ();
 using namespace scheme;
 
 void ReaderContext::addShared(int index, Object obj)
@@ -58,7 +59,6 @@ Object ReaderContext::getShared(int index)
 
 Object ReaderContext::read(TextualInputPort* port, bool& errorOccured)
 {
-    extern int yyparse ();
     MOSH_ASSERT(port);
     port_ = port;
     isStrictR6RSReader_ = false;
