@@ -520,6 +520,7 @@
   %exec
   %waitpid
   %pipe
+  %getpid
   current-directory
   set-current-directory!
   binary-port?

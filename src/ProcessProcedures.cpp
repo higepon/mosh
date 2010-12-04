@@ -232,3 +232,14 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 #endif
 }
+
+Object scheme::internalGetpidEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%getpid");
+    checkArgumentLength(0);
+#ifdef _WIN32
+    return Object::makeFixnum(GetCurrentProcessId());
+#else
+    return Object::makeFixnum(getpid());
+#endif
+}
