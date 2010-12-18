@@ -178,7 +178,8 @@ src/OSCompatSocket.h src/OSCompatSocket.cpp \
 src/OSCompatThread.h src/OSCompatThread.cpp \
 src/VMFactory.cpp src/VMFactory.h \
 src/SimpleStruct.h \
-src/OSCompat.h src/OSCompat.cpp
+src/OSCompat.h src/OSCompat.cpp \
+src/stubs.cpp
 
 if FFI_I386
 MOSH_CORE_SRCS += src/ffi_stub_i386.S
@@ -186,6 +187,10 @@ endif
 
 if FFI_X86_64
 MOSH_CORE_SRCS += src/ffi_stub_x86_64.S
+endif
+
+if MINGW32
+MOSH_CORE_SRCS += src/win32/process.c src/win32/process_stub.cpp
 endif
 
 noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
