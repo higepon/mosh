@@ -69,10 +69,10 @@ src/Reader.tab.cpp: src/Reader.y
 src/NumberReader.tab.cpp: src/NumberReader.y
 	bison -p "number_yy" -d $< -o $@
 
-src/Scanner.cpp : src/scanner.re
+src/Scanner.cpp : src/scanner.re src/Reader.tab.hpp
 	re2c -u $< > $@ # -d is debug option
 
-src/NumberScanner.cpp : src/NumberScanner.re
+src/NumberScanner.cpp : src/NumberScanner.re src/NumberReader.tab.hpp
 	re2c -cu $< > $@ # -d is debug option
 
 install:all
