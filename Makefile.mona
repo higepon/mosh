@@ -28,7 +28,7 @@ $(ONIG_OBJECTS) : $(ONIG_DIR)/config.h
 $(ONIG_DIR)/config.h : mona/onig_config.h
 	cp $< $@
 
-GEN_FILES = src/Instruction.h src/labels.cpp src/Object-accessors.h src/OSConstants.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Scanner.cpp src/NumberScanner.cpp src/cprocedures.cpp
+GEN_FILES = src/Instruction.h src/labels.cpp src/Object-accessors.h src/OSConstants.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/cprocedures.cpp
 
 gen: .BOOT $(GEN_FILES)
 
@@ -58,18 +58,13 @@ src/Object-accessors.h: src/accessors.scm
 src/OSConstants.h: src/os-constants.scm
 	(cd $(top_srcdir) && mosh misc/scripts/gen-os-constants.scm) > $@
 
-# READER 
-src/Reader.tab.hpp: src/Reader.tab.cpp src/Reader.y
-
-src/NumberReader.tab.hpp: src/NumberReader.tab.cpp src/NumberReader.y
-
-src/Reader.tab.cpp: src/Reader.y
+src/Reader.tab.cpp src/Reader.tab.hpp: src/Reader.y
 	bison -d $< -o $@
 
-src/NumberReader.tab.cpp: src/NumberReader.y
+src/NumberReader.tab.cpp src/NumberReader.tab.hpp: src/NumberReader.y
 	bison -p "number_yy" -d $< -o $@
 
-src/Scanner.cpp : src/scanner.re
+src/Scanner.cpp : src/scanner.re src/Reader.tab.hpp
 	re2c -u $< > $@ # -d is debug option
 
 src/NumberScanner.cpp : src/NumberScanner.re
