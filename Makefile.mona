@@ -67,7 +67,7 @@ src/NumberReader.tab.cpp src/NumberReader.tab.hpp: src/NumberReader.y
 src/Scanner.cpp : src/scanner.re src/Reader.tab.hpp
 	re2c -u $< > $@ # -d is debug option
 
-src/NumberScanner.cpp : src/NumberScanner.re
+src/NumberScanner.cpp : src/NumberScanner.re src/NumberReader.tab.hpp
 	re2c -cu $< > $@ # -d is debug option
 
 install:all
