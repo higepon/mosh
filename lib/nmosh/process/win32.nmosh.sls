@@ -4,35 +4,14 @@
                  process-result/win32
                  process-stdout/win32
                  process-stderr/win32)
-         (import (primitives %win32_process_pipe
-                             %win32_process_redirected_child
-                             %win32_process_wait
-                             %win32_handle_read
-                             %win32_handle_write
-                             %win32_handle_close)
+         (import (primitives %win32_process_redirected_child
+                             %win32_process_wait)
                  (srfi :8)
                  (rnrs)
-                 (mosh ffi))
+                 (mosh ffi)
+                 (nmosh win32 handle)
+                 (nmosh win32 util))
 
-(define null-pointer (integer->pointer 0))
-
-(define (byteswap! bv)
-  (define len (bytevector-length bv))
-  (define (itr idx)
-    (if (>= idx len)
-      bv
-      (begin
-        (let ((i (bytevector-u16-ref bv idx (endianness big))))
-          (bytevector-u16-set! bv idx i (endianness little)))
-        (itr (+ 2 idx)))))
-  (itr 0))
-
-(define (string->utf16-bv str)
-  (define str-bv (string->bytevector str (make-transcoder (utf-16-codec))))
-  (define len (bytevector-length str-bv))
-  (define ret (make-bytevector (+ len 2) 0))
-  (bytevector-copy! str-bv 0 ret 0 len)
-  (byteswap! ret))
 
 (define (handle-read-all h)
   (define BUFSIZ (* 1024 1024 1))
@@ -56,7 +35,7 @@
     out)
   (define (itr cur)
     (let ((bv (make-bytevector BUFSIZ)))
-      (let ((res (%win32_handle_read h bv BUFSIZ)))
+      (let ((res (win32-handle-read h bv BUFSIZ)))
         (cond
           ((and res (= BUFSIZ res))
            (itr (cons bv cur)))
@@ -76,10 +55,10 @@
 
 (define (process-wait/win32 process-status)
   (define (close-if-handle x)
-    (when (pointer? x)
-      (%win32_handle_close x)))
+    (when (win32-handle? x)
+      (win32-handle-close x)))
   (define (read-all-if-handle x)
-    (if (pointer? x)
+    (if (win32-handle? x)
       (handle-read-all x)
       #f))
 
@@ -92,7 +71,7 @@
             (stderr (vector-ref process-status 5)))
         (define out (read-all-if-handle stdout))
         (define err (read-all-if-handle stderr))
-        (%win32_handle_close h)
+        (win32-handle-close h)
         (close-if-handle stdin)
         (close-if-handle stdout)
         (close-if-handle stderr)
@@ -128,7 +107,7 @@
     (when (string? x)
       (assertion-violation 'process-launch/win32 "string argument is not supported yet.."))
     (if x
-      (receive (write read) (%win32_process_pipe)
+      (receive (write read) (win32-handle-pipe)
         (cons read write))
       (cons #f #f)))
   (define (pass-handle x)

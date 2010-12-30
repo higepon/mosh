@@ -30,7 +30,7 @@ win32_process_pipe(HANDLE* ret){
 	return 1;
 }
 
-int
+uintptr_t
 win32_process_redirected_child(wchar_t* spec,wchar_t* dir, HANDLE std_in, HANDLE std_out, HANDLE std_err){
 	PROCESS_INFORMATION pi;
 	STARTUPINFOW si;
@@ -72,7 +72,7 @@ win32_process_redirected_child(wchar_t* spec,wchar_t* dir, HANDLE std_in, HANDLE
 		return 0;
 	}
 	CloseHandle(pi.hThread);
-	return (int)pi.hProcess;
+	return (uintptr_t)pi.hProcess;
 }
 
 // should be moved to handle.c...
@@ -134,3 +134,25 @@ win32_handle_wait(HANDLE h){
 	}
 	return 1;
 }
+
+uintptr_t
+win32_create_named_pipe(wchar_t* name){
+	HANDLE h;
+	h = CreateNamedPipeW(name,PIPE_ACCESS_DUPLEX,PIPE_WAIT,PIPE_UNLIMITED_INSTANCES,4096,4096,0,NULL);
+	if(h == INVALID_HANDLE_VALUE){
+		OSERROR("CreateNamedPipeW");
+		return -1;
+	}
+	return (uintptr_t)h;
+}
+
+int
+win32_wait_named_pipe(HANDLE h){
+	BOOL b;
+	b = ConnectNamedPipe(h,NULL);
+	if(!b){
+		return 0;
+	}
+	return 1;
+}
+

@@ -30,13 +30,14 @@ using namespace scheme;
 
 // predef
 extern "C" int win32_process_pipe(uintptr_t* p);
-extern "C" void* win32_process_redirected_child(uint8_t* p0,uint8_t* p1, uintptr_t p2, uintptr_t p3, uintptr_t p4);
+extern "C" uintptr_t win32_process_redirected_child(uint8_t* p0,uint8_t* p1, uintptr_t p2, uintptr_t p3, uintptr_t p4);
 extern "C" int win32_handle_read(uintptr_t p0,void* p1,unsigned int len, unsigned int *res);
 extern "C" int win32_handle_write(uintptr_t p0,void* p1,unsigned int len, unsigned int *res);
 extern "C" int win32_handle_close(uintptr_t p0);
 extern "C" int win32_handle_wait(uintptr_t p0);
 extern "C" int win32_process_wait(uintptr_t p);
-
+extern "C" uintptr_t win32_create_named_pipe(uint8_t* name);
+extern "C" int win32_wait_named_pipe(uintptr_t p);
 
 Object
 stub_win32_process_pipe(VM* theVM, int argc, const Object* argv){
@@ -70,7 +71,7 @@ stub_win32_process_redirected_child(VM* theVM, int argc, const Object* argv){
 		pos = bv1->data();
 	}
 
-	void* p = win32_process_redirected_child(bv0->data(),pos,p1->pointer(),p2->pointer(),p3->pointer());
+	void* p = (void *)win32_process_redirected_child(bv0->data(),pos,p1->pointer(),p2->pointer(),p3->pointer());
 
 	if(p){
 		return Object::makePointer(p);
@@ -149,3 +150,32 @@ stub_win32_handle_wait(VM* theVM, int argc, const Object* argv){
 		return Object::False;
 	}
 }
+
+Object
+stub_win32_named_pipe_create(VM* theVM, int argc, const Object* argv){
+	DeclareProcedureName("%win32_named_pipe_create");
+	checkArgumentLength(1);
+	argumentAsByteVector(0,bv);
+
+	void* p = (void *)win32_create_named_pipe(bv->data());
+
+	if(p){
+		return Object::makePointer(p);
+	}else{
+		return Object::False;
+	}
+}
+
+Object
+stub_win32_named_pipe_wait(VM* theVM, int argc, const Object* argv){
+	DeclareProcedureName("win32_named_pipe_wait");
+	checkArgumentLength(1);
+	argumentAsPointer(0,p0);
+	int r = win32_wait_named_pipe(p0->pointer());
+	if(r){
+		return Object::True;
+	}else{
+		return Object::False;
+	}
+}
+

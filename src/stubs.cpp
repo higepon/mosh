@@ -32,6 +32,8 @@ Object stub_win32_handle_read(VM* theVM, int argc, const Object* argv);
 Object stub_win32_handle_write(VM* theVM, int argc, const Object* argv);
 Object stub_win32_handle_close(VM* theVM, int argc, const Object* argv);
 Object stub_win32_process_wait(VM* theVM, int argc, const Object* argv);
+Object stub_win32_named_pipe_create(VM* theVM, int argc, const Object* argv);
+Object stub_win32_named_pipe_wait(VM* theVM, int argc, const Object* argv);
 #endif
 
 void
@@ -43,5 +45,7 @@ register_stubs(VM* theVM){
     theVM->setValueString(UC("%win32_handle_write"),Object::makeCProcedure(stub_win32_handle_write));
     theVM->setValueString(UC("%win32_handle_close"),Object::makeCProcedure(stub_win32_handle_close));
     theVM->setValueString(UC("%win32_process_wait"),Object::makeCProcedure(stub_win32_process_wait));
+    theVM->setValueString(UC("%win32_named_pipe_create"),Object::makeCProcedure(stub_win32_named_pipe_create));
+    theVM->setValueString(UC("%win32_named_pipe_wait"),Object::makeCProcedure(stub_win32_named_pipe_wait));
 #endif
 }
