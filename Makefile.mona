@@ -30,7 +30,7 @@ $(ONIG_DIR)/config.h : mona/onig_config.h
 
 .PHONY : gen
 
-GEN_FILES = src/Instruction.h src/labels.cpp src/Object-accessors.h src/OSConstants.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/cprocedures.cpp
+GEN_FILES = src/Instruction.h src/labels.cpp src/Object-accessors.h src/OSConstants.h src/Reader.tab.cpp src/NumberReader.tab.cpp src/cprocedures.cpp
 
 gen: .BOOT $(GEN_FILES)
 
@@ -60,10 +60,10 @@ src/Object-accessors.h: src/accessors.scm
 src/OSConstants.h: src/os-constants.scm
 	(cd $(top_srcdir) && mosh misc/scripts/gen-os-constants.scm) > $@
 
-src/Reader.tab.hpp : src/Reader.y
+src/Reader.tab.cpp : src/Reader.y
 	bison -d $< -o $@
 
-src/NumberReader.tab.hpp : src/NumberReader.y
+src/NumberReader.tab.cpp : src/NumberReader.y
 	bison -p "number_yy" -d $< -o $@
 
 src/Scanner.cpp : src/scanner.re src/Reader.tab.hpp
