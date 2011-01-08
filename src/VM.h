@@ -34,9 +34,9 @@
 
 #include "scheme.h"
 #include <setjmp.h>
+#include <stdio.h>
 #include "Instruction.h"
 #include "EqHashTable.h"
-
 #ifdef _MSC_VER
 #define snprintf _snprintf
 #endif

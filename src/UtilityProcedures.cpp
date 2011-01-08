@@ -29,6 +29,9 @@
  *  $Id$
  */
 
+#ifdef MONA
+#include <monapi.h>
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -194,7 +197,12 @@ Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("host-os");
     checkArgumentLengthAtLeast(0);
+// TODO
+#ifdef MONA
+    return "mona";
+#else
     return MOSH_HOST_OS;
+#endif
 }
 
 Object scheme::booleanEqPEx(VM* theVM, int argc, const Object* argv)
@@ -570,10 +578,15 @@ Object scheme::getTimeofdayEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-timeofday");
     checkArgumentLength(0);
+#ifdef MONA
+    int64_t nowMsec = MonAPI::Date::nowInMsec();
+    return Object::cons(Object::makeBignum(nowMsec/1000), Object::makeBignum((nowMsec - (nowMsec/1000) * 1000) * 1000));
+#else
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
     return Object::cons(Object::makeBignum(tv.tv_sec), Object::makeBignum(tv.tv_usec));
+#endif
 }
 
 Object scheme::vmApplyEx(VM* theVM, int argc, const Object* argv)
@@ -835,7 +848,10 @@ Object scheme::callProcessEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsString(0, cmd);
-
+#ifdef MONA
+        callAssertionViolationAfter(theVM, procedureName, "not supported", L1(argv[0]));
+        return Object::Undef;
+#else
     const int BUFFER_SIZE = 1024;
     FILE* in = popen(cmd->data().ascii_c_str(), "r");
     char buffer[BUFFER_SIZE];
@@ -856,6 +872,7 @@ Object scheme::callProcessEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
     return Object::makeString(ret);
+#endif
 }
 
 Object scheme::internalGetClosureNameEx(VM* theVM, int argc, const Object* argv)
@@ -896,10 +913,16 @@ Object scheme::microsecondsEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("microseconds");
     checkArgumentLength(0);
+#ifdef MONA
+    int64_t msec = MonAPI::Date::nowInMsec();
+    uint64_t usec = msec * 1000;
+#else
     struct timeval tv;
     gettimeofday(&tv, NULL);
     const uint64_t usec = static_cast<uint64_t>(tv.tv_sec) * 1000000 + static_cast<uint64_t>(tv.tv_usec);
+#endif
     return Bignum::makeIntegerFromU64(usec);
+
 }
 // for srfi-19
 Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
@@ -917,6 +940,9 @@ Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
     localTime = *localtime(&current);
     time_t l = mktime(&localTime);
     utcTime = *gmtime(&l);
+#elif defined(MONA)
+    callAssertionViolationAfter(theVM, procedureName, "not implmented", L1(argv[0]));
+    return Object::Undef;
 #else
     localtime_r(&current, &localTime);
     time_t l = mktime(&localTime);
@@ -949,6 +975,12 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
       return Object::False;
     }
     return Object::makeString(UC("<not-supported>"));
+#elif defined(MONA)
+    uint64_t msec = MonAPI::Date::nowInMsec();
+    return Pair::list3(Object::makeFlonum((double)msec / 1000.0),
+                       Object::makeFlonum(0.0),
+                       Object::makeFlonum(0.0));
+
 #else
     checkArgumentLength(0);
     struct timeval tv;

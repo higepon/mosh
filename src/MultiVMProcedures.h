@@ -35,8 +35,49 @@
 #include "scheme.h"
 #include "OSCompatThread.h"
 
+#ifdef MONA
+
+extern scheme::VM* theVM;
+
 namespace scheme {
 
+    inline VM* currentVM()
+    {
+        return theVM;
+    }
+
+    inline bool setCurrentVM(VM* vm)
+    {
+        theVM = vm;
+        return true;
+    }
+
+    Object whereisEx(VM* theVM, int argc, const Object* argv);
+    Object registerEx(VM* theVM, int argc, const Object* argv);
+    Object vmSelfEx(VM* theVM, int argc, const Object* argv);
+    Object mainVmPEx(VM* theVM, int argc, const Object* argv);
+    Object vmPEx(VM* theVM, int argc, const Object* argv);
+    Object makeVmEx(VM* theVM, int argc, const Object* argv);
+    Object vmStartDEx(VM* theVM, int argc, const Object* argv);
+    Object vmSetValueDEx(VM* theVM, int argc, const Object* argv);
+    Object vmJoinDEx(VM* theVM, int argc, const Object* argv);
+    Object vmEvalEx(VM* theVM, int argc, const Object* argv);
+
+    Object makeConditionVariableEx(VM* theVM, int argc, const Object* argv);
+    Object conditionVariableNotifyAllDEx(VM* theVM, int argc, const Object* argv);
+    Object conditionVariableNotifyDEx(VM* theVM, int argc, const Object* argv);
+    Object conditionVariableWaitDEx(VM* theVM, int argc, const Object* argv);
+    Object mutexPEx(VM* theVM, int argc, const Object* argv);
+    Object mutexUnlockDEx(VM* theVM, int argc, const Object* argv);
+    Object mutexTryLockDEx(VM* theVM, int argc, const Object* argv);
+    Object mutexLockDEx(VM* theVM, int argc, const Object* argv);
+    Object makeMutexEx(VM* theVM, int argc, const Object* argv);
+
+};
+
+#else
+
+namespace scheme {
 
     Object whereisEx(VM* theVM, int argc, const Object* argv);
     Object registerEx(VM* theVM, int argc, const Object* argv);
@@ -77,5 +118,7 @@ namespace scheme {
     }
 
 }; // namespace scheme
+
+#endif // MONA
 
 #endif // SCHEME_MULTI_VM_PROCEDURES_

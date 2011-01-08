@@ -32,7 +32,9 @@
 #ifndef SCHEME_VM_INL_
 #define SCHEME_VM_INL_
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "Gloc.h"
 #ifndef _WIN32
 #include <sys/time.h>

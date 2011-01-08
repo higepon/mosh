@@ -39,7 +39,9 @@
 #include "Arithmetic.h"
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"
+#ifndef MONA
 #include <limits>
+#endif
 
 using namespace scheme;
 
@@ -47,11 +49,25 @@ Object Flonum::POSITIVE_INF;
 Object Flonum::NEGATIVE_INF;
 Object Flonum::NOT_A_NUMBER;
 
+double flonum_zero()
+{
+    return 0.0;
+}
+
 void Flonum::initialize()
 {
+#ifdef MONA
+    double inf = 1.0 / flonum_zero();
+    double nan = 0.0 / flonum_zero();
+    POSITIVE_INF = Object::makeFlonum(inf);
+    NEGATIVE_INF = Object::makeFlonum(-inf);
+    NOT_A_NUMBER = Object::makeFlonum(nan);
+#else
     POSITIVE_INF = Object::makeFlonum(std::numeric_limits<double>::infinity());
     NEGATIVE_INF = Object::makeFlonum(-std::numeric_limits<double>::infinity());
     NOT_A_NUMBER = Object::makeFlonum(std::numeric_limits<double>::quiet_NaN());
+
+#endif
 }
 
 Object Flonum::toExact() const

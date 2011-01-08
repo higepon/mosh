@@ -44,7 +44,7 @@ using namespace scheme;
 Transcoder::Transcoder(Codec* codec) :
     beginningOfInput_(true),
     codec_(codec),
-    eolStyle_(EolStyle(LF)),
+    eolStyle_(EolStyle(LF)), // LF means no convert.
     errorHandlingMode_(ErrorHandlingMode(REPLACE_ERROR)),
     lineNo_(1)
 {

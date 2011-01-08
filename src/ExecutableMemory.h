@@ -76,7 +76,14 @@ public:
     {
 
         // Originally from xbyak
-#if defined(__GNUC__) && !defined(MOSH_MINGW32)
+#ifdef MONA
+        addr_ = (uint8_t*)malloc(size_);
+        size_t pageSize = 4096;
+        size_t iaddr = reinterpret_cast<size_t>(addr_);
+        size_t roundAddr = iaddr & ~(pageSize - static_cast<size_t>(1));
+        roundAddr_ = (uint8_t*)roundAddr;
+        return roundAddr_;
+#elif defined(__GNUC__) && !defined(MOSH_MINGW32)
         // obsolete?
         addr_ = (uint8_t*)valloc(size_);
 

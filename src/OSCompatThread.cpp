@@ -42,6 +42,7 @@
 
 using namespace scheme;
 
+#ifndef MONA
 ThreadSpecificKey* Thread::selfKey;
 
 
@@ -84,3 +85,4 @@ bool Thread::create(void* (*start)(void*), void* arg)
     }
 #endif
 }
+#endif

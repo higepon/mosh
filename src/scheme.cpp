@@ -33,6 +33,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h> // for socklen_t
 #endif
+#include <stdio.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
@@ -40,7 +41,13 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "OSCompat.h"
+extern "C" {
 #include <gmp.h>
+}
+
+#ifdef MONA
+#include <sys/error.h>
+#endif
 #include "OSCompatThread.h"
 
 using namespace scheme;
@@ -101,7 +108,7 @@ BOOL WINAPI handler(DWORD ctrlChar)
 #endif
 
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(MONA)
 #define srandom srand
 #endif
 
@@ -118,7 +125,18 @@ void null_gc_warn_proc(char* msg, GC_word arg){
 void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.
-    srandom((unsigned int)time(NULL));
+    srandom(time(NULL));
+#ifdef MONA
+#if 0
+    const char* MAP_FILE_PATH = "/APPS/MOSH.APP/MOSH.MAP";
+    uint32_t pid = syscall_get_pid();
+    intptr_t ret = syscall_stack_trace_enable(pid, MAP_FILE_PATH);
+    if (ret != M_OK) {
+        fprintf(stderr, "syscall_stack_trace_enable error %d\n", ret);
+        exit(-1);
+    }
+#endif
+#endif // MONA
 #ifdef USE_BOEHM_GC
     GC_INIT();
 #ifdef _WIN32
@@ -129,7 +147,9 @@ void mosh_init()
     // Since GNU MP mpz makes many many "false pointer",
     // we allocate gmp buffers by malloc not GC_malloc.
     // Allocated memory are freed on Bignum's destructor.
+#ifndef MONA
     mp_set_memory_functions(gmp_alloc, gmp_realloc, gmp_free);
+#endif
 #endif
 // moved to VM constructor
 //    initCprocedures();
@@ -156,5 +176,11 @@ void mosh_init()
 // //        printf("[%c]", prefix);
 //         setEnv(UC("MOSH_GENSYM_PREFIX"), &prefix);
 //     }
+
 }
 
+
+
+extern "C" void dont_free(void* p)
+{
+}

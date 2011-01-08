@@ -29,6 +29,8 @@
            (test-print* more ...))]
       [(_) #'#f])))
 
+(define test-file (if (string=? (host-os) "mona") "/APPS/MOSH.APP/test/test.txt" "test/text.txt"))
+
 
 (test-print* ['(a b) "(a b)"]
              ['(a . b) "(a . b)"]
@@ -38,8 +40,8 @@
              [#\a "a" "#\\a"]
              ['#(a b c) "#(a b c)"]
              ["abc" "abc" "\"abc\""]
-             [(open-file-input-port "test/test.txt") "<binary-input-port test/test.txt>" "<binary-input-port test/test.txt>" "#[input-port]"]
-             [(open-input-file "test/test.txt") "<transcoded-textual-input-port <binary-input-port test/test.txt>>" "<transcoded-textual-input-port <binary-input-port test/test.txt>>" "#[input-port]"]
+             [(open-file-input-port test-file) (format "<binary-input-port ~a>" test-file) (format "<binary-input-port ~a>" test-file) "#[input-port]"]
+             [(open-input-file test-file) (format "<transcoded-textual-input-port <binary-input-port ~a>>" test-file) (format "<transcoded-textual-input-port <binary-input-port ~a>>" test-file) "#[input-port]"]
              [(open-string-output-port) "<string-output-port>" "<string-output-port>" "#[output-port]"]
              [(make-custom-textual-output-port
                "custom out"
@@ -48,7 +50,7 @@
                (lambda (pos) #f)
                (lambda () 'ok)) "<custom-textual-output-port custom out>" "<custom-textual-output-port custom out>" "#[output-port]"]
              [(lambda (x) #f) #/#<closure \d+>/ #/#<closure \d+>/ "#[procedure]"]
-             [(make-client-socket "www.google.co.jp" "http") #/<socket client .*>/ #/<socket client .*>/ "#[socket]"]
+             [(make-client-socket "www.google.co.jp" "80") #/<socket client .*>/ #/<socket client .*>/ "#[socket]"]
              [car #/<subr car>/ #/<subr car>/ "#[procedure]"]
              ['a "a"]
              [(make-eq-hashtable) "#<eq-hashtable>" "#<eq-hashtable>" "#[hashtable]"]

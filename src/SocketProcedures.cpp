@@ -43,6 +43,45 @@
 
 using namespace scheme;
 
+Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-name-whereis");
+    checkArgumentLength(1);
+    argumentAsString(0, name);
+    uint32_t tid;
+    if (monapi_name_whereis(name->data().ascii_c_str(), tid) == M_OK) {
+        return Bignum::makeIntegerFromU32(tid);
+    } else {
+        return Object::False;
+    }
+}
+
+// (%monapi-message-send dest header arg1 arg2 arg3 str)
+Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-message-send");
+    checkArgumentLength(6);
+    uint32_t tid;
+    if (argv[0].isFixnum()) {
+        tid = argv[0].toFixnum();
+    } else if (argv[0].isBignum()) {
+        tid = argv[0].toBignum()->toU32();
+    } else {
+        return callAssertionViolationAfter(theVM, procedureName, "u32 tid is required but got", L1(argv[0]));
+    }
+    argumentAsFixnum(1, header);
+    argumentAsFixnum(2, arg1);
+    argumentAsFixnum(3, arg2);
+    argumentAsFixnum(4, arg3);
+    argumentAsByteVector(5, str);
+    int ret = MonAPI::Message::send(tid, header, arg1, arg2, arg3, (const char*)str->data());
+    if (ret == M_OK) {
+        return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
+    }
+}
+
 // (socket-port socket)
 Object scheme::socketPortEx(VM* theVM, int argc, const Object* argv)
 {

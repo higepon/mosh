@@ -32,7 +32,166 @@
 #ifndef SCHEME_OSCOMPAT_THREAD_
 #define SCHEME_OSCOMPAT_THREAD_
 
+#ifdef MONA
 
+#include <time.h>
+
+// If you add new thread support for new operating system
+// See and add some macro to scheme.h, just before include gc.h
+
+namespace scheme {
+
+    class Mutex : public gc_cleanup
+    {
+        friend class ConditionVariable; // share the mutex_
+    private:
+
+    public:
+        Mutex()
+        {
+        }
+
+        ~Mutex()
+        {
+        }
+
+        void lock()
+        {
+        }
+
+        void unlock()
+        {
+        }
+
+        bool tryLock()
+        {
+            return true;
+        }
+    };
+
+    class ConditionVariable : public gc_cleanup
+    {
+    private:
+
+        void initialize()
+        {
+        }
+    public:
+        ConditionVariable()
+        {
+            initialize();
+        }
+
+        ConditionVariable(const ucs4string& name)
+        {
+            initialize();
+        }
+
+        virtual ~ConditionVariable()
+        {
+        }
+
+        ucs4string toString() const
+        {
+            return ucs4string(UC(""));
+        }
+
+        bool notify()
+        {
+            return true;
+        }
+
+        bool notifyAll()
+        {
+            return true;
+        }
+
+        bool wait(Mutex* mutex)
+        {
+            return true;
+        }
+
+        // returns false if timeout
+        bool waitWithTimeout(Mutex* mutex, int msecs)
+        {
+            return true;
+        }
+    private:
+        bool waitInternal(Mutex* mutex, int msec)
+        {
+            return true;
+        }
+    };
+
+    class ThreadSpecificKey : public gc_cleanup
+    {
+    private:
+    public:
+        ThreadSpecificKey()
+        {
+        }
+
+        virtual~ ThreadSpecificKey()
+        {
+        }
+
+    };
+
+    class Thread EXTEND_GC
+    {
+    public:
+
+        static void initialize()
+        {
+        }
+
+        static Thread* self()
+        {
+            MOSH_ASSERT(false);
+            return NULL;
+        }
+
+        static bool setSpecific(ThreadSpecificKey* key, void* value)
+        {
+            return true;
+        }
+
+        static void* getSpecific(ThreadSpecificKey* key)
+        {
+            MOSH_ASSERT(false);
+            return NULL;
+        }
+
+
+        Thread()
+        {
+        }
+        virtual ~Thread()
+        {
+        }
+
+        bool create(void* (*start)(void*), void* arg);
+
+        bool join(void** returnValue)
+        {
+            return true;
+        }
+
+        static void exit(void* exitValue)
+        {
+            return;
+        }
+
+    private:
+        void setLastError()
+        {
+        }
+
+    };
+
+}; // namespace scheme
+
+#else
 #if defined(__APPLE__) || defined(__CYGWIN__)
 #define pthread_yield sched_yield
 #endif
@@ -50,7 +209,7 @@
 
 // Check sanity
 // Boehm GC redirects pthread_create => GC_pthread_create with C macro.
-#ifndef _WIN32
+#if not defined(_WIN32) && not defined(MONA)
   #ifndef pthread_create
   #error "pthread_create redirect does not exist"
   #endif
@@ -541,5 +700,7 @@ namespace scheme {
     };
 
 }; // namespace scheme
+
+#endif // MONA
 
 #endif // SCHEME_OSCOMPAT_THREAD_

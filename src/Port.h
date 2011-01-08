@@ -33,6 +33,7 @@
 #define SCHEME_PORT_
 
 #include "scheme.h"
+#include <stdio.h>
 
 namespace scheme {
 

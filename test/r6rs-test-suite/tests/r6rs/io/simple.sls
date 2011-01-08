@@ -3,15 +3,18 @@
 (library (tests r6rs io simple)
   (export run-io-simple-tests)
   (import (rnrs)
+          (mosh)
           (tests r6rs test))
+
+  (define tmp-file (if (string=? "mona" (host-os)) "/MEM/io-tmp2" "io-tmp2"))
 
   (define (run-io-simple-tests)
 
     (test/unspec
-     (when (file-exists? "io-tmp2")
-       (delete-file "io-tmp2")))
+     (when (file-exists? tmp-file)
+       (delete-file tmp-file)))
 
-    (test/values (call-with-output-file "io-tmp2"
+    (test/values (call-with-output-file tmp-file
                    (lambda (p)
                      (test (output-port? p) #t)
                      (test (binary-port? p) #f)
@@ -23,7 +26,7 @@
                      (values 3 4)))
                  3 4)
 
-    (test/values (call-with-input-file "io-tmp2"
+    (test/values (call-with-input-file tmp-file
                    (lambda (p)
                      (test (input-port? p) #t)
                      (test (binary-port? p) #f)
@@ -41,25 +44,25 @@
                      (values 7 8 9)))
                  7 8 9)
 
-    (test/unspec (delete-file "io-tmp2"))
+    (test/unspec (delete-file tmp-file))
 
-    (let ([p (open-output-file "io-tmp2")])
+    (let ([p (open-output-file tmp-file)])
       (test (output-port? p) #t)
       (test (binary-port? p) #f)
       (test (textual-port? p) #t)
       (test/unspec (write-char #\! p))
       (test/unspec (close-output-port p)))
 
-    (let ([p (open-input-file "io-tmp2")])
+    (let ([p (open-input-file tmp-file)])
       (test (input-port? p) #t)
       (test (binary-port? p) #f)
       (test (textual-port? p) #t)
       (test (read-char p) #\!)
       (test/unspec (close-input-port p)))
 
-    (test/unspec (delete-file "io-tmp2"))
+    (test/unspec (delete-file tmp-file))
 
-    (test/values (with-output-to-file "io-tmp2"
+    (test/values (with-output-to-file tmp-file
                    (lambda ()
                      (test/unspec (write-char #\z))
                      (test/unspec (newline))
@@ -68,7 +71,7 @@
                      (values 30 40)))
                  30 40)
 
-    (test/values (with-input-from-file "io-tmp2"
+    (test/values (with-input-from-file tmp-file
                    (lambda ()
                      (test (peek-char) #\z)
                      (test (read-char) #\z)
@@ -79,8 +82,8 @@
                  70 80 90)
 
     (test/unspec
-     (when (file-exists? "io-tmp2")
-       (delete-file "io-tmp2")))
+     (when (file-exists? tmp-file)
+       (delete-file tmp-file)))
     
     (test (input-port? (current-input-port)) #t)
     (test (binary-port? (current-input-port)) #f)

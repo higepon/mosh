@@ -136,6 +136,7 @@ int SocketBinaryInputOutputPort::getU8()
         uint8_t c;
         const int ret = socket_->receive(&c, 1, 0);
         if (0 == ret) {
+            logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
             return EOF;
         } else if (-1 == ret) {
             throwIOError2(IOError::READ, socket_->getLastErrorMessage());

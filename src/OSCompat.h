@@ -102,6 +102,12 @@ namespace scheme {
             lastError_ = errno;
 #endif
         }
+
+        void setLastError(int e)
+        {
+            lastError_ = e;
+        }
+
         void operator=(const File&);
         File(const File& rhs);
     public:
@@ -134,7 +140,11 @@ namespace scheme {
 
         bool isOpen() const
         {
+#ifdef MONA
+            return desc_ > 0;
+#else
             return desc_ != INVALID_HANDLE_VALUE;
+#endif
         }
         bool close();
         bool isUTF16Console() const;
@@ -148,7 +158,6 @@ namespace scheme {
         bool isLastErrorAcessError() const;
 
         static Object size(const ucs4string& path);
-        static ucs4string toShortName(const ucs4string& path);
         static bool isExist(const ucs4string& path);
         static bool isWritable(const ucs4string& path);
         static bool isReadable(const ucs4string& path);

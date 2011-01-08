@@ -34,7 +34,6 @@
 #include "Bignum.h"
 #include "Ratnum.h"
 
-
 using namespace scheme;
 
 Object Ratnum::sqrt() const

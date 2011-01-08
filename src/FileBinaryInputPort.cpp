@@ -68,6 +68,7 @@ FileBinaryInputPort::FileBinaryInputPort(const char* file) : file_(new File), is
 {
     fileName_ = ucs4string::from_c_str(file);
     file_->open(fileName_, File::Read);
+
 }
 
 FileBinaryInputPort::~FileBinaryInputPort()

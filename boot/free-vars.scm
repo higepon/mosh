@@ -681,4 +681,8 @@
   sexp-map
   sexp-map/debug
   write/ss
+
+  ;; for Mona
+  %monapi-message-send
+  %monapi-name-whereis
   )

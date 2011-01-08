@@ -37,7 +37,9 @@
 using namespace scheme;
 
 Symbols* Symbol::symbols;
+#ifndef MONA
 Mutex* Symbol::mutex;
+#endif
 int Symbol::criticalSection;
 
 Object Symbol::QUOTE;
@@ -84,7 +86,9 @@ Object Symbol::SHIFT;
 void Symbol::initBuitinSymbols()
 {
     symbols = new Symbols;
+#ifndef MONA
     mutex = new Mutex;
+#endif
     criticalSection = 0;
     QUOTE             = Symbol::intern(UC("quote"));
     QUASIQUOTE        = Symbol::intern(UC("quasiquote"));
@@ -152,13 +156,17 @@ const ucs4char* Symbol::c_str()
 
 void Symbol::lock()
 {
+#ifndef MONA
     mutex->lock();
+#endif
 //    while (__sync_val_compare_and_swap(&criticalSection, 0, 1) != 0);
 }
 
 void Symbol::unlock()
 {
+#ifndef MONA
     mutex->unlock();
+#endif
 //       while (__sync_val_compare_and_swap(&criticalSection, 1, 0) != 1) {
 }
 
@@ -185,8 +193,12 @@ bool Symbol::isInterned(Object symbol)
 Object Symbol::add(const ucs4char* name)
 {
     Object sym = Object::makeSymbol(name);
+#ifndef MONA
     mutex->lock();
+#endif
     (*symbols)[name] = sym;
+#ifndef MONA
     mutex->unlock();
+#endif
     return sym;
 }

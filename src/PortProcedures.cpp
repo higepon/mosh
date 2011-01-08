@@ -711,7 +711,11 @@ Object scheme::standardLibraryPathEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("standard-library-path");
     checkArgumentLength(0);
+#ifdef MONA
+    return Object::makeString(UC("/APPS/MOSH/LIB"));
+#else
     return Object::makeString(UC(MOSH_LIB_PATH));
+#endif
 }
 
 Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
@@ -755,7 +759,7 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
             checkPortIsOpen(textualOutputPort, argv[1]);
             textualOutputPort->display(theVM, obj);
             // todo
-            textualOutputPort->flush();
+//            textualOutputPort->flush();
         }
         return Object::Undef;
     CATCH(ioError)
@@ -911,6 +915,16 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("delete-file");
     checkArgumentLength(1);
     argumentAsString(0, text);
+#ifdef MONA
+    if (monapi_file_delete(text->data().ascii_c_str()) != M_OK) {
+        callIoFileNameErrorAfter(theVM, procedureName,
+                                 "can't delete file",
+                                 argv[0]);
+        return Object::Undef;
+    } else {
+        return Object::Undef;
+    }
+#else
     if (-1 == unlink(text->data().ascii_c_str())) {
         callIoFileNameErrorAfter(theVM, procedureName,
                                  "can't delete file",
@@ -919,6 +933,7 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
     } else {
         return Object::Undef;
     }
+#endif
 }
 
 Object scheme::fileExistsPEx(VM* theVM, int argc, const Object* argv)

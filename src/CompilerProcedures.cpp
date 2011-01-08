@@ -1157,7 +1157,7 @@ Object scheme::simpleStructRefEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM,
                                     procedureName,
                                     "index out of range",
-                                                L1(argv[1]));
+                                    L2(argv[0], argv[1]));
         return Object::Undef;
     }
 }

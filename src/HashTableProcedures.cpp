@@ -29,6 +29,7 @@
  *  $Id: HashTableProceduures.cpp 213 2008-07-10 15:03:40Z higepon $
  */
 
+#include <ctype.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"

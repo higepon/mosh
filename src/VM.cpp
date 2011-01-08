@@ -636,6 +636,10 @@ Object VM::compile(Object code)
 
 Object VM::getStackTraceObj()
 {
+#ifdef MONA
+    monapi_warn("stack trace is currently disabled, since it causes gc crash.");
+    return Object::Nil;
+#else
     //const int MAX_DEPTH = 20;
     const int FP_OFFSET_IN_FRAME = 1;
     const int CLOSURE_OFFSET_IN_FRAME = 2;
@@ -650,24 +654,24 @@ Object VM::getStackTraceObj()
             if (src.isPair()) {
                 const Object procedure = src.cdr();
                 const Object location  = src.car();
-		r = L3(Symbol::intern(UC("*proc*")),procedure,location);
+                r = L3(Symbol::intern(UC("*proc*")),procedure,location);
             }else{
-		r = L1(Symbol::intern(UC("*unknown-proc*")));
-	    }
-	    i++;
+                r = L1(Symbol::intern(UC("*unknown-proc*")));
+            }
+            i++;
         } else if (cl->isCProcedure()) {
-	    r = L2(Symbol::intern(UC("*cproc*")),getClosureName(*cl));
+            r = L2(Symbol::intern(UC("*cproc*")),getClosureName(*cl));
             i++;
         } else if (cl->isRegMatch()) {
-	    r = L2(Symbol::intern(UC("*reg-match*")),*cl);
+            r = L2(Symbol::intern(UC("*reg-match*")),*cl);
             i++;
         } else if (cl->isRegexp()) {
-	    r = L2(Symbol::intern(UC("*regexp*")),*cl);
+            r = L2(Symbol::intern(UC("*regexp*")),*cl);
             i++;
         } else {
             MOSH_ASSERT(false);
         }
-	cur = Object::cons(Object::cons(Object::makeFixnum(i),r),cur);
+        cur = Object::cons(Object::cons(Object::makeFixnum(i),r),cur);
 #if 0
         if (i > MAX_DEPTH) {
             port->display(this, UC("      ... (more stack dump truncated)\n"));
@@ -707,10 +711,15 @@ Object VM::getStackTraceObj()
         }
     }
     return cur;
+#endif
 }
 
 Object VM::getStackTrace()
 {
+#ifdef MONA
+    monapi_warn("stack trace is currently disabled, since it causes gc crash.");
+    return Object::Nil;
+#else
     const int MAX_DEPTH = 20;
     const int FP_OFFSET_IN_FRAME = 1;
     const int CLOSURE_OFFSET_IN_FRAME = 2;
@@ -798,6 +807,7 @@ Object VM::getStackTrace()
         }
     }
     return getOutputStringEx(this, 1, &sport);
+#endif
 }
 
 bool VM::mayBeStackPointer(Object* obj) const
@@ -852,7 +862,10 @@ Object VM::activateR6RSMode(const uint8_t* image, unsigned int image_size, bool 
 {
     isR6RSMode_ = true;
     setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
+    uint64_t s1 = MonAPI::Date::nowInMsec();
     const Object code = FASL_GET_WITH_SIZE(image, image_size);
+    uint64_t s2 = MonAPI::Date::nowInMsec();
+    logprintf("fasl get = %d", (int)(s2 - s1));
     TRY_VM {
         Vector* v = code.toVector();
         return evaluateSafe(v->data(), v->length());

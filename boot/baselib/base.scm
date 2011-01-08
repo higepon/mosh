@@ -3775,7 +3775,7 @@
               )))
 
 (define (file-newer? a b)
-  (> (file-stat-mtime a) (file-stat-mtime b)))
+  (>= (file-stat-mtime a) (file-stat-mtime b)))
 
 ;; psyntax things start
 (define fasl-write! fasl-write)
@@ -3797,6 +3797,8 @@
   (or (try-create (get-environment-variable "HOME"))
       (try-create (get-environment-variable "LOCALAPPDATA")) ;; Vista
       (try-create (get-environment-variable "APPDATA")) ;; XP
+      (and (string=? (host-os) "mona") (file-exists? "/USER/TEMP") "/USER/TEMP")
+      (and (string=? (host-os) "mona") "/MEM")
       (try-create "/tmp")))
 
 

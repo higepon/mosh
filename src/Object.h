@@ -80,7 +80,6 @@ class Pointer;
 class SimpleStruct;
 class Continuation;
 class SharedReference;
-
 enum {
     CONST_NIL     = 0,
     CONST_EOF     = 1,

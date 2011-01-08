@@ -33,9 +33,17 @@
 #define SCHEME_SCHEME_H_
 
 #ifdef HAVE_CONFIG_H
-#  include "config.h"
+#    include "config.h"
 #else
-#  error "config.h not found"
+#  ifdef MONA
+//#    include "config_mona.h"
+#  else
+#    error "config.h not found"
+#  endif
+#endif
+
+#ifdef MONA
+#include <monapi.h>
 #endif
 
 #ifdef _WIN32
@@ -43,6 +51,7 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+#include <stdio.h>
 
 #ifdef _WIN32
     typedef unsigned char uint8_t;
@@ -63,8 +72,12 @@
 #pragma warning(push)
 #pragma warning(disable : 4146) // convert from signed to unsigned (this may be not necessary if gmp is latest version)
 #endif
+#ifndef MONA
 #include <cstdio>
+#endif
+extern "C" {
 #include <gmp.h>
+}
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -127,7 +140,7 @@ enum {
 typedef int32_t ucs4char; // use -1 for EOF
 typedef int fixedint;
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(MONA)
 const ucs4char* UC(const char *str);
 #elif defined(__CYGWIN__) || defined (_WIN32)
 #define UC_(x) L ## x

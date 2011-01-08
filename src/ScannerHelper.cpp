@@ -30,6 +30,8 @@
  */
 
 #include <errno.h>
+#include <stdio.h>
+#include <ctype.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Arithmetic.h"
@@ -37,6 +39,10 @@
 
 #ifdef _MSC_VER
     #define strtoll _strtoi64
+#endif
+
+#ifdef MONA
+    #define strtoll strtol
 #endif
 
 using namespace scheme;

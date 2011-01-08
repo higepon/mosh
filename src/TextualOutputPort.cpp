@@ -627,8 +627,10 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(o.toBignum()->toString());
     } else if (o.isVM()) {
         putString(o.toVM()->toString());
+#ifndef MONA
     } else if (o.isConditionVariable()) {
         putString(o.toConditionVariable()->toString());
+#endif
     } else if (o.isMutex()) {
         putString(UC("#<mutex>"));
     } else if (o.isCompnum()) {
