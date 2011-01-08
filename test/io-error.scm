@@ -349,7 +349,9 @@
                   (get-u8 binary-port) ;; port is already closed!
                   (display (read-char text-port))))
 
-(when (string=? (host-os) "linux")
+(when (or (string=? (host-os) "linux")
+          (string=? (host-os) "bsd")
+          (string=? (host-os) "darwin"))
 (let ()
   (define (text-pipe)
     ;; Binary ports here
@@ -376,7 +378,7 @@
   (close-port p-writer)))
 
 (cond
- [(member (host-os) '("win32" "linux"))
+ [(member (host-os) '("win32" "linux" "bsd" "darwin"))
   (test-true (string? (mosh-executable-path)))]
  [else
   '()])
