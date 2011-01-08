@@ -46,6 +46,7 @@ using namespace scheme;
 Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("monapi-name-whereis");
+#ifdef MONA
     checkArgumentLength(1);
     argumentAsString(0, name);
     uint32_t tid;
@@ -54,12 +55,16 @@ Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* ar
     } else {
         return Object::False;
     }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
 }
 
 // (%monapi-message-send dest header arg1 arg2 arg3 str)
 Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("monapi-message-send");
+#ifdef MONA
     checkArgumentLength(6);
     uint32_t tid;
     if (argv[0].isFixnum()) {
@@ -80,6 +85,9 @@ Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* ar
     } else {
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
     }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
 }
 
 // (socket-port socket)

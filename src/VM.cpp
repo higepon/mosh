@@ -862,10 +862,7 @@ Object VM::activateR6RSMode(const uint8_t* image, unsigned int image_size, bool 
 {
     isR6RSMode_ = true;
     setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
-    uint64_t s1 = MonAPI::Date::nowInMsec();
     const Object code = FASL_GET_WITH_SIZE(image, image_size);
-    uint64_t s2 = MonAPI::Date::nowInMsec();
-    logprintf("fasl get = %d", (int)(s2 - s1));
     TRY_VM {
         Vector* v = code.toVector();
         return evaluateSafe(v->data(), v->length());

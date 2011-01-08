@@ -97,8 +97,10 @@ void Socket::close()
 #ifdef _WIN32
     ::shutdown(socket_, SD_SEND);
     ::closesocket(socket_);
-#else
+#elif defined(MONA)
     ::closesocket(socket_);
+#else
+    ::close(socket_);
 #endif
     socket_ = -1;
 

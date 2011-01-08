@@ -7,7 +7,7 @@
           (rnrs mutable-strings (6))
           (tests r6rs test))
 
-  (define tmp-file (if (string=? "mona" (host-os)) "/MEM/io-tmp1" tmp-file))
+  (define tmp-file (if (string=? "mona" (host-os)) "/MEM/io-tmp1" "io-tmp1"))
 
   (define-syntax test-transcoders
     (syntax-rules ()
