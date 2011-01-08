@@ -33,7 +33,11 @@
 #define SCHEME_FLONUM_
 
 #include <stdlib.h>
+#ifdef MONA
+#include <math.h>
+#else
 #include <cmath> // isnan
+#endif
 #include "scheme.h"
 #include "Bignum.h"
 
