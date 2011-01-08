@@ -29,7 +29,7 @@
            (test-print* more ...))]
       [(_) #'#f])))
 
-(define test-file (if (string=? (host-os) "mona") "/APPS/MOSH.APP/test/test.txt" "test/text.txt"))
+(define test-file (if (string=? (host-os) "mona") "/APPS/MOSH.APP/test/test.txt" "test/test.txt"))
 
 
 (test-print* ['(a b) "(a b)"]
