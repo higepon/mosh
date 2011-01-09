@@ -147,7 +147,9 @@ void mosh_init()
     // Since GNU MP mpz makes many many "false pointer",
     // we allocate gmp buffers by malloc not GC_malloc.
     // Allocated memory are freed on Bignum's destructor.
+#ifndef MONA
     mp_set_memory_functions(gmp_alloc, gmp_realloc, gmp_free);
+#endif
 #endif
 // moved to VM constructor
 //    initCprocedures();
