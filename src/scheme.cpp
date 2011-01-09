@@ -44,6 +44,10 @@
 extern "C" {
 #include <gmp.h>
 }
+#if HAVE_OPENSSL
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#endif
 
 #ifdef MONA
 #include <sys/error.h>
@@ -126,6 +130,12 @@ void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.
     srandom(time(NULL));
+
+#if HAVE_OPENSSL
+    SSL_load_error_strings();
+    SSL_library_init();
+#endif
+
 #ifdef MONA
 #if 0
     const char* MAP_FILE_PATH = "/APPS/MOSH.APP/MOSH.MAP";

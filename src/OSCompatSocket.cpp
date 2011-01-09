@@ -45,7 +45,8 @@ Socket::Socket(int fd, enum Type type, const ucs4string& address) :
     socket_(fd),
     lastError_(0),
     address_(address),
-    type_(type)
+    type_(type),
+    isSSL_(false)
 {
 }
 
@@ -81,6 +82,40 @@ bool Socket::isOpen() const
     return socket_ != -1;
 }
 
+bool Socket::sslize()
+{
+#if HAVE_OPENSSL
+    if (isSSL_) {
+        return true;
+    }
+    ctx_ = SSL_CTX_new(SSLv23_client_method());
+    if (ctx_ == NULL) {
+        return false;
+    }
+    ssl_ = SSL_new(ctx_);
+    if (ssl_ == NULL) {
+        return false;
+    }
+
+    if (SSL_set_fd(ssl_, socket_) != 0) {
+        return false;
+    }
+
+    RAND_poll();
+    while (RAND_status() == 0) {
+        unsigned short rand_ret = rand() % 65536;
+        RAND_seed(&rand_ret, sizeof(rand_ret));
+    }
+    if (SSL_connect(ssl_) == -1) {
+        return false;
+    }
+    isSSL_ = true;
+    return true;
+#else
+    return false;
+#endif
+}
+
 void Socket::shutdown(int how)
 {
     if (!isOpen()) {
@@ -94,6 +129,11 @@ void Socket::close()
     if (!isOpen()) {
         return;
     }
+#if HAVE_OPENSSL
+    if (isSSL()) {
+        SSL_shutdown(ssl_);
+    }
+#endif
 #ifdef _WIN32
     ::shutdown(socket_, SD_SEND);
     ::closesocket(socket_);
@@ -101,6 +141,12 @@ void Socket::close()
     ::closesocket(socket_);
 #else
     ::close(socket_);
+#endif
+#if HAVE_OPENSSL
+    if (isSSL()) {
+        SSL_free(ssl_);
+        SSL_CTX_free(ctx_);
+    }
 #endif
     socket_ = -1;
 

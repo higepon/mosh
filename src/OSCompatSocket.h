@@ -34,18 +34,23 @@
 
 #include <sys/types.h>
 #ifdef _WIN32
-	#include <winsock2.h>
-	#include <ws2tcpip.h> // for socklen_t
-	#ifndef MOSH_MINGW32 
-	    #include <wspiapi.h>  // Windows 2000 doesn't have freeaddrinfo
-		#pragma comment(lib, "ws2_32.lib")
-		#pragma comment(lib, "iphlpapi.lib")
-	#endif
-	#define snprintf _snprintf
+    #include <winsock2.h>
+    #include <ws2tcpip.h> // for socklen_t
+    #ifndef MOSH_MINGW32
+        #include <wspiapi.h>  // Windows 2000 doesn't have freeaddrinfo
+        #pragma comment(lib, "ws2_32.lib")
+        #pragma comment(lib, "iphlpapi.lib")
+    #endif
+    #define snprintf _snprintf
 #else
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#endif
+#if HAVE_OPENSSL
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
 #endif
 
 #include "scheme.h"
@@ -70,7 +75,8 @@ namespace scheme {
         bool isOpen() const;
         ucs4string getLastErrorMessage() const;
         ucs4string toString() const;
-
+        bool sslize();
+        bool isSSL() const { return isSSL_; }
         static Socket* createClientSocket(const char* node,
                                           const char* service,
                                           int ai_family,
@@ -94,6 +100,11 @@ namespace scheme {
         int lastError_;
         ucs4string address_;
         enum Type type_;
+        bool isSSL_;
+#if HAVE_OPENSSL
+        SSL_CTX* ctx_;
+        SSL* ssl_;
+#endif
     };
 }; // namespace scheme
 

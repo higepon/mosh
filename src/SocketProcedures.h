@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object sslSocketPEx(VM* theVM, int argc, const Object* argv);
+    Object socketSslizeDEx(VM* theVM, int argc, const Object* argv);
     Object internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv);
     Object internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv);
     Object socketPortEx(VM* theVM, int argc, const Object* argv);

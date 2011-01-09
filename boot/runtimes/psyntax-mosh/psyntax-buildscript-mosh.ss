@@ -1120,6 +1120,8 @@
     (file-newer?  mosh)
     (%monapi-message-send sys)
     (%monapi-name-whereis sys)
+    (socket-sslize! sys)
+    (ssl-socket? sys)
     (standard-library-path mosh)
     (library-path mosh) ; for srfi system
     (host-os mosh) ; for srfi-system

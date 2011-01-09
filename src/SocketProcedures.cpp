@@ -43,6 +43,29 @@
 
 using namespace scheme;
 
+Object scheme::sslSocketPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("ssl-socket?");
+    checkArgumentLength(1);
+    argumentAsSocket(0, socket);
+    return Object::makeBool(socket->isSSL());
+}
+
+Object scheme::socketSslizeDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("socket-sslize!");
+    checkArgumentLength(1);
+    argumentAsSocket(0, socket);
+#if HAVE_OPENSSL
+    if (!socket->sslize()) {
+        return callAssertionViolationAfter(theVM, procedureName, "can't sslize", L1(argv[0]));
+    }
+    return Object::Undef;
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
 Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("monapi-name-whereis");

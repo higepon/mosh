@@ -110,6 +110,8 @@
           (only (mosh control) let-optionals*)
           (only (mosh) os-constant)
           (rename (system)
+                  (ssl-socket? ssl-socket?)
+                  (socket-sslize! socket-sslize!)
                   (socket-recv %socket-recv)
                   (socket-recv! %socket-recv!)
                   (socket-send %socket-send)
