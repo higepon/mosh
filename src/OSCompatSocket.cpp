@@ -97,10 +97,9 @@ bool Socket::sslize()
         return false;
     }
 
-    if (SSL_set_fd(ssl_, socket_) != 0) {
+    if (SSL_set_fd(ssl_, socket_) == 0) {
         return false;
     }
-
     RAND_poll();
     while (RAND_status() == 0) {
         unsigned short rand_ret = rand() % 65536;
@@ -184,15 +183,24 @@ ucs4string Socket::toString() const
 */
 int Socket::receive(uint8_t* data, int size, int flags)
 {
-    MOSH_ASSERT(isOpen());
+    if (isSSL()) {
+#if HAVE_OPENSSL
+        return SSL_read(ssl_, data, size);
+#else
+        MOSH_ASSERT(false);
+        return -1;
+#endif
+    } else {
+        MOSH_ASSERT(isOpen());
 
-    for (;;) {
-        const int ret = recv(socket_, (char*)data, size, flags);
-        if (ret == -1 && errno == EINTR) {
-            continue;
+        for (;;) {
+            const int ret = recv(socket_, (char*)data, size, flags);
+            if (ret == -1 && errno == EINTR) {
+                continue;
+            }
+            setLastError();
+            return ret;
         }
-        setLastError();
-        return ret;
     }
 }
 
@@ -207,24 +215,33 @@ int Socket::receive(uint8_t* data, int size, int flags)
 int Socket::send(uint8_t* data, int size, int flags)
 {
     MOSH_ASSERT(isOpen());
-    int rest = size;
-    int sizeSent = 0;
-    while (rest > 0) {
-        const int ret = ::send(socket_, (char*)data, size, flags);
-        if (ret == -1) {
-            if (errno == EINTR) {
-                continue;
-            } else {
-                setLastError();
-                return ret;
+    if (isSSL()) {
+#if HAVE_OPENSSL
+        return SSL_write(ssl_, data, size);
+#else
+        MOSH_ASSERT(false);
+        return -1;
+#endif
+    } else {
+        int rest = size;
+        int sizeSent = 0;
+        while (rest > 0) {
+            const int ret = ::send(socket_, (char*)data, size, flags);
+            if (ret == -1) {
+                if (errno == EINTR) {
+                    continue;
+                } else {
+                    setLastError();
+                    return ret;
+                }
             }
+            sizeSent += ret;
+            rest -= ret;
+            data += ret;
+            size -= ret;
         }
-        sizeSent += ret;
-        rest -= ret;
-        data += ret;
-        size -= ret;
+        return sizeSent;
     }
-    return sizeSent;
 }
 
 // Factories

@@ -35,4 +35,15 @@
            (test-true (string-contains s "HTTP/1.1")))
           )
  )
+
+(when (ssl-supported?)
+  (let ([client (make-client-socket "www.hatena.ne.jp" "443")])
+    (test-false (ssl-socket? client))
+    (socket-sslize! client)
+    (test-true (ssl-socket? client))
+    (test-true (> (socket-send client (string->utf8 "GET / HTTP/1.1\r\nHOST: www.hatena.ne.jp\r\n\r\n")) 0))
+    (let ([s (utf8->string (socket-recv client 100))])
+      (test-true (string-contains s "HTTP/1.1")))
+    ))
+
 (test-results)

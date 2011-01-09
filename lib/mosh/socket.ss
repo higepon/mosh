@@ -85,6 +85,9 @@
     socket-close
     socket-shutdown
     socket-port
+    ssl-supported?
+    ssl-socket?
+    socket-sslize!
     call-with-socket
     AF_INET
     AF_INET6
@@ -110,6 +113,7 @@
           (only (mosh control) let-optionals*)
           (only (mosh) os-constant)
           (rename (system)
+                  (ssl-supported? ssl-supported?)
                   (ssl-socket? ssl-socket?)
                   (socket-sslize! socket-sslize!)
                   (socket-recv %socket-recv)

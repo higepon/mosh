@@ -43,6 +43,15 @@
 
 using namespace scheme;
 
+Object scheme::sslSupportedPEx(VM* theVM, int argc, const Object* argv)
+{
+#if HAVE_OPENSSL
+    return Object::True;
+#else
+    return Object::False;
+#endif
+}
+
 Object scheme::sslSocketPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("ssl-socket?");

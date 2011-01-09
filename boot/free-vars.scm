@@ -688,4 +688,5 @@
 
   socket-sslize!
   ssl-socket?
+  ssl-supported?
   )

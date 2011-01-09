@@ -1122,6 +1122,7 @@
     (%monapi-name-whereis sys)
     (socket-sslize! sys)
     (ssl-socket? sys)
+    (ssl-supported? sys)
     (standard-library-path mosh)
     (library-path mosh) ; for srfi system
     (host-os mosh) ; for srfi-system
