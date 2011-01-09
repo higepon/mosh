@@ -40,6 +40,23 @@ LOCAL_CONFIGURE_ARGS="--host=$host --build=$build"
 AC_CHECK_LIB(gmp, __gmpz_init, ,
   [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])
 
+### OpenSSL (optional)
+have_openssl=no
+AC_TRY_LINK([#include <openssl/opensslv.h>],
+    [ return OPENSSL_VERSION_NUMBER; ],
+    [
+        have_openssl=1
+        LIBS="-lssl -lcrypto $LIBS"
+    ],
+    [
+        AC_MSG_WARN("libssl not found. OpenSSL Disabled...")
+        have_openssl=0
+    ])
+
+HAVE_OPENSSL=$have_openssl
+AC_DEFINE_UNQUOTED([HAVE_OPENSSL], $have_openssl, [Do we have openssl?])
+AC_SUBST([HAVE_OPENSSL])
+
 ### Oniguruma 5
 ## we need oniguruma 5.x for unicode support
 
