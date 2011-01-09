@@ -109,7 +109,11 @@
     file->string
     file->list
     write-to-file
-    gensym-prefix-set!)
+    gensym-prefix-set!
+    ssl-supported?
+    socket-sslize!
+    ssl-socket?
+    )
   (import
     (primitives
       dynamic-bind ; defined in base.scm
@@ -221,7 +225,11 @@
       file->string
       file->list
       write-to-file
-      gensym-prefix-set!)
+      gensym-prefix-set!
+      ssl-supported?
+      socket-sslize!
+      ssl-socket?
+      )
     (only (rnrs) lambda define-syntax syntax-rules ... list)
     )
 (define-syntax parameterize
