@@ -75,13 +75,7 @@
 #ifndef MONA
 #include <cstdio>
 #endif
-#ifdef MONA
-extern "C" {
 #include <gmp.h>
-}
-#else
-#include <gmp.h>
-#endif
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
