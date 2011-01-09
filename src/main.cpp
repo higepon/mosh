@@ -83,8 +83,8 @@ extern "C" unsigned int psyntax_mosh_image_size;
 #ifdef WITH_NMOSH_DEFAULTS
 Object
 internalGetStackTraceObj(VM* vm, int argc, const Object* argv){
-	//DeclareProcedureName("%get-stack-trace-obj");
-	return vm->getStackTraceObj();
+    //DeclareProcedureName("%get-stack-trace-obj");
+    return vm->getStackTraceObj();
 }
 Object
 internalGetNmoshDbgImage(VM* vm, int argc, const Object* argv){
