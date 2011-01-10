@@ -60,6 +60,8 @@
     (cond
      [(and (null? header) (and (= c1 #x0d) (= c2 #x0a)))
       header*]
+     [(and (eof-object? c1) (eof-object? c2))
+      (cons (utf8->string (u8-list->bytevector (reverse header))) header*)]
      [(and (= c1 #x0d) (= c2 #x0a))
       (loop (get-u8 p) (get-u8 p) '() (cons (utf8->string (u8-list->bytevector (reverse header))) header*))]
      [(= c2 #x0d)
@@ -69,18 +71,32 @@
 
 (define (parse-uri uri)
   (cond
-   [(irregex-search "(http|https)://([^/]+)(/.*)" uri) =>
+   [(irregex-search "(http|https)://([^/]+)(/?.*)" uri) =>
     (lambda (m)
-      (let ([scheme (irregex-match-substring m 1)]
-            [host (irregex-match-substring m 2)]
-            [path (irregex-match-substring m 3)])
-           (values host "443" path (string=? scheme "https"))))]
+      (let* ([scheme (irregex-match-substring m 1)]
+             [host (irregex-match-substring m 2)]
+             [path (irregex-match-substring m 3)]
+             [path (if (zero? (string-length path)) "/" path)])
+           (values host (if (string=? scheme "https") "443" "80") path (string=? scheme "https"))))]
    [else
     (assertion-violation 'parse-uri "malformed uri" uri)]))
 
 (define http-get
   (match-lambda*
    [(host port path)
+    (let ([p (socket-port (make-client-socket host port))])
+      (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+      (let1 header* (read-header p)
+        (let1 content-length (get-content-length header*)
+          (let loop ([i 0]
+                     [body* '()])
+            (cond
+             [(= i content-length)
+              (close-port p)
+              (utf8->string (u8-list->bytevector (reverse body*)))]
+             [else
+              (loop (+ i 1) (cons (get-u8 p) body*))])))))]
+   [(host port path #f)
     (let ([p (socket-port (make-client-socket host port))])
       (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
       (let1 header* (read-header p)
