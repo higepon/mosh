@@ -42,6 +42,8 @@
 ;; ToDo
 ;;   http-get->bytevector
 ;;   Now utf-8 only
+;;   redirect
+;;   status code
 
 (define (get-content-length header*)
   (let loop ([header* header*])
