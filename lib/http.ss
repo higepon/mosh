@@ -71,6 +71,14 @@
 
 (define (parse-uri uri)
   (cond
+   [(irregex-search "(http|https)://([^/]+):(\\d+)(/?.*)" uri) =>
+    (lambda (m)
+      (let* ([scheme (irregex-match-substring m 1)]
+             [host (irregex-match-substring m 2)]
+             [port (irregex-match-substring m 3)]
+             [path (irregex-match-substring m 4)]
+             [path (if (zero? (string-length path)) "/" path)])
+           (values host port path (string=? scheme "https"))))]
    [(irregex-search "(http|https)://([^/]+)(/?.*)" uri) =>
     (lambda (m)
       (let* ([scheme (irregex-match-substring m 1)]
