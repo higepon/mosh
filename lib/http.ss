@@ -69,9 +69,12 @@
 
 (define (parse-uri uri)
   (cond
-   [(irregex-search ".*" uri) =>
+   [(irregex-search "(http|https)://([^/]+)(/.*)" uri) =>
     (lambda (m)
-           (values "graph.facebook.com" "443" "/19292868552" #t))]
+      (let ([scheme (irregex-match-substring m 1)]
+            [host (irregex-match-substring m 2)]
+            [path (irregex-match-substring m 3)])
+           (values host "443" path (string=? scheme "https"))))]
    [else
     (assertion-violation 'parse-uri "malformed uri" uri)]))
 
