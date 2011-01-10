@@ -32,6 +32,7 @@
           (mosh)
           (mosh control)
           (irregex)
+          (match)
           (mosh socket)
           )
 
@@ -65,17 +66,38 @@
      [else
       (loop (get-u8 p) (get-u8 p) (cons c2 (cons c1 header)) header*)])))
 
-(define (http-get host port path)
-  (let ([p (socket-port (make-client-socket host port))])
-    (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
-    (let1 header* (read-header p)
-      (let1 content-length (get-content-length header*)
-        (let loop ([i 0]
-                   [body* '()])
-          (cond
-           [(= i content-length)
-            (close-port p)
-            (utf8->string (u8-list->bytevector (reverse body*)))]
-           [else
-            (loop (+ i 1) (cons (get-u8 p) body*))]))))))
+(define http-get
+  (match-lambda*
+   [(host port path)
+    (let ([p (socket-port (make-client-socket host port))])
+      (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+      (let1 header* (read-header p)
+        (let1 content-length (get-content-length header*)
+          (let loop ([i 0]
+                     [body* '()])
+            (cond
+             [(= i content-length)
+              (close-port p)
+              (utf8->string (u8-list->bytevector (reverse body*)))]
+             [else
+              (loop (+ i 1) (cons (get-u8 p) body*))])))))]
+   [(host port path #t)
+    (let* ([socket (make-client-socket host port)]
+           [dummy (socket-sslize! socket)]
+           [p (socket-port socket)])
+      (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+      (let1 header* (read-header p)
+        (let1 content-length (get-content-length header*)
+          (let loop ([i 0]
+                     [body* '()])
+            (cond
+             [(= i content-length)
+              (close-port p)
+              (utf8->string (u8-list->bytevector (reverse body*)))]
+             [else
+              (loop (+ i 1) (cons (get-u8 p) body*))])))))]
+   [(url)
+    (http-get "graph.facebook.com" "443" "/19292868552" #t)
+    ]))
+
 )
