@@ -53,4 +53,6 @@
   )
 
 (test-true (string-contains (http-get "http://www.hatena.ne.jp") "</html>"))
+(test-true (string-contains (http-get "http://www.hatena.ne.jp:80") "</html>"))
+(test-true (string-contains (http-get "http://www.hatena.ne.jp:80/") "</html>"))
 (test-results)
