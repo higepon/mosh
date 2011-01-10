@@ -68,7 +68,12 @@
       (loop (get-u8 p) (get-u8 p) (cons c2 (cons c1 header)) header*)])))
 
 (define (parse-uri uri)
-  (values "graph.facebook.com" "443" "/19292868552" #t))
+  (cond
+   [(irregex-search ".*" uri) =>
+    (lambda (m)
+           (values "graph.facebook.com" "443" "/19292868552" #t))]
+   [else
+    (assertion-violation 'parse-uri "malformed uri" uri)]))
 
 (define http-get
   (match-lambda*
