@@ -33,6 +33,7 @@
           (mosh control)
           (irregex)
           (match)
+          (srfi :8)
           (mosh socket)
           )
 
@@ -66,6 +67,9 @@
      [else
       (loop (get-u8 p) (get-u8 p) (cons c2 (cons c1 header)) header*)])))
 
+(define (parse-uri uri)
+  (values "graph.facebook.com" "443" "/19292868552" #t))
+
 (define http-get
   (match-lambda*
    [(host port path)
@@ -96,8 +100,9 @@
               (utf8->string (u8-list->bytevector (reverse body*)))]
              [else
               (loop (+ i 1) (cons (get-u8 p) body*))])))))]
-   [(url)
-    (http-get "graph.facebook.com" "443" "/19292868552" #t)
+   [(uri)
+    (receive (host port path ssl?) (parse-uri uri)
+        (http-get host port path ssl?))
     ]))
 
 )
