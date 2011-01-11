@@ -14,4 +14,5 @@
 
 (test-true (string-contains (http-get->utf8 "http://ow.ly/3BKpg") "mona"))
 
+(test-true (bytevector? (http-get "http://a1.twimg.com/profile_images/69441183/20060806012051_bigger.png")))
 (test-results)
