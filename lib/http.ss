@@ -34,6 +34,7 @@
           (irregex)
           (match)
           (srfi :8)
+          (only (srfi :13) string-null?)
           (mosh socket)
           )
 
@@ -73,19 +74,19 @@
 
 (define (parse-uri uri)
   (cond
-   [(irregex-search "(http|https)://([^/]+):(\\d+)(/?.*)" uri) =>
+   [(irregex-search '(: (=> scheme (or "http" "https")) "://" (=> host (+ (~ ":" "/"))) ":" (=> port (+ numeric)) (=> path (? "/") (* any))) uri) =>
     (lambda (m)
-      (let* ([scheme (irregex-match-substring m 1)]
-             [host (irregex-match-substring m 2)]
-             [port (irregex-match-substring m 3)]
-             [path (irregex-match-substring m 4)]
-             [path (if (zero? (string-length path)) "/" path)])
-           (values host port path (string=? scheme "https"))))]
-   [(irregex-search "(http|https)://([^/]+)(/?.*)" uri) =>
+      (let* ([path (irregex-match-substring m 'path)]
+             [path (if (string-null? path) "/" path)])
+           (values (irregex-match-substring m 'host)
+                   (irregex-match-substring m 'port)
+                   path
+                   (string=? (irregex-match-substring m 'scheme) "https"))))]
+   [(irregex-search '(: (=> scheme (or "http" "https")) "://" (=> host (+ (~ ":" "/"))) (=> path (? "/") (* any))) uri) =>
     (lambda (m)
-      (let* ([scheme (irregex-match-substring m 1)]
-             [host (irregex-match-substring m 2)]
-             [path (irregex-match-substring m 3)]
+      (let* ([scheme (irregex-match-substring m 'scheme)]
+             [host (irregex-match-substring m 'host)]
+             [path (irregex-match-substring m 'path)]
              [path (if (zero? (string-length path)) "/" path)])
            (values host (if (string=? scheme "https") "443" "80") path (string=? scheme "https"))))]
    [else
