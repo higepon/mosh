@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (http)
-  (export http-get)
+  (export http-get->utf8)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -101,7 +101,7 @@
    [else
     (assertion-violation 'parse-uri "malformed uri" uri)]))
 
-(define http-get
+(define http-get->utf8
   (match-lambda*
    [(host port path ssl?)
     (let1 socket (make-client-socket host port)
@@ -115,7 +115,7 @@
                [location (get-location header*)])
           (cond
            [location
-            (http-get location)]
+            (http-get->utf8 location)]
            [else
             (let1 content-length (get-content-length header*)
               (let loop ([i 0]
@@ -128,7 +128,7 @@
                   (loop (+ i 1) (cons (get-u8 p) body*))])))]))))]
    [(uri)
     (receive (host port path ssl?) (parse-uri uri)
-        (http-get host port path ssl?))
+        (http-get->utf8 host port path ssl?))
     ]))
 
 )
