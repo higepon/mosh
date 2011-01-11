@@ -12,7 +12,6 @@
 (test-true (string-contains (http-get "http://www.hatena.ne.jp:80") "</html>"))
 (test-true (string-contains (http-get "http://www.hatena.ne.jp:80/") "</html>"))
 
-(write (http-get "http://ow.ly/3BKpg"))
 (test-true (string-contains (http-get "http://ow.ly/3BKpg") "mona"))
 
 (test-results)

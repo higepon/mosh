@@ -45,13 +45,22 @@
 ;;   Now utf-8 only
 ;;   redirect
 ;;   status code
-
+;;   refactor get-content-length get-location
 (define (get-content-length header*)
   (let loop ([header* header*])
     (cond
      [(null? header*) #f]
      [(irregex-search "^Content-Length: ([0-9]+)" (car header*)) =>
       (lambda (m) (string->number (irregex-match-substring m 1)))]
+     [else
+      (loop (cdr header*))])))
+
+(define (get-location header*)
+  (let loop ([header* header*])
+    (cond
+     [(null? header*) #f]
+     [(irregex-search "^Location: (.+)" (car header*)) =>
+      (lambda (m) (irregex-match-substring m 1))]
      [else
       (loop (cdr header*))])))
 
@@ -102,16 +111,21 @@
         (socket-sslize! socket))
       (let1 p (socket-port socket)
         (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
-        (let1 header* (read-header p)
-          (let1 content-length (get-content-length header*)
-            (let loop ([i 0]
-                       [body* '()])
-              (cond
-               [(= i content-length)
-                (close-port p)
-                (utf8->string (u8-list->bytevector (reverse body*)))]
-               [else
-                (loop (+ i 1) (cons (get-u8 p) body*))]))))))]
+        (let* ([header* (read-header p)]
+               [location (get-location header*)])
+          (cond
+           [location
+            (http-get location)]
+           [else
+            (let1 content-length (get-content-length header*)
+              (let loop ([i 0]
+                         [body* '()])
+                (cond
+                 [(= i content-length)
+                  (close-port p)
+                  (utf8->string (u8-list->bytevector (reverse body*)))]
+                 [else
+                  (loop (+ i 1) (cons (get-u8 p) body*))])))]))))]
    [(uri)
     (receive (host port path ssl?) (parse-uri uri)
         (http-get host port path ssl?))
