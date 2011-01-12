@@ -104,32 +104,10 @@
 (define http-get->utf8
   (match-lambda*
    [(host port path ssl?)
-    (let1 socket (make-client-socket host port)
-      (when (and ssl? (not (ssl-supported?)))
-        (assertion-violation 'http-get "ssl is not supprted"))
-      (when ssl?
-        (socket-sslize! socket))
-      (let1 p (socket-port socket)
-        (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
-        (let* ([header* (read-header p)]
-               [location (get-location header*)])
-          (cond
-           [location
-            (http-get->utf8 location)]
-           [else
-            (let1 content-length (get-content-length header*)
-              (let loop ([i 0]
-                         [body* '()])
-                (cond
-                 [(= i content-length)
-                  (close-port p)
-                  (utf8->string (u8-list->bytevector (reverse body*)))]
-                 [else
-                  (loop (+ i 1) (cons (get-u8 p) body*))])))]))))]
+    (utf8->string (http-get host port path ssl?))]
    [(uri)
     (receive (host port path ssl?) (parse-uri uri)
-        (http-get->utf8 host port path ssl?))
-    ]))
+      (http-get->utf8 host port path ssl?))]))
 
 (define http-get
   (match-lambda*
@@ -145,7 +123,7 @@
                [location (get-location header*)])
           (cond
            [location
-            (http-get->utf8 location)]
+            (http-get location)]
            [else
             (let1 content-length (get-content-length header*)
               (let loop ([i 0]
