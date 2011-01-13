@@ -27,11 +27,15 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (http)
-  (export http-get)
+  (export http-get->utf8 http-get)
   (import (rnrs)
           (mosh)
           (mosh control)
           (irregex)
+          (match)
+          (srfi :8)
+          (only (srfi :13) string-null?)
+          (shorten)
           (mosh socket)
           )
 
@@ -40,15 +44,31 @@
 ;; ToDo
 ;;   http-get->bytevector
 ;;   Now utf-8 only
-
+;;   redirect
+;;   status code
+;;   refactor get-content-length get-location
 (define (get-content-length header*)
-  (let loop ([header* header*])
-    (cond
-     [(null? header*) #f]
-     [(irregex-search "^Content-Length: ([0-9]+)" (car header*)) =>
-      (lambda (m) (string->number (irregex-match-substring m 1)))]
-     [else
-      (loop (cdr header*))])))
+  (cond
+   [(assoc "Content-Length" header*) => (^(cl) (string->number (cdr cl)))]
+   [else #f]))
+
+(define (get-location header*)
+  (cond
+   [(assoc "Location" header*) => cdr]
+   [else #f]))
+
+(define (get-status header*)
+  (string->number (cdr (assoc "Status" header*))))
+
+(define (header*->alist header*)
+  (map (^(header)
+         (cond
+          [(irregex-search "([^:]+): (.+)" header) =>
+           (^m (cons (irregex-match-substring m 1) (irregex-match-substring m 2)))]
+          [(irregex-search "^HTTP/1.1 ([0-9]+).*" header) =>
+           (^m (cons "Status" (irregex-match-substring m 1)))]
+          [else
+           (error 'header*->alist "invalid HTTP Response Header")])) header*))
 
 (define (read-header p)
   (let loop ([c1 (get-u8 p)]
@@ -57,7 +77,9 @@
              [header* '()])
     (cond
      [(and (null? header) (and (= c1 #x0d) (= c2 #x0a)))
-      header*]
+      (header*->alist header*)]
+     [(and (eof-object? c1) (eof-object? c2))
+      (cons (utf8->string (u8-list->bytevector (reverse header))) header*)]
      [(and (= c1 #x0d) (= c2 #x0a))
       (loop (get-u8 p) (get-u8 p) '() (cons (utf8->string (u8-list->bytevector (reverse header))) header*))]
      [(= c2 #x0d)
@@ -65,17 +87,67 @@
      [else
       (loop (get-u8 p) (get-u8 p) (cons c2 (cons c1 header)) header*)])))
 
-(define (http-get host port path)
-  (let ([p (socket-port (make-client-socket host port))])
-    (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
-    (let1 header* (read-header p)
-      (let1 content-length (get-content-length header*)
-        (let loop ([i 0]
-                   [body* '()])
+(define (parse-uri uri)
+  (cond
+   [(irregex-search '(: (=> scheme (or "http" "https")) "://" (=> host (+ (~ ":" "/"))) ":" (=> port (+ numeric)) (=> path (? "/") (* any))) uri) =>
+    (lambda (m)
+      (let* ([path (irregex-match-substring m 'path)]
+             [path (if (string-null? path) "/" path)])
+           (values (irregex-match-substring m 'host)
+                   (irregex-match-substring m 'port)
+                   path
+                   (string=? (irregex-match-substring m 'scheme) "https"))))]
+   [(irregex-search '(: (=> scheme (or "http" "https")) "://" (=> host (+ (~ ":" "/"))) (=> path (? "/") (* any))) uri) =>
+    (lambda (m)
+      (let* ([scheme (irregex-match-substring m 'scheme)]
+             [host (irregex-match-substring m 'host)]
+             [path (irregex-match-substring m 'path)]
+             [path (if (zero? (string-length path)) "/" path)])
+           (values host (if (string=? scheme "https") "443" "80") path (string=? scheme "https"))))]
+   [else
+    (assertion-violation 'parse-uri "malformed uri" uri)]))
+
+(define http-get->utf8
+  (match-lambda*
+   [(host port path ssl?)
+    (receive (body status header*) (http-get host port path ssl?)
+             (values (utf8->string body) status header*))]
+   [(uri)
+    (receive (host port path ssl?) (parse-uri uri)
+      (http-get->utf8 host port path ssl?))]))
+
+(define http-get
+  (match-lambda*
+   [(host port path ssl?)
+    (let1 socket (make-client-socket host port)
+      (when (and ssl? (not (ssl-supported?)))
+        (assertion-violation 'http-get "ssl is not supprted"))
+      (when ssl?
+        (socket-sslize! socket))
+      (let1 p (socket-port socket)
+        (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+        (let* ([header* (read-header p)]
+               [status (get-status header*)])
           (cond
-           [(= i content-length)
-            (close-port p)
-            (utf8->string (u8-list->bytevector (reverse body*)))]
+           [(get-location header*) =>
+            (^(location) (http-get location))]
            [else
-            (loop (+ i 1) (cons (get-u8 p) body*))]))))))
+            (case status
+              [(200)
+               (let1 content-length (get-content-length header*)
+                 (let loop ([i 0]
+                            [body* '()])
+                   (cond
+                    [(= i content-length)
+                     (close-port p)
+                     (values (u8-list->bytevector (reverse body*)) status header*)]
+                    [else
+                     (loop (+ i 1) (cons (get-u8 p) body*))])))]
+              [else
+               (values #vu8() status header*)])]))))]
+   [(uri)
+    (receive (host port path ssl?) (parse-uri uri)
+        (http-get host port path ssl?))
+    ]))
+
 )

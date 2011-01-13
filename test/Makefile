@@ -27,6 +27,7 @@ runtest:
 	$(MOSH_TARGET) test/srfi-misc.scm
 	$(MOSH_TARGET) test/lists.scm
 	$(MOSH_TARGET) test/socket.scm
+	$(MOSH_TARGET) test/http.scm
 	$(MOSH_TARGET) test/match.scm
 	$(MOSH_TARGET) test/print.scm
 	$(MOSH_TARGET) test/concurrent.scm

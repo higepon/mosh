@@ -60,7 +60,7 @@
 (library (match)
   (export match match-lambda match-lambda*)
   (import
-   (only (rnrs) define-syntax syntax-rules _ ... vector? define if let pair? let-syntax begin car cdr lambda error quote null? equal? and)
+   (only (rnrs) >= reverse cons vector-length = + vector-ref define-syntax syntax-rules _ ... vector? define if let pair? let-syntax begin car cdr lambda error quote null? equal? and)
    (rnrs mutable-pairs))
 
 (define-syntax match-syntax-error

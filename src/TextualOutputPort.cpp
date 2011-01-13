@@ -114,7 +114,7 @@ void TextualOutputPort::putCharHandleSpecial(ucs4char c, bool inString)
 {
     const int ASCII_SPC = 32;
     const int ASCII_DEL = 127;
-    if ((c != 0xa && c != 0xd && c < ASCII_SPC) ||
+    if ((c != 0xa && c != 0xd && c != '\t' && c < ASCII_SPC) ||
         c == ASCII_DEL ||
         c == 0x80 ||
         c == 0xff ||
