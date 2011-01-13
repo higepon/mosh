@@ -1,39 +1,34 @@
 (import (rnrs)
-        (http)
-        (json)
         (match)
         (mosh)
         (shorten)
+        (facebook)
         (mosh control)
         (mosh test))
 
 ;; (define access-token "abcdefg")
 (include "test/access_token.scm")
 
-(define (fb-friends token)
-  (match (json-read (open-string-input-port (http-get->utf8 (format "https://graph.facebook.com/me/friends?access_token=~a" token))))
-    [#(("data" . friends))
-     (map vector->list friends)]
-    [else
-     '()]))
+(define (assoc-value obj lst fallback)
+  (aif (assoc obj lst)
+       (cdr it)
+       fallback))
 
-(define (fb-news token)
-  (match (json-read (open-string-input-port (http-get->utf8 (format "https://graph.facebook.com/me/home?access_token=~a" token))))
-    [#(("data" . news) paging)
-     (map vector->list news)]
-    [else
-     '()]))
+;; (let1 friends (fb-friends access-token)
+;;   (test-true (list? friends)))
 
+;; (for-each (^(news) (match (assoc "from" news)
+;;                      [("from" . #(("name" . name) ("id" . id)))
+;;                       (test-true #t)]
+;;                      [("from" . #(("name" . name) ("category" . category) ("id" . id)))
+;;                       (test-true #t)]
+;;                      [else
+;;                       (test-true #f)]))
+;;           (fb-news access-token))
 
-(let1 friends (fb-friends access-token)
-  (test-true (list? friends)))
-
-(for-each print (map (^(news) (match (assoc "from" news)
-;                       [x (write x)]
-                       [("from" . #(("name" . name) ("id" . id)))
-                        (cons name (cdr (assoc "message" news)))]
-                       [("from" . #(("name" . name) ("category" . category) ("id" . id)))
-                        (cons name (cdr (assoc "message" news)))]))
-              (fb-news access-token)))
+(let1 jpg (fb-picture access-token)
+  (define jpg-magic #xd8ff)
+  (test-true (bytevector? jpg))
+  (test-equal jpg-magic (bytevector-u16-ref jpg 0 'little)))
 
 (test-results)

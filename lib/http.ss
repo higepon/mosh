@@ -35,6 +35,7 @@
           (match)
           (srfi :8)
           (only (srfi :13) string-null?)
+          (shorten)
           (mosh socket)
           )
 
@@ -47,22 +48,27 @@
 ;;   status code
 ;;   refactor get-content-length get-location
 (define (get-content-length header*)
-  (let loop ([header* header*])
-    (cond
-     [(null? header*) #f]
-     [(irregex-search "^Content-Length: ([0-9]+)" (car header*)) =>
-      (lambda (m) (string->number (irregex-match-substring m 1)))]
-     [else
-      (loop (cdr header*))])))
+  (cond
+   [(assoc "Content-Length" header*) => (^(cl) (string->number (cdr cl)))]
+   [else #f]))
 
 (define (get-location header*)
-  (let loop ([header* header*])
-    (cond
-     [(null? header*) #f]
-     [(irregex-search "^Location: (.+)" (car header*)) =>
-      (lambda (m) (irregex-match-substring m 1))]
-     [else
-      (loop (cdr header*))])))
+  (cond
+   [(assoc "Location" header*) => cdr]
+   [else #f]))
+
+(define (get-status header*)
+  (string->number (cdr (assoc "Status" header*))))
+
+(define (header*->alist header*)
+  (map (^(header)
+         (cond
+          [(irregex-search "([^:]+): (.+)" header) =>
+           (^m (cons (irregex-match-substring m 1) (irregex-match-substring m 2)))]
+          [(irregex-search "^HTTP/1.1 ([0-9]+).*" header) =>
+           (^m (cons "Status" (irregex-match-substring m 1)))]
+          [else
+           (error 'header*->alist "invalid HTTP Response Header")])) header*))
 
 (define (read-header p)
   (let loop ([c1 (get-u8 p)]
@@ -71,7 +77,7 @@
              [header* '()])
     (cond
      [(and (null? header) (and (= c1 #x0d) (= c2 #x0a)))
-      header*]
+      (header*->alist header*)]
      [(and (eof-object? c1) (eof-object? c2))
       (cons (utf8->string (u8-list->bytevector (reverse header))) header*)]
      [(and (= c1 #x0d) (= c2 #x0a))
@@ -104,7 +110,8 @@
 (define http-get->utf8
   (match-lambda*
    [(host port path ssl?)
-    (utf8->string (http-get host port path ssl?))]
+    (receive (body status header*) (http-get host port path ssl?)
+             (values (utf8->string body) status header*))]
    [(uri)
     (receive (host port path ssl?) (parse-uri uri)
       (http-get->utf8 host port path ssl?))]))
@@ -120,20 +127,24 @@
       (let1 p (socket-port socket)
         (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
         (let* ([header* (read-header p)]
-               [location (get-location header*)])
+               [status (get-status header*)])
           (cond
-           [location
-            (http-get location)]
+           [(get-location header*) =>
+            (^(location) (http-get location))]
            [else
-            (let1 content-length (get-content-length header*)
-              (let loop ([i 0]
-                         [body* '()])
-                (cond
-                 [(= i content-length)
-                  (close-port p)
-                   (u8-list->bytevector (reverse body*))]
-                 [else
-                  (loop (+ i 1) (cons (get-u8 p) body*))])))]))))]
+            (case status
+              [(200)
+               (let1 content-length (get-content-length header*)
+                 (let loop ([i 0]
+                            [body* '()])
+                   (cond
+                    [(= i content-length)
+                     (close-port p)
+                     (values (u8-list->bytevector (reverse body*)) status header*)]
+                    [else
+                     (loop (+ i 1) (cons (get-u8 p) body*))])))]
+              [else
+               (values #vu8() status header*)])]))))]
    [(uri)
     (receive (host port path ssl?) (parse-uri uri)
         (http-get host port path ssl?))
