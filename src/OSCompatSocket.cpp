@@ -327,7 +327,7 @@ Socket* Socket::createClientSocket(const char* node,
     errorMessage = getLastErrorMessageInternal(lastError);
     return NULL;
 }
-#if not defined(__CYGWIN__) && not defined(MONA)
+#if !defined(__CYGWIN__) && !defined(MONA)
 extern ucs4string my_utf16ToUtf32(const std::wstring& s);
 #endif
 Socket* Socket::createServerSocket(const char* service,

@@ -209,7 +209,7 @@ namespace scheme {
 
 // Check sanity
 // Boehm GC redirects pthread_create => GC_pthread_create with C macro.
-#if not defined(_WIN32) && not defined(MONA)
+#if !defined(_WIN32) && !defined(MONA)
   #ifndef pthread_create
   #error "pthread_create redirect does not exist"
   #endif
