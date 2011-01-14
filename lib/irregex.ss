@@ -1,60 +1,33 @@
 ;;;; irregex.scm -- IrRegular Expressions
 (library (irregex)
          (export
-                ;from irregex-chicken
-                irregex string->irregex sre->irregex
-                string->sre maybe-string->sre
-                irregex? irregex-match-data?
-                irregex-new-matches irregex-reset-matches!
-                irregex-search irregex-search/matches irregex-match
-                irregex-search/chunked irregex-match/chunked make-irregex-chunker
-                irregex-match-substring irregex-match-subchunk
-                ;MOSH: check them...
-                ;irregex-match-start-source 
-                ;irregex-match-start-index
-                ;irregex-match-end-source 
-                ;irregex-match-end-index
-                irregex-match-num-submatches
-                irregex-fold irregex-replace irregex-replace/all
-                irregex-dfa irregex-dfa/search irregex-dfa/extract
-                irregex-nfa irregex-flags irregex-lengths irregex-names
-                irregex-num-submatches
-                ;MOSH: add
-                irregex-fold/chunked
-                )
+           ;from irregex-chicken
+
+           irregex string->irregex sre->irregex
+           string->sre maybe-string->sre                                                 
+           irregex? irregex-match-data?
+           irregex-new-matches irregex-reset-matches!
+           irregex-search irregex-search/matches irregex-match
+           irregex-search/chunked irregex-match/chunked make-irregex-chunker
+           irregex-match-substring irregex-match-subchunk
+           irregex-match-start-chunk irregex-match-start-index
+           irregex-match-end-chunk irregex-match-end-index
+           irregex-match-num-submatches irregex-match-names
+           irregex-match-valid-index?
+           irregex-fold irregex-replace irregex-replace/all
+           irregex-dfa irregex-dfa/search irregex-dfa/extract
+           irregex-nfa irregex-flags irregex-lengths irregex-names
+           irregex-num-submatches irregex-extract irregex-split
+           )
          (import (rnrs)
                  (only (rnrs r5rs (6)) modulo remainder quotient)
                  (rnrs mutable-strings)
                  (rnrs mutable-pairs))
 
+;; based on rev:2e55ccfbba
 
-
-;;; Original copyright statement:
-;;; Copyright (c) 2005-2010 Alex Shinn
-;;; All rights reserved.
-;;;
-;;; Redistribution and use in source and binary forms, with or without
-;;; modification, are permitted provided that the following conditions
-;;; are met:
-;;; 1. Redistributions of source code must retain the above copyright
-;;;    notice, this list of conditions and the following disclaimer.
-;;; 2. Redistributions in binary form must reproduce the above copyright
-;;;    notice, this list of conditions and the following disclaimer in the
-;;;    documentation and/or other materials provided with the distribution.
-;;; 3. The name of the author may not be used to endorse or promote products
-;;;    derived from this software without specific prior written permission.
-;;;
-;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-;;; IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-;;; OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-;;; IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-;;; INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-;;; NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-;;; DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-;;; THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-;;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-;;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+;;;; irregex.scm -- IrRegular Expressions
+;;
 ;; Copyright (c) 2005-2010 Alex Shinn.  All rights reserved.
 ;; BSD-style license: http://synthcode.com/license.txt
 
@@ -86,6 +59,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; History
 ;;
+;; 0.8.2: 2010/08/28 - (...)? submatch extraction fix and alternate
+;;                     named submatches from Peter Bex
+;;                     Added irregex-split, irregex-extract,
+;;                     irregex-match-names and irregex-match-valid-index?
+;;                     to Chicken and Guile module export lists and made
+;;                     the latter accept named submatches.  The procedures
+;;                     irregex-match-{start,end}-{index,chunk} now also
+;;                     accept named submatches, with the index argument
+;;                     made optional.  Improved argument type checks.
+;;                     Disallow negative submatch index.
+;;                     Improve performance of backtracking matcher.
+;;                     Refactor charset handling into a consistent API
 ;; 0.8.1: 2010/03/09 - backtracking irregex-match fix and other small fixes
 ;; 0.8.0: 2010/01/20 - optimizing DFA compilation, adding SRE escapes
 ;;                     inside PCREs, adding utility SREs
@@ -156,7 +141,7 @@
        (eq? irregex-match-tag (vector-ref obj 0))))
 
 (define (make-irregex-match count names)
-  (let ((res (make-vector (+ (* 4 (+ 2 count)) 4) #f)))
+  (let ((res (make-vector (+ (* 4 (+ 2 count)) 3) #f)))
     (vector-set! res 0 irregex-match-tag)
     (vector-set! res 2 names)
     res))
@@ -182,22 +167,18 @@
   (vector-set! m (- (vector-length m) 1) x))
 
 ;; public interface with error checking
-(define (irregex-match-start-chunk m n)
-  (if (not (irregex-match-valid-index? m n))
-      (error "irregex-match-start-chunk: not a valid index" m n))
-  (%irregex-match-start-chunk m n))
-(define (irregex-match-start-index m n)
-  (if (not (irregex-match-valid-index? m n))
-      (error "irregex-match-start-index: not a valid index" m n))
-  (%irregex-match-start-index m n))
-(define (irregex-match-end-chunk m n)
-  (if (not (irregex-match-valid-index? m n))
-      (error "irregex-match-end-chunk: not a valid index" m n))
-  (%irregex-match-end-chunk m n))
-(define (irregex-match-end-index m n)
-  (if (not (irregex-match-valid-index? m n))
-      (error "irregex-match-end-index: not a valid index" m n))
-  (%irregex-match-end-index m n))
+(define (irregex-match-start-chunk m . opt)
+  (let ((n (irregex-match-numeric-index "irregex-match-start-chunk" m opt)))
+    (and n (%irregex-match-start-chunk m n))))
+(define (irregex-match-start-index m . opt)
+  (let ((n (irregex-match-numeric-index "irregex-match-start-index" m opt)))
+    (and n (%irregex-match-start-index m n))))
+(define (irregex-match-end-chunk m . opt)
+  (let ((n (irregex-match-numeric-index "irregex-match-end-chunk" m opt)))
+    (and n (%irregex-match-end-chunk m n))))
+(define (irregex-match-end-index m . opt)
+  (let ((n (irregex-match-numeric-index "irregex-match-end-index" m opt)))
+    (and n (%irregex-match-end-index m n))))
 
 (define (irregex-match-start-chunk-set! m n start)
   (vector-set! m (+ 3 (* n 4)) start))
@@ -208,30 +189,63 @@
 (define (irregex-match-end-index-set! m n end)
   (vector-set! m (+ 6 (* n 4)) end))
 
-(define (irregex-match-index m opt)
-  (if (pair? opt)
-      (cond ((number? (car opt)) (car opt))
-            ((assq (car opt) (irregex-match-names m)) => cdr)
-            (else (error "unknown match name" (car opt))))
-      0))
+;; Helper procedure to convert any type of index from a rest args list
+;; to a numeric index.  Named submatches are converted to their corresponding
+;; numeric index, and numeric submatches are checked for validity.
+;; An error is raised for invalid numeric or named indices, #f is returned
+;; for defined but nonmatching indices.
+(define (irregex-match-numeric-index location m opt)
+  (cond
+   ((not (irregex-match-data? m))
+    (error (string-append location ": not match data") m))
+   ((not (pair? opt)) 0)
+   ((pair? (cdr opt))
+    (apply error (string-append location ": too many arguments") m opt))
+   (else
+    (let ((n (car opt)))
+      (if (number? n)
+          (if (and (integer? n) (exact? n))
+              (if (irregex-match-valid-numeric-index? m n)
+                  (and (irregex-match-matched-numeric-index? m n) n)
+                  (error (string-append location ": not a valid index")
+                         m n))
+              (error (string-append location ": not an exact integer") n))
+          (let lp ((ls (irregex-match-names m))
+                   (unknown? #t))
+            (cond
+             ((null? ls)
+              (and unknown?
+                   (error (string-append location ": unknown match name") n)))
+             ((eq? n (caar ls))
+              (if (%irregex-match-start-chunk m (cdar ls))
+                  (cdar ls)
+                  (lp (cdr ls) #f)))
+             (else (lp (cdr ls) unknown?)))))))))
 
-(define (%irregex-match-valid-index? m n)
-  (and (< (+ 3 (* n 4)) (vector-length m))
-       (vector-ref m (+ 4 (* n 4)))))
+(define (irregex-match-valid-numeric-index? m n)
+  (and (>= n 0) (< (+ 3 (* n 4)) (- (vector-length m) 4))))
+
+(define (irregex-match-matched-numeric-index? m n)
+  (and (vector-ref m (+ 4 (* n 4)))
+       #t))
+
+(define (irregex-match-valid-named-index? m n)
+  (and (assq n (irregex-match-names m))
+       #t))
 
 (define (irregex-match-valid-index? m n)
   (if (not (irregex-match-data? m))
       (error "irregex-match-valid-index?: not match data" m))
-  (if (not (integer? n))
-      (error "irregex-match-valid-index?: not an integer" n))
-  (%irregex-match-valid-index? m n))
+  (if (integer? n)
+      (if (not (exact? n))
+          (error "irregex-match-valid-index?: not an exact integer" n)
+          (irregex-match-valid-numeric-index? m n))
+      (irregex-match-valid-named-index? m n)))
 
 (define (irregex-match-substring m . opt)
-  (if (not (irregex-match-data? m))
-      (error "irregex-match-substring: not match data" m))
-  (let* ((cnk (irregex-match-chunker m))
-         (n (irregex-match-index m opt)))
-    (and (%irregex-match-valid-index? m n)
+  (let* ((n (irregex-match-numeric-index "irregex-match-substring" m opt))
+         (cnk (irregex-match-chunker m)))
+    (and n
          ((chunker-get-substring cnk)
           (%irregex-match-start-chunk m n)
           (%irregex-match-start-index m n)
@@ -239,19 +253,16 @@
           (%irregex-match-end-index m n)))))
 
 (define (irregex-match-subchunk m . opt)
-  (if (not (irregex-match-data? m))
-      (error "irregex-match-subchunk: not match data" m))
-  (let* ((cnk (irregex-match-chunker m))
-         (n (irregex-match-index m opt))
+  (let* ((n (irregex-match-numeric-index "irregex-match-subchunk" m opt))
+         (cnk (irregex-match-chunker m))
          (get-subchunk (chunker-get-subchunk cnk)))
     (if (not get-subchunk)
         (error "this chunk type does not support match subchunks")
-        (and (%irregex-match-valid-index? m n)
-             (get-subchunk
-              (%irregex-match-start-chunk m n)
-              (%irregex-match-start-index m n)
-              (%irregex-match-end-chunk m n)
-              (%irregex-match-end-index m n))))))
+        (and n (get-subchunk
+                (%irregex-match-start-chunk m n)
+                (%irregex-match-start-index m n)
+                (%irregex-match-end-chunk m n)
+                (%irregex-match-end-index m n))))))
 
 ;; chunkers tell us how to navigate through chained chunks of strings
 
@@ -400,11 +411,11 @@
   (let ((res (make-string len)))
     (let lp ((i len) (ls string-list))
       (if (pair? ls)
-	  (let* ((s (car ls))
-		 (slen (string-length s))
-		 (i (- i slen)))
-	    (%%string-copy! res i s 0 slen)
-	    (lp i (cdr ls)))))
+          (let* ((s (car ls))
+                 (slen (string-length s))
+                 (i (- i slen)))
+            (%%string-copy! res i s 0 slen)
+            (lp i (cdr ls)))))
     res))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -416,14 +427,6 @@
       '()
       (let lp ((i (- n 1)) (res '()))
         (if (zero? i) (cons 0 res) (lp (- i 1) (cons i res))))))
-
-;; take the head of list FROM up to but not including TO, which must
-;; be a tail of the list
-(define (take-up-to from to)
-  (let lp ((ls from) (res '()))
-    (if (and (pair? ls) (not (eq? ls to)))
-        (lp (cdr ls) (cons (car ls) res))
-        (reverse res))))
 
 ;; SRFI-1 extracts (simplified 1-ary versions)
 
@@ -1127,65 +1130,45 @@
   (let* ((end (string-length str))
          (invert? (and (< start end) (eqv? #\^ (string-ref str start))))
          (utf8? (flag-set? flags ~utf8?)))
-    (define (go i chars ranges)
+    (define (go i prev-char cset)
       (if (>= i end)
           (error "incomplete char set" str i end)
           (let ((c (string-ref str i)))
             (case c
               ((#\])
-               (if (and (null? chars) (null? ranges))
-                   (go (+ i 1) (cons #\] chars) ranges)
-                   (let ((ci? (flag-set? flags ~case-insensitive?))
-                         (hi-chars (if utf8? (filter high-char? chars) '()))
-                         (chars (if utf8? (remove high-char? chars) chars)))
+               (if (cset-empty? cset)
+                   (go (+ i 1) #\] (cset-adjoin cset #\]))
+                   (let ((ci? (flag-set? flags ~case-insensitive?)))
                      (list
-                      ((lambda (res)
-                         (if invert? (cons '~ res) (sre-alternate res)))
-                       (append
-                        hi-chars
-                        (if (pair? chars)
-                            (list
-                             (list (list->string
-                                    ((if ci?
-                                         cset-case-insensitive
-                                         (lambda (x) x))
-                                     (reverse chars)))))
-                            '())
-                        (if (pair? ranges)
-                            (let ((res (if ci?
-                                           (cset-case-insensitive
-                                            (reverse ranges))
-                                           (reverse ranges))))
-                              (list (cons '/ (alist->plist res))))
-                            '())))
+                      (let ((res (if ci? (cset-case-insensitive cset) cset)))
+                        (cset->sre (if invert? (cset-complement res) res)))
                       i))))
               ((#\-)
                (cond
                 ((or (= i start)
                      (and (= i (+ start 1)) (eqv? #\^ (string-ref str start)))
                      (eqv? #\] (string-ref str (+ i 1))))
-                 (go (+ i 1) (cons c chars) ranges))
-                ((null? chars)
+                 (go (+ i 1) c (cset-adjoin cset c)))
+                ((not prev-char)
                  (error "bad char-set"))
                 (else
-                 (let* ((c1 (car chars))
-                        (c2 (string-ref str (+ i 1))))
+                 (let ((char (string-ref str (+ i 1))))
                    (apply
-                    (lambda (c2 j)
-                      (if (char<? c2 c1)
-                          (error "inverted range in char-set" c1 c2)
-                          (go j (cdr chars) (cons (cons c1 c2) ranges))))
+                    (lambda (c j)
+                      (if (char<? c prev-char)
+                          (error "inverted range in char-set" prev-char c)
+                          (go j #f (cset-union cset (range->cset prev-char c)))))
                     (cond
-                     ((and (eqv? #\\ c2) (assv c2 posix-escape-sequences))
+                     ((and (eqv? #\\ char) (assv char posix-escape-sequences))
                       => (lambda (x) (list (cdr x) (+ i 3))))
-                     ((and (eqv? #\\ c2)
+                     ((and (eqv? #\\ char)
                            (eqv? (string-ref str (+ i 2)) #\x))
                       (string-parse-hex-escape str (+ i 3) end))
-                     ((and utf8? (<= #x80 (char->integer c2) #xFF))
-                      (let ((len (utf8-start-char->length c2)))
+                     ((and utf8? (<= #x80 (char->integer char) #xFF))
+                      (let ((len (utf8-start-char->length char)))
                         (list (utf8-string-ref str (+ i 1) len) (+ i 1 len))))
                      (else
-                      (list c2 (+ i 2)))))))))
+                      (list char (+ i 2)))))))))
               ((#\[)
                (let* ((inv? (eqv? #\^ (string-ref str (+ i 1))))
                       (i2 (if inv? (+ i 2) (+ i 1))))
@@ -1194,48 +1177,45 @@
                     (let ((j (string-scan-char str #\: (+ i2 1))))
                       (if (or (not j) (not (eqv? #\] (string-ref str (+ j 1)))))
                           (error "incomplete character class" str)
-                          (let* ((cset (sre->cset
-                                        (string->symbol
-                                         (substring str (+ i2 1) j))))
-                                 (cset (if inv? (cset-complement cset) cset)))
-                            (go (+ j 2)
-                                (append (filter char? cset) chars)
-                                (append (filter pair? cset) ranges))))))
+                          (let* ((class (sre->cset
+                                         (string->symbol
+                                          (substring str (+ i2 1) j))))
+                                 (class (if inv? (cset-complement class) class)))
+                            (go (+ j 2) #f (cset-union cset class))))))
                    ((#\= #\.)
                     (error "collating sequences not supported" str))
                    (else
-                    (go (+ i 1) (cons #\[ chars) ranges)))))
+                    (go (+ i 1) #\[ (cset-adjoin cset #\[))))))
               ((#\\)
                (let ((c (string-ref str (+ i 1))))
                  (case c
                    ((#\d #\D #\s #\S #\w #\W)
-                    (let ((cset (sre->cset (string->sre (string #\\ c)))))
-                      (go (+ i 2)
-                          (append (filter char? cset) chars)
-                          (append (filter pair? cset) ranges))))
+                    (go (+ i 2) #f
+                        (cset-union cset
+                                    (sre->cset (string->sre (string #\\ c))))))
                    ((#\x)
                     (apply
                      (lambda (ch j)
-                       (go j (cons ch chars) ranges))
+                       (go j ch (cset-adjoin cset ch)))
                      (string-parse-hex-escape str (+ i 2) end)))
                    (else
                     (let ((c (cond ((assv c posix-escape-sequences) => cdr)
                                    (else c))))
-                      (go (+ i 2)
-                          (cons (string-ref str (+ i 1)) (cons c chars))
-                          ranges))))))
+                      (go (+ i 2) c (cset-adjoin cset c)))))))
               (else
                (if (and utf8? (<= #x80 (char->integer c) #xFF))
                    (let ((len (utf8-start-char->length c)))
                      (go (+ i len)
-                         (cons (utf8-string-ref str i len) chars)
-                         ranges))
-                   (go (+ i 1) (cons c chars) ranges)))))))
+                         (utf8-string-ref str i len)
+                         (cset-adjoin cset (utf8-string-ref str i len))))
+                   (go (+ i 1) c (cset-adjoin cset c))))))))
     (if invert?
         (go (+ start 1)
-            (if (flag-set? flags ~multi-line?) '(#\newline) '())
-            '())
-        (go start '() '()))))
+            #f
+            (if (flag-set? flags ~multi-line?)
+                (char->cset #\newline)
+                (make-cset)))
+        (go start #f (make-cset)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; UTF-8 Utilities
@@ -1295,6 +1275,22 @@
   (case len
     ((1) #x7F) ((2) #xDF) ((3) #xEF) ((4) #xF7)
     (else (error "invalid utf8 length" len))))
+
+#| ;; NMOSH: we don't need this one
+;; Maybe this should just modify the input?
+(define (cset->utf8-pattern cset)
+  (let lp ((ls (cset->plist cset)) (alts '()) (lo-cset '()))
+    (if (null? ls)
+        (sre-alternate (append (reverse alts)
+                               (if (null? lo-cset)
+                                   '()
+                                   (list (cons '/ (reverse lo-cset))))))
+        (if (or (high-char? (car ls))  (high-char? (cadr ls)))
+            (lp (cddr ls)
+                (cons (unicode-range->utf8-pattern (car ls) (cadr ls)) alts)
+                lo-cset)
+            (lp (cddr ls) alts (cons (cadr ls) (cons (car ls) lo-cset)))))))
+|#
 
 (define (sre-adjust-utf8 sre flags) sre)
 
@@ -1660,6 +1656,10 @@
   (if (not (string? str)) (error "irregex-search: not a string" str))
   (let ((start (or (and (pair? o) (car o)) 0))
         (end (or (and (pair? o) (pair? (cdr o)) (cadr o)) (string-length str))))
+    (if (not (and (integer? start) (exact? start)))
+        (error "irregex-search: not an exact integer" start))
+    (if (not (and (integer? end) (exact? end)))
+        (error "irregex-search: not an exact integer" end))
     (irregex-search/chunked x
                             irregex-basic-string-chunker
                             (list str start end)
@@ -1754,6 +1754,10 @@
   (if (not (string? str)) (error "irregex-match: not a string" str))
   (let ((start (or (and (pair? o) (car o)) 0))
         (end (or (and (pair? o) (pair? (cdr o)) (cadr o)) (string-length str))))
+    (if (not (and (integer? start) (exact? start)))
+        (error "irregex-match: not an exact integer" start))
+    (if (not (and (integer? end) (exact? end)))
+        (error "irregex-match: not an exact integer" end))
     (irregex-match/chunked irx
                            irregex-basic-string-chunker
                            (list str start end))))
@@ -1837,11 +1841,9 @@
             ((< i end)
              (let* ((ch (string-ref str i))
                     (next (find (lambda (x)
-                                  (if (eqv? ch (car x))
-                                      #t
-                                      (and (pair? (car x))
-                                           (char<=? (caar x) ch)
-                                           (char<=? ch (cdar x)))))
+                                  (or (eqv? ch (car x))
+                                      (and (not (char? (car x)))
+                                           (cset-contains? (car x) ch))))
                                 (cdr state))))
                (and next (lp2 (+ i 1) (dfa-next-state dfa next)))))
             (else
@@ -1885,11 +1887,9 @@
            (else
             (let* ((ch (string-ref str i))
                    (cell (find (lambda (x)
-                                 (if (eqv? ch (car x))
-                                     #t
-                                     (and (pair? (car x))
-                                          (char<=? (caar x) ch)
-                                          (char<=? ch (cdar x)))))
+                                 (or (eqv? ch (car x))
+                                     (and (not (char? (car x)))
+                                          (cset-contains? (car x) ch))))
                                (cdr state))))
               (cond
                (cell
@@ -2023,11 +2023,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; SRE->NFA compilation
 ;;
-;; An NFA state is a numbered node with a list of patter->number
-;; transitions, where pattern is either a character, (lo . hi)
-;; character range, or epsilon (indicating an empty transition).
-;; There may be duplicate characters and overlapping ranges - since
-;; it's an NFA we process it by considering all possible transitions.
+;; An NFA state is a numbered node with a list of pattern->number
+;; transitions, where pattern is character set range, or epsilon
+;; (indicating an empty transition).
+;; There may be overlapping ranges - since it's an NFA we process it
+;; by considering all possible transitions.
 
 (define *nfa-presize* 128)  ;; constant
 (define *nfa-num-fields* 4) ;; constant
@@ -2039,8 +2039,6 @@
   (vector-ref nfa (* i *nfa-num-fields*)))
 (define (nfa-set-state-trans! nfa i x)
   (vector-set! nfa (* i *nfa-num-fields*) x))
-(define (nfa-push-state-trans! nfa i x)
-  (nfa-set-state-trans! nfa i (cons x (nfa-get-state-trans nfa i))))
 
 (define (nfa-get-epsilons nfa i)
   (vector-ref nfa (+ (* i *nfa-num-fields*) 1)))
@@ -2088,15 +2086,14 @@
               (set! buf tmp)))
         (nfa-set-state-trans! buf n2 trans-ls)
         n2)
-      (define (extend-state! next . trans)
+      (define (extend-state! next trans-cs)
         (and next
-             (add-state! (new-state-number next)
-                         (map (lambda (x) (cons x next)) trans))))
+             (add-state! (new-state-number next) (cons trans-cs next))))
       (define (add-char-state! next ch)
         (let ((alt (char-altcase ch)))
-          (if (and (flag-set? flags ~case-insensitive?) (not (eqv? ch alt)))
-              (extend-state! next ch alt)
-              (extend-state! next ch))))
+          (if (flag-set? flags ~case-insensitive?)
+              (extend-state! next (cset-union (char->cset ch) (char->cset alt)))
+              (extend-state! next (char->cset ch)))))
       (if (null? ls)
           next
           (cond
@@ -2132,12 +2129,11 @@
                        next))))
            ((pair? (car ls))
             (cond
-             ((string? (caar ls))
-              ;; enumerated character set
-              (lp (cons (sre-alternate (string->list (caar ls))) (cdr ls))
-                  n
-                  flags
-                  next))
+             ((string? (caar ls))       ; Enumerated character set
+              (let ((set (if (flag-set? flags ~case-insensitive?)
+                             (cset-case-insensitive (string->cset (caar ls)))
+                             (string->cset (caar ls)))))
+               (extend-state! (lp (cdr ls) n flags next) set)))
              (else
               (case (caar ls)
                 ((seq :)
@@ -2154,25 +2150,11 @@
                                     ~utf8?))))
                    (and next
                         (lp (cdar ls) (new-state-number next) flags next))))
-                ((/ - & ~) 
-                 (let ((ranges
-                        (sre->cset (car ls)
-                                   (flag-set? flags ~case-insensitive?))))
-                   (case (length ranges)
-                     ((1)
-                      (extend-state! (lp (cdr ls) n flags next) (car ranges)))
-                     (else
-                      (let ((next (lp (cdr ls) n flags next)))
-                        (and
-                         next
-                         (lp (list (sre-alternate
-                                    (map (lambda (x) (if (pair? x)
-                                                     (list '/ (car x) (cdr x))
-                                                     x))
-                                         ranges)))
-                             (new-state-number next)
-                             (flag-clear flags ~case-insensitive?)
-                             next)))))))
+                ((/ - & ~)
+                 (let ((range (sre->cset (car ls)
+                                         (flag-set? flags ~case-insensitive?))))
+                   (extend-state! (lp (cdr ls) n flags next)
+                                  range)))
                 ((or)
                  (let ((next (lp (cdr ls) n flags next)))
                    (and
@@ -2192,7 +2174,8 @@
                                            flags
                                            next))))
                           (and a
-                               (let ((c (add-state! (new-state-number a) '())))
+                               (let ((c (add-state! (new-state-number a)
+                                                    '())))
                                  (nfa-add-epsilon! buf c a)
                                  (nfa-add-epsilon! buf c b)
                                  c)))))))
@@ -2247,7 +2230,7 @@
                 ;;                            (sre-sequence (cdddar ls)))))
                 ;;             (cdr ls))
                 ;;     n flags next))
-                 ;; ignore submatches altogether
+                ;; ignore submatches altogether
                 (($ submatch)
                  (lp (cons (sre-sequence (cdar ls)) (cdr ls)) n flags next))
                 ((=> submatch-named)
@@ -2454,6 +2437,8 @@
 
 ;; When the conversion is complete we renumber the DFA sets-of-states
 ;; in order and convert the result to a vector for fast lookup.
+;; Charsets containing single characters are converted to those characters
+;; for quick matching of the literal parts in a regex.
 (define (dfa-renumber nfa dfa)
   (let* ((len (length dfa))
          (states (make-vector (nfa-num-states nfa) '()))
@@ -2469,125 +2454,67 @@
     (let lp ((ls dfa) (i 0))
       (cond ((pair? ls)
              (for-each
-              (lambda (x) (set-cdr! x (renumber (cdr x))))
+              (lambda (x)
+                (set-car! x (maybe-cset->char (car x)))
+                (set-cdr! x (renumber (cdr x))))
               (cddar ls))
              (vector-set! res i (cdar ls))
              (lp (cdr ls) (+ i 1)))))
     res))
 
-;; Extract all distinct characters or ranges and the potential states
-;; they can transition to from a given set of states.  Any ranges that
-;; would overlap with distinct characters are split accordingly.
+;; Extract all distinct ranges and the potential states they can transition
+;; to from a given set of states.  Any ranges that would overlap with
+;; distinct characters are split accordingly.
 (define (nfa-state-transitions nfa states)
   (let ((res (nfa-multi-state-fold
               states
               (lambda (st res)
-                (fold (lambda (trans res)
-                        (nfa-join-transitions! nfa res (car trans) (cdr trans)))
+                (let ((trans (nfa-get-state-trans nfa st)))
+                  (if (null? trans)
                       res
-                      (nfa-get-state-trans nfa st)))
+                      (nfa-join-transitions! nfa res (car trans) (cdr trans)))))
               '())))
     (for-each (lambda (x) (set-cdr! x (nfa-closure nfa (cdr x)))) res)
     res))
 
 (define (nfa-join-transitions! nfa existing elt state)
-  (define (join! ls elt state)
-    (if (not elt)
-        ls
-        (nfa-join-transitions! nfa ls elt state)))
-  (cond
-   ((char? elt)
-    (let lp ((ls existing) (res '()))
-      (cond
-       ((null? ls)
-        ;; done, just cons this on to the original list
-        (cons (cons elt (nfa-state->multi-state nfa state)) existing))
-       ((eq? elt (caar ls))
-        ;; add a new state to an existing char
-        (set-cdr! (car ls) (nfa-multi-state-add! (cdar ls) state))
-        existing)
-       ((and (pair? (caar ls))
-             (char<=? (caaar ls) elt)
-             (char<=? elt (cdaar ls)))
-        ;; split a range
-        (apply
-         (lambda (left right)
-           (let ((left-copy (nfa-multi-state-copy (cdar ls)))
-                 (right-copy (nfa-multi-state-copy (cdar ls))))
-             (cons (cons elt (nfa-multi-state-add! (cdar ls) state))
-                   (append (if left (list (cons left left-copy)) '())
-                           (if right (list (cons right right-copy)) '())
-                           res
-                           (cdr ls)))))
-         (split-char-range (caar ls) elt)))
-       (else
-        ;; keep looking
-        (lp (cdr ls) (cons (car ls) res))))))
-   (else
-    (let ((lo (car elt))
-          (hi (cdr elt)))
-      (let lp ((ls existing) (res '()))
-        (cond
-         ((null? ls)
-          ;; done, just cons this on to the original list
-          (cons (cons elt (nfa-state->multi-state nfa state)) existing))
-         ((and (char? (caar ls)) (char<=? lo (caar ls)) (char<=? (caar ls) hi))
-          ;; range enclosing a character
-          (apply
-           (lambda (left right)
-             (set-cdr! (car ls) (nfa-multi-state-add! (cdar ls) state))
-             (join! (join! existing left state) right state))
-           (split-char-range elt (caar ls))))
-         ((and (pair? (caar ls))
-               (or (and (char<=? (caaar ls) hi) (char<=? lo (cdaar ls)))
-                   (and (char<=? hi (caaar ls)) (char<=? (cdaar ls) lo))))
-          ;; overlapping ranges
-          (apply
-           (lambda (left1 left2 same right1 right2) ;; 5 regions
-             (let ((right1-copy (nfa-multi-state-copy (cdar ls)))
-                   (right2-copy (nfa-multi-state-copy (cdar ls))))
-               (set-car! (car ls) same)
-               (set-cdr! (car ls) (nfa-multi-state-add! (cdar ls) state))
-               (let* ((res (if right1
-                               (cons (cons right1 right1-copy) existing)
-                               existing))
-                      (res (if right2
-                               (cons (cons right2 right2-copy) res)
-                               res)))
-                 (join! (join! res left1 state) left2 state))))
-           (intersect-char-ranges elt (caar ls))))
-         (else
-          (lp (cdr ls) (cons (car ls) res)))))))))
-
-(define (char-range c1 c2)
-  (if (eqv? c1 c2) c1 (cons c1 c2)))
-
-;; assumes ch is included in the range
-(define (split-char-range range ch)
-  (list
-   (and (not (eqv? ch (car range)))
-        (char-range (car range) (integer->char (- (char->integer ch) 1))))
-   (and (not (eqv? ch (cdr range)))
-        (char-range (integer->char (+ (char->integer ch) 1)) (cdr range)))))
-
-;; returns 5 (possibly #f) char ranges:
-;;    a-only-1  a-only-2  a-and-b  b-only-1  b-only-2
-(define (intersect-char-ranges a b)
-  (if (char>? (car a) (car b))
-      (reverse (intersect-char-ranges b a))
-      (let ((a-lo (car a))
-            (a-hi (cdr a))
-            (b-lo (car b))
-            (b-hi (cdr b)))
-        (list
-         (and (char<? a-lo b-lo)
-              (char-range a-lo (integer->char (- (char->integer b-lo) 1))))
-         (and (char>? a-hi b-hi)
-              (char-range (integer->char (+ (char->integer b-hi) 1)) a-hi))
-         (char-range b-lo (if (char<? b-hi a-hi) b-hi a-hi))
-         #f
-         (and (char>? b-hi a-hi)
-              (char-range (integer->char (+ (char->integer a-hi) 1)) b-hi))))))
+  (define (csets-intersect? a b)
+    (let ((i (cset-intersection a b)))
+      (and (not (cset-empty? i)) i)))
+  (let lp ((ls existing) (res '()))
+    (cond
+     ((null? ls)
+      (cond       ; First try to find a group that includes this state
+       ((find (lambda (x) (nfa-multi-state-contains? (cdr x) state)) existing) =>
+        (lambda (existing-state)    ; If found, merge charsets with it
+          (set-car! existing-state (cset-union (car existing-state) elt))
+          existing))
+       ;; State not seen yet?  Add a new state transition
+       (else (cons (cons elt (nfa-state->multi-state nfa state)) existing))))
+     ((cset=? elt (caar ls)) ; Add state to existing set for this charset
+      (set-cdr! (car ls) (nfa-multi-state-add! (cdar ls) state))
+      existing)
+     ((csets-intersect? elt (caar ls)) => ; overlapping charset, but diff state
+      (lambda (intersection)
+        (let* ((only-in-old (cset-difference (caar ls) elt))
+               (states-for-old (and (not (cset-empty? only-in-old))
+                                    (nfa-multi-state-copy (cdar ls))))
+               (result (if states-for-old
+                           (cons (cons only-in-old states-for-old)
+                                 (append res (cdr ls)))
+                           (append res (cdr ls))))
+               (only-in-new (cset-difference elt (caar ls))))
+          ;; Add this state to the states already here and restrict to
+          ;; the overlapping charset
+          (set-car! (car ls) intersection)
+          (set-cdr! (car ls) (nfa-multi-state-add! (cdar ls) state))
+          ;; Continue with the remaining subset of the new cset (if nonempty)
+          (cons (car ls)
+                (if (cset-empty? only-in-new)
+                    result
+                    (nfa-join-transitions! nfa result only-in-new state))))))
+     (else
+      (lp (cdr ls) (cons (car ls) res))))))
 
 (define (nfa-cache-state-closure! nfa state)
   (let ((cached (nfa-get-state-closure nfa state)))
@@ -2739,8 +2666,13 @@
           ((?)
            (let ((match-once (lp (sre-sequence (cdr sre)) n #t)))
              (lambda (cnk start i end j matches)
-               (match-once cnk start i end j matches)
-               #t)))
+               (cond
+                ((match-once cnk start i end j matches)
+                 #t)
+                (else
+                 (vector-set! matches tmp-end-src-offset start)
+                 (vector-set! matches tmp-end-index-offset i)
+                 #t)))))
           (($ submatch => submatch-named)
            (let ((match-one
                   (lp (sre-sequence (if (memq (car sre) '($ submatch))
@@ -3277,17 +3209,47 @@
                     (fail)))
               (fail))))))
 
-(define (plist->alist ls)
-  (let lp ((ls ls) (res '()))
-    (if (null? ls)
-        (reverse res)
-        (lp (cddr ls) (cons (cons (car ls) (cadr ls)) res)))))
+(define (make-cset) (vector))
+(define (range->cset from to) (vector (cons from to)))
+(define (char->cset ch) (vector (cons ch ch)))
+(define (cset-empty? cs) (zero? (vector-length cs)))
+(define (maybe-cset->char cs)
+  (if (and (= (vector-length cs) 1)
+           (char=? (car (vector-ref cs 0)) (cdr (vector-ref cs 0))))
+      (car (vector-ref cs 0))
+      cs))
 
-(define (alist->plist ls)
-  (let lp ((ls ls) (res '()))
+;; Since csets are sorted, there's only one possible representation of any cset
+(define cset=? equal?)
+
+(define (cset-size cs)
+  (let ((len (vector-length cs)))
+   (let lp ((i 0) (size 0))
+     (if (= i len)
+         size
+         (lp (+ i 1) (+ size 1
+                        (- (char->integer (cdr (vector-ref cs i)))
+                           (char->integer (car (vector-ref cs i))))))))))
+
+(define (cset->plist cs)
+  (let lp ((i (- (vector-length cs) 1))
+           (res '()))
+    (if (= i -1)
+        res
+        (lp (- i 1) (cons (car (vector-ref cs i))
+                          (cons (cdr (vector-ref cs i)) res))))))
+
+(define (plist->cset ls)
+  (let lp ((ls ls) (res (make-cset)))
     (if (null? ls)
-        (reverse res)
-        (lp (cdr ls) (cons (cdar ls) (cons (caar ls) res))))))
+        res
+        (lp (cddr ls) (cset-union (range->cset (car ls) (cadr ls)) res)))))
+
+(define (string->cset s)
+  (fold (lambda (ch cs)
+          (cset-adjoin cs ch))
+        (make-cset)
+        (string->list s)))
 
 (define (sre->cset sre . o)
   (let lp ((sre sre) (ci? (and (pair? o) (car o))))
@@ -3296,8 +3258,8 @@
      ((pair? sre)
       (if (string? (car sre))
           (if ci?
-              (cset-case-insensitive (string->list (car sre)))
-              (string->list (car sre)))
+              (cset-case-insensitive (string->cset (car sre)))
+              (string->cset (car sre)))
           (case (car sre)
             ((~)
              (cset-complement
@@ -3309,7 +3271,7 @@
                    (rec (cadr sre))
                    (map rec (cddr sre))))
             ((/)
-             (let ((res (plist->alist (sre-flatten-ranges (cdr sre)))))
+             (let ((res (plist->cset (sre-flatten-ranges (cdr sre)))))
                (if ci?
                    (cset-case-insensitive res)
                    res)))
@@ -3321,7 +3283,9 @@
              (lp (sre-alternate (cdr sre)) #t))
             (else
              (error "not a valid sre char-set operator" sre)))))
-     ((char? sre) (rec (list (string sre))))
+     ((char? sre) (if ci?
+                      (cset-case-insensitive (range->cset sre sre))
+                      (range->cset sre sre)))
      ((string? sre) (rec (list sre)))
      (else
       (let ((cell (assq sre sre-named-definitions)))
@@ -3329,111 +3293,142 @@
             (rec (cdr cell))
             (error "not a valid sre char-set" sre)))))))
 
-;; another debugging utility
-;; (define (cset->sre cset)
-;;   (let lp ((ls cset) (chars '()) (ranges '()))
-;;     (cond
-;;      ((null? ls)
-;;       (sre-alternate
-;;        (append
-;;         (if (pair? chars) (list (list (list->string chars))) '())
-;;         (if (pair? ranges) (list (cons '/ (alist->plist ranges))) '()))))
-;;      ((char? (car ls)) (lp (cdr ls) (cons (car ls) chars) ranges))
-;;      (else (lp (cdr ls) chars (cons (car ls) ranges))))))
+(define (cset->sre cset)
+  (sre-alternate
+   (map (lambda (x) (list '/ (car x) (cdr x)))
+        (vector->list cset))))
 
 (define (cset-contains? cset ch)
-  (find (lambda (x)
-          (or (eqv? x ch)
-              (and (pair? x) (char<=? (car x) ch) (char<=? ch (cdr x)))))
-        cset))
-
-(define (cset-range x)
-  (if (char? x) (cons x x) x))
-
-(define (char-ranges-overlap? a b)
-  (if (pair? a)
-      (if (pair? b)
-          (or (and (char<=? (car a) (cdr b)) (char<=? (car b) (cdr a)))
-              (and (char<=? (cdr b) (car a)) (char<=? (cdr a) (car b))))
-          (and (char<=? (car a) b) (char<=? b (cdr a))))
-      (if (pair? b)
-          (char-ranges-overlap? b a)
-          (eqv? a b))))
+  (let ((len (vector-length cset)))
+    (case len
+      ((0) #f)
+      ((1) (let ((range (vector-ref cset 0)))
+             (and (char<=? ch (cdr range)) (char<=? (car range) ch))))
+      (else (let lp ((lower 0) (upper len))
+              (let* ((middle (quotient (+ upper lower) 2))
+                     (range (vector-ref cset middle)))
+                (cond ((char<? (cdr range) ch)
+                       (let ((next (+ middle 1)))
+                         (and (< next upper) (lp next upper))))
+                      ((char<? ch (car range))
+                       (and (< lower middle) (lp lower middle)))
+                      (else #t))))))))
 
 (define (char-ranges-union a b)
   (cons (if (char<=? (car a) (car b)) (car a) (car b))
         (if (char>=? (cdr a) (cdr b)) (cdr a) (cdr b))))
 
 (define (cset-union a b)
-  (cond ((null? b) a)
-        ((find-tail (lambda (x) (char-ranges-overlap? x (car b))) a)
-         => (lambda (ls)
-              (cset-union
-               (cset-union (append (take-up-to a ls) (cdr ls))
-                           (list (char-ranges-union (cset-range (car ls))
-                                                    (cset-range (car b)))))
-               (cdr b))))
-        (else (cset-union (cons (car b) a) (cdr b)))))
+  (let union-range ((a (vector->list a))
+                    (b (vector->list b))
+                    (res '()))
+    (cond
+     ((null? a) (list->vector (reverse (append (reverse b) res))))
+     ((null? b) (list->vector (reverse (append (reverse a) res))))
+     (else
+      (let ((a-range (car a))
+            (b-range (car b)))
+        (cond
+         ((char<? (next-char (cdr a-range)) (car b-range))
+          (union-range (cdr a) b (cons a-range res)))
+         ((char>? (car a-range) (next-char (cdr b-range)))
+          (union-range (cdr b) a (cons b-range res)))
+         ((char>=? (cdr a-range) (car b-range))
+          (union-range (cons (char-ranges-union a-range b-range) (cdr a))
+                       (cdr b)
+                       res))
+         (else (union-range (cdr a)
+                            (cons (char-ranges-union a-range b-range) (cdr b))
+                            res))))))))
+
+(define (cset-adjoin cs ch) (cset-union cs (char->cset ch)))
+
+(define (next-char c)
+  (integer->char (+ (char->integer c) 1)))
+
+(define (prev-char c)
+  (integer->char (- (char->integer c) 1)))
 
 (define (cset-difference a b)
-  (cond ((null? b) a)
-        ((not (car b)) (cset-difference a (cdr b)))
-        ((find-tail (lambda (x) (char-ranges-overlap? x (car b))) a)
-         => (lambda (ls)
-              (apply
-               (lambda (left1 left2 same right1 right2)
-                 (let* ((a (append (take-up-to a ls) (cdr ls)))
-                        (a (if left1 (cons left1 a) a))
-                        (a (if left2 (cons left2 a) a))
-                        (b (if right1 (cset-union b (list right1)) b))
-                        (b (if right2 (cset-union b (list right2)) b)))
-                   (cset-difference a b)))
-               (intersect-char-ranges (cset-range (car ls))
-                                      (cset-range (car b))))))
-        (else (cset-difference a (cdr b)))))
+  (let diff ((a (vector->list a))
+             (b (vector->list b))
+             (res '()))
+    (cond ((null? a) (list->vector (reverse res)))
+          ((null? b) (list->vector (append (reverse res) a)))
+          (else
+           (let ((a-range (car a))
+                 (b-range (car b)))
+             (cond
+              ((char<? (cdr a-range) (car b-range))
+               (diff (cdr a) b (cons a-range res)))
+              ((char>? (car a-range) (cdr b-range))
+               (diff a (cdr b) res))
+              ((and (char<=? (car b-range) (car a-range))
+                    (char>=? (cdr b-range) (cdr a-range)))
+               (diff (cdr a) b res))
+              (else (let ((left (and (char<? (car a-range) (car b-range))
+                                     (cons (car a-range)
+                                           (prev-char (car b-range)))))
+                          (right (and (char>? (cdr a-range) (cdr b-range))
+                                      (cons (next-char (cdr b-range))
+                                            (cdr a-range)))))
+                      (diff (if right (cons right (cdr a)) (cdr a))
+                            b
+                            (if left (cons left res) res))))))))))
+
+(define (min-char a b)
+  (if (char<? a b) a b))
+
+(define (max-char a b)
+  (if (char<? a b) b a))
 
 (define (cset-intersection a b)
-  (let intersect ((a a) (b b) (res '()))
-    (cond ((null? b) res)
-          ((find-tail (lambda (x) (char-ranges-overlap? x (car b))) a)
-           => (lambda (ls)
-                (apply
-                 (lambda (left1 left2 same right1 right2)
-                   (let* ((a (append (take-up-to a ls) (cdr ls)))
-                          (a (if left1 (cons left1 a) a))
-                          (a (if left2 (cons left2 a) a))
-                          (b (if right1 (cset-union b (list right1)) b))
-                          (b (if right2 (cset-union b (list right2)) b)))
-                     (intersect a b (cset-union res (list same)))))
-                 (intersect-char-ranges (cset-range (car ls))
-                                        (cset-range (car b))))))
-          (else (intersect a (cdr b) res)))))
+  (let intersect ((a (vector->list a))
+                  (b (vector->list b))
+                  (res '()))
+    (if (or (null? a) (null? b))
+        (list->vector (reverse res))
+        (let ((a-range (car a))
+              (b-range (car b)))
+          (cond
+           ((char<? (cdr a-range) (car b-range))
+            (intersect (cdr a) b res))
+           ((char>? (car a-range) (cdr b-range))
+            (intersect a (cdr b) res))
+           (else
+            (let ((result (cons (max-char (car b-range) (car a-range))
+                                (min-char (cdr a-range) (cdr b-range)))))
+              (intersect (if (char>? (cdr a-range) (cdr result))
+                             a (cdr a))
+                         (if (char>? (cdr b-range) (cdr result))
+                             b (cdr b))
+                         (cons result res)))))))))
 
 (define (cset-complement a)
   (cset-difference (sre->cset *all-chars*) a))
 
+;; This could use some optimization :)
 (define (cset-case-insensitive a)
-  (let lp ((ls a) (res '()))
-    (cond ((null? ls) (reverse res))
-          ((and (char? (car ls)) (char-alphabetic? (car ls)))
-           (let ((c2 (char-altcase (car ls)))
-                 (res (cons (car ls) res)))
-             (lp (cdr ls) (if (cset-contains? res c2) res (cons c2 res)))))
-          ((and (pair? (car ls))
-                (char-alphabetic? (caar ls))
+  (let lp ((ls (vector->list a)) (res '()))
+    (cond ((null? ls) (list->vector (reverse res)))
+          ((and (char-alphabetic? (caar ls))
                 (char-alphabetic? (cdar ls)))
            (lp (cdr ls)
-               (cset-union (cset-union res (list (car ls)))
-                           (list (cons (char-altcase (caar ls))
-                                       (char-altcase (cdar ls)))))))
-          (else (lp (cdr ls) (cset-union res (list (car ls))))))))
+               (reverse
+                (vector->list
+                 (cset-union (cset-union (list->vector (reverse res))
+                                         (vector (car ls)))
+                             (range->cset (char-altcase (caar ls))
+                                          (char-altcase (cdar ls))))))))
+          (else (lp (cdr ls) (reverse (vector->list
+                                       (cset-union (list->vector (reverse res))
+                                                   (vector (car ls))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Match and Replace Utilities
 
 (define (irregex-fold/fast irx kons knil str . o)
   (if (not (string? str)) (error "irregex-fold: not a string" str))
-  (if (not (procedure? kons)) (error "irregex-fold: not a procedure" kons))
   (let* ((irx (irregex irx))
          (matches (irregex-new-matches irx))
          (finish (or (and (pair? o) (car o)) (lambda (i acc) acc)))
@@ -3441,6 +3436,10 @@
          (end (if (and (pair? o) (pair? (cdr o)) (pair? (cddr o)))
                   (caddr o)
                   (string-length str))))
+    (if (not (and (integer? start) (exact? start)))
+        (error "irregex-fold: not an exact integer" start))
+    (if (not (and (integer? end) (exact? end)))
+        (error "irregex-fold: not an exact integer" end))
     (irregex-match-chunker-set! matches irregex-basic-string-chunker)
     (let lp ((i start) (acc knil))
       (if (>= i end)
@@ -3459,6 +3458,7 @@
                   (lp end acc))))))))
 
 (define (irregex-fold irx kons . args)
+  (if (not (procedure? kons)) (error "irregex-fold: not a procedure" kons))
   (let ((kons2 (lambda (i m acc) (kons i (irregex-copy-matches m) acc))))
     (apply irregex-fold/fast irx kons2 args)))
 
@@ -3469,6 +3469,7 @@
          (i (if (and (pair? o) (pair? (cdr o)))
                 (cadr o)
                 ((chunker-get-start cnk) start))))
+    (if (not (integer? i)) (error "irregex-fold/chunked: not an integer" i))
     (irregex-match-chunker-set! matches cnk)
     (let lp ((start start) (i i) (acc knil))
       (if (not start)
@@ -3483,6 +3484,7 @@
                   (lp end-src end-index acc))))))))
 
 (define (irregex-fold/chunked irx kons . args)
+  (if (not (procedure? kons)) (error "irregex-fold/chunked: not a procedure" kons))
   (let ((kons2 (lambda (s i m acc) (kons s i (irregex-copy-matches m) acc))))
     (apply irregex-fold/chunked/fast irx kons2 args)))
 
