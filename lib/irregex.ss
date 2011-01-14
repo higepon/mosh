@@ -18,6 +18,9 @@
            irregex-dfa irregex-dfa/search irregex-dfa/extract
            irregex-nfa irregex-flags irregex-lengths irregex-names
            irregex-num-submatches irregex-extract irregex-split
+
+           ;; add
+           irregex-fold/chunked
            )
          (import (rnrs)
                  (only (rnrs r5rs (6)) modulo remainder quotient)
@@ -3329,9 +3332,9 @@
       (let ((a-range (car a))
             (b-range (car b)))
         (cond
-         ((char<? (next-char (cdr a-range)) (car b-range))
+         ((i/char<? (next-char-idx (cdr a-range)) (car b-range))
           (union-range (cdr a) b (cons a-range res)))
-         ((char>? (car a-range) (next-char (cdr b-range)))
+         ((i/char>? (car a-range) (next-char-idx (cdr b-range)))
           (union-range (cdr b) a (cons b-range res)))
          ((char>=? (cdr a-range) (car b-range))
           (union-range (cons (char-ranges-union a-range b-range) (cdr a))
@@ -3343,11 +3346,28 @@
 
 (define (cset-adjoin cs ch) (cset-union cs (char->cset ch)))
 
+(define (char-idx obj)
+  (if (char? obj)
+    (char->integer obj)
+    obj))
+(define (i/char<? x y)
+  (< (char-idx x) 
+     (char-idx y)))
+(define (i/char>? x y)
+  (> (char-idx x)
+     (char-idx y)))
+
+
 (define (next-char c)
   (integer->char (+ (char->integer c) 1)))
 
 (define (prev-char c)
   (integer->char (- (char->integer c) 1)))
+
+;; NMOSH: we need this because R6RS doesn't allow (+ #x10ffff 1)
+;;        char index.
+(define (next-char-idx c)
+  (+ (char->integer c) 1))
 
 (define (cset-difference a b)
   (let diff ((a (vector->list a))

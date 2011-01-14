@@ -30,7 +30,9 @@
 
 (define-syntax test
   (syntax-rules ()
-    ((_ test-name expected test-expr) (test-equal test-name expected test-expr))
+    ((_ test-name expected test-expr) 
+     (begin
+       (test-equal test-name expected test-expr)))
     ((_ expected test-expr) (test-equal "[NO-NAME]" expected test-expr))))
 
 (define (port-for-each proc sym)
@@ -56,10 +58,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 ;;; orig
+
 (define (subst-matches matches subst)
   (define (submatch n)
     (if (vector? matches)
-        (irregex-match-substring matches n)
+        (and (irregex-match-valid-index? matches n)
+             (irregex-match-substring matches n))
         (list-ref matches n)))
   (and
    matches
