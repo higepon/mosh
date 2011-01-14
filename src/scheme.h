@@ -36,6 +36,7 @@
 #    include "config.h"
 #else
 #  ifdef MONA
+#define HAVE_OPENSSL 1
 //#    include "config_mona.h"
 #  else
 #    error "config.h not found"
