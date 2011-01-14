@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (http)
-  (export http-get->utf8 http-get)
+  (export http-get->utf8 http-get http-post)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -150,4 +150,12 @@
         (http-get host port path ssl?))
     ]))
 
+(define http-post
+  (match-lambda*
+   [(host port path ssl? data)
+    #f]
+   [(uri data)
+    (receive (host port path ssl?) (parse-uri uri)
+      (http-post host port path ssl? data))
+    ]))
 )
