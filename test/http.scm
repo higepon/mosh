@@ -20,4 +20,7 @@
   (test-equal 404 status)
   (test-true (list? header*))
   (test-true (assoc "Content-Type" header*)))
+
+(http-post "http://www.monaos.org/" '(("hige" . "hage")))
+
 (test-results)
