@@ -44,7 +44,6 @@
 extern "C" {
 #include <gmp.h>
 }
-#include <time.h>
 #if HAVE_OPENSSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
