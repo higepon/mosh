@@ -13,6 +13,7 @@
 /* Define for the AMD x86-64 architecture. */
 #define ARCH_X86_64 1
 
+#define HAVE_OPENSSL 1
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
