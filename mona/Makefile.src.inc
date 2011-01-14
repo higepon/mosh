@@ -36,7 +36,7 @@ MOSH_SOURCES = main.cpp \
           Flonum.cpp \
           FlonumProcedures.cpp \
           GenericHashTable.cpp \
-          HashTableProceduures.cpp \
+          HashTableProcedures.cpp \
           Latin1Codec.cpp \
           ListProcedures.cpp \
           MultiVMProcedures.cpp \
