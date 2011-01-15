@@ -37,6 +37,7 @@
           (only (srfi :13) string-null? string-join)
           (shorten)
           (mosh socket)
+          (uri)
           )
 
 ;; This library is undocumented. APIs is subject to change without notice.
@@ -153,7 +154,7 @@
 (define (alist->urlencoded alist)
   (string-join
    (map (match-lambda
-            [(key . value) (string-append key "=" value)]) alist)
+            [(key . value) (string-append (uri-encode key) "=" (uri-encode value))]) alist)
    "&"))
 
 (define http-post
