@@ -160,8 +160,7 @@
         (socket-sslize! socket))
       (let1 p (socket-port socket)
         ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
-        (put-bytevector p (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 9\r\n\r\n" path host)))
-        (put-bytevector p (string->utf8 "hige=hage"))
+        (put-bytevector p (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 16\r\n\r\nhige=pon&mona=os" path host)))
         (let* ([header* (read-header p)]
                [status (get-status header*)])
           (write header*)
