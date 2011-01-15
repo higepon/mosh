@@ -62,14 +62,15 @@
   (string->number (cdr (assoc "Status" header*))))
 
 (define (header*->alist header*)
+  (write header*)
   (map (^(header)
          (cond
           [(irregex-search "([^:]+): (.+)" header) =>
            (^m (cons (irregex-match-substring m 1) (irregex-match-substring m 2)))]
-          [(irregex-search "^HTTP/1.1 ([0-9]+).*" header) =>
+          [(irregex-search "^HTTP/1.[01] ([0-9]+).*" header) =>
            (^m (cons "Status" (irregex-match-substring m 1)))]
           [else
-           (error 'header*->alist "invalid HTTP Response Header")])) header*))
+           (error 'header*->alist "invalid HTTP Response Header" header)])) header*))
 
 (define (read-header p)
   (let loop ([c1 (get-u8 p)]
