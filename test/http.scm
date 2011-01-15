@@ -21,6 +21,7 @@
   (test-true (list? header*))
   (test-true (assoc "Content-Type" header*)))
 
-(http-post "http://www.monaos.org/" '(("hige" . "hage")))
+(let-values (([body status header*] (http-post "http://www.monaos.org/" '(("hige" . "hage")))))
+  (test-equal 200 status))
 
 (test-results)
