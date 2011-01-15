@@ -42,7 +42,7 @@ if(NOT EXISTS ${MOSH_ONIG_DIR})
 endif()
 
 
-set(MOSH_VERSION "0.2.6" CACHE STRING "mosh release version string")
+set(MOSH_VERSION "0.2.7" CACHE STRING "mosh release version string")
 # set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
 set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
 set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
