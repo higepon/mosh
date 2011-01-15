@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (http)
-  (export http-get->utf8 http-get http-post)
+  (export http-get->utf8 http-get http-post http-post->utf8)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -62,7 +62,6 @@
   (string->number (cdr (assoc "Status" header*))))
 
 (define (header*->alist header*)
-  (write header*)
   (map (^(header)
          (cond
           [(irregex-search "([^:]+): (.+)" header) =>
@@ -117,6 +116,16 @@
    [(uri)
     (receive (host port path ssl?) (parse-uri uri)
       (http-get->utf8 host port path ssl?))]))
+
+(define http-post->utf8
+  (match-lambda*
+   [(host port path ssl? data)
+    (receive (body status header*) (http-post host port path ssl? data)
+             (values (utf8->string body) status header*))]
+   [(uri data)
+    (receive (host port path ssl?) (parse-uri uri)
+      (http-post->utf8 host port path ssl? data))]))
+
 
 (define http-get
   (match-lambda*
@@ -185,7 +194,6 @@
                    (cond
                     [(or (and content-length (= i content-length)) (eof-object? u8))
                      (close-port p)
-                     (write (reverse body*))
                      (values (u8-list->bytevector (reverse body*)) status header*)]
                     [else
                      (loop (+ i 1) (cons u8 body*) (get-u8 p))])))]
