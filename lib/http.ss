@@ -183,17 +183,26 @@
      [else
       (case status
         [(200)
-         (let1 content-length (get-content-length header*)
-           (write content-length)
-           (let loop ([i 0]
-                      [body* '()]
-                      [u8 (get-u8 p)])
+         (cond
+          [(get-content-length header*) =>
+           (^(len)
+             (let loop ([i 0]
+                        [body* '()])
              (cond
-              [(or (and content-length (= i content-length)) (eof-object? u8))
+              [(= i len)
                (close-port p)
                (values (u8-list->bytevector (reverse body*)) status header*)]
               [else
-               (loop (+ i 1) (cons u8 body*) (get-u8 p))])))]
+               (loop (+ i 1) (cons (get-u8 p) body*))])))]
+          [else
+           (let loop ([body* '()])
+             (let1 u8 (get-u8 p)
+             (cond
+              [(eof-object? u8)
+               (close-port p)
+               (values (u8-list->bytevector (reverse body*)) status header*)]
+              [else
+               (loop (cons u8 body*))])))])]
         [else
          (values #vu8() status header*)])])))
 
