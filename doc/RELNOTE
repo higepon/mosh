@@ -1,3 +1,39 @@
+Mosh 0.2.X Release Note
+=======================
+
+What's Mosh
+-----------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://mosh.monaos.org/
+
+  Reference Manual:
+    http://mosh.monaos.org/
+
+  Developed by:
+    Higepon, kokosabu, herumi and OKUMURA Yuki.
+
+About This Release
+------------------
+
+Bug fixes:
+
+    (rnrs):
+        Fixed Issue 183 and Issue 186: 
+            (display #\tab) had outputted "x9;" instead of a tab character. 
+
+Changes
+
+    Mona OS support had added.
+
+    updated library
+      (mosh socket) : SSL/TLS Socket support.
+
+    updated 3rd party library
+          (irregex) : 0.8.2+ hg fixes (Alex Shinn's irregex library)
+
 Mosh 0.2.6 Release Note
 =======================
 
