@@ -153,7 +153,37 @@
 (define http-post
   (match-lambda*
    [(host port path ssl? data)
-    (values "" 200 '())]
+    (let1 socket (make-client-socket host port)
+      (when (and ssl? (not (ssl-supported?)))
+        (assertion-violation 'http-get "ssl is not supprted"))
+      (when ssl?
+        (socket-sslize! socket))
+      (let1 p (socket-port socket)
+        ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
+        (put-bytevector p (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 9\r\n\r\n" path host)))
+        (put-bytevector p (string->utf8 "hige=hage"))
+        (let* ([header* (read-header p)]
+               [status (get-status header*)])
+          (write header*)
+          (cond
+           [(get-location header*) =>
+            (^(location) (http-get location))]
+           [else
+            (case status
+              [(200)
+               (let1 content-length (get-content-length header*)
+                 (let loop ([i 0]
+                            [body* '()]
+                            [u8 (get-u8 p)])
+                   (cond
+                    [(or (and content-length (= i content-length)) (eof-object? u8))
+                     (close-port p)
+                     (write (reverse body*))
+                     (values (u8-list->bytevector (reverse body*)) status header*)]
+                    [else
+                     (loop (+ i 1) (cons u8 body*) (get-u8 p))])))]
+              [else
+               (values #vu8() status header*)])]))))]
    [(uri data)
     (receive (host port path ssl?) (parse-uri uri)
       (http-post host port path ssl? data))

@@ -21,7 +21,8 @@
   (test-true (list? header*))
   (test-true (assoc "Content-Type" header*)))
 
-(let-values (([body status header*] (http-post "http://www.monaos.org/" '(("hige" . "hage")))))
-  (test-equal 200 status))
+(let-values (([body status header*] (http-post "http://wiki.monaos.org/test.php" '(("hige" . "pon") ("mona" . "os")))))
+  (test-equal 200 status)
+  (test-equal "hige=pon&mona=os&" (utf8->string body)))
 
 (test-results)
