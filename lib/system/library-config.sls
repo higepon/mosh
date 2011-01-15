@@ -1,4 +1,4 @@
-(library (library-config)
+(library (system library-config)
          (export library-config)
          (import (rnrs))
 
