@@ -34,7 +34,7 @@
           (irregex)
           (match)
           (srfi :8)
-          (only (srfi :13) string-null?)
+          (only (srfi :13) string-null? string-join)
           (shorten)
           (mosh socket)
           )
@@ -150,6 +150,12 @@
         (http-get host port path ssl?))
     ]))
 
+(define (alist->urlencoded alist)
+  (string-join
+   (map (match-lambda
+            [(key . value) (string-append key "=" value)]) alist)
+   "&"))
+
 (define http-post
   (match-lambda*
    [(host port path ssl? data)
@@ -158,12 +164,12 @@
         (assertion-violation 'http-get "ssl is not supprted"))
       (when ssl?
         (socket-sslize! socket))
-      (let1 p (socket-port socket)
+      (let ([p (socket-port socket)]
+            [param (alist->urlencoded data)])
         ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
-        (put-bytevector p (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 16\r\n\r\nhige=pon&mona=os" path host)))
+        (put-bytevector p (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length param) param)))
         (let* ([header* (read-header p)]
                [status (get-status header*)])
-          (write header*)
           (cond
            [(get-location header*) =>
             (^(location) (http-get location))]

@@ -3,6 +3,7 @@
         (only (srfi :13) string-contains)
         (http)
         (json)
+        (match)
         (mosh test))
 
 (when (ssl-supported?)
