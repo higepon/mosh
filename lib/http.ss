@@ -129,32 +129,7 @@
 (define http-get
   (match-lambda*
    [(host port path secure?)
-    (let1 socket (make-client-socket host port)
-      (when (and secure? (not (ssl-supported?)))
-        (assertion-violation 'http-get "ssl is not supprted"))
-      (when secure?
-        (socket-sslize! socket))
-      (let1 p (socket-port socket)
-        (put-bytevector p (make-get-request path host))
-        (let* ([header* (read-header p)]
-               [status (get-status header*)])
-          (cond
-           [(get-location header*) =>
-            (^(location) (http-get location))]
-           [else
-            (case status
-              [(200)
-               (let1 content-length (get-content-length header*)
-                 (let loop ([i 0]
-                            [body* '()])
-                   (cond
-                    [(= i content-length)
-                     (close-port p)
-                     (values (u8-list->bytevector (reverse body*)) status header*)]
-                    [else
-                     (loop (+ i 1) (cons (get-u8 p) body*))])))]
-              [else
-               (values #vu8() status header*)])]))))]
+    (http-send-request host port secure? (make-get-request path host))]
    [(uri)
     (receive (host port path secure?) (parse-uri uri)
         (http-get host port path secure?))
