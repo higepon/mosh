@@ -110,29 +110,29 @@
 
 (define http-get->utf8
   (match-lambda*
-   [(host port path ssl?)
-    (receive (body status header*) (http-get host port path ssl?)
+   [(host port path secure?)
+    (receive (body status header*) (http-get host port path secure?)
              (values (utf8->string body) status header*))]
    [(uri)
-    (receive (host port path ssl?) (parse-uri uri)
-      (http-get->utf8 host port path ssl?))]))
+    (receive (host port path secure?) (parse-uri uri)
+      (http-get->utf8 host port path secure?))]))
 
 (define http-post->utf8
   (match-lambda*
-   [(host port path ssl? param-alist)
-    (receive (body status header*) (http-post host port path ssl? param-alist)
+   [(host port path secure? param-alist)
+    (receive (body status header*) (http-post host port path secure? param-alist)
              (values (utf8->string body) status header*))]
    [(uri param-alist)
-    (receive (host port path ssl?) (parse-uri uri)
-      (http-post->utf8 host port path ssl? param-alist))]))
+    (receive (host port path secure?) (parse-uri uri)
+      (http-post->utf8 host port path secure? param-alist))]))
 
 (define http-get
   (match-lambda*
-   [(host port path ssl?)
+   [(host port path secure?)
     (let1 socket (make-client-socket host port)
-      (when (and ssl? (not (ssl-supported?)))
+      (when (and secure? (not (ssl-supported?)))
         (assertion-violation 'http-get "ssl is not supprted"))
-      (when ssl?
+      (when secure?
         (socket-sslize! socket))
       (let1 p (socket-port socket)
         (put-bytevector p (make-get-request path host))
@@ -156,8 +156,8 @@
               [else
                (values #vu8() status header*)])]))))]
    [(uri)
-    (receive (host port path ssl?) (parse-uri uri)
-        (http-get host port path ssl?))
+    (receive (host port path secure?) (parse-uri uri)
+        (http-get host port path secure?))
     ]))
 
 (define (alist->urlencoded alist)
@@ -174,38 +174,40 @@
     ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
     (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length param) param))))
 
+(define (http-send-request host port secure? request)
+  (let1 socket (make-client-socket host port)
+    (when (and secure? (not (ssl-supported?)))
+      (assertion-violation 'http-get "ssl is not supprted"))
+    (when secure?
+      (socket-sslize! socket))
+    (let1 p (socket-port socket)
+      (put-bytevector p request)
+      (let* ([header* (read-header p)]
+             [status (get-status header*)])
+        (cond
+         [(get-location header*) =>
+          (^(location) (http-get location))]
+         [else
+          (case status
+            [(200)
+             (let1 content-length (get-content-length header*)
+               (let loop ([i 0]
+                          [body* '()]
+                          [u8 (get-u8 p)])
+                 (cond
+                  [(or (and content-length (= i content-length)) (eof-object? u8))
+                   (close-port p)
+                   (values (u8-list->bytevector (reverse body*)) status header*)]
+                  [else
+                   (loop (+ i 1) (cons u8 body*) (get-u8 p))])))]
+            [else
+             (values #vu8() status header*)])])))))
 (define http-post
   (match-lambda*
-   [(host port path ssl? param-alist)
-    (let1 socket (make-client-socket host port)
-      (when (and ssl? (not (ssl-supported?)))
-        (assertion-violation 'http-get "ssl is not supprted"))
-      (when ssl?
-        (socket-sslize! socket))
-      (let1 p (socket-port socket)
-        (put-bytevector p (make-post-request path host param-alist))
-        (let* ([header* (read-header p)]
-               [status (get-status header*)])
-          (cond
-           [(get-location header*) =>
-            (^(location) (http-get location))]
-           [else
-            (case status
-              [(200)
-               (let1 content-length (get-content-length header*)
-                 (let loop ([i 0]
-                            [body* '()]
-                            [u8 (get-u8 p)])
-                   (cond
-                    [(or (and content-length (= i content-length)) (eof-object? u8))
-                     (close-port p)
-                     (values (u8-list->bytevector (reverse body*)) status header*)]
-                    [else
-                     (loop (+ i 1) (cons u8 body*) (get-u8 p))])))]
-              [else
-               (values #vu8() status header*)])]))))]
+   [(host port path secure? param-alist)
+    (http-send-request host port secure? (make-post-request path host param-alist))]
    [(uri param-alist)
-    (receive (host port path ssl?) (parse-uri uri)
-      (http-post host port path ssl? param-alist))
+    (receive (host port path secure?) (parse-uri uri)
+      (http-post host port path secure? param-alist))
     ]))
 )
