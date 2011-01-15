@@ -1,0 +1,7 @@
+(newline)
+(display "correct tests: ")
+(display *correct-count*)
+(newline)
+(display "failed tests: ")
+(display *failed-count*)
+(newline)
