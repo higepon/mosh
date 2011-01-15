@@ -119,13 +119,12 @@
 
 (define http-post->utf8
   (match-lambda*
-   [(host port path ssl? data)
-    (receive (body status header*) (http-post host port path ssl? data)
+   [(host port path ssl? param-alist)
+    (receive (body status header*) (http-post host port path ssl? param-alist)
              (values (utf8->string body) status header*))]
-   [(uri data)
+   [(uri param-alist)
     (receive (host port path ssl?) (parse-uri uri)
-      (http-post->utf8 host port path ssl? data))]))
-
+      (http-post->utf8 host port path ssl? param-alist))]))
 
 (define http-get
   (match-lambda*
@@ -136,7 +135,7 @@
       (when ssl?
         (socket-sslize! socket))
       (let1 p (socket-port socket)
-        (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+        (put-bytevector p (make-get-request path host))
         (let* ([header* (read-header p)]
                [status (get-status header*)])
           (cond
@@ -167,18 +166,24 @@
             [(key . value) (string-append (uri-encode key) "=" (uri-encode value))]) alist)
    "&"))
 
+(define (make-get-request path host)
+  (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+
+(define (make-post-request path host param-alist)
+  (let1 param (alist->urlencoded param-alist)
+    ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
+    (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length param) param))))
+
 (define http-post
   (match-lambda*
-   [(host port path ssl? data)
+   [(host port path ssl? param-alist)
     (let1 socket (make-client-socket host port)
       (when (and ssl? (not (ssl-supported?)))
         (assertion-violation 'http-get "ssl is not supprted"))
       (when ssl?
         (socket-sslize! socket))
-      (let ([p (socket-port socket)]
-            [param (alist->urlencoded data)])
-        ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
-        (put-bytevector p (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length param) param)))
+      (let1 p (socket-port socket)
+        (put-bytevector p (make-post-request path host param-alist))
         (let* ([header* (read-header p)]
                [status (get-status header*)])
           (cond
@@ -199,8 +204,8 @@
                      (loop (+ i 1) (cons u8 body*) (get-u8 p))])))]
               [else
                (values #vu8() status header*)])]))))]
-   [(uri data)
+   [(uri param-alist)
     (receive (host port path ssl?) (parse-uri uri)
-      (http-post host port path ssl? data))
+      (http-post host port path ssl? param-alist))
     ]))
 )
