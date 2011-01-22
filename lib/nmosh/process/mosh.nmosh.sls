@@ -59,8 +59,6 @@
          (cons in out)))
       (else
         (assertion-violation 'process-launch/mosh "invalid argument" x))))
-  (when startup-path
-    (assertion-violation 'process-launch/mosh "not implemented yet!(startup-path)" startup-path))
   (let ((stdin (portarg/write std-in))
         (stdout (portarg/read std-out))
         (stderr (portarg/read std-err)))
@@ -69,9 +67,14 @@
           (my-stdout (car stdout))
           (child-stdout (cdr stdout))
           (my-stderr (car stderr))
-          (child-stderr (cdr stderr)))
+          (child-stderr (cdr stderr))
+          (wd (current-directory)))
       (receive (pid in out err) 
+        (when startup-path
+          (set-current-directory! startup-path))
         (spawn exec-path arg* (list child-stdin child-stdout child-stderr))
+        (when startup-path
+          (set-current-directory! wd))
         (when (port? child-stdin)
           (close-port child-stdin))
         (when (port? child-stdout)
