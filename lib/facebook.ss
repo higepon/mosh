@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (facebook)
-  (export fb-news fb-friends fb-picture fb-post-feed)
+  (export fb-news fb-friends fb-picture fb-post-feed fb-user)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -45,7 +45,7 @@
          [#(("data" . data) paging ...)
           (map vector->list data)]
          [json
-          (error 'call-json-api (format "facebook API error: ~a" json))])]
+          (vector->list json)])]
       [else
        (aif (assoc "WWW-Authenticate" header*)
             (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(,api ,token))
@@ -53,6 +53,9 @@
 
 (define (fb-friends token)
   (call-json-api 'friends token))
+
+(define (fb-user token)
+  (call-json-api "" token))
 
 (define (fb-news token)
   (call-json-api 'home token))
