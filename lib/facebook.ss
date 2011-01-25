@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (facebook)
-  (export fb-news fb-friends fb-picture fb-post-feed fb-user)
+  (export fb-news fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -36,6 +36,16 @@
           (json))
 
 ;; This library is undocumented. APIs is subject to change without notice.
+
+(define (fb-get-token code client-id client-secret redirect-uri)
+  (let1 tokens (http-get->utf8 (format "https://graph.facebook.com/oauth/access_token?client_id=~a&redirect_uri=~a&client_secret=~a&code=~a"
+                                client-id redirect-uri client-secret code))
+    (match (string-split tokens #\&)
+      ([token . more]
+       (cadr (string-split token #\=))))))
+
+(define (fb-picture-path id)
+  (format "http://graph.facebook.com/~a/picture" id))
 
 (define (call-json-api api token)
   (let-values (([body status header*] (http-get->utf8 (format "https://graph.facebook.com/me/~a?access_token=~a" api token))))
