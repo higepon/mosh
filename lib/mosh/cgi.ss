@@ -130,8 +130,13 @@
     (display "Content-type: text/html; charset=utf-8\n\n")
     (set! header-out? #t)))
 
-(define (moved-temporarily-header url)
-   (format #t "Status: 302 Moved Temporarily\nLocation: ~a\n\n" url)
+(define (moved-temporarily-header url . alist*)
+   (format #t "Status: 302 Moved Temporarily\nLocation: ~a\n" url)
+   (for-each
+    (^(key+value)
+      (format #t "~a: ~a\n" (car key+value) (cdr key+value)))
+     alist*)
+   (display "\n\n")
    (set! header-out? #t))
 
 (define (unauthorized-header)
