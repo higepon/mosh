@@ -74,16 +74,16 @@
 
 (define (template->sexp template variable*)
   (let-values (([port get-string] (open-string-output-port)))
-    (unless (null? variable*)
-      (display "(let () " port))
-    (for-each
-     (^(variable)
-       (format port "(define ~a ~s)" (car variable) (cdr variable))
-       )
-     variable*)
     (compile-elem template port)
-    (unless (null? variable*)
-      (display ") " port))
-    (read (open-string-input-port (get-string)))))
+    (let1 body (let1 p (open-string-input-port (get-string))
+                 (let loop ([sexp (read p)]
+                            [ret '()])
+                   (if (eof-object? sexp)
+                       (reverse ret)
+                       (loop (read p) (cons sexp ret)))))
+      (if (null? body)
+          #f
+          `(let (,@(map (^v `(,(car v) ,(cdr v))) variable*))
+             ,@body)))))
 )
 
