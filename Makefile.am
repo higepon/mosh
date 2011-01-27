@@ -235,6 +235,7 @@ lib/match.ss \
 lib/nmosh.nmosh.ss \
 lib/uri.ss \
 lib/http.ss \
+lib/template.ss \
 lib/facebook.ss \
 lib/irregex.ss \
 lib/rbtree.ss \
