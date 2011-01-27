@@ -138,10 +138,12 @@
 (define (alist->urlencoded alist)
   (string-join
    (map (match-lambda
-            [(key . value) (string-append (uri-encode key) "=" (uri-encode value))]) alist)
+;            [(key . value) (string-append (uri-encode key) "=" (uri-encode value))]) alist)
+            [(key . value) (string-append key "=" value)]) alist)
    "&"))
 
 (define (make-get-request path host)
+  (write (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host) (current-error-port))
   (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
 
 (define (make-post-request path host param-alist)

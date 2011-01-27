@@ -23,5 +23,5 @@
 (test-equal-template "<li>hige</li><li>hage</li>" "<% (for-each (lambda (x) %><li><%= x %></li><% ) b) %>" '((b . '("hige" "hage"))))
 (test-equal-template "" "" '())
 (test-equal 3 (ref '((a . 3)) a))
-(test-equal 3 (ref '((a . 3)) "a"))
+(test-equal-template "#t" "<%= (hashtable? a) %>" `((a . ,(make-eq-hashtable))))
 (test-results)
