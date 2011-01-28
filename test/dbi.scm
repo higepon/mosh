@@ -9,15 +9,11 @@
   (when conn
     ;; conn is sub-class of <connection>
     (test-true (if (memq <connection> (class-direct-supers (class-of conn))) #t #f))
-    (display "line:12\n")
     (let ([query (dbi-prepare conn "select * from user where user = ?")])
-      (display "line:14\n")
       ;; query is <query> or sub-class of query
       (test-true (or (eq? (class-of query) <query>)
                   (if (memq <query> (class-direct-supers (class-of query))) #t #f)))
-      (display "line:18\n")
       (let ([result (dbi-execute query "root")])
-        (display "line:20\n")
         ;; result is <result> or sub-class of result
         (test-true (or (eq? (class-of result) <result>)
                     (if (memq <result> (class-direct-supers (class-of result))) #t #f)))
