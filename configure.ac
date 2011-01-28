@@ -347,7 +347,7 @@ AC_ARG_WITH(mysql,
   AC_SUBST(PATH_TO_MYSQLCLIENT, "$withval")
   ],
   [
-  AC_SUBST(PATH_TO_MYSQLCLIENT, "libmysqlclient.so.15")
+  AC_SUBST(PATH_TO_MYSQLCLIENT, "libmysqlclient.so.16")
   ]
 )
 
