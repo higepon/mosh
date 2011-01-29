@@ -32,7 +32,7 @@ AM_CFLAGS   = $(GLOBAL_CFLAGS)
 AM_CXXFLAGS = $(GLOBAL_CFLAGS)
 
 # Boehm GC
-BOEHM_GC_DIR = gc-7.1
+BOEHM_GC_DIR = extlibs/gc-7.1
 GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 
 ## Regexp library oniguruma

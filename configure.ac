@@ -398,5 +398,5 @@ case "$target_in" in
 esac
 
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SUBDIRS([gc-7.1])
+AC_CONFIG_SUBDIRS([extlibs/gc-7.1])
 AC_OUTPUT(src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)
