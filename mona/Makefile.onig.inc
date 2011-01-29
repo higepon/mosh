@@ -1,4 +1,4 @@
-ONIG_DIR = ./onig-5.7.0
+ONIG_DIR = ./extlibs/onig-5.9.2
 
 ONIG_SOURCES = \
 	$(ONIG_DIR)/regcomp.c \
