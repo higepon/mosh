@@ -24,6 +24,13 @@
              (test-true (string? (getter row "host")))
              (test-true (string? (getter row "User"))))
            (dbi-result->list result))
+          (guard (c [(dbi-error? c)
+                     (test-equal "42S02" (dbi-error-num-string c))
+                     (test-equal "Table 'mysql.xxx' doesn't exist" (dbi-error-string c))
+                     (test-equal "select * from xxx" (dbi-error-sql c))]
+                    [else
+                     (fail "dbi-error should have been raised")])
+                 (dbi-execute (dbi-prepare conn "select * from xxx")))
           (dbi-close conn))))))
 
 

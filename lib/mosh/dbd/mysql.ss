@@ -36,7 +36,7 @@
    (only (mosh) format)
    (only (mosh ffi) pointer-null?)
    (only (rnrs) define quote let unless when assertion-violation zero?
-                guard cond else => lambda values string->number
+                guard cond else => lambda values string->number raise
                 let-values and = display reverse cons vector-set!
                 vector-ref make-vector vector-length + let* equal?
                 make-hashtable string-hash hashtable-set! hashtable-ref
@@ -89,8 +89,8 @@
 
 (define-method dbd-execute ((conn <mysql-connection>) sql)
   (let ([mysql (slot-ref conn 'mysql)])
-    (unless (pointer-null? (mysql-query mysql sql))
-      (assertion-violation 'mysql-query "failed" sql (mysql-error mysql)))
+    (unless (zero? (mysql-query mysql sql))
+      (raise (make-dbi-error 'mysql-query sql (mysql-error mysql) (mysql-sqlstate mysql))))
     (let ([result (mysql-store-result mysql)])
       (cond
        ;; select
