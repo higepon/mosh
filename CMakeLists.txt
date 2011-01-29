@@ -29,18 +29,12 @@ endif(MOSH_WITH_NMOSH)
 
 # external libraries
 # MOSH_GMP_DIR is MSVC only
-set(MOSH_ONIG_DIR CACHE PATH "path to oniguruma(http://www.geocities.jp/kosako3/oniguruma/)")
 
 # sanity check
 
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_srcs})
     message(FATAL_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
 endif()
-
-if(NOT EXISTS ${MOSH_ONIG_DIR})
-    message(SEND_ERROR "Oniguruma source-tree is missing. Please extract oniguruma(http://www.geocities.jp/kosako3/oniguruma/) as ${MOSH_ONIG_DIR} . ")
-endif()
-
 
 set(MOSH_VERSION "0.2.7" CACHE STRING "mosh release version string")
 # set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
@@ -208,46 +202,46 @@ endif(GMP_SEARCH)
 # => gc_srcs
 
 set(gc_core_srcs
-gc-7.1/allchblk.c
-gc-7.1/alloc.c
-gc-7.1/blacklst.c
-gc-7.1/checksums.c
-gc-7.1/dbg_mlc.c
-gc-7.1/dyn_load.c
-gc-7.1/finalize.c
-gc-7.1/gc_dlopen.c
-gc-7.1/gcj_mlc.c
-gc-7.1/headers.c
-gc-7.1/malloc.c
-gc-7.1/mallocx.c
-gc-7.1/mark.c
-gc-7.1/mark_rts.c
-gc-7.1/misc.c
-gc-7.1/new_hblk.c
-gc-7.1/obj_map.c
-gc-7.1/os_dep.c
-gc-7.1/mach_dep.c
-gc-7.1/pcr_interface.c
-gc-7.1/ptr_chck.c
-gc-7.1/real_malloc.c
-gc-7.1/reclaim.c
-gc-7.1/specific.c
-gc-7.1/stubborn.c
-gc-7.1/typd_mlc.c
-gc-7.1/backgraph.c
-gc-7.1/thread_local_alloc.c
-gc-7.1/libatomic_ops-1.2/src/atomic_ops.c
+extlibs/gc-7.1/allchblk.c
+extlibs/gc-7.1/alloc.c
+extlibs/gc-7.1/blacklst.c
+extlibs/gc-7.1/checksums.c
+extlibs/gc-7.1/dbg_mlc.c
+extlibs/gc-7.1/dyn_load.c
+extlibs/gc-7.1/finalize.c
+extlibs/gc-7.1/gc_dlopen.c
+extlibs/gc-7.1/gcj_mlc.c
+extlibs/gc-7.1/headers.c
+extlibs/gc-7.1/malloc.c
+extlibs/gc-7.1/mallocx.c
+extlibs/gc-7.1/mark.c
+extlibs/gc-7.1/mark_rts.c
+extlibs/gc-7.1/misc.c
+extlibs/gc-7.1/new_hblk.c
+extlibs/gc-7.1/obj_map.c
+extlibs/gc-7.1/os_dep.c
+extlibs/gc-7.1/mach_dep.c
+extlibs/gc-7.1/pcr_interface.c
+extlibs/gc-7.1/ptr_chck.c
+extlibs/gc-7.1/real_malloc.c
+extlibs/gc-7.1/reclaim.c
+extlibs/gc-7.1/specific.c
+extlibs/gc-7.1/stubborn.c
+extlibs/gc-7.1/typd_mlc.c
+extlibs/gc-7.1/backgraph.c
+extlibs/gc-7.1/thread_local_alloc.c
+extlibs/gc-7.1/libatomic_ops-1.2/src/atomic_ops.c
 )
 
 set(gc_pthread_srcs
-gc-7.1/pthread_support.c
-gc-7.1/pthread_stop_world.c
+extlibs/gc-7.1/pthread_support.c
+extlibs/gc-7.1/pthread_stop_world.c
 )
 set(gc_darwin_srcs
-gc-7.1/darwin_stop_world.c
+extlibs/gc-7.1/darwin_stop_world.c
 )
 set(gc_win32_srcs
-gc-7.1/win32_threads.c
+extlibs/gc-7.1/win32_threads.c
 )
 
 if(WIN32)
@@ -270,6 +264,7 @@ endif(WIN32)
 
 # Onigruma things
 
+set(MOSH_ONIG_DIR extlibs/onig-5.9.2)
 set(onig_srcs
 ${MOSH_ONIG_DIR}/regint.h
 ${MOSH_ONIG_DIR}/regparse.h
@@ -322,7 +317,7 @@ ${MOSH_ONIG_DIR}/enc/cp1251.c
 
 # mosh
 
-include_directories(${PROJECT_BINARY_DIR}/cmake gc-7.1/include gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest)
+include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-7.1/include extlibs/gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest)
 
 if(CMAKE_COMPILER_IS_GNUC)
     set(ffi_stub cmake/ffi_stub.S)
@@ -592,15 +587,15 @@ add_library(testingmosh EXCLUDE_FROM_ALL
 # GC tests
 macro(add_gcguitest testname)
 if(MSVC)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL WIN32 ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL WIN32 ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
 else(MSVC)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
 endif(MSVC)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gcguitest)
 macro(add_gctest testname)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
