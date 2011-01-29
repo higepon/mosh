@@ -76,26 +76,24 @@ boot/runtimes/psyntax-mosh/psyntax.*/*
 *.tab.hpp
  
 # lib
-gc-7.1/Makefile
-gc-7.1/config.h
-gc-7.1/bdw-gc.pc
-gc-7.1/libtool
+extlibs/gc-7.1/Makefile
+extlibs/gc-7.1/config.h
+extlibs/gc-7.1/bdw-gc.pc
+extlibs/gc-7.1/libtool
  
-gc-7.1/libatomic_ops-1.2/Makefile
-gc-7.1/libatomic_ops-1.2/doc/Makefile
-gc-7.1/libatomic_ops-1.2/src/Makefile
-gc-7.1/libatomic_ops-1.2/src/atomic_ops/Makefile
-gc-7.1/libatomic_ops-1.2/src/atomic_ops/sysdeps/Makefile
-gc-7.1/libatomic_ops-1.2/tests/Makefile
-gc-7.1/gctest
-gc-7.1/hugetest
-gc-7.1/leaktest
-gc-7.1/libatomic_ops
-gc-7.1/middletest
-gc-7.1/smashtest
-gc-7.1/threadleaktest
- 
-onig
+extlibs/gc-7.1/libatomic_ops-1.2/Makefile
+extlibs/gc-7.1/libatomic_ops-1.2/doc/Makefile
+extlibs/gc-7.1/libatomic_ops-1.2/src/Makefile
+extlibs/gc-7.1/libatomic_ops-1.2/src/atomic_ops/Makefile
+extlibs/gc-7.1/libatomic_ops-1.2/src/atomic_ops/sysdeps/Makefile
+extlibs/gc-7.1/libatomic_ops-1.2/tests/Makefile
+extlibs/gc-7.1/gctest
+extlibs/gc-7.1/hugetest
+extlibs/gc-7.1/leaktest
+extlibs/gc-7.1/libatomic_ops
+extlibs/gc-7.1/middletest
+extlibs/gc-7.1/smashtest
+extlibs/gc-7.1/threadleaktest
  
 # editor temporals
 *.swp
