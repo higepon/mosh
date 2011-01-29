@@ -1,9 +1,22 @@
  (library (mosh cgi)
-  (export init encode decode escape moved-temporarily-header header unauthorized-header)
+  (export init encode decode escape moved-temporarily-header header unauthorized-header call-with-cgi get-cookies not-found-header)
   (import (rnrs)
           (only (system) get-environment-variable)
-          (only (mosh) digit->integer  string-split format call-with-string-io bytevector-for-each  regexp-replace-all)
+          (shorten)
+          (mosh control)
+          (srfi :98)
+          (irregex)
+          (only (mosh) digit->integer  string-split format call-with-string-io bytevector-for-each  regexp-replace-all assoc-ref)
           )
+
+(define (call-with-cgi proc)
+  (guard (e
+          (#t
+           (header)
+           (write e)
+           (raise e)))
+         (let-values (([get-param request-method] (init)))
+           (proc get-param request-method))))
 
 (define header-out? #f)
 (define (escape text)
@@ -107,17 +120,45 @@
              #f)))
      request-method)))
 
-(define (header)
+(define (header . alist*)
   (unless header-out?
-    (display "Status: 200 OK\nContent-type: text/html; charset=utf-8\n\n")
+    (display "Status: 200 OK\n")
+    (for-each
+     (^(key+value)
+       (format #t "~a: ~a\n" (car key+value) (cdr key+value)))
+     alist*)
+    (display "Content-type: text/html; charset=utf-8\n\n")
     (set! header-out? #t)))
 
-(define (moved-temporarily-header url)
-   (format #t "Status: 302 Moved Temporarily\nLocation: ~a\n\n" url)
+(define (moved-temporarily-header url . alist*)
+   (format #t "Status: 302 Moved Temporarily\nLocation: ~a\n" url)
+   (for-each
+    (^(key+value)
+      (format #t "~a: ~a\n" (car key+value) (cdr key+value)))
+     alist*)
+   (display "\n\n")
    (set! header-out? #t))
 
 (define (unauthorized-header)
    (format #t "Status: 401 Unauthorized\n\n")
    (set! header-out? #t))
+
+(define (not-found-header)
+  (format #t "Status: 404 Not Found\n\n")
+  (set! header-out? #t))
+
+(define (get-cookies)
+  (aif (assoc-ref (get-environment-variables) "HTTP_COOKIE")
+       (let loop ([cookies-string it]
+                  [cookies '()])
+
+         (cond
+          [(irregex-search "([^=]+)=([^;]+);?\\s?(.*)" cookies-string) =>
+           (^m
+            (loop (irregex-match-substring m 3)
+                  (cons (cons (irregex-match-substring m 1) (irregex-match-substring m 2)) cookies)))]
+           [else
+            cookies]))
+       '()))
 
 )

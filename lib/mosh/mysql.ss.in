@@ -89,8 +89,8 @@
 ;; Retrieves the index field
 ;; .form (row-ref row index)
 ;; .returns Field as string
-(define (mysql-row-ref row index)
-  (pointer->string (pointer-ref-c-pointer row index)))
+(define (mysql-row-ref result row index)
+  (pointer->string (pointer-ref-c-pointer row index) (pointer-ref-c-unsigned-long (mysql-fetch-lengths result) index)))
 
 ;; Closes a previously opened connection
 ;; .form (close obj)

@@ -8,6 +8,7 @@ runtest:
 	$(MOSH_TARGET) --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
 	$(MOSH_TARGET) -5 src/all-tests.scm
 	$(MOSH_TARGET) test/misc.scm
+	$(MOSH_TARGET) test/template.scm
 	$(MOSH_TARGET) test/testing.scm
 	$(MOSH_TARGET) test/mosh-test.scm
 	$(MOSH_TARGET) test/io-error.scm

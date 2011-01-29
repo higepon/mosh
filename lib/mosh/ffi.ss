@@ -170,7 +170,7 @@
           null-terminated-bytevector->string
           null-terminated-utf8->string)
   (import (only (rnrs) append display define define-syntax syntax-case lambda map let syntax exists string=? string
-                       quasiquote unless assertion-violation quote = length and number? assq => cdr assoc
+                       quasiquote unless assertion-violation quote = length and number? assq => cdr assoc pair?
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
                        + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append)
@@ -294,7 +294,7 @@
 
       string value at which pointer points.
 |#
-(define (pointer->string pointer)
+(define (pointer->string pointer . len)
   (define nul (char->integer #\nul))
   (define (c-strlen pointer)
     (let loop ([index 0]
@@ -303,7 +303,7 @@
        [(= c nul) index]
        [else
         (loop (+ index 1) (pointer-ref-c-signed-char pointer (+ index 1)))])))
-  (let* ([len (c-strlen pointer)]
+  (let* ([len (if (pair? len) (car len) (c-strlen pointer))]
          [str (make-string len)])
     (let loop ([i 0])
       (cond

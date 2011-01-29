@@ -28,7 +28,6 @@
 ;
 (library (uri)
   (export uri-encode uri-decode)
-  (export uri-encode)
   (import (rnrs))
 
 ;; This library is undocumented. APIs is subject to change without notice.

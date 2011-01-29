@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (facebook)
-  (export fb-news fb-friends fb-picture)
+  (export fb-news fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -37,6 +37,16 @@
 
 ;; This library is undocumented. APIs is subject to change without notice.
 
+(define (fb-get-token code client-id client-secret redirect-uri)
+  (let1 tokens (http-get->utf8 (format "https://graph.facebook.com/oauth/access_token?client_id=~a&redirect_uri=~a&client_secret=~a&code=~a"
+                                client-id redirect-uri client-secret code))
+    (match (string-split tokens #\&)
+      ([token . more]
+       (cadr (string-split token #\=))))))
+
+(define (fb-picture-path id)
+  (format "http://graph.facebook.com/~a/picture" id))
+
 (define (call-json-api api token)
   (let-values (([body status header*] (http-get->utf8 (format "https://graph.facebook.com/me/~a?access_token=~a" api token))))
     (case status
@@ -45,7 +55,7 @@
          [#(("data" . data) paging ...)
           (map vector->list data)]
          [json
-          (error 'call-json-api (format "facebook API error: ~a" json))])]
+          (vector->list json)])]
       [else
        (aif (assoc "WWW-Authenticate" header*)
             (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(,api ,token))
@@ -53,6 +63,9 @@
 
 (define (fb-friends token)
   (call-json-api 'friends token))
+
+(define (fb-user token)
+  (call-json-api "" token))
 
 (define (fb-news token)
   (call-json-api 'home token))
@@ -66,5 +79,18 @@
             (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(picture ,token))
             (error 'call-json-api "facebook API error: unknown error" `(picture ,token)))])))
 
+(define (fb-post-feed token message)
+(let-values (([body status header*] (http-post (format "https://graph.facebook.com/me/feed?access_token=~a" token) `(("message" . ,message)))))
+    (case status
+      [(200)
+       (match (json-read (open-string-input-port body))
+         [#(("data" . data) paging ...)
+          (map vector->list data)]
+         [json
+          (error 'call-json-api (format "facebook API error: ~a" json))])]
+      [else
+       (aif (assoc "WWW-Authenticate" header*)
+            (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(,"feed" ,token))
+            (error 'call-json-api "facebook API error: unknown error" `(,"feed" ,token)))])))
 
 )

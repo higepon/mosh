@@ -172,7 +172,7 @@
 (define (make-driver name)
   (let ([eval-r6rs (symbol-value 'eval-r6rs)])
     (eval-r6rs `(import (clos core)))
-    (eval-r6rs `(import (dbd ,(string->symbol name))))
+    (eval-r6rs `(import (mosh dbd ,(string->symbol name))))
     (eval-r6rs `(make ,(string->symbol (format "<dbd-~a>" name))))))
 
 #|

@@ -34,6 +34,7 @@
    (clos user)
    (clos core)
    (only (mosh) format)
+   (only (mosh ffi) pointer-null?)
    (only (rnrs) define quote let unless when assertion-violation zero?
                 guard cond else => lambda values string->number
                 let-values and = display reverse cons vector-set!
@@ -88,12 +89,12 @@
 
 (define-method dbd-execute ((conn <mysql-connection>) sql)
   (let ([mysql (slot-ref conn 'mysql)])
-    (unless (zero? (mysql-query mysql sql))
+    (unless (pointer-null? (mysql-query mysql sql))
       (assertion-violation 'mysql-query "failed" sql (mysql-error mysql)))
     (let ([result (mysql-store-result mysql)])
       (cond
        ;; select
-       [(zero? result)
+       [(pointer-null? result)
         (make <mysql-result>
           'mysql mysql
           'lst '()
@@ -103,7 +104,7 @@
         (let loop ([row (mysql-fetch-row result)]
                    [ret '()])
           (cond
-           [(= row NULL)
+           [(pointer-null? row)
             (let ([getter (make-getter mysql result)])
               (mysql-free-result result)
               (make <mysql-result>
@@ -114,7 +115,7 @@
             (let ([v (make-vector (mysql-field-count mysql))])
               (vector-for-each-with-index
                (lambda (val index)
-                 (vector-set! v index (mysql-row-ref row index)))
+                 (vector-set! v index (mysql-row-ref result row index)))
                v)
               (loop (mysql-fetch-row result) (cons v ret)))]))]))))
 
@@ -132,7 +133,7 @@
     (let-values ([(db host port) (parse-options options)])
       (cond
        [(and db host port)
-        (when (zero? (mysql-real-connect mysql host user password db port NULL NULL))
+        (when (pointer-null? (mysql-real-connect mysql host user password db port NULL 0))
           (assertion-violation 'dbd-connect "mysql connection failed" (mysql-error mysql)))
         (make <mysql-connection> 'mysql mysql)]
        [else

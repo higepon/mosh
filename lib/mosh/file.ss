@@ -42,8 +42,8 @@
    file-directory? file-symbolic-link? file-regular? file-readable?
    file-executable? file-writable? file-size-in-bytes file-stat-mtime
    file-stat-atime  file-stat-ctime
-   file->string file->list write-to-file directory-list)
-  (import (only (system)
+   file->string file->list write-to-file directory-list file->sexp-list)
+  (import (rnrs) (only (system)
                 create-directory delete-directory rename-file create-symbolic-link
                 file-directory? file-symbolic-link? file-regular? file-readable?
                 file-executable? file-writable? file-size-in-bytes file-stat-mtime
@@ -362,4 +362,14 @@
       file - file.
       contents - string contents.
 |#
+
+(define (file->sexp-list file)
+  (with-input-from-file file
+    (lambda ()
+      (let loop ([line (read)]
+                 [ret '()])
+        (cond
+         [(eof-object? line) (reverse ret)]
+         [else
+          (loop (read) (cons line ret))])))))
 )

@@ -27,16 +27,17 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (http)
-  (export http-get->utf8 http-get)
+  (export http-get->utf8 http-get http-post http-post->utf8)
   (import (rnrs)
           (mosh)
           (mosh control)
           (irregex)
           (match)
           (srfi :8)
-          (only (srfi :13) string-null?)
+          (only (srfi :13) string-null? string-join)
           (shorten)
           (mosh socket)
+          (uri)
           )
 
 ;; This library is undocumented. APIs is subject to change without notice.
@@ -65,10 +66,10 @@
          (cond
           [(irregex-search "([^:]+): (.+)" header) =>
            (^m (cons (irregex-match-substring m 1) (irregex-match-substring m 2)))]
-          [(irregex-search "^HTTP/1.1 ([0-9]+).*" header) =>
+          [(irregex-search "^HTTP/1.[01] ([0-9]+).*" header) =>
            (^m (cons "Status" (irregex-match-substring m 1)))]
           [else
-           (error 'header*->alist "invalid HTTP Response Header")])) header*))
+           (error 'header*->alist "invalid HTTP Response Header" header)])) header*))
 
 (define (read-header p)
   (let loop ([c1 (get-u8 p)]
@@ -109,45 +110,95 @@
 
 (define http-get->utf8
   (match-lambda*
-   [(host port path ssl?)
-    (receive (body status header*) (http-get host port path ssl?)
+   [(host port path secure?)
+    (receive (body status header*) (http-get host port path secure?)
              (values (utf8->string body) status header*))]
    [(uri)
-    (receive (host port path ssl?) (parse-uri uri)
-      (http-get->utf8 host port path ssl?))]))
+    (receive (host port path secure?) (parse-uri uri)
+      (http-get->utf8 host port path secure?))]))
+
+(define http-post->utf8
+  (match-lambda*
+   [(host port path secure? param-alist)
+    (receive (body status header*) (http-post host port path secure? param-alist)
+             (values (utf8->string body) status header*))]
+   [(uri param-alist)
+    (receive (host port path secure?) (parse-uri uri)
+      (http-post->utf8 host port path secure? param-alist))]))
 
 (define http-get
   (match-lambda*
-   [(host port path ssl?)
-    (let1 socket (make-client-socket host port)
-      (when (and ssl? (not (ssl-supported?)))
-        (assertion-violation 'http-get "ssl is not supprted"))
-      (when ssl?
-        (socket-sslize! socket))
-      (let1 p (socket-port socket)
-        (put-bytevector p (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
-        (let* ([header* (read-header p)]
-               [status (get-status header*)])
-          (cond
-           [(get-location header*) =>
-            (^(location) (http-get location))]
-           [else
-            (case status
-              [(200)
-               (let1 content-length (get-content-length header*)
-                 (let loop ([i 0]
-                            [body* '()])
-                   (cond
-                    [(= i content-length)
-                     (close-port p)
-                     (values (u8-list->bytevector (reverse body*)) status header*)]
-                    [else
-                     (loop (+ i 1) (cons (get-u8 p) body*))])))]
-              [else
-               (values #vu8() status header*)])]))))]
+   [(host port path secure?)
+    (http-send-request host port secure? (make-get-request path host))]
    [(uri)
-    (receive (host port path ssl?) (parse-uri uri)
-        (http-get host port path ssl?))
+    (receive (host port path secure?) (parse-uri uri)
+        (http-get host port path secure?))
     ]))
 
+(define (alist->urlencoded alist)
+  (string-join
+   (map (match-lambda
+;            [(key . value) (string-append (uri-encode key) "=" (uri-encode value))]) alist)
+            [(key . value) (string-append key "=" value)]) alist)
+   "&"))
+
+(define (make-get-request path host)
+  (write (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host) (current-error-port))
+  (string->utf8 (format "GET ~a HTTP/1.1\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\n\r\n" path host)))
+
+(define (make-post-request path host param-alist)
+  (let1 param (alist->urlencoded param-alist)
+    ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
+    (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length param) param))))
+
+(define (http-receive-response p)
+  (let* ([header* (read-header p)]
+         [status (get-status header*)])
+    (cond
+     [(get-location header*) =>
+      (^(location) (http-get location))]
+     [else
+      (case status
+        [(200)
+         (cond
+          [(get-content-length header*) =>
+           (^(len)
+             (let loop ([i 0]
+                        [body* '()])
+             (cond
+              [(= i len)
+               (close-port p)
+               (values (u8-list->bytevector (reverse body*)) status header*)]
+              [else
+               (loop (+ i 1) (cons (get-u8 p) body*))])))]
+          [else
+           (let loop ([body* '()])
+             (let1 u8 (get-u8 p)
+             (cond
+              [(eof-object? u8)
+               (close-port p)
+               (values (u8-list->bytevector (reverse body*)) status header*)]
+              [else
+               (loop (cons u8 body*))])))])]
+        [else
+         (values #vu8() status header*)])])))
+
+(define (http-send-request host port secure? request)
+  (let1 socket (make-client-socket host port)
+    (when (and secure? (not (ssl-supported?)))
+      (assertion-violation 'http-get "ssl is not supprted"))
+    (when secure?
+      (socket-sslize! socket))
+    (let1 p (socket-port socket)
+      (put-bytevector p request)
+      (http-receive-response p))))
+
+(define http-post
+  (match-lambda*
+   [(host port path secure? param-alist)
+    (http-send-request host port secure? (make-post-request path host param-alist))]
+   [(uri param-alist)
+    (receive (host port path secure?) (parse-uri uri)
+      (http-post host port path secure? param-alist))
+    ]))
 )
