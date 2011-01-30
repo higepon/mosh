@@ -106,7 +106,7 @@
 |#
 (library (mosh ffi)
   (export make-c-function c-function open-shared-library find-shared-library (rename (%ffi-lookup lookup-shared-library))
-          pointer->string pointer->c-function
+          pointer->string pointer->c-function string->utf8z
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-unsigned-short size-of-int size-of-unsigned-int size-of-long size-of-unsigned-long
           size-of-long-long size-of-void* size-of-size_t size-of-pointer size-of-unsigned-long-long
@@ -174,7 +174,7 @@
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case utf8->string
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
                        + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append
-                       bytevector-u8-set!)
+                       bytevector-u8-set! string->utf8 bytevector-length when bytevector-u8-ref)
           (srfi :98)
           (only (srfi :13) string-prefix?)
           (only (rnrs mutable-strings) string-set!)
@@ -1477,7 +1477,16 @@
       (int64_t            . #x12)    ; FFI_RETURN_TYPE_INT64_T
       (uint64_t           . #x13)))  ; FFI_RETURN_TYPE_UINT64_T
 
-
+(define (string->utf8z str)
+  (let* ([u8 (string->utf8 str)]
+         [len (bytevector-length u8)]
+         [u8z (make-bytevector (+ len 1))])
+    (let loop ((i 0))
+      (when (< i len)
+        (bytevector-u8-set! u8z i (bytevector-u8-ref u8 i))
+        (loop (+ i 1))))
+    (bytevector-u8-set! u8z len 0)
+    u8z))
 
 (define pointer-null
   (integer->pointer 0))
