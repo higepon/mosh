@@ -38,7 +38,7 @@
    (only (rnrs) define quote let unless when assertion-violation zero?
                 guard cond else => lambda values string->number raise
                 let-values and = display reverse cons vector-set!
-                vector-ref make-vector vector-length + let* equal?
+                vector-ref make-vector vector-length + let* equal? string->utf8
                 make-hashtable string-hash hashtable-set! hashtable-ref
                 string-downcase)
    (mosh dbi))
@@ -89,7 +89,8 @@
 
 (define-method dbd-execute ((conn <mysql-connection>) sql)
   (let ([mysql (slot-ref conn 'mysql)])
-    (unless (zero? (mysql-query mysql sql))
+    ;; we assume mysql-server accepts utf8
+    (unless (zero? (mysql-query mysql (string->utf8 sql)))
       (raise (make-dbi-error 'mysql-query sql (mysql-error mysql) (mysql-sqlstate mysql))))
     (let ([result (mysql-store-result mysql)])
       (cond

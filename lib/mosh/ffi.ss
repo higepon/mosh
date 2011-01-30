@@ -170,10 +170,11 @@
           null-terminated-bytevector->string
           null-terminated-utf8->string)
   (import (only (rnrs) append display define define-syntax syntax-case lambda map let syntax exists string=? string
-                       quasiquote unless assertion-violation quote = length and number? assq => cdr assoc pair?
-                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case
+                       quasiquote unless assertion-violation quote = length and number? assq => cdr assoc pair? make-bytevector
+                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case utf8->string
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
-                       + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append)
+                       + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append
+                       bytevector-u8-set!)
           (srfi :98)
           (only (srfi :13) string-prefix?)
           (only (rnrs mutable-strings) string-set!)
@@ -304,12 +305,13 @@
        [else
         (loop (+ index 1) (pointer-ref-c-signed-char pointer (+ index 1)))])))
   (let* ([len (if (pair? len) (car len) (c-strlen pointer))]
-         [str (make-string len)])
+         [str (make-bytevector len)])
     (let loop ([i 0])
       (cond
-       [(= len i) str]
+       [(= len i) (utf8->string str)]
        [else
-        (string-set! str i (integer->char (pointer-ref-c-signed-char pointer i)))
+        ;; we assume u8
+        (bytevector-u8-set! str i (pointer-ref-c-uint8 pointer i))
         (loop (+ i 1))]))))
 
 #|

@@ -69,7 +69,7 @@
 ;; Executes the SQL statement
 ;; .form (query obj query)
 ;; .returns Zero if the statement was successful. Non-zero if an error occurred.
-(define mysql-query        (c-function-wrap libmysqlclient void* mysql_query        void* char*))
+(define mysql-query        (c-function-wrap libmysqlclient int mysql_query        void* char*))
 
 ;; After invoking query, you must call store-result() for every statement that successfully produces a result set (SELECT, SHOW, DESCRIBE, EXPLAIN, CHECK TABLE, and so forth).
 ;; .form (store-result obj)
