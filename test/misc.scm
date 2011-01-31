@@ -42,6 +42,7 @@
 (test-equal "" (read-string "\"\\\n \""))
 (test-equal "" (read-string "\"\\ \r \""))
 (test-equal ""  (read-string "\"\\\t\r\t\""))
+(test-equal 3  (read-string "3|4"))
 
 (test-equal 1
   (let ()
