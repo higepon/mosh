@@ -87,6 +87,7 @@ datum          : lexme_datum
                | defining_datum
                | defined_datum
                | DATUM_COMMENT datum datum { $$ = $3; }
+               | DATUM_COMMENT datum END_OF_FILE { currentVM()->readerContext()->setParsed(Object::Eof); YYACCEPT; }
                | DATUM_COMMENT lexme_datum { $$ = Object::Ignore; }
                | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;

@@ -10,6 +10,7 @@ runtest:
 	$(MOSH_TARGET) test/misc.scm
 	$(MOSH_TARGET) test/template.scm
 	$(MOSH_TARGET) test/testing.scm
+	$(MOSH_TARGET) test/comment.scm
 	$(MOSH_TARGET) test/mosh-test.scm
 	$(MOSH_TARGET) test/io-error.scm
 	$(MOSH_TARGET) test/input-output-port.scm
