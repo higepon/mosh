@@ -67,4 +67,8 @@
 
 (test-eq #f (string->number ""))
 (test-eq 1  (expt -1 (/ 4 2)))
+
+(let ([port (open-string-input-port "\"hige\"hage")])
+  (test-equal "hige" (read port))
+  (test-equal 'hage (read port)))
 (test-results)

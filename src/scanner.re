@@ -389,9 +389,7 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             return REGEXP;
         }
-        "\"" STRING_ELEMENT* "\"" DELMITER {
-
-            YYCURSOR--;
+        "\"" STRING_ELEMENT* "\"" {
             yylval->stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
             YYTOKEN = YYCURSOR;
             return STRING;
