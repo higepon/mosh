@@ -54,12 +54,17 @@
   (export dbi-connect dbi-prepare dbi-execute dbi-getter dbi-result->list dbi-close
           dbi-do
           <connection> <query> <result>
-          dbd-connect dbd-execute <dbd>)
+          dbd-connect dbd-execute <dbd>
+          make-dbi-error dbi-error?
+          dbi-error-sql
+          dbi-error-who
+          dbi-error-string
+          dbi-error-num-string)
   (import
-     (only (rnrs) define quote cond => lambda assertion-violation values
+     (only (rnrs) define quote cond => lambda assertion-violation values define-condition-type
                   let-values else and quasiquote unquote string->symbol let
                   let* null? apply string-append reverse if string=? car
-                  cdr cons string? number? char? when display string->list
+                  cdr cons string? number? char? when display string->list &error
                   map)
      (only (mosh) symbol-value format)
      (only (clos user) define-class define-generic define-method initialize initialize-direct-slots
@@ -77,6 +82,14 @@
     - (dbi-result->list <xxxx-result>) returns list of rows
     - (dbi-close <xxx-connection> returns unspecified.
 |#
+
+
+(define-condition-type &dbi-error &error
+  make-dbi-error dbi-error?
+  (who dbi-error-who)
+  (sql dbi-error-sql)
+  (string dbi-error-string)
+  (num-string dbi-error-num-string))
 
 #|
     Variable: <connection>

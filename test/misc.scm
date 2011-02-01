@@ -42,6 +42,7 @@
 (test-equal "" (read-string "\"\\\n \""))
 (test-equal "" (read-string "\"\\ \r \""))
 (test-equal ""  (read-string "\"\\\t\r\t\""))
+(test-equal 3  (read-string "3|4"))
 
 (test-equal 1
   (let ()
@@ -66,4 +67,8 @@
 
 (test-eq #f (string->number ""))
 (test-eq 1  (expt -1 (/ 4 2)))
+
+(let ([port (open-string-input-port "\"hige\"hage")])
+  (test-equal "hige" (read port))
+  (test-equal 'hage (read port)))
 (test-results)

@@ -189,7 +189,7 @@ int Scanner::scan(YYSTYPE* yylval)
   DECIMAL_10             = (UINTEGER_10 SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." SUFFIX);
   UREAL_2                = UINTEGER_2 | (UINTEGER_2 "/" UINTEGER_2);
   UREAL_8                = UINTEGER_8 | (UINTEGER_8 "/" UINTEGER_8);
-  UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
+  UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10 MANTISSA_WIDTH;
   UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16) | DECIMAL_10;
   REAL_10                = (SIGN UREAL_10) | ([\+\-] NAN_INF);
   REAL_16                = (SIGN UREAL_16) | ([\+\-] NAN_INF);
@@ -389,9 +389,7 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             return REGEXP;
         }
-        "\"" STRING_ELEMENT* "\"" DELMITER {
-
-            YYCURSOR--;
+        "\"" STRING_ELEMENT* "\"" {
             yylval->stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
             YYTOKEN = YYCURSOR;
             return STRING;

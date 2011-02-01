@@ -106,7 +106,7 @@
 |#
 (library (mosh ffi)
   (export make-c-function c-function open-shared-library find-shared-library (rename (%ffi-lookup lookup-shared-library))
-          pointer->string pointer->c-function
+          pointer->string pointer->c-function string->utf8z
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-unsigned-short size-of-int size-of-unsigned-int size-of-long size-of-unsigned-long
           size-of-long-long size-of-void* size-of-size_t size-of-pointer size-of-unsigned-long-long
@@ -170,10 +170,11 @@
           null-terminated-bytevector->string
           null-terminated-utf8->string)
   (import (only (rnrs) append display define define-syntax syntax-case lambda map let syntax exists string=? string
-                       quasiquote unless assertion-violation quote = length and number? assq => cdr assoc pair?
-                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case
+                       quasiquote unless assertion-violation quote = length and number? assq => cdr assoc pair? make-bytevector
+                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case utf8->string
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
-                       + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append)
+                       + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append
+                       bytevector-u8-set! string->utf8 bytevector-length when bytevector-u8-ref)
           (srfi :98)
           (only (srfi :13) string-prefix?)
           (only (rnrs mutable-strings) string-set!)
@@ -304,12 +305,13 @@
        [else
         (loop (+ index 1) (pointer-ref-c-signed-char pointer (+ index 1)))])))
   (let* ([len (if (pair? len) (car len) (c-strlen pointer))]
-         [str (make-string len)])
+         [str (make-bytevector len)])
     (let loop ([i 0])
       (cond
-       [(= len i) str]
+       [(= len i) (utf8->string str)]
        [else
-        (string-set! str i (integer->char (pointer-ref-c-signed-char pointer i)))
+        ;; we assume u8
+        (bytevector-u8-set! str i (pointer-ref-c-uint8 pointer i))
         (loop (+ i 1))]))))
 
 #|
@@ -1475,7 +1477,16 @@
       (int64_t            . #x12)    ; FFI_RETURN_TYPE_INT64_T
       (uint64_t           . #x13)))  ; FFI_RETURN_TYPE_UINT64_T
 
-
+(define (string->utf8z str)
+  (let* ([u8 (string->utf8 str)]
+         [len (bytevector-length u8)]
+         [u8z (make-bytevector (+ len 1))])
+    (let loop ((i 0))
+      (when (< i len)
+        (bytevector-u8-set! u8z i (bytevector-u8-ref u8 i))
+        (loop (+ i 1))))
+    (bytevector-u8-set! u8z len 0)
+    u8z))
 
 (define pointer-null
   (integer->pointer 0))

@@ -26,13 +26,14 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
  (library (template)
-  (export template-vars template->sexp eval-template eval-template-file ref)
+  (export template-vars template->sexp eval-template eval-template-file ref h)
   (import (rnrs)
           (shorten)
           (mosh)
           (mosh file)
           (srfi :39)
           (rnrs eval)
+          (rename (mosh cgi) (escape h))
           (mosh control)
           (irregex))
 
