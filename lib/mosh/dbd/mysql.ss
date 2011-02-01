@@ -34,13 +34,12 @@
    (clos user)
    (clos core)
    (only (mosh) format)
-   (only (mosh ffi) pointer-null?)
-   (only (mosh ffi) string->utf8z)
+   (only (mosh ffi) pointer-null? pointer->integer string->utf8z)
    (only (rnrs) define quote let unless when assertion-violation zero?
                 guard cond else => lambda values string->number raise
-                let-values and = display reverse cons vector-set! current-error-port
+                let-values and = display reverse cons vector-set! current-error-port unquote
                 vector-ref make-vector vector-length + let* equal? string->utf8
-                make-hashtable string-hash hashtable-set! hashtable-ref
+                make-hashtable string-hash hashtable-set! hashtable-ref quasiquote
                 string-downcase)
    (mosh dbi))
 
@@ -95,13 +94,13 @@
       (raise (make-dbi-error 'mysql-query sql (mysql-error mysql) (mysql-sqlstate mysql))))
     (let ([result (mysql-store-result mysql)])
       (cond
-       ;; select
+       ;; insert, update, create table
        [(pointer-null? result)
         (make <mysql-result>
           'mysql mysql
           'lst '()
-          'getter (lambda a 'none))]
-       ;; insert, update, create table
+          'getter (lambda a `(insert-id . ,(pointer->integer (mysql-insert-id mysql)))))]
+       ;; select
        [else
         (let loop ([row (mysql-fetch-row result)]
                    [ret '()])
