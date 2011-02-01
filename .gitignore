@@ -161,6 +161,9 @@ GSYMS
 GTAGS
 work.scm
 
+# autotools
+automake/*
+
 # test
 nmosh-cache
 /cache
