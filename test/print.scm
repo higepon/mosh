@@ -116,4 +116,12 @@
   (test-equal "(#1=(1 2) #1#)" (write-to-string write/ss x))
 )
 
+(let-values (((port getter) (open-string-output-port)))
+  (display #\alarm port)
+  (display #\backspace port)
+  (display #\vtab port)
+  (display #\page port)
+  (test-equal "\a\b\v\f" (getter)))
+
+
 (test-results)
