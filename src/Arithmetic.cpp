@@ -1478,7 +1478,7 @@ double FlonumUtil::algorithmR(Object f, const int e, const double z0)
         }
         if (Arithmetic::lt(D2, y)) {
             if (negD && m == iexpt_2n52 &&
-                Arithmetic::gt(Arithmetic::bitwiseShiftLeft(D2, 1), y)) {
+                Arithmetic::gt(Arithmetic::bitwiseShiftLeft(D2, 1), y) && k > -1074) {
                 z = prevfloat(z);
                 continue;
             }
