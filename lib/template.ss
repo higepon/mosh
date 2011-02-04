@@ -68,14 +68,14 @@
         [(irregex-search (string->irregex "^<%#(.+?)%>(.*)" 's) templ) =>
          (^m
           (compile-elem (irregex-match-substring m 2) port))]
+        [(irregex-search (string->irregex "^<%=unsafe(.+?)%>(.*)" 's) templ) =>
+         (^m
+          (format port "(display ~a)" (irregex-match-substring m 1))
+          (compile-elem (irregex-match-substring m 2) port))]
         ;; output with escape
         [(irregex-search (string->irregex "^<%=(.+?)%>(.*)" 's) templ) =>
          (^m
           (format port "(display (h ~a))" (irregex-match-substring m 1))
-          (compile-elem (irregex-match-substring m 2) port))]
-        [(irregex-search (string->irregex "^<%=unsafe(.+?)%>(.*)" 's) templ) =>
-         (^m
-          (format port "(display ~a)" (irregex-match-substring m 1))
           (compile-elem (irregex-match-substring m 2) port))]
         [(irregex-search (string->irregex "^<%(.+?)%>(.*)" 's) templ) =>
          (^m
