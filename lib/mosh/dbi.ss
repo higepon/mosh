@@ -62,10 +62,10 @@
           dbi-error-num-string)
   (import
      (only (rnrs) define quote cond => lambda assertion-violation values define-condition-type
-                  let-values else and quasiquote unquote string->symbol let
-                  let* null? apply string-append reverse if string=? car
-                  cdr cons string? number? char? when display string->list &error
-                  map)
+                  let-values else and quasiquote unquote string->symbol let = list->string
+                  let* null? apply string-append reverse if string=? car string-length
+                  cdr cons string? number? char? when display string->list &error case
+                  string-ref + map)
      (only (mosh) symbol-value format)
      (only (clos user) define-class define-generic define-method initialize initialize-direct-slots
                        make slot-ref))
@@ -230,10 +230,26 @@
      [else
       (assertion-violation 'dbi-connect "invalid dsn. dbi:drivername:options required" dsn)])))
 
+(define (escape-sql sql)
+  (let* ([len (string-length sql)]
+         [ret '()])
+    (let loop ([i 0]
+               [ret '()])
+      (cond
+       [(= len i) (list->string (reverse ret))]
+       [else
+        (case (string-ref sql i)
+          [(#\')
+           (loop (+ i 1) (cons #\' (cons #\' ret)))]
+          [(#\\)
+           (loop (+ i 1) (cons #\\ (cons #\\ ret)))]
+          [else
+           (loop (+ i 1) (cons (string-ref sql i)  ret))])]))))
+
 (define (prepare-helper obj)
   (cond
    [(string? obj)
-    (format "~s" obj)]
+    (format "~s" (escape-sql obj))]
    [(number? obj)
     (format "~a" obj)]
    [(char? obj)
