@@ -87,6 +87,9 @@ Object pointerRefCSignedShortEx(VM* theVM, int argc, const Object* argv);
 Object pointerRefCUnsignedCharEx(VM* theVM, int argc, const Object* argv);
 Object pointerRefCSignedCharEx(VM* theVM, int argc, const Object* argv);
 
+/* for SQLite */
+Object pointerCopyDEx(VM* theVM, int argc, const Object* argv);
+Object bytevectorPointerEx(VM* theVM, int argc, const Object* argv);
 
 } // namespace scheme
 

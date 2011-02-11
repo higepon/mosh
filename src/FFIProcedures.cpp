@@ -50,6 +50,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "SString.h"
+#include "ByteVector.h"
 #include "VM.h"
 #include "ProcedureMacro.h"
 #include "FFIProcedures.h"
@@ -1464,4 +1465,25 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
+}
+
+/* for SQLite */
+
+Object scheme::pointerCopyDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer-copy!");
+    checkArgumentLength(3);
+    argumentAsPointer(0, p0); // source
+    argumentAsPointer(1, p1); // destination
+    argumentAsFixnum(2, len);
+    memcpy((void *)p1->pointer(),(const void *)p0->pointer(),len);
+    return Object::Undef;
+}
+
+Object scheme::bytevectorPointerEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-pointer");
+    checkArgumentLength(1);
+    argumentAsByteVector(0, bv);
+    return Object::makePointer(bv->data());
 }

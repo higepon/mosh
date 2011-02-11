@@ -660,6 +660,8 @@
   pointer-set-c-float!
   pointer-set-c-double!
   pointer-set-c-pointer!
+  pointer-copy!
+  bytevector-pointer
   shared-errno
   simple-struct?
   make-simple-struct
