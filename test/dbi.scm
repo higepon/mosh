@@ -3,7 +3,7 @@
         (mosh)
         (mosh test)
         (clos core))
-(dbi-connect "dbi:mysql:mysql:127.0.0.1:3306" "root" "root")
+
 (let ([conn (guard (c (#t (display "mysql not supporeted\n") #f))
                       (dbi-connect "dbi:mysql:mysql:127.0.0.1:3306" "root" "root"))])
   (when conn
