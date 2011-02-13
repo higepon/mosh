@@ -68,4 +68,7 @@
 (test-error assertion-violation? (-))
 (test-error assertion-violation? (apply - '()))
 
+;; http://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308/
+2.2250738585072012e-308
+
 (test-results)

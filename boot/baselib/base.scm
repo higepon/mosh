@@ -677,7 +677,7 @@
          [calls-hash (second result)]
          [sample-closures  (cddr result)]
          [sample-table (summerize-samples calls-hash sample-closures)])
-    (print "time%        msec      calls   name                              location")
+    (display "time%        msec      calls   name                              location\n" (current-error-port))
     (for-each
      (lambda (x)
        (let* ([closure-or-src  (first x)]
@@ -686,7 +686,7 @@
               [file     (if (pair? location) (car location) #f)]
               [lineno   (if (pair? location) (second location) #f)]
               [count    (fourth x)])
-         (format #t " ~a   ~a ~a   ~a    ~a\n"
+         (format (current-error-port) " ~a   ~a ~a   ~a    ~a\n"
                  (lpad (third x) " " 3)
                  (lpad (* (second x) 10) " " 10)
                  (lpad count " " 10)
@@ -703,7 +703,7 @@
       )
      )
     (let1 seen-syms (vector->list (hashtable-keys sample-table))
-    (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
+    (format (current-error-port) "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
 ;; (define (show-profile result)
 ;;   (let ([total (first result)]
 ;;         [calls-hash (second result)]

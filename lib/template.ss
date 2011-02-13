@@ -26,7 +26,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
  (library (template)
-  (export template-vars template->sexp eval-template eval-template-file ref h)
+  (export template-vars template->sexp eval-template eval-template-file ref h template-dir)
   (import (rnrs)
           (shorten)
           (mosh)
@@ -38,6 +38,7 @@
           (irregex))
 
 (define template-vars (make-parameter #f))
+(define template-dir (make-parameter #f))
 
 (define-syntax ref
   (lambda (x)
@@ -45,22 +46,36 @@
       [(_ alist key)
        #'(assoc-ref alist 'key)])))
 
-(define (eval-template-file file vars)
-  (eval-template (file->string file) vars))
+(define (eval-template-file file vars . import-spec*)
+  (let1 path (if (template-dir) (string-append (template-dir) "/" file) file)
+    (apply eval-template (file->string path) vars import-spec*)))
 
-(define (eval-template template vars)
+(define (eval-template template vars . import-spec*)
   (parameterize ([template-vars vars])
     (let1 templ (template->sexp template vars)
       (if (eof-object? templ)
           '()
-          (eval templ (environment '(rnrs) '(mosh) '(template)))))))
+          (eval templ (apply environment '(rnrs) '(mosh) '(template) '(match) import-spec*))))))
 
 ;; http://d.hatena.ne.jp/yuum3/20080203/1202049898
 (define (compile-elem templ port)
   (cond [(string=? templ "") #t]
-        [(irregex-search (string->irregex "^<%=(.+?)%>(.*)" 's) templ) =>
+        [(irregex-search (string->irregex "^<%include (.+?)\\s*%>(.*)" 's) templ) =>
+         (^m
+          (let1 path (if (template-dir) (string-append (template-dir) "/" (irregex-match-substring m 1)) (irregex-match-substring m 1))
+            (compile-elem (string-append (file->string path) (irregex-match-substring m 2)) port)))]
+        ;; comment
+        [(irregex-search (string->irregex "^<%#(.+?)%>(.*)" 's) templ) =>
+         (^m
+          (compile-elem (irregex-match-substring m 2) port))]
+        [(irregex-search (string->irregex "^<%=unsafe(.+?)%>(.*)" 's) templ) =>
          (^m
           (format port "(display ~a)" (irregex-match-substring m 1))
+          (compile-elem (irregex-match-substring m 2) port))]
+        ;; output with escape
+        [(irregex-search (string->irregex "^<%=(.+?)%>(.*)" 's) templ) =>
+         (^m
+          (format port "(display (h ~a))" (irregex-match-substring m 1))
           (compile-elem (irregex-match-substring m 2) port))]
         [(irregex-search (string->irregex "^<%(.+?)%>(.*)" 's) templ) =>
          (^m
