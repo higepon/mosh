@@ -142,12 +142,13 @@
   ;; output
   (when (file-exists? filename)
     (delete-file filename))
-  (call-with-output-file filename output))
+  (call-with-output-file filename output)
+  (display filename))
 
 (define (gen-lib pth)
   (format #t "generating library for ~a\n" pth)
   (proc pth (file->table-list pth))
-  (display "done.\n"))
+  (display " generated.\n"))
 
 (for-each gen-lib libs)
 
