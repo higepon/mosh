@@ -306,6 +306,12 @@ int main(int argc, char *argv[])
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
     theVM->setValueString(UC("%invoke-applet"),Object::makeBool(invokeApplet));
     theVM->setValueString(UC("%nmosh-guru-mode"),Object::makeBool(isGuruMode));
+#ifdef NMOSH_EMBEDDED_MODE
+    theVM->setValueString(UC("%nmosh-embedded-mode"),Object::makeBool(1));
+#else
+    theVM->setValueString(UC("%nmosh-embedded-mode"),Object::makeBool(0));
+#endif
+
 #endif
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));

@@ -91,7 +91,7 @@ dnl if test $have_onig = "no" ; then
 dnl     AC_CHECK_LIB([onig],[regexec],[LIBS="$LIBS -lonig" have_onig="yes"])
 dnl fi
 
-# option2 was disabled (mosh doesn't provides some required defn)
+# option2 was disabled (mosh doesn't provide some required definition)
 dnl # option2: check for extlibs
 dnl if test -d ${srcdir}/extlibs/onig-5.9.2; then
 dnl     have_onig=yes

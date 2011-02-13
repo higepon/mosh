@@ -3,6 +3,7 @@
 GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
 		 -g \
 		 -Wall -Wno-deprecated \
+		 -I $(top_srcdir)/src/posix/terminal \
 		 -I src -I $(includedir) \
 		 -D MONA_SCHEME -D USE_BOEHM_GC \
 		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \
@@ -175,7 +176,7 @@ src/OSCompatThread.h src/OSCompatThread.cpp \
 src/VMFactory.cpp src/VMFactory.h \
 src/SimpleStruct.h \
 src/OSCompat.h src/OSCompat.cpp \
-src/stubs.cpp
+src/stubs.cpp src/posix/terminal/terminal.c 
 
 if FFI_I386
 MOSH_CORE_SRCS += src/ffi_stub_i386.S
@@ -197,17 +198,15 @@ noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 libmosh_main_a_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
 mosh_SOURCES = $(MOSH_CORE_SRCS)
 mosh_LDADD = libmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
-mosh_DEPENDENCIES = @LOCAL_ONIG@ libmosh_main.a
+mosh_DEPENDENCIES = libmosh_main.a
 
-libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp
+libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp 
 libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) -D WITH_NMOSH_DEFAULTS
 nmosh_SOURCES = $(MOSH_CORE_SRCS)
 nmosh_LDADD = libnmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
-nmosh_DEPENDENCIES = @LOCAL_ONIG@ libnmosh_main.a
+nmosh_DEPENDENCIES = libnmosh_main.a
 
 libmosh_core_for_test_a_SOURCES = $(MOSH_CORE_SRCS)
-libmosh_core_for_test_a_DEPENDENCIES = @LOCAL_ONIG@
-
 
 if MINGW32
 nmosh_LDADD += mosh-icon.o

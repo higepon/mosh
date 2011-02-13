@@ -1,6 +1,8 @@
 #!/bin/sh
 mkdir -p automake
-mosh --loadpath=lib misc/scripts/gencorelibmk.sps
+mkdir -p lib/nmosh/stubs
+mosh --loadpath=lib misc/scripts/gen-corelibmk.sps
+mosh --loadpath=lib misc/scripts/gen-nmosh-stubs.sps
 MYMAKE=`which gmake 2>/dev/null 1>/dev/null && echo gmake || echo make`
 autoreconf -ifv && \
 $MYMAKE -C boot bootstrap && \
