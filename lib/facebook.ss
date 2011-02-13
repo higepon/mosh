@@ -58,7 +58,7 @@
           (vector->list json)])]
       [else
        (aif (assoc "WWW-Authenticate" header*)
-            (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(,api ,token))
+            (error 'call-json-api (format "facebook API error: ~a ~a:~a" status (car it) (cdr it)) `(,api ,token))
             (error 'call-json-api "facebook API error: unknown error" `(,api ,token)))])))
 
 (define (fb-friends token)
@@ -79,18 +79,24 @@
             (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(picture ,token))
             (error 'call-json-api "facebook API error: unknown error" `(picture ,token)))])))
 
-(define (fb-post-feed token message)
-(let-values (([body status header*] (http-post (format "https://graph.facebook.com/me/feed?access_token=~a" token) `(("message" . ,message)))))
-    (case status
-      [(200)
-       (match (json-read (open-string-input-port body))
-         [#(("data" . data) paging ...)
-          (map vector->list data)]
-         [json
-          (error 'call-json-api (format "facebook API error: ~a" json))])]
-      [else
-       (aif (assoc "WWW-Authenticate" header*)
-            (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(,"feed" ,token))
-            (error 'call-json-api "facebook API error: unknown error" `(,"feed" ,token)))])))
+(define fb-post-feed
+  (match-lambda*
+   [(token message)
+    (fb-post-feed "me" token message)]
+    [(who token message)
+     (let-values (([body status header*] (http-post->utf8 (format "https://graph.facebook.com/~a/feed?access_token=~a" who token) `(("message" . ,message)))))
+       (case status
+         [(200)
+          (match (json-read (open-string-input-port body))
+            [#(("data" . data) paging ...)
+             (map vector->list data)]
+            [#((id . _))
+             '()]
+            [json
+             (error 'call-json-api (format "facebook API error: ~a" json))])]
+         [else
+          (aif (assoc "WWW-Authenticate" header*)
+               (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(,"feed" ,token))
+               (error 'call-json-api "facebook API error: unknown error" `(,"feed" ,token)))]))]))
 
 )
