@@ -35,10 +35,6 @@ AM_CXXFLAGS = $(GLOBAL_CFLAGS)
 BOEHM_GC_DIR = extlibs/gc-7.1
 GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 
-## Regexp library oniguruma
-#ONIG_DIR   = onig-5.7.0
-#REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
-
 # for GTEST
 GTEST_DIR     = $(top_srcdir)/gtest
 USER_DIR      = .
@@ -223,14 +219,8 @@ mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
 endif 
 
 if BUILD_LOCAL_ONIG
-$(top_builddir)/onig/Makefile:
-	mkdir -p onig
-	(cd onig && $(top_srcdir)/onig/configure @LOCAL_CONFIGURE_ARGS@ --disable-shared)
-
-local_oniguruma_tree: $(top_builddir)/onig/Makefile
-
-@LOCAL_ONIG@: local_oniguruma_tree
-	$(MAKE) -C onig
+include extlibs/onig-5.9.2.mk
+MOSH_CORE_SRCS += $(ONIG_SRCS)
 endif
 
 BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Reader.tab.cpp src/NumberReader.tab.cpp src/Scanner.cpp src/NumberScanner.cpp src/cprocedures.cpp src/labels.cpp src/OSConstants.h
