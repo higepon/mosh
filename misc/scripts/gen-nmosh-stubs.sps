@@ -1,9 +1,8 @@
 (import (yuni util tables scheme)
         (rnrs)
-        (yuni core)
-        (yuni util files)
+        (yuni core) (yuni util files)
         (srfi :48)
-        (mosh pp)
+        (mosh pp) (nmosh ffi pffi)
         (shorten))
 
 (define targets '("src/ext" "src/posix" "src/win32"))
@@ -25,6 +24,7 @@
 
 (define (proc pth table*)
   (define filename)
+  (define internal? #f)
   (define myname #f)
   (define libname)
   (define constants '())
@@ -72,7 +72,7 @@
     (define (emit-function tbl)
       (define (emit ret name args)
         ;; emit function definition
-        (pp `(define ,name (c-function 
+        (pp `(define ,name (pffi-c-function 
                              %library
                              ,(convtype ret) 
                              ,name ,@(if args (map convtype args) '()))) p))
@@ -81,10 +81,12 @@
     (format p ";; generated from ~a DO NOT EDIT!!\n" pth)
     (format p "(library (nmosh stubs ~a)\n" myname)
     (pp `(export ,@exports) p)
-    (pp '(import (mosh ffi) (rnrs) (nmosh ffi stublib)) p)
+    (pp '(import (mosh ffi) (rnrs) (nmosh ffi pffi) (nmosh ffi stublib)) p)
 
-    ;; emit globals (handle for shared-library)
-    (format p "\n\n(define-ffi-library %library ~a ~a)\n" libname libname)
+    ;; emit globals (handle for shared-library or pffi)
+    (if internal?
+      (format p "\n\n(define %library (make-pffi-ref '~a))\n" libname)
+      (format p "\n\n(define-ffi-library %library ~a ~a)\n" libname libname))
 
     (newline p)
 
@@ -102,6 +104,9 @@
     (for-each-tablesym 'c-function-table emit-function)
     ;; emit footer
     (display ")\n" p))
+
+  ;; collect internal?
+  (for-each-tablesym '*internal* (^ _ (set! internal? #t)))
 
   ;; collect myname
   (for-each (^e (let ((name (table-metadata-ref e 'libname:)))
