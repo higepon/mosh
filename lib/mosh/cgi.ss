@@ -6,6 +6,7 @@
           (mosh control)
           (srfi :98)
           (irregex)
+          (match)
           (only (mosh) digit->integer  string-split format call-with-string-io bytevector-for-each  regexp-replace-all assoc-ref)
           )
 
@@ -113,11 +114,13 @@
   (let* ([content-body (if (pair? body) (car body)  (request-body (request-method)))]
          [parsed (parse-query-string content-body)])
     (values
-     (lambda (key)
+     (match-lambda*
+      [(key)
        (let ([value (assoc (if (symbol? key) (symbol->string key) key) parsed)])
          (if value
              (cadr value)
-             #f)))
+             #f))]
+      [else parsed])
      request-method)))
 
 (define (header . alist*)
