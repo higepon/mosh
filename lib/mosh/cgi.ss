@@ -114,7 +114,7 @@
          [parsed (parse-query-string content-body)])
     (values
      (lambda (key)
-       (let ([value (assoc key parsed)])
+       (let ([value (assoc (if (symbol? key) (symbol->string key) key) parsed)])
          (if value
              (cadr value)
              #f)))
