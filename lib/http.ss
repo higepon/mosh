@@ -148,7 +148,7 @@
 
 (define (make-post-request path host param-alist)
   (let1 param (alist->urlencoded param-alist)
-    (format (current-error-port) "param=<~s>" param)
+;    (format (current-error-port) "param=<~s>" param)
     ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
     (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length param) param))))
 
