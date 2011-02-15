@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (facebook)
-  (export fb-news fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path)
+  (export fb-news fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path fb-friend)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -47,8 +47,8 @@
 (define (fb-picture-path id)
   (format "http://graph.facebook.com/~a/picture" id))
 
-(define (call-json-api api token)
-  (let-values (([body status header*] (http-get->utf8 (format "https://graph.facebook.com/me/~a?access_token=~a" api token))))
+(define (call-json-api id api token)
+  (let-values (([body status header*] (http-get->utf8 (format "https://graph.facebook.com/~a/~a?access_token=~a" id api token))))
     (case status
       [(200)
        (match (json-read (open-string-input-port body))
@@ -61,14 +61,19 @@
             (error 'call-json-api (format "facebook API error: ~a ~a:~a" status (car it) (cdr it)) `(,api ,token))
             (error 'call-json-api "facebook API error: unknown error" `(,api ,token)))])))
 
+
+
 (define (fb-friends token)
-  (call-json-api 'friends token))
+  (call-json-api 'me 'friends token))
 
 (define (fb-user token)
-  (call-json-api "" token))
+  (call-json-api 'me "" token))
+
+(define (fb-friend id token)
+  (call-json-api id "" token))
 
 (define (fb-news token)
-  (call-json-api 'home token))
+  (call-json-api 'me 'home token))
 
 (define (fb-picture token)
   (let-values (([body status header*] (http-get (format "https://graph.facebook.com/me/picture?access_token=~a" token))))

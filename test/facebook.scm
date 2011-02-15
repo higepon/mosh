@@ -31,6 +31,8 @@
   (test-true (bytevector? jpg))
   (test-equal jpg-magic (bytevector-u16-ref jpg 0 'little)))
 
-(fb-post-feed access-token "あああいうえおかき")
+;(fb-post-feed access-token "あああいうえおかき")
+
+(test-true (list? (fb-friend "100001165496695" access-token)))
 
 (test-results)
