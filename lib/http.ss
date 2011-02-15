@@ -64,7 +64,7 @@
 (define (header*->alist header*)
   (map (^(header)
          (cond
-          [(irregex-search "([^:]+): (.+)" header) =>
+          [(irregex-search "([^:]+): (.*)" header) =>
            (^m (cons (irregex-match-substring m 1) (irregex-match-substring m 2)))]
           [(irregex-search "^HTTP/1.[01] ([0-9]+).*" header) =>
            (^m (cons "Status" (irregex-match-substring m 1)))]
@@ -135,11 +135,11 @@
         (http-get host port path secure?))
     ]))
 
+;; fb-post-feed works with uri-encode.
 (define (alist->urlencoded alist)
   (string-join
    (map (match-lambda
             [(key . value) (string-append (uri-encode key) "=" (uri-encode value))]) alist)
-;            [(key . value) (string-append key "=" value)]) alist)
    "&"))
 
 (define (make-get-request path host)
