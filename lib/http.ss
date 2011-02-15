@@ -140,6 +140,7 @@
   (string-join
    (map (match-lambda
             [(key . value) (string-append (uri-encode key) "=" (uri-encode value))]) alist)
+;            [(key . value) (string-append key "=" value)]) alist)
    "&"))
 
 (define (make-get-request path host)

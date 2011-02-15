@@ -118,7 +118,7 @@
           ret
           (loop (- rest 1) (string-append ret pad))))))
 
-(define (condition-printer e port)
+(define (condition-printer/p e port)
     (define max-condition-len (apply max (map (lambda (c) (string-length (symbol->string (record-type-name (record-rtd c))))) (simple-conditions e))))
     (display " Condition components:\n" port)
     (for-each-with-index
@@ -195,7 +195,7 @@
               (#t
                (display "\nUnhandled exception:\n\n" (current-error-port))
                (if (condition? e)
-                   (condition-printer e (current-error-port))
+                   (condition-printer/p e (current-error-port))
                    (format (current-error-port) "  Non-condition object:\n     ~a\n" e))))
              (let loop ([line (get-line (current-input-port))]
                         [accum ""])
@@ -442,7 +442,7 @@
  (lambda (c)
    (cond
     [(condition? c)
-     (condition-printer c (current-error-port))]
+     (condition-printer/p c (current-error-port))]
     [else
      (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)])
    c)) ;; always returns the condition
