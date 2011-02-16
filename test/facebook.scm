@@ -33,6 +33,13 @@
 
 ;(fb-post-feed access-token "あああいうえおかき")
 
-(test-true (list? (fb-friend "100001165496695" access-token)))
+(time (for-each
+       (^f
+        (match f
+          [(("name" . _) ("id" . id))
+           (write (fb-friend id access-token))
+           (newline)]))
+       (fb-friends access-token)))
+;(test-true (list? (fb-friend "100001165496695" access-token)))
 
 (test-results)
