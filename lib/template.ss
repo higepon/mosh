@@ -60,8 +60,9 @@
 (define (compile-elem templ port)
 ;  (format (current-error-port) "\n\n~s\n\n" templ)
   (cond [(or (not templ) (string=? templ "")) #t]
-        [((string->regexp "^<%include (((?!%>)(.|\n))*)%>((.|\n)*)" 's) templ) =>
+        [((string->regexp "^<%include (((?!%>)(.|\n))*) %>((.|\n)*)" 's) templ) =>
          (^m
+;          (format (current-error-port) "fild=<~s>" (m 1)) 
           (let1 path (if (template-dir) (string-append (template-dir) "/" (m 1)) (m 1))
             (compile-elem (string-append (file->string path) (if (m 4) (m 4) "")) port)))]
         ;; comment
