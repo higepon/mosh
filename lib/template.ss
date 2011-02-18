@@ -77,15 +77,16 @@
          (^m
           (format port "(display (h ~a))" (m 1))
           (compile-elem (m 2) port))]
-        [((string->regexp "^<%((.|\n)+?)%>((.|\n)*)" 's) templ) =>
+        [((string->regexp "^<%(((?!%>)(.|\n))*)%>((.|\n)*)" 's) templ) =>
          (^m
- ;         (format (current-error-port) "hoge=<~s><~s>\n" (m 1) (m 3))
+;         (format (current-error-port) "hoge=[~s] [~s]\n" (m 1) (m 4))
           (format port "~a" (m 1))
-          (compile-elem (m 3) port))]
-        [((string->regexp "^(([^%])*)<%((.|\n)*)" 's) templ) =>
+          (compile-elem (m 4) port))]
+        [((string->regexp "^(((?!<%)(.|\n))*)<%((.|\n)*)" 's) templ) =>
          (^m
+;         (format (current-error-port) "hoge=[~s] [~s]\n" (m 1) (m 4))
           (format port "(display ~s)" (m 1))
-          (compile-elem (string-append "<%" (if (m 3) (m 3) "")) port))]
+          (compile-elem (string-append "<%" (if (m 4) (m 4) "")) port))]
         [else
          (format port "(display ~s)" templ)]))
 

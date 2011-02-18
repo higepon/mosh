@@ -109,11 +109,11 @@
 (test-equal-template "" "" '())
 (test-equal-template "\n3" "<%\n  (define a 3)%>\n3" '())
 (test-equal-template "34" "<% (display 3) %><% (display 4) %>" '())
-(test-equal-template "34" "<% (display 3) %>%<% (display 4) %>" '())
-;; (test-equal-template "" big '((a . "3") (b . "4")))
-;; (test-equal-template "" big2 '((a . "3") (b . "4")))
+(test-equal-template "3%4" "<% (display 3) %>%<% (display 4) %>" '())
 (test-equal 3 (ref '((a . 3)) a))
 (test-equal-template "" "<% \n %>" '())
+;; (test-equal-template "" big '((a . "3") (b . "4")))
+;; (test-equal-template "" big2 '((a . "3") (b . "4")))
 
 ;; todo: works on only nmosh
 ;(test-equal-template "#t" "<%= (hashtable? a) %>" `((a . ,(make-eq-hashtable))))
