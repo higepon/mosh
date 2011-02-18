@@ -58,32 +58,34 @@
 
 ;; http://d.hatena.ne.jp/yuum3/20080203/1202049898
 (define (compile-elem templ port)
+;  (format (current-error-port) "\n\n~s\n\n" templ)
   (cond [(or (not templ) (string=? templ "")) #t]
-        [((string->regexp "^<%include (.+?)\\s*%>(.*)" 's) templ) =>
+        [((string->regexp "^<%include ([^%]+?)\\s*%>((.|\n)*)" 's) templ) =>
          (^m
           (let1 path (if (template-dir) (string-append (template-dir) "/" (m 1)) (m 1))
-            (compile-elem (string-append (file->string path) (m 2)) port)))]
+            (compile-elem (string-append (file->string path) (if (m 2) (m 2) "")) port)))]
         ;; comment
-        [((string->regexp "^<%#(.+?)%>(.*)" 's) templ) =>
+        [((string->regexp "^<%#(.+?)%>((.|\n)*)" 's) templ) =>
          (^m
           (compile-elem (m 2) port))]
-        [((string->regexp "^<%=unsafe(.+?)%>(.*)" 's) templ) =>
+        [((string->regexp "^<%=unsafe(.+?)%>((.|\n)*)" 's) templ) =>
          (^m
           (format port "(display ~a)" (m 1))
           (compile-elem (m 2) port))]
         ;; output with escape
-        [((string->regexp "^<%=(.+?)%>(.*)" 's) templ) =>
+        [((string->regexp "^<%=([^%]+?)%>((.|\n)*)" 's) templ) =>
          (^m
           (format port "(display (h ~a))" (m 1))
           (compile-elem (m 2) port))]
-        [((string->regexp "^<%(.+?)%>(.*)" 's) templ) =>
+        [((string->regexp "^<%((.|\n)+?)%>((.|\n)*)" 's) templ) =>
          (^m
+ ;         (format (current-error-port) "hoge=<~s><~s>\n" (m 1) (m 3))
           (format port "~a" (m 1))
-          (compile-elem (m 2) port))]
-        [((string->regexp "^(([^%])*)<%(.*)" 's) templ) =>
+          (compile-elem (m 3) port))]
+        [((string->regexp "^(([^%])*)<%((.|\n)*)" 's) templ) =>
          (^m
           (format port "(display ~s)" (m 1))
-          (compile-elem (string-append "<%" (m 3)) port))]
+          (compile-elem (string-append "<%" (if (m 3) (m 3) "")) port))]
         [else
          (format port "(display ~s)" templ)]))
 
