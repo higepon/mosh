@@ -34,8 +34,7 @@
           (srfi :39)
           (rnrs eval)
           (rename (mosh cgi) (escape h))
-          (mosh control)
-          (irregex))
+          (mosh control))
 
 (define template-vars (make-parameter #f))
 (define template-dir (make-parameter #f))
@@ -59,32 +58,32 @@
 
 ;; http://d.hatena.ne.jp/yuum3/20080203/1202049898
 (define (compile-elem templ port)
-  (cond [(string=? templ "") #t]
-        [(irregex-search (string->irregex "^<%include (.+?)\\s*%>(.*)" 's) templ) =>
+  (cond [(or (not templ) (string=? templ "")) #t]
+        [(#/^<%include (.+?)\s*%>(.*)/ templ) =>
          (^m
-          (let1 path (if (template-dir) (string-append (template-dir) "/" (irregex-match-substring m 1)) (irregex-match-substring m 1))
-            (compile-elem (string-append (file->string path) (irregex-match-substring m 2)) port)))]
+          (let1 path (if (template-dir) (string-append (template-dir) "/" (m 1)) (m 1))
+            (compile-elem (string-append (file->string path) (m 2)) port)))]
         ;; comment
-        [(irregex-search (string->irregex "^<%#(.+?)%>(.*)" 's) templ) =>
+        [(#/^<%#(.+?)%>(.*)/ templ) =>
          (^m
-          (compile-elem (irregex-match-substring m 2) port))]
-        [(irregex-search (string->irregex "^<%=unsafe(.+?)%>(.*)" 's) templ) =>
+          (compile-elem (m 2) port))]
+        [(#/^<%=unsafe(.+?)%>(.*)/ templ) =>
          (^m
-          (format port "(display ~a)" (irregex-match-substring m 1))
-          (compile-elem (irregex-match-substring m 2) port))]
+          (format port "(display ~a)" (m 1))
+          (compile-elem (m 2) port))]
         ;; output with escape
-        [(irregex-search (string->irregex "^<%=(.+?)%>(.*)" 's) templ) =>
+        [(#/^<%=(.+?)%>(.*)/ templ) =>
          (^m
-          (format port "(display (h ~a))" (irregex-match-substring m 1))
-          (compile-elem (irregex-match-substring m 2) port))]
-        [(irregex-search (string->irregex "^<%(.+?)%>(.*)" 's) templ) =>
+          (format port "(display (h ~a))" (m 1))
+          (compile-elem (m 2) port))]
+        [(#/^<%(.+?)%>(.*)/ templ) =>
          (^m
-          (format port "~a" (irregex-match-substring m 1))
-          (compile-elem (irregex-match-substring m 2) port))]
-        [(irregex-search (string->irregex "^(.+?)<%(.*)" 's) templ) =>
+          (format port "~a" (m 1))
+          (compile-elem (m 2) port))]
+        [(#/^(([^%])*)<%(.*)/ templ) =>
          (^m
-          (format port "(display ~s)" (irregex-match-substring m 1))
-          (compile-elem (string-append "<%" (irregex-match-substring m 2)) port))]
+          (format port "(display ~s)" (m 1))
+          (compile-elem (string-append "<%" (m 3)) port))]
         [else
          (format port "(display ~s)" templ)]))
 
