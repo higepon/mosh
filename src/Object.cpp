@@ -301,10 +301,10 @@ Object Object::makeTextualInputPort(TextualInputPort* port)
                                                         reinterpret_cast<intptr_t>(port))));
 }
 
-Object Object::makeRegexp(const ucs4string& pattern, bool caseFold /* = false */)
+Object Object::makeRegexp(const ucs4string& pattern, bool caseFold, bool isSingleLine)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Regexp,
-                                                        reinterpret_cast<intptr_t>(new Regexp(pattern, caseFold)))));
+                                                            reinterpret_cast<intptr_t>(new Regexp(pattern, caseFold, isSingleLine)))));
 }
 
 Object Object::makeRegMatch(OnigRegion* region, const ucs4string& text)

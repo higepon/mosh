@@ -59,28 +59,28 @@
 ;; http://d.hatena.ne.jp/yuum3/20080203/1202049898
 (define (compile-elem templ port)
   (cond [(or (not templ) (string=? templ "")) #t]
-        [(#/^<%include (.+?)\s*%>(.*)/ templ) =>
+        [((string->regexp "^<%include (.+?)\\s*%>(.*)" 's) templ) =>
          (^m
           (let1 path (if (template-dir) (string-append (template-dir) "/" (m 1)) (m 1))
             (compile-elem (string-append (file->string path) (m 2)) port)))]
         ;; comment
-        [(#/^<%#(.+?)%>(.*)/ templ) =>
+        [((string->regexp "^<%#(.+?)%>(.*)" 's) templ) =>
          (^m
           (compile-elem (m 2) port))]
-        [(#/^<%=unsafe(.+?)%>(.*)/ templ) =>
+        [((string->regexp "^<%=unsafe(.+?)%>(.*)" 's) templ) =>
          (^m
           (format port "(display ~a)" (m 1))
           (compile-elem (m 2) port))]
         ;; output with escape
-        [(#/^<%=(.+?)%>(.*)/ templ) =>
+        [((string->regexp "^<%=(.+?)%>(.*)" 's) templ) =>
          (^m
           (format port "(display (h ~a))" (m 1))
           (compile-elem (m 2) port))]
-        [(#/^<%(.+?)%>(.*)/ templ) =>
+        [((string->regexp "^<%(.+?)%>(.*)" 's) templ) =>
          (^m
           (format port "~a" (m 1))
           (compile-elem (m 2) port))]
-        [(#/^(([^%])*)<%(.*)/ templ) =>
+        [((string->regexp "^(([^%])*)<%(.*)" 's) templ) =>
          (^m
           (format port "(display ~s)" (m 1))
           (compile-elem (string-append "<%" (m 3)) port))]

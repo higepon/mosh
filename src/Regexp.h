@@ -40,7 +40,7 @@ namespace scheme {
 class Regexp EXTEND_GC
 {
 public:
-    Regexp(const ucs4string& pattern, bool caseFold);
+    Regexp(const ucs4string& pattern, bool caseFold, bool isSingleLine);
     ~Regexp() {}
 
     Object match(const ucs4string& text);

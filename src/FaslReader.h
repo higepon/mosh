@@ -271,7 +271,7 @@ private:
             for (uint32_t i = 0; i < len; i++) {
                 text += fetchU32();
             }
-            return Object::makeRegexp(text);
+            return Object::makeRegexp(text, false, false);
 
         }
         case Fasl::TAG_PLIST: {
