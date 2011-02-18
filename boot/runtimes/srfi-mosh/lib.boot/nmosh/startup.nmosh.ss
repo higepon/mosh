@@ -22,11 +22,12 @@
 
 (define (enter-debugger c trace)
   (define (fallback x)
-    ;(display "debugger not found.\n" (current-error-port))
+    (display "debugger not found. using minidebug.\n" (current-error-port))
     (call-with-port (current-error-port) 
 		    (lambda (p) (minidebug p c trace))))
   ;(display "launching debugger...\n" (current-error-port))
-  (runlib/fallback fallback '((nmosh debugger)) 'debugger c trace))
-
+  (set-symbol-value! '%nmosh-fail-condition c)
+  (set-symbol-value! '%nmosh-fail-trace trace)
+  (runlib/fallback fallback '((nmosh debugger)) 'debugger))
 
 )
