@@ -156,10 +156,10 @@
                   [cookies '()])
 
          (cond
-          [(irregex-search "([^=]+)=([^;]+);?\\s?(.*)" cookies-string) =>
+          [(#/([^=]+)=([^;]+);?\s?(.*)/ cookies-string) =>
            (^m
-            (loop (irregex-match-substring m 3)
-                  (cons (cons (irregex-match-substring m 1) (irregex-match-substring m 2)) cookies)))]
+            (loop (if (m 3) (m 3) "")
+                  (cons (cons (m 1) (m 2)) cookies)))]
            [else
             cookies]))
        '()))
