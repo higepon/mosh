@@ -15,3 +15,6 @@ This directory includes some library distribution for convenience.
       This won't used at all in autotools(configure) builds.
       Please install oniguruma development package (like `onigruma-devel`)
       and see if `onig-config` command exists for autotools build.
+
+      slightly patched, see : http://d.hatena.ne.jp/nurse/20100826
+
