@@ -73,10 +73,10 @@
           (format port "(display ~a)" (m 1))
           (compile-elem (m 2) port))]
         ;; output with escape
-        [((string->regexp "^<%=([^%]+?)%>((.|\n)*)" 's) templ) =>
+        [((string->regexp "^<%=(((?!%>)(.|\n))*)%>((.|\n)*)" 's) templ) =>
          (^m
           (format port "(display (h ~a))" (m 1))
-          (compile-elem (m 2) port))]
+          (compile-elem (m 4) port))]
         [((string->regexp "^<%(((?!%>)(.|\n))*)%>((.|\n)*)" 's) templ) =>
          (^m
 ;         (format (current-error-port) "hoge=[~s] [~s]\n" (m 1) (m 4))

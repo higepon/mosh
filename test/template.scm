@@ -111,7 +111,7 @@
 (test-equal-template "34" "<% (display 3) %><% (display 4) %>" '())
 (test-equal-template "3%4" "<% (display 3) %>%<% (display 4) %>" '())
 (test-equal-template "34" "<%= a %><%= b %>" '((a . "3") (b . "4")))
-(test-equal-template "34" "<%= a %>%<%= b %>" '((a . "3") (b . "4")))
+(test-equal-template "3%4" "<%= a %>%<%= b %>" '((a . "3") (b . "4")))
 (test-equal 3 (ref '((a . 3)) a))
 (test-equal-template "" "<% \n %>" '())
 ;; (test-equal-template "" big '((a . "3") (b . "4")))
