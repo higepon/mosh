@@ -120,7 +120,7 @@ add_definitions(
     -DGC_NOT_DLL
     -DONIG_EXTERN=extern
     )
-set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/win/include")
+set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/src/win/include")
 endif(CMAKE_HOST_WIN32)
 
 # includes
@@ -547,8 +547,8 @@ source_group(win32 FILES ${mosh_win32_srcs})
 set(mosh_core_srcs 
 ${mosh_core_srcs}
 ${mosh_win32_srcs}
-win/win.cpp
-win/mosh.rc)
+src/win/win.cpp
+src/win/mosh.rc)
 set_source_files_properties(${mosh_core_srcs}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(CMAKE_HOST_WIN32)
