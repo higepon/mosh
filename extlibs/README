@@ -1,7 +1,7 @@
 This directory includes some library distribution for convenience.
 
  - gc-7.1 - Boehm GC
-      For: configure, CMake, MonaOS
+      For: autotools, CMake, MonaOS
 
       Boehm GC is (currently) only GC for Mosh and is always used.
       For autotools(configure) builds, this is deletion candidate.

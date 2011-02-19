@@ -4,7 +4,7 @@ mosh on Linux
 1. Install (Ubuntu, Debian)
 ---------------------------
 
-- Install following ports:
+- Install following packages using apt:
   libgmp3-dev
   libonig-dev or libonig2-dev
 - ./configure 

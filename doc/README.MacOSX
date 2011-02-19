@@ -4,11 +4,16 @@ mosh on MacOS X
 1. Install
 ----------
 
+(Homebrew includes mosh as a fomula. Say "brew install mosh" to install it.)
+
+To install this source package:
+
 - Install following using MacPorts:
   oniguruma5
   gmp
 - ./configure CFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
 - make
+- sudo make install
 
 Alternatively, you can use CMake and XCode. See README.CMake for details.
 
