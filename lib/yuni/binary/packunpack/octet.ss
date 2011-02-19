@@ -14,8 +14,30 @@
      (+ (octet-size-step pack0) (octet-size (pack1 ...))))
     ((_ ()) 0)))
 
+(define little-endian?
+  (eq? (native-endianness) 'little))
+
+
+(define bytevector-uint-set!/native
+  (if little-endian?
+    (lambda (bv off param size)
+      (bytevector-uint-set! bv off param (endianness little) size))
+    (lambda (bv off param size)
+      (bytevector-uint-set! bv off param (endianness big) size))))
+
+(define bytevector-sint-set!/native
+  (if little-endian?
+    (lambda (bv off param size)
+      (bytevector-sint-set! bv off param (endianness little) size))
+    (lambda (bv off param size)
+      (bytevector-sint-set! bv off param (endianness big) size))))
+
 (define-syntax do-single-octet-pack/unaligned
   (syntax-rules (unsigned signed pad)
+    ((_ bv off (unsigned X) param)
+     (bytevector-uint-set!/native bv off param X))
+    ((_ bv off (signed X) param)
+     (bytevector-sint-set!/native bv off param X))
     ((_ bv off (unsigned X en) param)
      (bytevector-uint-set! bv off param (endianness en) X))
     ((_ bv off (signed X en) param)
@@ -31,7 +53,7 @@
     ((_ bv off () ()) bv)
     ((_ bv off ((pad X) pack1 ...) (param0 ...))
      ; treat param is 0
-     (begin (do-single-octet-pack bv off (unsigned X native) 0)
+     (begin (do-single-octet-pack bv off (unsigned X) 0)
 	    (do-octet-pack bv
 			   (+ off X)
 			   (pack1 ...)
