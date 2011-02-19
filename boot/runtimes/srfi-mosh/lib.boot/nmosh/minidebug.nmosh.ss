@@ -1,8 +1,9 @@
 (library (nmosh minidebug)
 	 (export load-symbols minidebug stacktrace-printer show-profile)
 	 (import (rnrs) (nmosh global-flags)
-                 (nmosh condition-printer) (nmosh conditions) (only (mosh) format)
+                 (nmosh condition-printer) (nmosh conditions) 
 		 (primitives dbg-files dbg-syms fasl-read %get-nmosh-dbg-image
+                             format
 			     ; for show-profile
 			     hashtable-map lpad rpad string-chop
 			     get-closure-name summerize-samples

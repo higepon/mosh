@@ -3,10 +3,9 @@
 		 debug-format
 		 with-condition-printer with-condition-printer/raise)
 	 (import (rnrs) (nmosh conditions)
-		 (only (mosh) format)
                  (nmosh global-flags)
                  (nmosh pathutils)
-		 (primitives id-name id-debug id-maybe-library)) 
+		 (primitives format id-name id-debug id-maybe-library)) 
 
 
 (define (guru-mode?)

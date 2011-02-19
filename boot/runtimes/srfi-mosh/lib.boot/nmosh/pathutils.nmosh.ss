@@ -7,7 +7,8 @@
                  path-basename
                  path-dirname
                  )
-         (import (rnrs) (mosh))
+         (import (rnrs) 
+                 (primitives current-directory host-os))
 
 ;; from mosh-utils5.scm
 (define (run-win32-np?) (string=? "win32" (host-os)))

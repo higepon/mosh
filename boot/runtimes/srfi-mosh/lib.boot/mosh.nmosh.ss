@@ -1,6 +1,7 @@
 (library
   (mosh)
   (export
+    condition-printer ;; FIXME: should not be here
     include
     os-constant
     time-usage
@@ -131,6 +132,7 @@
       write/ss
       set-symbol-value!) run expand)
     (for (only (rnrs base) map car cadr caddr - lambda let* syntax-rules define-syntax list string-append define) expand run)
+    (only (nmosh condition-printer) condition-printer)
     )
  (define (library-path) (list (string-append (standard-library-path) "/lib")))
  (define-syntax time

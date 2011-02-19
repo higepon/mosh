@@ -1,6 +1,6 @@
 (library (nmosh global-flags)
          (export get-global-flag)
-         (import (rnrs) (mosh))
+         (import (rnrs) (primitives symbol-value))
 
 (define (get-global-flag sym)
   (guard
