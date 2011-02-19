@@ -126,7 +126,7 @@
 //                pc_  = returnCode_;
 //                goto return_entry;
             } else if (ac_.isRegexp()) {
-                extern Object rxmatchEx(Object args);
+//                extern Object rxmatchEx(Object args);
                 VM_ASSERT(operand.isFixnum());
                 const int argc = operand.toFixnum();
                 Object argv[2];
@@ -140,7 +140,7 @@
                 pc_[1] = operand;
                 ac_ = rxmatchCProc->call(this, argc + 1, argv);
             } else if (ac_.isRegMatch()) {
-                extern Object regMatchProxy(Object args);
+//                extern Object regMatchProxy(Object args);
                 VM_ASSERT(operand.isFixnum());
                 const int argc = operand.toFixnum();
                 Object argv[2];

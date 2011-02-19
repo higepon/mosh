@@ -385,12 +385,13 @@ int64_t File::write(uint8_t* buf, int64_t _size)
 // So we use WideCharToMultiByte and GetConsoleOutputCP.
 #if 1
         unsigned int destSize = 0;
-        if ((destSize = WideCharToMultiByte(GetConsoleOutputCP() , 0,(const wchar_t *)buf, _size / 2, (LPSTR)NULL, 0, NULL, NULL)) == 0) {
+		unsigned int consoleWriteSize = static_cast<unsigned int>(_size);
+        if ((destSize = WideCharToMultiByte(GetConsoleOutputCP() , 0,(const wchar_t *)buf, consoleWriteSize / 2, (LPSTR)NULL, 0, NULL, NULL)) == 0) {
             throwIOError2(IOError::WRITE, getLastErrorMessage());
             return 0;
         }
         uint8_t* dest = allocatePointerFreeU8Array(destSize + 1);
-        if (WideCharToMultiByte(GetConsoleOutputCP(), 0, (const wchar_t *)buf, _size / 2 , (LPSTR)dest, destSize, NULL, NULL) == 0){
+        if (WideCharToMultiByte(GetConsoleOutputCP(), 0, (const wchar_t *)buf, consoleWriteSize / 2 , (LPSTR)dest, destSize, NULL, NULL) == 0){
             throwIOError2(IOError::WRITE, getLastErrorMessage());
             return 0;
         }
@@ -400,7 +401,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
             throwIOError2(IOError::WRITE, getLastErrorMessage());
             return 0;
         }
-        writeSize = _size;
+        writeSize = consoleWriteSize;
 #else
         isOK = WriteConsole(desc_, buf, size / 2, &writeSize, NULL);
         writeSize *= 2;
@@ -654,7 +655,7 @@ bool File::isSymbolicLink(const ucs4string& path)
     if (attr == INVALID_FILE_ATTRIBUTES) {
         return false;
     }
-    return (attr & FILE_ATTRIBUTE_REPARSE_POINT);
+    return (attr & FILE_ATTRIBUTE_REPARSE_POINT)?true:false;
 #elif defined(MONA)
     return false;
 #else
@@ -687,7 +688,7 @@ bool File::isExecutable(const ucs4string& path)
 bool File::deleteFileOrDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
-    return DeleteFileW(utf32ToUtf16(path));
+    return DeleteFileW(utf32ToUtf16(path))?true:false;
 #elif defined(MONA)
     return monapi_file_delete(utf32toUtf8(path)) == M_OK;
 #else
@@ -698,7 +699,7 @@ bool File::deleteFileOrDirectory(const ucs4string& path)
 bool File::rename(const ucs4string& oldPath, const ucs4string& newPath)
 {
 #ifdef _WIN32
-    return MoveFileExW(utf32ToUtf16(oldPath), utf32ToUtf16(newPath), MOVEFILE_REPLACE_EXISTING);
+    return MoveFileExW(utf32ToUtf16(oldPath), utf32ToUtf16(newPath), MOVEFILE_REPLACE_EXISTING)?true:false;
 #elif defined(MONA)
     return false;
 #else
@@ -1167,7 +1168,7 @@ bool scheme::setCurrentDirectory(const ucs4string& dir)
 bool scheme::createDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
-    return CreateDirectoryW(utf32ToUtf16(path), NULL);
+    return CreateDirectoryW(utf32ToUtf16(path), NULL)?true:false;
 #elif defined(MONA)
     return false;
 #else
@@ -1179,7 +1180,7 @@ bool scheme::createDirectory(const ucs4string& path)
 bool scheme::isDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
-    return PathIsDirectoryW(utf32ToUtf16(path));
+    return PathIsDirectoryW(utf32ToUtf16(path))?true:false;
 #elif defined(MONA)
     MOSH_ASSERT(false);
     return false;

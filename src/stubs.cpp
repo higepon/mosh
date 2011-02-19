@@ -26,7 +26,9 @@
 #include "Closure.h"
 #include "VM-inl.h"
 
+#ifndef _WIN32
 #include "mosh_terminal.h"
+#endif
 
 using namespace scheme;
 

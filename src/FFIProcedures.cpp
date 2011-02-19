@@ -768,7 +768,7 @@ static int64_t callStubInt64_t(Pointer* func, CStack* cstack)
             uint32_t lo;
             uint32_t hi;
         } s32;
-    } ret;
+    } retarea;
     void* s = cstack->frame();
     __asm {
         MOV    ECX,bytes
@@ -780,10 +780,10 @@ static int64_t callStubInt64_t(Pointer* func, CStack* cstack)
         MOV    EDI,EDX
         CALL   p
         MOV    ESP,EDI
-        MOV    ret.s32.lo,EAX
-        MOV    ret.s32.hi,EDX
+        MOV    retarea.s32.lo,EAX
+        MOV    retarea.s32.hi,EDX
     }
-    return ret.s64;
+    return retarea.s64;
 #elif defined ARCH_X86_64
     return callStubIntptr_t(func, cstack);
 #else
@@ -1056,7 +1056,7 @@ Object scheme::pointerSetCFloatDEx(VM* theVM, int argc, const Object* argv)
     argumentAsPointer(0, pointer);
     argumentAsFixnum(1, offset);
     argumentAsFlonum(2, value);
-    pointer->set<float>(offset, value->value());
+    pointer->set<float>(offset, static_cast<float>(value->value()));
     return Object::Undef;
 }
 
