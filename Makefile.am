@@ -217,10 +217,10 @@ mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
 	$(WINDRES) $< -o mosh-icon.o
 endif 
 
-if BUILD_LOCAL_ONIG
-include extlibs/onig-5.9.2.mk
-MOSH_CORE_SRCS += $(ONIG_SRCS)
-endif
+# if BUILD_LOCAL_ONIG
+# include extlibs/onig-5.9.2.mk
+# MOSH_CORE_SRCS += $(ONIG_SRCS)
+# endif
 
 BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Reader.tab.cpp src/NumberReader.tab.cpp src/Scanner.cpp src/NumberScanner.cpp src/cprocedures.cpp src/labels.cpp src/OSConstants.h
 
