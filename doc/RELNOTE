@@ -52,6 +52,11 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
         pointer-ref-* and pointer-set-*! is now scaled by C sizeof(TYPE).
         i.e.) (pointer-ref-c-pointer ptr num) is now eqv. of ptr[num].
 
+    (srfi :19 time):
+        Fixed Issue 188: 
+            SRFI-19 implementation now includes a leap second inseted in 
+            2008-2009.
+
     (srfi :39 parameters):
         Fixed Issue 184: 
             SRFI-39 now implemented with (rnrs) constructs. Former psyntax-mosh
