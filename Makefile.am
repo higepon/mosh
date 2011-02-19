@@ -12,18 +12,21 @@ GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
 
 LIBS += @ONIG_LIBS@
 
+include automake/dist-git-revision.mk
+
 if DEVELOPER
 GIT_BRANCH=$(shell git symbolic-ref HEAD|cut -d'/' -f3)
 GIT_IS_DIRTY=$(shell git diff --quiet HEAD || echo "dirty")
 GIT_COMMIT_REVISION=$(shell git describe --always)$(GIT_IS_DIRTY)
 GIT_COMMIT_UNIXTIME=$(shell git cat-file commit HEAD|grep 'committer'|  awk '{ print $$(NF-1); }')
 GIT_COMMIT_DATE=$(shell date -d "1970/01/01 09:00:00 $(GIT_COMMIT_UNIXTIME) seconds" "+%Y/%m/%d %H:%M:%S")
-GLOBAL_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 else
-GIT_BRANCH=UNKNOWN
-GIT_COMMIT_REVISION=UNKNOWN
-GIT_COMMIT_DATE=UNKNOWN
+GIT_BRANCH=dist
+GIT_COMMIT_REVISION="$(DIST_GIT_REVISION)"
+GIT_COMMIT_DATE="$(DIST_GIT_COMMIT_DATE)"
 endif
+
+GLOBAL_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 
 if DEVELOPER
 DEBUG_FLAGS=-DDEBUG_VERSION

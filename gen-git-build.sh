@@ -1,5 +1,7 @@
 #!/bin/sh
 mkdir -p automake
+echo DIST_GIT_REVISION=\"`git describe --always`\" > automake/dist-git-revision.mk
+echo DIST_GIT_COMMIT_DATE=`git log --pretty=format:"\"%cD\"" -1 HEAD` >> automake/dist-git-revision.mk
 mkdir -p lib/nmosh/stubs
 mosh --loadpath=lib misc/scripts/gen-corelibmk.sps
 mosh --loadpath=lib misc/scripts/gen-nmosh-stubs.sps
