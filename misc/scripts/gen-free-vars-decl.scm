@@ -1,5 +1,4 @@
 (import (rnrs)
-        (match)
         (only (srfi :1) first second third))
 
 ;; Todo Replace with (mosh file)
@@ -24,9 +23,14 @@
   (let ((free-vars (cdar (file->sexp-list (second args)))))
     (display "(define *free-vars-decl* (quote (")(newline)
     (write/newline (map (lambda (free-var)
-              (match free-var
-                 [(proc proc-body) proc]
-                 [else free-var]))
+                          ;; FIXME: don't use (match) here..
+                          (if (and (list? free-var)
+                                   (= (length free-var) 2))
+                            (car free-var) ;; proc part
+                            free-var))
+              ;;(match free-var
+              ;;   [(proc proc-body) proc]
+              ;;   [else free-var])
             free-vars))
     (display ") ) )")(newline)))
 
