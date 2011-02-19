@@ -70,7 +70,7 @@
     (test-true (pointer-null? (return_pointer_null)))
     (test-equal (pointer->string (return_pointer_string)) "hello")
     (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) 0)) "hello")
-    (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) size-of-pointer)) "world")
+    (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) 1)) "world")
     (test-equal "Yeah hello" (append_hello "Yeah "))
 
 

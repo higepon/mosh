@@ -48,6 +48,10 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             SRFI-62 style datum comment was not accepted by reader in certain 
             cases.
 
+    (mosh ffi):
+        pointer-ref-* and pointer-set-*! is now scaled by C sizeof(TYPE).
+        i.e.) (pointer-ref-c-pointer ptr num) is now eqv. of ptr[num].
+
     (srfi :39 parameters):
         Fixed Issue 184: 
             SRFI-39 now implemented with (rnrs) constructs. Former psyntax-mosh
