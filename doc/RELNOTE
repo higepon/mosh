@@ -1,4 +1,4 @@
-Mosh 0.2.X Release Note
+Mosh 0.2.7 Release Note
 =======================
 
 What's Mosh
@@ -18,21 +18,71 @@ Mosh is A Fast R6RS Scheme interpreter.
 About This Release
 ------------------
 
+Mosh will be linked with OpenSSL library when available in Linux/FreeBSD/MacOSX.
+
+MonaOS support had merged.
+
+extlib/: Mosh sourcecode now ships with slightly patched oniguruma-5.9.2 
+source. This oniguruma will be used in CMake builds and MonaOS. Most users 
+can safely ignore this.
+
+nmosh user interface learned colour output. Set NMOSH_CLICOLOR 
+environment variable to "enable" to enable this. 
+
 Bug fixes:
 
     (rnrs):
-        Fixed Issue 183 and Issue 186: 
-            (display #\tab) had outputted "x9;" instead of a tab character. 
+        Number reader now reads 2.2250738585072012e-308 flawlessly.
+            See
+http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-numbers-again
+            for details.
+        Fixed Issue 178 reported by lp:~weinholt: 
+            A symbol immidiately followed by string was not accepted by reader.
+        Fixed Issue 183 and Issue 186 (partially): 
+            (display #\tab) had outputted "x9;" instead of a tab character.
+            Non-displayable chars still not fixed. See Issue 186.
+        Fixed Issue 181 reported by mrc.mgg: 
+            Number datum with "bar" like 1|53 was not accepted by reader. Note
+            that mosh will ignore specified mantissa width.
+        Fixed Issue 185 reported by mrc.mgg: 
+            SRFI-62 style datum comment was not accepted by reader in certain 
+            cases.
 
-Changes
+    (srfi :39 parameters):
+        Fixed Issue 184: 
+            SRFI-39 now implemented with (rnrs) constructs. Former psyntax-mosh
+            used psyntax's parameterize which not compatible with SRFI-39.
 
-    Mona OS support had added.
+Changes:
 
-    updated library
+    vanilla mosh:
+        Learned %getpid.
+        Various MonaOS related primitives are added.
+
+    Psyntax-mosh (mosh):
+        "make install" no longer perfoms cache update in $HOME/.mosh.
+
+    nmosh:
+        Now provides default (nmosh debugger) library which supports colourised
+        output.
+
+    updated library:
       (mosh socket) : SSL/TLS Socket support.
+          (mosh pp) : Implement R6RS string escapes.
 
-    updated 3rd party library
+    updated 3rd party library:
           (irregex) : 0.8.2+ hg fixes (Alex Shinn's irregex library)
+
+Known Issues:
+
+    See http://code.google.com/p/mosh-scheme/issues/list for full list.
+
+    - Every user's mosh cache (~/.mosh) should be removed when mosh updated.
+    - nmosh colour output should be improved. e.g.) Syntax-traces are not
+      colourised at all.
+    - Mosh/nmosh should be built with system-provided BoehmGC instead of 
+      shipped with Mosh sourcecode.
+    
 
 Mosh 0.2.6 Release Note
 =======================
