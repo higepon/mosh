@@ -20,7 +20,7 @@
 	 (- b (bit-loc X))
 	 b)))
     ((_ v voff (boolean))
-     (if (bitwise-bit-set? v voff)))))
+     (bitwise-bit-set? v voff))))
 
 (define-syntax do-bit-unpack-word!-1
   (syntax-rules (pad)
