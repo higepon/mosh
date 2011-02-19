@@ -2,14 +2,19 @@
 	 (export debugger)
 	 (import (rnrs) (nmosh global-flags)
                  (nmosh debugger condition-printer) 
-                 (nmosh ui deco)
+                 (prefix (nmosh ui deco) deco:)
                  (nmosh conditions) 
                  (srfi :48)
+                 (srfi :98)
 		 (primitives 
                    dbg-files dbg-syms fasl-read %get-nmosh-dbg-image))
 
 (define (guru-mode?)
   (get-global-flag '%nmosh-guru-mode))
+
+(define color-output?
+  (get-environment-variable "NMOSH_CLICOLOR"))
+
 
 (define libsyms '())
 
@@ -69,6 +74,11 @@
 
 (define (disp l)
   (display l (current-error-port)))
+
+(define deco/err
+  (if color-output?
+    deco:deco/err
+    disp))
 
 (define (fallback-trace-printer/deco trace)
 

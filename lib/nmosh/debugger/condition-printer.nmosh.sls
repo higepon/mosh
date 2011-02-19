@@ -6,10 +6,14 @@
                  (nmosh global-flags)
                  (nmosh pathutils)
                  (srfi :48)
+                 (srfi :98)
 		 (primitives id-name id-debug id-maybe-library)) 
 
 (define (guru-mode?)
   (get-global-flag '%nmosh-guru-mode))
+
+(define color-output?
+  (get-environment-variable "NMOSH_CLICOLOR"))
 
 ; almost as syntax->datum but allows symbol in l
 (define (strip l)
