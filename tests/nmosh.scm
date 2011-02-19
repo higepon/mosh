@@ -28,8 +28,8 @@
 			 a))
 	      #t))
 
-(test-error syntax-violation? (load "test/nmosh-test-error-export-level.ss"))
-(test-error syntax-violation? (load "test/nmosh-test-error-invalid-export.ss"))
-(test-true (begin (load "test/nmosh-test-multiple-libs.ss") #t))
+(test-error syntax-violation? (load "tests/nmosh-test-error-export-level.ss"))
+(test-error syntax-violation? (load "tests/nmosh-test-error-invalid-export.ss"))
+(test-true (begin (load "tests/nmosh-test-multiple-libs.ss") #t))
 
 (test-results)

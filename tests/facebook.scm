@@ -7,7 +7,7 @@
         (mosh test))
 
 ;; (define access-token "abcdefg")
-(include "test/access_token.scm")
+(include "tests/access_token.scm")
 
 (define (assoc-value obj lst fallback)
   (aif (assoc obj lst)

@@ -72,14 +72,14 @@
 ;; utf-8-codec
 ;;  read
 (test-error i/o-decoding-error?
-                 (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                 (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                        (file-options no-truncate no-fail)
                                                        (buffer-mode none)
                                                        (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
                          read))
 
 (test-error i/o-decoding-error?
-                 (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                 (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                        (file-options no-truncate no-fail)
                                                        (buffer-mode none)
                                                        (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -88,7 +88,7 @@
 ;; utf-8-codec
 ;;  peek-char
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -97,7 +97,7 @@
 ;; utf-8-codec
 ;;  get-datum
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -106,7 +106,7 @@
 ;; utf-8-codec
 ;;  get-string
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -115,7 +115,7 @@
 ;; utf-8-codec
 ;;  get-string-n!
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -124,7 +124,7 @@
 ;; utf-8-codec
 ;;  get-char
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -133,7 +133,7 @@
 ;; utf-8-codec
 ;;  get-string-n
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -142,7 +142,7 @@
 ;; utf-8-codec
 ;;  port-eof?
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -151,7 +151,7 @@
 ;; utf-8-codec
 ;;  get-line
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -160,7 +160,7 @@
 ;; utf-8-codec
 ;;  lookahead-char
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -169,7 +169,7 @@
 ;; utf-8-codec
 ;;  read-char
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -178,7 +178,7 @@
 ;; utf-8-codec
 ;;  read-char
 (test-error i/o-decoding-error?
-                (call-with-port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+                (call-with-port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                                       (file-options no-truncate no-fail)
                                                       (buffer-mode none)
                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
@@ -204,14 +204,14 @@
 ;; utf-16-codec
 ;;  read
 ;; (test-error i/o-decoding-error?
-;;                  (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                  (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                        (file-options no-truncate no-fail)
 ;;                                                        (buffer-mode none)
 ;;                                                        (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
 ;;                          read))
 
 ;; (test-error i/o-decoding-error?
-;;                  (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                  (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                        (file-options no-truncate no-fail)
 ;;                                                        (buffer-mode none)
 ;;                                                        (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -220,7 +220,7 @@
 ;; ;; utf-16-codec
 ;; ;;  peek-char
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -229,7 +229,7 @@
 ;; ;; utf-16-codec
 ;; ;;  get-datum
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -238,7 +238,7 @@
 ;; ;; utf-16-codec
 ;; ;;  get-string
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -247,7 +247,7 @@
 ;; ;; utf-16-codec
 ;; ;;  get-string-n!
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -256,7 +256,7 @@
 ;; ;; utf-16-codec
 ;; ;;  get-char
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -265,7 +265,7 @@
 ;; ;; utf-16-codec
 ;; ;;  get-string-n
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -274,7 +274,7 @@
 ;; ;; utf-16-codec
 ;; ;;  port-eof?
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -283,7 +283,7 @@
 ;; ;; utf-16-codec
 ;; ;;  get-line
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -292,7 +292,7 @@
 ;; ;; utf-16-codec
 ;; ;;  lookahead-char
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -301,7 +301,7 @@
 ;; ;; utf-16-codec
 ;; ;;  read-char
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -310,7 +310,7 @@
 ;; ;; utf-16-codec
 ;; ;;  read-char
 ;; (test-error i/o-decoding-error?
-;;                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+;;                 (call-with-port (open-file-input-port "./tests/invalid-utf16.txt"
 ;;                                                       (file-options no-truncate no-fail)
 ;;                                                       (buffer-mode none)
 ;;                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
@@ -318,7 +318,7 @@
 
 
 (test-error i/o-invalid-position-error?
-            (let ([port (open-file-input-port (string-append test-path-prefix "./test/invalid-utf8.txt")
+            (let ([port (open-file-input-port (string-append test-path-prefix "./tests/invalid-utf8.txt")
                                               (file-options no-truncate no-fail)
                                               (buffer-mode none))])
               (set-port-position! port -1)))
@@ -327,18 +327,18 @@
 (unless (or (string=? (host-os) "win32") (string=? (host-os) "cygwin") (string=? (host-os) "mona"))
   (let ()
   (test-error i/o-file-is-read-only-error?
-                  (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))
+                  (open-file-input/output-port "./tests/read-only.txt" (file-options no-fail) 'block))
 
   (test-error i/o-file-is-read-only-error?
-                  (open-file-output-port "./test/read-only.txt" (file-options no-fail) 'block))))
+                  (open-file-output-port "./tests/read-only.txt" (file-options no-fail) 'block))))
 
 
 ; we can't "svn add" this file, but test is OK.
-;(open-file-output-port "./test/can-not-read-write.txt" (file-options no-fail) 'block)
-;(open-file-input/output-port "./test/can-not-read-write.txt" (file-options no-fail) 'block)
-;(open-file-input-port "./test/can-not-read-write.txt" (file-options no-fail) 'block)
-;(open-input-file "./test/can-not-read-write.txt")
-;(open-output-file "./test/can-not-read-write.txt")
+;(open-file-output-port "./tests/can-not-read-write.txt" (file-options no-fail) 'block)
+;(open-file-input/output-port "./tests/can-not-read-write.txt" (file-options no-fail) 'block)
+;(open-file-input-port "./tests/can-not-read-write.txt" (file-options no-fail) 'block)
+;(open-input-file "./tests/can-not-read-write.txt")
+;(open-output-file "./tests/can-not-read-write.txt")
 
 ;; transcoded-port procedure closes the binary port
 (test-error i/o-port-error?

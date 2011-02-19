@@ -36,9 +36,9 @@
 
 (define (mona?) (string=? (host-os) "mona"))
 
-(define test-txt (if (mona?) "/APPS/MOSH.APP/test/test.txt" "./test/test.txt"))
-(define test-txt-tmp (if (mona?) "/MEM/test.txt.temp" "./test/test.txt.temp"))
-(define test-utf16 (if (mona?) "/MEM/utf16.txt" "./test/utf16.txt"))
+(define test-txt (if (mona?) "/APPS/MOSH.APP/tests/test.txt" "./tests/test.txt"))
+(define test-txt-tmp (if (mona?) "/MEM/test.txt.temp" "./tests/test.txt.temp"))
+(define test-utf16 (if (mona?) "/MEM/utf16.txt" "./tests/utf16.txt"))
 (define not-exist (if (mona?) "/MEM/not-exist" "./not-exist"))
 
 (define (rm file-name)
@@ -58,7 +58,7 @@
 
 (cp test-txt test-txt-tmp)
 (when (mona?)
-  (cp "/APPS/MOSH.APP/test/utf16.txt" test-utf16))
+  (cp "/APPS/MOSH.APP/tests/utf16.txt" test-utf16))
 
 (define (with-all-buffer-mode file proc)
   (let ([tmp-file (format "~a.temp" file)])

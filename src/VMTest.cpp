@@ -109,7 +109,7 @@ protected:
 
 
 TEST_F(VMTest, StackTrace1) {
-    theVM_->loadFileWithGuard(UC("./test/stack-trace1.scm"));
+    theVM_->loadFileWithGuard(UC("./tests/stack-trace1.scm"));
     EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
                  "\n"
                  " Condition components:\n"
@@ -122,13 +122,13 @@ TEST_F(VMTest, StackTrace1) {
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
                  "    2. sys-display: <subr>\n"
-                 "    3. (a):  <transcoded-textual-input-port <binary-input-port ./test/stack-trace1.scm>>:7\n"
-                 "    4. (b):  <transcoded-textual-input-port <binary-input-port ./test/stack-trace1.scm>>:12\n\n",
+                 "    3. (a):  <transcoded-textual-input-port <binary-input-port ./tests/stack-trace1.scm>>:7\n"
+                 "    4. (b):  <transcoded-textual-input-port <binary-input-port ./tests/stack-trace1.scm>>:12\n\n",
                  theVM_->getLastError().toString()->data().ascii_c_str());
 }
 
 TEST_F(VMTest, StackTrace2) {
-    theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
+    theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./tests/stack-trace2.scm"));
 #ifdef WITH_NMOSH_DEFAULTS
     theVM_->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, false);
 #else

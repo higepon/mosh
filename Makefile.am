@@ -247,7 +247,7 @@ boot/runtimes/psyntax-mosh/print-prefix.ss \
 boot/runtimes/psyntax-mosh/psyntax-prefix.txt \
 doc/mosh.1 doc/mosh_config.1 \
 doc/RELNOTE lib src \
-test src/call.inc.cpp ${GTEST_DIR} \
+tests src/call.inc.cpp ${GTEST_DIR} \
 doc README.md misc \
 boot/runtimes/srfi-mosh/Makefile \
 boot/runtimes/srfi-mosh/README \
@@ -323,37 +323,37 @@ ptest: testB testR testL
 ntest: ntestB ntestR ntestL
 
 testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
-	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
-	(MOSH_TARGET=$(MOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-ffi)
-	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-mosh)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest)
+	(MOSH_TARGET=$(MOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-ffi)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-mosh)
 
 testL:
-	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
-	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/yuni)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/irregex)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/yuni)
 
 testR:
-	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/r6rs-test-suite)
 
 #check-am is Automake's internal target..
 testU: check-am
 
 ntestB: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
-	(MOSH_TARGET=$(NMOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-ffi)
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-nmosh)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest)
+	(MOSH_TARGET=$(NMOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-ffi)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-nmosh)
 
 ntestL:
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/yuni)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/tests/irregex)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/tests/yuni)
 
 ntestR:
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/tests/r6rs-test-suite)
 
 testD:
-	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-for-developer)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-for-developer)
 
 ntestD:
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-for-developer)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-for-developer)
 
 # Builds gtest.a and gtest_main.a.
 

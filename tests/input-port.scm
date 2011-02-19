@@ -39,7 +39,7 @@
 ;; open-file-input-port with transcoder
 (with-all-buffer-mode
  (lambda (mode)
-   (let ([port (open-file-input-port "./test/utf16.txt" (file-options) mode (make-transcoder (utf-16-codec)))])
+   (let ([port (open-file-input-port "./tests/utf16.txt" (file-options) mode (make-transcoder (utf-16-codec)))])
      (test-true (input-port? port))
      (test-equal (read port) "あいう")
      (test-equal (read-char port) #\newline)
@@ -149,7 +149,7 @@
 ;; file-binary-input-port
 (with-all-buffer-mode
  (lambda (mode)
-   (let ([port  (open-file-input-port "./test/test.txt" (file-options) mode)])
+   (let ([port  (open-file-input-port "./tests/test.txt" (file-options) mode)])
      (test-true (input-port? port))
      (test-true (port-has-set-port-position!? port))
      (test-true (port-has-port-position? port))
