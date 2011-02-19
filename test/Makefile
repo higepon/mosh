@@ -10,6 +10,7 @@ runtest-for-developer:
 	$(MOSH_TARGET) test/http.scm
 	$(MOSH_TARGET) test/socket.scm
 	$(MOSH_TARGET) test/print.scm
+	$(MOSH_TARGET) test/memcached.scm
 
 runtest: 
 	$(MOSH_TARGET) --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
@@ -39,7 +40,6 @@ runtest:
 	$(MOSH_TARGET) test/concurrent-crash.scm
 	$(MOSH_TARGET) test/number.scm
 	$(MOSH_TARGET) test/cgi.scm
-	$(MOSH_TARGET) test/memcached.scm
 	$(MOSH_TARGET) test/shorten.scm
 	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_bad_regexp.scm 2>/dev/null
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_good_regexp.scm
