@@ -47,7 +47,7 @@ runtest:
 	! $(MOSH_TARGET) test/error-with-circular.scm 2>/dev/null
 
 runtest-ffi:
-	-(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
+	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
 
 runtest-mosh:
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared.scm
