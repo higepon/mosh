@@ -3,6 +3,8 @@
         (srfi :78)
         (rbtree))
 
+(check-set-mode! 'report-failed)
+
 (let ([rb (make-rbtree = <)])
   (do ([i 0 (+ i 1)])
       ((= i 100))
