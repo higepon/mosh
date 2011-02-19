@@ -42,12 +42,12 @@ compiler-vm.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
 
 .SUFFIXES: .scmc .h
 .scmc.h:
-	mosh $(SCRIPTS_DIR)/scmc2fasl.scm $< $<.fasl
-	mosh $(SCRIPTS_DIR)/binary2c.scm $<.fasl $@
+	mosh --disable-acc $(SCRIPTS_DIR)/scmc2fasl.scm $< $<.fasl
+	mosh --disable-acc $(SCRIPTS_DIR)/binary2c.scm $<.fasl $@
 
 psyntax_mosh_image.cpp: psyntax-mosh-image.scmc
-	mosh $(SCRIPTS_DIR)/scmc2fasl.scm $< $<.fasl
-	mosh $(SCRIPTS_DIR)/binary2cpp.scm $<.fasl $@
+	mosh --disable-acc $(SCRIPTS_DIR)/scmc2fasl.scm $< $<.fasl
+	mosh --disable-acc $(SCRIPTS_DIR)/binary2cpp.scm $<.fasl $@
 
 psyntax-mosh-image.scmc: runtimes/psyntax-mosh/psyntax.scm compiler-vm.scm
 	gosh vm.scm compile-file-without-macro $< > $@
@@ -65,7 +65,7 @@ baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $@
 
 free-vars-decl.scm: free-vars.scm
-	mosh $(SCRIPTS_DIR)/gen-free-vars-decl.scm $< > $@
+	mosh --disable-acc $(SCRIPTS_DIR)/gen-free-vars-decl.scm $< > $@
 
 GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
 SVN_REPOS="http://mosh-scheme.googlecode.com/svn/branches"
