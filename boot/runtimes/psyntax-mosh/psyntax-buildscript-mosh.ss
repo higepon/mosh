@@ -973,6 +973,7 @@
     (make-parameter                           sys)
     (parameterize                            sys)
     (disasm                                  sys)
+    (condition-printer                       mosh)
     (os-constant                             mosh)
     (time-usage                              mosh)
     (time                                    mosh interaction)

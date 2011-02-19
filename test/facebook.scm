@@ -31,6 +31,15 @@
   (test-true (bytevector? jpg))
   (test-equal jpg-magic (bytevector-u16-ref jpg 0 'little)))
 
-(fb-post-feed access-token "Mosh から Facebook Graph API を叩いて書き込んでる。")
+;(fb-post-feed access-token "あああいうえおかき")
+
+(time (for-each
+       (^f
+        (match f
+          [(("name" . _) ("id" . id))
+           (write (fb-friend id access-token))
+           (newline)]))
+       (fb-friends access-token)))
+;(test-true (list? (fb-friend "100001165496695" access-token)))
 
 (test-results)

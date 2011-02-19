@@ -6,6 +6,7 @@
           (mosh control)
           (srfi :98)
           (irregex)
+          (match)
           (only (mosh) digit->integer  string-split format call-with-string-io bytevector-for-each  regexp-replace-all assoc-ref)
           )
 
@@ -113,11 +114,13 @@
   (let* ([content-body (if (pair? body) (car body)  (request-body (request-method)))]
          [parsed (parse-query-string content-body)])
     (values
-     (lambda (key)
-       (let ([value (assoc key parsed)])
+     (match-lambda*
+      [(key)
+       (let ([value (assoc (if (symbol? key) (symbol->string key) key) parsed)])
          (if value
              (cadr value)
-             #f)))
+             #f))]
+      [else parsed])
      request-method)))
 
 (define (header . alist*)
@@ -153,10 +156,10 @@
                   [cookies '()])
 
          (cond
-          [(irregex-search "([^=]+)=([^;]+);?\\s?(.*)" cookies-string) =>
+          [(#/([^=]+)=([^;]+);?\s?(.*)/ cookies-string) =>
            (^m
-            (loop (irregex-match-substring m 3)
-                  (cons (cons (irregex-match-substring m 1) (irregex-match-substring m 2)) cookies)))]
+            (loop (if (m 3) (m 3) "")
+                  (cons (cons (m 1) (m 2)) cookies)))]
            [else
             cookies]))
        '()))

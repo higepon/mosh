@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (http)
-  (export http-get->utf8 http-get http-post http-post->utf8)
+  (export http-get->utf8 http-get http-post http-post->utf8 http-post-json)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -64,10 +64,10 @@
 (define (header*->alist header*)
   (map (^(header)
          (cond
-          [(irregex-search "([^:]+): (.+)" header) =>
-           (^m (cons (irregex-match-substring m 1) (irregex-match-substring m 2)))]
-          [(irregex-search "^HTTP/1.[01] ([0-9]+).*" header) =>
-           (^m (cons "Status" (irregex-match-substring m 1)))]
+          [(#/([^:]+): (.*)/ header) =>
+           (^m (cons (m 1) (m 2)))]
+          [(#/^HTTP\/1.[01] ([0-9]+).*/ header) =>
+           (^m (cons "Status" (m 1)))]
           [else
            (error 'header*->alist "invalid HTTP Response Header" header)])) header*))
 
@@ -135,6 +135,7 @@
         (http-get host port path secure?))
     ]))
 
+;; fb-post-feed works with uri-encode.
 (define (alist->urlencoded alist)
   (string-join
    (map (match-lambda
@@ -148,9 +149,16 @@
 
 (define (make-post-request path host param-alist)
   (let1 param (alist->urlencoded param-alist)
-    (format (current-error-port) "param=<~s>" param)
+;    (format (current-error-port) "param=<~s>" param)
     ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
     (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length param) param))))
+
+(define (make-post-request-json path host json . cookie)
+  (if (pair? cookie)
+      (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/json\r\nCookie: ~a\r\nContent-Length: ~d\r\n\r\n~a" path host (car cookie) (string-length json) json))
+      ;; To prevent Chunked Transfer-Encoding, we don't use HTTP/1.1.
+      (string->utf8 (format "POST ~a HTTP/1.0\r\nHost: ~a\r\nUser-Agent: Mosh Scheme (http)\r\nContent-Type: application/json\r\nContent-Length: ~d\r\n\r\n~a" path host (string-length json) json))))
+
 
 (define (http-receive-response p)
   (let* ([header* (read-header p)]
@@ -194,6 +202,16 @@
       (put-bytevector p request)
       (http-receive-response p))))
 
+(define http-post-json
+  (match-lambda*
+   [(host port path secure? json . cookie)
+    (http-send-request host port secure? (apply make-post-request-json path host json cookie))]
+   [(uri json . cookie)
+    (receive (host port path secure?) (parse-uri uri)
+      (apply http-post-json host port path secure? json cookie))
+    ]))
+
+
 (define http-post
   (match-lambda*
    [(host port path secure? param-alist)
@@ -202,4 +220,6 @@
     (receive (host port path secure?) (parse-uri uri)
       (http-post host port path secure? param-alist))
     ]))
+
+
 )
