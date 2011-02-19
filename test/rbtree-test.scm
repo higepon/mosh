@@ -121,5 +121,7 @@
     (time (rbtree-get rb 1234 1))
     (close-port port)))
 
+(when (file-exists? "rbtree.dot")
+  (delete-file "rbtree.dot"))
 
 (check-report)
