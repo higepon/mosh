@@ -1,5 +1,5 @@
 (import (rnrs)
-        (mosh)
+        (except (mosh) condition-printer)
         (system)
         (mosh queue)
         (mosh concurrent)
@@ -66,7 +66,7 @@
 
                )
              '()
-             '((rnrs) (mosh concurrent) (mosh) (mosh test))
+             '((rnrs) (mosh concurrent) (except (mosh) condition-printer) (mosh test))
             )])
 
 (link pid)

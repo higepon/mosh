@@ -1,8 +1,15 @@
-.PHONY: bogus runtest runtest-mosh runtest-nmosh
+.PHONY: bogus runtest runtest-mosh runtest-nmosh runtest-for-developer
 all: bogus
 bogus:
 	@echo "Do not use this makefile."
 	@false
+
+runtest-for-developer: 
+	$(MOSH_TARGET) test/mysql.scm
+	$(MOSH_TARGET) test/dbi.scm
+	$(MOSH_TARGET) test/http.scm
+	$(MOSH_TARGET) test/socket.scm
+	$(MOSH_TARGET) test/print.scm
 
 runtest: 
 	$(MOSH_TARGET) --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
@@ -23,16 +30,11 @@ runtest:
 	$(MOSH_TARGET) test/unicode.scm
 	$(MOSH_TARGET) test/srfi8.scm
 	$(MOSH_TARGET) test/srfi19.scm
-	$(MOSH_TARGET) test/mysql.scm
 	$(MOSH_TARGET) test/clos.scm
-	$(MOSH_TARGET) test/dbi.scm
 	$(MOSH_TARGET) test/srfi-misc.scm
 	$(MOSH_TARGET) test/lists.scm
-	$(MOSH_TARGET) test/socket.scm
-	$(MOSH_TARGET) test/http.scm
 	$(MOSH_TARGET) test/match.scm
 	$(MOSH_TARGET) test/srfi-39.scm
-	$(MOSH_TARGET) test/print.scm
 	$(MOSH_TARGET) test/concurrent.scm
 	$(MOSH_TARGET) test/concurrent-crash.scm
 	$(MOSH_TARGET) test/number.scm
@@ -45,7 +47,7 @@ runtest:
 	! $(MOSH_TARGET) test/error-with-circular.scm 2>/dev/null
 
 runtest-ffi:
-	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
+	-(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
 
 runtest-mosh:
 	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared.scm

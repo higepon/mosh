@@ -298,7 +298,8 @@ doc:
 	mosh misc/scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
 
-.PHONY: doc test ntest testB testR testL ntestB ntestR ntestL install
+.PHONY: doc test 
+.PHONY: ptest ntest testB testR testL ntestB ntestR ntestL install Xtest testD
 
 bench:
 #	@GOSH@ ./misc/scripts/bench.scm > /dev/null
@@ -307,13 +308,15 @@ bench:
 include Generate.mk
 
 #### test
-check: test ntest
+check: test
 
 #FIXME: use macro
 MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTARGS)"
 NMOSHBIN ="NMOSH_CACHEDIR=$(abs_builddir)/nmosh-cache MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
 
-test: testB testR testL
+test: ptest ntest
+Xtest: ptest ntest testD ntestD
+ptest: testB testR testL
 ntest: ntestB ntestR ntestL
 
 testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
@@ -323,6 +326,7 @@ testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 
 testL:
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/yuni)
 
 testR:
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
@@ -337,9 +341,16 @@ ntestB: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
 
 ntestL:
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/yuni)
 
 ntestR:
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
+
+testD:
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-for-developer)
+
+ntestD:
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-for-developer)
 
 # Builds gtest.a and gtest_main.a.
 
