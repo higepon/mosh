@@ -38,9 +38,12 @@
       (display "writing boot image...")(newline)
       (write-cobj 'nmosh p (obj->fasl vec))
       (display "done.")(newline)
+      #|
       (display "writing boot image(debug symbol)...")(newline)
       (write-cobj 'nmosh_dbg p (obj->fasl *SYMS*))
-      (display "done.")(newline))))
+      (display "done.")(newline)
+      |#
+      )))
 
 (define (build p)
   (display "#define uint8_t unsigned char\n" p)
@@ -49,14 +52,18 @@
   (display "const unsigned char* nmosh_image_ptr;\n" p)
   (display "extern \"C\" " p)
   (display "const unsigned int nmosh_image_size;\n" p)
+  #|
   (display "extern \"C\" " p)
   (display "const unsigned char* nmosh_dbg_image_ptr;\n" p)
   (display "extern \"C\" " p)
   (display "const unsigned int nmosh_dbg_image_size;\n" p)
+  |#
   (display "const unsigned char* nmosh_image_ptr = (unsigned char*)&nmosh_image;\n" p)
   (display "const unsigned int nmosh_image_size = sizeof(nmosh_image); \n" p)
+  #|
   (display "const unsigned char* nmosh_dbg_image_ptr = (unsigned char*)&nmosh_dbg_image;\n" p)
   (display "const unsigned int nmosh_dbg_image_size = sizeof(nmosh_dbg_image); \n" p)
+  |#
   )
 
 

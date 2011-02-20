@@ -71,8 +71,8 @@ static VM* theVM;
 #endif
 
 #ifdef WITH_NMOSH_DEFAULTS
-extern "C" const uint8_t* nmosh_dbg_image_ptr;
-extern "C" unsigned int nmosh_dbg_image_size;
+//extern "C" const uint8_t* nmosh_dbg_image_ptr;
+//extern "C" unsigned int nmosh_dbg_image_size;
 extern "C" const uint8_t* nmosh_image_ptr;
 extern "C" const unsigned int nmosh_image_size;
 #else
@@ -89,7 +89,8 @@ internalGetStackTraceObj(VM* vm, int argc, const Object* argv){
 Object
 internalGetNmoshDbgImage(VM* vm, int argc, const Object* argv){
     //DeclareProcedureName("%get-nmosh-dbg-image");
-    return FaslReader(vm, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
+    return Object::Nil;
+    //return FaslReader(vm, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
 }
 #endif
 
