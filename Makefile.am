@@ -267,7 +267,7 @@ boot/runtimes/srfi-mosh/mosh-exceptions.scm \
 boot/runtimes/srfi-mosh/mosh-utils5.scm \
 boot/runtimes/srfi-mosh/runtime.scm \
 gen-git-build.sh \
-CMakeLists.txt cmake
+CMakeLists.txt cmake extlibs
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \
