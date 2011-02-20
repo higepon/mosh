@@ -1,10 +1,80 @@
-(mosh
+(mosh/nmosh
+  ;; mosh/nmosh common
   (legend: 
-    (alias-name => "name of library")
-    (library-name => "library true name"))
-  #(alias-name library-name interface-level)
+    (alias-name => "name of library"))
+  #(alias-name interface-level)
   ;; mosh/nmosh distribution
-  [(shorten helper) #f internal]
+  ;; clos
+  [(clos user) user]
+  [(clos core) user]
+  [(clos helpers) user]
+  [(clos slot-access) user]
+  [(clos std-protocols *) user]
+  [(clos introspection) user]
+  [(clos private *) internal]
+
+  ;; config
+  [(config *) internal]
+
+  ;; mosh specific API
+  [(mosh c-type) user]
+  [(mosh c-type helper) internal]
+  [(mosh cgi) user]
+  [(mosh concurrent) user]
+  ;[(mosh config) user]
+  [(mosh control) user]
+  [(mosh dbd mysql) user]
+  [(mosh dbi) user]
+  [(mosh ffi) user]
+  [(mosh file) user]
+  [(mosh io conditions) user]
+  [(mosh irc client) user]
+  ;[(mosh mysql) user]
+  [(mosh pp) user]
+  [(mosh process) user]
+  [(mosh queue) user]
+  [(mosh shell repl) user]
+  [(mosh socket) user]
+  [(mosh test) user]
+
+  ;; mosh specific API (staging)
+  [(nmosh debugger) internal]
+  [(nmosh debugger condition-printer) internal]
+  [(nmosh debugger core) internal]
+  [(nmosh ffi pffi) internal]
+  [(nmosh ffi stublib) internal]
+  [(nmosh global-flags) internal]
+  [(nmosh process) internal]
+  [(nmosh process win32) internal]
+  [(nmosh process mosh) internal]
+  [(nmosh stubs *) internal]
+  [(nmosh ui deco) internal]
+  [(nmosh win32 handle) internal]
+  [(nmosh win32 named-pipe) internal]
+  [(nmosh win32 util) internal]
+  [(nmosh) user*]
+
+  ;; yuni/nmosh specific
+  [(yuni *) internal]
+
+  ;; lambda
+  [(lambda wiki) user]
+
+  ;; public-misc
+  [(irregex) user]
+  [(json) user]
+  [(packrat) user]
+
+  ;; public-misc (mosh original)
+  [(rbtree) user]
+  [(shorten) user]
+  [(shorten helper) internal]
+  [(monapi) user]
+  [(facebook) user]
+  [(http) user]
+  [(template) user]
+  [(uri) user]
+
 )
 
 (srfi-97
@@ -79,16 +149,17 @@
                        (srfi :99 records syntactic)] srfi]
 )
 
-(srfi-port
+(srfi-extra
+  ;; libraries not defined in SRFI-97
   (legend: 
     (alias-name => "name of library")
     (library-name => "library true name"))
   #(alias-name library-name interface-level)
   ;; SRFI-0
-  [(srfi :0) (srfi :0 cond-expand) srfi-port]
+  [(srfi :0) (srfi :0 cond-expand) srfi-extra]
 
   ;; SRFI-37
-  [(srfi :37) (srfi :37 args-fold) srfi-port]
+  [(srfi :37) (srfi :37 args-fold) srfi-extra]
 )
 
 (rnrs

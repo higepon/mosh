@@ -1,6 +1,6 @@
 (library (yuni util library-files)
          (export 
-           library-set-code!
+           ;library-set-code!
            library-name
            make-library-env
            search-library-bundle
