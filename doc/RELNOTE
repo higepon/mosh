@@ -49,18 +49,23 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             cases.
 
     (mosh ffi):
-        pointer-ref-* and pointer-set-*! is now scaled by C sizeof(TYPE).
+        pointer-ref-* and pointer-set-*! index is now scaled by C sizeof(TYPE).
         i.e.) (pointer-ref-c-pointer ptr num) is now eqv. of ptr[num].
+        These indices are erroneously scaled by 1(byte) in prior releases.
+
+    (srfi :1 lists):
+        Fixed Issue 192:
+            delete-duplicates now accepts (delete-duplicates obj) form.
 
     (srfi :19 time):
         Fixed Issue 188: 
-            SRFI-19 implementation now includes a leap second inseted in 
+            SRFI-19 implementation now includes a leap second inserted in 
             2008-2009.
 
     (srfi :39 parameters):
         Fixed Issue 184: 
             SRFI-39 now implemented with (rnrs) constructs. Former psyntax-mosh
-            used psyntax's parameterize which not compatible with SRFI-39.
+            used psyntax's parameterize which was not compatible with SRFI-39.
 
 Changes:
 
@@ -91,6 +96,10 @@ Known Issues:
       colourised at all.
     - Mosh/nmosh should be built with system-provided BoehmGC instead of 
       shipped with Mosh sourcecode.
+    - Some C++ compilers are known to miscompile mosh/nmosh. Try CXXFLAGS="-O1"
+      when your compiler don't finish compilation.
+      - MSVC prior 2010   - Won't finish compilation when LTO enabled.
+      - Clang++ 2.8/trunk - Crash when compiling FFIProcedures.cpp.
     
 
 Mosh 0.2.6 Release Note
