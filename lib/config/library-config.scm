@@ -107,9 +107,9 @@
   [(srfi :31) (srfi :31 rec) srfi]
   [(srfi :38) (srfi :38 with-shared-structure) srfi]
   [(srfi :39) (srfi :39 parameters) srfi]
-  [(srfi :41) [(srfi :41 streams)
-               (srfi :41 streams primitive)
-               (srfi :41 streams derived)] srfi]
+  [(srfi :41) (srfi :41 streams) srfi]
+  [(srfi :41 streams) [(srfi :41 streams primitive)
+                       (srfi :41 streams derived)] srfi]
   [(srfi :42) (srfi :42 eager-comprehensions) srfi]
   [(srfi :43) (srfi :43 vectors) srfi]
   [(srfi :44) (srfi :44 collections) srfi]

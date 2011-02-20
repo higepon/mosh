@@ -2,14 +2,21 @@
         (yuni util tables scheme)
         (yuni util files)
         (yuni core)
+        (only (srfi :1) delete-duplicates!)
+        (srfi :8)
         (srfi :48)
         (mosh pp)
         (rnrs)
         (shorten))
 
-(define generated '())
-(define (add-generated! x)
-  (set! generated (cons x generated)))
+(define generated-file '())
+(define (add-generated-file! x)
+  (set! generated-file (cons x generated-file)))
+(define generated-library '())
+(define (add-generated-library! x)
+  (unless (find (^p (equal? x p)) generated-library)
+    (set! generated-library (cons x generated-library))))
+
 (define* entry (name baselib* level))
 
 (define tbl (file->table-list "lib/config/library-config.scm"))
@@ -72,21 +79,19 @@
       #f)))
 
 (define (emit-aliaslib libname base*)
-  (define exports (map library-export base*))
-  (let ((syms (fold-left (^[cur e]
-                           (if (list? e)
-                             (append cur e)
-                             cur))
-                         '()
-                         exports))
+  (define syms0 (apply append (map library-export base*)))
+  ;(pp (list 'SYMS0 syms0))
+  (let ((syms (if syms0 (delete-duplicates! syms0) '()))
         (output (string-append (library-basepath libname)
                                ".mosh.sls"))
         (origpath (map library-path base*)))
+    ;(pp (list 'SYMS syms))
     (when (file-exists? output)
       (delete-file output))
     (when (for-all (^e e) origpath)
-      (display "generate: ")
-      (pp `(,libname <= ,@base*))
+      (format #t "generate: ~a <= ~a (~a exports)\n" libname 
+              base* 
+              (length syms))
       (call-with-output-file
         output
         (^p (format p ";; this file is an alias-library.\n")
@@ -103,7 +108,28 @@
                       base*)
             (format p "         )\n")
             (format p ") ;; library ~a\n" libname))) 
-      (add-generated! output))))
+      (for-each (^x (add-generated-library! x)) base*)
+      (add-generated-library! libname)
+      (add-generated-file! output))))
+
+(define* (generate-alias (e entry))
+  (let-with e (name baselib* level)
+    ;; ignore rnrs libraries here.
+    ;; rnrs composite libraries exports some symbol in
+    ;; different export level.
+    (when (and (list? baselib*) (not (eq? level 'rnrs)))
+      (emit-aliaslib name baselib*))))
+
+;; filter out multi-level alias
+(define* (has-multi-level? (e entry))
+  (define (aliased? x)
+    (find (^e (let-with e (name) (equal? x name))) entry*))
+  (let-with e (name baselib*)
+    (not 
+      (and (list? baselib*)
+           (for-all
+             (^p (not (aliased? p)))
+             baselib*)))))
 
 ;; collect all library definition
 
@@ -119,13 +145,10 @@
   tbl)
 
 ;; generate alias library
-(for-each (^e (let-with e (name baselib* level)
-                ;; ignore rnrs libraries here.
-                ;; rnrs composite libraries exports some symbol in
-                ;; different export level.
-                (when (and (list? baselib*) (not (eq? level 'rnrs)))
-                  (emit-aliaslib name baselib*))))
-          entry*)
+(receive (multi-levels first) (partition has-multi-level? entry*)
+  (for-each generate-alias first)
+  (for-each generate-alias multi-levels))
+
 #|
 ;; update .gitignore
 (let ()

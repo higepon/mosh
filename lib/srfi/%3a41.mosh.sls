@@ -1,96 +1,47 @@
 ;; this file is an alias-library.
 ;;  alias of:
-;;   lib/srfi/%3a41/streams.sls
-;;   lib/srfi/%3a41/streams/primitive.sls
-;;   lib/srfi/%3a41/streams/derived.sls
+;;   lib/srfi/%3a41/streams.mosh.sls
 (library (srfi :41)
          (export
-             stream-zip
-             stream-unfolds
-             stream-unfold
-             stream-take-while
-             stream-take
-             stream-scan
-             stream-reverse
-             stream-ref
-             stream-range
-             stream-of
-             stream-match
-             stream-map
-             stream-let
-             stream-length
-             stream-iterate
-             stream-from
-             stream-for-each
-             stream-fold
-             stream-filter
-             stream-drop-while
-             stream-drop
-             stream-constant
-             stream-concat
-             stream-append
-             stream->list
-             stream
-             port->stream
-             list->stream
              define-stream
-             stream-lambda
-             stream-cdr
-             stream-car
-             stream-pair?
-             stream-null?
-             stream?
-             stream-cons
-             stream-null
-             stream-lambda
-             stream-cdr
-             stream-car
-             stream-pair?
-             stream-null?
-             stream?
-             stream-cons
-             stream-null
-             stream-zip
-             stream-unfolds
-             stream-unfold
-             stream-take-while
-             stream-take
-             stream-scan
-             stream-reverse
-             stream-ref
-             stream-range
-             stream-of
-             stream-match
-             stream-map
-             stream-let
-             stream-length
-             stream-iterate
-             stream-from
-             stream-for-each
-             stream-fold
-             stream-filter
-             stream-drop-while
-             stream-drop
-             stream-constant
-             stream-concat
-             stream-append
-             stream->list
-             stream
-             port->stream
              list->stream
-             define-stream
-             stream-lambda
-             stream-cdr
-             stream-car
-             stream-pair?
-             stream-null?
-             stream?
-             stream-cons
+             port->stream
+             stream
+             stream->list
+             stream-append
+             stream-concat
+             stream-constant
+             stream-drop
+             stream-drop-while
+             stream-filter
+             stream-fold
+             stream-for-each
+             stream-from
+             stream-iterate
+             stream-length
+             stream-let
+             stream-map
+             stream-match
+             stream-of
+             stream-range
+             stream-ref
+             stream-reverse
+             stream-scan
+             stream-take
+             stream-take-while
+             stream-unfold
+             stream-unfolds
+             stream-zip
              stream-null
+             stream-cons
+             stream?
+             stream-null?
+             stream-pair?
+             stream-car
+             stream-cdr
+             stream-lambda
          )
          (import
              (srfi :41 streams)
-             (srfi :41 streams primitive)
-             (srfi :41 streams derived)
          )
 ) ;; library (srfi :41)
