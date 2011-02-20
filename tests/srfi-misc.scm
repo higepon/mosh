@@ -1,5 +1,6 @@
 (import (except (rnrs) let-values error define-record-type cond)
         (srfi :0)
+        (only (srfi :1) delete-duplicates)
         (srfi :2)
         (srfi :6)
         (srfi :8)
@@ -35,6 +36,11 @@
   (define name 'other)))
 
 (test-equal name 'mosh)
+
+;;;;;  SRFI-1   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Issue 192: delete-duplicates without eqv. func
+(test-equal '(a) (delete-duplicates '(a a a a)))
 
 ;;;;;  SRFI-2   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (test-equal 'pon (and-let* ((entry (assoc 'hige '((hige . pon))))) (cdr entry)))
