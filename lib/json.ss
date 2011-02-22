@@ -63,7 +63,7 @@
 	    (cond
 	     ((symbol? k) (write (symbol->string k) p))
 	     ((string? k) (write k p)) ;; for convenience
-	     (else (error "Invalid JSON table key in json-write" k)))
+	     (else (error 'json-write "Invalid JSON table key in json-write" k)))
 	    (display ": " p)
 	    (write-any v p)))
 	(display "}" p))
@@ -89,7 +89,7 @@
 	      (number? x)) (write x p))
 	 ((boolean? x) (display (if x "true" "false") p))
 	 ((eq? x (void)) (display "null" p))
-	 (else (error "Invalid JSON object in json-write" x))))
+	 (else (error 'write-any "Invalid JSON object in json-write" x))))
 
       (lambda (x . maybe-port)
 	(write-any x (if (pair? maybe-port) (car maybe-port) (current-output-port))))))
@@ -204,7 +204,7 @@
 	(let ((result (parser (base-generator->results (generator p)))))
 	  (if (parse-result-successful? result)
 	      (parse-result-semantic-value result)
-	      (error "JSON Parse Error"
+	      (error 'read-any "JSON Parse Error"
 		     (let ((e (parse-result-error result)))
 		       (list 'json-parse-error
 			     (parse-position->string (parse-error-position e))
