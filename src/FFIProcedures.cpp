@@ -614,29 +614,34 @@ static float callStubFloat(Pointer* func, CStack* cstack)
         FSTP   dret
     }
     return dret;
-#elif defined ARCH_X86_64
-    float ret;
+#elif defined(ARCH_X86_64)
+#ifdef __clang__
+    int
+#else
+    float
+#endif
+    ret;
     if (cstack->count() == 0) {
-        asm volatile("movq %%rsi, %%r10;"
-                     "movsd   (%%rdi), %%xmm0 ;"
-                     "movsd  8(%%rdi), %%xmm1 ;"
-                     "movsd 16(%%rdi), %%xmm2 ;"
-                     "movsd 24(%%rdi), %%xmm3 ;"
-                     "movsd 32(%%rdi), %%xmm4 ;"
-                     "movsd 40(%%rdi), %%xmm5 ;"
-                     "movsd 48(%%rdi), %%xmm6 ;"
-                     "movsd 56(%%rdi), %%xmm7 ;"
-                     "movq 0(%%r10), %%rdi ;"   // register argument 1
-                     "movq 8(%%r10), %%rsi ;"   // register argument 2
-                     "movq 16(%%r10), %%rdx ;"  // register argument 3
-                     "movq 24(%%r10), %%rcx ;"  // register argument 4
-                     "movq 32(%%r10), %%r8 ;"   // register argument 5
+        asm volatile("movq %%rsi, %%r10\n"
+                     "movsd   (%%rdi), %%xmm0 \n"
+                     "movsd  8(%%rdi), %%xmm1 \n"
+                     "movsd 16(%%rdi), %%xmm2 \n"
+                     "movsd 24(%%rdi), %%xmm3 \n"
+                     "movsd 32(%%rdi), %%xmm4 \n"
+                     "movsd 40(%%rdi), %%xmm5 \n"
+                     "movsd 48(%%rdi), %%xmm6 \n"
+                     "movsd 56(%%rdi), %%xmm7 \n"
+                     "movq 0(%%r10), %%rdi \n"   // register argument 1
+                     "movq 8(%%r10), %%rsi \n"   // register argument 2
+                     "movq 16(%%r10), %%rdx \n"  // register argument 3
+                     "movq 24(%%r10), %%rcx \n"  // register argument 4
+                     "movq 32(%%r10), %%r8 \n"   // register argument 5
                      "movq 40(%%r10), %%r9 ;"   // register argument 6
-                     "call *%%rax ;"
-#if !defined(__APPLE__)&&!defined(__FreeBSD__)
-                     "movq %%xmm0, %%rax ;"
+                     "call *%%rax \n"
+#if !defined(__APPLE__)&&!defined(__FreeBSD__)&&!defined(__clang__)
+                     "movq %%xmm0, %%rax \n"
 #else /* Apple's assembler doesn't support movq in that style . */
-                     "movd %%xmm0, %%rax ;"
+                     "movd %%xmm0, %%rax \n"
 #endif
                      : "=a" (ret)
                      : "0" (func->pointer()), "S" (cstack->reg()), "D"(cstack->xmm())
@@ -645,46 +650,52 @@ static float callStubFloat(Pointer* func, CStack* cstack)
     } else {
         const int bytes = (cstack->count()) * 8;
         asm volatile(
-            "movq %%rsi, %%r10;" // r10 for pointing register frame
-            "movq %%rdx, %%r11;" // r11 for pointer to stack argument in frame
-            "movq %%r11, %%r12;"
-            "addq %%rcx, %%r12;"  // r12 end of stack argument in frame
-            "movsd   (%%rdi), %%xmm0 ;"
-            "movsd  8(%%rdi), %%xmm1 ;"
-            "movsd 16(%%rdi), %%xmm2 ;"
-            "movsd 24(%%rdi), %%xmm3 ;"
-            "movsd 32(%%rdi), %%xmm4 ;"
-            "movsd 40(%%rdi), %%xmm5 ;"
-            "movsd 48(%%rdi), %%xmm6 ;"
-            "movsd 56(%%rdi), %%xmm7 ;"
-            "movq 0(%%r10), %%rdi ;"   // register argument 1
-            "movq 8(%%r10), %%rsi ;"   // register argument 2
-            "movq 16(%%r10), %%rdx ;"  // register argument 3
-            "movq 24(%%r10), %%rcx ;"  // register argument 4
-            "movq 32(%%r10), %%r8 ;"   // register argument 5
-            "movq 40(%%r10), %%r9 ;"   // register argument 6
-            "movq %%rsp, %%r13;"
-            "1:   ;"
-            "cmpq %%r11, %%r12;"
-            "je 2f;"
-            "movq 0(%%r11), %%r14;"
-            "movq %%r14, 0(%%r13);"
-            "addq $8, %%r11;"
-            "addq $8, %%r13;"
-            "jmp 1b;"
-            "2:   ;"
-            "call *%%rax ;"
-#if !defined(__APPLE__)&&!defined(__FreeBSD__)
-            "movq %%xmm0, %%rax ;"
+            "movq %%rsi, %%r10\n" // r10 for pointing register frame
+            "movq %%rdx, %%r11\n" // r11 for pointer to stack argument in frame
+            "movq %%r11, %%r12\n"
+            "addq %%rcx, %%r12\n"  // r12 end of stack argument in frame
+            "movsd   (%%rdi), %%xmm0 \n"
+            "movsd  8(%%rdi), %%xmm1 \n"
+            "movsd 16(%%rdi), %%xmm2 \n"
+            "movsd 24(%%rdi), %%xmm3 \n"
+            "movsd 32(%%rdi), %%xmm4 \n"
+            "movsd 40(%%rdi), %%xmm5 \n"
+            "movsd 48(%%rdi), %%xmm6 \n"
+            "movsd 56(%%rdi), %%xmm7 \n"
+            "movq 0(%%r10), %%rdi \n"   // register argument 1
+            "movq 8(%%r10), %%rsi \n"   // register argument 2
+            "movq 16(%%r10), %%rdx \n"  // register argument 3
+            "movq 24(%%r10), %%rcx \n"  // register argument 4
+            "movq 32(%%r10), %%r8 \n"   // register argument 5
+            "movq 40(%%r10), %%r9 \n"   // register argument 6
+            "movq %%rsp, %%r13\n"
+            "1:   \n"
+            "cmpq %%r11, %%r12\n"
+            "je 2f\n"
+            "movq 0(%%r11), %%r14\n"
+            "movq %%r14, 0(%%r13)\n"
+            "addq $8, %%r11\n"
+            "addq $8, %%r13\n"
+            "jmp 1b\n"
+            "2:   \n"
+            "call *%%rax \n"
+#if !defined(__APPLE__)&&!defined(__FreeBSD__)&&!defined(__clang__)
+            "movq %%xmm0, %%rax \n"
 #else
-            "movd %%xmm0, %%rax ;" /* Apple's assembler doesn't support that movq*/
+            "movd %%xmm0, %%rax \n" /* Apple's assembler doesn't support that movq*/
 #endif
             : "=a" (ret)
             : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
             : "memory"
             );
     }
+#ifndef __clang__
     return ret;
+#else
+    float retf; // clang dislikes =a (float) constraint..
+    retf = *(float *)&ret;
+    return retf;
+#endif // ifndef __clang__
 #else
     return 0.0;
 #endif
