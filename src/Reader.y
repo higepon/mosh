@@ -123,7 +123,7 @@ lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                    yyerror("Regexp literal is not allowed on #!r6rs mode");
                    YYERROR;
                  } else {
-                   $$ = Object::makeRegexp($1);
+                   $$ = Object::makeRegexp($1, false, false);
                  }
                }
                | NUMBER {

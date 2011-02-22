@@ -49,16 +49,17 @@ extern VM* theVM;
 #endif
 
 
-Regexp::Regexp(const ucs4string& pattern, bool caseFold) : pattern_(pattern),
-                                                           isErrorOccured_(false),
-                                                           errorMessage_(Object::Nil),
-                                                           irritants_(Object::Nil)
+Regexp::Regexp(const ucs4string& pattern, bool caseFold, bool isSingleLine) :
+    pattern_(pattern),
+    isErrorOccured_(false),
+    errorMessage_(Object::Nil),
+    irritants_(Object::Nil)
 {
     const ucs4char* p = pattern_.data();
     int r = onig_new(&regexp_,
                      (const uint8_t*)p,
                      (const uint8_t*)(p + pattern_.size()),
-                     (ONIG_OPTION_DEFAULT | caseFold ? ONIG_OPTION_IGNORECASE : 0),
+                     (ONIG_OPTION_DEFAULT) | (caseFold ? ONIG_OPTION_IGNORECASE : 0) | (isSingleLine? ONIG_OPTION_SINGLELINE : 0),
                      ONIG_ENCODING,
                      ONIG_SYNTAX_RUBY,
                      &einfo_);

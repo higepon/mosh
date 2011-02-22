@@ -64,10 +64,10 @@
 (define (header*->alist header*)
   (map (^(header)
          (cond
-          [(irregex-search "([^:]+): (.*)" header) =>
-           (^m (cons (irregex-match-substring m 1) (irregex-match-substring m 2)))]
-          [(irregex-search "^HTTP/1.[01] ([0-9]+).*" header) =>
-           (^m (cons "Status" (irregex-match-substring m 1)))]
+          [(#/([^:]+): (.*)/ header) =>
+           (^m (cons (m 1) (m 2)))]
+          [(#/^HTTP\/1.[01] ([0-9]+).*/ header) =>
+           (^m (cons "Status" (m 1)))]
           [else
            (error 'header*->alist "invalid HTTP Response Header" header)])) header*))
 

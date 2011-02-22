@@ -262,7 +262,7 @@ public:
     static Object makeByteVector(Object pair);
     static Object makeByteVector(const gc_vector<uint8_t>& v);
     static Object makeBool(bool a);
-    static Object makeRegexp(const ucs4string& pattern, bool caseFold = false);
+    static Object makeRegexp(const ucs4string& pattern, bool caseFold, bool isSingleLine);
     static Object makeRegMatch(OnigRegion* region, const ucs4string& text);
     static Object makeCodec(Codec* codec);
     static Object makeTranscoder(Transcoder* transcoder);

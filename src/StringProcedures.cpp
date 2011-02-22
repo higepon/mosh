@@ -119,9 +119,23 @@ Object scheme::stringEqPEx(VM* theVM, int argc, const Object* argv)
 Object scheme::stringToregexpEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string->regexp");
-    checkArgumentLength(1);
+    checkArgumentLengthAtLeast(1);
     argumentAsString(0, text);
-    return Object::makeRegexp(text->data());
+    bool isIgnoreCase = false;
+    bool isSingleLine = false;
+
+    if (argc == 1) {
+        return Object::makeRegexp(text->data(), isIgnoreCase, isSingleLine);
+    } else {
+        for (int i = 1; i < argc; i++) {
+            if (argv[i] == Symbol::intern(UC("i"))) {
+                isIgnoreCase = true;
+            } else if (argv[i] == Symbol::intern(UC("s"))) {
+                isSingleLine = true;
+            }
+        }
+        return Object::makeRegexp(text->data(), isIgnoreCase, isSingleLine);
+    }
 }
 
 Object scheme::makeStringEx(VM* theVM, int argc, const Object* argv)
