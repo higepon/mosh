@@ -328,6 +328,7 @@ testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-mosh)
 
 testL:
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/srfi)
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/irregex)
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/yuni)
 
@@ -343,6 +344,7 @@ ntestB: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-nmosh)
 
 ntestL:
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/tests/srfi)
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/tests/irregex)
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/tests/yuni)
 
