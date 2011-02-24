@@ -26,7 +26,9 @@
 (library (srfi :26 cut)
   (export cut cute)
   (import
-   (only (rnrs) ... _ begin define-syntax syntax-rules lambda begin let)
+   (only (rnrs) ... _ begin define-syntax syntax-rules lambda begin let
+         apply
+         )
    (only (srfi private include) include/resolve)
 )
   
