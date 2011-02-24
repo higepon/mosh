@@ -42,6 +42,8 @@
          (eval 'expr (environment '(rnrs) '(srfi :2 and-let*))))
        => #t)]))
 
+(check-set-mode! 'report-failed)
+
 ;; Taken straight from the reference implementation tests
 
 (expect  (and-let* () 1) 1)

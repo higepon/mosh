@@ -16,6 +16,8 @@
      [(_ expected expr)
       (check expr => expected)]))
 
+(check-set-mode! 'report-failed)
+
 ;;;===================================================
 
 (expect (format "test ~s" 'me) (format #f "test ~a" "me"))

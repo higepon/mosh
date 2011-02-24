@@ -47,6 +47,8 @@
   (rnrs r5rs)
   (srfi :78 lightweight-testing))
 
+(check-set-mode! 'report-failed)
+
 ; -- simple test --
 
 (check (+ 1 1) => 2)
