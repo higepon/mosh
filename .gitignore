@@ -2,7 +2,6 @@
 configure
  
 # autoconf/autotools
-INSTALL
 Makefile.in
 aclocal.m4
 config.guess
