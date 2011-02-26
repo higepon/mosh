@@ -1,5 +1,5 @@
 ;; MIT/GNU scheme compatible er-macro-transformer in R6RS syncase
-(library (yuni transformer scheme explicit-renaming)
+(library (yuni scheme explicit-renaming)
          (export er-macro-transformer syntax)
          (import (rnrs)
                  (yuni transformer scheme unwrap-syntax))

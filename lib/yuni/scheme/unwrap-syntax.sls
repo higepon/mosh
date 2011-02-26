@@ -1,4 +1,4 @@
-(library (yuni transformer scheme unwrap-syntax)
+(library (yuni scheme unwrap-syntax)
          (export unwrap-syntax)
          (import (rnrs))
 (define (unwrap-syntax x)
