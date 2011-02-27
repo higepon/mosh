@@ -106,8 +106,8 @@ Known Issues:
       shipped with Mosh sourcecode.
     - Some C++ compilers are known to miscompile mosh/nmosh. Try CXXFLAGS="-O1"
       if your compiler do not finish compilation.
-      - MSVC prior 2010 - May not finish compilation when LTO enabled.
-      - Clang++ trunk   - Sometimes miscompile bytevector related procedures.
+      - MSVC 2008 x64 - May not finish compilation when LTO enabled.
+      - Clang++ trunk - Sometimes miscompile bytevector related procedures.
 
 
 Mosh 0.2.6 Release Note
