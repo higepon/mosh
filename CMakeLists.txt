@@ -317,7 +317,7 @@ ${MOSH_ONIG_DIR}/enc/cp1251.c
 
 # mosh
 
-include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-7.1/include extlibs/gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest)
+include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-7.1/include extlibs/gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest src/posix/terminal)
 
 if(CMAKE_COMPILER_IS_GNUC)
     set(ffi_stub cmake/ffi_stub.S)
@@ -537,6 +537,7 @@ src/VMFactory.cpp
 src/OSCompat.cpp
 src/stubs.cpp
 ${ffi_stub}
+src/posix/terminal/terminal.c
 )
 
 if(CMAKE_HOST_WIN32)
