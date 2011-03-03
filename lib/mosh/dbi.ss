@@ -246,7 +246,7 @@
           [else
            (loop (+ i 1) (cons (string-ref sql i)  ret))])]))))
 
-(define (prepare-helper obj)
+(define (prepare-helper sql obj)
   (cond
    [(string? obj)
     (format "~s" (escape-sql obj))]
@@ -255,7 +255,7 @@
    [(char? obj)
     (format "~a" obj)]
    [else
-    (assertion-violation 'dbi-execute "not supported argument for prepared sql" obj)]))
+    (assertion-violation 'dbi-execute "not supported argument for prepared sql" obj sql)]))
 
 (define (dbi-set-prepared prepared args)
   (let* ([tokens (map (lambda (x) (format "~a" x)) (string->list prepared))])
@@ -270,7 +270,7 @@
          [(string=? "?" (car tokens))
           (when (null? args)
             (assertion-violation 'dbi-execute "args to short for prepared sql" prepared args))
-          (loop (cdr tokens) (cons (prepare-helper (car args)) ret) (cdr args))]
+          (loop (cdr tokens) (cons (prepare-helper prepared (car args)) ret) (cdr args))]
          [else
           (loop (cdr tokens) (cons (car tokens) ret) args)])]))))
 
