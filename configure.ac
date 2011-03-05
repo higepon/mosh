@@ -217,6 +217,9 @@ case "$target_os" in
 freebsd*)
   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
   ;;
+netbsd*)
+  AC_DEFINE(GC_NETBSD_THREADS,1,[Define to use NetBSD threads])
+  ;;
 cygwin)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
@@ -270,6 +273,10 @@ i[[3456]]86|pentium)
          MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
+       *netbsd*)
+         MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+         MOSH_LDADD_ARCH="-lpthread"
+         ;;
        *mingw*)
          MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc -static-libstdc++  -fwide-exec-charset=ucs-4le" #forcing WinXP & Gcc >= 4.5
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
@@ -301,6 +308,11 @@ i[[3456]]86|pentium)
                 ;;
                 *freebsd*)
                 AC_MSG_RESULT([x86_64(FreeBSD amd64)])
+                MOSH_OPTS="$MOSH_INTEL_OPTS"
+                MOSH_LDADD_ARCH="-lpthread"
+                ;;
+                *netbsd*)
+                AC_MSG_RESULT([x86_64(NetBSD amd64)])
                 MOSH_OPTS="$MOSH_INTEL_OPTS"
                 MOSH_LDADD_ARCH="-lpthread"
                 ;;

@@ -65,6 +65,8 @@ AC_ARG_ENABLE(threads,
 ## MOSH start
 ## Ubuntu 8.10 amd64 with DLINUX_THREADS=1 makes gctest crash.
 case "$host" in
+ *-*-netbsd*)
+   ;;
  *-*-freebsd*)
    ;;
  *-*-darwin*)
