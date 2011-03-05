@@ -36,9 +36,7 @@
 (define uri-unreserved-char-sv?
   (let ((unreserved-char-svs (map char->integer
                                   (string->list
-                                   "abcdefghijklmnopqrstuvwxyz¥
-                                    ABCDEFGHIJKLMNOPQRSTUVWXYZ¥
-                                    0123456789-._‾"))))
+                                   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._‾"))))
     (lambda (sv)
       (and (memv sv unreserved-char-svs) #t))))
 
@@ -49,6 +47,8 @@
        (for-each
         (lambda (sv)
           (cond ((uri-unreserved-char-sv? sv)
+                 (display (integer->char sv) (current-error-port))
+                 (newline (current-error-port))
                  (display (integer->char sv) p))
                 (else
                  (display "%" p)

@@ -1,4 +1,5 @@
 (import (rnrs)
+        (uri)
         (mosh test))
 
 (test-equal "\x41;" "A")
@@ -7,5 +8,9 @@
 
 (test-equal "ABC\x0;ABC" (utf8->string '#vu8(65 66 67 0 65 66 67)))
 (test-equal #vu8(65 66 67 0 65 66 67) (string->utf8 "ABC\x0;ABC"))
+
+(let ([org "起業"])
+  (test-equal "%e8%b5%b7%e6%a5%ad" (uri-encode org))
+  (test-equal org (uri-decode (uri-encode org))))
 
 (test-results)
