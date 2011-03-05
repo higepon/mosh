@@ -1,0 +1,24 @@
+mosh on NetBSD
+===============
+
+1. Install
+----------
+
+NetBSD default system compiler (gcc-4.1) will miscompile mosh when
+optimizations were enabled.
+
+- Install following packages:
+  lang/gcc44
+  devel/gmake
+  devel/oniguruma
+  devel/gmp
+- ./configure CFLAGS=-I/usr/pkg/include LDFLAGS=-L/usr/pkg/lib
+- gmake
+
+mosh cannot build using BSD "make".
+
+2. Limitations
+--------------
+
+- mosh is currently only tested at i386 architecture.
+
