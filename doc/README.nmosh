@@ -1,7 +1,3 @@
-README.nmosh 16-May-2010
-
-by OKUMURA Yuki <mjt@cltn.org>
-
 nmosh
 =====
 
@@ -45,10 +41,10 @@ runtime features and restrictions
      - .mosh.(ditto)
      - .(ditto)
  - Some libraries are included and auto-loaded with nmosh runtime. See
-   boot/runtimes/srfi-mosh/layout.scm for full listing. Note that import clause is 
-   still needed for auto-loaded libraries. (load is only means "library 
-   registration to system," not "import library symbols into current 
-   environment" which will be done with import clauses.)
+   boot/runtimes/srfi-mosh/layout.scm for full listing. Note that import 
+   clause is still needed for auto-loaded libraries. 
+   (load is only means "library registration to system," not "import library 
+   symbols into current environment" which will be done with import clauses.)
 
 ~/.nmosh-cache directory
 ------------------------
@@ -127,28 +123,28 @@ nmosh has more strict rule for library import levels. If you intended to use
 library function (other than from (rnrs)), specify import level in your script.
 
 e.g.)
-        change (import (some library)) to (import (for (some library) run expand))
+   change (import (some library)) to (import (for (some library) run expand)) 
 
 see R6RS section 7.2 for these syntax.
 
 Incorrect script behavior when ACC enabled
 ------------------------------------------
 
-Compared with previous mosh, nmosh has more aggressive caching strategy.  If your 
-script runs correctly under nmosh --disable-acc, check following :
+Compared with previous mosh, nmosh has more aggressive caching strategy.  
+If your script runs correctly under nmosh --disable-acc, check following :
 
  - Cleaning cache. (remove ~/.nmosh-cache/*)
  - Including other script such as R6RS section 12.6 will break when included 
    file was changed. nmosh will not track external environment to detect
    cache invalidation.
- - Simple gensym is not compatible with nmosh's cache mechanism. Since nmosh's cache
-   only contains expanded script. 
+ - Simple gensym is not compatible with nmosh's cache mechanism. Since nmosh's 
+   cache only contains expanded script. 
  - Any side-effect during "expand" phase will be ignored (NOT replayed when
    caches are loading).
 
 You can disable ACC (Auto Compilation Cache) partially using ERR5RS load 
-available in (rnrs load) library. Note that you can also load R6RS libraries with 
-this procedure.
+available in (rnrs load) library. Note that you can also load R6RS libraries 
+with this procedure.
 
 e.g.)
         change (import (some library)) to 
