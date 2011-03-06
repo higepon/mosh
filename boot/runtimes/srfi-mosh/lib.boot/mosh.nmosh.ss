@@ -130,11 +130,24 @@
       regexp?
       symbol-value
       write/ss
-      set-symbol-value!) run expand)
-    (for (only (rnrs base) map car cadr caddr - lambda let* syntax-rules define-syntax list string-append define) expand run)
+      set-symbol-value!
+      
+      prefix-list ;; nmosh-utils
+      ) run expand)
+    (for (only (rnrs base) 
+               list->string string->list reverse pair? char=? if and
+               map car cadr caddr - lambda let* syntax-rules define-syntax 
+               cdr list string-append define) expand run)
     (only (nmosh condition-printer) condition-printer)
     )
- (define (library-path) (list (string-append (standard-library-path) "/lib")))
+ (define (cleanup str)
+   (define (itr cur)
+     (if (and (pair? cur)
+              (char=? (car cur) #\/))
+       (itr (cdr cur))
+       (list->string (reverse cur))))
+   (itr (reverse (string->list str))))
+ (define (library-path) (map cleanup prefix-list))
  (define-syntax time
    (syntax-rules () ;from psyntax/expander
      ((_ expr)

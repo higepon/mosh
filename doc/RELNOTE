@@ -48,6 +48,9 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             SRFI-62 style datum comment was not accepted by reader in certain 
             cases.
 
+    (mosh): nmosh version
+        library-path procedure was not compatible with psyntax-mosh's one.
+
     (mosh ffi):
         pointer-ref-* and pointer-set-*! index is now scaled by C sizeof(TYPE).
         i.e.) (pointer-ref-c-pointer ptr num) is now eqv. of ptr[num].
