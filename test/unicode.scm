@@ -13,4 +13,6 @@
   (test-equal "%e8%b5%b7%e6%a5%ad" (uri-encode org))
   (test-equal org (uri-decode (uri-encode org))))
 
+(test-equal "a%0ab" (uri-encode "a\nb"))
+
 (test-results)
