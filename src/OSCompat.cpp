@@ -935,8 +935,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         std::string chop(path, ret);
         int pos = chop.find_last_of('/');
         if (pos > 0) {
-            const char* v = chop.substr(0, pos + 1).c_str();
-            return ucs4string::from_c_str(v);
+            return ucs4string::from_c_str(chop.substr(0, pos + 1).c_str());
         }
     }
     isErrorOccured = true;
@@ -951,8 +950,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         std::string chop(path);
         int pos = chop.find_last_of('/');
         if (pos > 0) {
-            const char* execPath = chop.substr(0, pos + 1).c_str();
-            return ucs4string::from_c_str(execPath);
+            return ucs4string::from_c_str(chop.substr(0, pos + 1).c_str());
         }
     }
     isErrorOccured = true;
@@ -964,8 +962,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         std::string chop(path);
         int pos = chop.find_last_of('/');
         if (pos > 0) {
-            const char* execPath = chop.substr(0, pos + 1).c_str();
-            return ucs4string::from_c_str(execPath);
+            return ucs4string::from_c_str(chop.substr(0, pos + 1).c_str());
         }
     }
     isErrorOccured = true;
