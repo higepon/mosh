@@ -52,12 +52,14 @@
                  test-error test-results fail
                  test-error-string   ; exported for tests of xunit
                  test-summary-string ; exported for tests of xunit
+                 good-enough?
                  )
          (import (only (rnrs) define apply max map lambda string-length symbol->string record-type-name record-rtd simple-conditions
-                       display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else
-                       unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor
+                       display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else number?
+                       unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor or real? and
                        reverse <= string-append do let-values open-string-output-port set! quasiquote call/cc with-exception-handler
-                       for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote)
+                       for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote real-part imag-part infinite? magnitude =
+                       * nan? < /)
                  (only (mosh) host-os format ungensym)
                  (only (match) match))
 
@@ -488,5 +490,40 @@
   (newline)
   (when has-error?
     (exit -1)))
+
+#|
+      Function: good-enough?
+
+      for floating point number comparison.
+
+      Prototype:
+      > (good-enough? lhs rhs)
+
+      Returns:
+
+        #t or #f.
+|#
+(define (good-enough? x y)
+    ;; relative error should be with 0.1%, but greater
+    ;; relative error is allowed when the expected value
+    ;; is near zero.
+    (cond ((not (number? x)) #f)
+          ((not (number? y)) #f)
+          ((or (not (real? x))
+               (not (real? y)))
+           (and (good-enough? (real-part x) (real-part y))
+                (good-enough? (imag-part x) (imag-part y))))
+          ((infinite? x)
+           (= x (* 2.0 y)))
+          ((infinite? y)
+           (= (* 2.0 x) y))
+          ((nan? y)
+           (nan? x))
+          ((> (magnitude y) 1e-6)
+           (< (/ (magnitude (- x y))
+                 (magnitude y))
+              1e-3))
+          (else
+           (< (magnitude (- x y)) 1e-6))))
 
 )

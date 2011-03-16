@@ -52,6 +52,8 @@
                  (display (integer->char sv) p))
                 (else
                  (display "%" p)
+                 (when (< sv 16)
+                   (display "0" p))
                  (display (number->string sv 16) p))))
         svs)))))
 

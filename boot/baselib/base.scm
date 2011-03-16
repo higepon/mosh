@@ -3836,3 +3836,15 @@
 (define (open-input-file filename)
   (open-file-input-port filename (make-file-options '()) 'block (native-transcoder)))
 
+(define (hashtable-fold-left proc seed ht)
+  (let* ([key* (hashtable-keys ht)]
+         [len (vector-length key*)])
+    (let loop ([i 0]
+               [ret seed])
+      (cond
+       [(= len i) ret]
+       [else
+        (loop (+ i 1)
+              (proc ret (vector-ref key* i) (hashtable-ref ht (vector-ref key* i))))]))))
+
+
