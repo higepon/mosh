@@ -1,9 +1,10 @@
 #!/usr/bin/env gosh
 (use gauche.test)
 (use srfi-1)
-(use util.match)
+;;(use util.match)
 (use gauche.sequence)
 (use file.util)
+(load "./baselib/match.scm")
 (set! debug-print-width 3000)
 
 (define alist-cons acons)
