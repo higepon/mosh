@@ -1106,6 +1106,7 @@
     (call-process interaction sys)
     (mosh-cache-dir sys)
     (hashtable-for-each mosh)
+    (hashtable-fold-left mosh)
     (regexp-replace-all mosh)
     (rxmatch mosh mosh)
     (string->regexp mosh)
