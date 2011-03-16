@@ -55,10 +55,11 @@
                  good-enough?
                  )
          (import (only (rnrs) define apply max map lambda string-length symbol->string record-type-name record-rtd simple-conditions
-                       display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else
-                       unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor
+                       display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else number?
+                       unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor or real? and
                        reverse <= string-append do let-values open-string-output-port set! quasiquote call/cc with-exception-handler
-                       for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote)
+                       for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote real-part imag-part infinite? magnitude =
+                       * nan? < /)
                  (only (mosh) host-os format ungensym)
                  (only (match) match))
 
