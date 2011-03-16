@@ -3149,6 +3149,24 @@
                               (cons (cons lab (cons '$module iface)) mr)
                               mod** kwd*)))))))))
 
+  (define (copy-rib-contents! from-rib to-rib)
+    (for-each
+      (lambda (sym mark* label)
+        (let ([id (make-stx sym mark* '() '())])
+          (extend-rib! to-rib id label)))
+      (rib-sym* from-rib) (rib-mark** from-rib) (rib-label* from-rib)))
+
+  (define chi-body*-macro
+    (lambda (e* r mr lex* rhs* mod** kwd* exp* rib top? e)
+      (let ((rib2 (make-empty-rib)))
+        (let-values ([(e1* r mr lex* rhs* mod** kwd* exp*)
+                      (chi-body* (list (add-subst rib2 e)) 
+                        r mr lex* rhs* mod** kwd* exp* rib2 top?)])
+          (copy-rib-contents! rib2 rib)
+          (if (null? e1*)
+              (chi-body* e* r mr lex* rhs* mod** kwd* exp* rib top?)
+              (values (append e1* e*) r mr lex* rhs* mod** kwd* exp*))))))
+
   (define chi-body*
     (lambda (e* r mr lex* rhs* mod** kwd* exp* rib top?)
       (cond
@@ -3205,20 +3223,17 @@
                      (chi-body* (append x* (cdr e*))
                         r mr lex* rhs* mod** kwd* exp* rib top?))))
                  ((global-macro global-macro!)
-                  (chi-body*
-                     (cons (add-subst rib (chi-global-macro value e))
-                           (cdr e*))
-                     r mr lex* rhs* mod** kwd* exp* rib top?))
+                  (chi-body*-macro (cdr e*)
+                     r mr lex* rhs* mod** kwd* exp* rib top?
+                     (chi-global-macro value e)))
                  ((local-macro local-macro!)
-                  (chi-body*
-                     (cons (add-subst rib (chi-local-macro value e))
-                           (cdr e*))
-                     r mr lex* rhs* mod** kwd* exp* rib top?))
+                  (chi-body*-macro (cdr e*)
+                     r mr lex* rhs* mod** kwd* exp* rib top?
+                     (chi-local-macro value e))) 
                  ((macro macro!)
-                  (chi-body*
-                     (cons (add-subst rib (chi-macro value e))
-                           (cdr e*))
-                     r mr lex* rhs* mod** kwd* exp* rib top?))
+                  (chi-body*-macro (cdr e*)
+                     r mr lex* rhs* mod** kwd* exp* rib top?
+                     (chi-macro value e)))
                  ((module)
                   (let-values (((lex* rhs* m-exp-id* m-exp-lab* r mr mod** kwd*)
                                 (chi-internal-module e r mr lex* rhs* mod** kwd*)))
