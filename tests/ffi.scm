@@ -11,6 +11,7 @@
 (define (calc-signed-min size-in-byte)
   (- (expt 2 (- (* size-in-byte 8) 1))))
 
+#| ;; Now we have this in (mosh test)
 ;; Originally from R6RS Test suite start
 (define (good-enough? x y)
   ;; relative error should be with 0.1%, but greater
@@ -35,6 +36,7 @@
         (else
          (< (magnitude (- x y)) 1e-6))))
 ;; Originally from R6RS Test suite end
+|#
 
 
 (when (ffi-supported?)
