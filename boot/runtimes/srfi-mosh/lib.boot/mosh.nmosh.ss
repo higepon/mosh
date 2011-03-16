@@ -43,6 +43,7 @@
     expand-path
     set-current-directory!
     hashtable-for-each
+    hashtable-fold-left
     regexp-replace-all
     rxmatch
     string->regexp
@@ -109,6 +110,7 @@
       expand-path
       set-current-directory!
       hashtable-for-each
+      hashtable-fold-left
       regexp-replace-all
       rxmatch
       string->regexp
