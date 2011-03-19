@@ -10,6 +10,7 @@ mosh on FreeBSD
   math/gmp
 - ./configure CFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib
 - gmake
+- sudo gmake install
 
 mosh cannot build using BSD "make".
 

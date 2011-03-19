@@ -5,10 +5,12 @@ mosh on Linux
 ---------------------------
 
 - Install following packages using apt:
+  g++ or your preferred compiler
   libgmp3-dev
   libonig-dev or libonig2-dev
 - ./configure 
 - make
+- sudo make install
 
 1. Install (Other distributions)
 --------------------------------
@@ -20,6 +22,7 @@ mosh on Linux
   When configure script couldn't find GMP libraries, you should specify CFLAGS
   and CXXFLAGS. 
   (e.g. ./configure CFLAGS="-I/usr/local/include -L/usr/local/lib")
+- sudo make install
 
 2. Limitations
 --------------
