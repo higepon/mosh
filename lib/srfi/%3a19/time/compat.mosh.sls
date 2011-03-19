@@ -24,22 +24,20 @@
 
 (library (srfi :19 time compat)
   (export
-   time-resolution
-   current-time
-   time-nanosecond
-   time-second
-   timezone-offset
-   cumulative-thread-time
-   cumulative-process-time
-   cumulative-gc-time)
+   format
+   host:time-resolution
+   host:current-time
+   host:time-nanosecond
+   host:time-second
+   host:time-gmt-offset)
   (import
    (rnrs base)
-   (only (system) microseconds local-tz-offset)
-   (srfi :19 time not-implemented))
+   (only (mosh) format)
+   (only (system) microseconds local-tz-offset))
 
-  (define time-resolution 1000)
-  (define (current-time) (microseconds))
-  (define (time-nanosecond t) (* (mod t 1000000) 1000))
-  (define (time-second t) (div t 1000000))
-  (define timezone-offset (local-tz-offset))
+  (define host:time-resolution 1000)
+  (define (host:current-time) (microseconds))
+  (define (host:time-nanosecond t) (* (mod t 1000000) 1000))
+  (define (host:time-second t) (div t 1000000))
+  (define (host:time-gmt-offset t) (local-tz-offset))
 )
