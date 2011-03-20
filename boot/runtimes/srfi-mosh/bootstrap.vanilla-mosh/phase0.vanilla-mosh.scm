@@ -24,6 +24,8 @@
 (define expander-src (read-all "expander.scm"))
 
 (define %verbose #t)
+(define %nmosh-portable-mode #f)
+(define %nmosh-prefixless-mode #t)
 (define %loadpath #f)
 
 (define (raise-syntax-violation . e)

@@ -318,7 +318,9 @@ int main(int argc, char *argv[])
 #else
     theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(0));
 #endif
-
+#else // WITH_NMOSH_DEFAULTS
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(0));
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(0));
 #endif
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));

@@ -1047,7 +1047,13 @@ Thread* VM::thread()
 
 void VM::copyOptions(VM* destVM, VM* srcVM)
 {
-    const ucs4char* options[] = {UC("%loadpath"), UC("%verbose"), UC("*command-line-args*")};
+    const ucs4char* options[] = {
+        // mosh options
+        UC("%loadpath"), UC("%verbose"), UC("*command-line-args*"),
+
+        // nmosh options
+        UC("%nmosh-portable-mode"), UC("%nmosh-prefixless-mode")
+    };
     for (size_t i = 0; i < sizeof(options) / sizeof(ucs4char*); i ++) {
         destVM->setValueString(options[i], srcVM->getGlobalValueOrFalse(options[i]));
     }

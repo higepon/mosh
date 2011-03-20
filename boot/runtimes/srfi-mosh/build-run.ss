@@ -10,6 +10,8 @@
 	    (rnrs mutable-pairs)
 	    (primitives permissive-eval sexp-map sexp-map/debug) (nmosh mosh-vm))
     (define %loadpath "lib.boot:lib.rnrs:lib:../../../lib")
+    (define %nmosh-portable-mode #f)
+    (define %nmosh-prefixless-mode #t)
     (define %verbose #t)
     (define %nmosh-failproc #f)))
 

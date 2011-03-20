@@ -1,5 +1,7 @@
 (define %verbose #f)
 (define %disable-acc #t)
+(define %nmosh-portable-mode #f)
+(define %nmosh-prefixless-mode #t)
 (define %loadpath "lib.rnrs:lib.boot:../../../lib")
 (load "compat-mosh-run.scm")
 (load "runtime.scm")

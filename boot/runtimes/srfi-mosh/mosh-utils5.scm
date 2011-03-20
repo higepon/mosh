@@ -32,12 +32,20 @@
   (let ((cpath (get-environment-variable "NMOSH_CACHEDIR")))
     (if cpath
       cpath
-      (if (run-win32-np?) 
+      (if %nmosh-portable-mode
 	(string-append (pathfilter (mosh-executable-path)) "cache") 
-        (let ((h (get-environment-variable "HOME")))
-          (if h
-            (string-append h "/.nmosh-cache")
-            #f))))))
+        (if (run-win32-np?) 
+          (let ((h (get-environment-variable "LOCALAPPDATA")))
+            (if h
+              (string-append h "\\nmosh-cache")
+              (let ((i (get-environment-variable "APPDATA")))
+                (if i
+                  (string-append i "\\nmosh-cache")
+                  #f))))
+          (let ((h (get-environment-variable "HOME")))
+            (if h
+              (string-append h "/.nmosh-cache")
+              #f)))))))
 
 (define mosh-cache-dir nmosh-cache-dir)
 
@@ -428,7 +436,7 @@
         (append-prefix-loadpath l)
 	'())
       (append-prefix-curpath l)
-      (append-prefix-stdlibpath l)
+      (if %nmosh-prefixless-mode '() (append-prefix-stdlibpath l))
       l ;fallback
       (append-prefix-execpath-rel l) ; fallback
       ))

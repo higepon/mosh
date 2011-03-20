@@ -6,6 +6,8 @@
 
 (define %verbose #f)
 (define %disable-acc #t)
+(define %nmosh-prefixless-mode #t)
+(define %nmosh-portable-mode #f)
 (define %loadpath "lib.rnrs:lib.boot:../../../lib")
 
 (define raise-syntax-violation (lambda e 
