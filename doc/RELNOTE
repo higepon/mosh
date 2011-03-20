@@ -31,6 +31,9 @@ environment variable to "enable" to enable this.
 
 Bug fixes:
 
+    psyntax-mosh:
+        Various bug-fixes from Ikarus psyntax. See Issue 134.
+
     (rnrs):
         Number reader now reads 2.2250738585072012e-308 flawlessly.
             See

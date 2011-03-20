@@ -1,3 +1,25 @@
+INSTALLING MOSH
+===============
+
+1. Overview
+===========
+
+Mosh supports two way to configure and build interpreter.
+
+1. "configure" build
+
+  As usual, you can use "./configure && make" to build and install Mosh.
+  Please refer O/S Specific section below.
+  "configure" build supports out-of-tree build, cross-compilation and 
+  "make check" for testing.
+
+2. CMake build
+
+  (CMake builds are developer only. We don't recommend this for end-users.)
+
+2. O/S Specific
+===============
+
 Currently, mosh supports following O/Ses.
 
 - Linux 2.6 (Debian, Ubuntu, Fedora, ...)
@@ -6,10 +28,11 @@ Currently, mosh supports following O/Ses.
 - FreeBSD 8.x or CURRENT
   see doc/README.FreeBSD
 
-- MacOS X
+- MacOS X (10.5 "Leopard" or later)
   see doc/README.MacOSX (or doc/README.CMake for XCode build)
 
-- Cygwin
+- Cygwin 1.7.x
+  see doc/README.Cygwin
 
 - Windows XP or later(32bit): MinGW
   see doc/README.MinGW (or doc/README.CMake for CMake build without MSYS)
