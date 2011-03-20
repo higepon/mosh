@@ -20,7 +20,7 @@ About This Release
 
 Mosh will be linked with OpenSSL library when available in Linux/FreeBSD/MacOSX.
 
-MonaOS support had merged.
+MonaOS support had been merged.
 
 extlib/: Mosh sourcecode now ships with slightly patched oniguruma-5.9.2 
 source. This oniguruma will be used in CMake builds and MonaOS. Most users 
@@ -114,6 +114,8 @@ Known Issues:
       if your compiler do not finish compilation.
       - MSVC 2008 x64 - May not finish compilation when LTO enabled.
       - Clang++ trunk - Sometimes miscompile bytevector related procedures.
+    - configure script will complain about
+        configure: WARNING: no configuration information is in libatomic_ops
 
 
 Mosh 0.2.6 Release Note

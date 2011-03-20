@@ -11,28 +11,43 @@ ENABLE_TESTING()
 
 # mosh/nmosh select
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
+option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
+option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
 
-set(nmosh_runtime_srcs
+# only ONE runtime source will be allowed.
+set(nmosh_runtime_src
 src/nmosh_image.cpp)
 
-set(psyntax_mosh_runtime_srcs
+set(psyntax_mosh_runtime_src
 src/psyntax_mosh_image.cpp)
 
 if(MOSH_WITH_NMOSH)
     set(TARGET_FLAVOR nmosh)
     add_definitions(-DWITH_NMOSH_DEFAULTS)
-    set(mosh_runtime_srcs ${nmosh_runtime_srcs})
+    set(mosh_runtime_src ${nmosh_runtime_src})
 else(MOSH_WITH_NMOSH)
     set(TARGET_FLAVOR mosh)
-    set(mosh_runtime_srcs ${psyntax_mosh_runtime_srcs})
+    set(mosh_runtime_src ${psyntax_mosh_runtime_src})
 endif(MOSH_WITH_NMOSH)
+
+if(MOSH_PORTABLE)
+    add_definitions(-DWITH_NMOSH_PORTABLE)
+    if(NOT MOSH_PREFIXLESS)
+        # silently enable prefix-less mode.
+        add_definitions(-DWITH_NMOSH_PREFIXLESS)
+    endif(MOSH_PREFIXLESS)
+endif(MOSH_PORTABLE)
+
+if(MOSH_PREFIXLESS)
+    add_definitions(-DWITH_NMOSH_PREFIXLESS)
+endif(MOSH_PREFIXLESS)
 
 # external libraries
 # MOSH_GMP_DIR is MSVC only
 
 # sanity check
 
-if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_srcs})
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_src})
     message(FATAL_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
 endif()
 
@@ -41,7 +56,8 @@ set(MOSH_VERSION "0.2.7" CACHE STRING "mosh release version string")
 set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
 set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
 
-mark_as_advanced(MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
+mark_as_advanced(MOSH_WITH_NMOSH 
+    MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
 
 add_definitions(-DHAVE_CONFIG_H
     -DMOSH_LIB_PATH=\"${MOSH_LIB_PATH}\"
@@ -569,7 +585,7 @@ add_executable(${TARGET_FLAVOR}
     ${gc_srcs} 
     ${mosh_core_srcs} 
     ${mosh_core_hdrs}
-    ${mosh_runtime_srcs}
+    ${mosh_runtime_src}
     src/main.cpp)
 
 target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
@@ -581,7 +597,7 @@ add_library(testinggc EXCLUDE_FROM_ALL
 add_library(testingmosh EXCLUDE_FROM_ALL
     ${mosh_core_srcs}
     ${PROJECT_SOURCE_DIR}/gtest/gtest/gtest-all.cc
-    ${mosh_runtime_srcs} ${onig_srcs} 
+    ${mosh_runtime_src} ${onig_srcs} 
     src/TestingSignalHandler.cpp
     src/TestingVM.cpp)
 

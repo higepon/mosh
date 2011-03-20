@@ -409,6 +409,11 @@
     (append-prefix-x l (current-directory)))
   (define (append-prefix-execpath l)
     (append-prefix-x l (mosh-executable-path)))
+  (define (append-prefix-execpath-rel l)
+    (let ((pth (mosh-executable-path)))
+      (if pth
+        (append-prefix-x l (string-append pth "../lib"))
+        '())))
   (define (append-prefix-stdlibpath l)
     (append-prefix-x l (standard-library-path)))
   (define (append-prefix-loadpath l)
@@ -417,7 +422,7 @@
       (append-prefix-l l (pathsep var))))
   (define (append-prefix l)
     (append
-      (append-prefix-execpath l)
+      ;(append-prefix-execpath l)
       (if %loadpath (append-prefix-l l (pathsep %loadpath)) '())
       (if (get-environment-variable "MOSH_LOADPATH")
         (append-prefix-loadpath l)
@@ -425,6 +430,7 @@
       (append-prefix-curpath l)
       (append-prefix-stdlibpath l)
       l ;fallback
+      (append-prefix-execpath-rel l) ; fallback
       ))
   (append-prefix (list "" "lib/")))
 

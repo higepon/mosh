@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
        {UC("clean-acc"), 0, 0, 'C'},
        {UC("verbose"), 0, 0, 'a'},
 #ifdef WITH_NMOSH_DEFAULTS
-       {UC("applet"), 0, 0, 'X'},
+       {UC("applet"), 0, 0, 'T'},
        {UC("guru-mode"), 0, 0, 'G'},
 #endif
        {0, 0, 0, 0}
@@ -307,10 +307,16 @@ int main(int argc, char *argv[])
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
     theVM->setValueString(UC("%invoke-applet"),Object::makeBool(invokeApplet));
     theVM->setValueString(UC("%nmosh-guru-mode"),Object::makeBool(isGuruMode));
-#ifdef NMOSH_EMBEDDED_MODE
-    theVM->setValueString(UC("%nmosh-embedded-mode"),Object::makeBool(1));
+#ifdef WITH_NMOSH_PORTABLE
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(1));
 #else
-    theVM->setValueString(UC("%nmosh-embedded-mode"),Object::makeBool(0));
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(0));
+#endif
+
+#ifdef WITH_NMOSH_PREFIXLESS
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(1));
+#else
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(0));
 #endif
 
 #endif
