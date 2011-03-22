@@ -438,56 +438,14 @@
             (make-stx (stx-expr e) m* s* ae*))
           (make-stx e m* s* ae*))))
 
+  ;;; to add a mark, we always add a corresponding shift.
+  (define add-mark
+    (lambda (m e ae)
+      (mkstx e (list m) '(shift) (list ae))))
+
   (define add-subst
     (lambda (subst e)
       (mkstx e '() (list subst) '())))
-
-  (define add-mark
-    (lambda (mark subst expr ae)
-      (define merge-ae*
-        (lambda (ls1 ls2)
-          (if (and (pair? ls1) (pair? ls2) (not (car ls2)))
-              (cancel ls1 ls2)
-              (append ls1 ls2))))
-      (define cancel
-        (lambda (ls1 ls2)
-          (let f ((x (car ls1)) (ls1 (cdr ls1)))
-            (if (null? ls1)
-                (cdr ls2)
-                (cons x (f (car ls1) (cdr ls1)))))))
-      (define (f e m s1* ae*)
-        (cond
-          [(pair? e)
-           (let ([a (f (car e) m s1* ae*)] 
-                 [d (f (cdr e) m s1* ae*)])
-             (if (eq? a d) e (cons a d)))]
-          [(vector? e) 
-           (let ([ls1 (vector->list e)])
-             (let ([ls2 (map (lambda (x) (f x m s1* ae*)) ls1)])
-               (if (for-all eq? ls1 ls2) e (list->vector ls2))))]
-          [(stx? e)
-           (let ([m* (stx-mark* e)] [s2* (stx-subst* e)])
-             (cond
-               [(null? m*)
-                (f (stx-expr e) m 
-                   (append s1* s2*)
-                   (merge-ae* ae* (stx-ae* e)))]
-               [(eq? (car m*) anti-mark)
-                (make-stx (stx-expr e) (cdr m*)
-                  (cdr (append s1* s2*))
-                  (merge-ae* ae* (stx-ae* e)))]
-               [else
-                (make-stx (stx-expr e)
-                  (cons m m*)
-                  (let ([s* (cons 'shift (append s1* s2*))])
-                    (if subst (cons subst s*) s*))
-                  (merge-ae* ae* (stx-ae* e)))]))]
-          [(symbol? e)
-           (syntax-violation #f 
-               "raw symbol encountered in output of macro"
-               expr e)]
-          [else (make-stx e (list m) s1* ae*)]))
-      (mkstx (f expr mark '() '()) '() '() (list ae))))
 
   ;;; now are some deconstructors and predicates for syntax objects.
   (define syntax-kind?
@@ -1760,7 +1718,7 @@
   (define quasiquote-macro
     (let ()
       (define (datum x)
-        (list (scheme-stx 'quote) (mkstx x top-mark* '() '())))
+        (list (scheme-stx 'quote) (mkstx x '() '() '())))
       (define-syntax app
         (syntax-rules (quote)
           ((_ 'x arg* ...)
@@ -2837,8 +2795,8 @@
   (define (local-macro-transformer x)
     (car x))
 
-  (define (do-macro-call transformer expr rib)
-    (let ([out (transformer (add-mark anti-mark #f expr #f))])
+  (define (do-macro-call transformer expr)
+    (let ([out (transformer (add-mark anti-mark expr #f))])
       (let f ([x out])
         ;;; don't feed me cycles.
         (unless (stx? x)
@@ -2849,16 +2807,16 @@
              (syntax-violation #f
                "raw symbol encountered in output of macro"
                expr x)])))
-      (add-mark (gen-mark) rib out expr)))
+      (add-mark (gen-mark) out expr)))
 
   ;;; chi procedures
   (define chi-macro
-    (lambda (p e rib) (do-macro-call (macro-transformer p) e rib)))
+    (lambda (p e) (do-macro-call (macro-transformer p) e)))
 
   (define chi-local-macro
-    (lambda (p e rib) (do-macro-call (local-macro-transformer p) e rib)))
+    (lambda (p e) (do-macro-call (local-macro-transformer p) e)))
 
-  (define (chi-global-macro p e rib)
+  (define (chi-global-macro p e)
     ;;; FIXME: does not handle macro!?
     (let ((lib (car p))
           (loc (cdr p)))
@@ -2869,7 +2827,7 @@
                  ((procedure? x) x)
                  (else (assertion-violation 'chi-global-macro
                           "BUG: not a procedure" x)))))
-          (do-macro-call transformer e rib)))))
+          (do-macro-call transformer e)))))
 
   (define chi-expr*
     (lambda (e* r mr)
@@ -2909,9 +2867,9 @@
            (let ((lex (lexical-var value)))
              (build-lexical-reference no-source lex)))
           ((global-macro global-macro!)
-           (chi-expr (chi-global-macro value e #f) r mr))
-          ((local-macro local-macro!) (chi-expr (chi-local-macro value e #f) r mr))
-          ((macro macro!) (chi-expr (chi-macro value e #f) r mr))
+           (chi-expr (chi-global-macro value e) r mr))
+          ((local-macro local-macro!) (chi-expr (chi-local-macro value e) r mr))
+          ((macro macro!) (chi-expr (chi-macro value e) r mr))
           ((constant)
            (let ((datum value))
              (build-data no-source datum)))
@@ -2979,9 +2937,9 @@
              ((global)
               (stx-error e "attempt to modify imported binding"))
              ((global-macro!)
-              (chi-expr (chi-global-macro value e #f) r mr))
+              (chi-expr (chi-global-macro value e) r mr))
              ((local-macro!)
-              (chi-expr (chi-local-macro value e #f) r mr))
+              (chi-expr (chi-local-macro value e) r mr))
              ((mutable)
               (stx-error e
                 "attempt to assign to an unexportable variable"))
@@ -3191,6 +3149,24 @@
                               (cons (cons lab (cons '$module iface)) mr)
                               mod** kwd*)))))))))
 
+  (define (copy-rib-contents! from-rib to-rib)
+    (for-each
+      (lambda (sym mark* label)
+        (let ([id (make-stx sym mark* '() '())])
+          (extend-rib! to-rib id label)))
+      (rib-sym* from-rib) (rib-mark** from-rib) (rib-label* from-rib)))
+
+  (define chi-body*-macro
+    (lambda (e* r mr lex* rhs* mod** kwd* exp* rib top? e)
+      (let ((rib2 (make-empty-rib)))
+        (let-values ([(e1* r mr lex* rhs* mod** kwd* exp*)
+                      (chi-body* (list (add-subst rib2 e)) 
+                        r mr lex* rhs* mod** kwd* exp* rib2 top?)])
+          (copy-rib-contents! rib2 rib)
+          (if (null? e1*)
+              (chi-body* e* r mr lex* rhs* mod** kwd* exp* rib top?)
+              (values (append e1* e*) r mr lex* rhs* mod** kwd* exp*))))))
+
   (define chi-body*
     (lambda (e* r mr lex* rhs* mod** kwd* exp* rib top?)
       (cond
@@ -3247,17 +3223,17 @@
                      (chi-body* (append x* (cdr e*))
                         r mr lex* rhs* mod** kwd* exp* rib top?))))
                  ((global-macro global-macro!)
-                  (chi-body*
-                   (cons (chi-global-macro value e rib) (cdr e*))
-                   r mr lex* rhs* mod** kwd* exp* rib top?))
+                  (chi-body*-macro (cdr e*)
+                     r mr lex* rhs* mod** kwd* exp* rib top?
+                     (chi-global-macro value e)))
                  ((local-macro local-macro!)
-                  (chi-body*
-                   (cons (chi-local-macro value e rib) (cdr e*))
-                   r mr lex* rhs* mod** kwd* exp* rib top?))
+                  (chi-body*-macro (cdr e*)
+                     r mr lex* rhs* mod** kwd* exp* rib top?
+                     (chi-local-macro value e))) 
                  ((macro macro!)
-                  (chi-body*
-                   (cons (chi-macro value e rib) (cdr e*))
-                   r mr lex* rhs* mod** kwd* exp* rib top?))
+                  (chi-body*-macro (cdr e*)
+                     r mr lex* rhs* mod** kwd* exp* rib top?
+                     (chi-macro value e)))
                  ((module)
                   (let-values (((lex* rhs* m-exp-id* m-exp-lab* r mr mod** kwd*)
                                 (chi-internal-module e r mr lex* rhs* mod** kwd*)))
