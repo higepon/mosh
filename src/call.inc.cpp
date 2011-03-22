@@ -45,7 +45,7 @@
                     pc_  = retCode;
 
                     ac_.toCProcedure()->call(this, argc, sp_ - argc);
-                } else if (ac_.toCProcedure()->proc == internalFfiCallEx) {
+                } else if (ac_.toCProcedure()->proc == internalFfiCallEx || ac_.toCProcedure()->proc == putStringEx) {
                     // ffi-call may be called recursively by ffi-callback.
                     Object* const retCode = Object::makeObjectArray(2);
                     retCode[0] = Object::makeRaw(INSTRUCTION(RETURN));
