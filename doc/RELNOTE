@@ -50,6 +50,12 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
         Fixed Issue 185 reported by mrc.mgg: 
             SRFI-62 style datum comment was not accepted by reader in certain 
             cases.
+        Fixed Issue 195 reported by mrc.mgg:
+            psyntax-mosh and nmosh implemented SRFI-93 version of with-syntax.
+            A patch for psyntax-mosh was contributed by amoebae.
+        Fixed Issue 198 reported by amoebae (partially):
+            put-string cannot be called during put-string of textual custom 
+            output port. 
 
     (mosh): nmosh version
         library-path procedure was not compatible with psyntax-mosh's one.
@@ -106,10 +112,12 @@ Known Issues:
     See http://code.google.com/p/mosh-scheme/issues/list for full list.
 
     - Every user's mosh cache (~/.mosh) should be removed when mosh updated.
+    - Custom port implementation cannot call port-related procedure recursively.
+      See Issue 198.
     - nmosh colour output should be improved. e.g.) Syntax-traces are not
       colourised at all.
     - Mosh/nmosh should be built with system-provided BoehmGC instead of 
-      shipped with Mosh sourcecode.
+      shipped with Mosh sourcecode. See Issue 156.
     - Some C++ compilers are known to miscompile mosh/nmosh. Try CXXFLAGS="-O1"
       if your compiler do not finish compilation.
       - MSVC 2008 x64 - May not finish compilation when LTO enabled.
