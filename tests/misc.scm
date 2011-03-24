@@ -3,6 +3,7 @@
         (srfi :8)
         (mosh test))
 
+;; Issue 195.
 (with-syntax ((a 1))
  (define a 1)
  (write 2))
