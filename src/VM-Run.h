@@ -50,6 +50,7 @@
 #include "Vector.h"
 #include "Stack.h"
 #include "UtilityProcedures.h"
+#include "PortProcedures.h"
 #include "TextualInputPort.h"
 #include "Codec.h"
 #include "Ratnum.h"

@@ -3,6 +3,10 @@
         (srfi :8)
         (mosh test))
 
+(with-syntax ((a 1))
+ (define a 1)
+ (write 2))
+
 (define (read-string str)
   (call-with-port (open-string-input-port str) read))
 

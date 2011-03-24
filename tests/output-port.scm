@@ -574,4 +574,15 @@
       (test-equal accum '(#\z #\b #\a))
       (close-port p))
 
+(let ((op (make-custom-textual-output-port
+           "test"
+           (lambda (string start count)
+             (put-string (current-output-port) string start count)
+             count)
+           #f
+           #f
+           #f)))
+ (put-string op "...\n"))
+
+
 (test-results)
