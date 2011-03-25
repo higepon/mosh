@@ -40,7 +40,7 @@ Bug fixes:
 http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-numbers-again
             for details.
         Fixed Issue 178 reported by lp:~weinholt: 
-            A symbol immidiately followed by string was not accepted by reader.
+            A symbol immediately followed by string was not accepted by reader.
         Fixed Issue 183 and Issue 186 (partially): 
             (display #\tab) had outputted "x9;" instead of a tab character.
             Non-displayable chars still not fixed. See Issue 186.
@@ -92,17 +92,17 @@ Changes:
         Various MonaOS related primitives are added.
 
     Psyntax-mosh (mosh):
-        "make install" no longer perfoms cache update in $HOME/.mosh.
+        "make install" no longer performs cache update in $HOME/.mosh.
 
     nmosh:
         Now provides default (nmosh debugger) library which supports colourised
         output.
 
-    updated library:
+    Updated library:
       (mosh socket) : SSL/TLS Socket support.
           (mosh pp) : Implement R6RS string escapes.
 
-    updated 3rd party library:
+    Updated 3rd party library:
           (irregex) : 0.8.2+ hg fixes (Alex Shinn's irregex library)
 
     Various redundant libraries were removed.
