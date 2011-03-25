@@ -1,15 +1,16 @@
 nmosh
 =====
+nmosh is another R6RS runtime for mosh VM.
 
-nmosh is mosh's new R6RS runtime by OKUMURA Yuki.
-It is R6RS compatible but some feature of previous psyntax-based mosh
-is not included.
+It is R6RS compatible but some feature of psyntax-based mosh is not included.
+nmosh is based on Andre van Tonder's R6RS macro and runtime implementation like
+Larceny and Gambit-R6RS.
 
 Simply, you can use it as mosh.
 
     nmosh some-script.ss
 
-compatibility notes
+Compatibility notes
 -------------------
  - nmosh is based on Andre van Tonder's R6RS macro and runtime implementation
    see http://www.het.brown.edu/people/andre/macros/ for more info.
@@ -24,31 +25,23 @@ compatibility notes
    - multiple library in one source
    - (and more)
 
-runtime features and restrictions
----------------------------------
- - DO NOT REDISTRIBUTE CACHES INSTALLED IN ~/.nmosh-cache. nmosh's cache will
-   include your private information such as username, paths and hostname. And
-   nmosh's cache is not compatible between any builds/releases. 
- - Do not use a library name starting with (nmosh), (rnrs) and (core). These
-   library name will be rejected in future release of nmosh runtime.
- - Library search order is extended from psyntax-based mosh. And you can use
-   .nmosh.sls extension for nmosh-only libraries. See --verbose to check which
-   library actually loaded.
-    suffix order:
-     - .nmosh.sls
-     - .nmosh.ss
-     - .nmosh.scm
-     - .mosh.(ditto)
-     - .(ditto)
- - Some libraries are included and auto-loaded with nmosh runtime. See
-   boot/runtimes/srfi-mosh/layout.scm for full listing. Note that import 
-   clause is still needed for auto-loaded libraries. 
-   (load is only means "library registration to system," not "import library 
-   symbols into current environment" which will be done with import clauses.)
-
-~/.nmosh-cache directory
+Cache directory location
 ------------------------
-~/.nmosh-cache directory contatins some sort of cache files. These files are
+nmosh uses different directory than psyntax-mosh.
+
+Embedded mode:
+ - "cache" directory aside nmosh executable(nmosh.exe).
+
+Windows:
+ - %LOCALAPPDATA%/nmosh-cache (Vista, 7)
+ - %APPDATA%/nmosh-cache (XP)
+
+Linux/*BSD/MacOS X:
+ - $HOME/.nmosh-cache
+
+Cache directory
+---------------
+cache directory contains some sort of cache files. These files are
 automatically updated.
 
    file ext.     format    description
@@ -64,6 +57,28 @@ script again.
 
 There is no way to disable building .ndbg in current release.
 
+Runtime features and restrictions
+---------------------------------
+ - DO NOT REDISTRIBUTE CACHES INSTALLED IN ~/.nmosh-cache. nmosh's cache will
+   include your private information such as username, paths and hostname. And
+   nmosh's cache is not compatible between any builds/releases. 
+ - Do not use a library name starting with (nmosh), (rnrs), (yuni) and (core). 
+   These library name will be rejected in future release of nmosh runtime.
+ - Library search order is extended from psyntax-based mosh. And you can use
+   .nmosh.sls extension for nmosh-only libraries. See --verbose to check which
+   library actually loaded.
+    suffix order:
+     - .nmosh.sls
+     - .nmosh.ss
+     - .nmosh.scm
+     - .mosh.(ditto)
+     - .(ditto)
+ - Some libraries are included and auto-loaded with nmosh runtime. See
+   boot/runtimes/srfi-mosh/layout.scm for full listing. Note that import 
+   clause is still needed for auto-loaded libraries. 
+   (load is only means "library registration to system," not "import library 
+   symbols into current environment" which will be done with import clauses.)
+
 using nrepl: Nmosh Read Eval Print Loop
 =======================================
 nmosh has it's own repl called "nrepl." 
@@ -73,7 +88,7 @@ scheme environment. You can load R6RS programs/libraries any time using nrepl.
 
 It is under active development and not intended to provide stable API/ABI/UI.
 
-default library
+Default library
 ---------------
 nrepl will load (nmosh) library by default. (nmosh) contains :
  - Standard R6RS libraries (rnrs)
@@ -82,13 +97,9 @@ nrepl will load (nmosh) library by default. (nmosh) contains :
    - ^  : (^(a b c) (+ a b c)) == (lambda (a b c) (+ a b c))
    - ^x : (^a (+ a 1)) == (lambda (a) (+ a 1))
 
-You can use (nmosh) library in your program/library, but it is NOT RECOMMENDED
-because (nmosh) library contents will change in future versions.
+(nmosh) library should not used by top-level programs.
 
-current deletion canditate:
- - (rnrs records)
-
-program loading
+Program loading
 ---------------
 nmosh provides traditional "load" procedure and it can be used at nrepl.
 This feature is useful for library development.
@@ -125,7 +136,7 @@ library function (other than from (rnrs)), specify import level in your script.
 e.g.)
    change (import (some library)) to (import (for (some library) run expand)) 
 
-see R6RS section 7.2 for these syntax.
+See R6RS section 7.2 for these syntax.
 
 Incorrect script behavior when ACC enabled
 ------------------------------------------
@@ -157,7 +168,7 @@ and (include "...").
 Runtime features
 ================
 
-syntax trace
+Syntax trace
 ------------
 
 When syntax error occurs in "expand" or "run" phase, nmosh will show syntax
@@ -173,17 +184,18 @@ implementation.
         trace : 
           (define-invalid x)
 
-guru-mode (trace suppression)
------------------------------
+Full syntax trace can be enabled with --guru-mode option.
 
-By default, stack trace and syntax trace are slightly suppressed. To disable
-this, specify --guru-mode option.
-
-minidebug
+Minidebug
 ---------
 
 When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke 
-(nmosh minidebug) to show stack trace.
+(nmosh debugger) to show some debugging information.
+
+Default debugger referenced as "minidebug". Currently, minidebug does not 
+contain any interactive debugging feature. 
+
+Minidebug will show stack trace like:
 
     prism:~ oku$ nmosh check.ss
      Condition components:
@@ -209,3 +221,12 @@ When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke
          cprc         cprocedure (mosh's internal function implemented in C++)
          mosh         Symbols from mosh runtime (boot/baselib or compiler.scm)
          nmsh         nmosh expander
+
+By default, stack trace will be suppressed if nmosh could not collect enough
+information from sourcecode. To force stack trace, specify --guru-mode.
+
+Guru-mode (trace suppression)
+-----------------------------
+
+By default, stack trace and syntax trace are slightly suppressed. To disable
+this, specify --guru-mode option.
