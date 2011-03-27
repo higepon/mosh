@@ -239,6 +239,8 @@ Object scheme::internalGetpidEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
 #ifdef _WIN32
     return Object::makeFixnum(GetCurrentProcessId());
+#elif defined(MONA)
+    return Object::makeFixnum(MonAPI::System::getProcessID());
 #else
     return Object::makeFixnum(getpid());
 #endif
