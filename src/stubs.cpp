@@ -1,4 +1,4 @@
-#include "Object.h"                                                                         
+#include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
@@ -26,7 +26,7 @@
 #include "Closure.h"
 #include "VM-inl.h"
 
-#ifndef _WIN32
+#if not defined(_WIN32) && not defined(MONA)
 #include "mosh_terminal.h"
 #endif
 
@@ -63,7 +63,7 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     Object tmp;
 
     tmp = Object::Nil;
-#ifndef WIN32
+#if not defined(WIN32) && not defined(MONA)
     tmp = Object::cons(LIBDATA_TERMINAL,tmp);
 #endif
     return tmp;
