@@ -82,6 +82,7 @@ MOSH_SOURCES = main.cpp \
           nmosh_image.cpp \
           psyntax_mosh_image.cpp \
           scheme.cpp \
-          ucs4string.cpp
+          ucs4string.cpp \
+          stubs.cpp
 
 SOURCES=$(patsubst %.cpp, src/%.cpp, $(MOSH_SOURCES))
