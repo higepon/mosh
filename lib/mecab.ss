@@ -1,4 +1,4 @@
-                                        ; mecab.ss : libmecab bindings.
+; mecab.ss : libmecab bindings.
 ;
 ;   Copyright (c) 2011  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 ;
