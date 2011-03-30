@@ -1,4 +1,4 @@
-; mecab.ss : libmecab bindings.
+                                        ; mecab.ss : libmecab bindings.
 ;
 ;   Copyright (c) 2011  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 ;
@@ -29,12 +29,18 @@
 (library (mecab)
   (export mecab-new2
           mecab-sparse-tostr2
+          mecab-sparse-tonode2
+          mecab-node-surface
+          mecab-node-length
+          mecab-node-next
+          mecab-node-prev
           mecab-destroy)
   (import (rnrs)
           (mosh ffi)
           (mosh))
 
 ;; This library is undocumented. APIs is subject to change without notice.
+;; Thanks to naoya_t.
 
 ;; We assume utf8
 
@@ -48,5 +54,21 @@
 
 (define (mecab-sparse-tostr2 . args)
   (pointer->string (apply (c-function libmecab void* mecab_sparse_tostr void* char* int) args)))
+
+(define mecab-sparse-tonode2
+  (c-function libmecab void* mecab_sparse_tonode2 void* char* int))
+
+(define (mecab-node-surface node)
+  (pointer->string (pointer-ref-c-pointer node 8)
+                   (mecab-node-length node)))
+
+(define (mecab-node-prev node) (pointer-ref-c-pointer node 0))
+(define (mecab-node-next node) (pointer-ref-c-pointer node 1))
+(define (mecab-node-enext node) (pointer-ref-c-pointer node 2))
+(define (mecab-node-bnext node) (pointer-ref-c-pointer node 3))
+
+(define (mecab-node-length node)
+  (pointer-ref-c-unsigned-short node (+ (* (/ size-of-pointer size-of-short) 10) (/ size-of-unsigned-int size-of-short))))
+
 
 )
