@@ -30,7 +30,6 @@
               (cons (mecab-node-surface node) surface*)
               (cons (mecab-node-feature node) feature*))]))
     (test-equal '("僕" "は" "お腹" "が" "すい" "た") (mecab-node-surface* (mecab-sparse-tonode2 m text len)))
-    (mecab-destroy m)
-))
+    (mecab-destroy m)))
 
 (test-results)
