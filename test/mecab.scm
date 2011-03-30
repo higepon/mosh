@@ -18,6 +18,7 @@
        [else
         (loop (mecab-node-next node)
               (cons (mecab-node-surface node) ret))]))
+    (test-equal '("僕" "は" "お腹" "が" "すい" "た") (mecab-node-surface* (mecab-sparse-tonode2 m text len)))
     (mecab-destroy m)
 ))
 
