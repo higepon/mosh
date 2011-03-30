@@ -27,10 +27,17 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (mecab)
-  (export)
+  (export  mecab-new2)
   (import (rnrs)
+          (mosh ffi)
           (mosh))
 
 ;; This library is undocumented. APIs is subject to change without notice.
+
+(define libmecab (open-shared-library "/usr/lib/libmecab.so"))
+
+(define mecab-new2
+  (c-function libmecab void* mecab_new2 char*))
+
 
 )
