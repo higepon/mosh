@@ -31,12 +31,15 @@
           mecab-sparse-tostr2
           mecab-sparse-tonode2
           mecab-node-surface
+          mecab-node-surface*
           mecab-node-length
           mecab-node-next
           mecab-node-prev
           mecab-destroy)
   (import (rnrs)
           (mosh ffi)
+          (mosh control)
+          (only (srfi :13) string-null?)
           (mosh))
 
 ;; This library is undocumented. APIs is subject to change without notice.
@@ -61,6 +64,17 @@
 (define (mecab-node-surface node)
   (pointer->string (pointer-ref-c-pointer node 8)
                    (mecab-node-length node)))
+
+(define (mecab-node-surface* node)
+  (let loop ([node node]
+             [ret '()])
+      (cond
+       [(pointer-null? node)
+        (reverse ret)]
+       [else
+        (let1 surface (mecab-node-surface node)
+          (loop (mecab-node-next node)
+                (if (string-null? surface) ret (cons (mecab-node-surface node) ret))))])))
 
 (define (mecab-node-prev node) (pointer-ref-c-pointer node 0))
 (define (mecab-node-next node) (pointer-ref-c-pointer node 1))
