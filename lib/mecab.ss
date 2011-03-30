@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (mecab)
-  (export  mecab-new2)
+  (export mecab-new2)
   (import (rnrs)
           (mosh ffi)
           (mosh))
