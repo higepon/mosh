@@ -27,7 +27,9 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (mecab)
-  (export mecab-new2 mecab-sparse-tostr2)
+  (export mecab-new2
+          mecab-sparse-tostr2
+          mecab-destroy)
   (import (rnrs)
           (mosh ffi)
           (mosh))
@@ -40,6 +42,9 @@
 
 (define mecab-new2
   (c-function libmecab void* mecab_new2 char*))
+
+(define mecab-destroy
+  (c-function libmecab void mecab_destroy void*))
 
 (define (mecab-sparse-tostr2 . args)
   (pointer->string (apply (c-function libmecab void* mecab_sparse_tostr void* char* int) args)))
