@@ -16,7 +16,15 @@
       (cond
        [(pointer-null? node)
         (test-equal '("" "僕" "は" "お腹" "が" "すい" "た" "") (reverse surface*))
-        (test-equal '() (reverse feature*))]
+        (test-equal '(("BOS/EOS" #f #f #f #f #f #f #f #f)
+                      ("名詞" "代名詞" "一般" #f #f #f "僕" "ボク" "ボク")
+                      ("助詞" "係助詞" #f #f #f #f "は" "ハ" "ワ")
+                      ("名詞" "一般" #f #f #f #f "お腹" "オナカ" "オナカ")
+                      ("助詞" "格助詞" "一般" #f #f #f "が" "ガ" "ガ")
+                      ("動詞" "自立" #f #f "五段・カ行イ音便" "連用タ接続" "すく" "スイ" "スイ")
+                      ("助動詞" #f #f #f "特殊・タ" "基本形" "た" "タ" "タ")
+                      ("BOS/EOS" #f #f #f #f #f #f #f #f))
+                    (reverse feature*))]
        [else
         (loop (mecab-node-next node)
               (cons (mecab-node-surface node) surface*)

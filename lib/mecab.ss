@@ -31,6 +31,7 @@
           mecab-sparse-tostr2
           mecab-sparse-tonode2
           mecab-node-surface
+          mecab-node-feature
           mecab-node-surface*
           mecab-node-length
           mecab-node-next
@@ -84,5 +85,8 @@
 (define (mecab-node-length node)
   (pointer-ref-c-unsigned-short node (+ (* (/ size-of-pointer size-of-short) 10) (/ size-of-unsigned-int size-of-short))))
 
+(define (mecab-node-feature node-ptr)
+  (map (lambda (s) (if (string=? "*" s) #f s))
+       (string-split (pointer->string (pointer-ref-c-pointer node-ptr 9)) #\,)))
 
 )
