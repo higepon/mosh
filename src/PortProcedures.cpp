@@ -1057,6 +1057,23 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     END_TRY
 }
 
+Object scheme::fileTostringEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file->string");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    if (File::isExist(path->data())) {
+        ucs4string ret;
+        TextualInputPort* in = new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(path->data()), createNativeTranscoder());
+        for (ucs4char ch = in->getChar(); ch != EOF; ch = in->getChar()) {
+            ret += ch;
+        }
+        return ret;
+    } else {
+        return "";
+    }
+}
+
 Object scheme::writeSsEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("write/ss");

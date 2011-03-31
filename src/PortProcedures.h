@@ -147,7 +147,7 @@ namespace scheme {
     Object renameFileEx(VM* theVM, int argc, const Object* argv);
     Object deleteDirectoryEx(VM* theVM, int argc, const Object* argv);
     Object createDirectoryEx(VM* theVM, int argc, const Object* argv);
-
+    Object fileTostringEx(VM* theVM, int argc, const Object* argv);
 } // namespace scheme
 
 #endif // SCHEME_PORT_PROCEDURES_
