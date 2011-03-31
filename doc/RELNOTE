@@ -38,12 +38,14 @@ Changes:
     Psyntax-mosh (mosh):
         "make install" no longer performs cache update in $HOME/.mosh.
         CMake support was dropped.
+        Now REPL uses SRFI-38 form to write their output. (See Issue 199)
 
     nmosh:
         Provides default (nmosh debugger) library which supports colourised
         output.
         Added default library loadpath and embedded-mode suitable for 
         application embedding. see doc/README.nmosh.
+        Now REPL uses SRFI-38 form to write their output. (See Issue 199)
 
         Windows:
             nmosh now saves expand/compile cache(ACC) into 
@@ -90,6 +92,9 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
         Fixed Issue 198 reported by amoebae (partially):
             put-string cannot be called during put-string of textual custom 
             output port. 
+        Fixed Issue 200 reported by mrc.mgg:
+            Zero length bytevector-input-port was not able to set its position
+            to offset 0.
 
     (rnrs syntax-case):
         Fixed Issue 195 reported by mrc.mgg:
