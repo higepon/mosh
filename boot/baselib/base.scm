@@ -517,15 +517,15 @@
     (lambda (port)
       (display content port))))
 
-(define (file->string filename)
-  (if (file-exists? filename)
-      (call-with-input-file filename
-        (lambda (p)
-          (let loop ([ret '()][c (read-char p)])
-            (if (eof-object? c)
-                (list->string (reverse ret))
-                (loop (cons c ret) (read-char p))))))
-        ""))
+;; (define (file->string filename)
+;;   (if (file-exists? filename)
+;;       (call-with-input-file filename
+;;         (lambda (p)
+;;           (let loop ([ret '()][c (read-char p)])
+;;             (if (eof-object? c)
+;;                 (list->string (reverse ret))
+;;                 (loop (cons c ret) (read-char p))))))
+;;         ""))
 
 (define (call-with-string-io str proc)
   (receive (out get-string) (open-string-output-port)

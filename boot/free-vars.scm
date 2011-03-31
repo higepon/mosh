@@ -692,4 +692,6 @@
   socket-sslize!
   ssl-socket?
   ssl-supported?
+
+  file->string
   )

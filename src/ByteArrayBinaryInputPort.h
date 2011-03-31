@@ -70,7 +70,9 @@ public:
     File* getFile();
     bool setPosition(int64_t position)
     {
-        if (position >= size_) {
+        if (size_ == 0 && position == 0) {
+            return true;
+        } else if (position >= size_) {
             return false;
         } else {
             index_ = position;
