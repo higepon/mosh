@@ -47,7 +47,7 @@ typedef __gnu_cxx::hash_map<scheme::Object,
                             scheme::Object,
                             hash_func,
                             std::equal_to<scheme::Object>,
-                            gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
+                            traceable_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 
 #elif HAVE_TR1_HASHES
 #ifdef _WIN32
@@ -67,12 +67,12 @@ struct hash_func
 typedef std::tr1::unordered_map<scheme::Object,
                                 scheme::Object,
                                 hash_func, std::equal_to<scheme::Object>,
-                                gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
+                                traceable_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 #else // std::map
 typedef std::map<scheme::Object,
                  scheme::Object,
                  std::less<scheme::Object>,
-                 gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
+                 traceable_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 #endif
 
 

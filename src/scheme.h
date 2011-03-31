@@ -100,9 +100,9 @@ extern "C" {
 #  include <gc_cpp.h>
 #  include <gc_allocator.h>
    template <class T1, class T2>
-   class gc_map : public std::map<T1, T2, std::less<T1>, gc_allocator<std::pair<const T1, T2> > >, public gc { };
+   class gc_map : public std::map<T1, T2, std::less<T1>, traceable_allocator<std::pair<const T1, T2> > >, public gc { };
    template <class T1>
-   class gc_vector : public std::vector<T1, gc_allocator<T1> >, public gc { };
+   class gc_vector : public std::vector<T1, traceable_allocator<T1> >, public gc { };
 #else
 #define EXTEND_GC
 template <class T1, class T2>
@@ -180,7 +180,7 @@ namespace scheme {
 
 #ifdef USE_BOEHM_GC
 class Object;
-typedef std::vector<Object, gc_allocator<Object> > ObjectVector;
+typedef std::vector<Object, traceable_allocator<Object> > ObjectVector;
 #else
 class Object;
 typedef std::vector<Object> ObjectVector;
@@ -220,7 +220,7 @@ inline void moshMemcpy(void *dest, const void *src, int64_t size)
 }
 
 #ifdef USE_BOEHM_GC
-class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocator<std::pair<const ucs4char* const, Object> > >, public gc { };
+class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, traceable_allocator<std::pair<const ucs4char* const, Object> > >, public gc { };
 #else
     class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, std::allocator<std::pair<const ucs4char* const, Object> > > {};
 #endif
