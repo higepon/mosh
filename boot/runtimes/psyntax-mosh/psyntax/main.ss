@@ -219,7 +219,7 @@
                (define (eval-string-print text)
                  (unless (or (string=? "\n" text) (= 0 (string-length text)))
                    (call-with-values (lambda () (eval-top-level (call-with-port (open-string-input-port text) read)))
-                     (lambda out* (for-each (lambda (out) (write out) (newline)) out*)
+                     (lambda out* (for-each (lambda (out) (write/ss out) (newline)) out*)
                      ))))
                (if (eof-object? line)
                    (begin
