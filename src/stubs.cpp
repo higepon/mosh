@@ -26,7 +26,11 @@
 #include "Closure.h"
 #include "VM-inl.h"
 
-#if not defined(_WIN32) && not defined(MONA)
+#if !defined(_WIN32) && !defined(MONA)
+#define HAVE_TERMINAL // this should be done in configure..
+#endif
+
+#ifdef HAVE_TERMINAL
 #include "mosh_terminal.h"
 #endif
 
@@ -49,7 +53,7 @@ Object stub_win32_named_pipe_wait(VM* theVM, int argc, const Object* argv);
 #define PTR(x) Object::makePointer((void*)x)
 #define FUNC(x,y) CONS(SYM(x),PTR(y))
 
-#ifndef WIN32
+#ifdef HAVE_TERMINAL
 #define LIBDATA_TERMINAL CONS(SYM("terminal"), \
 CONS(FUNC("terminal_acquire",terminal_acquire), \
 CONS(FUNC("terminal_release",terminal_release), \
@@ -63,7 +67,7 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     Object tmp;
 
     tmp = Object::Nil;
-#if not defined(WIN32) && not defined(MONA)
+#ifdef HAVE_TERMINAL
     tmp = Object::cons(LIBDATA_TERMINAL,tmp);
 #endif
     return tmp;
