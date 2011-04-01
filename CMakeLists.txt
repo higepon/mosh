@@ -14,7 +14,7 @@ ENABLE_TESTING()
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
 option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
 option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
-option(MOSH_WITH_NMOSH_GUI "build nmosh-gui version of mosh interpreter" ON)
+option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
 
 if(MOSH_WITH_NMOSH_GUI)
     find_package(wxWidgets COMPONENTS base core adv html xml xrc gl REQUIRED)
@@ -613,7 +613,7 @@ if(WIN32)
         PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(WIN32)
 
-add_executable(nmosh-gui WIN32
+add_executable(skymosh WIN32
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
@@ -622,7 +622,7 @@ add_executable(nmosh-gui WIN32
     ${wx_srcs})
 
 #see Ticket #12573
-target_link_libraries(nmosh-gui ${GMP_LIBRARY} ${arch_libs} ${wxWidgets_LIBRARIES})
+target_link_libraries(skymosh ${GMP_LIBRARY} ${arch_libs} ${wxWidgets_LIBRARIES})
 endif(MOSH_WITH_NMOSH_GUI)
 
 # tests
