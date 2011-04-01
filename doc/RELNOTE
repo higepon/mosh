@@ -132,10 +132,6 @@ Known Issues:
     - Every user's mosh cache (~/.mosh) should be removed when mosh updated.
     - Custom port implementation cannot call port-related procedure recursively.
       See Issue 198.
-    - nmosh colour output should be improved. e.g.) Syntax-traces are not
-      colourised at all.
-    - Mosh/nmosh should be built with system-provided BoehmGC instead of 
-      shipped with Mosh sourcecode. See Issue 156.
     - Some C++ compilers are known to miscompile mosh/nmosh. Try CXXFLAGS="-O1"
       if your compiler do not finish compilation.
       - MSVC 2008 x64 - May not finish compilation when LTO enabled.
