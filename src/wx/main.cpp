@@ -127,8 +127,8 @@ stub_wx_dispatch(VM* theVM,int argc,const Object* argv){
 }
 
 #ifdef WITH_NMOSH_DEFAULTS
-extern "C" const uint8_t* nmosh_dbg_image_ptr;
-extern "C" unsigned int nmosh_dbg_image_size;
+//extern "C" const uint8_t* nmosh_dbg_image_ptr;
+//extern "C" unsigned int nmosh_dbg_image_size;
 extern "C" const uint8_t* nmosh_image_ptr;
 extern "C" const unsigned int nmosh_image_size;
 #else
@@ -145,7 +145,8 @@ internalGetStackTraceObj(VM* theVM,int argc,const Object* argv){
 Object
 internalGetNmoshDbgImage(VM* theVM,int argc,const Object* argv){
     //DeclareProcedureName("%get-nmosh-dbg-image");
-    return FaslReader(theVM, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
+	return Object::Nil;
+//    return FaslReader(theVM, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
 }
 #endif
 
@@ -371,8 +372,21 @@ bool skyMosh::OnInit()
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
     theVM->setValueString(UC("%invoke-applet"),Object::makeBool(invokeApplet));
     theVM->setValueString(UC("%nmosh-guru-mode"),Object::makeBool(isGuruMode));
+#ifdef WITH_NMOSH_PORTABLE
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(1));
+#else
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(0));
 #endif
 
+#ifdef WITH_NMOSH_PREFIXLESS
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(1));
+#else
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(0));
+#endif
+#else // WITH_NMOSH_DEFAULTS
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(0));
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(0));
+#endif
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
 //     } else if (isCompileString) {

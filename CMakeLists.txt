@@ -618,7 +618,7 @@ add_executable(nmosh-gui WIN32
     ${gc_srcs} 
     ${mosh_core_srcs} 
     ${mosh_core_hdrs}
-    ${mosh_runtime_srcs}
+    ${mosh_runtime_src}
     ${wx_srcs})
 
 #see Ticket #12573
