@@ -420,7 +420,7 @@
   (define (append-prefix-execpath-rel l)
     (let ((pth (mosh-executable-path)))
       (if pth
-        (append-prefix-x l (string-append pth "../lib"))
+        (append-prefix-x l (string-append pth (standard-library-path)))
         '())))
   (define (append-prefix-stdlibpath l)
     (append-prefix-x l (standard-library-path)))
