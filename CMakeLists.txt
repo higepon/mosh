@@ -41,6 +41,7 @@ if(MOSH_PORTABLE)
     add_definitions(-DWITH_NMOSH_PORTABLE)
     if(NOT MOSH_PREFIXLESS)
         # silently enable prefix-less mode.
+        message(STATUS "Prefix-less mode was silently enabled.")
         add_definitions(-DWITH_NMOSH_PREFIXLESS)
     endif(MOSH_PREFIXLESS)
 endif(MOSH_PORTABLE)
@@ -61,7 +62,14 @@ endif()
 set(MOSH_VERSION "0.2.7" CACHE STRING "mosh release version string")
 # set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
 set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
-set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
+
+if(MOSH_PORTABLE)
+    set(MOSH_LIB_PATH "/lib")
+endif(MOSH_PREFIXLESS)
+    set(MOSH_LIB_PATH "/../share/${MOSH_NAME}/${MOSH_VERSION}/lib")
+else()
+    set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
+endif()
 
 mark_as_advanced(MOSH_WITH_NMOSH 
     MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
