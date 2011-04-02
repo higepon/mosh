@@ -18,17 +18,21 @@ Mosh is A Fast R6RS Scheme interpreter.
 About This Release
 ------------------
 
+Mosh will be linked with OpenSSL library when available in Linux/FreeBSD/MacOSX.
+
 FFI API(pointer-ref-* and pointer-set-*! from (mosh ffi)) had changed. See
 below for details.
 
-Mosh will be linked with OpenSSL library when available in Linux/FreeBSD/MacOSX.
-
-extlib/: Mosh sourcecode now ships with slightly patched oniguruma-5.9.2 
+extlib/: Mosh source code now ships with slightly patched oniguruma-5.9.2 
 source. This oniguruma will be used in CMake builds and MonaOS. Most users 
 can safely ignore this.
 
 nmosh user interface learned colour output. Set NMOSH_CLICOLOR 
 environment variable to "enable" to enable this. 
+
+Ruby's ERB like template library (Experimental).
+
+Facebook Graph API library (Experimental).
 
 Changes:
 
@@ -83,6 +87,10 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             SRFI-62 style datum comment was not accepted by reader in certain 
             cases.
 
+    REPL:
+        Fixed Issue 199 reported by amoebae:
+            Segumentation fault on printing circular object.
+
     (rnrs io simple):
         Fixed Issue 183 and Issue 186 (partially): 
             (display #\tab) had outputted "x9;" instead of a tab character.
@@ -95,6 +103,9 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
         Fixed Issue 200 reported by mrc.mgg:
             Zero length bytevector-input-port was not able to set its position
             to offset 0.
+
+        Fixed Issue 200 reported by mrc.mgg:
+            Setting port position to zero on bytevector input port.
 
     (rnrs syntax-case):
         Fixed Issue 195 reported by mrc.mgg:

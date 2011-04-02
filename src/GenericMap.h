@@ -83,20 +83,20 @@ struct LtObject
 typedef std::map<scheme::Object,
                  scheme::Object,
                  LtObject,
-                 traceable_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
+                 gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
 #elif defined(HAVE_EXT_HASHES)
 typedef __gnu_cxx::hash_map<scheme::Object,
                             scheme::Object,
                             generic_hash_func,
                             generic_equal_to,
-                            traceable_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
+                            gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
 #else
 //#error todo_use tr1_instread
 typedef std::tr1::unordered_map<scheme::Object,
                                 scheme::Object,
                                 generic_hash_func,
                                 generic_equal_to,
-                                traceable_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
+                                gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
 #endif
 
 #endif // SCHEME_GENERIC_MAP_
