@@ -43,7 +43,7 @@ if(MOSH_PORTABLE)
         # silently enable prefix-less mode.
         message(STATUS "Prefix-less mode was silently enabled.")
         add_definitions(-DWITH_NMOSH_PREFIXLESS)
-    endif(MOSH_PREFIXLESS)
+    endif()
 endif(MOSH_PORTABLE)
 
 if(MOSH_PREFIXLESS)
@@ -65,7 +65,7 @@ set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
 
 if(MOSH_PORTABLE)
     set(MOSH_LIB_PATH "/lib")
-else if(MOSH_PREFIXLESS)
+elseif(MOSH_PREFIXLESS)
     set(MOSH_LIB_PATH "/../share/${MOSH_NAME}/${MOSH_VERSION}/lib")
 else()
     set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
