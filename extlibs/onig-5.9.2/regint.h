@@ -170,6 +170,11 @@
 #include <stdlib.h>
 #endif
 
+// MOSH: add
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 #if defined(HAVE_ALLOCA_H) && !defined(__GNUC__)
 #include <alloca.h>
 #endif

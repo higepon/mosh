@@ -113,10 +113,13 @@ if(CMAKE_HOST_WIN32)
         add_definitions(-D_CRT_SECURE_NO_WARNINGS) #nasty
     else() # MayBE MinGW
         set(arch_libs ${arch_libs} shlwapi ws2_32)
-        add_definitions(-static-libgcc)
+        set(MOSH_ADDFLAGS "-fwide-exec-charset=ucs-4le -static-libgcc -Wno-deprecated")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MOSH_ADDFLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${MOSH_ADDFLAGS}")
+        #add_definitions(-static-libgcc)
         #add_definitions(-static-libstdc++)
-        add_definitions(-Wno-deprecated)
-        add_definitions(-fwide-exec-charset=ucs-4le)
+        #add_definitions(-Wno-deprecated)
+        #add_definitions(-fwide-exec-charset=ucs-4le)
         add_definitions(-DMOSH_MINGW32)
         add_definitions(-DHAVE_EXT_HASHES=1)
     endif(MSVC)
@@ -350,14 +353,15 @@ ${MOSH_ONIG_DIR}/enc/cp1251.c
 
 include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-7.1/include extlibs/gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest src/posix/terminal)
 
-if(CMAKE_COMPILER_IS_GNUC)
+if(CMAKE_COMPILER_IS_GNUCC)
     set(ffi_stub cmake/ffi_stub.S)
+    set_source_files_properties(${ffi_stub} PROPERTIES LANGUAGE C)
 elseif(WIN32)
     if(CMAKE_CL_64)
         message(STATUS "FFI stub was disabled (build without call-back support)")
         add_definitions(-DWITHOUT_FFI_STUB)
     endif()
-endif(CMAKE_COMPILER_IS_GNUC)
+endif(CMAKE_COMPILER_IS_GNUCC)
 
 set(mosh_core_hdrs
 src/Code.h
@@ -484,7 +488,7 @@ src/VMFactory.h
 src/SimpleStruct.h
 )
 
-set(mosh_core_srcs
+set(mosh_core_cxxsrcs
 src/OSCompat.h
 src/Transcoder.cpp
 src/EqvHashTable.cpp
@@ -569,9 +573,10 @@ src/OSCompatThread.cpp
 src/VMFactory.cpp
 src/OSCompat.cpp
 src/stubs.cpp
-${ffi_stub}
 src/posix/terminal/terminal.c
 )
+
+set(mosh_core_srcs ${mosh_core_cxxsrcs} ${ffi_stub})
 
 if(CMAKE_HOST_WIN32)
 set(mosh_win32_srcs
@@ -583,7 +588,7 @@ ${mosh_core_srcs}
 ${mosh_win32_srcs}
 src/win/win.cpp
 src/win/mosh.rc)
-set_source_files_properties(${mosh_core_srcs}
+set_source_files_properties(${mosh_core_cxxsrcs}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(CMAKE_HOST_WIN32)
 

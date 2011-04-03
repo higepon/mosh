@@ -1,4 +1,10 @@
 #include <windows.h>
+#include <config.h>
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
 
 char* errorpos; // FIXME: for debugging
 
