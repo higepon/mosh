@@ -29,6 +29,7 @@
 #ifndef MOSH_MINGW32
 #include "include/gettimeofday.h"
 #include <sys/timeb.h>
+#include <winsock.h> // for timeval
 
 int gettimeofday(struct timeval *tv, struct timezone *)
 {
