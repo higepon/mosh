@@ -131,11 +131,7 @@ stub_win32_process_wait(VM* theVM, int argc, const Object* argv){
 	checkArgumentLength(1);
 	argumentAsPointer(0,p);
 	int r = win32_process_wait(p->pointer());
-	if(r){
-		return Object::True;
-	}else{
-		return Object::False;
-	}
+        return Object::makeFixnum(r);
 }
 
 Object

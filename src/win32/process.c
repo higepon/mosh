@@ -121,7 +121,7 @@ win32_process_wait(HANDLE process){
 	BOOL r;
 	DWORD res;
 	r = WaitForSingleObject(process,INFINITE);
-	if(!r){
+	if(WAIT_FAILED == r){
 		OSERROR("WaitForSingleObject");
 		return -1;
 	}
