@@ -29,6 +29,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (import (rnrs)
+        (srfi :98)
         (facebook))
 
 (define fb-token
