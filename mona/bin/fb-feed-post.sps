@@ -1,4 +1,6 @@
-;   fb-feed-get: Get facebook feed.
+;   fb-feed-post: Post facebook feed.
+;
+;   usage: fb-feed-pst.sps content-to-post
 ;
 ;   Copyright (c) 2011  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 ;
@@ -27,11 +29,6 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (import (rnrs)
-        (mosh control)
-        (match)
-        (mosh)
-        (system)
-        (shorten)
         (facebook))
 
 (define fb-token
@@ -39,19 +36,4 @@
    (open-input-file (string-append (get-environment-variable "HOME") "/fb.token"))
    read))
 
-(define temp-file (string-append (get-environment-variable "HOME") "/TEMP/fb.data"))
-
-(when (file-exists? temp-file)
-    (delete-file temp-file))
-
-(let1 json (fb-news fb-token)
-  (call-with-port
-   (open-output-file temp-file)
-   (^p
-   (for-each
-    (^(m)
-      (cond
-       [(and (assoc-ref m "message") (assoc-ref m "from"))
-        (format p "~a\n~a\n" (assoc-ref (vector->list (assoc-ref m "from")) "name") (assoc-ref m "message"))]
-       [else '()]))
-    json))))
+(fb-post-feed fb-token (cadr (command-line)))
