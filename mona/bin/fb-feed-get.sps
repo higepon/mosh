@@ -55,6 +55,6 @@
         (format p "~a$~a$~a$\n"
                 (assoc-ref (vector->list (assoc-ref m "from")) "id")
                 (assoc-ref (vector->list (assoc-ref m "from")) "name")
-                (assoc-ref m "message"))]
+                (regexp-replace-all #/\n/ (assoc-ref m "message") ""))]
        [else '()]))
     json))))
