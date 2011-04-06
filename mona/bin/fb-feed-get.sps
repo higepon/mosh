@@ -52,6 +52,9 @@
     (^(m)
       (cond
        [(and (assoc-ref m "message") (assoc-ref m "from"))
-        (format p "~a\n~a\n" (assoc-ref (vector->list (assoc-ref m "from")) "name") (assoc-ref m "message"))]
+        (format p "~a$~a$~a$\n"
+                (assoc-ref (vector->list (assoc-ref m "from")) "id")
+                (assoc-ref (vector->list (assoc-ref m "from")) "name")
+                (assoc-ref m "message"))]
        [else '()]))
     json))))
