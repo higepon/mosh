@@ -95,6 +95,10 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
         Fixed Issue 199 reported by amoebae:
             Segumentation fault on printing circular object.
 
+    (rnrs base):
+        Fixed Issue 201 reported by mrc.mgg:
+            assert was not return any value.
+
     (rnrs io simple):
         Fixed Issue 183 and Issue 186 (partially): 
             (display #\tab) had outputted "x9;" instead of a tab character.

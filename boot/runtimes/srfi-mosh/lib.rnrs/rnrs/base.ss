@@ -116,7 +116,9 @@
     (define-syntax assert
       (syntax-rules ()
         ((_ expression)
-         (if (not expression)
-             (assertion-violation #f "assertion failed" 'expression)))))
+         (let ((p expression))
+           (if p
+             p
+             (assertion-violation #f "assertion failed" 'expression))))))
   ) ;; rnrs base
 

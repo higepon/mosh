@@ -3,6 +3,11 @@
         (srfi :8)
         (mosh test))
 
+;; Issue 201.
+(test-error assertion-violation? (assert #f))
+(test-equal #t (assert #t))
+(test-equal "test string" (assert "test string"))
+
 ;; Issue 195.
 (with-syntax ((a 1))
  (define a 1)
