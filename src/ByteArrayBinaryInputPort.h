@@ -72,7 +72,7 @@ public:
     {
         if (size_ == 0 && position == 0) {
             return true;
-        } else if (position >= size_) {
+        } else if (position > size_) {
             return false;
         } else {
             index_ = position;

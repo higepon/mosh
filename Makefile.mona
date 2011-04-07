@@ -80,6 +80,7 @@ install:all
 	$(INSTALL) $(TARGET).EXE $(INSTFILES) $(INSTDIR)
 	mkdir -p $(BINDIR)/LIBS/MOSH
 	cp -r ./lib/ $(BINDIR)/LIBS/MOSH/
+	(cd mona && cp -r ./bin $(BINDIR)/LIBS/MOSH/)
 
 depend dependencies:
 	$(CXX) -MM $(INCLUDE) $(CXXFLAGS) $(SOURCES) >> dependencies
