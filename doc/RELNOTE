@@ -109,8 +109,7 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             put-string cannot be called during put-string of textual custom 
             output port. 
         Fixed Issue 200 reported by mrc.mgg:
-            Zero length bytevector-input-port was not able to set its position
-            to offset 0.
+            set-port-position! to the last index is now acceptable.
 
     (rnrs syntax-case):
         Fixed Issue 195 reported by mrc.mgg:
