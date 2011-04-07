@@ -65,20 +65,63 @@
 
 (define* library-export (name type obj env))
 
+;; binding
+;;   type := macro | variable ;;;; identifier-macro..?
+(define* binding (name global-name id type))
+
+(define* (macro? (binding))
+  (let-with binding (type)
+    (eq? type 'macro)))
+(define* (variable? (binding))
+  (let-with binding (type)
+    (eq? type 'variable)))
+
+(define-syntax define-core-syntax*
+  (syntax-rules ()
+    ((_ (def name))
+     (define def (make-core-syntax 'name)))
+    ((_ cl0 cl1 ...)
+     (begin
+       (define-core-syntax* cl0)
+       (define-core-syntax* cl1 ...)))))
+
+(define-syntax core-syntax*
+  (syntax-rules ()
+    ((_ name ((name0 value0 ...) ...))
+     (begin
+       (define-core-syntax* (name0 value0 ...) ...)
+       (define name (list name0 ...))))))
+
+(core-syntax* core-syntax
+              (core:define-syntax 'define-syntax)
+              (core:let-syntax 'let-syntax)
+              (core:letrec-syntax 'letrec-syntax)
+              (core:quote 'core-quote)
+              (core:form 'core-form)
+              (core:extend 'core-extend)
+              (core:extend-define 'core-extend-define)
+              (core:invalid-form 'core-invalid-form)
+              (core:expand-form 'expand-form)
+              (core:expand-body 'expand-body)
+              (core:expand-begin 'expand-begin))
+
 ;; core expanders:
 ;;
 ;; define-syntax
 ;; let-syntax
 ;; letrec-syntax
 ;;
-;; core-define
 ;; core-quote
 ;; core-form
 ;; core-extend
+;; core-extend-define
 ;; core-invalid-form
 ;; expand-form
 ;; expand-body
-;; expand-name
+;; expand-begin
 
+(define (expand-sequence exp de le) ;; => exp de
+
+  )
 
 )

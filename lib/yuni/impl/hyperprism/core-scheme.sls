@@ -11,7 +11,7 @@
                  core:define
                  core:lambda
                  core:begin)
-         (import )
+         (import *core*)
 
 (define-syntax core:quote
   (syntax-rules ()
@@ -40,26 +40,27 @@
 (define-syntax core:define
   (syntax-rules ()
     ((_ name def ...)
-     (core-define (expand-name name)
-                  (core-extend (name)
-                               (expand-body def ...))))))
+     (core-extend-define (name)
+                         (core-form define 
+                                    (expand-form name)
+                                    (expand-body def ...))))))
 
 (define-syntax core:lambda
   (syntax-rules ()
-    ((_ (form ...) body ...)
-     (core-extend (form ...)
+    ((_ (name ...) body ...)
+     (core-extend (name ...)
                   (core-form lambda
-                             (expand-name (form ...))
+                             ((expand-form name) ...)
                              (expand-body body ...))))
-    ((_ form body ...)
-     (core-extend (form)
+    ((_ name body ...)
+     (core-extend (name)
                   (core-form lambda
-                             (expand-name form)
+                             (expand-form name)
                              (expand-body body ...))))))
 
 (define-syntax core:begin
   (syntax-rules ()
     ((_ form ...)
-     (core-form begin (expand-body form ...)))))
+     (core-form begin (expand-begin form ...)))))
 
 )
