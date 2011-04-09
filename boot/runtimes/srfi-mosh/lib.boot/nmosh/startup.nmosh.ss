@@ -17,6 +17,8 @@
          (let ((name (string->symbol (car cl))))
            (runlib `((nmosh applet ,name)) name))
          (ca-load (car cl) #f '(nmosh PROGRAM-FROM-NMOSH-STARTUP))))
+      ((get-global-flag '%nmosh-skymosh)
+       (runlib '((nmosh skymosh)) 'skymosh))
       (else 
 	(runlib '((nrepl simple)) 'nrepl)))))
 

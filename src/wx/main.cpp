@@ -368,6 +368,7 @@ bool skyMosh::OnInit()
 
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
 #ifdef WITH_NMOSH_DEFAULTS
+    theVM->setValueString(UC("%nmosh-skymosh"),Object::makeBool(1));
     theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
     theVM->setValueString(UC("%invoke-applet"),Object::makeBool(invokeApplet));
