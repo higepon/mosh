@@ -3,6 +3,7 @@
 (define %nmosh-portable-mode #f)
 (define %nmosh-prefixless-mode #t)
 (define %loadpath "lib.rnrs:lib.boot:../../../lib")
+(define (%getpid) 0)
 (load "compat-mosh-run.scm")
 (load "runtime.scm")
 (load "mosh-utils5.scm")

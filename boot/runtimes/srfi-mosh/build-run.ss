@@ -13,7 +13,8 @@
     (define %nmosh-portable-mode #f)
     (define %nmosh-prefixless-mode #t)
     (define %verbose #t)
-    (define %nmosh-failproc #f)))
+    (define %nmosh-failproc #f)
+    (define (%getpid) 0)))
 
 (define m (ex:current-environment))
 
