@@ -30,6 +30,11 @@
 #define HAVE_TERMINAL // this should be done in configure..
 #endif
 
+#ifdef _WIN32
+#define HAVE_AIO_WIN32
+#include "aio_win32.h"
+#endif
+
 #ifdef HAVE_TERMINAL
 #include "mosh_terminal.h"
 #endif
@@ -61,6 +66,20 @@ CONS(FUNC("terminal_getsize",terminal_getsize), \
 CONS(FUNC("terminal_isatty",terminal_isatty),NIL)))))
 #endif
 
+#ifdef HAVE_AIO_WIN32
+#define LIBDATA_AIO_WIN32 CONS(SYM("aio-win32"), \
+CONS(FUNC("win32_iocp_create",win32_iocp_create), \
+CONS(FUNC("win32_iocp_assoc",win32_iocp_assoc), \
+CONS(FUNC("win32_iocp_pop",win32_iocp_pop), \
+CONS(FUNC("win32_overlapped_alloc",win32_overlapped_alloc), \
+CONS(FUNC("win32_overlapped_free",win32_overlapped_free), \
+CONS(FUNC("win32_handle_read_async",win32_handle_read_async), \
+CONS(FUNC("win32_handle_write_async",win32_handle_write_async), \
+CONS(FUNC("win32_process_redirected_child2",win32_process_redirected_child2), \
+CONS(FUNC("win32_create_named_pipe_async",win32_create_named_pipe_async), \
+CONS(FUNC("win32_wait_named_pipe_async",win32_wait_named_pipe_async),NIL)))))))))))
+#endif
+
 Object
 stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     //DeclareProcedureName("%get-pffi-feature-set");
@@ -69,6 +88,9 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     tmp = Object::Nil;
 #ifdef HAVE_TERMINAL
     tmp = Object::cons(LIBDATA_TERMINAL,tmp);
+#endif
+#ifdef HAVE_AIO_WIN32
+	tmp = Pair::append2(tmp,LIBDATA_AIO_WIN32);
 #endif
     return tmp;
 }

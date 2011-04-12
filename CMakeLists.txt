@@ -154,7 +154,8 @@ add_definitions(
     -DGC_NOT_DLL
     -DONIG_EXTERN=extern
     )
-set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/src/win/include")
+set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/src/win/include"
+    "${PROJECT_SOURCE_DIR}/src/win32")
 endif(CMAKE_HOST_WIN32)
 
 # includes

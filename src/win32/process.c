@@ -5,6 +5,7 @@
 #include <stdint.h>
 #endif
 
+#include "aio_win32.h"
 
 char* errorpos; // FIXME: for debugging
 
@@ -156,6 +157,179 @@ int
 win32_wait_named_pipe(HANDLE h){
 	BOOL b;
 	b = ConnectNamedPipe(h,NULL);
+	if(!b){
+		return 0;
+	}
+	return 1;
+}
+
+uintptr_t
+win32_iocp_create(void){
+	// FIXME: err?
+	return (uintptr_t)CreateIoCompletionPort(INVALID_HANDLE_VALUE,NULL,0,0);
+}
+
+int
+win32_iocp_assoc(uintptr_t iocp,uintptr_t in,uintptr_t key){
+	HANDLE h = (HANDLE)in;
+	HANDLE ret;
+
+	ret = CreateIoCompletionPort(h,(HANDLE)iocp,key,0);
+	if(ret == NULL){
+		// error
+		return 0;
+	}
+	return 1;
+}
+
+int
+win32_iocp_pop(uintptr_t iocp, uintptr_t timeout,uintptr_t ret_bytestrans, uintptr_t ret_key, uintptr_t ret_overlapped){
+	BOOL b;
+	
+	// GetQueuedCompletionStatus will return status of de-queued I/O ops.
+	// So we should handle the result even if we get FALSE here..
+	b = GetQueuedCompletionStatus((HANDLE)iocp,(LPDWORD)ret_bytestrans,(PULONG_PTR)ret_key,(LPOVERLAPPED *)ret_overlapped,timeout);
+	if(!b){
+		return 0;
+	}else{
+		return 1;
+	}
+}
+
+// allocate and free OVERLAPPED. OVERLAPPED may passed to non-GC-managed threads.
+void*
+win32_overlapped_alloc(void){
+	return malloc(sizeof(OVERLAPPED)); // FIXME: should be aligned ??
+}
+
+void
+win32_overlapped_free(void* p){
+	free(p);
+}
+
+
+
+int
+win32_handle_read_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol){
+	BOOL b;
+	OVERLAPPED* ovl = (OVERLAPPED *)ol;
+	ovl->Offset = offsetL;
+	ovl->OffsetHigh = offsetH;
+	ovl->hEvent = NULL;
+	b = ReadFile((HANDLE)h,(void*)buf,length,NULL,ovl);
+	if(!b){
+		return 0;
+	}else{
+		return 1;
+	}
+}
+
+int
+win32_handle_write_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol){
+	BOOL b;
+	OVERLAPPED* ovl = (OVERLAPPED *)ol;
+	ovl->Offset = offsetL;
+	ovl->OffsetHigh = offsetH;
+	ovl->hEvent = NULL;
+	b = WriteFile((HANDLE)h,(void *)buf,length,NULL,ovl);
+	if(!b){
+		return 0;
+	}else{
+		return 1;
+	}
+}
+
+static HANDLE
+open_for_input(wchar_t* path){
+	SECURITY_ATTRIBUTES sat;
+
+	sat.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sat.bInheritHandle = TRUE;
+	sat.lpSecurityDescriptor = NULL;
+	return CreateFileW(path,GENERIC_READ,0,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_READONLY,&sat);
+}
+
+static HANDLE
+open_for_output(wchar_t* path){
+	SECURITY_ATTRIBUTES sat;
+
+	sat.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sat.bInheritHandle = TRUE;
+	sat.lpSecurityDescriptor = NULL;
+	return CreateFileW(path,GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,&sat);
+}
+
+uintptr_t
+win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wchar_t* std_out, wchar_t* std_err, int in_enable, int out_enable, int err_enable){
+	PROCESS_INFORMATION pi;
+	STARTUPINFOW si;
+	BOOL r;
+	HANDLE h;
+	HANDLE ex_out, ex_err;
+	ex_out = 0;
+	ex_err = 0;
+
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+	ZeroMemory(&si, sizeof(STARTUPINFOW));
+
+	si.cb = sizeof(STARTUPINFO);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	if(std_in != 0 && in_enable){
+		h = open_for_input(std_in);
+		if(h == INVALID_HANDLE_VALUE) return 0;
+		si.hStdInput = h;
+	}else{
+		si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	}
+	if(std_out != 0 && out_enable){
+		h = open_for_output(std_out);
+		if(h == INVALID_HANDLE_VALUE) return 0;
+		si.hStdOutput = h;
+		ex_out = h;
+	}else{
+		si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	}
+	if(std_err != 0 && err_enable){
+		h = open_for_output(std_err);
+		if(h == INVALID_HANDLE_VALUE) return 0;
+		si.hStdError = h;
+		ex_err = h;
+	}else{
+		si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+	}
+
+	r = CreateProcessW(NULL, spec, NULL, NULL, TRUE, 0, NULL, dir, &si, &pi);
+
+	if(ex_out != 0){
+		CloseHandle(std_out);
+	}
+
+	if(ex_err != 0){
+		CloseHandle(std_err);
+	}
+
+	if (! r){
+		OSERROR("CreateProcess");
+		return 0;
+	}
+	CloseHandle(pi.hThread);
+	return (uintptr_t)pi.hProcess;
+}
+
+uintptr_t
+win32_create_named_pipe_async(wchar_t* name){
+	HANDLE h;
+	h = CreateNamedPipeW(name,PIPE_ACCESS_DUPLEX|FILE_FLAG_OVERLAPPED,PIPE_WAIT,PIPE_UNLIMITED_INSTANCES|PIPE_REJECT_REMOTE_CLIENTS,4096,4096,0,NULL);
+	if(h == INVALID_HANDLE_VALUE){
+		OSERROR("CreateNamedPipeW");
+		return -1;
+	}
+	return (uintptr_t)h;
+}
+int
+win32_wait_named_pipe_async(uintptr_t h, uintptr_t ovl){
+	BOOL b;
+	b = ConnectNamedPipe((HANDLE)h,(OVERLAPPED *)ovl);
 	if(!b){
 		return 0;
 	}
