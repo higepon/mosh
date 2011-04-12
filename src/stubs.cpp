@@ -90,7 +90,7 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     tmp = Object::cons(LIBDATA_TERMINAL,tmp);
 #endif
 #ifdef HAVE_AIO_WIN32
-	tmp = Pair::append2(tmp,LIBDATA_AIO_WIN32);
+	tmp = Object::cons(LIBDATA_AIO_WIN32,tmp);
 #endif
     return tmp;
 }
