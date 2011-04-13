@@ -717,9 +717,23 @@ file(COPY ${PROJECT_SOURCE_DIR}/src/all-tests.scm DESTINATION ${PROJECT_BINARY_D
 file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
 
 
-install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
-    DESTINATION share/mosh/${MOSH_VERSION})
-if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
-    install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
+if(MOSH_PORTABLE)
+    if(MOSH_WITH_NMOSH_GUI)
+        install(TARGETS skymosh DESTINATION .)
+    endif()
+    install(TARGETS ${TARGET_FLAVOR} DESTINATION .)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib DESTINATION .)
+    if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
+        install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION .)
+    endif()
+else()
+    install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
+    if(MOSH_WITH_NMOSH_GUI)
+        install(TARGETS skymosh DESTINATION bin)
+    endif()
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
+        DESTINATION share/mosh/${MOSH_VERSION})
+    if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
+        install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
+    endif()
 endif()
