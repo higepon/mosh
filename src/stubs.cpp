@@ -39,6 +39,9 @@
 #include "mosh_terminal.h"
 #endif
 
+// boehm gc stubs are always available
+#include "boehmgc-stubs.h"
+
 using namespace scheme;
 
 #ifdef _WIN32
@@ -81,12 +84,17 @@ CONS(FUNC("win32_wait_named_pipe_async",win32_wait_named_pipe_async), \
 CONS(FUNC("win32_process_wait_async",win32_process_wait_async),NIL))))))))))))
 #endif
 
+#define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \
+CONS(FUNC("register_disappearing_link",register_disappearing_link), \
+CONS(FUNC("gcollect",gcollect),NIL)))
+
 Object
 stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     //DeclareProcedureName("%get-pffi-feature-set");
     Object tmp;
 
     tmp = Object::Nil;
+	tmp = Object::cons(LIBDATA_BOEHMGC_STUBS,tmp);
 #ifdef HAVE_TERMINAL
     tmp = Object::cons(LIBDATA_TERMINAL,tmp);
 #endif

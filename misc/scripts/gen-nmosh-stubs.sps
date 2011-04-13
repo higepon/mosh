@@ -5,7 +5,7 @@
         (mosh pp) (nmosh ffi pffi)
         (shorten))
 
-(define targets '("src/ext" "src/posix" "src/win32"))
+(define targets '("src/ext" "src/posix" "src/win32" "src/generic"))
 
 (define (locate-Library)
   (define libs '())
