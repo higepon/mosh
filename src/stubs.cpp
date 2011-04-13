@@ -77,7 +77,8 @@ CONS(FUNC("win32_handle_read_async",win32_handle_read_async), \
 CONS(FUNC("win32_handle_write_async",win32_handle_write_async), \
 CONS(FUNC("win32_process_redirected_child2",win32_process_redirected_child2), \
 CONS(FUNC("win32_create_named_pipe_async",win32_create_named_pipe_async), \
-CONS(FUNC("win32_wait_named_pipe_async",win32_wait_named_pipe_async),NIL)))))))))))
+CONS(FUNC("win32_wait_named_pipe_async",win32_wait_named_pipe_async), \
+CONS(FUNC("win32_process_wait_async",win32_process_wait_async),NIL))))))))))))
 #endif
 
 Object

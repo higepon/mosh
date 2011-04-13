@@ -7,7 +7,9 @@
                  win32_handle_write_async
                  win32_process_redirected_child2
                  win32_create_named_pipe_async
-                 win32_wait_named_pipe_async)
+                 win32_wait_named_pipe_async
+                 win32_process_wait_async
+                 )
          (import (rnrs)
                  (srfi :8)
                  (mosh ffi)
@@ -96,10 +98,15 @@
 (define (win32_process_redirected_child2 spec dir stdin stdout stderr)
   (define (pass x)
     (case x
-      ((#t #f) (integer->pointer 0))
+      ((#t #f) (integer->pointer 0)) ;; we no longer need this..
       (else
         (string->utf16-bv x))))
-  (define (passf x) (if x 1 0))
+  (define (passf x)
+    (if (string? x)
+      (if (file-exists? x)
+        3 ;; pass OPEN_EXISTING
+        2) ;; pass CREATE_ALWAYS
+      (if x 1 0)))
   (let ((x (stub:win32_process_redirected_child2
              (string->utf16-bv spec)
              (string->utf16-bv dir)
@@ -115,11 +122,24 @@
   (let ((x (stub:win32_create_named_pipe_async (string->utf16-bv name))))
     (pointer->handle x)))
 
+#|
+(define* (win32_process_wait0 (h win32-handle))
+         (let ((res (%win32_process_wait (handle->pointer h))))
+           res))
+|#
+
+
 (define* (win32_wait_named_pipe_async (h win32-handle) overlapped)
   (let ((x (stub:win32_wait_named_pipe_async (handle->pointer h)
                                              overlapped)))
     x))
 
-
+(define* (win32_process_wait_async (process win32-handle)
+                                   (iocp win32-handle)
+                                   key)
+         (let ((x (stub:win32_process_wait_async (handle->pointer process)
+                                                 (handle->pointer iocp)
+                                                 key)))
+           x))
 
 )

@@ -5,6 +5,9 @@
 #include <stdint.h>
 #endif
 
+#include <process.h>
+#include <stddef.h>
+
 #include "aio_win32.h"
 
 char* errorpos; // FIXME: for debugging
@@ -183,8 +186,11 @@ win32_iocp_assoc(uintptr_t iocp,uintptr_t in,uintptr_t key){
 }
 
 int
-win32_iocp_pop(uintptr_t iocp, uintptr_t timeout,uintptr_t ret_bytestrans, uintptr_t ret_key, uintptr_t ret_overlapped){
+win32_iocp_pop(uintptr_t iocp, intptr_t timeout_in,uintptr_t ret_bytestrans, uintptr_t ret_key, uintptr_t ret_overlapped){
 	BOOL b;
+	DWORD timeout;
+	timeout = (timeout_in == -1)?INFINITE:timeout_in;
+	
 	
 	// GetQueuedCompletionStatus will return status of de-queued I/O ops.
 	// So we should handle the result even if we get FALSE here..
@@ -240,27 +246,32 @@ win32_handle_write_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr
 }
 
 static HANDLE
-open_for_input(wchar_t* path){
+open_for_input(wchar_t* path,int mode){
 	SECURITY_ATTRIBUTES sat;
 
 	sat.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sat.bInheritHandle = TRUE;
 	sat.lpSecurityDescriptor = NULL;
-	return CreateFileW(path,GENERIC_READ,0,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_READONLY,&sat);
+	return CreateFileW(path,GENERIC_READ,FILE_SHARE_READ,&sat,mode,FILE_ATTRIBUTE_READONLY,NULL);
 }
 
 static HANDLE
-open_for_output(wchar_t* path){
+open_for_output(wchar_t* path,int mode){
 	SECURITY_ATTRIBUTES sat;
 
 	sat.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sat.bInheritHandle = TRUE;
 	sat.lpSecurityDescriptor = NULL;
-	return CreateFileW(path,GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,&sat);
+	return CreateFileW(path,GENERIC_WRITE,mode,&sat,CREATE_ALWAYS,0,NULL);
 }
 
+// mode:
+//  0 : /dev/null
+//  1 : stdio
+//  2 : CREATE_ALWAYS
+//  3 : OPEN_EXISTING or TRUNCATE_EXISTING
 uintptr_t
-win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wchar_t* std_out, wchar_t* std_err, int in_enable, int out_enable, int err_enable){
+win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wchar_t* std_out, wchar_t* std_err, int in_mode, int out_mode, int err_mode){
 	PROCESS_INFORMATION pi;
 	STARTUPINFOW si;
 	BOOL r;
@@ -274,38 +285,66 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 
 	si.cb = sizeof(STARTUPINFO);
 	si.dwFlags = STARTF_USESTDHANDLES;
-	if(std_in != 0 && in_enable){
-		h = open_for_input(std_in);
+	switch(in_mode){
+	case 0:
+		break;
+	case 1:
+		si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+		break;
+	case 3:
+		h = open_for_input(std_in,OPEN_EXISTING);
 		if(h == INVALID_HANDLE_VALUE) return 0;
 		si.hStdInput = h;
-	}else{
-		si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+		break;
 	}
-	if(std_out != 0 && out_enable){
-		h = open_for_output(std_out);
+	switch(out_mode){
+	case 0:
+		break;
+	case 1:
+		si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+		break;
+	case 2:
+		h = open_for_output(std_out,CREATE_ALWAYS);
 		if(h == INVALID_HANDLE_VALUE) return 0;
 		si.hStdOutput = h;
 		ex_out = h;
-	}else{
-		si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+		break;
+	case 3:
+		h = open_for_output(std_out,TRUNCATE_EXISTING);
+		if(h == INVALID_HANDLE_VALUE) return 0;
+		si.hStdOutput = h;
+		ex_out = h;
+		break;
 	}
-	if(std_err != 0 && err_enable){
-		h = open_for_output(std_err);
+	switch(err_mode){
+	case 0:
+		break;
+	case 1:
+		si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+		break;
+	case 2:
+		h = open_for_output(std_err,CREATE_ALWAYS);
 		if(h == INVALID_HANDLE_VALUE) return 0;
 		si.hStdError = h;
 		ex_err = h;
-	}else{
-		si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+		break;
+	case 3:
+		h = open_for_output(std_err,TRUNCATE_EXISTING);
+		if(h == INVALID_HANDLE_VALUE) return 0;
+		si.hStdError = h;
+		ex_err = h;
+		break;
 	}
 
+	//FIXME: should we use CREATE_NO_WINDOW ?
 	r = CreateProcessW(NULL, spec, NULL, NULL, TRUE, 0, NULL, dir, &si, &pi);
 
 	if(ex_out != 0){
-		CloseHandle(std_out);
+		CloseHandle(ex_out);
 	}
 
 	if(ex_err != 0){
-		CloseHandle(std_err);
+		CloseHandle(ex_err);
 	}
 
 	if (! r){
@@ -336,3 +375,54 @@ win32_wait_named_pipe_async(uintptr_t h, uintptr_t ovl){
 	return 1;
 }
 
+typedef struct {
+	HANDLE h;
+	HANDLE iocp;
+	uintptr_t key;
+} thread_waiter_param;
+
+
+static void
+emit_queue_event(HANDLE iocp,uintptr_t key,intptr_t res){
+	PostQueuedCompletionStatus(iocp,res,key,NULL);
+}
+
+static void
+thread_waiter(void* p){
+	thread_waiter_param* param = (thread_waiter_param *)p;
+	BOOL r;
+	DWORD res;
+	HANDLE h;
+	HANDLE iocp;
+	uintptr_t key;
+	h = param->h;
+	iocp = param->iocp;
+	key = param->key;
+	free(param);
+
+	r = WaitForSingleObject(h,INFINITE);
+	if(WAIT_FAILED == r){
+		OSERROR("WaitForSingleObject");
+		emit_queue_event(iocp,key,-1);
+	}else{
+		GetExitCodeProcess(h,&res);
+		CloseHandle(h);
+		emit_queue_event(iocp,key,res);
+	}
+}
+
+static void
+invoke_thread_waiter(HANDLE h, HANDLE iocp, uintptr_t key){
+	thread_waiter_param* param;
+	param = (thread_waiter_param *)malloc(sizeof(thread_waiter_param));
+	param->h = h;
+	param->iocp = iocp;
+	param->key = key;
+	_beginthread(thread_waiter,0,param);
+}
+
+int
+win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key){
+	invoke_thread_waiter((HANDLE)h,(HANDLE)iocp,key);
+	return 1;
+}
