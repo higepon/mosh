@@ -694,4 +694,6 @@
   ssl-supported?
 
   file->string
+  pointer->object
+  object->pointer
   )

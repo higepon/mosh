@@ -1596,3 +1596,18 @@ Object scheme::bytevectorPointerEx(VM* theVM, int argc, const Object* argv)
     argumentAsByteVector(0, bv);
     return Object::makePointer(bv->data());
 }
+
+Object scheme::objectTopointerEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("object->pointer");
+    checkArgumentLength(1);
+    return Object::makePointer((void *)argv);
+}
+
+Object scheme::pointerToobjectEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer->object");
+    checkArgumentLength(1);
+    argumentAsPointer(0, p0);
+    return *reinterpret_cast<Object *>((void *)p0->pointer());
+}
