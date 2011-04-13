@@ -179,7 +179,7 @@ src/OSCompatThread.h src/OSCompatThread.cpp \
 src/VMFactory.cpp src/VMFactory.h \
 src/SimpleStruct.h \
 src/OSCompat.h src/OSCompat.cpp \
-src/stubs.cpp src/posix/terminal/terminal.c 
+src/stubs.cpp src/posix/terminal/terminal.c src/generic/boehmgc-stubs.c
 
 if FFI_I386
 MOSH_CORE_SRCS += src/ffi_stub_i386.S
