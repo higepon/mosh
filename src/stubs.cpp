@@ -81,7 +81,16 @@ CONS(FUNC("win32_handle_write_async",win32_handle_write_async), \
 CONS(FUNC("win32_process_redirected_child2",win32_process_redirected_child2), \
 CONS(FUNC("win32_create_named_pipe_async",win32_create_named_pipe_async), \
 CONS(FUNC("win32_wait_named_pipe_async",win32_wait_named_pipe_async), \
-CONS(FUNC("win32_process_wait_async",win32_process_wait_async),NIL))))))))))))
+CONS(FUNC("win32_process_wait_async",win32_process_wait_async), \
+CONS(FUNC("win32_sockaddr_storage_size",win32_sockaddr_storage_size), \
+CONS(FUNC("win32_socket_create",win32_socket_create), \
+CONS(FUNC("win32_addrinfoex_free",win32_addrinfoex_free), \
+CONS(FUNC("win32_addrinfoex_read",win32_addrinfoex_read), \
+CONS(FUNC("win32_socket_connect",win32_socket_connect), \
+CONS(FUNC("win32_socket_accept",win32_socket_accept), \
+CONS(FUNC("win32_socket_bind",win32_socket_bind), \
+CONS(FUNC("win32_socket_listen",win32_socket_listen), \
+	NIL))))))))))))))))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \

@@ -1,3 +1,7 @@
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <MSWSock.h>
+
 #include <windows.h>
 #include <config.h>
 
@@ -7,6 +11,7 @@
 
 #include <process.h>
 #include <stddef.h>
+
 
 #include "aio_win32.h"
 
@@ -425,4 +430,170 @@ int
 win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key){
 	invoke_thread_waiter((HANDLE)h,(HANDLE)iocp,key);
 	return 1;
+}
+
+
+/* windows sockets */
+int
+win32_sockaddr_storage_size(void){
+	return sizeof(SOCKADDR_STORAGE);
+}
+
+// mode = 0 .. default
+//        4 .. IPv4
+//        6 .. IPv6
+// proto = 0 .. ERR
+//         1 .. TCP
+//         2 .. UDP
+uintptr_t
+win32_socket_create(int mode,int proto,uintptr_t ret_connectex,uintptr_t ret_acceptex){
+	int aaf;
+	int atype;
+	int aproto;
+	GUID guidConnectEx = WSAID_CONNECTEX;
+	GUID guidAcceptEx = WSAID_ACCEPTEX;
+	DWORD bogus;
+	uintptr_t ret;
+	switch(mode){
+	case 0:
+		aaf = AF_UNSPEC;
+		break;
+	case 4:
+		aaf = AF_INET;
+		break;
+	case 6:
+		aaf = AF_INET6;
+		break;
+	}
+	switch(proto){
+	case 0: // wrong
+		atype = 0;
+		aproto = 0;
+		break;
+	case 1:
+		atype = SOCK_STREAM;
+		aproto = IPPROTO_TCP;
+		break;
+	case 2:
+		atype = SOCK_DGRAM;
+		aproto = IPPROTO_UDP;
+		break;
+	}	
+	ret = (uintptr_t)socket(aaf,atype,aproto);
+
+	if(atype == SOCK_STREAM){
+		WSAIoctl(ret,SIO_GET_EXTENSION_FUNCTION_POINTER,&guidConnectEx,sizeof(GUID),(void *)ret_connectex,sizeof(void*),&bogus,NULL,NULL);
+		WSAIoctl(ret,SIO_GET_EXTENSION_FUNCTION_POINTER,&guidAcceptEx,sizeof(GUID),(void *)ret_acceptex,sizeof(void*),&bogus,NULL,NULL);
+	}
+
+	return ret;
+}
+
+// mode = 0 .. default
+//        4 .. IPv4
+//        6 .. IPv6
+// proto = 0 .. default
+//         1 .. TCP
+//         2 .. UDP
+int
+win32_getaddrinfo(wchar_t* name,wchar_t* servicename,uintptr_t ret_addrinfoex,int mode,int proto){
+	int ret;
+	ADDRINFOEX aie;
+	aie.ai_flags = 0;
+	switch(mode){
+	case 0:
+		aie.ai_family = AF_UNSPEC;
+		break;
+	case 4:
+		aie.ai_family = AF_INET;
+		break;
+	case 6:
+		aie.ai_family = AF_INET6;
+		break;
+	}
+	switch(proto){
+	case 0:
+		aie.ai_socktype = 0;
+		aie.ai_protocol = 0;
+		break;
+	case 1:
+		aie.ai_socktype = SOCK_STREAM;
+		aie.ai_protocol = IPPROTO_TCP;
+		break;
+	case 2:
+		aie.ai_socktype = SOCK_DGRAM;
+		aie.ai_protocol = IPPROTO_UDP;
+		break;
+	}
+
+	
+	ret = GetAddrInfoExW(name,servicename,NS_ALL,NULL,&aie,(PADDRINFOEXW*)ret_addrinfoex,NULL,NULL,NULL,NULL);
+	return ret;
+}
+
+void
+win32_addrinfoex_free(uintptr_t aie){
+	FreeAddrInfoEx((ADDRINFOEX *)aie);
+}
+
+void
+win32_addrinfoex_read(uintptr_t aie,uintptr_t* ret_family,uintptr_t* ret_sockaddr,uintptr_t* ret_namelen,uintptr_t* ret_next){
+	ADDRINFOEX *aiep = (ADDRINFOEX *)aie;
+	switch(aiep->ai_family){
+	case AF_INET:
+		*ret_family = 4;
+		break;
+	case AF_INET6:
+		*ret_family = 6;
+		break;
+	default:
+		*ret_family = 0;
+		break;
+	}
+	*ret_sockaddr = (uintptr_t)aiep->ai_addr;
+	*ret_namelen = (uintptr_t)aiep->ai_addrlen;
+	*ret_next = (uintptr_t)aiep->ai_next;
+}
+
+int
+win32_socket_connect(uintptr_t func,uintptr_t s,uintptr_t saddr,int namelen,uintptr_t overlapped){
+	LPFN_CONNECTEX con = (LPFN_CONNECTEX)func;
+	BOOL b;
+	b = con((SOCKET)s,(const struct sockaddr *)saddr,namelen,NULL,0,NULL,(OVERLAPPED *)overlapped);
+	if(b){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+int
+win32_socket_accept(uintptr_t func,uintptr_t slisten,uintptr_t saccept,uintptr_t buf,int bufsize,uintptr_t overlapped){
+	BOOL b;
+	LPFN_ACCEPTEX acc = (LPFN_ACCEPTEX)func;
+	DWORD len;
+	int err;
+	int addrlen = sizeof(SOCKADDR_STORAGE)+16;
+	int datasize = bufsize - addrlen - addrlen;
+	b = acc((SOCKET)slisten,(SOCKET)saccept,(void *)buf,datasize,addrlen,addrlen,&len,(OVERLAPPED *)overlapped);
+	if(!b){
+		err = WSAGetLastError();
+		if(err == ERROR_IO_PENDING){
+			return 1;
+		}else{
+			return 0;
+		}
+	}else{
+		return 1;
+	}
+}
+
+int
+win32_socket_bind(uintptr_t s,uintptr_t name,int namelen){
+	return bind((SOCKET)s,(const struct sockaddr *)name,namelen);
+}
+
+int
+win32_socket_listen(uintptr_t s,int l){
+	return listen((SOCKET)s,(l == 0)?SOMAXCONN:l);
 }
