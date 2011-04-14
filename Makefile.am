@@ -4,6 +4,7 @@ GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
 		 -g \
 		 -Wall -Wno-deprecated \
 		 -I $(top_srcdir)/src/posix/terminal \
+		 -I $(top_srcdir)/src/generic \
 		 -I src -I $(includedir) \
 		 -D MONA_SCHEME -D USE_BOEHM_GC \
 		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \

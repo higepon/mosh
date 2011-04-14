@@ -76,6 +76,8 @@ CONS(FUNC("win32_iocp_assoc",win32_iocp_assoc), \
 CONS(FUNC("win32_iocp_pop",win32_iocp_pop), \
 CONS(FUNC("win32_overlapped_alloc",win32_overlapped_alloc), \
 CONS(FUNC("win32_overlapped_free",win32_overlapped_free), \
+CONS(FUNC("win32_overlapped_setmydata",win32_overlapped_setmydata), \
+CONS(FUNC("win32_overlapped_getmydata",win32_overlapped_getmydata), \
 CONS(FUNC("win32_handle_read_async",win32_handle_read_async), \
 CONS(FUNC("win32_handle_write_async",win32_handle_write_async), \
 CONS(FUNC("win32_process_redirected_child2",win32_process_redirected_child2), \
@@ -90,7 +92,8 @@ CONS(FUNC("win32_socket_connect",win32_socket_connect), \
 CONS(FUNC("win32_socket_accept",win32_socket_accept), \
 CONS(FUNC("win32_socket_bind",win32_socket_bind), \
 CONS(FUNC("win32_socket_listen",win32_socket_listen), \
-	NIL))))))))))))))))))))
+CONS(FUNC("win32_getaddrinfo",win32_getaddrinfo), \
+	NIL)))))))))))))))))))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \

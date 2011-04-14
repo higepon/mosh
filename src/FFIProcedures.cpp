@@ -1601,7 +1601,7 @@ Object scheme::objectTopointerEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("object->pointer");
     checkArgumentLength(1);
-    return Object::makePointer((void *)argv);
+    return Object::makePointer((void *)argv[0].val);
 }
 
 Object scheme::pointerToobjectEx(VM* theVM, int argc, const Object* argv)
@@ -1609,5 +1609,5 @@ Object scheme::pointerToobjectEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer->object");
     checkArgumentLength(1);
     argumentAsPointer(0, p0);
-    return *reinterpret_cast<Object *>((void *)p0->pointer());
+    return Object::makeRaw(p0->pointer());
 }

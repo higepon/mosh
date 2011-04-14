@@ -12,6 +12,9 @@
 #include <process.h>
 #include <stddef.h>
 
+#define GC_NO_THREAD_REDIRECTS // we don't need override
+#include <gc.h>
+
 
 #include "aio_win32.h"
 
@@ -208,17 +211,36 @@ win32_iocp_pop(uintptr_t iocp, intptr_t timeout_in,uintptr_t ret_bytestrans, uin
 }
 
 // allocate and free OVERLAPPED. OVERLAPPED may passed to non-GC-managed threads.
+
+typedef struct{
+	OVERLAPPED ovl;
+	void* p;
+} OVPAIR;
+
 void*
 win32_overlapped_alloc(void){
-	return malloc(sizeof(OVERLAPPED)); // FIXME: should be aligned ??
+	OVPAIR* p;
+	p = (OVPAIR *)GC_MALLOC_UNCOLLECTABLE(sizeof(OVPAIR));
+	ZeroMemory(p,sizeof(OVPAIR));
+	return p; // FIXME: should be aligned ??
 }
 
 void
 win32_overlapped_free(void* p){
-	free(p);
+	GC_FREE(p);
 }
 
+void
+win32_overlapped_setmydata(void* p,void* data){
+	OVPAIR* ov = (OVPAIR *)p;
+	ov->p = data;
+}
 
+void*
+win32_overlapped_getmydata(void* p){
+	OVPAIR* ov = (OVPAIR *)p;
+	return (void *)ov->p;
+}
 
 int
 win32_handle_read_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol){
@@ -384,12 +406,13 @@ typedef struct {
 	HANDLE h;
 	HANDLE iocp;
 	uintptr_t key;
+	uintptr_t overlapped;
 } thread_waiter_param;
 
 
 static void
-emit_queue_event(HANDLE iocp,uintptr_t key,intptr_t res){
-	PostQueuedCompletionStatus(iocp,res,key,NULL);
+emit_queue_event(HANDLE iocp,uintptr_t key,intptr_t res,uintptr_t overlapped){
+	PostQueuedCompletionStatus(iocp,res,key,(LPOVERLAPPED)overlapped);
 }
 
 static void
@@ -400,35 +423,38 @@ thread_waiter(void* p){
 	HANDLE h;
 	HANDLE iocp;
 	uintptr_t key;
+	uintptr_t overlapped;
 	h = param->h;
 	iocp = param->iocp;
 	key = param->key;
+	overlapped = param->overlapped;
 	free(param);
 
 	r = WaitForSingleObject(h,INFINITE);
 	if(WAIT_FAILED == r){
 		OSERROR("WaitForSingleObject");
-		emit_queue_event(iocp,key,-1);
+		emit_queue_event(iocp,key,-1,overlapped);
 	}else{
 		GetExitCodeProcess(h,&res);
 		CloseHandle(h);
-		emit_queue_event(iocp,key,res);
+		emit_queue_event(iocp,key,res,overlapped);
 	}
 }
 
 static void
-invoke_thread_waiter(HANDLE h, HANDLE iocp, uintptr_t key){
+invoke_thread_waiter(HANDLE h, HANDLE iocp, uintptr_t key,uintptr_t overlapped){
 	thread_waiter_param* param;
 	param = (thread_waiter_param *)malloc(sizeof(thread_waiter_param));
 	param->h = h;
 	param->iocp = iocp;
 	param->key = key;
+	param->overlapped = overlapped;
 	_beginthread(thread_waiter,0,param);
 }
 
 int
-win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key){
-	invoke_thread_waiter((HANDLE)h,(HANDLE)iocp,key);
+win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key, uintptr_t overlapped){
+	invoke_thread_waiter((HANDLE)h,(HANDLE)iocp,key,overlapped);
 	return 1;
 }
 
@@ -498,8 +524,8 @@ win32_socket_create(int mode,int proto,uintptr_t ret_connectex,uintptr_t ret_acc
 int
 win32_getaddrinfo(wchar_t* name,wchar_t* servicename,uintptr_t ret_addrinfoex,int mode,int proto){
 	int ret;
-	ADDRINFOEX aie;
-	aie.ai_flags = 0;
+	ADDRINFOW aie;
+	ZeroMemory(&aie,sizeof(aie));
 	switch(mode){
 	case 0:
 		aie.ai_family = AF_UNSPEC;
@@ -527,18 +553,18 @@ win32_getaddrinfo(wchar_t* name,wchar_t* servicename,uintptr_t ret_addrinfoex,in
 	}
 
 	
-	ret = GetAddrInfoExW(name,servicename,NS_ALL,NULL,&aie,(PADDRINFOEXW*)ret_addrinfoex,NULL,NULL,NULL,NULL);
+	ret = GetAddrInfoW(name,servicename,&aie,(PADDRINFOW*)ret_addrinfoex);
 	return ret;
 }
 
 void
 win32_addrinfoex_free(uintptr_t aie){
-	FreeAddrInfoEx((ADDRINFOEX *)aie);
+	FreeAddrInfoW((ADDRINFOW *)aie);
 }
 
 void
 win32_addrinfoex_read(uintptr_t aie,uintptr_t* ret_family,uintptr_t* ret_sockaddr,uintptr_t* ret_namelen,uintptr_t* ret_next){
-	ADDRINFOEX *aiep = (ADDRINFOEX *)aie;
+	ADDRINFOW *aiep = (ADDRINFOW *)aie;
 	switch(aiep->ai_family){
 	case AF_INET:
 		*ret_family = 4;
@@ -559,11 +585,24 @@ int
 win32_socket_connect(uintptr_t func,uintptr_t s,uintptr_t saddr,int namelen,uintptr_t overlapped){
 	LPFN_CONNECTEX con = (LPFN_CONNECTEX)func;
 	BOOL b;
+	int err;
+	struct sockaddr_in sin;
+	int ret;
+
+	// FIXME: we need this API...
+	ZeroMemory(&sin,sizeof(sin));
+	sin.sin_family = AF_INET;
+	ret = bind((SOCKET)s,(const struct sockaddr *)&sin,sizeof(sin));
 	b = con((SOCKET)s,(const struct sockaddr *)saddr,namelen,NULL,0,NULL,(OVERLAPPED *)overlapped);
 	if(b){
 		return 1;
 	}else{
-		return 0;
+		err = WSAGetLastError();
+		if(err == ERROR_IO_PENDING){
+			return 1;
+		}else{
+			return 0;
+		}
 	}
 }
 
@@ -590,7 +629,13 @@ win32_socket_accept(uintptr_t func,uintptr_t slisten,uintptr_t saccept,uintptr_t
 
 int
 win32_socket_bind(uintptr_t s,uintptr_t name,int namelen){
-	return bind((SOCKET)s,(const struct sockaddr *)name,namelen);
+	int ret;
+	ret = bind((SOCKET)s,(const struct sockaddr *)name,namelen);
+	if(ret == SOCKET_ERROR){
+		return 0;
+	}else{
+		return 1;
+	}
 }
 
 int
