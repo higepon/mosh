@@ -1,13 +1,9 @@
 #include <winsock2.h>
-#include <ws2tcpip.h>
 #include <MSWSock.h>
+#include <ws2tcpip.h>
 
 #include <windows.h>
 #include <config.h>
-
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
 
 #include <process.h>
 #include <stddef.h>
@@ -17,6 +13,10 @@
 
 
 #include "aio_win32.h"
+
+#ifndef WSAID_ACCEPTEX
+#error Your MinGW/Win32 runtime is too old... Try Mingw-w64 with -m32 option.
+#endif
 
 char* errorpos; // FIXME: for debugging
 
@@ -385,7 +385,7 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 uintptr_t
 win32_create_named_pipe_async(wchar_t* name){
 	HANDLE h;
-	h = CreateNamedPipeW(name,PIPE_ACCESS_DUPLEX|FILE_FLAG_OVERLAPPED,PIPE_WAIT,PIPE_UNLIMITED_INSTANCES|PIPE_REJECT_REMOTE_CLIENTS,4096,4096,0,NULL);
+	h = CreateNamedPipeW(name,PIPE_ACCESS_DUPLEX|FILE_FLAG_OVERLAPPED,PIPE_WAIT,PIPE_UNLIMITED_INSTANCES,4096,4096,0,NULL);
 	if(h == INVALID_HANDLE_VALUE){
 		OSERROR("CreateNamedPipeW");
 		return -1;
