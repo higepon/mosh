@@ -270,11 +270,11 @@ i[[3456]]86|pentium)
           fi
           ;;
        *freebsd*)
-         MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+         MOSH_OPTS="$MOSH_INTEL_OPTS"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *netbsd*)
-         MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+         MOSH_OPTS="$MOSH_INTEL_OPTS"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *mingw*)
@@ -287,7 +287,7 @@ i[[3456]]86|pentium)
 	 ;;
 
         *)
-          MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
+          MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer" # -mfpmath=sse -msse3 -march=$host_cpu
           ;;
         esac
 
