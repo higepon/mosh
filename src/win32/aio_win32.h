@@ -27,6 +27,12 @@ int win32_socket_connect(uintptr_t func,uintptr_t s,uintptr_t saddr,int namelen,
 int win32_socket_accept(uintptr_t func,uintptr_t slisten,uintptr_t saccept,uintptr_t buf,int bufsize,uintptr_t overlapped);
 int win32_socket_bind(uintptr_t s,uintptr_t name,int namelen);
 int win32_socket_listen(uintptr_t s,int l);
+
+// GC related
+void* win32_finalization_handler_get(void);
+void* win32_finalization_handler_create(void* iocp,void* key,void* ptr);
+void win32_finalization_handler_dispose(void* d);
+
 #ifdef __cplusplus
 };
 #endif

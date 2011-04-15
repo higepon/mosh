@@ -213,6 +213,7 @@ win32_iocp_pop(uintptr_t iocp, intptr_t timeout_in,uintptr_t ret_bytestrans, uin
 // allocate and free OVERLAPPED. OVERLAPPED may passed to non-GC-managed threads.
 
 typedef struct{
+    // N.B. should synced with finalization handler
 	OVERLAPPED ovl;
 	void* p;
 } OVPAIR;
@@ -450,6 +451,37 @@ invoke_thread_waiter(HANDLE h, HANDLE iocp, uintptr_t key,uintptr_t overlapped){
 	param->key = key;
 	param->overlapped = overlapped;
 	_beginthread(thread_waiter,0,param);
+}
+
+typedef struct {
+    // N.B. should synced with OVPAIR
+    OVERLAPPED ovl;
+    void* ptr;
+
+    HANDLE iocp;
+    void* key;
+} finalization_handler_data;
+
+static void
+finalizer(void* obj, void* userdata){
+    finalization_handler_data* d=(finalization_handler_data *)userdata;
+    emit_queue_event(d->iocp,(uintptr_t)d->key,0,(uintptr_t)d->ptr);
+}
+
+void*
+win32_finalization_handler_get(void){
+    return finalizer;
+}
+
+void*
+win32_finalization_handler_create(void* iocp, void* key, void* ptr){
+    finalization_handler_data* d;
+    d = (finalization_handler_data *)GC_MALLOC_UNCOLLECTABLE(sizeof(finalization_handler_data));
+    ZeroMemory(&d->ovl,sizeof(OVERLAPPED));
+    d->iocp = (HANDLE)iocp;
+    d->key = key;
+    d->ptr = ptr;
+    return d;
 }
 
 int

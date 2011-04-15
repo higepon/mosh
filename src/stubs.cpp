@@ -30,6 +30,10 @@
 #define HAVE_TERMINAL // this should be done in configure..
 #endif
 
+#ifndef MONA
+#define HAVE_BDWGC_STUBS
+#endif
+
 #ifdef _WIN32
 #define HAVE_AIO_WIN32
 #include "aio_win32.h"
@@ -39,8 +43,9 @@
 #include "mosh_terminal.h"
 #endif
 
-// boehm gc stubs are always available
+#ifdef HAVE_BDWGC_STUBS
 #include "boehmgc-stubs.h"
+#endif 
 
 using namespace scheme;
 
@@ -93,12 +98,19 @@ CONS(FUNC("win32_socket_accept",win32_socket_accept), \
 CONS(FUNC("win32_socket_bind",win32_socket_bind), \
 CONS(FUNC("win32_socket_listen",win32_socket_listen), \
 CONS(FUNC("win32_getaddrinfo",win32_getaddrinfo), \
-	NIL)))))))))))))))))))))))
+CONS(FUNC("win32_finalization_handler_get",win32_finalization_handler_get), \
+CONS(FUNC("win32_finalization_handler_create",win32_finalization_handler_create), \
+	NIL)))))))))))))))))))))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \
+CONS(FUNC("create_weak_vector",create_weak_vector), \
+CONS(FUNC("weak_vector_ref",weak_vector_ref), \
+CONS(FUNC("weak_vector_set",weak_vector_set), \
+CONS(FUNC("register_disappearing_link_wv",register_disappearing_link_wv), \
+CONS(FUNC("register_finalizer",register_finalizer), \
 CONS(FUNC("register_disappearing_link",register_disappearing_link), \
-CONS(FUNC("gcollect",gcollect),NIL)))
+CONS(FUNC("gcollect",gcollect),NIL))))))))
 
 Object
 stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
@@ -106,7 +118,9 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     Object tmp;
 
     tmp = Object::Nil;
+#ifdef HAVE_BDWGC_STUBS
 	tmp = Object::cons(LIBDATA_BOEHMGC_STUBS,tmp);
+#endif
 #ifdef HAVE_TERMINAL
     tmp = Object::cons(LIBDATA_TERMINAL,tmp);
 #endif

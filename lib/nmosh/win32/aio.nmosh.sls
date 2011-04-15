@@ -23,12 +23,17 @@
                  win32_socket_accept
                  win32_socket_bind
                  win32_socket_listen
+
+                 ;; GC related
+                 win32_finalization_handler_alloc_overlapped
+                 win32_register_finalization_event
                  )
          (import (rnrs)
                  (srfi :8)
                  (mosh ffi)
                  (yuni core)
                  (nmosh win32 util)
+                 (nmosh finalizers)
                  (prefix (nmosh stubs aio-win32) stub:))
 
 (define null null-pointer)
@@ -289,5 +294,13 @@
     ((s) (win32_socket_listen/backlog-count s 0))
     ((s l) (win32_socket_listen/backlog-count s l))))
 
+(define* (win32_finalization_handler_alloc_overlapped (iocp win32-handle) key ptr)
+  (stub:win32_finalization_handler_create (handle->pointer iocp)
+                                          key
+                                          ptr))
+
+(define* (win32_register_finalization_event obj overlapped)
+  (define finalizer (make-finalizer (stub:win32_finalization_handler_get)))
+  (register-finalizer obj finalizer overlapped))
 
 )
