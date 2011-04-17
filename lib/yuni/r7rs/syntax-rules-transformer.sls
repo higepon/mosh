@@ -35,7 +35,7 @@
    (lambda (expr rename compare inject)
      (let ((ellipsis-specified? (identifier? (cadr expr)))
            (count 0)
-           (_er-macro-transformer+ (rename 'er-macro-transformer+))
+           ;(_er-macro-transformer+ (rename 'er-macro-transformer+))
            (_lambda (rename 'lambda))      (_let (rename 'let))
            (_begin (rename 'begin))        (_if (rename 'if))
            (_and (rename 'and))            (_or (rename 'or))
@@ -260,16 +260,14 @@
              (list _quote '()))
             (else 
               t))))
-       (list
-        _er-macro-transformer+
-        (list _lambda (list _expr _rename _compare _inject)
-              (cons
+       (list _lambda (list _expr _rename _compare _inject)
+             (cons
                _or
                (append
-                (map
-                 (lambda (clause) (expand-pattern (car clause) (cadr clause)))
-                 forms)
-                (list (list _error "no expansion for"
-                            _expr)))))))))
+                 (map
+                   (lambda (clause) (expand-pattern (car clause) (cadr clause)))
+                   forms)
+                 (list (list _error "no expansion for"
+                             _expr))))))))
 
 )

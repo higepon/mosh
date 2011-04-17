@@ -1,7 +1,7 @@
 (library (yuni r7rs cond-case)
          (export syntax-rules cond case)
          (import 
-           (except (rnrs) cond case else ... => syntax-rules)
+           (except (rnrs) define-syntax cond case else ... => syntax-rules)
            (for (yuni r7rs syntax-rules) expand))
 
 
@@ -144,6 +144,7 @@
        (set! var1 init1)
        ...
        (let () body1 body2 ...)))))
+
 (define-syntax begin
   (syntax-rules ()
     ((begin exp ...)

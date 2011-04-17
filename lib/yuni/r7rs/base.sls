@@ -94,10 +94,12 @@
            ;; include 
            )
          (import
-           (except (rnrs) cond case syntax-rules)
-           (yuni r7rs syntax-rules)
-           (yuni r7rs cond-case)
-           (yuni r7rs blob)
+           (except (rnrs) error cond case syntax-rules define-record-type define-syntax)
+           (for (yuni r7rs syntax-rules) run expand)
+           (for (yuni r7rs cond-case) run expand)
+           (for (yuni r7rs blob) run expand)
+           (for (yuni r7rs define-record-type) run expand)
+           (for (yuni r7rs error) run expand)
            (rnrs r5rs)
            (rnrs mutable-pairs)
            (rnrs mutable-strings)
