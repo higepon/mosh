@@ -5,7 +5,7 @@
 		 (nmosh condition-printer)
 		 (nmosh minidebug)
                  (nmosh global-flags)
-		 (primitives ca-load ca-load/disable-cache set-symbol-value!))
+		 (primitives ca-load DEBUGMODE-ON set-symbol-value!))
 
 (define (startup)
   (set-symbol-value! '%nmosh-failproc enter-debugger)
@@ -28,6 +28,7 @@
     (call-with-port (current-error-port) 
 		    (lambda (p) (minidebug p c trace))))
   ;(display "launching debugger...\n" (current-error-port))
+  (DEBUGMODE-ON)
   (set-symbol-value! '%nmosh-fail-condition c)
   (set-symbol-value! '%nmosh-fail-trace trace)
   (runlib/fallback fallback '((nmosh debugger)) 'debugger))

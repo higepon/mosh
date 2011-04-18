@@ -1,13 +1,19 @@
 (define ERRPORT (current-error-port))
+(define DEBUGGING #f)
 (define (PCK . obj)
   (if %verbose
     (begin 
-      (display "-> " ERRPORT)
-      (for-each (lambda (e)
-		  (display e ERRPORT)
-		  (display " " ERRPORT))
-		obj)
-      (newline ERRPORT))))
+      (if (not DEBUGGING)
+        (begin 
+          (display "-> " ERRPORT)
+          (for-each (lambda (e)
+                      (display e ERRPORT)
+                      (display " " ERRPORT))
+                    obj)
+          (newline ERRPORT))))))
+
+(define (DEBUGMODE-ON)
+  (set! DEBUGGING #t))
 
 ;;------------------------------------------------
 ;; definitions
