@@ -20,7 +20,7 @@ CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS) .BOOT
 ONIG_OBJECTS = $(ONIG_SOURCES:.c=.o)
 INSTFILES    = MOSH.map mona/all-tests.scm
 top_srcdir = "."
-FIRSTDEP = gen
+
 include $(SHAREDIR)/configs/monapi-exe.inc
 
 $(ONIG_OBJECTS) : $(ONIG_DIR)/config.h
