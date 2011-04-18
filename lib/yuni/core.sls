@@ -2,7 +2,6 @@
          (export ~ := 
                  define*
                  lambda*
-                 define-composite
                  let-with let-with*
                  is-a?
                  typeof
@@ -75,12 +74,13 @@
 (define-syntax typeof
   (syntax-rules ()
     ((_ obj)
-     (minitype-typeof obj))))
+     (miniobj-typeof obj))))
 
 (define-syntax is-a?
   (syntax-rules ()
     ((_ obj type)
-     (minitype-predicate obj type))))
+     (eq? type
+          (miniobj-typeof obj)))))
 
 ; make
 (define-syntax make-apply-rule1!
