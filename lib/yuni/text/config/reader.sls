@@ -88,9 +88,64 @@
     (reverse
       (itr 'top '() (string->list str)))))
 
+(define (phase1 x)
+  (define (split-str chr x)
+    (define (itr acc rest)
+      (if (pair? rest)
+        (let ((ch (car rest))
+              (next (cdr rest)))
+          (if (char=? ch chr)
+            (cons (list->string (reverse acc))
+                  (list->string next))
+            (itr (cons ch acc) next)))
+        (cons x '())))
+    (itr '() (string->list x)))
+  (let ((s (string->list x)))
+    (cond
+      ((not (pair? s))
+       ;; An Empty Line..
+       '())
+      ((char=? #\[ (car s))
+       ;; section
+       (let* ((len (string-length x))
+              (entry (substring x 1 (- len 1)))
+              (spr (split-str #\space entry)))
+         (let ((a (car spr))
+               (b (cdr spr)))
+           (if (null? b)
+             (list a)
+             (list a b)))))
+      (else
+        (split-str #\= x)))))
+
 (define (string-list->config l)
-  (let ((lines (map cleanup-line l)))
-    lines))
+  (define (valid? x)
+    (and x
+         (not (null? x))))
+  (define (itr current acc cur rest)
+    (if (pair? rest)
+      (let ((e (car rest))
+            (next (cdr rest)))
+        (define (accum x)
+          (if (null? x)
+            acc
+            (cons x acc)))
+        (cond
+          ((list? e)
+           (if (valid? current)
+             (itr e '() (cons (cons current (list (reverse acc)))
+                               cur)
+                  next)
+             (itr e '() cur next)))
+          ((pair? e)
+           (itr current (accum e) cur next))
+          (else (itr current acc cur next))))
+      (reverse (if (valid? current)
+                 (cons (cons current (list (reverse acc)))
+                       cur)
+                 cur))))
+  (let ((lines (map phase1 (map cleanup-line l))))
+    (itr #f '() '() lines)))
 
 )
                  
