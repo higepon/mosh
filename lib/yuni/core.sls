@@ -170,7 +170,7 @@
     ((_ sym (cur ...) (spec ...) () body ...)
      (lambda (cur ...) 
        (annotate-check sym spec) ...
-       body ...))))
+       (let () body ...)))))
 
 (define-syntax lambda*0
   (syntax-rules ()
