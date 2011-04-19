@@ -9,7 +9,7 @@
 
 (define-miniobj-typeof miniobj-typeof
                        miniobj-minitype-typeof
-                       miniobj-minitype-typeof-error)
+                       (lambda (_) #f))
 
 (define-miniobj-ref miniobj-ref
                     miniobj-minitype-ref

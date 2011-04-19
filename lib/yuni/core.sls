@@ -79,8 +79,8 @@
 (define-syntax is-a?
   (syntax-rules ()
     ((_ obj type)
-     (eq? type
-          (miniobj-typeof obj)))))
+     (and type (eq? type
+                    (miniobj-typeof obj))))))
 
 ; make
 (define-syntax make-apply-rule1!
