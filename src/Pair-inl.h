@@ -73,7 +73,8 @@ inline bool Object::isAnnotatedPair() const
 
 inline Object& Object::sourceInfo() const
 {
-    return toPair()->sourceInfo;
+    static Object ret = Object::False;
+    return ret;
 }
 
 inline Object& Object::first() const
