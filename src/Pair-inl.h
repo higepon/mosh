@@ -71,12 +71,6 @@ inline bool Object::isAnnotatedPair() const
     return isPair() && GC_base((void*)val) && GC_size((void*)val) >= sizeof(AnnotatedPair);
 }
 
-inline Object& Object::sourceInfo() const
-{
-    static Object ret = Object::False;
-    return ret;
-}
-
 inline Object& Object::first() const
 {
     return car();

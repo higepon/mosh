@@ -1146,7 +1146,7 @@ const
 Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s)
 {
     // preserve debug info
-    const Object si = s.isPair() ? s.sourceInfo() : Object::False;
+    const Object si = s.isAnnotatedPair() ? s.toAnnotatedPair()->annotation : Object::False;
     const Object newdbg = (si != Object::False) ? si : dbg;
     Object r;
 

@@ -167,7 +167,6 @@ public:
     HashTable* toHashTable() const;
     Object& car() const;
     Object& cdr() const;
-    Object& sourceInfo() const;
     Object& first() const;
     Object& second() const;
     Object& third() const;
