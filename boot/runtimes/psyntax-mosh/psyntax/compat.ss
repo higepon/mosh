@@ -106,7 +106,7 @@
 ;  (define (annotation-source x) x)
   (define (annotation-expression x)
     (cond
-     [(pair? x)
+     [(annotated-pair? x)
       (cons (car x) (cdr x))]
      [(procedure? x)
       ;; should return copy?

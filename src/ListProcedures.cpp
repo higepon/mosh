@@ -179,8 +179,8 @@ Object scheme::sourceInfoEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("source-info");
     checkArgumentLength(1);
     const Object arg = argv[0];
-    if (arg.isPair()) {
-        return arg.sourceInfo();
+    if (arg.isAnnotatedPair()) {
+        return arg.toAnnotatedPair()->annotation;
     } else if (arg.isClosure()) {
         return arg.toClosure()->sourceInfo;
     } else {
@@ -197,8 +197,8 @@ Object scheme::setSourceInfoDEx(VM* theVM, int argc, const Object* argv)
     const Object sourceInfo = argv[1];
     if (target.isClosure()) {
         target.toClosure()->sourceInfo = sourceInfo;
-    } else if (target.isPair()) {
-        target.toPair()->sourceInfo = sourceInfo;
+    } else if (target.isAnnotatedPair()) {
+        target.toAnnotatedPair()->annotation = sourceInfo;
     } else {
     }
     return target;
