@@ -197,7 +197,7 @@
   (pass1/find-symbol-in-lvars pass1/find-symbol-in-lvars)
   ($label $label)
   ($local-ref $local-ref)
-  (list-transpose+ (lambda ll 
+  (list-transpose+ (lambda ll
                      (define (map1 f l)
                        (if (null? l)
                            l
@@ -694,4 +694,10 @@
   ssl-supported?
 
   file->string
+
+  ;; annotated pair
+  annotated-cons
+  annotated-pair?
+  get-annotation
+  set-annotation!
   )

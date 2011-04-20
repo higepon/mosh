@@ -35,6 +35,10 @@
 #include "scheme.h"
 
 namespace scheme {
+    Object setAnnotationDEx(VM* theVM, int argc, const Object* argv);
+    Object getAnnotationEx(VM* theVM, int argc, const Object* argv);
+    Object annotatedPairPEx(VM* theVM, int argc, const Object* argv);
+    Object annotatedConsEx(VM* theVM, int argc, const Object* argv);
     Object listEx(VM* theVM, int argc, const Object* argv);
     Object listTransposeAddEx(VM* theVM, int argc, const Object* argv);
     Object caaaarEx(VM* theVM, int argc, const Object* argv);
