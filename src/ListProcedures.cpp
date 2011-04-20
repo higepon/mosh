@@ -1203,6 +1203,10 @@ Object scheme::sexpMapEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::setAnnotationDEx(VM* theVM, int argc, const Object* argv)
 {
+    DeclareProcedureName("set-annotation!");
+    checkArgumentLength(2);
+    argumentAsAnnotatedPair(0, p);
+    p->annotation = argv[1];
     return Object::Undef;
 }
 
