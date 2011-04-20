@@ -198,6 +198,15 @@ struct Pair EXTEND_GC
     Object sourceInfo;
 };
 
+struct AnnotatedPair EXTEND_GC
+{
+    AnnotatedPair(Object car, Object cdr, Object annotation) : car(car), cdr(cdr), annotation(annotation) {}
+
+    Object car;
+    Object cdr;
+    Object annotation;
+};
+
 } // namespace scheme
 
 #endif // SCHEME_PAIR_H_

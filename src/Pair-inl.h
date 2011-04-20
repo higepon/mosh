@@ -51,6 +51,11 @@ inline Object Object::cons(Object car, Object cdr, Object sourceInfo /* = Object
     return Object(reinterpret_cast<intptr_t>(new Pair(car, cdr, sourceInfo)));
 }
 
+inline Object Object::makeAnnoatedPair(Object car, Object cdr, Object annotation)
+{
+    return Object(reinterpret_cast<intptr_t>(new AnnotatedPair(car, cdr, annotation)));
+}
+
 inline Object& Object::cdr() const
 {
     return toPair()->cdr;

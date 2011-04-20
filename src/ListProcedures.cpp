@@ -1119,7 +1119,7 @@ Object scheme::listEx(VM* theVM, int argc, const Object* argv)
 const Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s);
 const Object sexp_map(VM* theVM, Object f, Object s);
 const
-Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg) 
+Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg)
 {
     Vector* v = o.toVector();
     const int vLength = v->length();
@@ -1131,7 +1131,7 @@ Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg)
 }
 
 const
-Object sexp_map_for_vector(VM* theVM, Object f, Object o) 
+Object sexp_map_for_vector(VM* theVM, Object f, Object o)
 {
     Vector* v = o.toVector();
     const int vLength = v->length();
@@ -1165,7 +1165,7 @@ Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s)
 
 Object scheme::sexpMapDebugEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("sexp-map/debug"); 
+    DeclareProcedureName("sexp-map/debug");
     checkArgumentLength(3);
     argumentCheckProcedure(1,f);
     const Object dbg = argv[0];
@@ -1193,7 +1193,7 @@ Object sexp_map(VM* theVM, Object f, Object s)
 
 Object scheme::sexpMapEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("sexp-map"); 
+    DeclareProcedureName("sexp-map");
     checkArgumentLength(2);
     argumentCheckProcedure(0,f);
     const Object s = argv[1];
@@ -1218,5 +1218,12 @@ Object scheme::annotatedPairPEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::annotatedConsEx(VM* theVM, int argc, const Object* argv)
 {
+    DeclareProcedureName("annotated-cons");
+    checkArgumentLengthBetween(2, 3);
+    if (argc == 2) {
+        return Object::makeAnnoatedPair(argv[0], argv[1], Object::False);
+    } else {
+        return Object::makeAnnoatedPair(argv[0], argv[1], argv[2]);
+    }
     return Object::Undef;
 }
