@@ -40,8 +40,8 @@
     Process Management Library
 |#
 (library (mosh process)
-  (export (rename (%pipe pipe) (%fork fork) (%waitpid waitpid) (%spawn spawn) (%exec exec)))
-  (import (only (system) %spawn %waitpid %pipe %fork %exec))
+  (export (rename (%pipe pipe) (%fork fork) (%waitpid waitpid) (%spawn spawn) (%exec exec) (%getpid getpid)))
+  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid))
 
   #|
       Function: fork
@@ -125,5 +125,18 @@
       Returns:
 
         Two ports
+  |#
+
+  #|
+      Function: getpid
+
+      Returns the process ID of the current interpreter process.  
+
+      Prototype:
+      > (getpid)
+
+      Returns:
+
+        Process ID as exact integer 
   |#
 )

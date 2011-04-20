@@ -41,6 +41,7 @@ runtest:
 	$(MOSH_TARGET) tests/number.scm
 	$(MOSH_TARGET) tests/cgi.scm
 	$(MOSH_TARGET) tests/shorten.scm
+	$(MOSH_TARGET) tests/process.scm
 	! $(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_bad_regexp.scm 2>/dev/null
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm

@@ -1097,6 +1097,7 @@
     (simple-struct-name interaction sys)
     (%waitpid interaction sys)
     (%spawn interaction sys)
+    (%getpid interaction sys)
     (current-directory interaction mosh)
     (expand-path interaction sys mosh)
     (set-current-directory! interaction mosh)
