@@ -8,5 +8,9 @@
   (test-true (pair? a-pair))
   (test-false (number a-pair))
   (test-eq 1 (car a-pair))
-  (test-eq 2 (cdr a-pair)))
+  (test-eq 2 (cdr a-pair))
+  (test-false (get-annotation a-pair))
+  (set-annotation a-pair 3)
+  (test-eq 3 (get-annotation a-pair)))
+
 (test-results)
