@@ -1209,13 +1209,16 @@ Object scheme::setAnnotationDEx(VM* theVM, int argc, const Object* argv)
 Object scheme::getAnnotationEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-annotation");
+    checkArgumentLength(1);
     argumentAsAnnotatedPair(0, p);
     return p->annotation;
 }
 
 Object scheme::annotatedPairPEx(VM* theVM, int argc, const Object* argv)
 {
-    return Object::Undef;
+    DeclareProcedureName("annotated-pair?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isAnnotatedPair());
 }
 
 Object scheme::annotatedConsEx(VM* theVM, int argc, const Object* argv)
