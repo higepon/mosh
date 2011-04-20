@@ -47,6 +47,10 @@
 #include "boehmgc-stubs.h"
 #endif 
 
+#ifdef HAVE_KQUEUE
+#include "bsd/kqueue_stubs.h"
+#endif
+
 using namespace scheme;
 
 #ifdef _WIN32
@@ -112,12 +116,46 @@ CONS(FUNC("register_finalizer",register_finalizer), \
 CONS(FUNC("register_disappearing_link",register_disappearing_link), \
 CONS(FUNC("gcollect",gcollect),NIL))))))))
 
+#ifdef HAVE_KQUEUE
+#define LIBDATA_KQUEUE CONS(SYM("kqueue-stubs"), \
+CONS(FUNC("kq_create",kq_create), \
+CONS(FUNC("kevent_alloc",kevent_alloc), \
+CONS(FUNC("kevent_offset",kevent_offset), \
+CONS(FUNC("kevent_dispose",kevent_dispose), \
+CONS(FUNC("kevent_set_readevent",kevent_set_readevent), \
+CONS(FUNC("kevent_set_writeevent",kevent_set_writeevent), \
+CONS(FUNC("kevent_set_enableuserevent",kevent_set_enableuserevent), \
+CONS(FUNC("kevent_set_triggeruserevent",kevent_set_triggeruserevent), \
+CONS(FUNC("kevent_ident",kevent_ident), \
+CONS(FUNC("kevent_type",kevent_type), \
+CONS(FUNC("kevent_decode_fd",kevent_decode_fd), \
+CONS(FUNC("kevent_exec",kevent_exec), \
+CONS(FUNC("socket_sizeof_sockaddr_storage",socket_sizeof_sockaddr_storage), \
+CONS(FUNC("socket_getaddrinfo",socket_getaddrinfo), \
+CONS(FUNC("socket_create",socket_create), \
+CONS(FUNC("socket_freeaddrinfo",socket_freeaddrinfo), \
+CONS(FUNC("socket_bind",socket_bind), \
+CONS(FUNC("socket_accept",socket_accept), \
+CONS(FUNC("socket_listen",socket_listen), \
+CONS(FUNC("socket_connect",socket_connect), \
+CONS(FUNC("socket_addrinfo_read",socket_addrinfo_read), \
+CONS(FUNC("socket_setnodelay",socket_setnodelay), \
+CONS(FUNC("fd_read",fd_read), \
+CONS(FUNC("fd_write",fd_write), \
+CONS(FUNC("fd_close",fd_close), \
+CONS(FUNC("fd_setnonblock",fd_setnonblock), \
+    NIL)))))))))))))))))))))))))))
+#endif
+
 Object
 stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     //DeclareProcedureName("%get-pffi-feature-set");
     Object tmp;
 
     tmp = Object::Nil;
+#ifdef HAVE_KQUEUE
+	tmp = Object::cons(LIBDATA_KQUEUE,tmp);
+#endif
 #ifdef HAVE_BDWGC_STUBS
 	tmp = Object::cons(LIBDATA_BOEHMGC_STUBS,tmp);
 #endif

@@ -194,6 +194,10 @@ if MINGW32
 MOSH_CORE_SRCS += src/win32/process.c src/win32/process_stub.cpp
 endif
 
+if KQUEUE
+MOSH_CORE_SRCS += src/bsd/kqueue_stubs.c
+endif
+
 noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 
 # mosh

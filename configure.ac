@@ -348,6 +348,21 @@ case "$host_os" in
 esac
 AM_CONDITIONAL(MINGW32, test x$mingw32 = xtrue)
 
+AC_MSG_CHECKING([whether to enable kqueue support])
+case "$host_os" in
+freebsd*)
+        kqueuestub=true
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([HAVE_KQUEUE], 1, [BSD Kqueue support.])
+
+	;;
+*)
+        kqueuestub=false
+        AC_MSG_RESULT([no])
+	;;
+esac
+AM_CONDITIONAL(KQUEUE, test x$kqueuestub = xtrue)
+
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)
 

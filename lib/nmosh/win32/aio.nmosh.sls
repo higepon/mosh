@@ -32,6 +32,7 @@
                  (srfi :8)
                  (mosh ffi)
                  (yuni core)
+                 (nmosh ffi box)
                  (nmosh win32 util)
                  (nmosh finalizers)
                  (prefix (nmosh stubs aio-win32) stub:))
@@ -42,35 +43,6 @@
        (= 0 (pointer->integer x))))
 
 (define* win32-handle (pointer))
-
-;; FIXME: use sizeof ptr
-(define (make-box-64) (make-bytevector 8))
-(define (box-64-ref x)
-  (bytevector-u64-native-ref x 0))
-(define (box-64-ref-signed x)
-  (bytevector-s64-native-ref x 0))
-
-(define (make-box-32) (make-bytevector 4))
-(define (box-32-ref x)
-  (bytevector-u32-native-ref x 0))
-(define (box-32-ref-signed x)
-  (bytevector-s32-native-ref x 0))
-
-;; We need run-time dispatch here. Because nmosh64 may execute nmosh32 cached 
-;; code..
-(define-syntax sel32/64
-  (syntax-rules ()
-    ((_ q p32 p64)
-     (case q
-       ((4) p32)
-       ((8) p64)))))
-(define make-ptr-box (sel32/64 size-of-void* make-box-32 make-box-64))
-(define ptr-box-ref
-  (let ((ref (sel32/64 size-of-void* box-32-ref box-64-ref)))
-    (lambda (x) (integer->pointer (ref x)))))
-
-(define make-int-box (sel32/64 size-of-int make-box-32 make-box-64))
-(define int-box-ref (sel32/64 size-of-int box-32-ref-signed box-64-ref-signed))
 
 (define (split64 x)
   (values 
