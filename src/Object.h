@@ -39,6 +39,7 @@
 namespace scheme {
 
 struct Pair;
+struct AnnotatedPair;
 class Vector;
 class String;
 class Closure;
@@ -148,6 +149,7 @@ public:
     bool isProcedure() const;
     bool isHashTable() const;
     bool isPair() const;
+    bool isAnnotatedPair() const;
     bool isList() const;
     bool operator==(Object o) const;
     bool operator!=(Object o) const;
@@ -160,6 +162,7 @@ public:
     int toInstruction() const;
     int toCompilerInstruction() const;
     Pair* toPair() const;
+    AnnotatedPair* toAnnotatedPair() const;
     Object* toObjectPointer() const;
     HashTable* toHashTable() const;
     Object& car() const;

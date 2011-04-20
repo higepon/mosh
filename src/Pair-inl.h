@@ -66,6 +66,11 @@ inline bool Object::isPair() const
     return isRawPointer() && ((toPair()->car.val & 0x03) != 0x03);
 }
 
+inline bool Object::isAnnotatedPair() const
+{
+    return isPair() && GC_base((void*)val) && GC_size((void*)val) >= sizeof(AnnotatedPair);
+}
+
 inline Object& Object::sourceInfo() const
 {
     return toPair()->sourceInfo;
