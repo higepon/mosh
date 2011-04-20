@@ -97,7 +97,7 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
 
     REPL:
         Fixed Issue 199 reported by amoebae:
-            Segumentation fault on printing circular object.
+            Segmentation fault on printing circular object.
 
     (rnrs base): nmosh version
         Fixed Issue 201 reported by mrc.mgg:
