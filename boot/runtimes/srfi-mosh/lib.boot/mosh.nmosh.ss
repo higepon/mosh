@@ -133,12 +133,16 @@
       symbol-value
       write/ss
       set-symbol-value!
-      
+
       prefix-list ;; nmosh-utils
+      annotated-cons
+      annotated-pair?
+      get-annotation
+      set-annotation!
       ) run expand)
-    (for (only (rnrs base) 
+    (for (only (rnrs base)
                list->string string->list reverse pair? char=? if and
-               map car cadr caddr - lambda let* syntax-rules define-syntax 
+               map car cadr caddr - lambda let* syntax-rules define-syntax
                cdr list string-append define) expand run)
     (only (nmosh condition-printer) condition-printer)
     )
@@ -154,13 +158,13 @@
    (syntax-rules () ;from psyntax/expander
      ((_ expr)
       (let* ([start (time-usage)]
-	     [result ((lambda () expr))]
-	     [end (time-usage)]
-	     [used (map - end start)]
-	     [real (car used)]
-	     [user (cadr used)]
-	     [sys (caddr used)])
-	(format #t "~%;;~a real ~a user ~a sys~%~!" real user sys)
-	result))))
-  
+         [result ((lambda () expr))]
+         [end (time-usage)]
+         [used (map - end start)]
+         [real (car used)]
+         [user (cadr used)]
+         [sys (caddr used)])
+    (format #t "~%;;~a real ~a user ~a sys~%~!" real user sys)
+    result))))
+
   )

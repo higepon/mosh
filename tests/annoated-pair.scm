@@ -3,11 +3,6 @@
         (mosh control)
         (mosh test))
 
-(define annotated-cons cons)
-(define annotated-pair? pair?)
-(define (get-annotation x) #f)
-(define (set-annotation! x y) x)
-
 (let1 a-pair (annotated-cons 1 2)
   (test-true (annotated-pair? a-pair))
   (test-true (pair? a-pair))

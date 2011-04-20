@@ -1203,19 +1203,20 @@ Object scheme::sexpMapEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::setAnnotationDEx(VM* theVM, int argc, const Object* argv)
 {
+    return Object::Undef;
 }
 
 Object scheme::getAnnotationEx(VM* theVM, int argc, const Object* argv)
 {
-
+    return Object::Undef;
 }
 
 Object scheme::annotatedPairPEx(VM* theVM, int argc, const Object* argv)
 {
-
+    return Object::Undef;
 }
 
 Object scheme::annotatedConsEx(VM* theVM, int argc, const Object* argv)
 {
-
+    return Object::Undef;
 }
