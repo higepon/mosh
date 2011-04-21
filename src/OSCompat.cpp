@@ -929,7 +929,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     }
     isErrorOccured = true;
     return UC("");
-#elif defined(__linux__) || defined(__CYGWIN__)
+#elif defined(__linux__) || defined(__CYGWIN__) || defined(__NetBSD__)
     char path[4096];
     int ret = readlink("/proc/self/exe", path, sizeof(path));
     if (ret != -1) {

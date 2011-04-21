@@ -38,6 +38,7 @@ Changes:
 
     New platform support:
         MonaOS
+        NetBSD i386/amd64 -- gcc 4.4 or later required.
 
     Deprecated platform:
         MinGW32+MSYS using "./configure" -- Use CMake instead.
