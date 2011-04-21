@@ -1,0 +1,57 @@
+(library (test checker)
+         (export check-status)
+         (import (rnrs)
+                 (mosh)
+                 (mosh test))
+         (define (check-trace-entry e)
+           (or
+             (and (list? e)
+                  (<= 2 (length e))
+                  (begin
+                    (test-true #t)
+                    #t))
+             (begin (test-results)
+                    (exit -1))))
+         (define (proc-name e)
+           (and (eq? (cadr e) '*proc*)
+                (or (and (pair? (caddr e)) (car (caddr e))))))
+         (define (cproc-name e)
+           (and (eq? (cadr e) '*cproc*)
+                (caddr e)))
+
+         (define (check-trace t)
+           (if (and (list? t) (<= 2 (length t)))
+             (let ((b? (cadr t))
+                   (a? (caddr t))
+                   (sys-display? (cadddr t)))
+               (for-each check-trace-entry (list b? a? sys-display?))
+               (let ((b? (proc-name b?))
+                     (a? (proc-name a?))
+                     (sys-display? (cproc-name sys-display?)))
+                 (if (and (eq? '~a a?) (eq? '~b b?))
+                   (test-equal 'sys-display sys-display?)
+                   (check-trace (cdr t)))))
+             #f))
+         (define (check-status condition trace)
+           ;(write/ss trace)
+           ;(condition-printer condition (current-error-port))
+           (check-trace trace)
+           (test-true (assertion-violation? condition))
+           (test-equal "textual-output-port required, but got 3"
+                       (condition-message condition))
+           (test-results)
+           (exit 0)))
+
+
+(library (nmosh debugger)
+         (export debugger)
+         (import (rnrs)
+                 (test checker)
+                 (primitives set-symbol-value! %nmosh-failproc))
+
+
+         (define (debugger) ;; this shouldn't be called
+           (display "FATAL ERROR..\n")
+           (assertion-violation 'nmosh-debugger-test
+                                "fail"))
+         (set-symbol-value! '%nmosh-failproc check-status))
