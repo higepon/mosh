@@ -66,7 +66,13 @@
     regexp?
     write/ss
     symbol-value
-    set-symbol-value!)
+    set-symbol-value!
+    
+    annotated-cons
+    annotated-pair?
+    get-annotation
+    set-annotation!
+    )
   (import
     (for (primitives
       include
