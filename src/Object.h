@@ -181,6 +181,7 @@ public:
     static Object makeGloc(Object value);
     static Object makeSocket(const Socket* socket);
     static Object* makeObjectArray(int size);
+    static Object* makeObjectArrayLocal(int size);
     static Object makeFixnum(fixedint n);
     static Object makeBignum(signed long int n);
     static Object makeBignum(Bignum* b);
