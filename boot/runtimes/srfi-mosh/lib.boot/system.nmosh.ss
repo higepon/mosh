@@ -105,6 +105,7 @@
     microseconds
     local-tz-offset
     call-process
+    %getpid
     mosh-cache-dir
     file->string
     file->list
@@ -221,6 +222,7 @@
       microseconds
       local-tz-offset
       call-process
+      %getpid
       mosh-cache-dir
       file->string
       file->list

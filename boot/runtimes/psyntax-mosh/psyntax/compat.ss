@@ -97,16 +97,27 @@
 
 
   ;; defined for mosh
+  ;;; - source is a pair of file-name x char-position
+  ;;; - stripped is an s-expression with no annotations
+  ;;; - expression is a list/vector/id/whathaveyou that 
+  ;;;   may contain further annotations.
   (define read-annotated read)
-;  (define (annotation-stripped x) (set-source-info! x #f))
-  (define (annotation-stripped x) (annotation-expression x)) ;; what is difference between annotation-stripped and annotation-expression?
-  (define (annotation? x) (source-info x))
-;  (define (annotation? x) #f)
-  (define (annotation-source x) (source-info x))
-;  (define (annotation-source x) x)
-  (define (annotation-expression x)
+
+  (define (annotation-stripped x)
     (cond
      [(pair? x)
+      (cons (annotation-stripped (car x)) (annotation-stripped (cdr x)))]
+     [(procedure? x)
+      (set-source-info! x #f)]
+     [else x]))
+
+  (define (annotation? x) (or (and (annotated-pair? x) (source-info x) ) (and (procedure? x) (source-info x))))
+
+  (define (annotation-source x) (source-info x))
+
+  (define (annotation-expression x)
+    (cond
+     [(annotated-pair? x)
       (cons (car x) (cdr x))]
      [(procedure? x)
       ;; should return copy?

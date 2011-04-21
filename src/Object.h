@@ -39,6 +39,7 @@
 namespace scheme {
 
 struct Pair;
+struct AnnotatedPair;
 class Vector;
 class String;
 class Closure;
@@ -148,6 +149,7 @@ public:
     bool isProcedure() const;
     bool isHashTable() const;
     bool isPair() const;
+    bool isAnnotatedPair() const;
     bool isList() const;
     bool operator==(Object o) const;
     bool operator!=(Object o) const;
@@ -160,11 +162,11 @@ public:
     int toInstruction() const;
     int toCompilerInstruction() const;
     Pair* toPair() const;
+    AnnotatedPair* toAnnotatedPair() const;
     Object* toObjectPointer() const;
     HashTable* toHashTable() const;
     Object& car() const;
     Object& cdr() const;
-    Object& sourceInfo() const;
     Object& first() const;
     Object& second() const;
     Object& third() const;
@@ -192,7 +194,8 @@ public:
     static Object makeCompilerInstruction(int n);
     static Object makeChar(ucs4char ch);
     static Object makeConst(int n);
-    static Object cons(Object car, Object cdr, Object sourceInfo = Object::False);
+    static Object cons(Object car, Object cdr);
+    static Object makeAnnoatedPair(Object car, Object cdr, Object annotation);
     static Object makeVector(int n, Object o = Object::Undef);
     static Object makeVector(int n, Object* objects);
     static Object makeVector(Object pair);

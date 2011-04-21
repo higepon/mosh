@@ -16,6 +16,7 @@ runtest:
 	$(MOSH_TARGET) --loadpath=".:./tests/mylib" tests/use-foo.scm # test : separated loadpath
 	$(MOSH_TARGET) -5 src/all-tests.scm
 	$(MOSH_TARGET) tests/misc.scm
+	$(MOSH_TARGET) tests/annotated-pair.scm
 	$(MOSH_TARGET) tests/template.scm
 	$(MOSH_TARGET) tests/testing.scm
 	$(MOSH_TARGET) tests/comment.scm
@@ -41,6 +42,7 @@ runtest:
 	$(MOSH_TARGET) tests/number.scm
 	$(MOSH_TARGET) tests/cgi.scm
 	$(MOSH_TARGET) tests/shorten.scm
+	$(MOSH_TARGET) tests/process.scm
 	! $(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_bad_regexp.scm 2>/dev/null
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm

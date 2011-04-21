@@ -41,14 +41,14 @@ inline Object& Object::car() const
     return toPair()->car;
 }
 
-inline Object Object::cons(Object car, Object cdr, Object sourceInfo /* = Object::False */)
+inline Object Object::cons(Object car, Object cdr)
 {
-// this makes Mosh very slow.
-// don't use this.
-//     if (sourceInfo.isFalse() && car.isPair()) {
-//         sourceInfo = car.sourceInfo();
-//     }
-    return Object(reinterpret_cast<intptr_t>(new Pair(car, cdr, sourceInfo)));
+    return Object(reinterpret_cast<intptr_t>(new(GC) Pair(car, cdr)));
+}
+
+inline Object Object::makeAnnoatedPair(Object car, Object cdr, Object annotation)
+{
+    return Object(reinterpret_cast<intptr_t>(new(GC) AnnotatedPair(car, cdr, annotation)));
 }
 
 inline Object& Object::cdr() const
@@ -61,9 +61,12 @@ inline bool Object::isPair() const
     return isRawPointer() && ((toPair()->car.val & 0x03) != 0x03);
 }
 
-inline Object& Object::sourceInfo() const
+inline bool Object::isAnnotatedPair() const
 {
-    return toPair()->sourceInfo;
+    // if (isPair()) {
+    //     printf("GC_size((void*)val) =%d  sizeof(AnnotatedPair) =%d %d:%d", GC_size((void*)val), sizeof(AnnotatedPair), GC_size(GC_MALLOC(sizeof(struct Pair))), GC_size(new(GC) AnnotatedPair(Object::False, Object::False, Object::False)));
+    // }
+    return isPair() && GC_base((void*)val) && GC_size((void*)val) > sizeof(AnnotatedPair);
 }
 
 inline Object& Object::first() const

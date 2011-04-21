@@ -34,9 +34,9 @@
 
 namespace scheme {
 
-struct Pair EXTEND_GC
+struct Pair
 {
-    Pair(Object car, Object cdr, Object sourceInfo = Object::False) : car(car), cdr(cdr), sourceInfo(sourceInfo) {}
+    Pair(Object car, Object cdr) : car(car), cdr(cdr)  {}
     static int length(Object obj)
     {
         if (!obj.isPair()) return 0;
@@ -49,6 +49,8 @@ struct Pair EXTEND_GC
         }
         return len;
     }
+
+    ~Pair() {}
 
     static bool isList(Object p)
     {
@@ -195,7 +197,15 @@ struct Pair EXTEND_GC
 
     Object car;
     Object cdr;
-    Object sourceInfo;
+};
+
+struct AnnotatedPair
+{
+    AnnotatedPair(Object car, Object cdr, Object annotation) : car(car), cdr(cdr), annotation(annotation) {}
+
+    Object car;
+    Object cdr;
+    Object annotation;
 };
 
 } // namespace scheme

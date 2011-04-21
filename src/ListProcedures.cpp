@@ -179,8 +179,8 @@ Object scheme::sourceInfoEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("source-info");
     checkArgumentLength(1);
     const Object arg = argv[0];
-    if (arg.isPair()) {
-        return arg.sourceInfo();
+    if (arg.isAnnotatedPair()) {
+        return arg.toAnnotatedPair()->annotation;
     } else if (arg.isClosure()) {
         return arg.toClosure()->sourceInfo;
     } else {
@@ -197,8 +197,8 @@ Object scheme::setSourceInfoDEx(VM* theVM, int argc, const Object* argv)
     const Object sourceInfo = argv[1];
     if (target.isClosure()) {
         target.toClosure()->sourceInfo = sourceInfo;
-    } else if (target.isPair()) {
-        target.toPair()->sourceInfo = sourceInfo;
+    } else if (target.isAnnotatedPair()) {
+        target.toAnnotatedPair()->annotation = sourceInfo;
     } else {
     }
     return target;
@@ -1119,7 +1119,7 @@ Object scheme::listEx(VM* theVM, int argc, const Object* argv)
 const Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s);
 const Object sexp_map(VM* theVM, Object f, Object s);
 const
-Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg) 
+Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg)
 {
     Vector* v = o.toVector();
     const int vLength = v->length();
@@ -1131,7 +1131,7 @@ Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg)
 }
 
 const
-Object sexp_map_for_vector(VM* theVM, Object f, Object o) 
+Object sexp_map_for_vector(VM* theVM, Object f, Object o)
 {
     Vector* v = o.toVector();
     const int vLength = v->length();
@@ -1146,7 +1146,7 @@ const
 Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s)
 {
     // preserve debug info
-    const Object si = s.isPair() ? s.sourceInfo() : Object::False;
+    const Object si = s.isAnnotatedPair() ? s.toAnnotatedPair()->annotation : Object::False;
     const Object newdbg = (si != Object::False) ? si : dbg;
     Object r;
 
@@ -1165,7 +1165,7 @@ Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s)
 
 Object scheme::sexpMapDebugEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("sexp-map/debug"); 
+    DeclareProcedureName("sexp-map/debug");
     checkArgumentLength(3);
     argumentCheckProcedure(1,f);
     const Object dbg = argv[0];
@@ -1193,10 +1193,46 @@ Object sexp_map(VM* theVM, Object f, Object s)
 
 Object scheme::sexpMapEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("sexp-map"); 
+    DeclareProcedureName("sexp-map");
     checkArgumentLength(2);
     argumentCheckProcedure(0,f);
     const Object s = argv[1];
     return sexp_map(theVM,f,s);
 
+}
+
+Object scheme::setAnnotationDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("set-annotation!");
+    checkArgumentLength(2);
+    argumentAsAnnotatedPair(0, p);
+    p->annotation = argv[1];
+    return Object::Undef;
+}
+
+Object scheme::getAnnotationEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-annotation");
+    checkArgumentLength(1);
+    argumentAsAnnotatedPair(0, p);
+    return p->annotation;
+}
+
+Object scheme::annotatedPairPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("annotated-pair?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isAnnotatedPair());
+}
+
+Object scheme::annotatedConsEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("annotated-cons");
+    checkArgumentLengthBetween(2, 3);
+    if (argc == 2) {
+        return Object::makeAnnoatedPair(argv[0], argv[1], Object::False);
+    } else {
+        return Object::makeAnnoatedPair(argv[0], argv[1], argv[2]);
+    }
+    return Object::Undef;
 }

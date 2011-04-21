@@ -228,6 +228,11 @@ inline Pair* Object::toPair() const
     return reinterpret_cast<Pair*>(val);
 }
 
+inline AnnotatedPair* Object::toAnnotatedPair() const
+{
+    return reinterpret_cast<AnnotatedPair*>(val);
+}
+
 inline Object Object::makeObjectPointer(Object* p)
 {
 #ifdef DEBUG_VERSION
