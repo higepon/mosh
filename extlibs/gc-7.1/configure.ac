@@ -47,6 +47,9 @@ gc_cflags="${gc_cflags} -fomit-frame-pointer -DUSE_I686_PREFETCH"
 ##AC_DEFINE(DONT_ADD_BYTE_AT_END) ## N.B. gc-7.1 has bug about this. Use patch by Hans Boehm
 AC_DEFINE(LARGE_CONFIG)
 AC_DEFINE(NO_CLOCK)
+
+## DONT_ADD_BYTE_AT_END is required to distinguish annotated pair and normal pair. See isAnnotatedPair.
+AC_DEFINE(DONT_ADD_BYTE_AT_END)
 ## Mosh end
 
 GC_CFLAGS=${gc_cflags}

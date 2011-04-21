@@ -193,7 +193,7 @@ public:
     static Object makeCompilerInstruction(int n);
     static Object makeChar(ucs4char ch);
     static Object makeConst(int n);
-    static Object cons(Object car, Object cdr, Object sourceInfo = Object::False);
+    static Object cons(Object car, Object cdr);
     static Object makeAnnoatedPair(Object car, Object cdr, Object annotation);
     static Object makeVector(int n, Object o = Object::Undef);
     static Object makeVector(int n, Object* objects);
