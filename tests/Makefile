@@ -45,6 +45,8 @@ runtest:
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm
 	! $(MOSH_TARGET) tests/error-with-circular.scm 2>/dev/null
+	$(MOSH_TARGET) tests/process.scm
+	$(MOSH_TARGET) tests/annotated-pair.scm
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/tests/ffi.scm)
@@ -58,7 +60,5 @@ runtest-mosh:
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
 
 runtest-nmosh:
-	$(MOSH_TARGET) tests/process.scm
-	$(MOSH_TARGET) tests/annotated-pair.scm
 	$(MOSH_TARGET) tests/nmosh.scm
 	$(MOSH_TARGET) tests/nrepl.scm
