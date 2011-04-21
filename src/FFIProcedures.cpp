@@ -753,7 +753,7 @@ static float callStubFloat(Pointer* func, CStack* cstack)
             "jmp 1b\n"
             "2:   \n"
             "call *%%rax \n"
-#if !defined(__APPLE__)&&!defined(__FreeBSD__)&&!defined(__clang__)!&&defined(__NetBSD__)
+#if !defined(__APPLE__)&&!defined(__FreeBSD__)&&!defined(__clang__)&&!defined(__NetBSD__)
             "movq %%xmm0, %%rax \n"
 #else
             "movd %%xmm0, %%rax \n" /* Apple's assembler doesn't support that movq*/
