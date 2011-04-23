@@ -33,6 +33,10 @@ void* win32_finalization_handler_get(void);
 void* win32_finalization_handler_create(void* iocp,void* key,void* ptr);
 void win32_finalization_handler_dispose(void* d);
 
+
+// GUI related (subset)
+int win32_messagebox(wchar_t* caption,wchar_t* msg,int dlgtype,int icontype);
+
 #ifdef __cplusplus
 };
 #endif

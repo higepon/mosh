@@ -674,3 +674,40 @@ int
 win32_socket_listen(uintptr_t s,int l){
 	return listen((SOCKET)s,(l == 0)?SOMAXCONN:l);
 }
+
+/* simple GUI elements */
+
+// DLGTYPE: 0:OK 1: YESNO 2: YESNOCANCEL
+// ICONTYPE: 0:OK(INFO), 1:OK(WARN), 2:OK(ERR) 
+int
+win32_messagebox(wchar_t* caption,wchar_t* msg,int dlgtype,int icontype){
+	unsigned int buttontype;
+	unsigned int msgtype;
+
+	switch(dlgtype){
+	case 0:
+	default:
+		buttontype = MB_OK;
+		break;
+	case 1:
+		buttontype = MB_YESNO;
+		break;
+	case 2:
+		buttontype = MB_YESNOCANCEL;
+		break;
+	}
+	switch(icontype){
+	default:
+	case 0:
+		msgtype = MB_ICONINFORMATION;
+		break;
+	case 1:
+		msgtype = MB_ICONWARNING;
+		break;
+	case 2:
+		msgtype = MB_ICONHAND;
+		break;
+	}
+
+	return MessageBoxW(NULL,msg,caption,buttontype|msgtype);
+}
