@@ -1,0 +1,41 @@
+(import (rnrs load)
+        (nmosh process)
+        (srfi :19)
+        (srfi :48)
+        (except (mosh) time format)
+        (yuni util files)
+        (rnrs))
+
+(define files (file->sexp-list "testfiles"))
+
+(define (run-nmosh file)
+  (let ((p (process-launch (path-append (mosh-executable-path) "nmosh.exe")
+                           #f
+                           (list file)
+                           #f #f #f)))
+    (process-wait p)
+    (process-result p)))
+
+(define (time-report start end)
+  (let ((dif (time-difference end start)))
+    (let ((n (time-nanosecond dif))
+          (s (time-second dif)))
+      (format "(~a msec)" (* 1000.0 (+ s (/ n 1000 1000 1000)))))))
+
+(define (testaudit file)
+  (unless (file-exists? file)
+    (format #t "file: ~a not found!!\n" file)
+    (exit -1)))
+
+(define (runtest file)
+  (define ret)
+  (define start)
+  (define end)
+  (format #t "======= run ~a\n" file)
+  (set! start (current-time))
+  (set! ret (run-nmosh file))
+  (set! end (current-time))
+  (format #t "======= done ~a(~a) ~a\n" file ret (time-report start end)))
+
+(for-each testaudit files)
+(for-each runtest files)
