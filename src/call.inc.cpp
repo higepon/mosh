@@ -32,38 +32,29 @@
             if (ac_.isCProcedure()) {
                 COUNT_CALL(ac_);
                 cl_ = ac_;
+                // applyEx is just used for marking
+                // We convert the apply request to a call request.
                 if (ac_.toCProcedure()->proc == applyEx) {
-                    const int argc = operand.toFixnum();
+                    int argc = operand.toFixnum();
                     Object* argv = sp_ - argc;
-                    Object argsAsList = Object::Nil;
-                    // for (int i = 0; i < argc; i++) {
-                    //     VM_LOG2("[~a]=~a\n", Object::makeFixnum(i), argv[i]);
-                    // }
-                    for (int i = 1; i < argc; i++) {
-                        if (i == argc - 1) {
-// todo
-//                            argumentCheckList(i, lastPair);
-                            argsAsList = Pair::appendD(argsAsList, argv[i]);
-                        } else {
-                            argsAsList = Pair::appendD(argsAsList, Pair::list1(argv[i]));
-                        }
-                    }
                     sp_ = sp_ - argc;
                     ac_ = argv[0];
-                    if (!ac_.isProcedure()) {
-                        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                    }
-                    for (int i = 0; ; i++) {
-                        if (argsAsList.isNil()) {
-//                            printf("CALL %d %s %s:%d\n", i, __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                            operand = Object::makeFixnum(i);
-                            goto call_entry;
+                    // (apply proc arg1 arg2 ... argsAsList)
+                    // push arguments. The last argument is flatten.
+                    for (int i = 1; i < argc; i++) {
+                        if (i == argc - 1) {
+                            Object lastPair = argv[i];
+                            for (int j = 0;; j++) {
+                                if (lastPair.isNil()) {
+                                    operand = Object::makeFixnum(argc - 2 + j);
+                                    goto call_entry;
+                                } else {
+                                    push(lastPair.car());
+                                    lastPair = lastPair.cdr();
+                                }
+                            }
                         } else {
-//                            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                            push(argsAsList.car());
-//                            VM_LOG1("push~a\n", argsAsList.car());
-//                            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                            argsAsList = argsAsList.cdr();
+                            push(argv[i]);
                         }
                     }
                 } else if (ac_.toCProcedure()->proc == evalEx) {
