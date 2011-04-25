@@ -133,7 +133,7 @@
         (cond
           ((list? e)
            (if (valid? current)
-             (itr e '() (cons (cons current (list (reverse acc)))
+             (itr e '() (cons (cons current (reverse acc))
                                cur)
                   next)
              (itr e '() cur next)))
@@ -141,7 +141,7 @@
            (itr current (accum e) cur next))
           (else (itr current acc cur next))))
       (reverse (if (valid? current)
-                 (cons (cons current (list (reverse acc)))
+                 (cons (cons current (reverse acc))
                        cur)
                  cur))))
   (let ((lines (map phase1 (map cleanup-line l))))
