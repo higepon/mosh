@@ -36,7 +36,7 @@ setup GMP:
            (c:\XXXXXX\mpir-2.x.x\build.vc10\Win32\Release)
 -   MinGW: Download GMP 5.x from http://gmplib.org/ and build it.
 
-2. Configulation
+2. Configuration
 ----------------
 
 TBD.

@@ -66,10 +66,11 @@ Changes:
          (facebook) : Facebook Graph API library (Experimental).
 
     Updated libraries:
+     (mosh process) : Added getpid procedure.
       (mosh socket) : SSL/TLS Socket support with OpenSSL.
           (mosh pp) : Implement R6RS char/string escapes.
          (mosh ffi) : pointer-ref-* and pointer-set-*! now take C-like scaled 
-                      index. See "bug fixes" section below.
+                      index. See "bug fixes" section below. (API change)
 
     Updated 3rd party library:
           (irregex) : 0.8.2+ hg fixes (Alex Shinn's irregex library)
@@ -79,6 +80,9 @@ Changes:
         like alias. Note that SRFI-97 aliases (like (srfi :1)) are supported.
 
 Bug fixes:
+
+    VM:
+        apply didn't preserve tail-context. See Issue 204.
 
     psyntax-mosh:
         Various bug-fixes from Ikarus psyntax. See Issue 134.
@@ -100,6 +104,10 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
     REPL:
         Fixed Issue 199 reported by amoebae:
             Segmentation fault on printing circular object.
+
+    (rnrs base): 
+        Fixed Issue 204:
+            call-with-values didn't preserve tail-context.
 
     (rnrs base): nmosh version
         Fixed Issue 201 reported by mrc.mgg:
@@ -159,7 +167,6 @@ Known Issues:
       See Issue 198.
     - Some C++ compilers are known to miscompile mosh/nmosh. Try CXXFLAGS="-O1"
       if your compiler do not finish compilation.
-      - MSVC 2008 x64 - May not finish compilation when LTO enabled.
       - Clang++ trunk - Sometimes miscompile bytevector related procedures.
       - MSVC 2010 SP1 - Sometimes causes compiler's internal error. Repeat
         compilation if this occur.
