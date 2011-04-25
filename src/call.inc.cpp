@@ -32,8 +32,32 @@
             if (ac_.isCProcedure()) {
                 COUNT_CALL(ac_);
                 cl_ = ac_;
-                if (ac_.toCProcedure()->proc == applyEx ||
-                    ac_.toCProcedure()->proc == evalEx) {
+                // applyEx is just used for marking
+                // We convert the apply request to a call request.
+                if (ac_.toCProcedure()->proc == applyEx) {
+                    int argc = operand.toFixnum();
+                    Object* argv = sp_ - argc;
+                    sp_ = sp_ - argc;
+                    ac_ = argv[0];
+                    // (apply proc arg1 arg2 ... argsAsList)
+                    // push arguments. The last argument is flatten.
+                    for (int i = 1; i < argc; i++) {
+                        if (i == argc - 1) {
+                            Object lastPair = argv[i];
+                            for (int j = 0;; j++) {
+                                if (lastPair.isNil()) {
+                                    operand = Object::makeFixnum(argc - 2 + j);
+                                    goto call_entry;
+                                } else {
+                                    push(lastPair.car());
+                                    lastPair = lastPair.cdr();
+                                }
+                            }
+                        } else {
+                            push(argv[i]);
+                        }
+                    }
+                } else if (ac_.toCProcedure()->proc == evalEx) {
                     // don't share retCode with others.
                     // because apply's arguments length is not constant.
                     Object* const retCode = Object::makeObjectArray(2);

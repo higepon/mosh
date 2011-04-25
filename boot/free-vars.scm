@@ -696,7 +696,7 @@
   file->string
 
   ;; annotated pair
-  annotated-cons
+  (annotated-cons cons)
   annotated-pair?
   get-annotation
   set-annotation!

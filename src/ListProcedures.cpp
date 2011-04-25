@@ -200,6 +200,10 @@ Object scheme::setSourceInfoDEx(VM* theVM, int argc, const Object* argv)
     } else if (target.isAnnotatedPair()) {
         target.toAnnotatedPair()->annotation = sourceInfo;
     } else {
+        // callAssertionViolationAfter(theVM,
+        //                             procedureName,
+        //                             "unable to set",
+        //                             L2(argv[0], argv[1]));
     }
     return target;
 }

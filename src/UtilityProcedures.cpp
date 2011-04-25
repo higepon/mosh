@@ -631,21 +631,7 @@ Object scheme::evalCompiledEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::applyEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("apply");
-    checkArgumentLengthAtLeast(2);
-
-    argumentCheckProcedure(0, proc);
-
-    Object argsAsList = Object::Nil;
-    for (int i = 1; i < argc; i++) {
-        if (i == argc - 1) {
-            argumentCheckList(i, lastPair);
-            argsAsList = Pair::appendD(argsAsList, lastPair);
-        } else {
-            argsAsList = Pair::appendD(argsAsList, Pair::list1(argv[i]));
-        }
-    }
-    theVM->applyClosure(proc, argsAsList);
+    MOSH_FATAL("you should not call apply directory");
     return Object::Undef;
 }
 

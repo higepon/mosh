@@ -283,13 +283,6 @@ void VM::initializeDynamicCode()
     trigger4Code_->push(Object::makeFixnum(0));
     trigger4Code_->push(Object::makeRaw(Instruction::HALT));
 
-    applyClosureCode_ = new Code(5);
-    applyClosureCode_->push(Object::makeRaw(Instruction::CALL));
-    applyClosureCode_->push(Object::makeFixnum(0));
-    applyClosureCode_->push(Object::makeRaw(Instruction::RETURN));
-    applyClosureCode_->push(Object::makeFixnum(0));
-    applyClosureCode_->push(Object::makeRaw(Instruction::HALT));
-
     callClosureByNameCode_ = new Code(10);
     callClosureByNameCode_->push(Object::makeRaw(Instruction::FRAME));
     callClosureByNameCode_->push(Object::makeFixnum(8));
@@ -579,18 +572,6 @@ Object VM::setAfterTrigger4(Object closure, Object arg1, Object arg2, Object arg
     pc_[4]= arg2;
     pc_[1]= arg1;
     return ac_;
-}
-
-
-void VM::applyClosure(Object closure, Object args)
-{
-    applyClosureCode_->set(1, Object::makeFixnum(Pair::length(args)));
-    makeCallFrame(pc_);
-    for (Object obj = args; !obj.isNil(); obj = obj.cdr()) {
-        push(obj.car());
-    }
-    ac_ = closure;
-    pc_ = getDirectThreadedCode(applyClosureCode_->code(), applyClosureCode_->size());
 }
 
 // we need to save registers.

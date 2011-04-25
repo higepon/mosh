@@ -66,6 +66,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         CASE(CALL)
         {
             operand = fetchOperand();
+        call_entry:
             #include "call.inc.cpp"
             NEXT;
         }
