@@ -21,11 +21,13 @@
            socket_connect
            socket_accept
            socket_addrinfo_read
+           socket_setnodelay
 
            ;; posix fd
            fd_read
            fd_write
-           fd_close)
+           fd_close
+           fd_setnonblock)
          (import (rnrs)
                  (yuni core)
                  (mosh ffi)
@@ -234,6 +236,9 @@
         (if (null-pointer? addr) #f (make-inetname addr len))
         (if (null-pointer? next) #f (pointer->addrinfo next))))))
 
+(define* (socket_setnodelay (fd))
+  (stub:socket_setnodelay (fd->int fd)))
+
 (define* (fd_read (fd) buf len)
   (let ((r (stub:fd_read (fd->int fd)
                          buf
@@ -247,5 +252,8 @@
 
 (define* (fd_close (fd))
   (stub:fd_close (fd->int fd)))
+
+(define* (fd_setnonblock (fd))
+  (stub:fd_setnonblock (fd->int fd)))
 
 )
