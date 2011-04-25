@@ -20,7 +20,7 @@ if test "" = "$CXXFLAGS"; then
     CXXFLAGS=" "
 fi
 
-AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh-scheme-$PACKAGE_VERSION")
+AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh-$PACKAGE_VERSION")
 
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES
