@@ -29,9 +29,6 @@
            (test-print* more ...))]
       [(_) #'#f])))
 
-(define test-file (if (string=? (host-os) "mona") "/APPS/MOSH.APP/tests/test.txt" "tests/test.txt"))
-
-
 (test-print* 
              [(make-client-socket "www.google.co.jp" "80") #/<socket client .*>/ #/<socket client .*>/ "#[socket]"]
 
