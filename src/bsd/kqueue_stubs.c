@@ -23,6 +23,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
+#include <gc.h>
 
 
 int
@@ -122,25 +123,35 @@ kevent_exec(int q,int changecount, void* ke_changes,int count, void *ke_out,int 
 
 /*** Socket Functions ... ***/
 
-#if 0
+// FIXME: getaddrinfo is not compatible with boehm GC..?
 static struct addrinfo * 
-save_addrinfo(struct addrinfo *ai){
+save_addrinfo(struct addrinfo *ai, int do_free_p){
     struct addrinfo *p;
+    if(!ai) return NULL;
     p = GC_MALLOC(sizeof(struct addrinfo));
     *p = *ai;
-    if(ai->ai_next){
-        p->ai_next = save_addrinfo(ai->ai_next);
+    if(ai->ai_addr){
+        p->ai_addr = GC_MALLOC(ai->ai_addrlen);
+        memcpy(p->ai_addr,ai->ai_addr,ai->ai_addrlen);
     }
+    if(ai->ai_canonname){
+        p->ai_canonname = GC_MALLOC(strlen(ai->ai_canonname));
+        strcpy(p->ai_canonname,ai->ai_canonname);
+    }
+    if(ai->ai_next){
+        p->ai_next = save_addrinfo(ai->ai_next,0);
+    }
+    if(do_free_p) freeaddrinfo(ai);
     return p;
 }
-#endif
 
 /* proto: 0:TCP 1:UDP */
 int
 socket_getaddrinfo(char* name,char* servicename, void* ret_addrinfo, int mode, int proto){
     int ret;
     struct addrinfo ai;
-    struct addrinfo* r;
+    struct addrinfo* r = NULL;
+    struct addrinfo* s;
     memset(&ai,0,sizeof(ai));
     switch(mode){
         case 0:
@@ -169,7 +180,8 @@ socket_getaddrinfo(char* name,char* servicename, void* ret_addrinfo, int mode, i
     }
 
     ret = getaddrinfo(name,servicename,&ai,&r);
-    *(void **)ret_addrinfo = r;
+    s = save_addrinfo(r,1);
+    *(void **)ret_addrinfo = s;
     return ret;
 }
 
@@ -212,7 +224,8 @@ socket_create(int mode,int proto){
 
 void
 socket_freeaddrinfo(void* ai){
-    freeaddrinfo(ai);
+    // DO NOTHING
+    //freeaddrinfo(ai);
 }
 
 int
