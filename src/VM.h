@@ -136,7 +136,6 @@ public:
     Object setAfterTrigger0(Object closure);
     Object evalAfter(Object sexp);
     Object evalCompiledAfter(Object code);
-    void applyClosure(Object closure, Object args);
     Object vmapply(Object proc, Object args);
     Object apply(Object proc, Object args);
     void loadFileWithGuard(const ucs4string& file);
@@ -343,7 +342,6 @@ protected:
     Code* trigger3Code_;
     Code* trigger4Code_;
 
-    Code* applyClosureCode_;
     Code* callClosureByNameCode_;
     Code* callCode_;
 
