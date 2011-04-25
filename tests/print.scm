@@ -1,7 +1,6 @@
 (import (rnrs)
         (mosh)
         (only (mosh pp) pp)
-        (mosh socket)
         (rnrs mutable-pairs)
         (mosh test))
 
@@ -50,7 +49,6 @@
                (lambda (pos) #f)
                (lambda () 'ok)) "<custom-textual-output-port custom out>" "<custom-textual-output-port custom out>" "#[output-port]"]
              [(lambda (x) #f) #/#<closure \d+>/ #/#<closure \d+>/ "#[procedure]"]
-             [(make-client-socket "www.google.co.jp" "80") #/<socket client .*>/ #/<socket client .*>/ "#[socket]"]
              [car #/<subr car>/ #/<subr car>/ "#[procedure]"]
              ['a "a"]
              [(make-eq-hashtable) "#<eq-hashtable>" "#<eq-hashtable>" "#[hashtable]"]

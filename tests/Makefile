@@ -9,7 +9,7 @@ runtest-for-developer:
 	$(MOSH_TARGET) tests/dbi.scm
 	$(MOSH_TARGET) tests/http.scm
 	$(MOSH_TARGET) tests/socket.scm
-	$(MOSH_TARGET) tests/print.scm
+	$(MOSH_TARGET) tests/print-socket.scm
 	$(MOSH_TARGET) tests/memcached.scm
 
 runtest: 
@@ -47,6 +47,7 @@ runtest:
 	! $(MOSH_TARGET) tests/error-with-circular.scm 2>/dev/null
 	$(MOSH_TARGET) tests/process.scm
 	$(MOSH_TARGET) tests/annotated-pair.scm
+	$(MOSH_TARGET) tests/print.scm
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/tests/ffi.scm)
