@@ -118,13 +118,13 @@
   (define (addrinfo->list addrinfo)
     (if addrinfo
       (receive (inetname next) (socket_addrinfo_read addrinfo)
-        inetname
-        (addrinfo->list next))
+        (cons inetname
+              (addrinfo->list next)))
       '()))
   (let ((addrinfo (socket_getaddrinfo name service mode proto)))
     (if addrinfo
       (let ((l (addrinfo->list addrinfo)))
-        (socket_freeaddrinfo addrinfo)
+        (socket_freeaddrinfo addrinfo) ;; Don't forget to do this..
         l)
       #f)))
 
