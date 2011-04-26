@@ -331,10 +331,10 @@ Object scheme::numberTostringEx(VM* theVM, int argc, const Object* argv)
 Object scheme::charEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char=?");
-    checkArgumentLengthAtLeast(1);
+    checkArgumentLengthAtLeast(2);
     argumentAsChar(0, startCharacter);
 
-    for (int i = 0; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         argumentAsChar(i, currentCharacter);
         if (startCharacter != currentCharacter) {
             return Object::False;
