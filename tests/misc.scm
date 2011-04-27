@@ -86,5 +86,12 @@
 (let ([port (open-string-input-port "\"hige\"hage")])
   (test-equal "hige" (read port))
   (test-equal 'hage (read port)))
+
+;; define-test
+
+(define define-test/0dat #f)
+(define-test define-test/0 (test-equal "string" define-test/0dat))
+(set! define-test/0dat "string")
+
 (test-results)
 
