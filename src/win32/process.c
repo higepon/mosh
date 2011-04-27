@@ -298,10 +298,12 @@ open_for_output(wchar_t* path,int mode){
 //  1 : stdio
 //  2 : CREATE_ALWAYS
 //  3 : OPEN_EXISTING or TRUNCATE_EXISTING
+//  4 : pass HANDLE
 uintptr_t
 win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wchar_t* std_out, wchar_t* std_err, int in_mode, int out_mode, int err_mode){
 	PROCESS_INFORMATION pi;
 	STARTUPINFOW si;
+	int err;
 	BOOL r;
 	HANDLE h;
 	HANDLE ex_out, ex_err;
@@ -324,6 +326,9 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 		if(h == INVALID_HANDLE_VALUE) return 0;
 		si.hStdInput = h;
 		break;
+    case 4:
+        si.hStdInput = (HANDLE)std_in;
+        break;
 	}
 	switch(out_mode){
 	case 0:
@@ -339,10 +344,15 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 		break;
 	case 3:
 		h = open_for_output(std_out,TRUNCATE_EXISTING);
+		err = GetLastError();
 		if(h == INVALID_HANDLE_VALUE) return 0;
 		si.hStdOutput = h;
 		ex_out = h;
 		break;
+    case 4:
+        si.hStdOutput = (HANDLE)std_out;
+        ex_out = (HANDLE)std_out;
+        break;
 	}
 	switch(err_mode){
 	case 0:
@@ -362,6 +372,10 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 		si.hStdError = h;
 		ex_err = h;
 		break;
+    case 4:
+        si.hStdError = (HANDLE)std_err;
+        ex_err = (HANDLE)std_err;
+        break;
 	}
 
 	//FIXME: should we use CREATE_NO_WINDOW ?
@@ -386,7 +400,7 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 uintptr_t
 win32_create_named_pipe_async(wchar_t* name){
 	HANDLE h;
-	h = CreateNamedPipeW(name,PIPE_ACCESS_DUPLEX|FILE_FLAG_OVERLAPPED,PIPE_WAIT,PIPE_UNLIMITED_INSTANCES,4096,4096,0,NULL);
+	h = CreateNamedPipeW(name,PIPE_ACCESS_DUPLEX|FILE_FLAG_OVERLAPPED,PIPE_WAIT,PIPE_UNLIMITED_INSTANCES,4096,4096,NMPWAIT_WAIT_FOREVER,NULL);
 	if(h == INVALID_HANDLE_VALUE){
 		OSERROR("CreateNamedPipeW");
 		return -1;
@@ -396,9 +410,17 @@ win32_create_named_pipe_async(wchar_t* name){
 int
 win32_wait_named_pipe_async(uintptr_t h, uintptr_t ovl){
 	BOOL b;
+	int err;
 	b = ConnectNamedPipe((HANDLE)h,(OVERLAPPED *)ovl);
+	err = GetLastError();
 	if(!b){
-		return 0;
+		if (err == ERROR_IO_PENDING){
+			return 1;
+		}else if(err == ERROR_PIPE_CONNECTED){
+			return 1;
+		}else{
+			return 0;
+		}
 	}
 	return 1;
 }

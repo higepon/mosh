@@ -80,6 +80,7 @@ CONS(FUNC("terminal_isatty",terminal_isatty),NIL)))))
 
 #ifdef HAVE_AIO_WIN32
 #define LIBDATA_AIO_WIN32 CONS(SYM("aio-win32"), \
+CONS(FUNC("win32_process_pipe",win32_process_pipe), \
 CONS(FUNC("win32_iocp_create",win32_iocp_create), \
 CONS(FUNC("win32_iocp_assoc",win32_iocp_assoc), \
 CONS(FUNC("win32_iocp_pop",win32_iocp_pop), \
@@ -104,7 +105,7 @@ CONS(FUNC("win32_socket_listen",win32_socket_listen), \
 CONS(FUNC("win32_getaddrinfo",win32_getaddrinfo), \
 CONS(FUNC("win32_finalization_handler_get",win32_finalization_handler_get), \
 CONS(FUNC("win32_finalization_handler_create",win32_finalization_handler_create), \
-	NIL)))))))))))))))))))))))))
+	NIL))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
 CONS(FUNC("win32_messagebox",win32_messagebox) ,\

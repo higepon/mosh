@@ -26,8 +26,7 @@
 
                  ;; GC related
                  win32_finalization_handler_alloc_overlapped
-                 win32_register_finalization_event
-                 )
+                 win32_register_finalization_event)
          (import (rnrs)
                  (srfi :8)
                  (mosh ffi)
@@ -44,6 +43,8 @@
 
 (define* win32-handle (pointer))
 
+(define (handle? x) (is-a? x win32-handle))
+
 (define (split64 x)
   (values 
     (bitwise-arithmetic-shift x -32)
@@ -57,6 +58,16 @@
 
 (define* (handle->pointer (h win32-handle))
   (let-with h (pointer) pointer))
+
+#|
+(define (win32_process_pipe)
+  (let ((box (make-ptr-array 2)))
+    (define (ret x)
+      (pointer->handle (ptr-array-ref box x)))
+    (stub:win32_process_pipe box)
+    (values (ret 0)
+            (ret 1))))
+|#
 
 (define (win32_iocp_create)
   (let ((p (stub:win32_iocp_create)))
@@ -115,21 +126,44 @@
                                            overlapped)))
       x)))
 
+(define pipehead "\\\\.\\pipe")
+(define pipehead-len (string-length pipehead))
+(define (named-pipe? x)
+  (and (string? x)
+       (string=? pipehead
+                 (substring x 0 pipehead-len))))
+
 (define (win32_process_redirected_child2 spec dir stdin stdout stderr)
   (define (pass x)
     (case x
       ((#t #f) (integer->pointer 0)) ;; we no longer need this..
       (else
-        (string->utf16-bv x))))
+        (cond
+          ((string? x) (string->utf16-bv x))
+          ((handle? x) (handle->pointer x))))))
+  (define (pass-dir x)
+    (cond
+      ((string? x) (string->utf16-bv x))
+      ((not x) (integer->pointer 0))))
+
   (define (passf x)
-    (if (string? x)
-      (if (file-exists? x)
-        3 ;; pass OPEN_EXISTING
-        2) ;; pass CREATE_ALWAYS
-      (if x 1 0)))
+    (cond
+      ((string? x)
+       (if (or (named-pipe? x)  ;; Don't touch if x is named-pipe!
+               (file-exists? x))
+         3 ;; pass OPEN_EXISTING
+         2)) ;; pass CREATE_ALWAYS
+      ((handle? x)
+       ;; pass 4 for handle
+       4)
+      ((not x) 0) ;; discard output
+      ((eq? #t x) 1) ;; redirect to stdout/err
+      (else (assertion-violation 'win32_process_redirected_child2
+                                 "invalid argument"
+                                 x))))
   (let ((x (stub:win32_process_redirected_child2
              (string->utf16-bv spec)
-             (string->utf16-bv dir)
+             (pass-dir dir)
              (pass stdin)
              (pass stdout)
              (pass stderr)

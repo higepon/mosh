@@ -4,6 +4,7 @@
   (libname: aio-win32)
   (header: "aio_win32.h")
   #(ret name args)
+  (int win32_process_pipe (void*))
   (void* win32_iocp_create)
   (int win32_iocp_assoc (void* void* void*))
   (int win32_iocp_pop (void* int void* void* void*))

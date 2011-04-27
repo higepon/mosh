@@ -3,6 +3,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+int win32_process_pipe(void* ret);
 uintptr_t win32_iocp_create(void);
 int win32_iocp_assoc(uintptr_t iocp,uintptr_t in,uintptr_t key);
 int win32_iocp_pop(uintptr_t iocp,intptr_t timeout,uintptr_t ret_bytestrans,uintptr_t ret_key,uintptr_t ret_overlapped);
