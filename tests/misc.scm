@@ -26,6 +26,9 @@
               ((port getter)   (open-string-output-port)))
    #f))
 
+(define-test automatically-called?
+  (test-true #t))
+
 (test-false (hurtme "ciao"))
 
 (test-equal "ABC\x0;ABC" (fasl->obj (obj->fasl (utf8->string #vu8(65 66 67 0 65 66 67)))))
@@ -77,3 +80,4 @@
   (test-equal "hige" (read port))
   (test-equal 'hage (read port)))
 (test-results)
+

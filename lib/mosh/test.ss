@@ -53,15 +53,38 @@
                  test-error-string   ; exported for tests of xunit
                  test-summary-string ; exported for tests of xunit
                  good-enough?
+                 define-test test*
                  )
          (import (only (rnrs) define apply max map lambda string-length symbol->string record-type-name record-rtd simple-conditions
                        display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else number?
                        unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor or real? and
                        reverse <= string-append do let-values open-string-output-port set! quasiquote call/cc with-exception-handler
                        for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote real-part imag-part infinite? magnitude =
-                       * nan? < /)
-                 (only (mosh) host-os format ungensym)
+                       * nan? < / make-eq-hashtable hashtable-set!)
+                 (only (mosh) host-os format ungensym hashtable-for-each)
+                 (only (mosh control) let1)
                  (only (match) match))
+
+(define test* (make-eq-hashtable))
+
+#|
+      Functio: define-syntax
+
+      Define a test. The test is called automatically by test-results.
+
+      Prototype:
+      > (define-test x (test-eq 3 3))
+
+      Returns:
+
+        unspecified.
+|#
+(define-syntax define-test
+  (lambda (x)
+    (syntax-case x ()
+      [(_ name expr)
+       #'(define name (hashtable-set! test* 'name (lambda () expr)))])))
+
 
 (define (condition-printer e port)
     (define max-condition-len (apply max (map (lambda (c) (string-length (symbol->string (record-type-name (record-rtd c))))) (simple-conditions e))))
@@ -476,20 +499,24 @@
         unspecified.
 |#
 (define (test-results)
-  (define has-error? (> failed-count 0))
-  (display (test-error-string))
-  (when has-error?
-    (newline))
-  (cond
-   [has-error?
-    (with-color-red
-     (display (test-summary-string)))]
-   [else
-    (with-color-green
-     (display (test-summary-string)))])
-  (newline)
-  (when has-error?
-    (exit -1)))
+  (hashtable-for-each
+   (lambda (key proc)
+     (proc))
+   test*)
+  (let1 has-error? (> failed-count 0)
+    (display (test-error-string))
+    (when has-error?
+      (newline))
+    (cond
+     [(> failed-count 0)
+      (with-color-red
+       (display (test-summary-string)))]
+     [else
+      (with-color-green
+       (display (test-summary-string)))])
+    (newline)
+    (when has-error?
+      (exit -1))))
 
 #|
       Function: good-enough?
