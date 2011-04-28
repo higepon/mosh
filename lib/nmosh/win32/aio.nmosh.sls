@@ -12,6 +12,8 @@
                  win32_create_named_pipe_async
                  win32_wait_named_pipe_async
                  win32_process_wait_async
+                 win32_cancelioex
+                 win32_handle_close
 
                  ;; sockets
                  win32_sockaddr_storage_size
@@ -35,6 +37,18 @@
                  (nmosh win32 util)
                  (nmosh finalizers)
                  (prefix (nmosh stubs aio-win32) stub:))
+
+(define socket-handles (make-eq-hashtable))
+(define* (add-socket! (h win32-handle))
+  (let ((i (pointer->integer (handle->pointer h))))
+    (hashtable-set! socket-handles i 'socket)))
+(define* (remove-socket! (h win32-handle))
+  (let ((i (pointer->integer (handle->pointer h))))
+    (hashtable-delete! socket-handles i)))
+(define* (socket? (h win32-handle))
+  (let ((i (pointer->integer (handle->pointer h))))
+    (eq? (hashtable-ref socket-handles i #f)
+         'socket)))
 
 (define null null-pointer)
 (define (null-pointer? x)
@@ -192,6 +206,19 @@
                                           overlapped)))
     x))
 
+(define* (win32_cancelioex (h win32-handle)
+                           overlapped)
+  (stub:win32_cancelioex (handle->pointer h)
+                         overlapped))
+
+(define* (win32_handle_close (h win32-handle))
+  (let ((handle (handle->pointer h)))
+    (if (socket? h)
+      (let ((r (stub:win32_socket_close handle)))
+        (remove-socket! h)
+        r)
+      (stub:win32_handle_close handle))))
+
 ;; socket
 (define win32_sockaddr_storage_size stub:win32_sockaddr_storage_size)
 
@@ -203,13 +230,15 @@
     ((1) ;; TCP
      (let ((ret_connectex (make-ptr-box))
            (ret_acceptex (make-ptr-box)))
-       (let ((p (stub:win32_socket_create mode proto ret_connectex ret_acceptex)))
-         (values (pointer->handle p)
+       (let ((h (pointer->handle (stub:win32_socket_create mode proto ret_connectex ret_acceptex))))
+         (add-socket! h)
+         (values h
                  (ptr-box-ref ret_connectex)
                  (ptr-box-ref ret_acceptex)))))
     ((2) ;; UDP
-     (let ((p (stub:win32_socket_create mode proto null null)))
-       (values (pointer->handle p)
+     (let ((h (pointer->handle (stub:win32_socket_create mode proto null null))))
+       (add-socket! h)
+       (values h
                #f
                #f)))
     (else

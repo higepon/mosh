@@ -80,7 +80,8 @@ CONS(FUNC("terminal_isatty",terminal_isatty),NIL)))))
 
 #ifdef HAVE_AIO_WIN32
 #define LIBDATA_AIO_WIN32 CONS(SYM("aio-win32"), \
-CONS(FUNC("win32_process_pipe",win32_process_pipe), \
+CONS(FUNC("win32_handle_close",win32_handle_close), \
+CONS(FUNC("win32_cancelioex",win32_cancelioex), \
 CONS(FUNC("win32_iocp_create",win32_iocp_create), \
 CONS(FUNC("win32_iocp_assoc",win32_iocp_assoc), \
 CONS(FUNC("win32_iocp_pop",win32_iocp_pop), \
@@ -96,6 +97,7 @@ CONS(FUNC("win32_wait_named_pipe_async",win32_wait_named_pipe_async), \
 CONS(FUNC("win32_process_wait_async",win32_process_wait_async), \
 CONS(FUNC("win32_sockaddr_storage_size",win32_sockaddr_storage_size), \
 CONS(FUNC("win32_socket_create",win32_socket_create), \
+CONS(FUNC("win32_socket_close",win32_socket_close), \
 CONS(FUNC("win32_addrinfoex_free",win32_addrinfoex_free), \
 CONS(FUNC("win32_addrinfoex_read",win32_addrinfoex_read), \
 CONS(FUNC("win32_socket_connect",win32_socket_connect), \
@@ -105,7 +107,7 @@ CONS(FUNC("win32_socket_listen",win32_socket_listen), \
 CONS(FUNC("win32_getaddrinfo",win32_getaddrinfo), \
 CONS(FUNC("win32_finalization_handler_get",win32_finalization_handler_get), \
 CONS(FUNC("win32_finalization_handler_create",win32_finalization_handler_create), \
-	NIL))))))))))))))))))))))))))
+	NIL))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
 CONS(FUNC("win32_messagebox",win32_messagebox) ,\

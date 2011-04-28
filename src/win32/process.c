@@ -246,13 +246,19 @@ win32_overlapped_getmydata(void* p){
 int
 win32_handle_read_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol){
 	BOOL b;
+	int err;
 	OVERLAPPED* ovl = (OVERLAPPED *)ol;
 	ovl->Offset = offsetL;
 	ovl->OffsetHigh = offsetH;
 	ovl->hEvent = NULL;
 	b = ReadFile((HANDLE)h,(void*)buf,length,NULL,ovl);
 	if(!b){
-		return 0;
+		err = GetLastError();
+		if(err == ERROR_IO_PENDING){
+			return 1;
+		}else{
+			return 0;
+		}
 	}else{
 		return 1;
 	}
@@ -261,13 +267,19 @@ win32_handle_read_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_
 int
 win32_handle_write_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol){
 	BOOL b;
+	int err;
 	OVERLAPPED* ovl = (OVERLAPPED *)ol;
 	ovl->Offset = offsetL;
 	ovl->OffsetHigh = offsetH;
 	ovl->hEvent = NULL;
 	b = WriteFile((HANDLE)h,(void *)buf,length,NULL,ovl);
 	if(!b){
-		return 0;
+		err = GetLastError();
+		if(err == ERROR_IO_PENDING){
+			return 1;
+		}else{
+			return 0;
+		}
 	}else{
 		return 1;
 	}
@@ -512,6 +524,21 @@ win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key, uintptr_t ove
 	return 1;
 }
 
+int 
+win32_cancelioex(void* h,void* ovl){
+	return CancelIoEx((HANDLE)h,(OVERLAPPED *)ovl);
+}
+
+#if 0
+int
+win32_process_get_result(void* process){
+	BOOL r;
+	DWORD res;
+	GetExitCodeProcess((HANDLE)process,&res);
+	CloseHandle((HANDLE)process);
+	return res;
+}
+#endif
 
 /* windows sockets */
 int
@@ -567,6 +594,11 @@ win32_socket_create(int mode,int proto,uintptr_t ret_connectex,uintptr_t ret_acc
 	}
 
 	return ret;
+}
+
+int
+win32_socket_close(uintptr_t s){
+	return closesocket((SOCKET)s);
 }
 
 // mode = 0 .. default
@@ -733,3 +765,4 @@ win32_messagebox(wchar_t* caption,wchar_t* msg,int dlgtype,int icontype){
 
 	return MessageBoxW(NULL,msg,caption,buttontype|msgtype);
 }
+

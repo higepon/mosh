@@ -17,6 +17,9 @@ uintptr_t win32_process_redirected_child2(wchar_t *spec,wchar_t* dir,wchar_t* st
 uintptr_t win32_create_named_pipe_async(wchar_t* name);
 int win32_wait_named_pipe_async(uintptr_t h,uintptr_t ovl);
 int win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key,uintptr_t overlapped);
+//int win32_process_get_result(void* p);
+int win32_cancelioex(void* h,void* ovl);
+int win32_handle_close(void* h);
 
 //winsock
 int win32_sockaddr_storage_size(void);
@@ -28,6 +31,7 @@ int win32_socket_connect(uintptr_t func,uintptr_t s,uintptr_t saddr,int namelen,
 int win32_socket_accept(uintptr_t func,uintptr_t slisten,uintptr_t saccept,uintptr_t buf,int bufsize,uintptr_t overlapped);
 int win32_socket_bind(uintptr_t s,uintptr_t name,int namelen);
 int win32_socket_listen(uintptr_t s,int l);
+int win32_socket_close(uintptr_t s);
 
 // GC related
 void* win32_finalization_handler_get(void);
