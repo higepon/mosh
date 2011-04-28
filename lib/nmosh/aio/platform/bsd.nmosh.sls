@@ -1,4 +1,4 @@
-(library (nmosh aio bsd)
+(library (nmosh aio platform bsd)
          (export resolve-socketname*
 
                  queue
