@@ -688,7 +688,8 @@ bool File::isExecutable(const ucs4string& path)
 bool File::deleteFileOrDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
-    return DeleteFileW(utf32ToUtf16(path))?true:false;
+	const wchar_t* wpath = utf32ToUtf16(path);
+    return (DeleteFileW(wpath)||RemoveDirectoryW(wpath))?true:false;
 #elif defined(MONA)
     return monapi_file_delete(utf32toUtf8(path)) == M_OK;
 #else

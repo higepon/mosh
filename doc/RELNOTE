@@ -101,6 +101,9 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             SRFI-62 style datum comment was not accepted by reader in certain 
             cases.
 
+    OS Compatibility Layer:
+       Native Win32 port was not able to remove directories.
+
     REPL:
         Fixed Issue 199 reported by amoebae:
             Segmentation fault on printing circular object.
