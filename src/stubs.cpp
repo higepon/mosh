@@ -112,6 +112,10 @@ CONS(FUNC("win32_finalization_handler_create",win32_finalization_handler_create)
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
 CONS(FUNC("win32_messagebox",win32_messagebox) ,\
 	NIL))
+
+#define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
+CONS(FUNC("win32_get_processor_count",win32_get_processor_count), \
+	NIL))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \
@@ -172,6 +176,7 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 #ifdef HAVE_AIO_WIN32
 	tmp = Object::cons(LIBDATA_AIO_WIN32,tmp);
 	tmp = Object::cons(LIBDATA_WIN32_GUI,tmp);
+    tmp = Object::cons(LIBDATA_WIN32_MISC,tmp);
 #endif
     return tmp;
 }

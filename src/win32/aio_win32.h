@@ -42,6 +42,9 @@ void win32_finalization_handler_dispose(void* d);
 // GUI related (subset)
 int win32_messagebox(wchar_t* caption,wchar_t* msg,int dlgtype,int icontype);
 
+// misc
+int win32_get_processor_count(void);
+
 #ifdef __cplusplus
 };
 #endif

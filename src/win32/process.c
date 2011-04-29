@@ -766,3 +766,13 @@ win32_messagebox(wchar_t* caption,wchar_t* msg,int dlgtype,int icontype){
 	return MessageBoxW(NULL,msg,caption,buttontype|msgtype);
 }
 
+/* misc */
+
+
+// from http://stackoverflow.com/questions/150355/programmatically-find-the-number-of-cores-on-a-machine
+int
+win32_get_processor_count(void){
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return si.dwNumberOfProcessors;
+}
