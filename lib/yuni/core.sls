@@ -142,9 +142,10 @@
   (if (is-a? id type)
     'ok
     (begin ;; FIXME
-      (display "type violation!!")(newline)
-      (display (list sym id-name type-name id type))(newline)
-      (car #f))))
+      (assertion-violation 'yuni-core
+                           "type violation"
+                           id-name
+                           type-name))))
 
 (define-syntax annotate-check
   (syntax-rules ()
