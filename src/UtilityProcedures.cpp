@@ -861,15 +861,17 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     }
 
     Object exit, termsig;
-    if (WIFEXITED(status))
+    if (WIFEXITED(status)) {
         exit = Bignum::makeInteger(WEXITSTATUS(status));
-    else
+    } else {
         exit = Object::False;
+    }
 
-    if (WIFSIGNALED(status))
+    if (WIFSIGNALED(status)) {
         termsig = Bignum::makeInteger(WTERMSIG(status));
-    else
+    } else {
         termsig = Object::False;
+    }
 
     return theVM->values3(Object::makeString(ret), exit, termsig);
 #endif
