@@ -1108,7 +1108,7 @@
     (directory-list sys)
     (microseconds sys)
     (local-tz-offset sys)
-    (call-process interaction sys)
+    (%call-process interaction sys)
     (mosh-cache-dir sys)
     (hashtable-for-each mosh)
     (hashtable-fold-left mosh)

@@ -95,7 +95,7 @@ namespace scheme {
     Object charLtPEx(VM* theVM, int argc, const Object* argv);
     Object readEx(VM* theVM, int argc, const Object* argv);
     Object vectorTolistEx(VM* theVM, int argc, const Object* argv);
-    Object callProcessEx(VM* theVM, int argc, const Object* argv);
+    Object internalCallProcessEx(VM* theVM, int argc, const Object* argv);
     Object internalGetClosureNameEx(VM* theVM, int argc, const Object* argv);
     Object internalsetUnionEx(VM* theVM, int argc, const Object* argv);
     Object internalsetIntersectEx(VM* theVM, int argc, const Object* argv);

@@ -40,8 +40,14 @@
     Process Management Library
 |#
 (library (mosh process)
-  (export (rename (%pipe pipe) (%fork fork) (%waitpid waitpid) (%spawn spawn) (%exec exec) (%getpid getpid)))
-  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid))
+  (export (rename (%pipe pipe)
+                  (%fork fork)
+                  (%waitpid waitpid)
+                  (%spawn spawn)
+                  (%exec exec)
+                  (%getpid getpid)
+                  (%call-process call-process)))
+  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid %call-process))
 
   #|
       Function: fork
@@ -138,5 +144,22 @@
       Returns:
 
         Process ID as exact integer 
+  |#
+
+  #|
+      Function: call-process
+
+      Run an external command using a shell.
+
+      Prototype:
+      > (call-process command)
+
+      Returns:
+
+        3 values:
+        * The command's complete output on stdout (stderr is not captured).
+        * The exit status of the command, or #f if it terminated abnormally.
+        * #f on normal termination, or the signal number if it was terminated
+          by a signal.
   |#
 )

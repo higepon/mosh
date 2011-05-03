@@ -172,7 +172,7 @@
   read
   (vector->list vector->list)
   (set-source-info! (lambda e #f))
-  call-process
+  %call-process
   %get-closure-name
   (append append)
   (append2 append)
