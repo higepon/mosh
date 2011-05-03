@@ -828,9 +828,9 @@ Object scheme::vectorTolistEx(VM* theVM, int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::callProcessEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("call-process");
+    DeclareProcedureName("%call-process");
     checkArgumentLength(1);
 
     argumentAsString(0, cmd);
@@ -853,11 +853,27 @@ Object scheme::callProcessEx(VM* theVM, int argc, const Object* argv)
     while ((size = fread(buffer, sizeof(char), BUFFER_SIZE, in)) > 0) {
         ret += ucs4string::from_c_str(buffer, size);
     }
-    if (pclose(in) != 0) {
+
+    int status = pclose(in);
+    if (status == -1) {
         callAssertionViolationAfter(theVM, procedureName, "failed. pclose returned error", L1(argv[0]));
         return Object::Undef;
     }
-    return Object::makeString(ret);
+
+    Object exit, termsig;
+    if (WIFEXITED(status)) {
+        exit = Bignum::makeInteger(WEXITSTATUS(status));
+    } else {
+        exit = Object::False;
+    }
+
+    if (WIFSIGNALED(status)) {
+        termsig = Bignum::makeInteger(WTERMSIG(status));
+    } else {
+        termsig = Object::False;
+    }
+
+    return theVM->values3(Object::makeString(ret), exit, termsig);
 #endif
 }
 

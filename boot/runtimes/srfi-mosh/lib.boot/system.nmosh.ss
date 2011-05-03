@@ -106,6 +106,7 @@
     local-tz-offset
     call-process
     %getpid
+    %call-process
     mosh-cache-dir
     file->string
     file->list
@@ -223,6 +224,7 @@
       local-tz-offset
       call-process
       %getpid
+      %call-process
       mosh-cache-dir
       file->string
       file->list
