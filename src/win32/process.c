@@ -213,7 +213,7 @@ win32_iocp_pop(uintptr_t iocp, intptr_t timeout_in,uintptr_t ret_bytestrans, uin
 // allocate and free OVERLAPPED. OVERLAPPED may passed to non-GC-managed threads.
 
 typedef struct{
-    // N.B. should synced with finalization handler
+    // N.B. should synced with finalization handler and window handler
 	OVERLAPPED ovl;
 	void* p;
 } OVPAIR;
@@ -764,6 +764,178 @@ win32_messagebox(wchar_t* caption,wchar_t* msg,int dlgtype,int icontype){
 	}
 
 	return MessageBoxW(NULL,msg,caption,buttontype|msgtype);
+}
+
+// initialize base window classes
+#define BASECLASS L"nmosh win32"
+
+typedef struct{
+    // N.B. should synced with OVPAIR
+    OVERLAPPED ovl;
+    void* ptr;
+
+    HANDLE iocp;
+}window_handler_data;
+
+static void
+window_handler(void* p){
+    MSG msg;
+    HWND hWnd;
+    window_handler_data* whd = (window_handler_data *)p;
+    hWnd = CreateWindowExW(
+        0, //exstyle
+        BASECLASS,
+        L"", // title
+        WS_OVERLAPPEDWINDOW, // style
+        0,
+        0,
+        0,
+        0,
+        NULL,
+        NULL,
+        GetModuleHandle(0),
+        p);
+
+    while(GetMessageW(&msg,hWnd,0,0)){
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+}
+static void
+post_window_event(window_handler_data* whd,int id,uintptr_t param){
+    emit_queue_event(whd->iocp,(uintptr_t)id,(intptr_t)param,(uintptr_t)&whd->ovl);
+}
+
+LRESULT CALLBACK
+BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
+    window_handler_data* whd = (window_handler_data *)GetWindowLongPtr(hWnd,GWL_USERDATA);
+
+    switch(msg){
+    case WM_CREATE:
+        whd = (window_handler_data *)(((CREATESTRUCT *)lParam)->lpCreateParams);
+        SetWindowLongPtrW(hWnd,GWL_USERDATA,(LONG_PTR)whd);
+        post_window_event(whd,0,(uintptr_t)hWnd);
+        return 0;
+    case WM_DESTROY:
+        post_window_event(whd,1,0);
+        return 0;
+    default:
+        return DefWindowProcW(hWnd, msg, wParam, lParam);
+    }
+}
+
+void
+win32_window_move(HWND hWnd,signed int x,signed int y,signed int w,signed int h){
+    MoveWindow(hWnd,x,y,w,h,TRUE);
+}
+
+// 0 = not activate, 1 = activate
+void
+win32_window_show(HWND hWnd,int cmd){
+    int sw;
+    switch(cmd){
+    case 1:
+        sw = SW_SHOW;
+        break;
+    case 0:
+        sw = SW_SHOWNA;
+    }
+    ShowWindow(hWnd,sw);
+}
+
+void
+win32_window_hide(HWND hWnd){
+    ShowWindow(hWnd,SW_HIDE);
+}
+
+void
+win32_window_settitle(HWND hWnd,wchar_t* text){
+    SetWindowTextW(hWnd,text);
+}
+
+void
+win32_window_close(HWND hWnd){
+    CloseWindow(hWnd);
+}
+
+void
+win32_window_destroy(HWND hWnd){
+    DestroyWindow(hWnd);
+}
+
+void
+win32_registerwindowclass(void){
+    WNDCLASSEXW cls;
+    ZeroMemory(&cls,sizeof(cls));
+    cls.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    cls.cbSize = sizeof(cls); 
+    cls.lpfnWndProc = BaseWndProc;
+    cls.hInstance = (HINSTANCE)GetModuleHandle(0);
+    cls.lpszClassName = L"nmosh win32";
+    cls.style = CS_HREDRAW|CS_VREDRAW;
+
+    RegisterClassExW(&cls);
+}
+
+// freed by overlapped_free
+void*
+win32_window_alloc(void){
+    return GC_MALLOC_UNCOLLECTABLE(sizeof(window_handler_data));
+}
+
+void
+win32_window_create(HANDLE iocp,void* param){
+	_beginthread(window_handler,0,param);
+}
+
+typedef struct{
+    int ignorecount;
+    int cmd;
+    int valid;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+}monitor_enum_state;
+
+static BOOL CALLBACK
+monitorenum_handler(HMONITOR hMoni,HDC bogus0,LPRECT lprcMoni,monitor_enum_state* s){
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    if(s->ignorecount){
+        s->ignorecount--;
+        return TRUE; // continue
+    }else{
+        s->valid = 1;
+        if(s->cmd==0){
+            s->x0 = lprcMoni->top;
+            s->y0 = lprcMoni->left;
+            s->x1 = lprcMoni->bottom;
+            s->y1 = lprcMoni->right;
+        }else{
+            GetMonitorInfo(hMoni,&mi);
+            s->x0 = mi.rcWork.top;
+            s->y0 = mi.rcWork.left;
+            s->x1 = mi.rcWork.bottom;
+            s->y1 = mi.rcWork.right;
+        }
+        return FALSE; // stop
+    }
+}
+
+// cmd 0 = phys area, 1 = work area (i.e. excludes taskbar)
+void
+win32_getmonitorinfo(int id,int cmd,signed int *valid,signed int *x0,signed int* y0,signed int *x1,signed int *y1){
+    monitor_enum_state s;
+    s.valid = 0;
+    s.ignorecount = id;
+    s.cmd = cmd;
+    EnumDisplayMonitors(NULL,NULL,(MONITORENUMPROC)monitorenum_handler,(LPARAM)&s);
+    *valid = s.valid;
+    *x0 = s.x0;
+    *y0 = s.y0;
+    *x1 = s.x1;
+    *y1 = s.y1;
 }
 
 /* misc */
