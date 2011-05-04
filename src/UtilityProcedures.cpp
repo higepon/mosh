@@ -837,7 +837,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsString(0, cmd);
-#ifdef MONA
+#if defined(MONA)||defined(_WIN32)
         callAssertionViolationAfter(theVM, procedureName, "not supported", L1(argv[0]));
         return Object::Undef;
 #else
