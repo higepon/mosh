@@ -14,6 +14,7 @@
            file->list
            file->sexp-list
            file->string-list
+           string-list->file
 
            ;; defined in file-ops
            file-regular?
@@ -224,6 +225,20 @@
 
 (define (file->string-list pth)
   (file->list get-line pth))
+
+
+;; To file op .. Always overwrite
+(define (string-list->file pth l)
+  (when (file-exists? pth)
+    (delete-file pth))
+  (with-output-to-file
+    pth
+    (lambda ()
+      (for-each (lambda (e) 
+                  (put-string (current-output-port) e)
+                  (newline))
+                l))))
+
 
 ;; tree walk
 (define (directory-walk pth proc)
