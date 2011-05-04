@@ -111,7 +111,17 @@ CONS(FUNC("win32_finalization_handler_create",win32_finalization_handler_create)
 
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
 CONS(FUNC("win32_messagebox",win32_messagebox) ,\
-	NIL))
+CONS(FUNC("win32_window_move",win32_window_move) ,\
+CONS(FUNC("win32_window_show",win32_window_show) ,\
+CONS(FUNC("win32_window_hide",win32_window_hide) ,\
+CONS(FUNC("win32_window_settitle",win32_window_settitle) ,\
+CONS(FUNC("win32_window_close",win32_window_close) ,\
+CONS(FUNC("win32_window_destroy",win32_window_destroy) ,\
+CONS(FUNC("win32_registerwindowclass",win32_registerwindowclass) ,\
+CONS(FUNC("win32_window_alloc",win32_window_alloc) ,\
+CONS(FUNC("win32_window_create",win32_window_create) ,\
+CONS(FUNC("win32_getmonitorinfo",win32_getmonitorinfo) ,\
+	NIL))))))))))))
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
 CONS(FUNC("win32_get_processor_count",win32_get_processor_count), \

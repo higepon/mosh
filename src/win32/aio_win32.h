@@ -41,8 +41,16 @@ void win32_finalization_handler_dispose(void* d);
 
 // GUI related (subset)
 int win32_messagebox(wchar_t* caption,wchar_t* msg,int dlgtype,int icontype);
-
-
+void win32_window_move(void* hWnd,signed int x,signed int y,signed int w,signed int h);
+void win32_window_show(void* hWnd,int cmd);
+void win32_window_hide(void* hWnd);
+void win32_window_settitle(void* hWnd,wchar_t* text);
+void win32_window_close(void* hWnd);
+void win32_window_destroy(void* hWnd);
+void win32_registerwindowclass(void);
+void* win32_window_alloc(void);
+void win32_window_create(void* iocp,void* overlapped);
+void win32_getmonitorinfo(int id,int cmd,signed int *valid,signed int *x0,signed int* y0,signed int *x1,signed int *y1);
 // misc
 int win32_get_processor_count(void);
 

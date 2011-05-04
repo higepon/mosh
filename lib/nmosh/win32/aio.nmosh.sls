@@ -28,7 +28,12 @@
 
                  ;; GC related
                  win32_finalization_handler_alloc_overlapped
-                 win32_register_finalization_event)
+                 win32_register_finalization_event
+
+                 ;; for gui
+                 win32-handle
+                 handle->pointer
+                 )
          (import (rnrs)
                  (srfi :8)
                  (mosh ffi)

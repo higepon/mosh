@@ -825,13 +825,13 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 }
 
 void
-win32_window_move(HWND hWnd,signed int x,signed int y,signed int w,signed int h){
-    MoveWindow(hWnd,x,y,w,h,TRUE);
+win32_window_move(void* hWnd,signed int x,signed int y,signed int w,signed int h){
+    MoveWindow((HWND)hWnd,x,y,w,h,TRUE);
 }
 
 // 0 = not activate, 1 = activate
 void
-win32_window_show(HWND hWnd,int cmd){
+win32_window_show(void* hWnd,int cmd){
     int sw;
     switch(cmd){
     case 1:
@@ -840,27 +840,27 @@ win32_window_show(HWND hWnd,int cmd){
     case 0:
         sw = SW_SHOWNA;
     }
-    ShowWindow(hWnd,sw);
+    ShowWindow((HWND)hWnd,sw);
 }
 
 void
-win32_window_hide(HWND hWnd){
-    ShowWindow(hWnd,SW_HIDE);
+win32_window_hide(void* hWnd){
+    ShowWindow((HWND)hWnd,SW_HIDE);
 }
 
 void
-win32_window_settitle(HWND hWnd,wchar_t* text){
-    SetWindowTextW(hWnd,text);
+win32_window_settitle(void* hWnd,wchar_t* text){
+    SetWindowTextW((HWND)hWnd,text);
 }
 
 void
-win32_window_close(HWND hWnd){
-    CloseWindow(hWnd);
+win32_window_close(void* hWnd){
+    CloseWindow((HWND)hWnd);
 }
 
 void
-win32_window_destroy(HWND hWnd){
-    DestroyWindow(hWnd);
+win32_window_destroy(void* hWnd){
+    DestroyWindow((HWND)hWnd);
 }
 
 void
@@ -884,8 +884,10 @@ win32_window_alloc(void){
 }
 
 void
-win32_window_create(HANDLE iocp,void* param){
-	_beginthread(window_handler,0,param);
+win32_window_create(void* iocp,void* overlapped){
+    window_handler_data *whd = (window_handler_data *)overlapped;
+    whd->iocp = iocp;
+	_beginthread(window_handler,0,overlapped);
 }
 
 typedef struct{
@@ -908,16 +910,16 @@ monitorenum_handler(HMONITOR hMoni,HDC bogus0,LPRECT lprcMoni,monitor_enum_state
     }else{
         s->valid = 1;
         if(s->cmd==0){
-            s->x0 = lprcMoni->top;
-            s->y0 = lprcMoni->left;
-            s->x1 = lprcMoni->bottom;
-            s->y1 = lprcMoni->right;
+            s->x0 = lprcMoni->left;
+            s->y0 = lprcMoni->top;
+            s->x1 = lprcMoni->right;
+            s->y1 = lprcMoni->bottom;
         }else{
             GetMonitorInfo(hMoni,&mi);
-            s->x0 = mi.rcWork.top;
-            s->y0 = mi.rcWork.left;
-            s->x1 = mi.rcWork.bottom;
-            s->y1 = mi.rcWork.right;
+            s->x0 = mi.rcWork.left;
+            s->y0 = mi.rcWork.top;
+            s->x1 = mi.rcWork.right;
+            s->y1 = mi.rcWork.bottom;
         }
         return FALSE; // stop
     }
