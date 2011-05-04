@@ -1,7 +1,7 @@
 (library (yuni text config reader)
-         (export string-list->config)
+         (export string-list->config/line
+                 string-list->config)
          (import (rnrs))
-
 
 ;; looks silly, but we need this in very early stage..
 (define (cleanup-line str)
@@ -118,34 +118,43 @@
       (else
         (split-str #\= x)))))
 
-(define (string-list->config l)
+(define (string-list->config/line l)
   (define (valid? x)
     (and x
          (not (null? x))))
-  (define (itr current acc cur rest)
+  (define (itr current acc cur rest lineno)
     (if (pair? rest)
       (let ((e (car rest))
-            (next (cdr rest)))
+            (next (cdr rest))
+            (next-lineno (+ lineno 1)))
         (define (accum x)
           (if (null? x)
             acc
-            (cons x acc)))
+            (cons (cons x lineno) acc)))
         (cond
           ((list? e)
            (if (valid? current)
              (itr e '() (cons (cons current (reverse acc))
                                cur)
-                  next)
-             (itr e '() cur next)))
+                  next next-lineno)
+             (itr e '() cur next next-lineno)))
           ((pair? e)
-           (itr current (accum e) cur next))
-          (else (itr current acc cur next))))
+           (itr current (accum e) cur next next-lineno))
+          (else (itr current acc cur next next-lineno))))
       (reverse (if (valid? current)
                  (cons (cons current (reverse acc))
                        cur)
                  cur))))
   (let ((lines (map phase1 (map cleanup-line l))))
-    (itr #f '() '() lines)))
+    (itr #f '() '() lines 0)))
+
+(define (string-list->config l)
+  (define (entryfilter e)
+    (car e))
+  (define (sectionfilter e)
+    (cons (car e)
+          (map entryfilter (cdr e))))
+  (let ((x (string-list->config/line l)))
+    (map sectionfilter x)))
 
 )
-                 
