@@ -125,7 +125,10 @@ CONS(FUNC("win32_getmonitorinfo",win32_getmonitorinfo) ,\
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
 CONS(FUNC("win32_get_processor_count",win32_get_processor_count), \
-	NIL))
+CONS(FUNC("win32_get_ansi_codepage",win32_get_ansi_codepage), \
+CONS(FUNC("win32_multibyte_to_widechar",win32_multibyte_to_widechar), \
+CONS(FUNC("win32_measure_multibyte_to_widechar",win32_measure_multibyte_to_widechar), \
+	NIL)))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \

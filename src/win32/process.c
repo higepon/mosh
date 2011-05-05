@@ -950,3 +950,34 @@ win32_get_processor_count(void){
     GetSystemInfo(&si);
     return si.dwNumberOfProcessors;
 }
+
+int
+win32_get_ansi_codepage(void){
+    return GetACP();
+}
+
+// 1: success, otherwise: error
+// N.B.: Do not feed null strings
+int
+win32_multibyte_to_widechar(int cp, void* input, int input_count, void* output, int output_count, int* output_size){
+    int ret;
+    ret = MultiByteToWideChar(cp,0,(LPCSTR)input,input_count,(LPWSTR)output,output_count);
+    if(!ret){ // error
+        *output_size = 0;
+        return -1;
+    }else{
+        *output_size = ret * 2;
+        return 1;
+    }
+}
+
+// 0<: success
+// N.B.: Do not feed null strings
+int
+win32_measure_multibyte_to_widechar(int cp, void* input, int input_count){
+    int ret;
+    ret = MultiByteToWideChar(cp,0,(LPCSTR)input,input_count,(LPWSTR)NULL,0);
+    return ret*2;
+}
+
+
