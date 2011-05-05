@@ -561,32 +561,38 @@ Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
     argumentAsBinaryOutputPort(0, outputPort);
     checkPortIsOpen(outputPort, argv[0]);
     argumentAsByteVector(1, bv);
-    if (argc < 3) {
-        outputPort->putByteVector(bv);
-        return Object::Undef;
-    }
+    TRY_WITHOUT_DSTR
+        if (argc < 3) {
+            outputPort->putByteVector(bv);
+            return Object::Undef;
+        }
 
-    argumentCheckExactInteger(2, startObj);
-    int start;
-    if (startObj.isFixnum()) {
-        start = startObj.toFixnum();
-    } else { // startObj.isBignum()
-        start = startObj.toBignum()->toS32();
-    }
-    if (argc < 4) {
-        outputPort->putByteVector(bv, start);
-        return Object::Undef;
-    }
+        argumentCheckExactInteger(2, startObj);
+        int start;
+        if (startObj.isFixnum()) {
+            start = startObj.toFixnum();
+        } else { // startObj.isBignum()
+            start = startObj.toBignum()->toS32();
+        }
+        if (argc < 4) {
+            outputPort->putByteVector(bv, start);
+            return Object::Undef;
+        }
 
-    argumentCheckExactInteger(3, countObj);
-    int count;
-    if (countObj.isFixnum()) {
-        count = countObj.toFixnum();
-    } else { // countObj.isBignum()
-        count = countObj.toBignum()->toS32();
-    }
-    outputPort->putByteVector(bv, start, count);
-    return Object::Undef;
+        argumentCheckExactInteger(3, countObj);
+        int count;
+        if (countObj.isFixnum()) {
+            count = countObj.toFixnum();
+        } else { // countObj.isBignum()
+            count = countObj.toBignum()->toS32();
+        }
+        outputPort->putByteVector(bv, start, count);
+        return Object::Undef;
+    CATCH(ioError)
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    END_TRY
 }
 
 Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
