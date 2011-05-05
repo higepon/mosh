@@ -1925,19 +1925,25 @@ Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flush-output-port");
     checkArgumentLength(1);
-    const Object outputPort = argv[0];
-    if (outputPort.isBinaryOutputPort()) {
-        outputPort.toBinaryOutputPort()->flush();
-    } else if (outputPort.isBinaryInputOutputPort()) {
-        outputPort.toBinaryInputOutputPort()->flush();
-    } else if (outputPort.isTextualOutputPort()) {
-        outputPort.toTextualOutputPort()->flush();
-    } else if (outputPort.isTextualInputOutputPort()) {
-        outputPort.toTextualInputOutputPort()->flush();
-    } else {
-        callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
-    }
-    return Object::Undef;
+    TRY_WITHOUT_DSTR
+        const Object outputPort = argv[0];
+        if (outputPort.isBinaryOutputPort()) {
+            outputPort.toBinaryOutputPort()->flush();
+        } else if (outputPort.isBinaryInputOutputPort()) {
+            outputPort.toBinaryInputOutputPort()->flush();
+        } else if (outputPort.isTextualOutputPort()) {
+            outputPort.toTextualOutputPort()->flush();
+        } else if (outputPort.isTextualInputOutputPort()) {
+            outputPort.toTextualInputOutputPort()->flush();
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
+        }
+        return Object::Undef;
+    CATCH(ioError)
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    END_TRY
 }
 
 Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
