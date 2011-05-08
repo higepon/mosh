@@ -79,9 +79,10 @@
 ;; proc = (^[bv offset count] ...) => bufptr
 (define (do-pipe/in proc bufsize)
   (make io-object
-        (type 'pipe-in)
-        (bufsize 4096)
+        (type 'pipe-in/wait)
+        (bufsize bufsize)
         (buf (make-bytevector bufsize))
+        (bufstart 0)
         (proc proc)
         (handle #f)
         (realized? #f)))
@@ -90,7 +91,7 @@
   ;; we ignore bufsize here...
   (case-lambda
     ((proc)
-     (do-pipe/in proc #f))))
+     (do-pipe/in proc 4096))))
 
 (define (io-object? x)
   (is-a? x io-object))
@@ -127,7 +128,9 @@
             (handle hpipe)
             (filename pipename)
             (realized? #t))
-    (register-io-object Q io-object)))
+    (register-io-object Q io-object)
+    (let-with io-object (overlapped)
+      (win32_wait_named_pipe_async hpipe overlapped))))
 
 (define* (queue-process-launch
            (Q)
@@ -167,12 +170,16 @@
 
 (define* (launch-io-event (io io-object) bytes)
   (let-with io (type buf bufstart bufsize proc param handle overlapped)
+    ;(display (list 'launch-io type))(newline)
     (case type
+      ((pipe-in/wait)
+       (touch! io (type 'pipe-in))
+       (win32_handle_read_async handle 0 bufsize buf overlapped))
       ((pipe-in)
-       (let ((offset (proc buf bufstart bytes)))
+       (let ((offset (proc buf bufstart (pointer->integer bytes))))
          (cond 
            (offset (touch! io (bufstart offset))
-                   (win32_handle_read_async handle bufstart (- bufsize bufstart) overlapped))
+                   (win32_handle_read_async handle offset (- bufsize offset) buf overlapped))
            ((not offset) ;; close
             (dispose-io-object io)))))
       ((process)
