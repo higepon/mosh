@@ -132,6 +132,18 @@
     (let-with io-object (overlapped)
       (win32_wait_named_pipe_async hpipe overlapped))))
 
+(define (compose-process-spec spec)
+  (define (needs-escape? str)
+    (find char-whitespace? (string->list str)))
+  (define (escape str)
+    (if (needs-escape? str)
+      (string-append "\"" str "\"")
+      str))
+  (fold-left (lambda (cur e)
+               (string-append cur " " (escape e)))
+             (car spec)
+             (cdr spec)))
+
 (define* (queue-process-launch
            (Q)
            spec start-dir env*
@@ -145,7 +157,7 @@
         (let-with x (filename) filename))))
   ;; FIXME: process env*
 
-  (let ((proc (win32_process_redirected_child2 spec
+  (let ((proc (win32_process_redirected_child2 (compose-process-spec spec)
                                                start-dir
                                                (pass in)
                                                (pass out)

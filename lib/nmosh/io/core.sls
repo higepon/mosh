@@ -228,7 +228,7 @@
     (plet base-prop (exec chdir stdout/bin stderr/bin finish)
           (queue-process-launch
             Q
-            (car exec) ;; FIXME: ...
+            exec 
             chdir
             #f ;; FIXME: implement env*
             (discard) ;; FIXME: implement input
