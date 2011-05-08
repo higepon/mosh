@@ -3,7 +3,8 @@
            win32_get_processor_count
            win32_get_ansi_codepage
            win32_multibyte_to_widechar
-           win32_measure_multibyte_to_widechar)
+           win32_measure_multibyte_to_widechar
+           win32_mypath)
          (import (rnrs)
                  (nmosh ffi box)
                  (prefix (nmosh stubs win32-misc) stub:))
@@ -32,5 +33,11 @@
                input
                (bytevector-length input))))
     ret))
+
+(define (win32_mypath bv size)
+  (let ((ret (stub:win32_mypath bv size)))
+    (unless (= ret 1)
+      (assertion-violation 'win32_mypath
+                           "something wrong with win32_mypath"))))
 
 )

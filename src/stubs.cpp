@@ -128,7 +128,8 @@ CONS(FUNC("win32_get_processor_count",win32_get_processor_count), \
 CONS(FUNC("win32_get_ansi_codepage",win32_get_ansi_codepage), \
 CONS(FUNC("win32_multibyte_to_widechar",win32_multibyte_to_widechar), \
 CONS(FUNC("win32_measure_multibyte_to_widechar",win32_measure_multibyte_to_widechar), \
-	NIL)))))
+CONS(FUNC("win32_mypath",win32_mypath), \
+	NIL))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \

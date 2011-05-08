@@ -980,4 +980,14 @@ win32_measure_multibyte_to_widechar(int cp, void* input, int input_count){
     return ret*2;
 }
 
-
+// 1 = success, otherwise = failure
+int
+win32_mypath(wchar_t* buf,int len){
+    int ret;
+    ret = GetModuleFileNameW(NULL,buf,len);
+    if(ret==len||ret==0){
+        return -1; // fail
+    }else{
+        return 1;
+    }
+}
