@@ -15,6 +15,7 @@ option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
 option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
 option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
 option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
+option(MOSH_DEBUG_VERSION "build Debug version of mosh interpreter" OFF)
 
 if(MOSH_WITH_NMOSH_GUI)
     find_package(wxWidgets COMPONENTS base core adv html xml xrc gl REQUIRED)
@@ -46,6 +47,10 @@ if(MOSH_PORTABLE)
     endif()
 endif(MOSH_PORTABLE)
 
+if(MOSH_DEBUG_VERSION)
+    add_definitons(-DDEBUG_VERSION)
+endif(MOSH_DEBUG_VERSION)
+
 if(MOSH_PREFIXLESS)
     add_definitions(-DWITH_NMOSH_PREFIXLESS)
 endif(MOSH_PREFIXLESS)
@@ -72,7 +77,7 @@ else()
 endif()
 
 mark_as_advanced(MOSH_WITH_NMOSH 
-    MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
+    MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH MOSH_DEBUG_VERSION)
 
 add_definitions(-DHAVE_CONFIG_H
     -DMOSH_LIB_PATH=\"${MOSH_LIB_PATH}\"
