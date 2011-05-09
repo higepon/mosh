@@ -45,7 +45,7 @@
     bufstart
     buf
     proc
-    param ;; string(file) / ???(socket) / 
+    param ;; string(file) / ???(socket) / io-object list(process)
     handle ;; win32-handle (if available)
     overlapped ;; overlapped
     Q
@@ -68,23 +68,28 @@
 
 (define* (dispose-io-object (io-object))
   (let-with io-object (Q handle type overlapped)
-    (let-with Q (io-objects)
-      (hashtable-delete! io-objects (pointer->integer
-                                      (object->pointer io-object))))
-    (case type
-      ((process) 'nothing-to-do)
-      (else (win32_handle_close handle)))
-    (win32_overlapped_free overlapped)))
+    (when overlapped ;; to prevent double dispose
+      (when Q
+        (let-with Q (io-objects)
+          (hashtable-delete! io-objects (pointer->integer
+                                          (object->pointer io-object)))))
+      (case type
+        ((process) 'nothing-to-do)
+        (else (win32_handle_close handle)))
+      (win32_overlapped_free overlapped)
+      (touch! io-object (overlapped #f)))))
 
 ;; proc = (^[bv offset count] ...) => bufptr
 (define (do-pipe/in proc bufsize)
   (make io-object
+        (Q #f)
         (type 'pipe-in/wait)
         (bufsize bufsize)
         (buf (make-bytevector bufsize))
         (bufstart 0)
         (proc proc)
         (handle #f)
+        (overlapped #f)
         (realized? #f)))
 
 (define pipe/in
@@ -117,7 +122,9 @@
 
 (define (overlapped->io-object ovl)
   (let ((p (win32_overlapped_getmydata ovl)))
-    (pointer->object p)))
+    (if (= (pointer->integer p) 0)
+      #f
+      (pointer->object p))))
 
 ;; realize/queue 
 ;; (create HANDLE+OVERLAPPED from io-object and process internally)
@@ -126,6 +133,7 @@
          (hpipe (win32_create_named_pipe_async pipename)))
     (touch! io-object
             (handle hpipe)
+            (overlapped #f)
             (filename pipename)
             (realized? #t))
     (register-io-object Q io-object)
@@ -148,15 +156,17 @@
            (Q)
            spec start-dir env*
            (in io-object) (out io-object) (err io-object) result-proc)
+  (define ht (make-eq-hashtable))
+  (define passed-objects '())
   (define (pass x)
     (cond
       ((discard? x)
        #f)
       (else ;; FIXME non pipe-in support...
+        (set! passed-objects (cons x passed-objects))
         (realize/queue/pipe-in Q x)
         (let-with x (filename) filename))))
   ;; FIXME: process env*
-
   (let ((proc (win32_process_redirected_child2 (compose-process-spec spec)
                                                start-dir
                                                (pass in)
@@ -166,6 +176,8 @@
                          (Q Q) ;; FIXME: Why ??
                          (type 'process)
                          (proc result-proc)
+                         (param passed-objects)
+                         (overlapped #f)
                          (realized? #t)
                          (handle proc))))
       (register-io-object Q procobj)
@@ -196,7 +208,14 @@
             (dispose-io-object io)))))
       ((process)
        (proc (pointer->integer bytes))
+       (for-each (lambda (e) (dispose-io-object e))
+                 param)
        (dispose-io-object io)))))
+
+(define (warn-disappear-event ovl)
+  (display "WARNING: event had been disappeared at " (current-error-port))
+  (display ovl (current-error-port))
+  (newline (current-error-port)))
 
 (define* (queue-dispatch (Q))
   (let-with Q (evt)
@@ -204,7 +223,10 @@
       (touch! Q (evt #f))
       (let-with evt (ovl bytes)
         (let ((io (overlapped->io-object ovl)))
-          (launch-io-event io bytes))))))
+          (if 
+            io 
+            (launch-io-event io bytes)
+            (warn-disappear-event ovl)))))))
 
 (define* event
   (bytes key ovl))

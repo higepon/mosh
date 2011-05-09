@@ -7,9 +7,7 @@
            nmosh-io-master-queue
 
            ;; process
-           launch!
-           do-launch!
-           )
+           launch!)
          (import (nmosh io master-queue)
                  (nmosh aio platform win32)
                  (nmosh win32 util) ;; mbcs
@@ -68,13 +66,13 @@
 (define-syntax prop-list
   (syntax-rules ()
     ((_) '())
-    ((_ (name . prop) next ...)
-     (cons (cons 'name prop)
+    ((_ (name prop ...) next ...)
+     (cons (list 'name prop ...)
            (prop-list next ...)))))
 
 (define-syntax launch!
   (syntax-rules ()
-    ((_ (propent0 propent1 ...))
+    ((_ propent0 propent1 ...)
      (do-launch! (prop-list propent0 propent1 ...)))
     ((_ name (propent0 propent1 ...))
      (letrec ((name (launch! (propent0 propent1 ...))))
