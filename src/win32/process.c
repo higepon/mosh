@@ -524,10 +524,13 @@ win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key, uintptr_t ove
 	return 1;
 }
 
+#if 0
+// Vista or later only...
 int 
 win32_cancelioex(void* h,void* ovl){
 	return CancelIoEx((HANDLE)h,(OVERLAPPED *)ovl);
 }
+#endif
 
 #if 0
 int

@@ -588,8 +588,7 @@ set(mosh_core_srcs ${mosh_core_cxxsrcs} ${ffi_stub})
 
 if(CMAKE_HOST_WIN32)
 set(mosh_win32_srcs
-src/win32/process.c
-src/win32/process_stub.cpp)
+src/win32/process.c)
 source_group(win32 FILES ${mosh_win32_srcs})
 set(mosh_core_srcs 
 ${mosh_core_srcs}

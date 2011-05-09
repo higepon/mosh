@@ -191,7 +191,7 @@ MOSH_CORE_SRCS += src/ffi_stub_x86_64.S
 endif
 
 if MINGW32
-MOSH_CORE_SRCS += src/win32/process.c src/win32/process_stub.cpp
+MOSH_CORE_SRCS += src/win32/process.c
 endif
 
 if KQUEUE

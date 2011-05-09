@@ -3,7 +3,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-int win32_process_pipe(void* ret);
 uintptr_t win32_iocp_create(void);
 int win32_iocp_assoc(uintptr_t iocp,uintptr_t in,uintptr_t key);
 int win32_iocp_pop(uintptr_t iocp,intptr_t timeout,uintptr_t ret_bytestrans,uintptr_t ret_key,uintptr_t ret_overlapped);
@@ -18,7 +17,7 @@ uintptr_t win32_create_named_pipe_async(wchar_t* name);
 int win32_wait_named_pipe_async(uintptr_t h,uintptr_t ovl);
 int win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key,uintptr_t overlapped);
 //int win32_process_get_result(void* p);
-int win32_cancelioex(void* h,void* ovl);
+//int win32_cancelioex(void* h,void* ovl);
 int win32_handle_close(void* h);
 
 //winsock

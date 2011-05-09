@@ -12,7 +12,6 @@
                  win32_create_named_pipe_async
                  win32_wait_named_pipe_async
                  win32_process_wait_async
-                 win32_cancelioex
                  win32_handle_close
 
                  ;; sockets
@@ -210,11 +209,6 @@
                                           key
                                           overlapped)))
     x))
-
-(define* (win32_cancelioex (h win32-handle)
-                           overlapped)
-  (stub:win32_cancelioex (handle->pointer h)
-                         overlapped))
 
 (define* (win32_handle_close (h win32-handle))
   (let ((handle (handle->pointer h)))

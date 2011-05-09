@@ -18,7 +18,6 @@
   (void* win32_create_named_pipe_async (void*))
   (int win32_wait_named_pipe_async (void* void*))
   (int win32_process_wait_async (void* void* void* void*))
-  (int win32_cancelioex (void* void*))
   (int win32_sockaddr_storage_size)
   (void* win32_socket_create (int int void* void*))
   (int win32_getaddrinfo (void* void* void* int int))

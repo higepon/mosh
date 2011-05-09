@@ -53,17 +53,6 @@
 
 using namespace scheme;
 
-#ifdef _WIN32
-Object stub_win32_process_pipe(VM* theVM, int argc, const Object* argv);
-Object stub_win32_process_redirected_child(VM* theVM, int argc, const Object* argv);
-Object stub_win32_handle_read(VM* theVM, int argc, const Object* argv);
-Object stub_win32_handle_write(VM* theVM, int argc, const Object* argv);
-Object stub_win32_handle_close(VM* theVM, int argc, const Object* argv);
-Object stub_win32_process_wait(VM* theVM, int argc, const Object* argv);
-Object stub_win32_named_pipe_create(VM* theVM, int argc, const Object* argv);
-Object stub_win32_named_pipe_wait(VM* theVM, int argc, const Object* argv);
-#endif
-
 #define NIL Object::Nil
 #define CONS(x,y) Object::cons((x),(y))
 #define SYM(x) Symbol::intern(UC(x))
@@ -81,7 +70,6 @@ CONS(FUNC("terminal_isatty",terminal_isatty),NIL)))))
 #ifdef HAVE_AIO_WIN32
 #define LIBDATA_AIO_WIN32 CONS(SYM("aio-win32"), \
 CONS(FUNC("win32_handle_close",win32_handle_close), \
-CONS(FUNC("win32_cancelioex",win32_cancelioex), \
 CONS(FUNC("win32_iocp_create",win32_iocp_create), \
 CONS(FUNC("win32_iocp_assoc",win32_iocp_assoc), \
 CONS(FUNC("win32_iocp_pop",win32_iocp_pop), \
@@ -107,7 +95,7 @@ CONS(FUNC("win32_socket_listen",win32_socket_listen), \
 CONS(FUNC("win32_getaddrinfo",win32_getaddrinfo), \
 CONS(FUNC("win32_finalization_handler_get",win32_finalization_handler_get), \
 CONS(FUNC("win32_finalization_handler_create",win32_finalization_handler_create), \
-	NIL))))))))))))))))))))))))))))
+	NIL)))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
 CONS(FUNC("win32_messagebox",win32_messagebox) ,\
@@ -203,14 +191,4 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 void
 register_stubs(VM* theVM){
     theVM->setValueString(UC("%get-pffi-feature-set"),Object::makeCProcedure(stub_get_pffi_feature_set));
-#ifdef _WIN32
-    theVM->setValueString(UC("%win32_process_pipe"),Object::makeCProcedure(stub_win32_process_pipe));
-    theVM->setValueString(UC("%win32_process_redirected_child"),Object::makeCProcedure(stub_win32_process_redirected_child));
-    theVM->setValueString(UC("%win32_handle_read"),Object::makeCProcedure(stub_win32_handle_read));
-    theVM->setValueString(UC("%win32_handle_write"),Object::makeCProcedure(stub_win32_handle_write));
-    theVM->setValueString(UC("%win32_handle_close"),Object::makeCProcedure(stub_win32_handle_close));
-    theVM->setValueString(UC("%win32_process_wait"),Object::makeCProcedure(stub_win32_process_wait));
-    theVM->setValueString(UC("%win32_named_pipe_create"),Object::makeCProcedure(stub_win32_named_pipe_create));
-    theVM->setValueString(UC("%win32_named_pipe_wait"),Object::makeCProcedure(stub_win32_named_pipe_wait));
-#endif
 }
