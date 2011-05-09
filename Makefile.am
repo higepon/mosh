@@ -445,6 +445,14 @@ test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp sr
 test_thread_LDADD = $(TEST_LDADD_)
 
 dist-hook:
+	-rm -rf $(top_distdir)/extlibs/gc-7.1/libstomic_ops-1.2/autom4te.cache
+	-rm -f $(top_distdir)/doc/text/Download.txt
+	-rm -f $(top_distdir)/src/ffitest.o
+	-rm -f $(top_distdir)/src/mosh_config
+	-rm -f $(top_distdir)/src/stamp-h1
+	-rm -f $(top_distdir)/src/config.h.in~
+	-rm -f $(top_distdir)/lib/mosh/config.ss
+	-rm -f $(top_distdir)/lib/mosh/mysql.ss
 	-rm -f $(top_distdir)/lib/libffitest.so.1.0
 	-rm -f $(top_distdir)/src/config.h
 
