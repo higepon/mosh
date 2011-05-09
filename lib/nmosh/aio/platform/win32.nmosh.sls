@@ -51,24 +51,34 @@
     Q
     realized?))
 
-(define* (register-io-object (Q) (io-object))
+;; debug
+(define count 0)
+(define (connection-count) count)
+(define (inc-count) (set! count (+ 1 count)))
+(define (dec-count) (set! count (- count 1)))
+
+;; FIXME: won't work with (Q)...
+(define* (register-io-object (queue Q) (io-object))
   (define ovl (win32_overlapped_alloc))
-  (let-with Q (io-objects)
+  (win32_overlapped_setmydata ovl (integer->pointer #xdeadbeef))
+  (let-with queue (io-objects)
     (hashtable-set! io-objects 
                     (pointer->integer (object->pointer io-object))
                     io-object))
   (touch! io-object
-          (Q Q)
+          (Q queue)
           (overlapped ovl))
   (win32_overlapped_setmydata ovl (object->pointer io-object))
   (let-with io-object (handle type)
-    (let-with Q (iocp)
+    (let-with queue (iocp)
       (win32_iocp_assoc iocp handle (object->pointer io-object)))))
 
 
 (define* (dispose-io-object (io-object))
   (let-with io-object (Q handle type overlapped)
+    (inc-count)
     (when overlapped ;; to prevent double dispose
+      (dec-count)
       (when Q
         (let-with Q (io-objects)
           (hashtable-delete! io-objects (pointer->integer
@@ -108,10 +118,6 @@
         (handle #f)
         (realized? #t)))
 
-(define (discard? x)
-  (and (io-object? x)
-       (let-with x (type)
-         (eq? type 'discard))))
 (define* (realized? (io-object))
   (let-with io-object (realized?) realized?))
 
@@ -122,9 +128,13 @@
 
 (define (overlapped->io-object ovl)
   (let ((p (win32_overlapped_getmydata ovl)))
-    (if (= (pointer->integer p) 0)
-      #f
-      (pointer->object p))))
+    (case (pointer->integer p)
+      ((0)
+       #f)
+      ((#xdeadbeef) ;; trap uninitialized OVPAIR
+       (error 'beef "dead beef")
+       #f)
+      (else (pointer->object p)))))
 
 ;; realize/queue 
 ;; (create HANDLE+OVERLAPPED from io-object and process internally)
@@ -156,16 +166,20 @@
            (Q)
            spec start-dir env*
            (in io-object) (out io-object) (err io-object) result-proc)
-  (define ht (make-eq-hashtable))
   (define passed-objects '())
   (define (pass x)
-    (cond
-      ((discard? x)
+    (case (and (io-object? x)
+               (let-with x (type) type))
+      ((discard)
        #f)
-      (else ;; FIXME non pipe-in support...
-        (set! passed-objects (cons x passed-objects))
-        (realize/queue/pipe-in Q x)
-        (let-with x (filename) filename))))
+      ((pipe-in/wait) ;; FIXME non pipe-in support...
+       (set! passed-objects (cons x passed-objects))
+       (realize/queue/pipe-in Q x)
+       (let-with x (filename) filename))
+      (else
+        (assertion-violation 'pueue-process-launch
+                             "invalid argument"
+                             x))))
   ;; FIXME: process env*
   (let ((proc (win32_process_redirected_child2 (compose-process-spec spec)
                                                start-dir
@@ -223,8 +237,7 @@
       (touch! Q (evt #f))
       (let-with evt (ovl bytes)
         (let ((io (overlapped->io-object ovl)))
-          (if 
-            io 
+          (if io 
             (launch-io-event io bytes)
             (warn-disappear-event ovl)))))))
 
