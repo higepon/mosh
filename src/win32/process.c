@@ -809,6 +809,19 @@ post_window_event(window_handler_data* whd,int id,uintptr_t param){
     emit_queue_event(whd->iocp,(uintptr_t)id,(intptr_t)param,(uintptr_t)&whd->ovl);
 }
 
+// events:
+// 0 : create (HWND)
+// 1 : destroy (0)
+// 2 : close (0)
+// 3 : char (c)
+// 4 : MouseMove (XY)
+// 5 : MouseEvent (XY)
+// 6 : VScroll
+// 7 : HScroll
+// 8 : Key Modifier ON
+// 9 : Key Modifier OFF
+// 11 : Mouse Event (mouse)
+// 20 : SIZE (WH)
 LRESULT CALLBACK
 BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     window_handler_data* whd = (window_handler_data *)GetWindowLongPtr(hWnd,GWL_USERDATA);
@@ -822,6 +835,26 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     case WM_DESTROY:
         post_window_event(whd,1,0);
         return 0;
+    case WM_CLOSE:
+        post_window_event(whd,2,0);
+        return 0;
+    case WM_CHAR:
+        post_window_event(whd,3,wParam); // UTF-16 keycode
+        return 0;
+    case WM_MOUSEMOVE:
+        post_window_event(whd,3,lParam);
+        return 0;
+    case WM_MOUSEWHEEL:
+        post_window_event(whd,6,GET_WHEEL_DELTA_WPARAM(wParam));
+        return 0;
+    case WM_MOUSEHWHEEL:
+        post_window_event(whd,7,GET_WHEEL_DELTA_WPARAM(wParam));
+        return 0;
+    case WM_SIZE:
+        post_window_event(whd,20,lParam);
+        return 0;
+    // mouse keys
+    // keyboard keys
     default:
         return DefWindowProcW(hWnd, msg, wParam, lParam);
     }
