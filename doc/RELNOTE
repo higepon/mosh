@@ -45,6 +45,9 @@ Changes:
         MinGW32+MSYS using "./configure" -- Use CMake instead.
         VisualStudio 2008
 
+    Build system:
+        Test suite now supports out-of-tree builds.
+
     Psyntax-mosh (mosh):
         "make install" no longer performs cache update in $HOME/.mosh.
         CMake support was dropped.
