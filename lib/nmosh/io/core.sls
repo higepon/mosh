@@ -2,9 +2,7 @@
          (export 
            io-dispatch-loop
            io-dispatch
-           cleanup
-           with-cleanup
-           nmosh-io-master-queue
+           io-dispatch-sync
 
            ;; process
            launch!)
@@ -12,27 +10,16 @@
                  (nmosh aio platform win32)
                  (nmosh win32 util) ;; mbcs
                  (yuni core)
-                 (yuni util invalid-form)
                  (shorten)
                  (rnrs))
 
-(define-invalid-forms cleanup)
-
 (define Q nmosh-io-master-queue)
-
-(define-syntax with-cleanup
-  (syntax-rules (cleanup)
-    ((_ form0 ... (cleanup cleanup-form ...))
-     (guard (c (#t (let ((result (let () cleanup-form ...)))
-                     (when result
-                       (raise c)))))
-            form0 ...))))
 
 (define (io-dispatch-loop)
   (io-dispatch)
   (io-dispatch-loop))
 
-(define io-dispatch
+(define io-dispatch/one
   (case-lambda
     (() 
      (queue-wait Q)
@@ -40,6 +27,16 @@
     ((timeout) 
      (queue-wait/timeout Q timeout)
      (queue-dispatch Q timeout))))
+
+(define-syntax io-dispatch-sync
+  (syntax-rules ()
+    ((_ resume form0 ...)
+     (call/cc (lambda (resume)
+                (let () form0 ...)
+                (io-dispatch-loop))))))
+
+;; FIXME: io-dispatch should dispach all queued events..
+(define io-dispatch io-dispatch/one)
 
 (define (do-plet-lookup obj sym default)
   (let ((p (assoc sym obj)))
@@ -68,6 +65,9 @@
     ((_) '())
     ((_ (name prop ...) next ...)
      (cons (list 'name prop ...)
+           (prop-list next ...)))
+    ((_ (name . prop) next ...)
+     (cons (cons 'name prop)
            (prop-list next ...)))))
 
 (define-syntax launch!
