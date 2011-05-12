@@ -14,13 +14,8 @@ ENABLE_TESTING()
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
 option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
 option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
-option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
+# option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
 option(MOSH_DEBUG_VERSION "build Debug version of mosh interpreter" OFF)
-
-if(MOSH_WITH_NMOSH_GUI)
-    find_package(wxWidgets COMPONENTS base core adv html xml xrc gl REQUIRED)
-    include( ${wxWidgets_USE_FILE} )
-endif(MOSH_WITH_NMOSH_GUI)
 
 # only ONE runtime source will be allowed.
 set(nmosh_runtime_src
@@ -619,32 +614,6 @@ add_executable(${TARGET_FLAVOR}
 
 target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
 
-if(MOSH_WITH_NMOSH_GUI)
-set(wx_srcs
-    src/wx/stubs.cpp
-    src/wx/resources.cpp
-    src/wx/frames.cpp
-    src/wx/dc.cpp
-    src/wx/main.cpp)
-source_group(wxmosh FILES ${wx_srcs})
-if(WIN32)
-    add_definitions(-D_ITERATOR_DEBUG_LEVEL=0)
-    set_source_files_properties(${wx_srcs}
-        PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
-endif(WIN32)
-
-add_executable(skymosh WIN32
-    ${onig_srcs} 
-    ${gc_srcs} 
-    ${mosh_core_srcs} 
-    ${mosh_core_hdrs}
-    ${mosh_runtime_src}
-    ${wx_srcs})
-
-#see Ticket #12573
-target_link_libraries(skymosh ${GMP_LIBRARY} ${arch_libs} ${wxWidgets_LIBRARIES})
-endif(MOSH_WITH_NMOSH_GUI)
-
 # tests
 
 add_library(testinggc EXCLUDE_FROM_ALL
@@ -723,9 +692,6 @@ file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_D
 
 
 if(MOSH_PORTABLE)
-    if(MOSH_WITH_NMOSH_GUI)
-        install(TARGETS skymosh DESTINATION .)
-    endif()
     install(TARGETS ${TARGET_FLAVOR} DESTINATION .)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib DESTINATION .)
     if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
@@ -733,9 +699,6 @@ if(MOSH_PORTABLE)
     endif()
 else()
     install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
-    if(MOSH_WITH_NMOSH_GUI)
-        install(TARGETS skymosh DESTINATION bin)
-    endif()
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
         DESTINATION share/mosh/${MOSH_VERSION})
     if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
