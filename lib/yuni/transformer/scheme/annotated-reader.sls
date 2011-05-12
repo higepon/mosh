@@ -49,7 +49,7 @@
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (file->source filename)
+(define (file->source filename inject)
 
   (define null-input (list 'null))
   (define buf null-input)
@@ -3562,7 +3562,7 @@
       (let ((n (string-length tokenValue)))
         ;; YUNI: actually returns identifier-object
         (define (return sym)
-          (make-identifier sym #f current-position))
+          (inject sym current-position))
         (define (loop i)
           (if (= i n)
               (return (string->symbol tokenValue))
