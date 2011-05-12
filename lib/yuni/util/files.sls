@@ -125,6 +125,9 @@
 (define (path->list pth)
   (strsep (pathfilter pth) #\/))
 
+(define (list->path l)
+  (fold-left path-append (car l) (cdr l)))
+
 (define (expand-loadpath lp)
   (strsep lp CHR-ENVPATHSEP))
 
@@ -137,29 +140,22 @@
 (define (relative-path? pth) (not (absolute-path? pth)))
 
 (define (simplify-path pth)
-  (define (make-simple base l)
-    (define (chop-itr base-cur l-cur)
-      (if (and (pair? base-cur) (pair? l-cur)
-               (string=? (car base-cur) (car l-cur)))
-        (chop-itr (cdr base-cur) (cdr l-cur))
-        (values base-cur l-cur)))
-    (define (run)
-      (chop-itr base l))
-    (define (return base l)
-      (append
-        (map (lambda (bogus) "..") base)
-        l))
-    (call-with-values run return))
-  (cond
-    ((absolute-path? pth)
-     (let ((base (path->list (current-directory)))
-           (l (path->list pth)))
-       (let ((r (compose-rel-path (make-simple base l))))
-         (if (< (string-length pth) (string-length r))
-           pth
-           r))))
-    (else pth)))
-    
+  (define (sweep l)
+    (define (sweep/dot l)
+      (filter (lambda (e) (not (string=? e "."))) l))
+    (define (sweep/dd cur a)
+      (if (pair? a)
+        (if (and (string=? (car a) "..")
+                 (pair? cur)
+                 (not (string=? (car cur) "..")))
+          (sweep/dd (cdr cur) (cdr a))
+          (sweep/dd (cons (car a) cur) (cdr a)))
+        (reverse cur)))
+    (sweep/dot (sweep/dd '() l)))
+  (let ((l (sweep (path->list pth))))
+    (if (pair? l)
+      (list->path l)
+      ".")))
 
 (define (split-dir+base pth)
   (define (itr cur rest)

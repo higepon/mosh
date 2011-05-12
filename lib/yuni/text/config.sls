@@ -1,8 +1,10 @@
 (library (yuni text config)
          (export file->config
-                 config->file)
+                 config->file
+                 template-replace)
          (import (rnrs)
                  (yuni util files)
+                 (yuni text config template)
                  (yuni text config reader)
                  (yuni text config writer))
 

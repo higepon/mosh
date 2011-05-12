@@ -1,8 +1,8 @@
-(library (yuni text config templete)
-         (export templete-replace)
+(library (yuni text config template)
+         (export template-replace)
          (import (rnrs))
 
-(define (split-templete str)
+(define (split-template str)
   (define (itr mode cur acc rest)
     (if (pair? rest)
       (let ((chr (car rest))
@@ -40,8 +40,8 @@
         (if b (cdr b) #f)))
     e))
 
-(define (templete-replace str env)
-  (define code (split-templete str))
+(define (template-replace str env)
+  (define code (split-template str))
   (let ((l (map (lambda (e) (do-replace e env)) code)))
     (fold-left
       (lambda (cur e orig)
