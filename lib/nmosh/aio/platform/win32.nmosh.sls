@@ -70,9 +70,17 @@
           (overlapped ovl))
   (win32_overlapped_setmydata ovl (object->pointer io-object))
   (let-with io-object (handle type)
-    (let-with queue (iocp)
-      (win32_iocp_assoc iocp handle (object->pointer io-object)))))
-
+    (case type
+      ((window)
+       (let-with queue (iocp)
+         (win32_window_create iocp ovl)))
+      ((pipe-in/wait process)
+       (let-with queue (iocp)
+         (win32_iocp_assoc iocp handle (object->pointer io-object))))
+      (else
+        (assertion-violation 'register-io-object
+                             "invalid io-object type"
+                             type)))))
 
 (define* (dispose-io-object (io-object))
   (let-with io-object (Q handle type overlapped)
@@ -221,10 +229,12 @@
            ((not offset) ;; close
             (dispose-io-object io)))))
       ((process)
-       (proc (pointer->integer bytes))
-       (for-each (lambda (e) (dispose-io-object e))
+       (for-each (lambda (e) 
+                   (display ('AUTOMATIC-DISPOSE e))(newline)
+                   (dispose-io-object e))
                  param)
-       (dispose-io-object io)))))
+       (dispose-io-object io)
+       (proc (pointer->integer bytes))))))
 
 (define (warn-disappear-event ovl)
   (display "WARNING: event had been disappeared at " (current-error-port))
