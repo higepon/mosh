@@ -65,7 +65,7 @@ Changes:
             %LOCALAPPDATA%/nmosh-cache by default.
 
     New libraries:
-         (templete) : Ruby's ERB like template library (Experimental).
+         (template) : Ruby's ERB like template library (Experimental).
          (facebook) : Facebook Graph API library (Experimental).
 
     Updated libraries:
