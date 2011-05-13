@@ -778,14 +778,17 @@ typedef struct{
     void* ptr;
 
     HANDLE iocp;
+	HDC hBufferDC;
+	HBITMAP buffer;
 }window_handler_data;
 
 static void
 window_handler(void* p){
     MSG msg;
-    HWND hWnd;
+	HWND hWnd;
     window_handler_data* whd = (window_handler_data *)p;
-    hWnd = CreateWindowExW(
+
+	hWnd = CreateWindowExW(
         0, //exstyle
         BASECLASS,
         L"", // title
@@ -809,6 +812,18 @@ post_window_event(window_handler_data* whd,int id,uintptr_t param){
     emit_queue_event(whd->iocp,(uintptr_t)id,(intptr_t)param,(uintptr_t)&whd->ovl);
 }
 
+static void
+clearbuffer(window_handler_data* whd){
+	if(whd->buffer){
+		DeleteObject(whd->buffer);
+	}
+	if(whd->hBufferDC){
+		DeleteDC(whd->hBufferDC);
+	}
+	whd->buffer = 0;
+	whd->hBufferDC = 0;
+}
+
 // events:
 // 0 : create (HWND)
 // 1 : destroy (0)
@@ -822,17 +837,33 @@ post_window_event(window_handler_data* whd,int id,uintptr_t param){
 // 9 : Key Modifier OFF
 // 11 : Mouse Event (mouse)
 // 20 : SIZE (WH)
+// 30 : active
+// 31 : inactive
 LRESULT CALLBACK
 BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     window_handler_data* whd = (window_handler_data *)GetWindowLongPtr(hWnd,GWL_USERDATA);
+	PAINTSTRUCT ps;
+	HDC hDC;
+	RECT r;
 
     switch(msg){
+	case WM_PAINT:
+		if(whd->hBufferDC){
+			hDC = BeginPaint(hWnd,&ps);
+			GetClientRect(hWnd,&r);
+			BitBlt(hDC,0,0,r.right,r.bottom,whd->hBufferDC,0,0,SRCCOPY);
+			EndPaint(hWnd,&ps);
+		}
+		return 0;
+	case WM_ERASEBKGND:
+		return 0;
     case WM_CREATE:
         whd = (window_handler_data *)(((CREATESTRUCT *)lParam)->lpCreateParams);
         SetWindowLongPtrW(hWnd,GWL_USERDATA,(LONG_PTR)whd);
         post_window_event(whd,0,(uintptr_t)hWnd);
         return 0;
     case WM_DESTROY:
+		clearbuffer(whd);
         post_window_event(whd,1,0);
         return 0;
     case WM_CLOSE:
@@ -842,7 +873,7 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
         post_window_event(whd,3,wParam); // UTF-16 keycode
         return 0;
     case WM_MOUSEMOVE:
-        post_window_event(whd,3,lParam);
+        post_window_event(whd,4,lParam);
         return 0;
     case WM_MOUSEWHEEL:
         post_window_event(whd,6,GET_WHEEL_DELTA_WPARAM(wParam));
@@ -853,8 +884,19 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     case WM_SIZE:
         post_window_event(whd,20,lParam);
         return 0;
+	case WM_USER:
+		DestroyWindow(hWnd);
+		return 0;
+	case WM_ACTIVATE:
+		if(wParam == WA_INACTIVE){
+			post_window_event(whd,31,0);
+		}else{
+			post_window_event(whd,30,0);
+		}
+		goto do_default;
     // mouse keys
     // keyboard keys
+do_default:
     default:
         return DefWindowProcW(hWnd, msg, wParam, lParam);
     }
@@ -863,6 +905,24 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 void
 win32_window_move(void* hWnd,signed int x,signed int y,signed int w,signed int h){
     MoveWindow((HWND)hWnd,x,y,w,h,TRUE);
+}
+
+
+void
+win32_window_fitbuffer(void* hWnd,void* p){
+	window_handler_data* whd = (window_handler_data *)p;
+	RECT r;
+	HDC hBufferDC;
+	HBITMAP buffer;
+	GetClientRect(hWnd,&r);
+
+	clearbuffer(whd);
+
+	hBufferDC = CreateCompatibleDC(NULL);
+	buffer = CreateCompatibleBitmap(hBufferDC,r.right,r.bottom);
+
+	whd->hBufferDC = hBufferDC;
+	whd->buffer = buffer;
 }
 
 // 0 = not activate, 1 = activate
@@ -877,6 +937,7 @@ win32_window_show(void* hWnd,int cmd){
         sw = SW_SHOWNA;
     }
     ShowWindow((HWND)hWnd,sw);
+	UpdateWindow(hWnd);
 }
 
 void
@@ -896,14 +957,14 @@ win32_window_close(void* hWnd){
 
 void
 win32_window_destroy(void* hWnd){
-    DestroyWindow((HWND)hWnd);
+    PostMessage((HWND)hWnd,WM_USER,0,0);
 }
 
 void
 win32_registerwindowclass(void){
     WNDCLASSEXW cls;
     ZeroMemory(&cls,sizeof(cls));
-    cls.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    cls.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
     cls.cbSize = sizeof(cls); 
     cls.lpfnWndProc = BaseWndProc;
     cls.hInstance = (HINSTANCE)GetModuleHandle(0);
@@ -923,6 +984,9 @@ void
 win32_window_create(void* iocp,void* overlapped){
     window_handler_data *whd = (window_handler_data *)overlapped;
     whd->iocp = iocp;
+	whd->hBufferDC = 0;
+	whd->buffer = 0;
+
 	_beginthread(window_handler,0,overlapped);
 }
 

@@ -9,10 +9,13 @@
                  win32_registerwindowclass
                  win32_window_alloc
                  win32_window_create
+                 win32_window_fitbuffer
                  win32_getmonitorinfo
-                 )
+
+                 integer->hwnd)
          (import (rnrs)
                  (yuni core)
+                 (mosh ffi)
                  (nmosh ffi box)
                  (nmosh win32 aio) ;; for win32-handle
                  (nmosh win32 util)
@@ -26,6 +29,9 @@
 (define (pointer->hwnd x)
   (make HWND (handle x)))
 
+(define (integer->hwnd x)
+  (pointer->hwnd (integer->pointer x)))
+
 (define (win32_messagebox caption msg dlgtype icontype)
   (stub:win32_messagebox 
     (string->utf16-bv caption)
@@ -37,6 +43,7 @@
   (stub:win32_window_move (hwnd->pointer HWND)
                           x y w h))
 
+;; cmd 0 = not activate, 1 = activate
 (define* (win32_window_show (HWND) cmd)
   (stub:win32_window_show (hwnd->pointer HWND)
                           cmd))
@@ -53,6 +60,11 @@
 
 (define* (win32_window_destroy (HWND))
   (stub:win32_window_destroy (hwnd->pointer HWND)))
+
+;; you will need some sync on this.
+(define* (win32_window_fitbuffer (HWND) p)
+  (stub:win32_window_fitbuffer (hwnd->pointer HWND)
+                               p))
 
 (define (win32_registerwindowclass)
   (stub:win32_registerwindowclass))

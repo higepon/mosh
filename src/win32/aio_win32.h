@@ -49,6 +49,7 @@ void win32_window_destroy(void* hWnd);
 void win32_registerwindowclass(void);
 void* win32_window_alloc(void);
 void win32_window_create(void* iocp,void* overlapped);
+void win32_window_fitbuffer(void* hWnd,void* p);
 void win32_getmonitorinfo(int id,int cmd,signed int *valid,signed int *x0,signed int* y0,signed int *x1,signed int *y1);
 
 // misc

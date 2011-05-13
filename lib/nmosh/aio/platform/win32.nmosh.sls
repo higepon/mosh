@@ -1,11 +1,11 @@
 (library (nmosh aio platform win32)
-         (export queue
+         (export ;; core functions
+                 queue
                  queue-dispose
                  queue-wait/timeout
                  queue-wait
                  queue-peek
                  queue-dispatch
-                 queue-process-launch
                  
                  ;; I/O objects constructors
                  discard
@@ -20,8 +20,12 @@
                  ;pipe/pull
                  pipe/in
 
-                 ;; 
+                 ;; process
+                 queue-process-launch
                  ;process-kill
+
+                 ;; GUI related
+                 queue-create-window
                  )
          (import (rnrs)
                  (srfi :8)
@@ -30,6 +34,7 @@
                  (primitives object->pointer
                              pointer->object)
                  (nmosh gensym)
+                 (nmosh win32 gui)
                  (nmosh win32 aio))
 
 (define* Q (iocp evt io-objects))
@@ -39,7 +44,7 @@
 (define* io-object
   (type  ;; stdin stdout stderr , file-in file-out ,
          ;; pipe-push, pipe-pull, pipe-in
-         ;; process, discard
+         ;; process, discard, window
     filename
     bufsize
     bufstart
@@ -59,7 +64,11 @@
 
 ;; FIXME: won't work with (Q)...
 (define* (register-io-object (queue Q) (io-object))
-  (define ovl (win32_overlapped_alloc))
+  (define ovl 
+    (let-with io-object (type)
+      (case type
+        ((window) (win32_window_alloc))
+        (else (win32_overlapped_alloc)))))
   (win32_overlapped_setmydata ovl (integer->pointer #xdeadbeef))
   (let-with queue (io-objects)
     (hashtable-set! io-objects 
@@ -92,7 +101,7 @@
           (hashtable-delete! io-objects (pointer->integer
                                           (object->pointer io-object)))))
       (case type
-        ((process) 'nothing-to-do)
+        ((process window) 'nothing-to-do)
         (else (win32_handle_close handle)))
       (win32_overlapped_free overlapped)
       (touch! io-object (overlapped #f)))))
@@ -170,6 +179,22 @@
              (car spec)
              (cdr spec)))
 
+(define class-registered? #f)
+(define* (queue-create-window (Q) handler)
+  (unless class-registered?
+    (win32_registerwindowclass)
+    (set! class-registered? #t))
+  (let ((win (make io-object
+                   (Q Q)
+                   (type 'window)
+                   (param #f)
+                   (overlapped #f)
+                   (realized? #t)
+                   (proc handler)
+                   (handle #f))))
+    (register-io-object Q win)
+    win))
+
 (define* (queue-process-launch
            (Q)
            spec start-dir env*
@@ -214,7 +239,7 @@
 ;  )
 
 
-(define* (launch-io-event (io io-object) bytes)
+(define* (launch-io-event (io io-object) key bytes)
   (let-with io (type buf bufstart bufsize proc param handle overlapped)
     ;(display (list 'launch-io type))(newline)
     (case type
@@ -225,16 +250,24 @@
        (let ((offset (proc buf bufstart (pointer->integer bytes))))
          (cond 
            (offset (touch! io (bufstart offset))
-                   (win32_handle_read_async handle offset (- bufsize offset) buf overlapped))
+                   (win32_handle_read_async 
+                     handle offset (- bufsize offset) buf overlapped))
            ((not offset) ;; close
             (dispose-io-object io)))))
       ((process)
        (for-each (lambda (e) 
-                   (display ('AUTOMATIC-DISPOSE e))(newline)
                    (dispose-io-object e))
                  param)
        (dispose-io-object io)
-       (proc (pointer->integer bytes))))))
+       (proc (pointer->integer bytes)))
+      ((window)
+       (proc overlapped
+             (pointer->integer key)
+             (pointer->integer bytes)))
+      (else
+        (display "WARNING: unrecognized event type: " (current-error-port))
+        (display type (current-error-port))
+        (newline (current-error-port))))))
 
 (define (warn-disappear-event ovl)
   (display "WARNING: event had been disappeared at " (current-error-port))
@@ -245,10 +278,10 @@
   (let-with Q (evt)
     (when evt
       (touch! Q (evt #f))
-      (let-with evt (ovl bytes)
+      (let-with evt (ovl key bytes)
         (let ((io (overlapped->io-object ovl)))
           (if io 
-            (launch-io-event io bytes)
+            (launch-io-event io key bytes)
             (warn-disappear-event ovl)))))))
 
 (define* event

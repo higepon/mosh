@@ -108,8 +108,9 @@ CONS(FUNC("win32_window_destroy",win32_window_destroy) ,\
 CONS(FUNC("win32_registerwindowclass",win32_registerwindowclass) ,\
 CONS(FUNC("win32_window_alloc",win32_window_alloc) ,\
 CONS(FUNC("win32_window_create",win32_window_create) ,\
+CONS(FUNC("win32_window_fitbuffer",win32_window_fitbuffer) ,\
 CONS(FUNC("win32_getmonitorinfo",win32_getmonitorinfo) ,\
-	NIL))))))))))))
+	NIL)))))))))))))
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
 CONS(FUNC("win32_get_processor_count",win32_get_processor_count), \

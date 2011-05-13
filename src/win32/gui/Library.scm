@@ -13,6 +13,7 @@
   (void win32_window_destroy (void*))
   (void win32_registerwindowclass)
   (void* win32_window_alloc)
+  (void win32_window_fitbuffer (void* void*))
   (void win32_window_create (void* void*))
   (void win32_getmonitorinfo (int int void* void* void* void* void*))
   )
