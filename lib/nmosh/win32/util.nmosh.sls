@@ -35,8 +35,8 @@
         pos
         (locate-null (+ 2 pos)))))
   (let* ((nullpos (locate-null 0))
-         (newbv (make-bytevector (+ nullpos 2))))
-    (bytevector-copy! bv 0 newbv 0 (+ nullpos 2))
+         (newbv (make-bytevector nullpos)))
+    (bytevector-copy! bv 0 newbv 0 nullpos)
     (byteswap! newbv)
     (bytevector->string newbv (make-transcoder (utf-16-codec)))))
 
