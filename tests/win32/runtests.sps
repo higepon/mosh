@@ -1,20 +1,29 @@
 (import (rnrs load)
         (nmosh process)
+        (srfi :8)
         (srfi :19)
         (srfi :48)
         (except (mosh) time format)
         (yuni util files)
+        (nmosh win32 util)
         (rnrs))
 
-(define files (file->sexp-list "testfiles"))
+(define files (file->sexp-list "tests/testfiles.scm"))
+(define NMOSH (nmosh-executable-path))
+
+(define something-wrong? #f)
 
 (define (run-nmosh file)
-  (let ((p (process-launch (path-append (mosh-executable-path) "nmosh.exe")
-                           #f
-                           (list file)
-                           #f #f #f)))
-    (process-wait p)
-    (process-result p)))
+  (receive (s out err) (apply process->stdout+stderr (list NMOSH file))
+    (unless (string=? "" out)
+      (display " -- stdout -- \n")
+      (display out)(newline))
+    (unless (string=? "" err)
+      (display " -- stderr -- \n")
+      (display err)(newline))
+    (unless (= s 0)
+      (set! something-wrong? #t))
+    s))
 
 (define (time-report start end)
   (let ((dif (time-difference end start)))
@@ -31,7 +40,7 @@
   (define ret)
   (define start)
   (define end)
-  (format #t "======= run ~a\n" file)
+  (format #t "======= run ~a\n" (list NMOSH file))
   (set! start (current-time))
   (set! ret (run-nmosh file))
   (set! end (current-time))
@@ -39,3 +48,7 @@
 
 (for-each testaudit files)
 (for-each runtest files)
+
+(if something-wrong? 
+  (exit -1)
+  (exit 0))
