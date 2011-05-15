@@ -747,12 +747,14 @@ Object File::modifyTime(const ucs4string& path)
     }
     return Object::Undef;
 #elif defined(MONA)
-    static bool isWarningShown = false;
-    if (!isWarningShown) {
-        monapi_warn("modifyTime returns always zero\n");
-        isWarningShown = true;
+    MonAPI::Date date;
+    intptr_t ret = monapi_file_get_date(utf32toUtf8(path), date);
+    if (ret == M_OK) {
+        return Arithmetic::mul(Bignum::makeInteger(1000000000),
+                               Bignum::makeIntegerFromU64(date.toUnixTime()));
+    } else {
+        return Object::Undef;
     }
-    return Object::makeFixnum(0);
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -789,8 +791,14 @@ Object File::accessTime(const ucs4string& path)
     }
     return Object::Undef;
 #elif defined(MONA)
-    MOSH_ASSERT(false);
-    return Object::Undef;
+    MonAPI::Date date;
+    intptr_t ret = monapi_file_get_date(utf32toUtf8(path), date);
+    if (ret == M_OK) {
+        return Arithmetic::mul(Bignum::makeInteger(1000000000),
+                               Bignum::makeIntegerFromU64(date.toUnixTime()));
+    } else {
+        return Object::Undef;
+    }
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -828,7 +836,14 @@ Object File::changeTime(const ucs4string& path)
     }
     return Object::Undef;
 #elif defined(MONA)
-    return Object::Undef;
+    MonAPI::Date date;
+    intptr_t ret = monapi_file_get_date(utf32toUtf8(path), date);
+    if (ret == M_OK) {
+        return Arithmetic::mul(Bignum::makeInteger(1000000000),
+                               Bignum::makeIntegerFromU64(date.toUnixTime()));
+    } else {
+        return Object::Undef;
+    }
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
