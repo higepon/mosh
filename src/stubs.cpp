@@ -110,7 +110,22 @@ CONS(FUNC("win32_window_alloc",win32_window_alloc) ,\
 CONS(FUNC("win32_window_create",win32_window_create) ,\
 CONS(FUNC("win32_window_fitbuffer",win32_window_fitbuffer) ,\
 CONS(FUNC("win32_getmonitorinfo",win32_getmonitorinfo) ,\
-	NIL)))))))))))))
+CONS(FUNC("win32_window_updaterects",win32_window_updaterects) ,\
+CONS(FUNC("win32_window_createbitmap",win32_window_createbitmap) ,\
+CONS(FUNC("win32_window_getclientrect_x",win32_window_getclientrect_x) ,\
+CONS(FUNC("win32_window_getclientrect_y",win32_window_getclientrect_y) ,\
+CONS(FUNC("win32_dc_create",win32_dc_create) ,\
+CONS(FUNC("win32_dc_dispose",win32_dc_dispose) ,\
+CONS(FUNC("win32_dc_selectobject",win32_dc_selectobject) ,\
+CONS(FUNC("win32_dc_transform",win32_dc_transform) ,\
+CONS(FUNC("win32_dc_settransform",win32_dc_settransform) ,\
+CONS(FUNC("win32_gdi_deleteobject",win32_gdi_deleteobject) ,\
+CONS(FUNC("win32_pen_create",win32_pen_create) ,\
+CONS(FUNC("win32_brush_create",win32_brush_create) ,\
+CONS(FUNC("win32_font_create",win32_font_create) ,\
+CONS(FUNC("win32_dc_draw",win32_dc_draw) ,\
+CONS(FUNC("win32_dc_measure_text",win32_dc_measure_text) ,\
+	NIL))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
 CONS(FUNC("win32_get_processor_count",win32_get_processor_count), \

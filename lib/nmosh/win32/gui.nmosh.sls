@@ -12,6 +12,21 @@
                  win32_window_fitbuffer
                  win32_getmonitorinfo
 
+                 win32_window_updaterects
+                 win32_window_createbitmap
+                 win32_window_getclientrect
+                 win32_dc_create
+                 win32_dc_dispose
+                 win32_dc_selectobject
+                 ;win32_dc_transform
+                 ;win32_dc_settransform
+                 win32_gdi_deleteobject
+                 win32_pen_create
+                 win32_brush_create
+                 win32_font_create
+                 win32_dc_draw
+                 win32_dc_measure_text
+
                  integer->hwnd)
          (import (rnrs)
                  (yuni core)
@@ -94,6 +109,80 @@
         (values x0 y0 x1 y1)
         (values #f #f #f #f)))))
 
+(define* DC (pointer))
+(define (pointer->dc p)
+  (make DC (pointer p)))
+(define* (dc->pointer (DC))
+  (let-with DC (pointer) pointer))
+(define* GDIOBJ (pointer))
 
+(define (pointer->gdiobj p)
+  (make GDIOBJ (pointer p)))
+(define* (gdiobj->pointer (GDIOBJ))
+  (let-with GDIOBJ (pointer) pointer))
+
+(define* (win32_window_updaterects wnd (DC) rects count)
+  (stub:win32_window_updaterects wnd (dc->pointer DC) rects count))
+(define (win32_window_createbitmap wnd x y)
+  (pointer->gdiobj
+    (stub:win32_window_createbitmap wnd x y)))
+(define* (win32_window_getclientrect (HWND))
+  (values
+    (stub:win32_window_getclientrect_x (hwnd->pointer HWND))
+    (stub:win32_window_getclientrect_y (hwnd->pointer HWND))))
+(define (win32_dc_create)
+  (pointer->dc (stub:win32_dc_create)))
+(define* (win32_dc_dispose (DC))
+  (stub:win32_dc_dispose (dc->pointer DC)))
+(define* (win32_gdi_deleteobject (GDIOBJ))
+  (stub:win32_gdi_deleteobject (gdiobj->pointer GDIOBJ)))
+(define (win32_pen_create width r g b)
+  (pointer->gdiobj
+    (stub:win32_pen_create width r g b)))
+(define (win32_brush_create r g b)
+  (pointer->gdiobj
+    (stub:win32_brush_create r g b)))
+(define (win32_font_create height weight italic? face)
+  (define (convert-weight-sym w)
+    (cond 
+      ((symbol? w)
+       (case w
+         ((thin) 100)
+         ((extralight) 200)
+         ((light) 300)
+         ((normal) 400)
+         ((regular) 400)
+         ((medium) 500)
+         ((semibold) 600)
+         ((bold) 700)
+         ((ultrabold) 800)
+         ((black) 900)
+         (else 400)))
+      ((number? w) w)
+      (else 400)))
+  (let ((facename (string->utf16-bv face))
+        (weight (convert-weight-sym weight))
+        (italicp (if italic? 1 0)))
+    (let ((p (stub:win32_font_create height weight italicp facename)))
+      (and (not (= 0 (pointer->integer p)))
+           (pointer->gdiobj p)))))
+(define* (win32_dc_draw (DC) bmpdc? ops count)
+  (define bmpdc (if bmpdc?
+                  (let-with bmpdc? (pointer) pointer)
+                  (integer->pointer 0)))
+  (stub:win32_dc_draw (dc->pointer DC)
+                      bmpdc
+                      ops
+                      count))
+
+(define* (win32_dc_measure_text (DC) str)
+  (let ((x (make-int-box))
+        (y (make-int-box))
+        (str-bv (string->uint16-bv str)))
+    (let ((b (stub:win32_dc_measure_text (dc->pointer DC)
+                                         str-bv (string-length str) x y)))
+      (if (= b 0)
+        (values #f #f)
+        (values (int-box-ref x) (int-box-ref y))))))
 
 )

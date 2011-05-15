@@ -49,7 +49,25 @@ void win32_window_destroy(void* hWnd);
 void win32_registerwindowclass(void);
 void* win32_window_alloc(void);
 void win32_window_create(void* iocp,void* overlapped);
-void win32_window_fitbuffer(void* hWnd,void* p);
+void win32_window_fitbuffer(void* wnd);
+
+void win32_window_updaterects(void* w,void* dc, int count, int* rects);
+void* win32_window_createbitmap(void *w,int x,int y);
+int win32_window_getclientrect_x(void* h);
+int win32_window_getclientrect_y(void* h);
+void* win32_dc_create(void);
+void win32_dc_dispose(void* d);
+void win32_dc_selectobject(void* d,void* obj);
+void win32_dc_transform(void* d,void* m);
+void win32_dc_settransform(void* d,void* m);
+void win32_gdi_deleteobject(void* obj);
+void* win32_pen_create(int w,int r,int g,int b);
+void* win32_brush_create(int r,int g,int b);
+void* win32_font_create(int h,int weight,int italicp,wchar_t* face);
+void win32_dc_draw(void* dc,void* bmpdc,intptr_t* ops,int len);
+int win32_dc_measure_text(void* d,wchar_t* str,int len,int* x,int* y);
+
+
 void win32_getmonitorinfo(int id,int cmd,signed int *valid,signed int *x0,signed int* y0,signed int *x1,signed int *y1);
 
 // misc

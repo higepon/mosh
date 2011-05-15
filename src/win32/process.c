@@ -778,8 +778,10 @@ typedef struct{
     void* ptr;
 
     HANDLE iocp;
-	HDC hBufferDC;
+    HWND hWnd;
+    HDC hBufferDataDC;
 	HBITMAP buffer;
+    CRITICAL_SECTION cs;
 }window_handler_data;
 
 static void
@@ -801,7 +803,7 @@ window_handler(void* p){
         NULL,
         GetModuleHandle(0),
         p);
-
+    whd->hWnd = hWnd;
     while(GetMessageW(&msg,hWnd,0,0)){
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
@@ -817,11 +819,11 @@ clearbuffer(window_handler_data* whd){
 	if(whd->buffer){
 		DeleteObject(whd->buffer);
 	}
-	if(whd->hBufferDC){
-		DeleteDC(whd->hBufferDC);
+	if(whd->hBufferDataDC){
+		DeleteDC(whd->hBufferDataDC);
 	}
 	whd->buffer = 0;
-	whd->hBufferDC = 0;
+    whd->hBufferDataDC = 0;
 }
 
 // events:
@@ -848,10 +850,12 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 
     switch(msg){
 	case WM_PAINT:
-		if(whd->hBufferDC){
+		if(whd->hBufferDataDC){
 			hDC = BeginPaint(hWnd,&ps);
 			GetClientRect(hWnd,&r);
-			BitBlt(hDC,0,0,r.right,r.bottom,whd->hBufferDC,0,0,SRCCOPY);
+            EnterCriticalSection(&whd->cs);
+			BitBlt(hDC,0,0,r.right,r.bottom,whd->hBufferDataDC,0,0,SRCCOPY);
+            LeaveCriticalSection(&whd->cs);
 			EndPaint(hWnd,&ps);
 		}
 		return 0;
@@ -909,19 +913,24 @@ win32_window_move(void* hWnd,signed int x,signed int y,signed int w,signed int h
 
 
 void
-win32_window_fitbuffer(void* hWnd,void* p){
+win32_window_fitbuffer(void* p){
 	window_handler_data* whd = (window_handler_data *)p;
 	RECT r;
 	HDC hBufferDC;
+	HDC hBufferDataDC;
 	HBITMAP buffer;
+    HWND hWnd = whd->hWnd;
 	GetClientRect(hWnd,&r);
 
 	clearbuffer(whd);
 
 	hBufferDC = CreateCompatibleDC(NULL);
+	hBufferDataDC = CreateCompatibleDC(NULL);
+    SetGraphicsMode(hBufferDC,GM_ADVANCED); // enable matrix op
 	buffer = CreateCompatibleBitmap(hBufferDC,r.right,r.bottom);
+    SelectObject(hBufferDataDC,buffer);
 
-	whd->hBufferDC = hBufferDC;
+    whd->hBufferDataDC = hBufferDataDC;
 	whd->buffer = buffer;
 }
 
@@ -937,7 +946,7 @@ win32_window_show(void* hWnd,int cmd){
         sw = SW_SHOWNA;
     }
     ShowWindow((HWND)hWnd,sw);
-	UpdateWindow(hWnd);
+	UpdateWindow((HWND)hWnd);
 }
 
 void
@@ -984,8 +993,9 @@ void
 win32_window_create(void* iocp,void* overlapped){
     window_handler_data *whd = (window_handler_data *)overlapped;
     whd->iocp = iocp;
-	whd->hBufferDC = 0;
+    whd->hBufferDataDC = 0;
 	whd->buffer = 0;
+    InitializeCriticalSection(&whd->cs);
 
 	_beginthread(window_handler,0,overlapped);
 }
@@ -1038,6 +1048,251 @@ win32_getmonitorinfo(int id,int cmd,signed int *valid,signed int *x0,signed int*
     *y0 = s.y0;
     *x1 = s.x1;
     *y1 = s.y1;
+}
+
+/* bitmap drawing */
+
+// FIXME: compose rgn?
+
+static void
+performupdate(HDC hDCBuf,HDC hDCSrc,int x0,int y0,int x1,int y1){
+    BitBlt(hDCBuf,x0,y0,x1,y1,hDCSrc,x0,y0,SRCCOPY);
+}
+
+static void
+sendupdate(HWND hWnd,int x0,int y0,int x1,int y1){
+    RECT r;
+    r.left = x0;
+    r.top = y0;
+    r.right = x1;
+    r.bottom = y1;
+
+    InvalidateRect(hWnd,&r,FALSE);
+}
+
+// N.B.: dc should select Buffer surface before call this
+void
+win32_window_updaterects(void* w,void* dc, int count, int* rects){
+    window_handler_data* whd = (window_handler_data *)w;
+    HDC hDC = (HDC)dc;
+    int i,p;
+    XFORM current;
+    GetWorldTransform(hDC,&current);
+    ModifyWorldTransform(hDC,NULL,MWT_IDENTITY);
+    EnterCriticalSection(&whd->cs);
+    for(i=0;i!=count;i++){
+        p = i*4;
+        performupdate(whd->hBufferDataDC,hDC,rects[p],rects[p+1],rects[p+2],rects[p+3]);
+    }
+    LeaveCriticalSection(&whd->cs);
+    for(i=0;i!=count;i++){
+        p = i*4;
+        sendupdate(whd->hWnd,rects[p],rects[p+1],rects[p+2],rects[p+3]);
+    }
+    SetWorldTransform(hDC,&current);
+}
+
+void*
+win32_window_createbitmap(void *w,int x,int y){
+    window_handler_data *whd = (window_handler_data *)w;
+    return CreateCompatibleBitmap(whd->hBufferDataDC,x,y);
+}
+
+int
+win32_window_getclientrect_x(void* h){
+    HWND hWnd = (HWND)h;
+    RECT r;
+    GetClientRect(hWnd,&r);
+    return r.right;
+}
+
+int
+win32_window_getclientrect_y(void* h){
+    HWND hWnd = (HWND)h;
+    RECT r;
+    GetClientRect(hWnd,&r);
+    return r.bottom;
+}
+
+// Device Context
+void*
+win32_dc_create(void){
+    return CreateCompatibleDC(NULL);
+}
+
+void
+win32_dc_dispose(void* d){
+    HDC hDC = (HDC)d;
+    DeleteDC(hDC);
+}
+
+void
+win32_dc_selectobject(void* d,void* obj){
+    HDC hDC = (HDC)d;
+    HGDIOBJ hobj = (HGDIOBJ)obj;
+    SelectObject(hDC,hobj);
+}
+
+void
+win32_dc_transform(void* d,void* m){
+    HDC hDC = (HDC)d;
+    window_handler_data* whd = (window_handler_data *)d;
+    XFORM* xf = (XFORM *)m;
+    ModifyWorldTransform(hDC,xf,MWT_RIGHTMULTIPLY);
+}
+
+void
+win32_dc_settransform(void* d,void* m){
+    HDC hDC = (HDC)d;
+    XFORM* xf = (XFORM *)m;
+    SetWorldTransform(hDC,xf);
+}
+
+
+// Generic GDI Object management(bitmap brush pen font)
+void
+win32_gdi_deleteobject(void* obj){
+    HGDIOBJ hobj = (HGDIOBJ)obj;
+    DeleteObject(hobj);
+}
+
+void*
+win32_pen_create(int w,int r,int g,int b){
+    return CreatePen(PS_SOLID,w,RGB(r,g,b));
+}
+
+void*
+win32_brush_create(int r,int g,int b){
+    return CreateSolidBrush(RGB(r,g,b));
+}
+
+void*
+win32_font_create(int h,int weight,int italicp,wchar_t* face){
+    return CreateFontW(h,0,0,0,weight,italicp,0,0,DEFAULT_CHARSET,0,0,0,0,face);
+}
+
+// DRAW OPS
+// PATH:
+ // 90 BEGIN_PATH
+ // 91 CLOSE_PATH
+ // 1 MOVE [X Y]
+ // 2 LINE [X Y]
+ // 3 QCURVE [CPX CPY X Y]
+ // 4 BCURVE [CP1X CP1Y CP2X CP2Y X Y]
+ // 5 ARCTO [X1 Y1 X2 Y2 R]
+ // 6 ARC [X Y R startA endA ACLW?]
+ // 7 RECT [X Y W H]
+// DRAW:
+ // 8 FILL
+ // 9 STROKE
+ // 10 FILLSTROKE
+ // -- CLIP
+ // -- ISPOINTINPATH [X Y]
+
+// bmpdc will only be used if BLT occur. bmpdc shouldn't be transformed. 
+void
+win32_dc_draw(void* dc,void* bmpdc,intptr_t* ops,int len){
+    int p = 0;
+    int* arg;
+    HDC hDC = (HDC)dc;
+    HDC hBmpDC = (HDC)bmpdc;
+    POINT pbuf[3];
+
+    while(p!=len){
+        arg = &ops[p];
+        switch(arg[0]){
+// Path control
+ // 90 BEGIN_PATH
+ // 91 CLOSE_PATH
+        case 90:
+            BeginPath(hDC);
+            p++;
+            continue;
+        case 91:
+            EndPath(hDC);
+            p++;
+            continue;
+
+// Primitives
+        case 1: //MOVE
+            MoveToEx(hDC,arg[1],arg[2],NULL);
+            p+=3;
+            continue;
+        case 2: //LINE
+            LineTo(hDC,arg[1],arg[2]);
+            p+=3;
+            continue;
+        case 3: //QCURVE
+            // FIXME: WRONG
+            pbuf[0].x = arg[1];
+            pbuf[0].y = arg[2];
+            pbuf[1].x = arg[1];
+            pbuf[1].y = arg[2];
+            pbuf[2].x = arg[3];
+            pbuf[2].y = arg[4];
+            PolyBezierTo(hDC,pbuf,3);
+            p+=5;
+            continue;
+        case 4: //BCURVE
+            pbuf[0].x = arg[1];
+            pbuf[0].y = arg[2];
+            pbuf[1].x = arg[3];
+            pbuf[1].y = arg[4];
+            pbuf[2].x = arg[5];
+            pbuf[2].y = arg[6];
+            PolyBezierTo(hDC,pbuf,3);
+            p+=7;
+            continue;
+ // 5 ARCTO [X1 Y1 X2 Y2 R]
+ // 6 ARC [X Y R startA endA ACLW?]
+ // 7 RECT [X Y W H]
+// DRAW:
+ // 8 FILL
+        case 8:
+            FillPath(hDC);
+            p++;
+            continue;
+ // 9 STROKE
+        case 9:
+            StrokePath(hDC);
+            p++;
+            continue;
+ // 10 STROKEFILL
+        case 10:
+            StrokeAndFillPath(hDC);
+            p++;
+            continue;
+// Text:
+ // 20 TEXT [X Y LEN TEXT_PTR]
+        case 20:
+            TextOutW(hDC,arg[2],arg[3],(LPCWSTR)arg[1],arg[4]);
+            p+=5;
+            continue;
+// GDI Local
+ // 30 SELECT_OBJECT [PTR]
+        case 30:
+            SelectObject(hDC,(HGDIOBJ)arg[1]);
+            p+=2;
+            continue;
+// 31 BLT [HBITMAP XD YD X0 Y0 X1 Y1] // N.B. This cannot COPY on same bitmap
+        case 31:
+            SelectObject(hBmpDC,(HGDIOBJ)arg[1]);
+            BitBlt(hDC,arg[4],arg[5],arg[6],arg[7],hBmpDC,arg[2],arg[3],SRCCOPY);
+            p+=8;
+            continue;
+        }
+    }
+}
+
+int // BOOL
+win32_dc_measure_text(void* d,wchar_t* str,int len,int* x,int* y){
+    BOOL b;
+    HDC hDC = (HDC)d;
+    SIZE s;
+    b = GetTextExtentPoint32W(hDC,str,len,&s);
+    *x=s.cx;
+    *y=s.cy;
+    return b;
 }
 
 /* misc */
