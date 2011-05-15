@@ -782,6 +782,7 @@ typedef struct{
     HDC hBufferDataDC;
 	HBITMAP buffer;
     CRITICAL_SECTION cs;
+    int enable;
 }window_handler_data;
 
 static void
@@ -804,9 +805,11 @@ window_handler(void* p){
         GetModuleHandle(0),
         p);
     whd->hWnd = hWnd;
+    whd->enable = 1;
     while(GetMessageW(&msg,hWnd,0,0)){
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
+        if(!whd->enable) return;
     }
 }
 static void
@@ -869,6 +872,7 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     case WM_DESTROY:
 		clearbuffer(whd);
         post_window_event(whd,1,0);
+        whd->enable=0;
         return 0;
     case WM_CLOSE:
         post_window_event(whd,2,0);
@@ -916,18 +920,15 @@ void
 win32_window_fitbuffer(void* p){
 	window_handler_data* whd = (window_handler_data *)p;
 	RECT r;
-	HDC hBufferDC;
 	HDC hBufferDataDC;
 	HBITMAP buffer;
     HWND hWnd = whd->hWnd;
 	GetClientRect(hWnd,&r);
 
 	clearbuffer(whd);
-
-	hBufferDC = CreateCompatibleDC(NULL);
 	hBufferDataDC = CreateCompatibleDC(NULL);
-    SetGraphicsMode(hBufferDC,GM_ADVANCED); // enable matrix op
-	buffer = CreateCompatibleBitmap(hBufferDC,r.right,r.bottom);
+    
+	buffer = CreateCompatibleBitmap(hBufferDataDC,r.right,r.bottom);
     SelectObject(hBufferDataDC,buffer);
 
     whd->hBufferDataDC = hBufferDataDC;
@@ -1072,7 +1073,7 @@ sendupdate(HWND hWnd,int x0,int y0,int x1,int y1){
 
 // N.B.: dc should select Buffer surface before call this
 void
-win32_window_updaterects(void* w,void* dc, int count, int* rects){
+win32_window_updaterects(void* w,void* dc,int* rects, int count){
     window_handler_data* whd = (window_handler_data *)w;
     HDC hDC = (HDC)dc;
     int i,p;
@@ -1117,7 +1118,10 @@ win32_window_getclientrect_y(void* h){
 // Device Context
 void*
 win32_dc_create(void){
-    return CreateCompatibleDC(NULL);
+    HDC hDC;
+    hDC = CreateCompatibleDC(NULL);
+    SetGraphicsMode(hDC,GM_ADVANCED); // enable matrix op
+    return hDC;
 }
 
 void
@@ -1214,15 +1218,15 @@ win32_dc_draw(void* dc,void* bmpdc,intptr_t* ops,int len){
             continue;
 
 // Primitives
-        case 1: //MOVE
+        case 1: //MOVE [X Y]
             MoveToEx(hDC,arg[1],arg[2],NULL);
             p+=3;
             continue;
-        case 2: //LINE
+        case 2: //LINE [X Y]
             LineTo(hDC,arg[1],arg[2]);
             p+=3;
             continue;
-        case 3: //QCURVE
+        case 3: //QCURVE [CX CY X Y]
             // FIXME: WRONG
             pbuf[0].x = arg[1];
             pbuf[0].y = arg[2];
@@ -1233,7 +1237,7 @@ win32_dc_draw(void* dc,void* bmpdc,intptr_t* ops,int len){
             PolyBezierTo(hDC,pbuf,3);
             p+=5;
             continue;
-        case 4: //BCURVE
+        case 4: //BCURVE [C0X C0Y C1X C1Y X Y]
             pbuf[0].x = arg[1];
             pbuf[0].y = arg[2];
             pbuf[1].x = arg[3];
@@ -1263,7 +1267,7 @@ win32_dc_draw(void* dc,void* bmpdc,intptr_t* ops,int len){
             p++;
             continue;
 // Text:
- // 20 TEXT [X Y LEN TEXT_PTR]
+ // 20 TEXT [X Y LEN TEXT_PTR] // N.B. Text won't use current point
         case 20:
             TextOutW(hDC,arg[2],arg[3],(LPCWSTR)arg[1],arg[4]);
             p+=5;

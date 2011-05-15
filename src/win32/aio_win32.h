@@ -51,7 +51,7 @@ void* win32_window_alloc(void);
 void win32_window_create(void* iocp,void* overlapped);
 void win32_window_fitbuffer(void* wnd);
 
-void win32_window_updaterects(void* w,void* dc, int count, int* rects);
+void win32_window_updaterects(void* w,void* dc, int* rects, int count);
 void* win32_window_createbitmap(void *w,int x,int y);
 int win32_window_getclientrect_x(void* h);
 int win32_window_getclientrect_y(void* h);

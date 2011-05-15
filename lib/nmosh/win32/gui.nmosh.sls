@@ -77,9 +77,8 @@
   (stub:win32_window_destroy (hwnd->pointer HWND)))
 
 ;; you will need some sync on this.
-(define* (win32_window_fitbuffer (HWND) p)
-  (stub:win32_window_fitbuffer (hwnd->pointer HWND)
-                               p))
+(define* (win32_window_fitbuffer p)
+  (stub:win32_window_fitbuffer p))
 
 (define (win32_registerwindowclass)
   (stub:win32_registerwindowclass))
@@ -134,6 +133,9 @@
   (pointer->dc (stub:win32_dc_create)))
 (define* (win32_dc_dispose (DC))
   (stub:win32_dc_dispose (dc->pointer DC)))
+(define* (win32_dc_selectobject (DC) (GDIOBJ))
+  (stub:win32_dc_selectobject (dc->pointer DC)
+                              (gdiobj->pointer GDIOBJ)))
 (define* (win32_gdi_deleteobject (GDIOBJ))
   (stub:win32_gdi_deleteobject (gdiobj->pointer GDIOBJ)))
 (define (win32_pen_create width r g b)
@@ -178,7 +180,7 @@
 (define* (win32_dc_measure_text (DC) str)
   (let ((x (make-int-box))
         (y (make-int-box))
-        (str-bv (string->uint16-bv str)))
+        (str-bv (string->utf16-bv str)))
     (let ((b (stub:win32_dc_measure_text (dc->pointer DC)
                                          str-bv (string-length str) x y)))
       (if (= b 0)

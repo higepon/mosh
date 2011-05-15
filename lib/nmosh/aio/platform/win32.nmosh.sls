@@ -26,6 +26,7 @@
 
                  ;; GUI related
                  queue-create-window
+                 dispose-io-object
                  )
          (import (rnrs)
                  (srfi :8)
