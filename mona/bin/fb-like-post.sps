@@ -1,4 +1,6 @@
-;   fb-feed-get: Get facebook feed.
+;   fb-like-post: Add like! to the post
+;
+;   usage: fb-like-post.sps object_id_of_post
 ;
 ;   Copyright (c) 2011  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 ;
@@ -27,11 +29,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (import (rnrs)
-        (mosh control)
-        (match)
-        (mosh)
-        (system)
-        (shorten)
+        (srfi :98)
         (facebook))
 
 (define fb-token
@@ -39,24 +37,4 @@
    (open-input-file (string-append (get-environment-variable "HOME") "/fb.token"))
    read))
 
-(define temp-file (string-append (get-environment-variable "HOME") "/TEMP/fb.data"))
-
-(when (file-exists? temp-file)
-    (delete-file temp-file))
-
-(let1 json (fb-news fb-token)
-  (call-with-port
-   (open-output-file temp-file)
-   (^p
-   (for-each
-    (^(m)
-      (cond
-       [(and (assoc-ref m "message") (assoc-ref m "from"))
-        (format p "~a$~a$~a$~a$~a\n"
-                (assoc-ref (vector->list (assoc-ref m "from")) "id")
-                (assoc-ref (vector->list (assoc-ref m "from")) "name")
-                (regexp-replace-all #/\n/ (assoc-ref m "message") "")
-                (if (assoc-ref m "likes") (assoc-ref (vector->list (assoc-ref m "likes")) "count") 0)
-                (assoc-ref m "id"))]
-       [else '()]))
-    json))))
+(fb-post-like fb-token (cadr (command-line)))
