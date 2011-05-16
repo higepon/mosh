@@ -74,13 +74,13 @@ src/NumberScanner.cpp : src/NumberScanner.re src/NumberReader.tab.hpp
 
 install:all
 	mkdir -p $(INSTDIR)
-	cp -fpr tests $(INSTDIR)
+	cp -fr tests $(INSTDIR)
 	rm -rf $(INSTDIR)/r6rs-test-suite
 	mv $(INSTDIR)/tests/r6rs-test-suite $(INSTDIR)/ # Avoid too long path longer than 64
 	$(INSTALL) $(TARGET).EXE $(INSTFILES) $(INSTDIR)
 	mkdir -p $(BINDIR)/LIBS/MOSH
-	cp -pr ./lib/ $(BINDIR)/LIBS/MOSH/
-	(cd mona && cp -pr ./bin $(BINDIR)/LIBS/MOSH/)
+	cp -r ./lib/ $(BINDIR)/LIBS/MOSH/
+	(cd mona && cp -r ./bin $(BINDIR)/LIBS/MOSH/)
 
 depend dependencies:
 	$(CXX) -MM $(INCLUDE) $(CXXFLAGS) $(SOURCES) >> dependencies

@@ -747,14 +747,12 @@ Object File::modifyTime(const ucs4string& path)
     }
     return Object::Undef;
 #elif defined(MONA)
-    MonAPI::Date date;
-    intptr_t ret = monapi_file_get_date(utf32toUtf8(path), date);
-    if (ret == M_OK) {
-        return Arithmetic::mul(Bignum::makeInteger(1000000000),
-                               Bignum::makeIntegerFromU64(date.toUnixTime()));
-    } else {
-        return Object::Undef;
+    static bool isWarningShown = false;
+    if (!isWarningShown) {
+        monapi_warn("modifyTime returns always zero\n");
+        isWarningShown = true;
     }
+    return Object::makeFixnum(0);
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -791,14 +789,8 @@ Object File::accessTime(const ucs4string& path)
     }
     return Object::Undef;
 #elif defined(MONA)
-    MonAPI::Date date;
-    intptr_t ret = monapi_file_get_date(utf32toUtf8(path), date);
-    if (ret == M_OK) {
-        return Arithmetic::mul(Bignum::makeInteger(1000000000),
-                               Bignum::makeIntegerFromU64(date.toUnixTime()));
-    } else {
-        return Object::Undef;
-    }
+    MOSH_ASSERT(false);
+    return Object::Undef;
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -836,14 +828,7 @@ Object File::changeTime(const ucs4string& path)
     }
     return Object::Undef;
 #elif defined(MONA)
-    MonAPI::Date date;
-    intptr_t ret = monapi_file_get_date(utf32toUtf8(path), date);
-    if (ret == M_OK) {
-        return Arithmetic::mul(Bignum::makeInteger(1000000000),
-                               Bignum::makeIntegerFromU64(date.toUnixTime()));
-    } else {
-        return Object::Undef;
-    }
+    return Object::Undef;
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
@@ -1203,4 +1188,22 @@ bool scheme::isDirectory(const ucs4string& path)
     }
     return false;
 #endif
+}
+
+// Analyze waitpid() return values to provide information for CALL-PROCESS,
+// WAITPID, SPAWN etc.
+Object scheme::processExitValue(int statVal) {
+    if (WIFEXITED(statVal)) {
+        return Bignum::makeInteger(WEXITSTATUS(statVal));
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::processTerminationSignal(int statVal) {
+    if (WIFSIGNALED(statVal)) {
+        return Bignum::makeInteger(WTERMSIG(statVal));
+    } else {
+        return Object::False;
+    }
 }

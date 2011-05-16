@@ -78,7 +78,11 @@
 
       Returns:
 
-        The return values are two exact integers, the first one is the child process id, and the second is a status code.
+        3 values are returned:
+        * Child process ID as exact integer.
+        * Exit status as exact integer, or #f on abnormal termination.
+        * Signal number as exact integer if the process was signaled, or #f on
+        normal termination.
   |#
 
   #|
