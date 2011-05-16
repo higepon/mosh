@@ -126,7 +126,7 @@
   (make binding
         (name sym)
         (global-name sym)
-        (type 'macro)
+        (type 'core-macro)
         (id (make-identifier sym core-name (list "core-library" sym)))))
 
 (define* library-stage (library-env loaded-library*))
@@ -141,10 +141,12 @@
   (let-with lib (name) name))
 
 ;; binding
-;;   type := macro | variable ;;;; identifier-macro..?
-(define* binding (name global-name id type code))
+;;   type := core-macro | macro | variable ;;;; identifier-macro..?
+(define* binding (name global-name id type code proc))
 
 (define* (binding-id (b binding)) (let-with b (id) id))
+(define* (binding-name (b binding)) (let-with b (name) name))
+(define* (binding-global-name (b binding)) (let-with b (global-name) global-name))
 
 (define* (rename-binding (old binding) sym)
   (let-with old (global-name id type)
@@ -159,11 +161,16 @@
         (name sym)
         (global-name sym)
         (id (make-identifier sym #f (list "primitive" sym)))
+        (code #f)
+        (proc #f)
         (type 'variable)))
 
 (define (make-primitive-bindings sym*)
   (map make-primitive-binding sym*))
 
+(define* (core-syntax? (binding))
+  (let-with binding (type)
+    (eq? type 'core-macro)))
 (define* (macro? (binding))
   (let-with binding (type)
     (eq? type 'macro)))
@@ -196,21 +203,6 @@
               (core:expand-form expand-form)
               (core:expand-body expand-body)
               (core:expand-begin expand-begin))
-
-;; core expanders:
-;;
-;; define-syntax
-;; let-syntax
-;; letrec-syntax
-;;
-;; core-quote
-;; core-form
-;; core-extend
-;; core-extend-define
-;; core-invalid-form
-;; expand-form
-;; expand-body
-;; expand-begin
 
 (define (env-lookup env sym) ;; => binding / #f
   (define (do-lookup bind*)
@@ -264,9 +256,14 @@
           (rest (cdr exp)))
       (if (identifier? head)
         (let ((headv (env-lookup env (identifier-name head))))
-          (if (and headv (macro? headv)) ;; invoke transformer
-            (invoke-transformer headv exp)
-            (values (map rename-variable exp) env)))
+          (if headv
+            (cond
+              ((macro? headv) ;; invoke transformer
+               (invoke-transformer headv exp))
+              ((core-syntax? headv)
+               )
+              (else ;; application
+                (values (map rename-variable exp) env)))))
         (assertion-violation 'expand-sequence
                              "invalid form"
                              exp)))
@@ -313,7 +310,7 @@
                (let-with old-binding (name)
                  (let ((newname (search-name name)))
                    (if newname
-                     (rename-binding old-binding (search-name name))
+                     (rename-binding old-binding newname)
                      old-binding))))
              (map renamer binding*))
            (make-binding (cadr clause)
@@ -331,5 +328,5 @@
                              (syntax->datum stx)))
       (fold-left append '() (map do-import import-clause*))))
   (let ((top-binding (process-import (car stx))))
-    (expand-sequence/top stage (cdr stx) (list top-binding))))
+    (expand-sequence/toplevel stage (cdr stx) (list top-binding))))
 )
