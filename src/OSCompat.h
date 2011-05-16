@@ -82,9 +82,6 @@ namespace scheme {
     void initOSConstants();
     Object getOSConstant(Object key, bool& found);
 
-    Object processExitValue(int statVal);
-    Object processTerminationSignal(int statVal);
-
     class File EXTEND_GC
     {
 #ifdef _WIN32

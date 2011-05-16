@@ -860,9 +860,20 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    return theVM->values3(Object::makeString(ret),
-                          processExitValue(status),
-                          processTerminationSignal(status));
+    Object exit, termsig;
+    if (WIFEXITED(status)) {
+        exit = Bignum::makeInteger(WEXITSTATUS(status));
+    } else {
+        exit = Object::False;
+    }
+
+    if (WIFSIGNALED(status)) {
+        termsig = Bignum::makeInteger(WTERMSIG(status));
+    } else {
+        termsig = Object::False;
+    }
+
+    return theVM->values3(Object::makeString(ret), exit, termsig);
 #endif
 }
 
