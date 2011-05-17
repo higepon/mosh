@@ -30,17 +30,20 @@
  */
 
 
+#ifndef MONA
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+#include <stdlib.h>
+
 #ifndef _WIN32
 #include <dirent.h>
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> // necesary for os-constant procedure.
 #endif
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdlib.h>
 #ifdef __APPLE__
 #include <sys/param.h>
 #include <mach-o/dyld.h> /* _NSGetExecutablePath */
@@ -1208,17 +1211,25 @@ bool scheme::isDirectory(const ucs4string& path)
 // Analyze waitpid() return values to provide information for CALL-PROCESS,
 // WAITPID, SPAWN etc.
 Object scheme::processExitValue(int statVal) {
+#if !defined(_WIN32)&&!defined(MONA)
     if (WIFEXITED(statVal)) {
         return Bignum::makeInteger(WEXITSTATUS(statVal));
     } else {
         return Object::False;
     }
+#else
+    return Object::False;
+#endif
 }
 
 Object scheme::processTerminationSignal(int statVal) {
+#if !defined(_WIN32)&&!defined(MONA)
     if (WIFSIGNALED(statVal)) {
         return Bignum::makeInteger(WTERMSIG(statVal));
     } else {
         return Object::False;
     }
+#else
+    return Object::False;
+#endif
 }
