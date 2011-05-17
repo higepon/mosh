@@ -36,24 +36,23 @@
 #include <netinet/in.h>
 #include <netdb.h> // necesary for os-constant procedure.
 #endif
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
 #ifdef __APPLE__
 #include <sys/param.h>
 #include <mach-o/dyld.h> /* _NSGetExecutablePath */
 #include <string.h>
 #endif /* __APPLE__ */
-
 #ifdef MONA
 #include <monapi.h>
 #endif
 #ifdef __FreeBSD__
 #include <dlfcn.h>
-#include <sys/types.h>
 #include <sys/sysctl.h>
-extern int main(int argc, char *argv[]);
 #endif /* __FreeBSD__ */
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdlib.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
