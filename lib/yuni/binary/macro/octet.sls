@@ -1,5 +1,5 @@
 (library (yuni binary macro octet)
-         (export pack/octet size/octet unpack/octet)
+         (export pack!/octet size/octet unpack-let/octet)
          (import 
            (rnrs)
            (rnrs base)
@@ -7,8 +7,8 @@
 
 (define-syntax do-pack/clause
   (syntax-rules ()
-    ((_ bv offset val "blob" bytes)
-     (bytevector-copy! val 0 bv offset bytes))
+    ((_ bv offset val "blob" bytes from-offset)
+     (bytevector-copy! val from-offset bv offset bytes))
     ((_ bv offset #f "pad" bytes)
      (values))
     ((_ bv offset val "single" bytes)
@@ -65,78 +65,79 @@
        (do-pack/clause bv offset . (pack type size . endian?))
        (pack/clause bv (+ offset size) rest ...)))))
 
-(define-syntax lambda-filter-false
+(define-syntax pack!/octet/normalized
   (syntax-rules ()
-    ((_ (cur ...) () body ...)
-     (lambda (cur ...) body ...))
-    ((_ (cur ...) (#f . rest) body ...)
-     (lambda-filter-false (cur ...) rest body ...))
-    ((_ (cur ...) (head . rest) body ...)
-     (lambda-filter-false (cur ... head) rest body ...))))
-
-(define-syntax pack/octet/normalized
-  (syntax-rules ()
-    ((_ (entry-name . clause) ...)
-     (lambda-filter-false () (bv offset entry-name ...)
-       (pack/clause bv offset (entry-name . clause) ...)))))
+    ((_ (bv offset) clause ...)
+     (let ()
+       (pack/clause bv offset clause ...)))))
 
 (define-syntax clause-size
   (syntax-rules ()
     ((_ (name type size . endian?))
      size)))
 
-(define-syntax normalize-pack-clause
-  (syntax-rules ()
-    ((_ ("double" endianness ...))
-     (entry-name "double" 8 endianness ...))
-    ((_ ("single" endianness ...))
-     (entry-name "single" 4 endianness ...))
-    ((_ ("bytevector" bytes))
-     (entry-name "blob" bytes))
-    ((_ ("pad" bytes))
-     (#f "pad" bytes))
-    ((_ (others ...))
-     (entry-name others ...))))
-
 (define-syntax itr-with-normalized-clause
   (syntax-rules ()
-    ((_ cns (cur ...) (("double" endianness ...) . rest))
+    ((_ param cns (cur ...) ((id "double" endianness ...) . rest))
      (itr-with-normalized-clause
+       param
        cns
-       (cur ... (entry-name "double" 8 endianness ...))
+       (cur ... (id "double" 8 endianness ...))
        rest))
-    ((_ cns (cur ...) (("single" endianness ...) . rest))
+    ((_ param cns (cur ...) ((id "single" endianness ...) . rest))
      (itr-with-normalized-clause
+       param
        cns
-       (cur ... (entry-name "single" 4 endianness ...))
+       (cur ... (id "single" 4 endianness ...))
        rest))
-    ((_ cns (cur ...) (("bytevector" bytes) . rest))
+    ((_ param cns (cur ...) (("pad" bytes) . rest))
      (itr-with-normalized-clause
-       cns
-       (cur ... (entry-name "blob" bytes))
-       rest))
-    ((_ cns (cur ...) (("pad" bytes) . rest))
-     (itr-with-normalized-clause
+       param
        cns
        (cur ... (#f "pad" bytes))
        rest))
-    ((_ cns (cur ...) ((others ...) . rest))
+    ((_ param cns (cur ...) ((id "blob" bytes) . rest)) ;; offset 0
      (itr-with-normalized-clause
+       param
        cns
-       (cur ... (entry-name others ...))
+       (cur ... (id "blob" bytes 0))
        rest))
-    ((_ cns (cur ...) ())
-     (cns cur ...))))
+    ((_ param cns (cur ...) ((id "blob!" bytes) . rest)) ;; offset 0
+     (itr-with-normalized-clause
+       param
+       cns
+       (cur ... (#f "blob!" bytes id 0 bytes))
+       rest))
+    ((_ param cns (cur ...) ((id "blob!" bytes offset) . rest)) ;; offset 0
+     (itr-with-normalized-clause
+       param
+       cns
+       (cur ... (#f "blob!" bytes id offset bytes))
+       rest))
+    ((_ param cns (cur ...) ((id "blob!" bytes offset count) . rest))
+     (itr-with-normalized-clause
+       param
+       cns
+       (cur ... (#f "blob!" bytes id offset count))
+       rest))
+    ((_ param cns (cur ...) ((others ...) . rest))
+     (itr-with-normalized-clause
+       param
+       cns
+       (cur ... (others ...))
+       rest))
+    ((_ param cns (cur ...) ())
+     (cns param cur ...))))
 
 (define-syntax with-normalized-clause
   (syntax-rules ()
-    ((_ cns param ...)
-     (itr-with-normalized-clause cns () (param ...)))))
+    ((_ param cns clause ...)
+     (itr-with-normalized-clause param cns () (clause ...)))))
 
-(define-syntax pack/octet
+(define-syntax pack!/octet
   (syntax-rules ()
-    ((_ clause0 ...)
-     (with-normalized-clause pack/octet/normalized clause0 ...))))
+    ((_ bv offset clause0 ...)
+     (with-normalized-clause (bv offset) pack!/octet/normalized clause0 ...))))
 
 (define-syntax size/octet/normalized
   (syntax-rules ()
@@ -146,7 +147,7 @@
 (define-syntax size/octet
   (syntax-rules ()
     ((_ clause0 ...)
-     (with-normalized-clause size/octet/normalized clause0 ...))))
+     (with-normalized-clause #f size/octet/normalized clause0 ...))))
 
 (define (subbytevector bv off l)
   (let ((buf (make-bytevector l)))
@@ -155,8 +156,10 @@
 
 (define-syntax unpack/clause
   (syntax-rules ()
-    ((_ bv offset "blob" bytes)
+    ((_ bv offset "blob" bytes bogus)
      (subbytevector bv offset bytes))
+    ((_ bv offset "blob!" bytes id dest-offset dest-count)
+     (bytevector-copy! bv offset id dest-offset dest-count))
     ((_ bv offset "single" bytes)
      (bytevector-ieee-single-native-ref bv offset ))
     ((_ bv offset "single" bytes endian)
@@ -204,26 +207,28 @@
 
 (define-syntax itr-unpack-clause
   (syntax-rules ()
-    ((_ (cur ...) bv offset ())
-     (values cur ...))
-    ((_ cur bv offset ((#f value ...) . rest))
-     (itr-unpack-clause cur bv offset rest))
-    ((_ (cur ...) bv offset ((name head size endian? ...) . rest))
-     (itr-unpack-clause
-       (cur ... (unpack/clause bv offset . (head size endian? ...)))
-       bv
-       (+ offset size)
-       rest))))
+    ((_ bv offset (body ...) ())
+     (let () body ...))
+    ((_ bv offset body ((#f value ...) . rest)) ;; side-effect (or pad)
+     (begin
+       (unpack/clause bv offset . (value ...))
+       (itr-unpack-clause bv offset body rest)))
+    ((_ bv offset body ((name head size endian? ...) . rest))
+     (let ((name (unpack/clause bv offset . (head size endian? ...))))
+       (itr-unpack-clause bv (+ offset size) body rest)))))
 
-(define-syntax unpack/octet/normalized
+(define-syntax unpack-let/octet/normalized
   (syntax-rules ()
-    ((_ clause0 ...)
-     (lambda (bv offset)
-       (itr-unpack-clause () bv offset (clause0 ...))))))
+    ((_ (bv offset body ...) clause0 ...)
+     (let ()
+       (itr-unpack-clause bv offset (body ...) (clause0 ...))))))
 
-(define-syntax unpack/octet
+(define-syntax unpack-let/octet
   (syntax-rules ()
-    ((_ clause0 ...)
-     (with-normalized-clause unpack/octet/normalized clause0 ...))))
+    ((_ bv offset (clause0 ...))
+     (unpack-let/octet bv offset (clause0 ...) (values)))
+    ((_ bv offset (clause0 ...) body ...)
+     (with-normalized-clause (bv offset body ...) 
+                             unpack-let/octet/normalized clause0 ...))))
 
 )
