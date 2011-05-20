@@ -25,21 +25,20 @@ Currently, mosh supports following O/Ses.
 - Linux 2.6 (Debian, Ubuntu, Fedora, ...)
   see doc/README.Linux
 
-- FreeBSD 8.x or CURRENT
-  see doc/README.FreeBSD
-
 - MacOS X (10.5 "Leopard" or later)
   see doc/README.MacOSX (or doc/README.CMake for XCode build)
 
-- Cygwin 1.7.x
-  see doc/README.Cygwin
-
-- Windows XP or later(32bit): MinGW
-  see doc/README.MinGW and doc/README.CMake
 - Windows XP or later(32bit): Visual Studio
   see doc/README.CMake
-- Windows 7(64bit): Visual Studio
-  (We don't recommend Win64 build for now ... Try Win32 builds.)
+
+- FreeBSD 8.x or CURRENT
+  see doc/README.FreeBSD
+
+- NetBSD 5.x
+  see doc/README.NetBSD
+
+- Cygwin 1.7.x
+  see doc/README.Cygwin
 
 - MonaOS
 
