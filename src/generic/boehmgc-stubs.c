@@ -1,6 +1,6 @@
 #include <gc.h>
 
-#include "boehmgc-stubs.h"
+#include "generic/boehmgc-stubs.h"
 
 void*
 create_weak_vector(int count){

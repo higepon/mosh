@@ -1,9 +1,4 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif 
-#ifdef HAVE_KQUEUE
-
-#include "bsd/kqueue_stubs.h"
+#include "bsd/kqueue/kqueue_stubs.h"
 
 #include <stdio.h>
 /* BSD kqueue stubs */
@@ -344,6 +339,3 @@ fd_setnonblock(int fd){
     flg = fcntl(fd,F_GETFL,0);
     fcntl(fd,F_SETFL,flg|O_NONBLOCK);
 }
-
-
-#endif /* HAVE_KQUEUE */

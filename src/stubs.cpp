@@ -40,15 +40,15 @@
 #endif
 
 #ifdef HAVE_TERMINAL
-#include "mosh_terminal.h"
+#include "posix/terminal/mosh_terminal.h"
 #endif
 
 #ifdef HAVE_BDWGC_STUBS
-#include "boehmgc-stubs.h"
+#include "generic/boehmgc-stubs.h"
 #endif 
 
 #ifdef HAVE_KQUEUE
-#include "bsd/kqueue_stubs.h"
+#include "bsd/kqueue/kqueue_stubs.h"
 #endif
 
 #ifdef HAVE_PTRACE_COMMON
@@ -93,110 +93,110 @@ CONS(FN(ptrace_setfpregs), NIL)))))))))))))))
 
 #ifdef HAVE_AIO_WIN32
 #define LIBDATA_AIO_WIN32 CONS(SYM("aio-win32"), \
-CONS(FUNC("win32_handle_close",win32_handle_close), \
-CONS(FUNC("win32_iocp_create",win32_iocp_create), \
-CONS(FUNC("win32_iocp_assoc",win32_iocp_assoc), \
-CONS(FUNC("win32_iocp_pop",win32_iocp_pop), \
-CONS(FUNC("win32_overlapped_alloc",win32_overlapped_alloc), \
-CONS(FUNC("win32_overlapped_free",win32_overlapped_free), \
-CONS(FUNC("win32_overlapped_setmydata",win32_overlapped_setmydata), \
-CONS(FUNC("win32_overlapped_getmydata",win32_overlapped_getmydata), \
-CONS(FUNC("win32_handle_read_async",win32_handle_read_async), \
-CONS(FUNC("win32_handle_write_async",win32_handle_write_async), \
-CONS(FUNC("win32_process_redirected_child2",win32_process_redirected_child2), \
-CONS(FUNC("win32_create_named_pipe_async",win32_create_named_pipe_async), \
-CONS(FUNC("win32_wait_named_pipe_async",win32_wait_named_pipe_async), \
-CONS(FUNC("win32_process_wait_async",win32_process_wait_async), \
-CONS(FUNC("win32_sockaddr_storage_size",win32_sockaddr_storage_size), \
-CONS(FUNC("win32_socket_create",win32_socket_create), \
-CONS(FUNC("win32_socket_close",win32_socket_close), \
-CONS(FUNC("win32_addrinfoex_free",win32_addrinfoex_free), \
-CONS(FUNC("win32_addrinfoex_read",win32_addrinfoex_read), \
-CONS(FUNC("win32_socket_connect",win32_socket_connect), \
-CONS(FUNC("win32_socket_accept",win32_socket_accept), \
-CONS(FUNC("win32_socket_bind",win32_socket_bind), \
-CONS(FUNC("win32_socket_listen",win32_socket_listen), \
-CONS(FUNC("win32_getaddrinfo",win32_getaddrinfo), \
-CONS(FUNC("win32_finalization_handler_get",win32_finalization_handler_get), \
-CONS(FUNC("win32_finalization_handler_create",win32_finalization_handler_create), \
+CONS(FN(win32_handle_close), \
+CONS(FN(win32_iocp_create), \
+CONS(FN(win32_iocp_assoc), \
+CONS(FN(win32_iocp_pop), \
+CONS(FN(win32_overlapped_alloc), \
+CONS(FN(win32_overlapped_free), \
+CONS(FN(win32_overlapped_setmydata), \
+CONS(FN(win32_overlapped_getmydata), \
+CONS(FN(win32_handle_read_async), \
+CONS(FN(win32_handle_write_async), \
+CONS(FN(win32_process_redirected_child2), \
+CONS(FN(win32_create_named_pipe_async), \
+CONS(FN(win32_wait_named_pipe_async), \
+CONS(FN(win32_process_wait_async), \
+CONS(FN(win32_sockaddr_storage_size), \
+CONS(FN(win32_socket_create), \
+CONS(FN(win32_socket_close), \
+CONS(FN(win32_addrinfoex_free), \
+CONS(FN(win32_addrinfoex_read), \
+CONS(FN(win32_socket_connect), \
+CONS(FN(win32_socket_accept), \
+CONS(FN(win32_socket_bind), \
+CONS(FN(win32_socket_listen), \
+CONS(FN(win32_getaddrinfo), \
+CONS(FN(win32_finalization_handler_get), \
+CONS(FN(win32_finalization_handler_create), \
 	NIL)))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
-CONS(FUNC("win32_messagebox",win32_messagebox) ,\
-CONS(FUNC("win32_window_move",win32_window_move) ,\
-CONS(FUNC("win32_window_show",win32_window_show) ,\
-CONS(FUNC("win32_window_hide",win32_window_hide) ,\
-CONS(FUNC("win32_window_settitle",win32_window_settitle) ,\
-CONS(FUNC("win32_window_close",win32_window_close) ,\
-CONS(FUNC("win32_window_destroy",win32_window_destroy) ,\
-CONS(FUNC("win32_registerwindowclass",win32_registerwindowclass) ,\
-CONS(FUNC("win32_window_alloc",win32_window_alloc) ,\
-CONS(FUNC("win32_window_create",win32_window_create) ,\
-CONS(FUNC("win32_window_fitbuffer",win32_window_fitbuffer) ,\
-CONS(FUNC("win32_getmonitorinfo",win32_getmonitorinfo) ,\
-CONS(FUNC("win32_window_updaterects",win32_window_updaterects) ,\
-CONS(FUNC("win32_window_createbitmap",win32_window_createbitmap) ,\
-CONS(FUNC("win32_window_getclientrect_x",win32_window_getclientrect_x) ,\
-CONS(FUNC("win32_window_getclientrect_y",win32_window_getclientrect_y) ,\
-CONS(FUNC("win32_dc_create",win32_dc_create) ,\
-CONS(FUNC("win32_dc_dispose",win32_dc_dispose) ,\
-CONS(FUNC("win32_dc_selectobject",win32_dc_selectobject) ,\
-CONS(FUNC("win32_dc_transform",win32_dc_transform) ,\
-CONS(FUNC("win32_dc_settransform",win32_dc_settransform) ,\
-CONS(FUNC("win32_gdi_deleteobject",win32_gdi_deleteobject) ,\
-CONS(FUNC("win32_pen_create",win32_pen_create) ,\
-CONS(FUNC("win32_brush_create",win32_brush_create) ,\
-CONS(FUNC("win32_font_create",win32_font_create) ,\
-CONS(FUNC("win32_dc_draw",win32_dc_draw) ,\
-CONS(FUNC("win32_dc_measure_text",win32_dc_measure_text) ,\
+CONS(FN(win32_messagebox) ,\
+CONS(FN(win32_window_move) ,\
+CONS(FN(win32_window_show) ,\
+CONS(FN(win32_window_hide) ,\
+CONS(FN(win32_window_settitle) ,\
+CONS(FN(win32_window_close) ,\
+CONS(FN(win32_window_destroy) ,\
+CONS(FN(win32_registerwindowclass) ,\
+CONS(FN(win32_window_alloc) ,\
+CONS(FN(win32_window_create) ,\
+CONS(FN(win32_window_fitbuffer) ,\
+CONS(FN(win32_getmonitorinfo) ,\
+CONS(FN(win32_window_updaterects) ,\
+CONS(FN(win32_window_createbitmap) ,\
+CONS(FN(win32_window_getclientrect_x) ,\
+CONS(FN(win32_window_getclientrect_y) ,\
+CONS(FN(win32_dc_create) ,\
+CONS(FN(win32_dc_dispose) ,\
+CONS(FN(win32_dc_selectobject) ,\
+CONS(FN(win32_dc_transform) ,\
+CONS(FN(win32_dc_settransform) ,\
+CONS(FN(win32_gdi_deleteobject) ,\
+CONS(FN(win32_pen_create) ,\
+CONS(FN(win32_brush_create) ,\
+CONS(FN(win32_font_create) ,\
+CONS(FN(win32_dc_draw) ,\
+CONS(FN(win32_dc_measure_text) ,\
 	NIL))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
-CONS(FUNC("win32_get_processor_count",win32_get_processor_count), \
-CONS(FUNC("win32_get_ansi_codepage",win32_get_ansi_codepage), \
-CONS(FUNC("win32_multibyte_to_widechar",win32_multibyte_to_widechar), \
-CONS(FUNC("win32_measure_multibyte_to_widechar",win32_measure_multibyte_to_widechar), \
-CONS(FUNC("win32_mypath",win32_mypath), \
+CONS(FN(win32_get_processor_count), \
+CONS(FN(win32_get_ansi_codepage), \
+CONS(FN(win32_multibyte_to_widechar), \
+CONS(FN(win32_measure_multibyte_to_widechar), \
+CONS(FN(win32_mypath), \
 	NIL))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \
-CONS(FUNC("create_weak_vector",create_weak_vector), \
-CONS(FUNC("weak_vector_ref",weak_vector_ref), \
-CONS(FUNC("weak_vector_set",weak_vector_set), \
-CONS(FUNC("register_disappearing_link_wv",register_disappearing_link_wv), \
-CONS(FUNC("register_finalizer",register_finalizer), \
-CONS(FUNC("register_disappearing_link",register_disappearing_link), \
-CONS(FUNC("gcollect",gcollect),NIL))))))))
+CONS(FN(create_weak_vector), \
+CONS(FN(weak_vector_ref), \
+CONS(FN(weak_vector_set), \
+CONS(FN(register_disappearing_link_wv), \
+CONS(FN(register_finalizer), \
+CONS(FN(register_disappearing_link), \
+CONS(FN(gcollect),NIL))))))))
 
 #ifdef HAVE_KQUEUE
 #define LIBDATA_KQUEUE CONS(SYM("kqueue-stubs"), \
-CONS(FUNC("kq_create",kq_create), \
-CONS(FUNC("kevent_alloc",kevent_alloc), \
-CONS(FUNC("kevent_offset",kevent_offset), \
-CONS(FUNC("kevent_dispose",kevent_dispose), \
-CONS(FUNC("kevent_set_readevent",kevent_set_readevent), \
-CONS(FUNC("kevent_set_writeevent",kevent_set_writeevent), \
-CONS(FUNC("kevent_set_enableuserevent",kevent_set_enableuserevent), \
-CONS(FUNC("kevent_set_triggeruserevent",kevent_set_triggeruserevent), \
-CONS(FUNC("kevent_ident",kevent_ident), \
-CONS(FUNC("kevent_type",kevent_type), \
-CONS(FUNC("kevent_decode_fd",kevent_decode_fd), \
-CONS(FUNC("kevent_exec",kevent_exec), \
-CONS(FUNC("socket_sizeof_sockaddr_storage",socket_sizeof_sockaddr_storage), \
-CONS(FUNC("socket_getaddrinfo",socket_getaddrinfo), \
-CONS(FUNC("socket_create",socket_create), \
-CONS(FUNC("socket_freeaddrinfo",socket_freeaddrinfo), \
-CONS(FUNC("socket_bind",socket_bind), \
-CONS(FUNC("socket_accept",socket_accept), \
-CONS(FUNC("socket_listen",socket_listen), \
-CONS(FUNC("socket_connect",socket_connect), \
-CONS(FUNC("socket_addrinfo_read",socket_addrinfo_read), \
-CONS(FUNC("socket_setnodelay",socket_setnodelay), \
-CONS(FUNC("fd_read",fd_read), \
-CONS(FUNC("fd_write",fd_write), \
-CONS(FUNC("fd_close",fd_close), \
-CONS(FUNC("fd_setnonblock",fd_setnonblock), \
+CONS(FN(kq_create), \
+CONS(FN(kevent_alloc), \
+CONS(FN(kevent_offset), \
+CONS(FN(kevent_dispose), \
+CONS(FN(kevent_set_readevent), \
+CONS(FN(kevent_set_writeevent), \
+CONS(FN(kevent_set_enableuserevent), \
+CONS(FN(kevent_set_triggeruserevent), \
+CONS(FN(kevent_ident), \
+CONS(FN(kevent_type), \
+CONS(FN(kevent_decode_fd), \
+CONS(FN(kevent_exec), \
+CONS(FN(socket_sizeof_sockaddr_storage), \
+CONS(FN(socket_getaddrinfo), \
+CONS(FN(socket_create), \
+CONS(FN(socket_freeaddrinfo), \
+CONS(FN(socket_bind), \
+CONS(FN(socket_accept), \
+CONS(FN(socket_listen), \
+CONS(FN(socket_connect), \
+CONS(FN(socket_addrinfo_read), \
+CONS(FN(socket_setnodelay), \
+CONS(FN(fd_read), \
+CONS(FN(fd_write), \
+CONS(FN(fd_close), \
+CONS(FN(fd_setnonblock), \
     NIL)))))))))))))))))))))))))))
 #endif
 

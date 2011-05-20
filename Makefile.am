@@ -3,8 +3,6 @@
 GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
 		 -g \
 		 -Wall -Wno-deprecated \
-		 -I $(top_srcdir)/src/posix/terminal \
-		 -I $(top_srcdir)/src/generic \
 		 -I src -I $(includedir) \
 		 -D MONA_SCHEME -D USE_BOEHM_GC \
 		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \
@@ -195,7 +193,7 @@ MOSH_CORE_SRCS += src/win32/process.c
 endif
 
 if KQUEUE
-MOSH_CORE_SRCS += src/bsd/kqueue_stubs.c
+MOSH_CORE_SRCS += src/bsd/kqueue/kqueue_stubs.c
 endif
 
 if PTRACE_COMMON
