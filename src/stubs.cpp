@@ -51,6 +51,10 @@
 #include "bsd/kqueue_stubs.h"
 #endif
 
+#ifdef HAVE_PTRACE_COMMON
+#include "posix/ptrace/ptrace_common.h"
+#endif
+
 using namespace scheme;
 
 #define NIL Object::Nil
@@ -58,6 +62,8 @@ using namespace scheme;
 #define SYM(x) Symbol::intern(UC(x))
 #define PTR(x) Object::makePointer((void*)x)
 #define FUNC(x,y) CONS(SYM(x),PTR(y))
+#define FN(x) FUNC(#x,x)
+
 
 #ifdef HAVE_TERMINAL
 #define LIBDATA_TERMINAL CONS(SYM("terminal"), \
@@ -65,6 +71,24 @@ CONS(FUNC("terminal_acquire",terminal_acquire), \
 CONS(FUNC("terminal_release",terminal_release), \
 CONS(FUNC("terminal_getsize",terminal_getsize), \
 CONS(FUNC("terminal_isatty",terminal_isatty),NIL)))))
+#endif
+
+#ifdef HAVE_PTRACE_COMMON 
+#define LIBDATA_PTRACE_COMMON CONS(SYM("ptrace-common"), \
+CONS(FN(call_ptrace), \
+CONS(FN(ptrace_traceme), \
+CONS(FN(ptrace_write), \
+CONS(FN(ptrace_read), \
+CONS(FN(ptrace_continue), \
+CONS(FN(ptrace_singlestep), \
+CONS(FN(ptrace_attach), \
+CONS(FN(ptrace_detatch), \
+CONS(FN(ptrace_regsize), \
+CONS(FN(ptrace_getregs), \
+CONS(FN(ptrace_setregs), \
+CONS(FN(ptrace_fpregsize), \
+CONS(FN(ptrace_getfpregs), \
+CONS(FN(ptrace_setfpregs), NIL))))))))))))))) 
 #endif
 
 #ifdef HAVE_AIO_WIN32
@@ -182,6 +206,9 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     Object tmp;
 
     tmp = Object::Nil;
+#ifdef HAVE_PTRACE_COMMON
+	tmp = Object::cons(LIBDATA_PTRACE_COMMON,tmp);
+#endif
 #ifdef HAVE_KQUEUE
 	tmp = Object::cons(LIBDATA_KQUEUE,tmp);
 #endif

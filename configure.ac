@@ -363,6 +363,21 @@ freebsd*)
 esac
 AM_CONDITIONAL(KQUEUE, test x$kqueuestub = xtrue)
 
+AC_MSG_CHECKING([whether to enable ptrace support])
+case "$host_os" in
+freebsd*)
+        ptracestub_common=true
+        AC_MSG_RESULT([yes(common)])
+        AC_DEFINE([HAVE_PTRACE_COMMON], 1, [Common ptrace support.])
+
+	;;
+*)
+        ptracestub_common=false
+        AC_MSG_RESULT([no])
+	;;
+esac
+AM_CONDITIONAL(PTRACE_COMMON, test x$ptracestub_common = xtrue)
+
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)
 

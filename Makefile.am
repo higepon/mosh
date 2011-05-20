@@ -198,6 +198,10 @@ if KQUEUE
 MOSH_CORE_SRCS += src/bsd/kqueue_stubs.c
 endif
 
+if PTRACE_COMMON
+MOSH_CORE_SRCS += src/posix/ptrace/ptrace_common.c
+endif
+
 noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 
 # mosh
