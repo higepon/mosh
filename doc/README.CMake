@@ -16,7 +16,7 @@ LIMITATIONS
 
 In short, it's win32 only. Other platforms are may or may not work.
 
-- Microsoft Visual Studio 2008 SP1, 2010
+- Microsoft Visual Studio 2010 SP1
 - Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Unix Makefile with GCC/G++ 4.3 or later
 - MinGW Makefile with TDM-GCC 4.5 or later
@@ -47,4 +47,10 @@ TBD.
 
 (Just same as standard CMake projects.)
 
+4. Known Issues
+---------------
 
+- generic: Big-endian architectures are not supported. Current CMakeList.txt
+           assumes target architecture is Little-endian.
+- MacOS X: FFI Callback is not supported.
+-    MSVC: FFI Callback is not supported at Win64.
