@@ -30,7 +30,9 @@
 
 #ifndef CONFIG_ASM
 #ifdef HAVE_STDINT_H
+#ifndef  __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
+#endif
 #include <stdint.h>
 #else
 #ifdef _MSC_VER
