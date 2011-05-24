@@ -205,6 +205,14 @@ struct AnnotatedPair
 
     Object car;
     Object cdr;
+#ifdef GC_DEBUG
+#error current AnnotatedPair implementation is not compatible with GC_DEBUG
+#endif
+    // FIXME: do some magic!
+    //   We will use GC_size to distinguish Pair and AnnotatedPair.
+    //   But GC_size is not fully reliable. So we inject 2 more
+    //   words here.
+    void* bogus[2];
     Object annotation;
 };
 
