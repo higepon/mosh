@@ -43,7 +43,7 @@ if(MOSH_PORTABLE)
 endif(MOSH_PORTABLE)
 
 if(MOSH_DEBUG_VERSION)
-    add_definitons(-DDEBUG_VERSION)
+    add_definitions(-DDEBUG_VERSION)
 endif(MOSH_DEBUG_VERSION)
 
 if(MOSH_PREFIXLESS)
