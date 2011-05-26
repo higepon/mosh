@@ -1,5 +1,17 @@
 # GLOBAL CFLAGS
 
+GC_CFLAGS = \
+	    -DGC_THREADS \
+	    -DLARGE_CONFIG=1 \
+	    -DTHREAD_LOCAL_ALLOC=1 \
+	    -DHAS_X86_THREAD_STATE64___RAX=1 \
+	    -DATOMIC_UNCOLLECTABLE=1 \
+	    -DNO_EXECUTE_PERMISSION=1 \
+	    -DALL_INTERIOR_POINTERS=1 \
+	    -DJAVA_FINALIZATION=1 \
+	    -DGC_GCJ_SUPPORT=1 \
+	    -DUSE_I686_PREFETCH
+
 GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
 		 -g \
 		 -Wall -Wno-deprecated \
@@ -7,6 +19,7 @@ GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
 		 -D MONA_SCHEME -D USE_BOEHM_GC \
 		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \
 		 -D_FILE_OFFSET_BITS=64 -Wall -pipe $(DEBUG_FLAGS) \
+		 $(GC_CFLAGS) \
 		 @MOSH_OPTS@ # temp -Wno-deprecated
 
 LIBS += @ONIG_LIBS@
@@ -35,16 +48,12 @@ AM_CFLAGS   = $(GLOBAL_CFLAGS)
 AM_CXXFLAGS = $(GLOBAL_CFLAGS)
 
 # Boehm GC
-BOEHM_GC_DIR = extlibs/gc-7.1
-GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
+BOEHM_GC_DIR = extlibs/bdwgc
 
 # for GTEST
 GTEST_DIR     = $(top_srcdir)/gtest
 USER_DIR      = .
 TESTS         = # used later
-
-#SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
-SUBDIRS = $(BOEHM_GC_DIR) .
 
 man_MANS = doc/mosh.1 doc/mosh_config.1
 
@@ -200,6 +209,61 @@ if PTRACE_COMMON
 MOSH_CORE_SRCS += src/posix/ptrace/ptrace_common.c
 endif
 
+GC_SRCS = \
+$(BOEHM_GC_DIR)/allchblk.c \
+$(BOEHM_GC_DIR)/alloc.c \
+$(BOEHM_GC_DIR)/blacklst.c \
+$(BOEHM_GC_DIR)/checksums.c \
+$(BOEHM_GC_DIR)/dbg_mlc.c \
+$(BOEHM_GC_DIR)/dyn_load.c \
+$(BOEHM_GC_DIR)/finalize.c \
+$(BOEHM_GC_DIR)/gc_dlopen.c \
+$(BOEHM_GC_DIR)/gcj_mlc.c \
+$(BOEHM_GC_DIR)/headers.c \
+$(BOEHM_GC_DIR)/malloc.c \
+$(BOEHM_GC_DIR)/mallocx.c \
+$(BOEHM_GC_DIR)/mark.c \
+$(BOEHM_GC_DIR)/mark_rts.c \
+$(BOEHM_GC_DIR)/misc.c \
+$(BOEHM_GC_DIR)/new_hblk.c \
+$(BOEHM_GC_DIR)/obj_map.c \
+$(BOEHM_GC_DIR)/os_dep.c \
+$(BOEHM_GC_DIR)/mach_dep.c \
+$(BOEHM_GC_DIR)/pcr_interface.c \
+$(BOEHM_GC_DIR)/real_malloc.c \
+$(BOEHM_GC_DIR)/reclaim.c \
+$(BOEHM_GC_DIR)/specific.c \
+$(BOEHM_GC_DIR)/stubborn.c \
+$(BOEHM_GC_DIR)/typd_mlc.c \
+$(BOEHM_GC_DIR)/backgraph.c \
+$(BOEHM_GC_DIR)/thread_local_alloc.c \
+$(BOEHM_GC_DIR)/libatomic_ops/src/atomic_ops.c 
+
+GC_PTHREAD_SRCS = \
+$(BOEHM_GC_DIR)/pthread_start.c \
+$(BOEHM_GC_DIR)/pthread_support.c \
+$(BOEHM_GC_DIR)/pthread_stop_world.c 
+
+GC_DARWIN_SRCS = \
+$(BOEHM_GC_DIR)/darwin_stop_world.c 
+
+GC_WIN32_SRCS = \
+$(BOEHM_GC_DIR)/win32_threads.c 
+
+if GC_PTHREAD
+GC_SRCS += $(GC_PTHREAD_SRCS)
+endif
+
+if GC_DARWIN
+GC_SRCS += $(GC_DARWIN_SRCS)
+endif
+
+if GC_MINGW
+GC_SRCS += $(GC_WIN32_SRCS)
+endif
+
+MOSH_CORE_SRCS += $(GC_SRCS)
+
 noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 
 # mosh
@@ -207,13 +271,13 @@ noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
 libmosh_main_a_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
 mosh_SOURCES = $(MOSH_CORE_SRCS)
-mosh_LDADD = libmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+mosh_LDADD = libmosh_main.a $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 mosh_DEPENDENCIES = libmosh_main.a
 
 libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp 
 libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) -D WITH_NMOSH_DEFAULTS
 nmosh_SOURCES = $(MOSH_CORE_SRCS)
-nmosh_LDADD = libnmosh_main.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+nmosh_LDADD = libnmosh_main.a $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 nmosh_DEPENDENCIES = libnmosh_main.a
 
 libmosh_core_for_test_a_SOURCES = $(MOSH_CORE_SRCS)
@@ -242,7 +306,7 @@ datadir = @MOSH_LIB_PATH@
 data_DATA = src/all-tests.scm
 nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
-INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I$(top_srcdir)/src
+INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(BOEHM_GC_DIR)/libatomic_ops/src -I$(top_srcdir)/src
 EXTRA_DIST     = \
 boot/vm.scm boot/baselib boot/compiler.scm \
 boot/free-vars.scm misc/scripts boot/baselib/match.scm doc \
@@ -274,7 +338,7 @@ boot/runtimes/srfi-mosh/mosh-exceptions.scm \
 boot/runtimes/srfi-mosh/mosh-utils5.scm \
 boot/runtimes/srfi-mosh/runtime.scm \
 gen-git-build.sh \
-CMakeLists.txt cmake extlibs/onig-5.9.2 # explicitly exclude gc-7.1
+CMakeLists.txt cmake extlibs
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \
@@ -387,7 +451,7 @@ gtest_main.a : gtest-all.o gtest_main.o
 
 check_PROGRAMS=
 TEST_CXXFLAGS_     = $(GLOBAL_CFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0  -DTEST_SRCDIR="\"$(top_srcdir)/\""
-TEST_LDADD_        = libmosh_core_for_test.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
+TEST_LDADD_        = libmosh_core_for_test.a gtest_main.a $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
 TEST_DEPENDENCIES_ = libmosh_core_for_test.a gtest_main.a
 
 TESTS += test_object
@@ -447,7 +511,6 @@ test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp sr
 test_thread_LDADD = $(TEST_LDADD_)
 
 dist-hook:
-	-rm -rf $(top_distdir)/extlibs/gc-7.1/libstomic_ops-1.2/autom4te.cache
 	-rm -f $(top_distdir)/doc/text/Download.txt
 	-rm -f $(top_distdir)/src/ffitest.o
 	-rm -f $(top_distdir)/src/mosh_config

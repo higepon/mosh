@@ -209,27 +209,43 @@ AC_MSG_CHECKING([check threads])
 case "$target_os" in
 *darwin*)
   AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
+  AM_CONDITIONAL(GC_PTHREAD, true)
+  AM_CONDITIONAL(GC_DARWIN, true)
+  AM_CONDITIONAL(GC_MINGW, false)
   ;;
 *linux*)
   AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+  AM_CONDITIONAL(GC_PTHREAD, true)
+  AM_CONDITIONAL(GC_DARWIN, false)
+  AM_CONDITIONAL(GC_MINGW, false)
   ;;
 freebsd*)
   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
+  AM_CONDITIONAL(GC_PTHREAD, true)
+  AM_CONDITIONAL(GC_DARWIN, false)
+  AM_CONDITIONAL(GC_MINGW, false)
   ;;
 netbsd*)
   AC_DEFINE(GC_NETBSD_THREADS,1,[Define to use NetBSD threads])
+  AM_CONDITIONAL(GC_PTHREAD, true)
+  AM_CONDITIONAL(GC_DARWIN, false)
+  AM_CONDITIONAL(GC_MINGW, false)
   ;;
 cygwin)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-  # gc-7.1 fix
-  ac_configure_args="$ac_configure_args --disable-shared CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
+  AM_CONDITIONAL(GC_PTHREAD, true)
+  AM_CONDITIONAL(GC_DARWIN, false)
+  AM_CONDITIONAL(GC_MINGW, false)
   ;;
 
 mingw*)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
+  AM_CONDITIONAL(GC_PTHREAD, false)
+  AM_CONDITIONAL(GC_DARWIN, false)
+  AM_CONDITIONAL(GC_MINGW, true)
   ;;
 *)
   AC_MSG_ERROR([Please modify configure.ac for $target_os])
@@ -277,7 +293,7 @@ i[[3456]]86|pentium)
          MOSH_OPTS="$MOSH_INTEL_OPTS"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
-       *mingw*)
+       *mingw*) #FIXME: now broken
          MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc -static-libstdc++  -fwide-exec-charset=ucs-4le" #forcing WinXP & Gcc >= 4.5
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
          ;;
@@ -334,9 +350,10 @@ i[[3456]]86|pentium)
 
 AC_MSG_CHECKING([whether to enable MinGW support])
 case "$host_os" in
-*mingw*)
+*mingw*) #FIXME: now broken
         mingw32=true
         AC_MSG_RESULT([yes])
+        AC_MSG_WARN([MinGW support with this configure is now broken. Use CMake instead])
 	AC_CHECK_TOOL(WINDRES, windres)
 	ac_configure_args="$ac_configure_args --disable-shared --enable-threads=win32 CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
 
@@ -433,5 +450,4 @@ case "$target_in" in
 esac
 
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SUBDIRS([extlibs/gc-7.1])
 AC_OUTPUT(src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)
