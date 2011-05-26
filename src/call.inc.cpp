@@ -44,6 +44,10 @@
                     for (int i = 1; i < argc; i++) {
                         if (i == argc - 1) {
                             Object lastPair = argv[i];
+                            if (!lastPair.isList()) {
+                                callAssertionViolationAfter(this, "apply", "last argument should be proper list", L1(lastPair));
+                                NEXT;
+                            }
                             for (int j = 0;; j++) {
                                 if (lastPair.isNil()) {
                                     operand = Object::makeFixnum(argc - 2 + j);

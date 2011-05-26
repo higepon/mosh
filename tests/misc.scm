@@ -83,6 +83,9 @@
 
 (test-error assertion-violation? (char=? #\x))
 
+;; Issue 213
+(test-error assertion-violation? (apply + 1))
+
 (let ([port (open-string-input-port "\"hige\"hage")])
   (test-equal "hige" (read port))
   (test-equal 'hage (read port)))
