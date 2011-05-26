@@ -18,6 +18,8 @@
 #ifndef GC_PRIVATE_H
 #define GC_PRIVATE_H
 
+#undef HAVE_CONFIG_H /* MOSH: We never generate config.h */
+
 #ifdef HAVE_CONFIG_H
 # include "private/config.h"
 #endif

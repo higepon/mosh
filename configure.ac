@@ -211,33 +211,33 @@ case "$target_os" in
   AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
   AM_CONDITIONAL(GC_PTHREAD, true)
   AM_CONDITIONAL(GC_DARWIN, true)
-  AM_CONDITIONAL(GC_MINGW, false)
+  AM_CONDITIONAL(GC_WIN32, false)
   ;;
 *linux*)
   AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
   AM_CONDITIONAL(GC_PTHREAD, true)
   AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_MINGW, false)
+  AM_CONDITIONAL(GC_WIN32, false)
   ;;
 freebsd*)
   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
   AM_CONDITIONAL(GC_PTHREAD, true)
   AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_MINGW, false)
+  AM_CONDITIONAL(GC_WIN32, false)
   ;;
 netbsd*)
   AC_DEFINE(GC_NETBSD_THREADS,1,[Define to use NetBSD threads])
   AM_CONDITIONAL(GC_PTHREAD, true)
   AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_MINGW, false)
+  AM_CONDITIONAL(GC_WIN32, false)
   ;;
 cygwin)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
   AM_CONDITIONAL(GC_PTHREAD, true)
   AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_MINGW, false)
+  AM_CONDITIONAL(GC_WIN32, true)
   ;;
 
 mingw*)
@@ -245,7 +245,7 @@ mingw*)
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
   AM_CONDITIONAL(GC_PTHREAD, false)
   AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_MINGW, true)
+  AM_CONDITIONAL(GC_WIN32, true)
   ;;
 *)
   AC_MSG_ERROR([Please modify configure.ac for $target_os])

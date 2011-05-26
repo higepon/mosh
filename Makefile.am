@@ -258,7 +258,7 @@ if GC_DARWIN
 GC_SRCS += $(GC_DARWIN_SRCS)
 endif
 
-if GC_MINGW
+if GC_WIN32
 GC_SRCS += $(GC_WIN32_SRCS)
 endif
 

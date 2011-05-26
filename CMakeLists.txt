@@ -238,46 +238,47 @@ endif(GMP_SEARCH)
 # => gc_srcs
 
 set(gc_core_srcs
-extlibs/gc-7.1/allchblk.c
-extlibs/gc-7.1/alloc.c
-extlibs/gc-7.1/blacklst.c
-extlibs/gc-7.1/checksums.c
-extlibs/gc-7.1/dbg_mlc.c
-extlibs/gc-7.1/dyn_load.c
-extlibs/gc-7.1/finalize.c
-extlibs/gc-7.1/gc_dlopen.c
-extlibs/gc-7.1/gcj_mlc.c
-extlibs/gc-7.1/headers.c
-extlibs/gc-7.1/malloc.c
-extlibs/gc-7.1/mallocx.c
-extlibs/gc-7.1/mark.c
-extlibs/gc-7.1/mark_rts.c
-extlibs/gc-7.1/misc.c
-extlibs/gc-7.1/new_hblk.c
-extlibs/gc-7.1/obj_map.c
-extlibs/gc-7.1/os_dep.c
-extlibs/gc-7.1/mach_dep.c
-extlibs/gc-7.1/pcr_interface.c
-extlibs/gc-7.1/ptr_chck.c
-extlibs/gc-7.1/real_malloc.c
-extlibs/gc-7.1/reclaim.c
-extlibs/gc-7.1/specific.c
-extlibs/gc-7.1/stubborn.c
-extlibs/gc-7.1/typd_mlc.c
-extlibs/gc-7.1/backgraph.c
-extlibs/gc-7.1/thread_local_alloc.c
-extlibs/gc-7.1/libatomic_ops-1.2/src/atomic_ops.c
+extlibs/bdwgc/allchblk.c
+extlibs/bdwgc/alloc.c
+extlibs/bdwgc/blacklst.c
+extlibs/bdwgc/checksums.c
+extlibs/bdwgc/dbg_mlc.c
+extlibs/bdwgc/dyn_load.c
+extlibs/bdwgc/finalize.c
+extlibs/bdwgc/gc_dlopen.c
+extlibs/bdwgc/gcj_mlc.c
+extlibs/bdwgc/headers.c
+extlibs/bdwgc/malloc.c
+extlibs/bdwgc/mallocx.c
+extlibs/bdwgc/mark.c
+extlibs/bdwgc/mark_rts.c
+extlibs/bdwgc/misc.c
+extlibs/bdwgc/new_hblk.c
+extlibs/bdwgc/obj_map.c
+extlibs/bdwgc/os_dep.c
+extlibs/bdwgc/mach_dep.c
+extlibs/bdwgc/pcr_interface.c
+extlibs/bdwgc/ptr_chck.c
+extlibs/bdwgc/real_malloc.c
+extlibs/bdwgc/reclaim.c
+extlibs/bdwgc/specific.c
+extlibs/bdwgc/stubborn.c
+extlibs/bdwgc/typd_mlc.c
+extlibs/bdwgc/backgraph.c
+extlibs/bdwgc/thread_local_alloc.c
+extlibs/bdwgc/libatomic_ops/src/atomic_ops.c
 )
 
 set(gc_pthread_srcs
-extlibs/gc-7.1/pthread_support.c
-extlibs/gc-7.1/pthread_stop_world.c
+extlibs/bdwgc/pthread_start.c
+extlibs/bdwgc/pthread_support.c
+extlibs/bdwgc/pthread_stop_world.c
 )
 set(gc_darwin_srcs
-extlibs/gc-7.1/darwin_stop_world.c
+extlibs/bdwgc/darwin_stop_world.c
 )
 set(gc_win32_srcs
-extlibs/gc-7.1/win32_threads.c
+extlibs/bdwgc/win32_threads.c
 )
 
 if(WIN32)
@@ -353,7 +354,7 @@ ${MOSH_ONIG_DIR}/enc/cp1251.c
 
 # mosh
 
-include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-7.1/include extlibs/gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest src/posix/terminal src/generic)
+include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/bdwgc/include extlibs/bdwgc/libatomic_ops/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest src/posix/terminal src/generic)
 
 if(CMAKE_COMPILER_IS_GNUCC)
     if(XCODE)
@@ -632,15 +633,15 @@ add_library(testingmosh EXCLUDE_FROM_ALL
 # GC tests
 macro(add_gcguitest testname)
 if(MSVC)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL WIN32 ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL WIN32 ${PROJECT_SOURCE_DIR}/extlibs/bdwgc/tests/${testname}.c)
 else(MSVC)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/bdwgc/tests/${testname}.c)
 endif(MSVC)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gcguitest)
 macro(add_gctest testname)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/bdwgc/tests/${testname}.c)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
