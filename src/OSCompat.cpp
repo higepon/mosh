@@ -353,7 +353,7 @@ int64_t File::size()
         return -1;
     }
 #elif defined(MONA)
-    
+
     return monapi_file_get_file_size(desc_);
 #else
     struct stat st;
@@ -385,7 +385,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
 // So we use WideCharToMultiByte and GetConsoleOutputCP.
 #if 1
         unsigned int destSize = 0;
-		unsigned int consoleWriteSize = static_cast<unsigned int>(_size);
+        unsigned int consoleWriteSize = static_cast<unsigned int>(_size);
         if ((destSize = WideCharToMultiByte(GetConsoleOutputCP() , 0,(const wchar_t *)buf, consoleWriteSize / 2, (LPSTR)NULL, 0, NULL, NULL)) == 0) {
             throwIOError2(IOError::WRITE, getLastErrorMessage());
             return 0;

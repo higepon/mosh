@@ -106,12 +106,11 @@ Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object*
         } else {
             str = Object::makeByteVector(info.str, MESSAGE_INFO_MAX_STR_LENGTH);
         }
-        theVM->values5(Bignum::makeIntegerFromU32(info.header),
-                       Bignum::makeIntegerFromU32(info.arg1),
-                       Bignum::makeIntegerFromU32(info.arg2),
-                       Bignum::makeIntegerFromU32(info.arg3),
-                       str);
-        return Object::Undef;
+        return theVM->values5(Bignum::makeIntegerFromU32(info.header),
+                              Bignum::makeIntegerFromU32(info.arg1),
+                              Bignum::makeIntegerFromU32(info.arg2),
+                              Bignum::makeIntegerFromU32(info.arg3),
+                              str);
     } else {
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret));
     }

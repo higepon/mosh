@@ -45,6 +45,7 @@
                   (%monapi-name-add! monapi-name-add!))
           MSG_OK
           MSG_STARTED
+          MSG_STOP
           MSG_INTERRUPTED
           MSG_TIMER
           MSG_READ_READY
@@ -134,4 +135,12 @@
     MSG_TEXT
 |#
 (define MSG_TEXT (os-constant 'MSG_TEXT))
+
+#|
+    Constant: MSG_STOP
+
+    MSG_STOP
+|#
+(define MSG_STOP (os-constant 'MSG_STOP))
+
 )
