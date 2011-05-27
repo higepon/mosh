@@ -332,6 +332,11 @@ Object Object::makeByteVector(int n, int8_t v)
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<intptr_t>(new ByteVector(n, v)))));
 }
 
+Object Object::makeByteVector(const char* src, size_t length)
+{
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<intptr_t>(new ByteVector(src, length)))));
+}
+
 Object Object::makeStack(Object* src, int size)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Stack, reinterpret_cast<intptr_t>(new Stack(src, size)))));
