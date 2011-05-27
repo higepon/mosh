@@ -132,8 +132,9 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    return theVM->values2(Bignum::makeIntegerFromU64(child),
-                          Bignum::makeInteger(WEXITSTATUS(status)));
+    return theVM->values3(Bignum::makeIntegerFromU64(child),
+                          processExitValue(status),
+                          processTerminationSignal(status));
 #endif
 }
 
