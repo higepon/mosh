@@ -106,11 +106,13 @@ Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object*
         } else {
             str = Object::makeByteVector(info.str, MESSAGE_INFO_MAX_STR_LENGTH);
         }
-        return theVM->values5(Bignum::makeIntegerFromU32(info.header),
-                              Bignum::makeIntegerFromU32(info.arg1),
-                              Bignum::makeIntegerFromU32(info.arg2),
-                              Bignum::makeIntegerFromU32(info.arg3),
-                              str);
+        return theVM->values6(
+            Bignum::makeIntegerFromU32(info.from),
+            Bignum::makeIntegerFromU32(info.header),
+            Bignum::makeIntegerFromU32(info.arg1),
+            Bignum::makeIntegerFromU32(info.arg2),
+            Bignum::makeIntegerFromU32(info.arg3),
+            str);
     } else {
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret));
     }
@@ -125,18 +127,11 @@ Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* ar
     DeclareProcedureName("monapi-message-send");
 #ifdef MONA
     checkArgumentLength(6);
-    uint32_t tid;
-    if (argv[0].isFixnum()) {
-        tid = argv[0].toFixnum();
-    } else if (argv[0].isBignum()) {
-        tid = argv[0].toBignum()->toU32();
-    } else {
-        return callAssertionViolationAfter(theVM, procedureName, "u32 tid is required but got", L1(argv[0]));
-    }
-    argumentAsFixnum(1, header);
-    argumentAsFixnum(2, arg1);
-    argumentAsFixnum(3, arg2);
-    argumentAsFixnum(4, arg3);
+    argumentAsU32(0, tid);
+    argumentAsU32(1, header);
+    argumentAsU32(2, arg1);
+    argumentAsU32(3, arg2);
+    argumentAsU32(4, arg3);
     argumentAsByteVector(5, str);
     int ret = MonAPI::Message::send(tid, header, arg1, arg2, arg3, (const char*)str->data());
     if (ret == M_OK) {

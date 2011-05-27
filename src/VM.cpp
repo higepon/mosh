@@ -966,13 +966,14 @@ Object VM::values3(Object obj1, Object obj2, Object obj3)
     return obj1; // set to ac_ later.
 }
 
-Object VM::values5(Object obj1, Object obj2, Object obj3, Object obj4, Object obj5)
+Object VM::values6(Object obj1, Object obj2, Object obj3, Object obj4, Object obj5, Object obj6)
 {
     values_[0] = obj2;
     values_[1] = obj3;
     values_[2] = obj4;
     values_[3] = obj5;
-    numValues_ = 5;
+    values_[4] = obj6;
+    numValues_ = 6;
     return obj1; // set to ac_ later.
 }
 
