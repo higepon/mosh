@@ -39,7 +39,10 @@
     MonAPI Library
 |#
 (library (monapi)
-  (export (rename (%monapi-message-send monapi-message-send) (%monapi-name-whereis monapi-name-whereis))
+  (export (rename (%monapi-message-send monapi-message-send)
+                  (%monapi-message-receive monapi-message-receive)
+                  (%monapi-name-whereis monapi-name-whereis)
+                  (%monapi-name-add! monapi-name-add!))
           MSG_OK
           MSG_STARTED
           MSG_INTERRUPTED

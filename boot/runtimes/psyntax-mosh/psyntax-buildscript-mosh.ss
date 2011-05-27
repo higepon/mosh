@@ -1127,6 +1127,8 @@
     (file-newer?  mosh)
     (%monapi-message-send sys)
     (%monapi-name-whereis sys)
+    (%monapi-message-receive sys)
+    (%monapi-name-add! sys)
     (socket-sslize! sys)
     (ssl-socket? sys)
     (ssl-supported? sys)

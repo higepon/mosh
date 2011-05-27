@@ -92,6 +92,34 @@ Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* ar
 #endif
 }
 
+Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-message-receive");
+#ifdef MONA
+    MessageInfo info;
+    checkArgumentLength(0);
+    intptr_t ret = MonAPI::Message::receive(&info);
+    if (ret == M_OK) {
+        Object str;
+        if (info.str == NULL) {
+            str = Object::makeByteVector(0);
+        } else {
+            str = Object::makeByteVector(info.str, MESSAGE_INFO_MAX_STR_LENGTH);
+        }
+        theVM->values5(Bignum::makeIntegerFromU32(info.header),
+                       Bignum::makeIntegerFromU32(info.arg1),
+                       Bignum::makeIntegerFromU32(info.arg2),
+                       Bignum::makeIntegerFromU32(info.arg3),
+                       str);
+        return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
 // (%monapi-message-send dest header arg1 arg2 arg3 str)
 Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv)
 {
@@ -116,6 +144,23 @@ Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* ar
         return Object::Undef;
     } else {
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiNameAddDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-name-add!");
+#ifdef MONA
+    checkArgumentLength(1);
+    argumentAsString(0, name);
+    intptr_t ret = monapi_name_add(name->data().ascii_c_str());
+    if (ret == M_OK) {
+        return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L1(argv[0]));
     }
 #else
     return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);

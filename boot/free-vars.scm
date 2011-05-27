@@ -688,6 +688,8 @@
   ;; for Mona
   %monapi-message-send
   %monapi-name-whereis
+  %monapi-message-receive
+  %monapi-name-add!
 
   socket-sslize!
   ssl-socket?
