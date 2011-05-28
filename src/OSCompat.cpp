@@ -1208,17 +1208,25 @@ bool scheme::isDirectory(const ucs4string& path)
 // Analyze waitpid() return values to provide information for CALL-PROCESS,
 // WAITPID, SPAWN etc.
 Object scheme::processExitValue(int statVal) {
+#ifdef MONA
+    return Object::False;
+#else
     if (WIFEXITED(statVal)) {
         return Bignum::makeInteger(WEXITSTATUS(statVal));
     } else {
         return Object::False;
     }
+#endif
 }
 
 Object scheme::processTerminationSignal(int statVal) {
+#ifdef MONA
+    return Object::False;
+#else
     if (WIFSIGNALED(statVal)) {
         return Bignum::makeInteger(WTERMSIG(statVal));
     } else {
         return Object::False;
     }
+#endif
 }
