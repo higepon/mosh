@@ -45,6 +45,10 @@ namespace scheme {
     Object internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object* argv);
     Object internalMonapiMessageReplyEx(VM* theVM, int argc, const Object* argv);
     Object internalMonapiMessageSendReceiveEx(VM* theVM, int argc, const Object* argv);
+    Object internalMonapiStreamReadEx(VM* theVM, int argc, const Object* argv);
+    Object internalMonapiMakeStreamEx(VM* theVM, int argc, const Object* argv);
+    Object internalMonapiStreamWriteEx(VM* theVM, int argc, const Object* argv);
+    Object internalMonapiStreamHandleEx(VM* theVM, int argc, const Object* argv);
     Object socketPortEx(VM* theVM, int argc, const Object* argv);
     Object socketPEx(VM* theVM, int argc, const Object* argv);
     Object socketAcceptEx(VM* theVM, int argc, const Object* argv);

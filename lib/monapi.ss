@@ -40,9 +40,13 @@
 |#
 (library (monapi)
   (export (rename
-                  (%monapi-message-receive monapi-message-receive)
-                  (%monapi-name-whereis monapi-name-whereis)
-                  (%monapi-name-add! monapi-name-add!))
+           (%monapi-make-stream monapi-make-stream)
+           (%monapi-stream-handle monapi-stream-handle)
+           (%monapi-stream-write monapi-stream-write)
+           (%monapi-stream-read monapi-stream-read)
+           (%monapi-message-receive monapi-message-receive)
+           (%monapi-name-whereis monapi-name-whereis)
+           (%monapi-name-add! monapi-name-add!))
           monapi-message-reply
           monapi-message-send
           monapi-message-send-receive
