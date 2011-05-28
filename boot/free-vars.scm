@@ -692,6 +692,10 @@
   %monapi-name-add!
   %monapi-message-send-receive
   %monapi-message-reply
+  %monapi-make-stream
+  %monapi-stream-handle
+  %monapi-stream-write
+  %monapi-stream-read
 
   socket-sslize!
   ssl-socket?
