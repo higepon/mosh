@@ -39,10 +39,14 @@
     MonAPI Library
 |#
 (library (monapi)
-  (export (rename (%monapi-message-send monapi-message-send)
+  (export (rename
                   (%monapi-message-receive monapi-message-receive)
                   (%monapi-name-whereis monapi-name-whereis)
                   (%monapi-name-add! monapi-name-add!))
+          monapi-message-reply
+          monapi-message-send
+          monapi-message-send-receive
+          message->string
           MSG_OK
           MSG_STARTED
           MSG_STOP
@@ -69,8 +73,43 @@
       arg2 - message arg2 as exact integer.
       arg3 - message arg3 as exact integer.
       bv - message str as bytevector, should be less than equal 128 byte.
-
 |#
+(define monapi-message-send
+  (case-lambda
+   [(dest header)
+    (%monapi-message-send dest header 0 0 0 #vu8())]
+   [(dest header arg1)
+    (%monapi-message-send dest header arg1 0 0 #vu8())]
+   [(dest header arg1 arg2)
+    (%monapi-message-send dest header arg1 arg2 0 #vu8())]
+   [(dest header arg1 arg2 arg3)
+    (%monapi-message-send dest header arg1 arg2 arg3 #vu8())]
+   [(dest header arg1 arg2 arg3 bv)
+    (%monapi-message-send dest header arg1 arg2 arg3 bv)]))
+
+(define monapi-message-send-receive
+  (case-lambda
+   [(dest header)
+    (%monapi-message-send-receive dest header 0 0 0 #vu8())]
+   [(dest header arg1)
+    (%monapi-message-send-receive dest header arg1 0 0 #vu8())]
+   [(dest header arg1 arg2)
+    (%monapi-message-send-receive dest header arg1 arg2 0 #vu8())]
+   [(dest header arg1 arg2 arg3)
+    (%monapi-message-send-receive dest header arg1 arg2 arg3 #vu8())]
+   [(dest header arg1 arg2 arg3 bv)
+    (%monapi-message-send-receive dest header arg1 arg2 arg3 bv)]))
+
+(define monapi-message-reply
+  (case-lambda
+   [(from header)
+    (%monapi-message-reply from header 0 0 #vu8())]
+   [(from header arg2)
+    (%monapi-message-reply from header arg2 0 #vu8())]
+   [(from header arg2 arg3)
+    (%monapi-message-reply from header arg2 arg3 #vu8())]
+   [(from header arg2 arg3 bv)
+    (%monapi-message-reply from header arg2 arg3 bv)]))
 
 #|
     Function: monapi-name-whereis
@@ -142,5 +181,25 @@
     MSG_STOP
 |#
 (define MSG_STOP (os-constant 'MSG_STOP))
+
+(define (decode num)
+  (cond
+   [(= 31 num) #\space]
+   [(<= 0 num 25)
+    (integer->char (+ (char->integer #\A) num))]
+   [(<= 26 num 30)
+    (integer->char (+ (char->integer #\1) num -26))]
+   [else #\?]))
+
+(define (message->string msg)
+  (list->string
+   (list
+    (decode (bitwise-arithmetic-shift-right msg 27))
+    (decode (bitwise-and (bitwise-arithmetic-shift-right msg 22) 31))
+    (decode (bitwise-and (bitwise-arithmetic-shift-right msg 17) 31))
+    (if (zero? (bitwise-and (bitwise-arithmetic-shift-right msg 1) 1)) #\space #\:)
+    (decode (bitwise-and (bitwise-arithmetic-shift-right msg 12) 31))
+    (decode (bitwise-and (bitwise-arithmetic-shift-right msg 7) 31))
+    (decode (bitwise-and (bitwise-arithmetic-shift-right msg 2) 31)))))
 
 )
