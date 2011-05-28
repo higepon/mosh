@@ -75,6 +75,33 @@ Object scheme::socketSslizeDEx(VM* theVM, int argc, const Object* argv)
 #endif
 }
 
+Object scheme::internalMonapiMessageReplyEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-message-reply");
+#ifdef MONA
+    checkArgumentLength(5);
+    argumentAsU32(0, from);
+    argumentAsU32(1, header);
+    argumentAsU32(2, arg2);
+    argumentAsU32(3, arg3);
+    argumentAsByteVector(4, str);
+    MessageInfo info;
+    info.from = from;
+    info.header = header;
+
+    const char* data = str->length() == 0 ? NULL : (const char*)str->data();
+    logprintf("data=%x", data);
+    int ret = MonAPI::Message::reply(&info, arg2, arg3, data);
+    if (ret == M_OK) {
+        return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
 Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("monapi-name-whereis");
@@ -133,9 +160,47 @@ Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* ar
     argumentAsU32(3, arg2);
     argumentAsU32(4, arg3);
     argumentAsByteVector(5, str);
-    int ret = MonAPI::Message::send(tid, header, arg1, arg2, arg3, (const char*)str->data());
+    const char* data = str->length() == 0 ? NULL : (const char*)str->data();
+    int ret = MonAPI::Message::send(tid, header, arg1, arg2, arg3, data);
     if (ret == M_OK) {
         return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiMessageSendReceiveEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-message-send-receive");
+#ifdef MONA
+    checkArgumentLength(6);
+    argumentAsU32(0, tid);
+    argumentAsU32(1, header);
+    argumentAsU32(2, arg1);
+    argumentAsU32(3, arg2);
+    argumentAsU32(4, arg3);
+    argumentAsByteVector(5, str);
+    const char* data = str->length() == 0 ? NULL : (const char*)str->data();
+    MessageInfo dest;
+    int ret = MonAPI::Message::sendReceive(&dest, tid, header, arg1, arg2, arg3, data);
+    if (ret == M_OK) {
+        Object str;
+        logprintf("dest.str=%x", dest.str);
+        if (dest.str == NULL) {
+            str = Object::makeByteVector(0);
+        } else {
+            str = Object::makeByteVector(dest.str, MESSAGE_INFO_MAX_STR_LENGTH);
+        }
+        return theVM->values6(
+            Bignum::makeIntegerFromU32(dest.from),
+            Bignum::makeIntegerFromU32(dest.header),
+            Bignum::makeIntegerFromU32(dest.arg1),
+            Bignum::makeIntegerFromU32(dest.arg2),
+            Bignum::makeIntegerFromU32(dest.arg3),
+            str);
     } else {
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
     }

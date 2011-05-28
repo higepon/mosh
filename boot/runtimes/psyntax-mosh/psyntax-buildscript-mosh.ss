@@ -1126,6 +1126,8 @@
     (stat-mtime mosh)
     (file-newer?  mosh)
     (%monapi-message-send sys)
+    (%monapi-message-send-receive sys)
+    (%monapi-message-reply sys)
     (%monapi-name-whereis sys)
     (%monapi-message-receive sys)
     (%monapi-name-add! sys)

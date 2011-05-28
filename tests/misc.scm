@@ -1,6 +1,7 @@
 (import (rnrs)
         (mosh)
         (srfi :8)
+        (monapi)
         (mosh test))
 
 ;; Issue 195.
@@ -81,5 +82,22 @@
 (let ([port (open-string-input-port "\"hige\"hage")])
   (test-equal "hige" (read port))
   (test-equal 'hage (read port)))
+
+(test-equal "   : OK" (message->string #xfffff72a))
+(test-equal "   :STR" (message->string #xffff29c6))
+(test-equal "   :INT" (message->string #xfffe86ce))
+(test-equal "   :TMR" (message->string #xffff3646))
+(test-equal "   :RDY" (message->string #xffff11e2))
+(test-equal "   :WDY" (message->string #xffff61e2))
+(test-equal "   :TXT" (message->string #xffff3bce))
+(test-equal "   :ADD" (message->string #xfffe018e))
+(test-equal "   :RMV" (message->string #xffff1656))
+(test-equal "   : NM" (message->string #xfffff6b2))
+(test-equal "   :WHR" (message->string #xffff63c6))
+(test-equal "   :STP" (message->string #xffff29be))
+(test-equal "   :UPD" (message->string #xffff478e))
+(test-equal "ABC DEF" (message->string #x443214))
+(test-equal "ABC D1F" (message->string #x443d14))
+
 (test-results)
 
