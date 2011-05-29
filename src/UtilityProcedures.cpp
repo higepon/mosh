@@ -845,6 +845,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     if (result != M_OK) {
         callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
     }
+    // todo values
     return Bignum::makeIntegerFromSigned<intptr_t>(monapi_process_wait_terminated(tid));
 #else
     const int BUFFER_SIZE = 1024;
