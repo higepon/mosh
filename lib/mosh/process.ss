@@ -46,8 +46,8 @@
                   (%spawn spawn)
                   (%exec exec)
                   (%getpid getpid)
-                  (%call-process call-process)) process-list)
-  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid %call-process process-list))
+                  (%call-process call-process)) process-list process-terminate!)
+  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid %call-process process-list process-terminate!))
 
   #|
       Function: fork
@@ -178,6 +178,19 @@
       Returns:
 
         a process list as an a-list. Keys of the a-list depend on OS.
+  |#
+
+  #|
+      Function: process-terminate!
+
+      Kill process identified by OS dependent process identifier.
+
+      Prototype:
+      > (process-terminate! id)
+
+      Returns:
+
+        #t if terminated otherwise #f.
   |#
 
 )

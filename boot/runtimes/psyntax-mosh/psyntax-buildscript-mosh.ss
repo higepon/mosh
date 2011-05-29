@@ -1126,6 +1126,7 @@
     (stat-mtime mosh)
     (file-newer?  mosh)
     (process-list sys)
+    (process-terminate! sys)
     (%monapi-message-send sys)
     (%monapi-message-send-receive sys)
     (%monapi-message-reply sys)

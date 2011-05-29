@@ -698,6 +698,7 @@
   %monapi-stream-read
 
   process-list
+  process-terminate!
 
   socket-sslize!
   ssl-socket?

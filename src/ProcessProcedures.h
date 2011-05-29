@@ -44,6 +44,7 @@ Object internalGetpidEx(VM* theVM, int argc, const Object* argv);
 Object currentDirectoryEx(VM* theVM, int argc, const Object* argv);
 Object setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv);
 Object processListEx(VM* theVM, int argc, const Object* argv);
+Object processTerminateDEx(VM* theVM, int argc, const Object* argv);
 } // namespace scheme
 
 #endif // SCHEME_PROCESS_PROCEDURES_

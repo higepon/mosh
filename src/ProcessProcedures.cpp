@@ -268,6 +268,23 @@ Object scheme::processListEx(VM* theVM, int argc, const Object* argv)
 #else
     return Object::Nil;
 #endif
+}
+
+Object scheme::processTerminateDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("process-terminate!");
+    checkArgumentLength(1);
+#ifdef MONA
+    argumentAsU32(0, tid);
+    if (syscall_kill_thread(tid) == M_OK) {
+        return Object::True;
+    } else {
+        return Object::False;
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list2(n1, n2));
+#endif
 
 }
+
 
