@@ -697,6 +697,8 @@
   %monapi-stream-write
   %monapi-stream-read
 
+  process-list
+
   socket-sslize!
   ssl-socket?
   ssl-supported?

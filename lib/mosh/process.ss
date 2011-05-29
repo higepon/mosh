@@ -46,8 +46,8 @@
                   (%spawn spawn)
                   (%exec exec)
                   (%getpid getpid)
-                  (%call-process call-process)))
-  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid %call-process))
+                  (%call-process call-process)) process-list)
+  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid %call-process process-list))
 
   #|
       Function: fork
@@ -166,4 +166,18 @@
         * #f on normal termination, or the signal number if it was terminated
           by a signal.
   |#
+
+  #|
+      Function: process-list
+
+      Returns a process list as an a-list. Keys of the a-list depend on OS.
+
+      Prototype:
+      > (process-list)
+
+      Returns:
+
+        a process list as an a-list. Keys of the a-list depend on OS.
+  |#
+
 )

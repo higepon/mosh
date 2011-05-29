@@ -166,6 +166,10 @@ struct Pair
         return Object::cons(a, list4(b, c, d, e));
     }
 
+    static Object list6(Object a, Object b, Object c, Object d, Object e, Object f)
+    {
+        return Object::cons(a, list5(b, c, d, e, f));
+    }
 
     static Object objectVectorToList(const ObjectVector& objectVector)
     {

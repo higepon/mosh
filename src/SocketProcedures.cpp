@@ -248,14 +248,10 @@ Object scheme::internalMonapiStreamWriteEx(VM* theVM, int argc, const Object* ar
     DeclareProcedureName("monapi-stream-write");
 #ifdef MONA
     checkArgumentLength(2);
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     argumentAsPointer(0, s);
     argumentAsByteVector(1, bv);
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
-    logprintf("%s %s:%d stream=%x\n", __func__, __FILE__, __LINE__, stream);
     uint32_t writtenSize = stream->write(bv->data(), bv->length());
-    logprintf("%s %s:%d\n", __func__, __FILE__, __LINE__);
     return Bignum::makeIntegerFromU32(writtenSize);
 #else
     return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
