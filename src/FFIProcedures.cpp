@@ -42,7 +42,9 @@
 #ifdef _MSC_VER
 #include <xmmintrin.h>
 #else
+#ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
+#endif
 #include <stdint.h>
 #endif
 #include "Object.h"
