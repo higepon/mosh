@@ -1,12 +1,17 @@
 (library (nmosh aio platform bsd)
          (export resolve-socketname*
+                 discard
+                 pipe/in
 
                  queue
                  queue-dispose
                  queue-wait/timeout
                  queue-wait
                  queue-peek
-                 queue-get
+                 queue-dispatch
+
+                 ;; process
+                 queue-process-launch
                  )
          (import (rnrs)
                  (yuni core)
@@ -20,9 +25,52 @@
 
 (define* fd-event (fd r/w eof? count))
 
+(define* io-object
+  (type ;; pipe/in
+    realized?
+    fd-pass
+    fd-proc ;; only for pipe
+    Q
+    proc/read
+    proc/write ;; only for file/socket fd
+    ))
+
 (define* user-event (key))
 
-(define* queue-event (key data size offset event))
+(define discard-id (list 'discard))
+
+(define (discard? obj)
+  (eq? discard-id obj))
+
+(define (discard) discard-id)
+
+(define (pipe/in proc)
+  (make io-object
+    (type 'pipe/in)
+    (realized? #f)
+    (Q #f)
+    (proc/read proc)))
+
+(define* (realize-io-object (io-object))
+  (let-with io-object (type Q proc)
+    (define (do-fd-assoc/read fd) (queue-fd-assoc/read! Q fd proc))
+    (case type
+      ((pipe/in)
+       (receive (in out) (fd-pipe)
+         (touch! io-object
+                 (fd-pass in)
+                 (fd-proc out))
+         (do-fd-assoc/read out)))
+      (else
+        (assertion-violation 'realize-io-object
+                             "invalid argument"
+                             type)))))
+
+(define* (dispose-io-object (io-object))
+  (let-with io-object (Q fd-proc)
+    (queue-fd-close Q fd-proc)
+    (touch! (realized? #f)
+            (Q #f))))
 
 ;; read/write
 
@@ -39,6 +87,23 @@
   (let-with Q (kq ev*)
     (fd_close kq)
     (kevent_dispose ev*)))
+
+(define* (queue-fd-close (Q) fd)
+  (let-with Q (fd-hash)
+    (hashtable-delete! fd-hash (fd->int fd))
+    (fd_close fd)))
+
+(define* (queue-register-fd/read! (Q) fd)
+  (define ke (kevent_alloc 1))
+  (kevent_set_readevent! ke 0 fd)
+  (let-with Q (kqueue)
+    (kevent_exec kqueue ke 0 1 #f 0 0 -1))
+  (kevent_dispose ke))
+
+(define* (queue-fd-assoc/read! (Q) fd key)
+  (let-with Q (fd-hash)
+    (queue-register-fd/read! Q fd)
+    (hashtable-set! fd-hash (fd->int fd) key)))
 
 (define* (extract-ev-item (Q) ev* offset)
   (let ((id (kevent_ident ev* offset)))
@@ -80,19 +145,14 @@
 (define* (queue-peek (Q))
   (queue-wait/timeout Q 0))
 
-(define* (build-event (Q) head)
+(define* (dispatch-event (Q) head)
   (let-with (Q) (fd-hash user-hash)
     (cond
       ((is-a? head fd-event)
        (let-with head (fd r/w eof? count)
-         (let ((key (hashtable-ref fd-hash fd)))
+         (let ((key (hashtable-ref fd-hash (fd->int fd))))
            (receive (data size) (issue-request fd r/w count)
-             (make queue-event 
-                   (key key)
-                   (data data)
-                   (size size)
-                   (offset 0)
-                   (event head))))))
+             (key data size 0)))))
       ((is-a? head user-event)
        (let-with head (key)
          (let ((key (hashtable-ref user-hash key)))
@@ -103,13 +163,21 @@
                  (offset #f)
                  (event head))))))))
 
-(define* (queue-get (Q))
+(define* (queue-dispatch (Q))
   (let-with Q (queue)
     (and (not (null? queue))
          (let ((head (car queue))
                (rest (cdr queue)))
            (touch! Q (queue rest))
-           (build-event Q head)))))
+           (dispatch-event Q head)))))
+
+(define* (queue-process-launch
+           (Q)
+           spec start-dir env* (in io-object) (out io-object) (err io-object)
+           result-proc)
+  ;; FIXME
+
+  )
 
 
 ;; support API (name resolv)

@@ -197,7 +197,8 @@ CONS(FN(fd_read), \
 CONS(FN(fd_write), \
 CONS(FN(fd_close), \
 CONS(FN(fd_setnonblock), \
-    NIL)))))))))))))))))))))))))))
+CONS(FN(fd_pipe), \
+    NIL))))))))))))))))))))))))))))
 #endif
 
 Object

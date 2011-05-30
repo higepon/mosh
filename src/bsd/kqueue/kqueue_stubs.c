@@ -339,3 +339,13 @@ fd_setnonblock(int fd){
     flg = fcntl(fd,F_GETFL,0);
     fcntl(fd,F_SETFL,flg|O_NONBLOCK);
 }
+
+int
+fd_pipe(int* in, int* out){
+    int fds[2];
+    int e;
+    e = pipe(fds);
+    *in = fds[0];
+    *out = fds[1];
+    return e;
+}

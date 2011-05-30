@@ -27,10 +27,15 @@
            fd_read
            fd_write
            fd_close
-           fd_setnonblock)
+           fd_setnonblock
+           fd_pipe
+           
+           fd->int
+           )
          (import (rnrs)
                  (yuni core)
                  (mosh ffi)
+                 (system)
                  (srfi :8)
                  (nmosh ffi box)
                  (primitives bytevector-pointer pointer-copy!)
@@ -255,5 +260,12 @@
 
 (define* (fd_setnonblock (fd))
   (stub:fd_setnonblock (fd->int fd)))
+
+(define (fd_pipe)
+  (let ((in (make-int-box))
+        (out (make-int-box)))
+    (stub:fd_pipe in out)
+    (values (int->fd (int-box-ref in))
+            (int->fd (int-box-ref out)))))
 
 )
