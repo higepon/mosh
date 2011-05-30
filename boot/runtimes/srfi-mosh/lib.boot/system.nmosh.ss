@@ -115,6 +115,18 @@
     ssl-supported?
     socket-sslize!
     ssl-socket?
+    process-list
+    process-terminate!
+    %monapi-message-send
+    %monapi-message-send-receive
+    %monapi-message-reply
+    %monapi-name-whereis
+    %monapi-message-receive
+    %monapi-name-add!
+    %monapi-make-stream
+    %monapi-stream-handle
+    %monapi-stream-write
+    %monapi-stream-read
     )
   (import
     (primitives
@@ -233,6 +245,18 @@
       ssl-supported?
       socket-sslize!
       ssl-socket?
+      process-list
+      process-terminate!
+      %monapi-message-send
+      %monapi-message-send-receive
+      %monapi-message-reply
+      %monapi-name-whereis
+      %monapi-message-receive
+      %monapi-name-add!
+      %monapi-make-stream
+      %monapi-stream-handle
+      %monapi-stream-write
+      %monapi-stream-read
       )
     (only (rnrs) lambda define-syntax syntax-rules ... list)
     )
