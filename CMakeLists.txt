@@ -16,6 +16,7 @@ option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
 option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
 # option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
 option(MOSH_DEBUG_VERSION "build Debug version of mosh interpreter" OFF)
+option(MOSH_GC_PARALLEL_MARK "Boehm GC: Turn on parallel-marking" OFF)
 
 # only ONE runtime source will be allowed.
 set(nmosh_runtime_src
@@ -41,6 +42,10 @@ if(MOSH_PORTABLE)
         add_definitions(-DWITH_NMOSH_PREFIXLESS)
     endif()
 endif(MOSH_PORTABLE)
+
+if(MOSH_GC_PARALLEL_MARK)
+    add_definitions(-DPARALLEL_MARK)
+endif(MOSH_GC_PARALLEL_MARK)
 
 if(MOSH_DEBUG_VERSION)
     add_definitions(-DDEBUG_VERSION)
@@ -91,7 +96,8 @@ add_definitions(-DHAVE_CONFIG_H
     -DGC_GCJ_SUPPORT=1
     -DJAVA_FINALIZATION=1
     -DUSE_I686_PREFETCH
-#    -DDONT_ADD_BYTE_AT_END=1
+    -DDONT_ADD_BYTE_AT_END=1
+    -DHANDLE_FORK=1
     )
 
 

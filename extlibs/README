@@ -1,12 +1,9 @@
 This directory includes some library distribution for convenience.
 
- - gc-7.1 - Boehm GC
+ - bdwgc - Boehm GC
       For: autotools, CMake, MonaOS
 
       Boehm GC is (currently) only GC for Mosh and is always used.
-      For autotools(configure) builds, this is deletion candidate.
-      See Issue 156 for this progress.
-      http://code.google.com/p/mosh-scheme/issues/detail?id=156
 
  - onig-5.9.2 - oniguruma
       For: CMake, MonaOS

@@ -395,7 +395,7 @@ inline void* operator new(
   }
 #endif /* GC_OPERATOR_NEW_ARRAY */
 
-#if defined(__CYGWIN__)
+#if 0&&defined(__CYGWIN__) /* MOSH: */
 # include <new> // for delete throw()
   inline void operator delete(void *p)
   {

@@ -211,8 +211,8 @@ struct AnnotatedPair
     // FIXME: do some magic!
     //   We will use GC_size to distinguish Pair and AnnotatedPair.
     //   But GC_size is not fully reliable. So we inject 2 more
-    //   words here.
-    void* bogus[2];
+    //   words here. (when debugging)
+    //void* bogus[2];
     Object annotation;
 };
 

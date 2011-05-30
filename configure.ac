@@ -91,14 +91,6 @@ dnl if test $have_onig = "no" ; then
 dnl     AC_CHECK_LIB([onig],[regexec],[LIBS="$LIBS -lonig" have_onig="yes"])
 dnl fi
 
-# option2 was disabled (mosh doesn't provide some required definition)
-dnl # option2: check for extlibs
-dnl if test -d ${srcdir}/extlibs/onig-5.9.2; then
-dnl     have_onig=yes
-dnl     local_onig_build=yes
-dnl     ONIG_CFLAGS="-I${srcdir}/extlibs/onig-5.9.2"
-dnl fi
-
 if test $have_onig = "no" ; then
     AC_MSG_ERROR([oniguruma not found, mosh requires oniguruma 5.x])
 fi
@@ -205,53 +197,49 @@ MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-point
 
 # Checks for O/S specific features
 
+has_gc_pthread=false
+has_gc_darwin=false
+has_gc_win32=false
 AC_MSG_CHECKING([check threads])
 case "$target_os" in
 *darwin*)
   AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
-  AM_CONDITIONAL(GC_PTHREAD, true)
-  AM_CONDITIONAL(GC_DARWIN, true)
-  AM_CONDITIONAL(GC_WIN32, false)
+  has_gc_pthread=true
+  has_gc_darwin=true
   ;;
 *linux*)
   AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-  AM_CONDITIONAL(GC_PTHREAD, true)
-  AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_WIN32, false)
+  has_gc_pthread=true
   ;;
 freebsd*)
   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
-  AM_CONDITIONAL(GC_PTHREAD, true)
-  AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_WIN32, false)
+  has_gc_pthread=true
   ;;
 netbsd*)
   AC_DEFINE(GC_NETBSD_THREADS,1,[Define to use NetBSD threads])
-  AM_CONDITIONAL(GC_PTHREAD, true)
-  AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_WIN32, false)
+  has_gc_pthread=true
   ;;
 cygwin)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-  AM_CONDITIONAL(GC_PTHREAD, true)
-  AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_WIN32, true)
+  has_gc_pthread=true
+  has_gc_win32=true
   ;;
 
 mingw*)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
-  AM_CONDITIONAL(GC_PTHREAD, false)
-  AM_CONDITIONAL(GC_DARWIN, false)
-  AM_CONDITIONAL(GC_WIN32, true)
+  has_gc_win32=true
   ;;
 *)
   AC_MSG_ERROR([Please modify configure.ac for $target_os])
   ;;
 esac
 
+AM_CONDITIONAL(GC_PTHREAD, $has_gc_pthread)
+AM_CONDITIONAL(GC_DARWIN, $has_gc_darwin)
+AM_CONDITIONAL(GC_WIN32, $has_gc_win32)
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
 MOSH_LDADD_ARCH="-ldl -lpthread"

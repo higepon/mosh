@@ -176,5 +176,3 @@ Known Issues:
       - Clang++ trunk - Sometimes miscompile bytevector related procedures.
       - MSVC 2010 SP1 - Sometimes causes compiler's internal error. Repeat
         compilation if this occur.
-    - configure script will complain about
-        configure: WARNING: no configuration information is in libatomic_ops
