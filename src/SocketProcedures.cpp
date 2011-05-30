@@ -40,6 +40,7 @@
 #include "OSCompatSocket.h"
 #include "SocketProcedures.h"
 #include "SocketBinaryInputOutputPort.h"
+#include "FFI.h"
 
 using namespace scheme;
 
@@ -75,6 +76,33 @@ Object scheme::socketSslizeDEx(VM* theVM, int argc, const Object* argv)
 #endif
 }
 
+Object scheme::internalMonapiMessageReplyEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-message-reply");
+#ifdef MONA
+    checkArgumentLength(5);
+    argumentAsU32(0, from);
+    argumentAsU32(1, header);
+    argumentAsU32(2, arg2);
+    argumentAsU32(3, arg3);
+    argumentAsByteVector(4, str);
+    MessageInfo info;
+    info.from = from;
+    info.header = header;
+
+    const char* data = str->length() == 0 ? NULL : (const char*)str->data();
+    logprintf("data=%x", data);
+    int ret = MonAPI::Message::reply(&info, arg2, arg3, data);
+    if (ret == M_OK) {
+        return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
 Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("monapi-name-whereis");
@@ -92,31 +120,168 @@ Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* ar
 #endif
 }
 
+Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-message-receive");
+#ifdef MONA
+    MessageInfo info;
+    checkArgumentLength(0);
+    intptr_t ret = MonAPI::Message::receive(&info);
+    if (ret == M_OK) {
+        Object str;
+        if (info.str == NULL) {
+            str = Object::makeByteVector(0);
+        } else {
+            str = Object::makeByteVector(info.str, MESSAGE_INFO_MAX_STR_LENGTH);
+        }
+        return theVM->values6(
+            Bignum::makeIntegerFromU32(info.from),
+            Bignum::makeIntegerFromU32(info.header),
+            Bignum::makeIntegerFromU32(info.arg1),
+            Bignum::makeIntegerFromU32(info.arg2),
+            Bignum::makeIntegerFromU32(info.arg3),
+            str);
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
 // (%monapi-message-send dest header arg1 arg2 arg3 str)
 Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("monapi-message-send");
 #ifdef MONA
     checkArgumentLength(6);
-    uint32_t tid;
-    if (argv[0].isFixnum()) {
-        tid = argv[0].toFixnum();
-    } else if (argv[0].isBignum()) {
-        tid = argv[0].toBignum()->toU32();
-    } else {
-        return callAssertionViolationAfter(theVM, procedureName, "u32 tid is required but got", L1(argv[0]));
-    }
-    argumentAsFixnum(1, header);
-    argumentAsFixnum(2, arg1);
-    argumentAsFixnum(3, arg2);
-    argumentAsFixnum(4, arg3);
+    argumentAsU32(0, tid);
+    argumentAsU32(1, header);
+    argumentAsU32(2, arg1);
+    argumentAsU32(3, arg2);
+    argumentAsU32(4, arg3);
     argumentAsByteVector(5, str);
-    int ret = MonAPI::Message::send(tid, header, arg1, arg2, arg3, (const char*)str->data());
+    const char* data = str->length() == 0 ? NULL : (const char*)str->data();
+    int ret = MonAPI::Message::send(tid, header, arg1, arg2, arg3, data);
     if (ret == M_OK) {
         return Object::Undef;
     } else {
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
     }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiMessageSendReceiveEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-message-send-receive");
+#ifdef MONA
+    checkArgumentLength(6);
+    argumentAsU32(0, tid);
+    argumentAsU32(1, header);
+    argumentAsU32(2, arg1);
+    argumentAsU32(3, arg2);
+    argumentAsU32(4, arg3);
+    argumentAsByteVector(5, str);
+    const char* data = str->length() == 0 ? NULL : (const char*)str->data();
+    MessageInfo dest;
+    int ret = MonAPI::Message::sendReceive(&dest, tid, header, arg1, arg2, arg3, data);
+    if (ret == M_OK) {
+        Object str;
+        logprintf("dest.str=%x", dest.str);
+        if (dest.str == NULL) {
+            str = Object::makeByteVector(0);
+        } else {
+            str = Object::makeByteVector(dest.str, MESSAGE_INFO_MAX_STR_LENGTH);
+        }
+        return theVM->values6(
+            Bignum::makeIntegerFromU32(dest.from),
+            Bignum::makeIntegerFromU32(dest.header),
+            Bignum::makeIntegerFromU32(dest.arg1),
+            Bignum::makeIntegerFromU32(dest.arg2),
+            Bignum::makeIntegerFromU32(dest.arg3),
+            str);
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiNameAddDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-name-add!");
+#ifdef MONA
+    checkArgumentLength(1);
+    argumentAsString(0, name);
+    intptr_t ret = monapi_name_add(name->data().ascii_c_str());
+    if (ret == M_OK) {
+        return Object::Undef;
+    } else {
+        return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L1(argv[0]));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiStreamReadEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-stream-read");
+#ifdef MONA
+    checkArgumentLength(2);
+    argumentAsPointer(0, s);
+    argumentAsU32(1, sizeToRead);
+    MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
+    uint8_t* buf = allocatePointerFreeU8Array(sizeToRead);
+    uint32_t readSize = stream->read(buf, sizeToRead);
+    return Object::makeByteVector((char*)buf, readSize);
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiStreamWriteEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-stream-write");
+#ifdef MONA
+    checkArgumentLength(2);
+    argumentAsPointer(0, s);
+    argumentAsByteVector(1, bv);
+    MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
+    uint32_t writtenSize = stream->write(bv->data(), bv->length());
+    return Bignum::makeIntegerFromU32(writtenSize);
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiMakeStreamEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-make-stream");
+#ifdef MONA
+    checkArgumentLengthBetween(0, 1);
+    if (argc == 0) {
+        return Object::makePointer(new MonAPI::Stream());
+    } else {
+        argumentAsU32(0, handle);
+        return Object::makePointer(MonAPI::Stream::FromHandle(handle));
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+#endif
+}
+
+Object scheme::internalMonapiStreamHandleEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("monapi-stream-handle");
+#ifdef MONA
+    checkArgumentLength(1);
+    argumentAsPointer(0, s);
+    MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
+    return Bignum::makeIntegerFromU32(stream->handle());
 #else
     return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
 #endif

@@ -72,7 +72,7 @@ SVN_REPOS="http://mosh-scheme.googlecode.com/svn/branches"
 
 bootstrap:
 	svn checkout $(SVN_REPOS)/psyntax.$(GIT_BRANCH_NAME)/ runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME) || \
-    svn checkout $(SVN_REPOS)/psyntax.master/ runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
+	svn checkout $(SVN_REPOS)/psyntax.master/ runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
 	cp -p runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm runtimes/psyntax-mosh/
 
 

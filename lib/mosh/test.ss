@@ -439,7 +439,7 @@
   (lambda (x)
     (syntax-case x ()
       [(_ color expr more ...)
-       (if (string=? (host-os) "win32")
+       (if (or (string=? (host-os) "win32") (string=? (host-os) "mona"))
            #'(begin expr more ...)
            #'(dynamic-wind
                  (lambda () (display color))

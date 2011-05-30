@@ -121,7 +121,7 @@ public:
     Object values(int num, const Object* v);
     Object values2(Object obj1, Object obj2);
     Object values3(Object obj1, Object obj2, Object obj3);
-
+    Object values6(Object obj1, Object obj2, Object obj3, Object obj4, Object obj5, Object obj6);
 
     Object compile(Object o);
     Object callClosureByName(Object procSymbol, Object o);

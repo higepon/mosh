@@ -55,7 +55,7 @@
 #include "BinaryInputPort.h"
 #include "Bignum.h"
 #include "OSCompat.h"
-
+#include "Symbol.h"
 
 using namespace scheme;
 
@@ -246,3 +246,45 @@ Object scheme::internalGetpidEx(VM* theVM, int argc, const Object* argv)
     return Object::makeFixnum(getpid());
 #endif
 }
+
+Object scheme::processListEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("process-list");
+    checkArgumentLength(0);
+#ifdef MONA
+    syscall_set_ps_dump();
+    PsInfo info;
+    Object ret = Object::Nil;
+    while (syscall_read_ps_dump(&info) == M_OK) {
+        ret = Object::cons(Pair::list6(Object::cons(Symbol::intern(UC("tid")), Bignum::makeIntegerFromU32(info.tid)),
+                                       Object::cons(Symbol::intern(UC("state")), Symbol::intern(info.state ? UC("running") : UC("waiting"))),
+                                       Object::cons(Symbol::intern(UC("cr3")), Bignum::makeIntegerFromU32(info.cr3)),
+                                       Object::cons(Symbol::intern(UC("name")), info.name),
+                                       Object::cons(Symbol::intern(UC("esp")), Bignum::makeIntegerFromU32(info.esp)),
+                                       Object::cons(Symbol::intern(UC("eip")), Bignum::makeIntegerFromU32(info.eip))),
+                           ret);
+    }
+    return ret;
+#else
+    return Object::Nil;
+#endif
+}
+
+Object scheme::processTerminateDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("process-terminate!");
+    checkArgumentLength(1);
+#ifdef MONA
+    argumentAsU32(0, tid);
+    if (syscall_kill_thread(tid) == M_OK) {
+        return Object::True;
+    } else {
+        return Object::False;
+    }
+#else
+    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list2(n1, n2));
+#endif
+
+}
+
+

@@ -264,6 +264,7 @@ public:
     static Object makeByteVector(int n, int8_t v);
     static Object makeByteVector(ByteVector* b);
     static Object makeByteVector(Object pair);
+    static Object makeByteVector(const char* src, size_t length);
     static Object makeByteVector(const gc_vector<uint8_t>& v);
     static Object makeBool(bool a);
     static Object makeRegexp(const ucs4string& pattern, bool caseFold, bool isSingleLine);

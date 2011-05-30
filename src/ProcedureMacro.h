@@ -93,6 +93,18 @@
         return Object::Undef; \
     }
 
+#define argumentAsU32(index, variableName) \
+    const Object obj ## variableName = argv[index];     \
+    uint32_t variableName;                              \
+    if (obj ## variableName.isFixnum()) { \
+        variableName = obj ## variableName.toFixnum(); \
+    } else if (obj ## variableName.isBignum()) { \
+        variableName = obj ## variableName.toBignum()->toU32();    \
+    } else { \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "uint32", obj ## variableName); \
+        return Object::Undef; \
+    }
+
 #define argumentAsTextualOutputPort(index, variableName) \
     const Object obj ## variableName = argv[index];     \
     TextualOutputPort* variableName;                                  \

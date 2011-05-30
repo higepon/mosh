@@ -688,6 +688,17 @@
   ;; for Mona
   %monapi-message-send
   %monapi-name-whereis
+  %monapi-message-receive
+  %monapi-name-add!
+  %monapi-message-send-receive
+  %monapi-message-reply
+  %monapi-make-stream
+  %monapi-stream-handle
+  %monapi-stream-write
+  %monapi-stream-read
+
+  process-list
+  process-terminate!
 
   socket-sslize!
   ssl-socket?

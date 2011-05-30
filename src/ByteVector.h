@@ -77,6 +77,16 @@ public:
         }
     }
 
+    ByteVector(const char* p, size_t length) : length_(length)
+    {
+#ifdef USE_BOEHM_GC
+        data_ = new(PointerFreeGC) uint8_t[length];
+#else
+        data_ = new uint8_t[length];
+#endif
+        memcpy(data_, p, length);
+    }
+
     ByteVector(Object pair) : length_(Pair::length(pair))
     {
         MOSH_ASSERT(pair.isPair() || pair.isNil());

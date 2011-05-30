@@ -837,9 +837,22 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsString(0, cmd);
-#if defined(MONA)||defined(_WIN32)
+#ifdef _WIN32
         callAssertionViolationAfter(theVM, procedureName, "not supported", L1(argv[0]));
         return Object::Undef;
+#elif defined(MONA)
+    uint32_t tid;
+    MonAPI::Stream* s = MonAPI::System::getStdoutStream();
+    int result = monapi_process_execute_file_get_tid(cmd->data().ascii_c_str(),
+                                                     MONAPI_TRUE,
+                                                     &tid,
+                                                     MonAPI::System::getProcessStdinID(),
+                                                     MonAPI::System::getProcessStdoutID());
+    if (result != M_OK) {
+        callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
+    }
+    // todo values
+    return Bignum::makeIntegerFromSigned<intptr_t>(monapi_process_wait_terminated(tid));
 #else
     const int BUFFER_SIZE = 1024;
     FILE* in = popen(cmd->data().ascii_c_str(), "r");
