@@ -258,7 +258,7 @@ extlibs/bdwgc/malloc.c
 extlibs/bdwgc/mallocx.c
 extlibs/bdwgc/mark.c
 extlibs/bdwgc/mark_rts.c
-extlibs/bdwgc/misc.c
+extlibs/bdwgc/gc_misc.c
 extlibs/bdwgc/new_hblk.c
 extlibs/bdwgc/obj_map.c
 extlibs/bdwgc/os_dep.c

@@ -227,7 +227,7 @@ $(BOEHM_GC_DIR)/malloc.c \
 $(BOEHM_GC_DIR)/mallocx.c \
 $(BOEHM_GC_DIR)/mark.c \
 $(BOEHM_GC_DIR)/mark_rts.c \
-$(BOEHM_GC_DIR)/misc.c \
+$(BOEHM_GC_DIR)/gc_misc.c \
 $(BOEHM_GC_DIR)/new_hblk.c \
 $(BOEHM_GC_DIR)/obj_map.c \
 $(BOEHM_GC_DIR)/os_dep.c \
