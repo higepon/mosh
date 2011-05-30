@@ -1,7 +1,7 @@
 ; process.scm - test for (mosh process)
 
 (import (rnrs)
-        (only (mosh) format)
+        (only (mosh) host-os format)
         (mosh process)
         (mosh test))
 
@@ -58,22 +58,22 @@
 
 (test-true (procedure? waitpid))
 
-(let-values (((pid cin cout cerr) (spawn "true" '() (list #f #f #f))))
-  (let-values (((wpid status termsig) (waitpid pid)))
-    (test-eqv pid wpid)
-    (test-eqv status 0)
-    (test-false termsig)))
+(unless (string=? (host-os) "cygwin") ;; Cygwin may fail below
+  (let-values (((pid cin cout cerr) (spawn "true" '() (list #f #f #f))))
+    (let-values (((wpid status termsig) (waitpid pid)))
+      (test-eqv pid wpid)
+      (test-eqv status 0)
+      (test-false termsig)))
 
-(let-values (((pid cin cout cerr) (spawn "false" '() (list #f #f #f))))
-  (let-values (((wpid status termsig) (waitpid pid)))
-    (test-eqv pid wpid)
-    (test-true (not (zero? status)))
-    (test-false termsig)))
-
-(let-values (((pid cin cout cerr) (spawn "sh" '("-c" "kill -9 $$") (list #f #f #f))))
-  (let-values (((wpid status termsig) (waitpid pid)))
-    (test-eqv pid wpid)
-    (test-false status)
-    (test-eqv 9 termsig)))
+  (let-values (((pid cin cout cerr) (spawn "false" '() (list #f #f #f))))
+    (let-values (((wpid status termsig) (waitpid pid)))
+      (test-eqv pid wpid)
+      (test-true (not (zero? status)))
+      (test-false termsig)))
+  (let-values (((pid cin cout cerr) (spawn "sh" '("-c" "kill -9 $$") (list #f #f #f))))
+    (let-values (((wpid status termsig) (waitpid pid)))
+      (test-eqv pid wpid)
+      (test-false status)
+      (test-eqv 9 termsig))))
 
 (test-results)
