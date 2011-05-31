@@ -17,13 +17,15 @@ GC_CFLAGS = \
 
 GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
 		 -g \
-		 -Wall -Wno-deprecated \
+		 -Wall \
 		 -I src -I $(includedir) \
 		 -D MONA_SCHEME -D USE_BOEHM_GC \
 		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \
 		 -D_FILE_OFFSET_BITS=64 -Wall -pipe $(DEBUG_FLAGS) \
 		 $(GC_CFLAGS) \
 		 @MOSH_OPTS@ # temp -Wno-deprecated
+
+GLOBAL_CXXFLAGS = -Wno-deprecated
 
 LIBS += @ONIG_LIBS@
 
@@ -48,7 +50,7 @@ DEBUG_FLAGS=-DDEBUG_VERSION
 endif
 
 AM_CFLAGS   = $(GLOBAL_CFLAGS)
-AM_CXXFLAGS = $(GLOBAL_CFLAGS)
+AM_CXXFLAGS = $(GLOBAL_CFLAGS) $(GLOBAL_CXXFLAGS)
 
 # Boehm GC
 BOEHM_GC_DIR = extlibs/bdwgc
@@ -278,7 +280,7 @@ mosh_LDADD = libmosh_main.a $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 mosh_DEPENDENCIES = libmosh_main.a
 
 libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp 
-libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) -D WITH_NMOSH_DEFAULTS
+libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) $(GLOBAL_CXXFLAGS) -D WITH_NMOSH_DEFAULTS
 nmosh_SOURCES = $(MOSH_CORE_SRCS)
 nmosh_LDADD = libnmosh_main.a $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 nmosh_DEPENDENCIES = libnmosh_main.a
@@ -453,7 +455,7 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(RANLIB) $@
 
 check_PROGRAMS=
-TEST_CXXFLAGS_     = $(GLOBAL_CFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0  -DTEST_SRCDIR="\"$(top_srcdir)/\""
+TEST_CXXFLAGS_     = $(GLOBAL_CFLAGS) $(GLOBAL_CXXFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0  -DTEST_SRCDIR="\"$(top_srcdir)/\""
 TEST_LDADD_        = libmosh_core_for_test.a gtest_main.a $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
 TEST_DEPENDENCIES_ = libmosh_core_for_test.a gtest_main.a
 
@@ -531,4 +533,4 @@ lib/libffitest.so.1.0: src/ffitest.c
 
 # for flymake
 check-syntax:
-	$(CXX) -o nul $(GLOBAL_CFLAGS) $(INCLUDES) $(DEFAULT_INCLUDES) -DHAVE_CONFIG_H -S ${CHK_SOURCES}
+	$(CXX) -o nul $(GLOBAL_CFLAGS) $(GLOBAL_CXXFLAGS) $(INCLUDES) $(DEFAULT_INCLUDES) -DHAVE_CONFIG_H -S ${CHK_SOURCES}

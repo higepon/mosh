@@ -140,25 +140,25 @@ have_tr1_hashes=0
 have_ext_hashes=0
 AC_LANG([C++])
 AC_MSG_CHECKING([for hashed associative containers])
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #include <tr1/unordered_map>
 int main(int, char **)
 {
     std::tr1::unordered_map<int, int> m;
     m.insert(std::make_pair(1, 2));
 }
-],
+]])],
 [have_tr1_hashes=1],
 [have_tr1_hashes=0])
 
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #include <ext/hash_map>
 int main(int, char **)
 {
     __gnu_cxx::hash_map<int, int> m;
     m.insert(std::make_pair(1, 2));
 }
-],
+]])],
 [have_ext_hashes=1],
 [have_ext_hashes=0])
 AC_MSG_RESULT([$have_ext_hashes])
