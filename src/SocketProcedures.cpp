@@ -72,6 +72,7 @@ Object scheme::socketSslizeDEx(VM* theVM, int argc, const Object* argv)
     }
     return Object::Undef;
 #else
+    (void) socket;
     return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
 #endif
 }
