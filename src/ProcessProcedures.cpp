@@ -282,8 +282,7 @@ Object scheme::processTerminateDEx(VM* theVM, int argc, const Object* argv)
         return Object::False;
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Object::False);
-#endif
+    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list1(argv[0]));
 
 }
 
