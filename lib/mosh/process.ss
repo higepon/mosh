@@ -46,8 +46,9 @@
                   (%spawn spawn)
                   (%exec exec)
                   (%getpid getpid)
-                  (%call-process call-process)) process-list process-terminate!)
-  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid %call-process process-list process-terminate!))
+                  (%call-process call-process)
+                  (%start-process start-process)) process-list process-terminate!)
+  (import (only (system) %spawn %waitpid %pipe %fork %exec %getpid %call-process process-list process-terminate! %start-process))
 
   #|
       Function: fork
@@ -165,6 +166,16 @@
         * The exit status of the command, or #f if it terminated abnormally.
         * #f on normal termination, or the signal number if it was terminated
           by a signal.
+  |#
+
+  #|
+      Function: start-process
+
+      Run an external command. Unlike call-process, start-process doesn't wait it's terminatation.
+
+      Prototype:
+      > (start-process command . os-depedent-args)
+
   |#
 
   #|
