@@ -173,6 +173,7 @@
   (vector->list vector->list)
   (set-source-info! (lambda e #f))
   %call-process
+  %start-process
   %get-closure-name
   (append append)
   (append2 append)

@@ -82,6 +82,7 @@
 #include "Arithmetic.h"
 #include "Bignum.h"
 #include "OSCompat.h"
+#include "FFI.h"
 
 #ifdef _WIN32
     #define popen _popen
@@ -826,6 +827,38 @@ Object scheme::vectorTolistEx(VM* theVM, int argc, const Object* argv)
         ret = Object::cons(v->ref(i), ret);
     }
     return ret;
+}
+
+// (start-process command-line . args)
+//    Unlike call-process, start-process just starts a process, doen't wait it's termination.
+//    On Mona (start-process comand-line standard-stream-haneld).
+Object scheme::internalStartProcessEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%start-process");
+    checkArgumentLengthBetween(1, 2);
+    argumentAsString(0, cmd);
+#ifdef MONA
+    uint32_t stdoutHandle = NULL;
+    if (argc == 1) {
+        stdoutHandle = MonAPI::System::getProcessStdoutID();
+    } else {
+        argumentAsPointer(1, s);
+        MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
+        stdoutHandle = stream->handle();
+    }
+    uint32_t tid;
+    int result = monapi_process_execute_file_get_tid(cmd->data().ascii_c_str(),
+                                                     MONAPI_TRUE,
+                                                     &tid,
+                                                     MonAPI::System::getProcessStdinID(),
+                                                     stdoutHandle);
+    if (result != M_OK) {
+        callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
+    }
+    return Object::Undef;
+#else
+    return callAssertionViolationAfter(theVM, procedureName, "not implmented", L1(argv[0]));
+#endif
 }
 
 Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
