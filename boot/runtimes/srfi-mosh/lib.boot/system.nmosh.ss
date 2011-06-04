@@ -127,6 +127,7 @@
     %monapi-stream-handle
     %monapi-stream-write
     %monapi-stream-read
+    %start-process
     )
   (import
     (primitives
@@ -257,6 +258,7 @@
       %monapi-stream-handle
       %monapi-stream-write
       %monapi-stream-read
+      %start-process
       )
     (only (rnrs) lambda define-syntax syntax-rules ... list)
     )
