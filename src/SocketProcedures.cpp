@@ -237,7 +237,8 @@ Object scheme::internalMonapiStreamReadEx(VM* theVM, int argc, const Object* arg
     argumentAsU32(1, sizeToRead);
     MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
     uint8_t* buf = allocatePointerFreeU8Array(sizeToRead);
-    uint32_t readSize = stream->read(buf, sizeToRead);
+    bool waitsDataCome = true;
+    uint32_t readSize = stream->read(buf, sizeToRead, waitsDataCome);
     return Object::makeByteVector((char*)buf, readSize);
 #else
     return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
@@ -268,7 +269,7 @@ Object scheme::internalMonapiMakeStreamEx(VM* theVM, int argc, const Object* arg
         return Object::makePointer(new MonAPI::Stream());
     } else {
         argumentAsU32(0, handle);
-        return Object::makePointer(MonAPI::Stream::FromHandle(handle));
+        return Object::makePointer(MonAPI::Stream::createFromHandle(handle));
     }
 #else
     return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
