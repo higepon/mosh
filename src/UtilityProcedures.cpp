@@ -1058,3 +1058,32 @@ Object scheme::lookupNongenerativeRtdEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     return nongenerativeRtds.ref(argv[0], Object::False);
 }
+
+Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv) {
+    DeclareProcedureName("%confstr");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, name);
+
+    Object val;    // return value of this procedure
+    int save_errno  = errno;
+
+    size_t size = confstr(name, NULL, 0);
+    ucs4string result = ucs4string(size);
+    char *buf = result.ascii_c_str();
+    size_t ret = confstr(name, buf, size);
+
+    // Handle two error cases which we need to distinguish thru errno
+    if (ret == 0) {
+        if (errno != save_errno) {
+            callErrorAfter(theVM, procedureName, "invalid name", L1(argv[0]));
+        } else {
+            val = Object::False;
+        }
+    } else {
+        // Can't call makeString on 'result' as 'buf' is now a separate piece
+        // of memory
+        val = Object::makeString(buf);
+    }
+    
+    return val;
+}

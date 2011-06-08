@@ -116,6 +116,7 @@ namespace scheme {
 
     Object setSymbolValueDEx(VM* theVM, int argc, const Object* argv);
     Object symbolValueEx(VM* theVM, int argc, const Object* argv);
+    Object internalConfstrEx(VM* theVM, int argc, const Object* argv);
 //     Object testEx(VM* theVM, int argc, const Object* argv);
 //     Object test2Ex(VM* theVM, int argc, const Object* argv);
 

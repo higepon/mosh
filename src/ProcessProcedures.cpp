@@ -163,75 +163,39 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%exec");
-    checkArgumentLength(5);
+    checkArgumentLength(3);
     argumentAsString(0, command);
     argumentCheckList(1, args);
-#if defined(_WIN32) || defined(MONA)
-    callAssertionViolationAfter(theVM, procedureName, "exec() failed");
-    return Object::makeString(UC("<not-supported>"));
-#else
-    const Object in  = argv[2];
-    const Object out = argv[3];
-    const Object err = argv[4];
-    if (in.isBinaryInputPort()) {
-        File* file = in.toBinaryInputPort()->getFile();
-        if (NULL == file) {
-            callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
-            return Object::Undef;
-        }
+    argumentCheckList(2, env);
 
-        if (!file->dup(File::STANDARD_IN)) {
-            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
-            return Object::Undef;
-        }
-    }
+    int length;
+    Object pair;
 
-    if (out.isBinaryOutputPort()) {
-        File* file = out.toBinaryOutputPort()->getFile();
-        if (NULL == file) {
-            callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
-            return Object::Undef;
-        }
+    const char *path_ = command->data().ascii_c_str();
 
-        if (!file->dup(File::STANDARD_OUT)) {
-            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
-            return Object::Undef;
-        }
-    }
-
-    if (err.isBinaryOutputPort()) {
-        File* file = err.toBinaryOutputPort()->getFile();
-        if (NULL == file) {
-            callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
-            return Object::Undef;
-        }
-
-        if (!file->dup(File::STANDARD_ERR)) {
-            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
-            return Object::Undef;
-        }
-    }
-
-    const int length = Pair::length(args);
-    char** p = new(GC) char*[length + 2];
-    p[0] = command->data().ascii_c_str();
-    Object pair = args;
-    for (int i = 1; i <= length; i++) {
-        p[i] = pair.car().toString()->data().ascii_c_str();
+    // XXX: Check in scheme wrapper that this is non-null.
+    length = Pair::length(args);
+    char** argv_ = new(GC) char*[length + 1];
+    pair = args;
+    for (int i = 0; i < length; i++) {
+        argv_[i] = pair.car().toString()->data().ascii_c_str();
         pair = pair.cdr();
     }
-    p[length + 1] = (char*)NULL;
-    const int ret = execvp(command->data().ascii_c_str(), p);
+    argv_[length] = (char*)NULL;
 
-    if (-1 == ret) {
-        callAssertionViolationImmidiaImmediately(theVM, procedureName, "failed", L2(argv[0], getLastErrorMessage()));
-        exit(-1);
-        return Object::Undef;
+    length = Pair::length(env);
+    char** envp_ = new(GC) char*[length + 1];
+    pair = env;
+    for (int i = 0; i < length; i++) {
+        envp_[i] = pair.car().toString()->data().ascii_c_str();
+        pair = pair.cdr();
     }
+    envp_[length] = (char*)NULL;
 
-    // this procedure doesn't return
-    return Object::Undef;
-#endif
+    execve(path_, (char* const*) argv_, (char* const*) envp_);
+    
+    // If we ever return we have failed by definition.
+    return Object::makeFixnum(errno);
 }
 
 Object scheme::internalGetpidEx(VM* theVM, int argc, const Object* argv)
@@ -246,6 +210,38 @@ Object scheme::internalGetpidEx(VM* theVM, int argc, const Object* argv)
     return Object::makeFixnum(getpid());
 #endif
 }
+
+Object scheme::internalDupEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%dup");
+    checkArgumentLength(2);
+
+    File** files = new(GC) File*[argc];
+    for (int i = 0; i < argc; i++) {
+        Object obj = argv[i];
+        BinaryPort* p;
+
+        if (obj.isBinaryInputPort()) {
+            p = obj.toBinaryInputPort();
+        } else if (obj.isBinaryOutputPort()) {
+            p = obj.toBinaryOutputPort();
+        } else {
+            callAssertionViolationAfter(theVM,
+                                        procedureName,
+                                        "invalid port type",
+                                        L1(argv[i]));
+            return Object::Undef;
+        }
+
+        files[i] = p->getFile();
+    }
+
+    if (files[0]->dup(*(files[1]))) {
+        return Object::True;
+    } else {
+        return Object::False;
+    }
+}    
 
 Object scheme::processListEx(VM* theVM, int argc, const Object* argv)
 {
