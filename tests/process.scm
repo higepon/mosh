@@ -75,8 +75,8 @@
 
 (test-true (procedure? waitpid))
 
-<<<<<<< HEAD
 (unless (string=? (host-os) "cygwin") ;; Cygwin may fail below
+  ; consider replacing the command with 'true' or something
   (let-values (((pid cin cout cerr) (spawn "true" '() (list #f #f #f))))
     (let-values (((wpid status termsig) (waitpid pid)))
       (test-eqv pid wpid)
@@ -92,126 +92,107 @@
     (let-values (((wpid status termsig) (waitpid pid)))
       (test-eqv pid wpid)
       (test-false status)
-      (test-eqv 9 termsig))))
-=======
-; consider replacing the command with 'true' or something
-(let-values (((pid cin cout cerr) (spawn "true" '() (list #f #f #f))))
-  (let-values (((wpid status termsig) (waitpid pid)))
-    (test-eqv pid wpid)
-    (test-eqv status 0)
-    (test-false termsig)))
-
-(let-values (((pid cin cout cerr) (spawn "false" '() (list #f #f #f))))
-  (let-values (((wpid status termsig) (waitpid pid)))
-    (test-eqv pid wpid)
-    (test-true (not (zero? status)))
-    (test-false termsig)))
-
-(let-values (((pid cin cout cerr) (spawn "sh" '("-c" "kill -9 $$") (list #f #f #f))))
-  (let-values (((wpid status termsig) (waitpid pid)))
-    (test-eqv pid wpid)
-    (test-false status)
-    (test-eqv 9 termsig)))
->>>>>>> higepon/master
-
-; most basic test
-(let-values (((pid cin cout cerr) (spawn "true" '())))
-  (ignore-values (waitpid pid))
-  (test-true (integer? pid))
-  (test-false cin)
-  (test-false cout)
-  (test-false cerr))
-
-; passing arguments to a spawned command
-(let-values (((pid cin cout cerr) (spawn "test" '("foo" "=" "bar"))))
-  (ignore-values (waitpid pid))
-  (test-true (integer? pid))
-  (test-false cin)
-  (test-false cout)
-  (test-false cerr))
-
-; echoing strings to stdout
-(let ((cin1 (open-devnull)))
-  (let*-values (((pipe-in cout1) (pipe))
-                ((pid cin2 cout2 cerr2)
-                 (spawn "printf" '("test is %s" "mosh")
-                        (list cin1 cout1 #f))))
-    (close-port cout1)
+      (test-eqv 9 termsig)))
+  
+  ; most basic test
+  (let-values (((pid cin cout cerr) (spawn "true" '())))
     (ignore-values (waitpid pid))
     (test-true (integer? pid))
-    (test-eq cin1 cin2)
-    (test-eq cout1 cout2)
-    (test-equal "test is mosh" (pipe->string pipe-in))))
-
-; echoing strings to stderr
-(let ((cin1 (open-devnull)))
-  (let*-values (((pipe-in cerr1) (pipe))
-                ((pid cin2 cout2 cerr2)
-                 (spawn "sh" '("-c" "printf 'test is mosh' >&2")
-                        (list cin1 #f cerr1))))
-    (close-port cerr1)
+    (test-false cin)
+    (test-false cout)
+    (test-false cerr))
+  
+  ; passing arguments to a spawned command
+  (let-values (((pid cin cout cerr) (spawn "test" '("foo" "=" "bar"))))
     (ignore-values (waitpid pid))
     (test-true (integer? pid))
-    (test-eq cin1 cin2)
-    (test-eq cerr1 cerr2)
-    (test-equal "test is mosh" (pipe->string pipe-in))))
-
-; This test will only work if we are run from the right place, ie the root of the
-; mosh source tree.  So skip it if there's no subdirectory 'tests'.
-(let ((saved-cwd (current-directory)))
-  (let ((setup-worked?
-         (guard (ex (#t #f))
-           (set-current-directory! "tests")
-           (rename-file "printf.sh" "printf")
-           (file-executable? "printf"))))
-    (when setup-worked?
-          (let ((cin1 (open-devnull)))
-            (let*-values (((pipe-in cout1) (pipe))
-                          ((pid cin2 cout2 cerr2)
-                           (spawn "printf" '("test is not mosh")
-                                  (list cin1 cout1 #f)
-                                  #f)))
-              (close-port cout1)
-              (let-values (((wpid status termsig) (waitpid pid)))
-                (test-eqv wpid pid)
-                (test-true (integer? pid))
-                (test-eq cin1 cin2)
-                (test-eq cout1 cout2)
-                (test-eqv 32 status)
-                (test-equal "test is mosh\n" (pipe->string pipe-in)))))
-
-        ; clean up
-        (rename-file "printf" "printf.sh")
-        (set-current-directory! saved-cwd))))
-
-; emptying the environment
-(let ((cin1 (open-devnull)))
-  (let*-values (((pipe-in cout1) (pipe))
-                ((pid cin2 cout2 cerr2)
-                 (spawn "env" '()
-                        (list cin1 cout1 #f)
-                        #t
-                        '())))
-    (close-port cout1)
-    (ignore-values (waitpid pid))
-    (test-true (integer? pid))
-    (test-eq cin1 cin2)
-    (test-eq cout1 cout2)
-    (test-equal "" (pipe->string pipe-in))))
-
-; modified environment for subprocess
-(let ((cin1 (open-devnull)))
-   (let*-values (((pipe-in cout1) (pipe))
-                 ((pid cin2 cout2 cerr2)
-                  (spawn "env" '()
-                         (list cin1 cout1 #f)
-                         #t
-                         '(("HOME" . "hige") ("PATH" . "hoge")))))
-    (close-port cout1)
-    (ignore-values (waitpid pid))
-    (test-true (integer? pid))
-    (test-eq cin1 cin2)
-    (test-eq cout1 cout2)
-    (test-equal "HOME=hige\nPATH=hoge\n" (pipe->string pipe-in))))
+    (test-false cin)
+    (test-false cout)
+    (test-false cerr))
+  
+  ; echoing strings to stdout
+  (let ((cin1 (open-devnull)))
+    (let*-values (((pipe-in cout1) (pipe))
+                  ((pid cin2 cout2 cerr2)
+                   (spawn "printf" '("test is %s" "mosh")
+                          (list cin1 cout1 #f))))
+      (close-port cout1)
+      (ignore-values (waitpid pid))
+      (test-true (integer? pid))
+      (test-eq cin1 cin2)
+      (test-eq cout1 cout2)
+      (test-equal "test is mosh" (pipe->string pipe-in))))
+  
+  ; echoing strings to stderr
+  (let ((cin1 (open-devnull)))
+    (let*-values (((pipe-in cerr1) (pipe))
+                  ((pid cin2 cout2 cerr2)
+                   (spawn "sh" '("-c" "printf 'test is mosh' >&2")
+                          (list cin1 #f cerr1))))
+      (close-port cerr1)
+      (ignore-values (waitpid pid))
+      (test-true (integer? pid))
+      (test-eq cin1 cin2)
+      (test-eq cerr1 cerr2)
+      (test-equal "test is mosh" (pipe->string pipe-in))))
+  
+  ; This test will only work if we are run from the right place, ie the root of the
+  ; mosh source tree.  So skip it if there's no subdirectory 'tests'.
+  (let ((saved-cwd (current-directory)))
+    (let ((setup-worked?
+           (guard (ex (#t #f))
+             (set-current-directory! "tests")
+             (rename-file "printf.sh" "printf")
+             (file-executable? "printf"))))
+      (when setup-worked?
+            (let ((cin1 (open-devnull)))
+              (let*-values (((pipe-in cout1) (pipe))
+                            ((pid cin2 cout2 cerr2)
+                             (spawn "printf" '("test is not mosh")
+                                    (list cin1 cout1 #f)
+                                    #f)))
+                (close-port cout1)
+                (let-values (((wpid status termsig) (waitpid pid)))
+                  (test-eqv wpid pid)
+                  (test-true (integer? pid))
+                  (test-eq cin1 cin2)
+                  (test-eq cout1 cout2)
+                  (test-eqv 32 status)
+                  (test-equal "test is mosh\n" (pipe->string pipe-in)))))
+  
+          ; clean up
+          (rename-file "printf" "printf.sh")
+          (set-current-directory! saved-cwd))))
+  
+  ; emptying the environment
+  (let ((cin1 (open-devnull)))
+    (let*-values (((pipe-in cout1) (pipe))
+                  ((pid cin2 cout2 cerr2)
+                   (spawn "env" '()
+                          (list cin1 cout1 #f)
+                          #t
+                          '())))
+      (close-port cout1)
+      (ignore-values (waitpid pid))
+      (test-true (integer? pid))
+      (test-eq cin1 cin2)
+      (test-eq cout1 cout2)
+      (test-equal "" (pipe->string pipe-in))))
+  
+  ; modified environment for subprocess
+  (let ((cin1 (open-devnull)))
+     (let*-values (((pipe-in cout1) (pipe))
+                   ((pid cin2 cout2 cerr2)
+                    (spawn "env" '()
+                           (list cin1 cout1 #f)
+                           #t
+                           '(("HOME" . "hige") ("PATH" . "hoge")))))
+      (close-port cout1)
+      (ignore-values (waitpid pid))
+      (test-true (integer? pid))
+      (test-eq cin1 cin2)
+      (test-eq cout1 cout2)
+      (test-equal "HOME=hige\nPATH=hoge\n" (pipe->string pipe-in))))
+)
 
 (test-results)
