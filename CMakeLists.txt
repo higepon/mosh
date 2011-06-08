@@ -17,6 +17,7 @@ option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
 # option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
 option(MOSH_DEBUG_VERSION "build Debug version of mosh interpreter" OFF)
 option(MOSH_GC_PARALLEL_MARK "Boehm GC: Turn on parallel-marking" OFF)
+set(MOSH_EXECUTABLE_NAME "nmosh" CACHE STRING "Interpreter executable name")
 
 # only ONE runtime source will be allowed.
 set(nmosh_runtime_src
@@ -615,7 +616,7 @@ set_source_files_properties(src/main.cpp src/TestingSignalHandler.cpp
 endif(WIN32)
 source_group(gc FILES ${gc_srcs})
 source_group(oniguruma FILES ${onig_srcs})
-add_executable(${TARGET_FLAVOR}
+add_executable(${MOSH_EXECUTABLE_NAME}
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
@@ -623,7 +624,7 @@ add_executable(${TARGET_FLAVOR}
     ${mosh_runtime_src}
     src/main.cpp)
 
-target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
+target_link_libraries(${MOSH_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
 
 # tests
 
@@ -703,13 +704,13 @@ file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_D
 
 
 if(MOSH_PORTABLE)
-    install(TARGETS ${TARGET_FLAVOR} DESTINATION .)
+    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION .)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib DESTINATION .)
     if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
         install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION .)
     endif()
 else()
-    install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
+    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION bin)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
         DESTINATION share/mosh/${MOSH_VERSION})
     if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
