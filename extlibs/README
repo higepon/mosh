@@ -5,13 +5,17 @@ This directory includes some library distribution for convenience.
 
       Boehm GC is (currently) only GC for Mosh and is always used.
 
+      Slightly patched :
+         misc.c => gc_misc.c renamed.
+         Cygwin workaround at gc_cpp.h was commented out.
+
  - onig-5.9.2 - oniguruma
       For: CMake, MonaOS
 
-      oniguruma is regular expression library.
+      Oniguruma is regular expression library.
       This won't used at all in autotools(configure) builds.
       Please install oniguruma development package (like `onigruma-devel`)
       and see if `onig-config` command exists for autotools build.
 
-      slightly patched, see : http://d.hatena.ne.jp/nurse/20100826
+      Slightly patched, see : http://d.hatena.ne.jp/nurse/20100826
 
