@@ -128,6 +128,8 @@
     %monapi-stream-write
     %monapi-stream-read
     %start-process
+    %confstr
+    %dup
     )
   (import
     (primitives
@@ -259,6 +261,8 @@
       %monapi-stream-write
       %monapi-stream-read
       %start-process
+      %confstr
+      %dup
       )
     (only (rnrs) lambda define-syntax syntax-rules ... list)
     )
