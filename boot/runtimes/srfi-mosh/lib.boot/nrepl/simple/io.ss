@@ -1,6 +1,6 @@
 (library (nrepl simple io)
 	 (export nrepl-read-one nrepl-loop-step nrepl-result-writer)
-	 (import (rnrs) (only (mosh) write/ss))
+	 (import (rnrs) (primitives write/ss))
 
 ;-------------------------------------------------------------------------
 ; simple REPL (standard I/O routines)
