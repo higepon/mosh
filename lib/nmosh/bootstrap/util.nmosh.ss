@@ -1,4 +1,4 @@
-(library (nmosh mosh-vm)
+(library (nmosh bootstrap util)
 	 (export read-all
 		 compile-to-codevector
 		 compile-to-codevector/toplevel
@@ -8,10 +8,14 @@
 
 	 (import (only (mosh) format) 
 		 (rnrs) (srfi :8) (srfi :42) 
+         #|
+         (only 
+           (nmosh boot compiler)
+           compile compile-w/o-halt)
+         |#
+         (primitives
+           compile compile-w/o-halt)
 		 (primitives 
-		   compile
-		   compile-w/o-halt 
-		   eval-compiled! 
 		   fasl-read 
 		   fasl-write!))
 
@@ -28,10 +32,10 @@
     (put-string p s)))
 
 (define (compile-to-codevector/toplevel l)
-  (compile l))
+  (compile-w/o-halt l))
 
 (define (compile-to-codevector l)
-  (compile-w/o-halt l))
+  (compile l))
 
 (define (obj->fasl obj)
   (receive (port bv-proc) (open-bytevector-output-port)

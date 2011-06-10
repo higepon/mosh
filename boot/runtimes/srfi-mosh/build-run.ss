@@ -8,7 +8,7 @@
 	    (mosh)
 	    (system)
 	    (rnrs mutable-pairs)
-	    (primitives permissive-eval sexp-map sexp-map/debug) (nmosh mosh-vm))
+	    (primitives permissive-eval sexp-map sexp-map/debug) (nmosh bootstrap util))
     (define %loadpath "lib.boot:lib.rnrs:lib:../../../lib")
     (define %nmosh-portable-mode #f)
     (define %nmosh-prefixless-mode #t)
