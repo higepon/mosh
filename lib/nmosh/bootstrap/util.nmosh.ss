@@ -32,10 +32,10 @@
     (put-string p s)))
 
 (define (compile-to-codevector/toplevel l)
-  (compile-w/o-halt l))
+  (compile l))
 
 (define (compile-to-codevector l)
-  (compile l))
+  (compile-w/o-halt l))
 
 (define (obj->fasl obj)
   (receive (port bv-proc) (open-bytevector-output-port)
