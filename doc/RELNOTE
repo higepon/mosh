@@ -136,6 +136,9 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             psyntax-mosh and nmosh had implemented SRFI-93 version of 
             with-syntax.  A patch for psyntax-mosh was contributed by amoebae.
 
+    (match):
+        match couldn't match certain pattern.
+
     (mosh): nmosh version
         library-path procedure was not compatible with psyntax-mosh's one.
 
