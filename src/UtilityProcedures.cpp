@@ -860,6 +860,7 @@ Object scheme::internalStartProcessEx(VM* theVM, int argc, const Object* argv)
     }
     return Object::Undef;
 #else
+    (void) cmd;
     return callAssertionViolationAfter(theVM, procedureName, "not implmented", L1(argv[0]));
 #endif
 }
@@ -1070,6 +1071,7 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv) {
     checkArgumentLength(1);
     argumentAsFixnum(0, name);
 
+#ifndef _WIN32
     Object val;    // return value of this procedure
     int save_errno  = errno;
 
@@ -1080,10 +1082,19 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv) {
 
     // Handle two error cases which we need to distinguish thru errno
     if (ret == 0) {
+        // error
+        val = Object::False;
         if (errno != save_errno) {
-            callErrorAfter(theVM, procedureName, "invalid name", L1(argv[0]));
-        } else {
-            val = Object::False;
+            switch(errno){
+                case EINVAL:
+                    callErrorAfter(theVM, procedureName, "invalid name", 
+                            L1(argv[0]));
+                    break;
+                default:
+                    callErrorAfter(theVM, procedureName, "unknown error", 
+                            L1(argv[0]));
+                    break;
+            }
         }
     } else {
         // Can't call makeString on 'result' as 'buf' is now a separate piece
@@ -1092,4 +1103,8 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv) {
     }
     
     return val;
+#else
+    (void) name;
+    return Object::False;
+#endif
 }
