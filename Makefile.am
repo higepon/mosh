@@ -336,7 +336,6 @@ boot/runtimes/srfi-mosh/expander.scm \
 boot/runtimes/srfi-mosh/init.ss \
 boot/runtimes/srfi-mosh/init5.scm \
 boot/runtimes/srfi-mosh/layout.scm \
-boot/runtimes/srfi-mosh/lib \
 boot/runtimes/srfi-mosh/lib.boot \
 boot/runtimes/srfi-mosh/lib.rnrs \
 boot/runtimes/srfi-mosh/mosh-exceptions.scm \
