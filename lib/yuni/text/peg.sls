@@ -1,3 +1,60 @@
+(library (yuni text peg)
+         (export make-peg-stream
+                 string->peg-stream
+                 port->peg-stream
+                 list->peg-stream
+                 peg-stream-peek!
+                 peg-stream-position
+                 ;<parse-error>
+                 &parse-error
+                 make-peg-parse-error
+
+                 peg-run-parser peg-parse-string peg-parse-port
+                 $return $fail $expect 
+                 $do $do* $<< $try $seq $or $fold-parsers $fold-parsers-right
+                 $many $many1 $skip-many
+                 $repeat $optional
+                 $alternate
+                 $sep-by $end-by $sep-end-by
+                 $count $between
+                 $not $many-till $chain-left $chain-right
+                 $lazy
+
+                 $s $c $y
+                 $string $string-ci 
+                 $char $one-of $none-of $many-chars
+                 $satisfy
+
+                 ;; YUNI: newline was removed
+                 anychar upper lower letter alphanum digit
+                 hexdigit tab space spaces eof
+
+                 $->rope rope->string rope-finalize
+
+                 ;; YUNI: cr lf
+                 cr lf
+                 parse-error?
+                 )
+         (import (rnrs)
+                 (rnrs mutable-pairs)
+                 (rnrs r5rs)
+                 (yuni core)
+                 (yuni util binding-constructs)
+                 (yuni util combinators)
+                 (yuni util inline) ;; lie
+                 (only (srfi :1)
+                       append-map
+                       append!
+                       reverse!)
+                 (only (srfi :13) string-drop string-concatenate)
+                 (srfi :8)
+                 (srfi :14)
+                 (srfi :26)
+                 (srfi :31)
+                 (srfi :48)
+                 (match) ;; mosh only
+                 )
+
 ;;;
 ;;; peg.scm - Parser Expression Grammar Parser
 ;;;
@@ -32,47 +89,6 @@
 ;;;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;;;
 
-(define-module parser.peg
-  (use srfi-1)
-  (use srfi-13)
-  (use srfi-14)
-  (use gauche.collection)
-  (use util.list)
-  (use util.match)
-  (export make-peg-stream
-          string->peg-stream
-          port->peg-stream
-          list->peg-stream
-          peg-stream-peek!
-          peg-stream-position
-          <parse-error>
-          make-peg-parse-error
-
-          peg-run-parser peg-parse-string peg-parse-port
-          $return $fail $expect 
-          $do $do* $<< $try $seq $or $fold-parsers $fold-parsers-right
-          $many $many1 $skip-many
-          $repeat $optional
-          $alternate
-          $sep-by $end-by $sep-end-by
-          $count $between
-          $not $many-till $chain-left $chain-right
-          $lazy
-
-          $s $c $y
-          $string $string-ci 
-          $char $one-of $none-of $many-chars
-          $satisfy
-
-          anychar upper lower letter alphanum digit
-          hexdigit newline tab space spaces eof
-
-          $->rope rope->string rope-finalize
-          )
-  )
-
-(select-module parser.peg)
-
 ;;;============================================================
 ;;; How is EBNF represented in the PEG library?
 ;;;
@@ -101,39 +117,69 @@
 ;;; Parse result types
 ;;;
 
-(define-condition-type <parse-error> <error> #f
-  (position)                            ;stream position
-  (objects))                            ;offending object(s) or messages
+(define-condition-type &parse-error &condition
+                       make-parse-error-condition parse-error?
+                       (position parse-error-position) ;; stream position
+                       (message parse-error-message)) ;; offendint object(s) or messages
 
-(define-method write-object ((o <parse-error>) out)
-  (format out "#<<parse-error> ~S>" (ref o 'message)))
+;; (define-method write-object ((o <parse-error>) out)
+;;   (format out "#<<parse-error> ~S>" (ref o 'message)))
 
 (define-inline (parse-success? x) (not x))
 
-(define-macro (return-result value stream)
-  `(values #f ,value ,stream))
+(define-syntax return-result 
+  (syntax-rules ()
+    ((_ value stream)
+     (values #f value stream))))
 
-(define-macro (return-failure/message m s)
-  `(values 'fail-message ,m ,s))
-(define-macro (return-failure/expect m s)
-  `(values 'fail-expect ,m ,s))
-(define-macro (return-failure/unexpect m s)
-  `(values 'fail-unexpect ,m ,s))
-(define-macro (return-failure/compound m s)
-  `(values 'fail-compound ,m ,s))
+(define-syntax return-failure/message
+  (syntax-rules ()
+    ((_ m s)
+     (values 'fail-message m s))))
+
+(define-syntax return-failure/expect
+  (syntax-rules ()
+    ((_ m s)
+     (values 'fail-expect m s))))
+
+(define-syntax return-failure/unexpect
+  (syntax-rules ()
+    ((_ m s)
+     (values 'fail-unexpect m s))))
+
+(define-syntax return-failure/compound
+  (syntax-rules ()
+    ((_ m s)
+     (values 'fail-compound m s))))
+
+(define (group-by-car objs)
+  ;; FIXME!: STUB STUB STUB
+  (list objs))
+
+(define (assoc-ref alist key)
+  (cond ((assoc key alist) => cdr)
+        (else #f)))
 
 (define (make-peg-parse-error type objs stream)
   (define (analyze-compound-error objs pos)
     (let1 grps (map (lambda (g) (cons (caar g) (map cdr g)))
-                    (group-collection objs :key car))
+                    ;; FIXME:!
+                    ;;(group-collection objs :key car)
+                    (group-by-car objs))
       (let ((msgs (assoc-ref grps 'fail-message))
             (exps (assoc-ref grps 'fail-expect))
             (unexps (assoc-ref grps 'fail-unexpect)))
         (string-concatenate
-         (or-concat (cond-list
-                     [exps (compound-exps exps)]
-                     [unexps (compound-unexps unexps)]
-                     [msgs @ msgs]))))))
+         (or-concat 
+           ;;(cond-list
+           ;;  [exps (compound-exps exps)]
+           ;;  [unexps (compound-unexps unexps)]
+           ;;  [msgs @ msgs])
+           (append
+             (if exps (list (compound-exps exps)) '())
+             (if unexps (list (compound-unexps unexps)) '())
+             (if msgs msgs '()))
+           )))))
   (define (or-concat lis)
     (match lis
       [() '()]
@@ -164,9 +210,13 @@
       ))
   (let ((pos (peg-stream-position stream))
         (nexttok (begin (peg-stream-peek! stream) (car stream))))
-    (make-condition <parse-error>
-                    'position pos 'objects objs
-                    'message (message pos nexttok))))
+    ;; (make-condition <parse-error>
+    ;;                 'position pos 'objects objs
+    ;;                 'message (message pos nexttok))
+    
+    ;; FIXME: FIXME!!
+    (make-parse-error-condition pos (list message pos nexttok))
+    ))
 
 (define (peg-run-parser parser stream)
   (receive (r v s) (parser stream)
@@ -190,28 +240,20 @@
 (define-inline (rope? obj)
   (and (pair? obj) (eq? (car obj) 'rope)))
 
-(inline-stub
- (define-cfn rope2string_int (obj p) :: void :static
-   (label restart)
-   (cond [(SCM_STRINGP obj) (SCM_PUTS obj p)]
-         [(SCM_CHARP obj) (SCM_PUTC (SCM_CHAR_VALUE obj) p)]
-         [(SCM_PAIRP obj)
-          (when (SCM_EQ (SCM_CAR obj) 'rope)
-            (set! obj (SCM_CDR obj)) (goto restart))
-          (for-each (lambda (elt)
-                      (cond [(SCM_STRINGP elt) (SCM_PUTS elt p)]
-                            [(SCM_CHARP elt) (SCM_PUTC (SCM_CHAR_VALUE elt) p)]
-                            [else (rope2string_int elt p)]))
-                    obj)]
-         [(not (SCM_NULLP obj))
-          (Scm_Error "rope->string: unknown object to write: %S" obj)]))
-
- (define-cproc rope->string (obj)
-   (body <top>
-         (let* ((p (Scm_MakeOutputStringPort TRUE)))
-           (rope2string_int obj p)
-           (result (Scm_GetOutputString (SCM_PORT p) 0)))))
- )
+(define (rope->string obj)
+  (define first obj)
+  (define (traverse obj port)
+    (cond ((rope? obj)
+           (traverse (cdr obj) port))
+          ((null? obj) 'do-nothing)
+          ((pair? obj) (map (cut traverse <> port) obj))
+          ((string? obj) (display obj port))
+          ((char? obj) (display obj port))
+          (else 
+            (error 'rope->string "don't know how to write: " obj))))
+  (receive (p pr) (open-string-output-port)
+    (call-with-port p (cut traverse obj <>))
+    (pr)))
 
 ;;;============================================================
 ;;; Input Stream
@@ -242,6 +284,7 @@
 ;; A generator must return #<eof> if it reaches the end of the stream.
 ;;
 
+#| ;; original cise version
 (inline-stub
  (define-cfn peg_stream_fini_cc (result (data :: void**)) :static
    (return SCM_FALSE))
@@ -271,20 +314,50 @@
              (Scm_VMPushCC peg_stream_cc data 1)
              (result (Scm_VMApply0 (SCM_CAAR s))))])))
  )
+|#
+
+(define (peg-stream-peek! s)
+  (define (peg-stream-cc s result)
+    (let ((p (car s))
+          (tokcnt (cdr s)))
+      (set-car! s result)
+      (set-cdr! s (cons p (+ 1 tokcnt)))
+      (cond ((and (eof-object? result) (cdr p)) ;; call FINI
+             ((cdr p))
+             #f)
+            (else (not (eof-object? result))))))
+  (cond
+    ((not (pair? s))
+     (error 'peg-stream-peek! "peg-stream required" s))
+    ((not (integer? (cdr s))) ;; is not a Terminator?
+     (not (eof-object? (car s))))
+    (else (peg-stream-cc s ((caar s))))))
 
 ;; Create a peg-stream from the given generator.
 ;; "Args" part and the dispatch is a performance hack to avoid
 ;; extra closure invocation.
-(define (make-peg-stream generator :optional (fini #f))
+
+;; YUNI: ...but we use case-lambda here.
+
+(define (do-make-peg-stream generator fini)
   `((,generator . ,fini) . 0))
 
+(define make-peg-stream
+  (case-lambda
+    ((g) (do-make-peg-stream g #f))
+    ((g fini) (do-make-peg-stream g fini))))
+
 (define (string->peg-stream str)
-  (let1 p (open-input-string str :private? #t)
-    (make-peg-stream (cut read-char p) (cut close-input-port p))))
+  (let1 p (open-string-input-port str)
+    (make-peg-stream (cut read-char p) (cut close-port p))))
 
 ;; NB: should we have an option to leave the port open?
-(define (port->peg-stream iport :key (reader read-char))
-  (make-peg-stream (cut reader iport) (cut close-input-port iport)))
+;; YUNI: should accept "reader" key
+;;(define (port->peg-stream iport :key (reader read-char))
+;;  (make-peg-stream (cut reader iport) (cut close-input-port iport)))
+
+(define (port->peg-stream iport)
+  (make-peg-stream (cut read-char iport) (cut close-port iport)))
 
 (define (list->peg-stream lis)
   (make-peg-stream (lambda ()
@@ -330,6 +403,7 @@
 ;;            |  (parser)
 ;;            |  parser
 ;;
+#| ;; original traditional-macro code
 (define-macro (%gen-do-common)
   '(begin
      ;; an ad-hoc optimization to eliminate a closure in typical cases.
@@ -390,6 +464,7 @@
     (error "Malformed $do: at least one clause is required."))
   (parse-do clauses))
 
+
 (define-macro ($do* . clauses)
 
   (%gen-do-common)
@@ -416,15 +491,88 @@
                        (values ,r1 ,v1 ,s1)
                        ,(loop s1 rest))))])]))))
   )
+|#
+
+(define-syntax itr-$do
+  (syntax-rules ()
+    ((_ s ((var parser) rest ...) body)
+     (receive (r1 var s1) (parser s)
+       (if r1
+         (values r1 var s1)
+         (itr-$do s1 (rest ...) body))))
+    ((_ s (parser rest ...) body)
+     (receive (r1 v1 s1) (parser s)
+       (if r1
+         (values r1 v1 s1)
+         (itr-$do s1 (rest ...) body))))
+    ((_ s () body)
+     (body s))))
+
+(define-syntax itr-gen-$do
+  (syntax-rules ()
+    ((_ binds var&parsers body)
+     (let binds
+       (lambda (s)
+         (itr-$do s var&parsers body))))
+    ;; FIXME:Should we detect symbol/identifiers?
+    ((_ binds var&parsers (var parser) clause1 ...)
+     (itr-gen-$do ((tmp parser) . binds) ((var tmp) . var&parsers) clause1 ...))
+    ((_ binds var&parsers (parser) clause1 ...)
+     (itr-gen-$do ((tmp parser) . binds) (tmp . var&parsers) clause1 ...))
+    ((_ binds var&parsers parser clause1 ...)
+     (itr-gen-$do ((tmp parser) . binds) (tmp . var&parsers) clause1 ...))))
+
+(define-syntax rev-$do
+  (syntax-rules ()
+    ((_ rev (clause0 clause1 ...) body)
+     (rev-$do (clause0 . rev) (clause1 ...) body))
+    ((_ (rev ...) () body)
+     (itr-gen-$do () () rev ... body))))
+
+(define-syntax $do
+  (syntax-rules ()
+    ((_ clause0 ... body)
+     (rev-$do () (clause0 ...) body))))
+
+(define-syntax itr-$do*
+  (syntax-rules ()
+    ((_ s body)
+     (body s))
+    ((_ s (var parser) clause1 ...)
+     (receive (r1 var s1) (parser s)
+       (if r1
+         (values r1 var s1)
+         (itr-$do* s1 clause1 ...))))
+    ((_ s (parser) clause1 ...)
+     (itr-$do s parser clause1 ...))
+    ((_ s parser clause1 ...)
+     (receive (r1 v1 s1) (parser s)
+       (if r1
+         (values r1 v1 s1)
+         (itr-$do* s1 clause1 ...))))))
+
+(define-syntax $do* 
+  (syntax-rules ()
+    ((_ clause0 clause1 ...)
+     (lambda (s)
+       (itr-$do* s clause0 clause1 ...)))))
 
 ;; $<< proc parser ...
 ;;   == ($do [tmp parser] ... ($return (proc tmp ...)))
-(define-macro ($<< proc . parsers)
-  (let ((temps (map (lambda (_) (gensym)) parsers)))
-    `($do ,@(map list temps parsers) ($return (,proc ,@temps)))))
+(define-syntax itr-$<<
+  (syntax-rules ()
+    ((_ proc (name parser) ...)
+     ($do [name parser] ... ($return (proc name ...))))))
+
+(define-syntax $<<
+  (syntax-rules ()
+    ((_ proc parsers ...)
+     (itr-$<< proc (name parsers) ...))))
+
 
 ;; $or p1 p2 ...
 ;;   Ordered choice.
+#| ;; original traditional-macro code
 (define-macro ($or . parsers)
 
   (define (parse-or parsers ps binds)
@@ -457,6 +605,56 @@
   (if (null? parsers)
     `(cut values #f #t <>)
     (parse-or parsers '() '())))
+|#
+
+(define-syntax compose-failure
+  (syntax-rules ()
+    ((_ ((p r v s) ...) s0)
+     (values 'fail-compound
+             (list (cons r v) ... )
+             s0))))
+
+(define-syntax itr-finish-$or
+  (syntax-rules ()
+    ((_ s0 ini (p r v s))
+     (receive (r v s) (p s0)
+       (if (and r (eq? s0 s))
+         (compose-failure ini s0)
+         (values r v s))))
+    ((_ s0 ini (p r v s) next0 next1 ...)
+     (receive (r v s) (p s0)
+       (if (and r (eq? s0 s))
+         (itr-finish-$or s0 ini next0 next1 ...)
+         (values r v s))))))
+
+(define-syntax itr-gen-finish-$or
+  (syntax-rules ()
+    ((_ x (prvs ...) ())
+     (itr-finish-$or x (prvs ...) prvs ...))
+    ((_ x (prvs ...) (p0 p1 ...))
+     (itr-gen-finish-$or x (prvs ... (p0 r v s)) (p1 ...)))))
+
+(define-syntax finish-$or
+  (syntax-rules ()
+    ((_ ps binds)
+     (let binds
+       (lambda (x)
+         (itr-gen-finish-$or x () ps))))))
+
+(define-syntax itr-$or
+  (syntax-rules ()
+    ((_ () ps binds)
+     (finish-$or ps binds))
+    ((_ ((x ...) . parsers) (ps ...) (binds ...))
+     (itr-$or parsers (ps ... tmp) (binds ... (tmp (x ...)))))
+    ((_ (p . parsers) (ps ...) binds)
+     (itr-$or parsers (ps ... p) binds))))
+
+(define-syntax $or
+  (syntax-rules ()
+    ((_) (cut values #f #t <>))
+    ((_ parsers ...)
+     (itr-$or (parsers ...) () ()))))
 
 ;; $fold-parsers proc seed parsers
 ;; $fold-parsers-right proc seed parsers
@@ -524,7 +722,7 @@
 (define (%check-min-max min max)
   (when (or (negative? min)
             (and max (> min max)))
-    (error "invalid argument:" min max)))
+    (error 'check-min-max "invalid argument:" min max)))
 
 ;; $loop [var parser] ([v0 init0] ...)
 ;;       :while expr
@@ -555,7 +753,7 @@
     [(_ (v parser) ((var init) ...) . xs)
      ($loop%gather xs ($loop $loop%body (v parser) ((var init) ...)))]
     [(_ . other)
-     (syntax-error "Malformed $loop: " ($loop . other))]))
+     (error '$loop "Malformed $loop: " ($loop . other))]))
 
 (define-syntax $loop%body
   (syntax-rules ()
@@ -600,18 +798,18 @@
   (syntax-rules ()
     [(_ () (name body . fixpart) ?update ?while ?until ?finish)
      (body fixpart ?update ?while ?until ?finish)]
-    [(_ (:update u . xs) fix _ w t f)
+    [(_ ("update" u . xs) fix _ w t f)
      ($loop%gather xs fix (#t . u) w t f)]
-    [(_ (:updates (u ...) . xs) fix _ w t f)
+    [(_ ("updates" (u ...) . xs) fix _ w t f)
      ($loop%gather xs fix (#f u ...) w t f)]
-    [(_ (:while w . xs) fix u _ t f)
+    [(_ ("while" w . xs) fix u _ t f)
      ($loop%gather xs fix u w t f)]
-    [(_ (:until t . xs) fix u w _ f)
+    [(_ ("until" t . xs) fix u w _ f)
      ($loop%gather xs fix u w t f)]
-    [(_ (:finish f . xs) fix u w t _)
+    [(_ ("finish" f . xs) fix u w t _)
      ($loop%gather xs fix u w t f)]
     [(_ (other . _) (name . x) u w t f)
-     (syntax-errorf "Invalid keyword in ~a: ~s" name other)]
+     (error '$loop%gather "Invalid keyword" name other)]
     [(_ xs fix)
      ($loop%gather xs fix #t #t #t #t)]
     ))
@@ -636,61 +834,92 @@
 ;;   Exactly n times of p.  Returns the list.
 (define ($count parse n)
   ($loop [v parse] ([vs '()] [cnt 0])
-         :while  (< cnt n)
-         :updates [(cons v vs) (+ cnt 1)]
-         :until  #f
-         :finish (reverse! vs)))
+         "while"  (< cnt n)
+         "updates" [(cons v vs) (+ cnt 1)]
+         "until"  #f
+         "finish" (reverse! vs)))
 
 (define ($skip-count parse n)
   ($loop [v parse] ([cnt 0])
-         :while (< cnt n)
-         :update (+ cnt 1)
-         :until #f))
+         "while" (< cnt n)
+         "update" (+ cnt 1)
+         "until" #f))
 
 ;; $many p &optional min max
 ;; $many1 p &optional max
-(define ($many parse :optional (min 0) (max #f))
+(define (do-$many parse min max)
   (%check-min-max min max)
   (if (= min 0)
     (if (not max)
-      ($loop [v parse] ([vs '()]) :update (cons v vs) :finish (reverse! vs))
+      ($loop [v parse] ([vs '()]) "update" (cons v vs) "finish" (reverse! vs))
       ($loop [v parse] ([vs '()] [cnt 0])
-             :while (< cnt max)
-             :updates [(cons v vs) (+ cnt 1)]
-             :finish (reverse! vs)))
+             "while" (< cnt max)
+             "updates" [(cons v vs) (+ cnt 1)]
+             "finish" (reverse! vs)))
     ($do [xs ($count parse min)]
          [ys ($many parse 0 (and max (- max min)))]
          ($return (append xs ys)))))
 
-(define ($many1 parse :optional (max #f))
+(define $many
+  (case-lambda
+    ((parse) (do-$many parse 0 #f))
+    ((parse min) (do-$many parse min #f))
+    ((parse min max) (do-$many parse min max))))
+
+(define (do-$many1 parse max)
   (if max
     ($do [v parse] [vs ($many parse 0 (- max 1))] ($return (cons v vs)))
     ($do [v parse] [vs ($many parse)] ($return (cons v vs)))))
 
+(define $many1
+  (case-lambda
+    ((parse) (do-$many1 parse #f))
+    ((parse max) (do-$many1 parse max))))
+
 ;; $skip-many p &optional min max
 ;;   Like $many, but does not keep the results.
-(define ($skip-many parse :optional (min 0) (max #f))
+(define (do-$skip-many parse min max)
   (%check-min-max min max)
   (if (= min 0)
     (if (not max)
       ($loop [v parse] ())
-      ($loop [v parse] ([cnt 0]) :while (< cnt max) :update (+ cnt 1)))
+      ($loop [v parse] ([cnt 0]) "while" (< cnt max) "update" (+ cnt 1)))
     ($do [($skip-count parse min)]
          [($skip-many parse 0 (and max (- max min)))]
          ($return #f))))
 
-(define ($skip-many1 parse :optional (max #f))
+(define $skip-many
+  (case-lambda
+    ((parse) (do-$skip-many parse 0 #f))
+    ((parse min) (do-$skip-many parse min #f))
+    ((parse min max) (do-$skip-many parse min max))))
+
+(define (do-$skip-many1 parse max)
   (if max
     ($do parse [($skip-many1 parse)] ($return #f))
     ($do parse [($skip-many1 parse 0 (- max 1))] ($return #f))))
 
-(define ($optional parse :optional (fallback #f))
+(define $skip-many1
+  (case-lambda
+    ((parse) (do-$skip-many1 parse #f))
+    ((parse max) (do-$skip-many1 parse max))))
+
+(define (do-$optional parse fallback)
   ($or parse ($return fallback)))
+
+(define $optional
+  (case-lambda
+    ((parse) (do-$optional parse #f))
+    ((parse fallback) (do-$optional parse fallback))))
 
 (define ($repeat parse n)
   ($many parse n n))
 
-(define ($sep-by parse sep :optional (min 0) (max #f))
+;; FIXME: implement elsewhere
+(define (clamp x min)
+  (if (< x min) min x))
+
+(define (do-$sep-by parse sep min max)
   (define rep
     ($do [x parse]
          [xs ($many ($seq sep parse)
@@ -701,6 +930,12 @@
    [(and max (zero? max)) ($return '())]
    [(> min 0) rep]
    [else ($or rep ($return '()))]))
+
+(define $sep-by
+  (case-lambda
+    ((parse sep) (do-$sep-by parse sep 0 #f))
+    ((parse sep min) (do-$sep-by parse sep min #f))
+    ((parse sep min max) (do-$sep-by parse sep min max))))
 
 (define ($alternate parse sep)
   ($or ($do [h parse]
@@ -726,17 +961,17 @@
 ;;   But it can't be easily extended to the bounded version wihtout
 ;;   sacrificing performance.  
 
-(define ($sep-end-by parse sep :optional (min 0) (max #f))
+(define (do-$sep-end-by parse sep min max)
   (define (bound max)
     ($loop [s&v ($do [v parse]
                      [s ($optional ($do sep ($return #t)))]
                      ($return (cons s v)))]
            ([vs '()] [cont? #t] [cnt 0])
-           :while  (and cont? (if max (< cnt max) #t))
-           :updates [(cons (cdr s&v) vs)
+           "while"  (and cont? (if max (< cnt max) #t))
+           "updates" [(cons (cdr s&v) vs)
                      (car s&v)
                      (+ cnt 1)]
-           :finish (reverse! vs)))
+           "finish" (reverse! vs)))
   
   (%check-min-max min max)
   ;; The fact that the last 'sep' is optional makes things complicated.
@@ -746,6 +981,12 @@
          [x  parse]
          [ys ($optional ($seq sep (bound (and max (- max min -1)))) '())]
          ($return (append xs (list x) ys)))))
+
+(define $sep-end-by
+  (case-lambda
+    ((parse sep) (do-$sep-end-by parse sep 0 #f))
+    ((parse sep min) (do-$sep-end-by parse sep min #f))
+    ((parse sep min max) (do-$sep-end-by parse sep min max))))
 
 (define ($between open parse close)
   ($do open [v parse] close ($return v)))
@@ -806,8 +1047,12 @@
 ;;;
 
 (define ($->rope parser)   ($<< make-rope parser))
-(define ($->string parser) ($<< (.$ rope->string make-rope) parser))
-(define ($->symbol parser) ($<< (.$ string->symbol rope->string make-rope) parser))
+;(define ($->string parser) ($<< (.$ rope->string make-rope) parser))
+;(define ($->symbol parser) ($<< (.$ string->symbol rope->string make-rope) parser))
+;
+;FIXME: I miss ".$" ...
+(define ($->string parser) ($<< (lambda (s)  (rope->string (make-rope s))) parser))
+(define ($->symbol parser) ($<< (lambda (s) (string->symbol (rope->string (make-rope s)))) parser))
 
 (define (rope-finalize obj)
   (cond [(rope? obj) (rope->string obj)]
@@ -877,15 +1122,18 @@
      (define proc
        ($expect ($one-of charset) expect)))))
 
-(define-char-parser upper    #[A-Z]         "upper case letter")
-(define-char-parser lower    #[a-z]         "lower case letter")
-(define-char-parser letter   #[A-Za-z]      "letter")
-(define-char-parser alphanum #[A-Za-z0-9]   "letter or digit")
-(define-char-parser digit    #[0-9]         "digit")
-(define-char-parser hexdigit #[0-9A-Fa-f]   "hexadecimal digit")
-(define-char-parser newline  #[\n]          "newline")
-(define-char-parser tab      #[\t]          "tab")
-(define-char-parser space    #[\s]          "space")
+(define-char-parser upper    char-set:upper-case         "upper case letter")
+(define-char-parser lower    char-set:lower-case         "lower case letter")
+(define-char-parser letter   char-set:letter      "letter")
+(define-char-parser alphanum char-set:letter+digit   "letter or digit")
+(define-char-parser digit    char-set:digit         "digit")
+(define-char-parser hexdigit char-set:hex-digit   "hexadecimal digit")
+;(define-char-parser newline  #[\n]          "newline")
+(define-char-parser cr (list->char-set '(#\return))          "carrige-return")
+(define-char-parser lf (list->char-set '(#\linefeed))          "linefeed")
+(define-char-parser tab      (list->char-set '(#\tab))          "tab")
+;(define-char-parser space    #[ \v\f\t\r\n] "space")
+(define-char-parser space    (list->char-set '(#\space #\tab #\vtab #\return #\linefeed)) "space")
 
 (define spaces ($<< make-rope ($many space)))
 
@@ -894,3 +1142,4 @@
     (return-failure/expect "end of input" s)
     (return-result #t (cdr s))))
 
+)
