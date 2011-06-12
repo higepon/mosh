@@ -4,7 +4,7 @@ The current release of Mosh supports all of the features R6RS.
 See detailed information on http://mosh.monaos.org.
 
 # Building and Installing Mosh
-Get a release of Mosh from [Download](http://code.google.com/p/mosh-scheme/downloads/list). Alternatively, the [development head version](http://storage.osdev.info/pub/mosh/mosh-current.tar.gz) is available.
+Get a release of Mosh from [Download](http://code.google.com/p/mosh-scheme/downloads/list). The [development head version](http://storage.osdev.info/pub/mosh/mosh-current.tar.gz) is also available.
 
 See [INSTALL](https://github.com/higepon/mosh/blob/master/INSTALL) and [doc](https://github.com/higepon/mosh/tree/master/doc) for prerequisite packages.
 
@@ -13,7 +13,7 @@ See [INSTALL](https://github.com/higepon/mosh/blob/master/INSTALL) and [doc](htt
     % make check
     % make install
 
-On Windows or FreeBSD platforms, see [Build](http://mosh.monaos.org/files/doc/text/Download-txt.html).
+On Windows, see [Build](http://mosh.monaos.org/files/doc/text/Download-txt.html).
 
 # Building the cutting-edge Mosh
 ## Requirements
