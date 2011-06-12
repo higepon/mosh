@@ -98,9 +98,11 @@ add_definitions(-DHAVE_CONFIG_H
     -DJAVA_FINALIZATION=1
     -DUSE_I686_PREFETCH
     -DDONT_ADD_BYTE_AT_END=1
-    -DHANDLE_FORK=1
     )
 
+if(NOT CMAKE_HOST_WIN32)
+    add_definitions(-DHANDLE_FORK=1)
+endif(NOT CMAKE_HOST_WIN32)
 
 # OS Settings
 if(CMAKE_HOST_WIN32)
