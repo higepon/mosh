@@ -49,7 +49,7 @@ namespace scheme {
         {
 //            MOSH_ASSERT(name_.isSymbol());
             MOSH_ASSERT(fieldCount_ >= 0);
-            fields_ = Object::makeObjectArray(fieldCount_);
+            fields_ = Object::makeObjectArrayLocal(fieldCount_);
             for (int i = 0; i< fieldCount; i++) {
                 fields_[i] = Object::Undef;
             }

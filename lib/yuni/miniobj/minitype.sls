@@ -1,6 +1,8 @@
 (library (yuni miniobj minitype)
          (export miniobj-minitype-ref
                  miniobj-minitype-set!
+                 miniobj-minitype-typeof
+                 miniobj-minitype-typeof-error
                  define-minitype
                  make-minitype
                  make-minitype-obj
@@ -101,6 +103,14 @@
     (check-minitype-obj obj minitype)
     (vector-set! (minitype-obj-slot obj) slotno value)))
 
+(define (miniobj-minitype-typeof obj k)
+  (if (minitype-obj? obj)
+    (minitype-obj-type obj)
+    (k obj)))
+
+(define (miniobj-minitype-typeof-error obj)
+  (assertion-violation 'miniobj-typeof "unsupported object" obj))
+
 (define (miniobj-minitype-ref obj slot k)
   (if (minitype-obj? obj)
     (vector-ref (minitype-obj-slot obj) (scan-slot (minitype-obj-type obj) slot))
@@ -110,6 +120,7 @@
   (if (minitype-obj? obj)
     (vector-set! (minitype-obj-slot obj) (scan-slot (minitype-obj-type obj) slot) value)
     (k obj slot value)))
+
 (define-syntax define-minitype
   (syntax-rules ()
     ((_ name spec)

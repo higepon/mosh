@@ -56,7 +56,6 @@ bool scheme::isErrorBufInitialized = false;
 static Object raiseAfter2(VM* theVM, const ucs4char* procName, Object who, Object message)
 {
     const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
-    Object condition = Object::Nil;
     if (procedure.isFalse()) {
         const Object content =  format(theVM, UC(" WARNING: Error occured before (~e ...) defined\n"), Pair::list1(procName));
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
@@ -75,7 +74,6 @@ static Object raiseAfter2(VM* theVM, const ucs4char* procName, Object who, Objec
 static Object raiseAfter3(VM* theVM, const ucs4char* procName, Object who, Object message, Object irritants)
 {
     const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
-    Object condition = Object::Nil;
     if (procedure.isFalse()) {
         const Object content =  format(theVM, UC(" WARNING: Error occured before (~e ...) defined\n"), Pair::list1(procName));
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);
@@ -95,7 +93,6 @@ static Object raiseAfter3(VM* theVM, const ucs4char* procName, Object who, Objec
 static Object raiseAfter4(VM* theVM, const ucs4char* procName, Object who, Object message, Object irritant1, Object irritant2)
 {
     const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(procName));
-    Object condition = Object::Nil;
     if (procedure.isFalse()) {
         const Object content =  format(theVM, UC(" WARNING: Error occured before (~e ...) defined\n"), Pair::list1(procName));
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, content);

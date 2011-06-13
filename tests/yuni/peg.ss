@@ -41,6 +41,7 @@
         (srfi :14)
         (srfi :26)
         (srfi :8)
+        (srfi :48)
         (mosh test)
         (yuni util binding-constructs)
         (yuni text peg))
@@ -76,13 +77,13 @@
 (define-syntax test-succ
   (syntax-rules ()
     ((_ label expect parse input)
-     (test-equal expect
-                 (parse-string parse input)))))
+     (begin 
+       (test-equal expect
+                   (peg-parse-string parse input))))))
 
 #|
 (define-syntax test-fail
   (syntax-rules ()
-    ((_ label expect parse input)
      (test* #`",label (failure)" expect
             (guard (e ((<parse-error> e)
                        (list (ref e 'position) (ref e 'objects)))
@@ -94,7 +95,8 @@
 (define-syntax test-fail
   (syntax-rules ()
     ((_ label expect parse input)
-     (test-error parse-error? (parse-string parse input)))))
+     (begin 
+       (test-error parse-error? (peg-parse-string parse input))))))
 
 ;;;============================================================
 ;;; Ropes
@@ -213,7 +215,6 @@
            ($or ($string "foo") ($string "bar"))
            "012345")
 
-#|
 ;; $try
 (test-succ "$try" "foo"
            ($try ($string "foo"))
@@ -227,7 +228,6 @@
 (test-fail "$try" '(0 "bar")
            ($try ($seq ($string "foo") ($string "bar")))
            "foobaz...")
-|#
 
 ;; $do
 (test-succ "$do" "j"
@@ -273,14 +273,11 @@
                 ($return (list x y z)))
            "ABcdEF")
 
-#|
 (test-fail "$do and $or" '(3 "foo")
            ($do (v ($or ($string "foo") ($string "bar")))
                 ($string (rope-finalize v)))
            "foobar")
-|#
 
-#|
 ;; $fold-parsers and $fold-parsers-right
 (test-succ "$fold-parsers" '()                  ; base case
            ($fold-parsers cons '() '())
@@ -301,7 +298,6 @@
 (test-fail "$fold-parsers-right" '(2 #\c)
            ($fold-parsers-right cons '() (list ($char #\a) ($char #\b) ($char #\c)))
            "abd")
-|#
 
 ;; $seq
 (test-succ "$seq" "b"
@@ -326,13 +322,11 @@
 (test-succ "$many" '("a" "a")
            ($many ($string "a") 1 2) "aaaaa")
 
-#|
 ;; $skip-many
 (test-succ "$skip-many" #\a
            ($seq ($skip-many ($string "a") 1 2) ($one-of char-set:lower-case)) "aaaaa")
 (test-succ "$skip-many" #\b
            ($seq ($skip-many ($string "a")) ($one-of char-set:lower-case)) "baaaaa")
-|#
 
 ;; $repeat
 (test-succ "$repeat" '(#\a #\b #\a)
@@ -346,13 +340,10 @@
 (test-succ "$optional" #f
            ($optional ($char #\a)) "ABAB")
 
-#| ;; FIXME:
 (test-fail "$optional" '(1 #\b)
            ($optional ($seq ($char #\a) ($char #\b)))
            "ac")
-|#
 
-#|
 ;; $sep-by
 (test-succ "$sep-by" '(#\a #\b)
            ($sep-by ($one-of a-to-b) ($string ","))
@@ -369,17 +360,13 @@
 (test-fail "$sep-by" '(2 a-to-c)
            ($sep-by ($one-of a-to-c) ($string ",") 2 3)
            "a,2,3")
-|#
 
-#|
 ;; $end-by
 (test-succ "$end-by" '(#\a #\b)
            ($end-by ($one-of char-set:lower-case) ($string ","))
            "a,b,")
-|#
 
 ;; $sep-end-by
-#|
 (let ((p ($sep-end-by ($seq ($one-of char-set:lower-case) ($one-of char-set:lower-case)) ($string ","))))
   (define (succ in exp) (test-succ "$sep-end-by" exp p in))
   (define (fail in exp) (test-fail "$sep-end-by" exp p in))
@@ -390,12 +377,17 @@
   (succ "aa"  '(#\a))
   (succ "bb," '(#\b))
   (succ "cc,Z" '(#\c))
+#| ;; compiler error
   (fail "cc,dZ" '(4 char-set:lower-case))
+|#
   (succ "ee,ff," '(#\e #\f))
   (succ "ggZ"  '(#\g))
   (succ "hh,," '(#\h))
   (succ "ii,jjZ"  '(#\i #\j))
+
+#| ;; compiler error
   (fail "kk,ll,mZ" '(7 char-set:lower-case))
+|#
 
   (test-succ "$sep-end-by (min)" '(#\a #\b)
              ($sep-end-by ($seq ($one-of char-set:lower-case) ($one-of char-set:lower-case))
@@ -414,7 +406,6 @@
                           ($string ",") 3)
              "aa,bb,")
   )
-|#
 
 ;; $count
 (test-succ "$count" '(#\a #\b)
@@ -449,7 +440,6 @@
            ($many-till alphanum digit)
            "ab78")
 
-#|
 ;; $many-chars
 (test-succ "$many-chars" '(#\c #\b #\a)
            ($many-chars a-to-c)
@@ -466,7 +456,6 @@
 (test-succ "$many-chars" '(#\c #\b)
            ($many-chars a-to-c 0 2)
            "cbad")
-|#
 
 ;; $chain-left
 (let ((integer
@@ -508,7 +497,6 @@
 (test-fail "$lazy" '(0 #\a)
            ($lazy ($char #\a)) "b")
 
-#|
 ;;;============================================================
 ;;; Backtrack control
 ;;;
@@ -535,7 +523,6 @@
   (test-fail "$or and $try" '(4 "foo") parser
              "abc+efg")
   )
-|#
 
 ;;;============================================================
 ;;; Token Parsers
@@ -584,13 +571,11 @@
   (test-succ "nesting parenthesis" 3 nesting "((()))")
   (test-succ "nesting parenthesis" 3 nesting "((()))()")
   (test-succ "nesting parenthesis" 3 nesting "(()(()))")
-#| ;;FIXME:
   (test-fail "nesting parenthesis" '(3 #\) ) nesting "(((")
-|#
   )
 
-;; number parser (1) - simple
 #|
+;; number parser (1) - simple
 (let* ((sign?    ($optional ($one-of #[-+])))
        (digits   ($seq sign? ($many-chars #[\d] 1)))
        (point    ($seq ($char #\.) ($many ($one-of #[\d]) 1)))

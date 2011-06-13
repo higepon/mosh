@@ -64,7 +64,7 @@
              (- (bytevector-uint-ref bv index endien size) (expt 256 size))
              (bytevector-uint-ref bv index endien size)))
         (else
-         (assertion-violation 'bytevector-uint-ref
+         (assertion-violation 'bytevector-sint-ref
                               (format "expected endianness, but got ~a, as argument 3" endien)
                               (list bv index endien size)))))
 

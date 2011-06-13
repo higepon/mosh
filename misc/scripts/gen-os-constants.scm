@@ -16,6 +16,10 @@
   (for-each
    (lambda (constant)
      (match constant
+       [('define-c-defined-const-uint32_t val)
+        (format #t "#ifdef ~a\n" val)
+        (format #t "osConstants->set(Symbol::intern(UC(\"~a\")), Bignum::makeIntegerFromU32((uint32_t)~a));\n" val val)
+        (format #t "#endif\n")]
        [('define-c-defined-const val)
         (format #t "#ifdef ~a\n" val)
         (format #t "osConstants->set(Symbol::intern(UC(\"~a\")), Bignum::makeInteger((long int)~a));\n" val val)

@@ -1,11 +1,16 @@
 mosh on MinGW
 =============
 
+NOTE
+----
+
+"./configure" build was deprecated in 0.2.7 release.
+Please try CMake build(see also README.CMake).
+
 STATUS
 ------
 
 NOT supported :
-- "make check"
 - profiler
 - unix process functions (fork, waitpid, ...)
 
@@ -13,40 +18,7 @@ PREREQUISITES
 -------------
 
 - MinGW (tested by 4.5.1 TDM)
-- bash (MSYS or Cygwin)
 - gnu MP library
-- oniguruma-5.x.x
 
 TDM-GCC (http://tdm-gcc.tdragon.net/) is recommended.
-
-CONFIGURATION & BUILD
----------------------
-
-As usual product, run the configure script and make.
-
- ./configure --disable-profiler && make
-
-Alternatively, you may use CMake to build mosh. See doc/README.CMake for
-details.
-
-LIMITATIONS
------------
-
-- MinGW port is experimental. Some features are not available.
-
-INSTALL
--------
-
-Copy nmosh.exe and lib/.
-
-Current version of Mosh won't use Windows' registry, unless you installed Mosh
-with binary distribution installer.
-
-AUTO-COMPILE-CACHE (ACC)
-------------------------
-
-Mosh caches parsed script into "cache" directory.
-
-This is called "ACC (Auto-Compile-Cache)" and you can disable it with
- --disable-acc commandline option.
 

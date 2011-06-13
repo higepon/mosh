@@ -38,26 +38,42 @@ Changes:
 
     New platform support:
         MonaOS
+        Wine 1.3 or later -- nmosh and i386 only
+        NetBSD i386/amd64 -- gcc 4.4 or later required.
+
+    Deprecated platform:
+        MinGW32+MSYS using "./configure" -- Use CMake instead.
+        VisualStudio 2008
+
+    Build system:
+        Test suite now supports out-of-tree builds.
 
     Psyntax-mosh (mosh):
         "make install" no longer performs cache update in $HOME/.mosh.
         CMake support was dropped.
+        Now REPL uses SRFI-38 form to write their output. (See Issue 199)
 
     nmosh:
         Provides default (nmosh debugger) library which supports colourised
         output.
         Added default library loadpath and embedded-mode suitable for 
-        application embedding. see doc/README.nmosh.
+        application embedding. See doc/README.nmosh.
+        Now REPL uses SRFI-38 form to write their output. (See Issue 199)
 
         Windows:
             nmosh now saves expand/compile cache(ACC) into 
             %LOCALAPPDATA%/nmosh-cache by default.
 
+    New libraries:
+         (template) : Ruby's ERB like template library (Experimental).
+         (facebook) : Facebook Graph API library (Experimental).
+
     Updated libraries:
-      (mosh socket) : SSL/TLS Socket support.
-          (mosh pp) : Implement R6RS string escapes.
+     (mosh process) : Added getpid procedure.
+      (mosh socket) : SSL/TLS Socket support with OpenSSL.
+          (mosh pp) : Implement R6RS char/string escapes.
          (mosh ffi) : pointer-ref-* and pointer-set-*! now take C-like scaled 
-                      index. See "bug fixes" section below.
+                      index. See "bug fixes" section below. (API change)
 
     Updated 3rd party library:
           (irregex) : 0.8.2+ hg fixes (Alex Shinn's irregex library)
@@ -67,6 +83,9 @@ Changes:
         like alias. Note that SRFI-97 aliases (like (srfi :1)) are supported.
 
 Bug fixes:
+
+    VM:
+        apply didn't preserve tail-context. See Issue 204.
 
     psyntax-mosh:
         Various bug-fixes from Ikarus psyntax. See Issue 134.
@@ -85,9 +104,20 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
             SRFI-62 style datum comment was not accepted by reader in certain 
             cases.
 
+    OS Compatibility Layer:
+       Native Win32 port was not able to remove directories.
+
     REPL:
         Fixed Issue 199 reported by amoebae:
-            Segumentation fault on printing circular object.
+            Segmentation fault on printing circular object.
+
+    (rnrs base): 
+        Fixed Issue 204:
+            call-with-values didn't preserve tail-context.
+
+    (rnrs base): nmosh version
+        Fixed Issue 201 reported by mrc.mgg:
+            assert was not return any value.
 
     (rnrs io simple):
         Fixed Issue 183 and Issue 186 (partially): 
@@ -98,14 +128,16 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
         Fixed Issue 198 reported by amoebae (partially):
             put-string cannot be called during put-string of textual custom 
             output port. 
-
         Fixed Issue 200 reported by mrc.mgg:
-            Setting port position to zero on bytevector input port.
+            set-port-position! to the last index is now acceptable.
 
     (rnrs syntax-case):
         Fixed Issue 195 reported by mrc.mgg:
             psyntax-mosh and nmosh had implemented SRFI-93 version of 
             with-syntax.  A patch for psyntax-mosh was contributed by amoebae.
+
+    (match):
+        match couldn't match certain pattern.
 
     (mosh): nmosh version
         library-path procedure was not compatible with psyntax-mosh's one.
@@ -135,7 +167,6 @@ http://blog.practical-scheme.net/gauche/20110203-bitten-by-floating-point-number
     (srfi :42 eager-comprehensions):
         string-ec, vector-of-length-ec and min-ec was not properly exported.
 
-
 Known Issues:
 
     See http://code.google.com/p/mosh-scheme/issues/list for full list.
@@ -145,815 +176,6 @@ Known Issues:
       See Issue 198.
     - Some C++ compilers are known to miscompile mosh/nmosh. Try CXXFLAGS="-O1"
       if your compiler do not finish compilation.
-      - MSVC 2008 x64 - May not finish compilation when LTO enabled.
       - Clang++ trunk - Sometimes miscompile bytevector related procedures.
-    - configure script will complain about
-        configure: WARNING: no configuration information is in libatomic_ops
-
-
-Mosh 0.2.6 Release Note
-=======================
-
-What's Mosh
------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and OKUMURA Yuki.
-
-About This Release
-------------------
-
-Maintenace release.
-Starting from this release, Visual Studio builds are migrated to CMake.
-See doc/README.CMake for details.
-
-New build prerequisites:
-
-    - oniguruma >= 5.9.0
-    - CMake >= 2.8.0 (Windows, Visual Studio only)
-
-    Oniguruma library is unbundled from mosh distribution. Configure script will
-    search oniguruma with following order; 1) using `onig-config' 2) using
-    -lonig gcc option and user specified CFLAGS 3) if oniguruma source
-    distribution is found in a subdir as named `onig' it will be build together.
-
-Changes:
-
-    New platform support includes FFI support:
-        - Darwin x86_64
-        - FreeBSD amd64
-
-    New platform support WITHOUT FFI support:
-        - Windows amd64 (Experimental)
-
-    New build environment support:
-        - Visual Studio 2010 i386/amd64 (using CMake, experimental)
-        - XCode 3.x amd64 (using CMake, experimental)
-
-    Now mosh REPL handles multiple-values like Gauche. When a procedure return
-    multiple values, REPL will show each values unlike previous version (which
-    discarded values other than the first.)
-
-    FreeBSD:
-        Use sysctl(3) to implement (mosh-executable-path) instead of procfs.
-
-Bug fixes:
-
-    (rnrs):
-        exact-non-negative-integer? had retuned incorrect value.
-        Fixed expt procedure bug reported by Eduardo Cavazos.
-        Fixed Issue 147 reported by mrc.mgg: 
-            log procedure had returned incorrect value.
-        Fixed Issue 148 reported by mrc.mgg: 
-            expt procedure is now much more faster than previous release.
-            Now it uses GMP mpz_pow_ui when operands are fixnums.
-        Fixed Issue 149 reported by mrc.mgg: 
-            Reader now handles the "."(period) charactor collectly.
-        Fixed Issue 154 reported by tabe.fixedpoint: 
-            exact-integer-sqrt procedure now raises error when an inexact 
-            integer given.
-        Fixed Issue 159:
-            assoc procedure now checks argments are list of pairs.
-            (assoc '(0)) no longer causes SEGV.
-        Fixed Issue 161 reported by tabe.fixedpoint:
-            -(minus) procedure was returned 0 instead of raising an error when
-            applied with 0 argument. Now (-) raises an &assertion error.
-        Fixed Issue 169 reported by ianprice90:
-            Reading 0 elements from a port was resulting in an eof-object.
-        Fixed Issue 170 reported by ianprice90:
-            Custom binary/text port's close procedure was not called.
-        Fixed Issue 173 reported by ianprice90:
-            string->number was returned an EOF object on empty string.
-
-    (mosh memcached):
-        memcached-set! procedure now collectly sends flags and expiry 
-        arguments.
-
-    (srfi :98):
-        get-environment-variable and get-environment-variables had returned
-        incollect results at MinGW/Cygwin environment.
-
-    Core:
-        Fixed shebang handling bug reported by Eduardo Cavazos.
-        Fixed Issue 158: 
-            nmosh was not started when $HOME is not set or has wrong value.
-        Fixed Issue 175 reported by marcomaggi:
-            C procedures (DeclareProcedureName macro) was not set returning 
-            values count properly. 
-        
-    Documentation:
-        Fixed Issue 167 reported by amoebae:
-            (mosh ffi) example was incorrect.
-
-Known issues:
-
-    See http://code.google.com/p/mosh-scheme/issues/list for full list.
-
-    - configure script will complain about
-        configure: WARNING: no configuration information is in libatomic_ops
-    - #t.BLAHBLAH... read as #t instead of raising error.
-
-    Win32/64 Host:
-        - Win64 host support is experimental and lacks FFI support.
-        - "make check" or "make test" tests are not work properly.
-        - Visual Studio builds are suboptimal for performance due to absense 
-          of char32 support and the "computed goto"(used for direct-threading
-          feature.)
-        - Visual Studio 2008 SP1 sometimes won't finish their compilation
-          when both link-time code generation(/LTCG) and /Ox are enabled.
-        - mosh/nmosh cannot build using MinGW64.
-
-    MacOS X Host:
-        - mosh/nmosh cannot build as an universal binary.
-        - Direct-threading is disabled on XCode builds. This will reduce
-          runtime performance. Use ./configure builds for performance.
-        
-
-Mosh 0.2.5 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and OKUMURA Yuki.
-
-About This Release
-------------------
-
-This release introduces "nmosh" another R6RS environment.
-See doc/README.nmosh for details.
-
-Changes
-
-    Introduce nmosh by OKUMURA Yuki.
-     nmosh is a port of Andre van Tonder's R6RS macro and runtime[1] and R6RS
-    record from Larceny[2] with additional expander-cache (ACC) and debugging 
-    feature such as runtime stack trace. 
-     Although nmosh is intended to a drop-in replacement of previous psyntax
-    based mosh, it is still lacks some mosh specific enhancements against R6RS
-    standard such as SRFI-38, shared namespace with expand/run phases and more.
-     In this version, standard build process(./configure && make) and MSVC
-    solution build both binary which "mosh" is for previous psyntax based 
-    runtime and "nmosh" is for nmosh runtime.
-    [1] http://www.het.brown.edu/people/andre/macros/
-    [2] http://www.larcenists.org/
-    
-    Configure script now supports out-of-tree building. 
-     Since some GTEST based tests still not support out-of-tree building and 
-    testing, "make check" target will fail (in out-of-tree build only, in-tree
-    builds should pass it.)
-
-    updated library
-          (irregex) : 0.8.1 (Alex Shinn's irregex library)
-     (mosh process) : add "exec"
-
-    new library
-          (shorten) : the shorten formed lambda like Gauche
-                      (^a (+ 1 a)) == (lambda (a) (+ 1 a)) etc.
-        (rnrs load) : ERR5RS load (nmosh only)
-
-    BoehmGC: MIPS32 processor support.
-
-    MSVC build now depends on MPIR instead of GMP.
-     Download MPIR from http://www.mpir.org and extract to win/mpir. mosh.sln
-    will load and build them together.
-     Note that building MPIR will require yasm installed. see
-    MPIR's own document (mpir/build.vc9/readme.txt) for detail.
-
-Bug fixes.
-
-    Fixed Issue 141 reported by mrc.mgg: 
-        Profiler(-p) no longer causes sporadic SEGVs while startup.
-    Fixed Issue 140 reported by mrc.mgg: 
-        R6RS write now uses normal write procedure instead of SRFI-38 printer introduced 
-        in 0.2.4.
-    Fixed Issue 136 reported by Will.Donnelly:
-        (mosh process) library now exports exec procedure among its friends.
-
-Mosh 0.2.4 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and .mjt.
-
-About This Release
-------------------
-Maintenance release.
-Please remove ~/.mosh before install.
-
-Changes
-
-    Replaced R6RS records implmentation.
-
-    Changed Fasl format to handle shared structures.
-
-    read/write handle shared structures with srfi-38 style.
-
-Bug fixes.
-
-    Fixed Issue 135: "problem with letrec* binding value from function argument, through define, too" reported by mrc.mgg.
-
-    Fixed Issue 133: "infinite loop in library serialisation" reported by mrc.mgg.
-
-    Fixed Issue 132: "bad record protocol handling with three-level inheritance hierarchy" reported by mrc.mgg.
-
-    Fixed Issue 130: "incorrect error message detail with syntax error" reported by mrc.mgg.
-
-    Fixed Issue 129: "incorrect handling of imported record types" reported by mrc.mgg.
-
-    Fixed Issue 101: "[request] optional reading of external representation with shared structure" reported by mrc.mgg.
-
-    Fixed Issue 97: "variable reference error on letrec*" reported by tabe.fixedpoint.
-
-    Fixed Issue 48: "	Extended syntax must raise exception in #!r6rs mode." reported by dico.leque.comicron.
-
-    Nongenerative rtds are shared between multiple VMs.
-
-    Fixed a bug on letrec* on backend reported by .mjt.
-
-    Fixed a bug on reading number by .mjt.
-
-Mosh 0.2.3 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and .mjt.
-
-About This Release
-------------------
-Maintenance release.
-Please remove ~/.mosh before install.
-
-Bug fixes.
-    Changed Fasl format to handle correctly shared structures.
-    Fixed SEGV on un-closed #| style comment.
-    Added TAIL_CALL and LOCAL_TAIL_CALL instruction. SHIFT instruction is no more used.
-
-Mosh 0.2.2 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and .mjt.
-
-About This Release
-------------------
-Maintenance release.
-
-Bug fixes.
-    Fixed VMTest.
-    Fixed named-let which has internal define.
-    Fixed iform-count-size-upto for $UNDEF iform.
-    Fixed a wrong string construction on fasl-read.
-    Fixed issue 120 : -v option by mrc.mgg.
-    Fixed issue 121 : Wrong validation of arguments for vector-ref by mrc.mgg.
-    Fixed issue 122 : Unwanted output characters from time by mrc.mgg.
-    Fixed issue 123 : Bad REPL input causes assertion failure, reader does not catch missing closing by mrc.mgg.
-    Fixed issue 124 : Bug on multi-line string parse patch by dico.leque.
-    Fixed issue 125 : mismatchd paren and bracket patch by dico.leque.
-    Fixed issue 127 : An external representation of \f pointed out by dico.leque.
-    Fixed issue 128 : Error with sole call/cc pointed out by tabe.
-
-New library.
-    Added Alex shinn's IrRegex library (0.7.5) by okuoku.
-
-Mosh 0.2.0 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and .mjt.
-
-About This Release
-------------------
-
-Added (mosh concurrent) library.
-  (mosh concurrent) offeres "Erlang (or termite) like" message passing concurrent system.
-  This is alpha version. Please give us your feedback.
-  You can see some samples on mosh/example directory.
-
-Added auto-compilation-cache.
-  Loaded libraries will be compiled automatically and stored to the cache directory on first execution.
-  This offer far greater efficiency.
-  --disable-acc and --clean-acc option are avalable.
-
-Added (mosh file) library which exports as following procedures.
-  create-directory
-  delete-directory
-  rename-file
-  create-symbolic-link
-  file-directory?
-  file-symbolic-link?
-  file-regular?
-  file-readable?
-  file-executable?
-  file-writable?
-  file-size-in-bytes
-  file-stat-mtime
-  file-stat-atime
-  file-stat-ctime
-
-Improved (mosh ffi).
-  Now FFI works on Windows too. (by OKUMURA Yuki)
-  Added pointer procedures.
-    pointer?, shared-errno, pointer->integer, integer->pointer
-    pointer-set-c-int8!, pointer-set-c-int16!,
-    pointer-set-c-int32!, pointer-set-c-int64!, pointer-ref-c-uint8,
-    pointer-ref-c-uint16, pointer-ref-c-uint32, pointer-ref-c-uint64,
-    pointer-ref-c-int8, pointer-ref-c-int16, pointer-ref-c-int32,
-    pointer-ref-c-int64, pointer-ref-c-signed-char, pointer-ref-c-unsigned-char,
-    pointer-ref-c-signed-short, pointer-ref-c-unsigned-short, pointer-ref-c-signed-int,
-    pointer-ref-c-unsigned-int, pointer-ref-c-signed-long, pointer-ref-c-unsigned-long,
-    pointer-ref-c-signed-long-long, pointer-ref-c-unsigned-long-long, pointer-ref-c-float,
-    pointer-ref-c-double, pointer-ref-c-pointer, pointer-set-c-char!, pointer-set-c-short!,
-    pointer-set-c-int!, pointer-set-c-long!, pointer-set-c-long-long!,
-    pointer-set-c-float!, pointer-set-c-double!, pointer-set-c-pointer!,
-    pointer-null, pointer-null?, pointer-diff, pointer-add,
-    pointer=?, pointer<?, pointer>?, pointer<=?, pointer>=?, pointer<>?
-
-Rewrite equal? for perfomance reason.
-    Using Efficient Nondestructive Equality Checking for Trees and Graphs Michael D. Adams and R. Kent Dybvig.
-
-Improved compilation time.
-  Some critical procedures are rewritten in C++.
-
-Updated (lambda wiki).
-  See example/wiki
-
-Many bug fixes.
-  Thanks to Marco Maggi, he gave us many detailed bug reports.
-
-Mosh 0.1.2 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and .mjt.
-
-About This Release
-------------------
-
-  Great improvement of Bignum.
-
-
-Mosh 0.1.1 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and .mjt.
-
-About This Release
-------------------
-
-  Bug fix of installation path.
-
-
-Mosh 0.1.0 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://mosh.monaos.org/
-
-  Reference Manual:
-    http://mosh.monaos.org/
-
-  Developed by:
-    Higepon, kokosabu, herumi and .mjt.
-
-About This Release
-------------------
-
-Mosh becomes R6RS compliant.
-
-  Passed all of "R6RS test suite" which is written by PLT Scheme project.
-  Run like following.
-    mosh --loadpath=r6rs-test-suite r6rs-test-suite/tests/r6rs/run-via-eval.sps
-
-Added new reference manual.
-  http://mosh.monaos.org/
-
-Supported build on Windows with Visual C++ by herumi.
-
-Supported build on Mingw by .mjt.
-
-Added Socket API.
-  See Manual and example/irc-client.ss
-
-Added FFI (Foreign Function Interface). 
-  See Manual and test/ffi.scm.
-
-Implemented R6RS Numric tower.
-
-Implemented R6RS Port I/O.
-
-Implemented R6RS Simple I/O.
-
-Imroved reader and scanner.
-
-Added Alex Shinn's match library.
-
-Added Tiny CLOS object system ported to R6RS by Christian Sloma.
-
-Added MySQL API.
-
-Added SRFIs written by Derick Eddington.
-  (srfi :0 cond-expand)
-  (srfi :1 lists)
-  (srfi :2 and-let*)
-  (srfi :6 basic-string-ports)
-  (srfi :8 receive)
-  (srfi :9 records)
-  (srfi :11 let-values)
-  (srfi :13 strings)
-  (srfi :14 char-sets)
-  (srfi :16 case-lambda)
-  (srfi :19 time)
-  (srfi :23 error)
-  (srfi :26 cut)
-  (srfi :27 random-bits)
-  (srfi :31 rec)
-  (srfi :37 args-fold)
-  (srfi :38 with-shared-structure)
-  (srfi :39 parameters)
-  (srfi :41 streams)
-  (srfi :42 eager-comprehensions)
-  (srfi :43 vectors)
-  (srfi :48 intermediate-format-strings)
-  (srfi :61 cond)
-  (srfi :64 testing)
-  (srfi :67 compare-procedures)
-  (srfi :78 lightweight-testing)
-  (srfi :98 os-environment-variables)
-  (srfi :99 records)
-
-Added many optimizations.
-  Instruction combination.
-  Gloc lookup.
-  SSE flags.
-  Efficient Fasl.
-
-Updated Boehm GC to 7.1.
-
-Mosh 0.0.7 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://code.google.com/p/mosh-scheme/
-
-
-About This Release
-------------------
-
-Implemented R6RS Sorting.
-
-Implemented R6RS Unicode.
-
-Implemented R6RS Bytevectors(Almost).
-
-Updated psyntax to the newest version. (Thanks to Leppie)
-
-Added library loading support.
-
-Added SRFI 8 and SRFI 98 support.
-
-Added UTF16/UTF32 Codec.
-
-Added R6RS Read Eval Print Loop.
-  mosh>(import (srfi :98))
-  #<unspecified>
-  mosh>(get-environment-variable "HOME")
-  "/Users/taro"
-
-Added stack auto expansion system for stack over flow.
-
-Improved load speed by Fasl(Fast loading).
-
-Improved read speed by rewriting read using bison and re2c.
-It becomes much faster.
-
-Improved g++ compilation speed of Mosh.
-
-Added library serialization system.(experimental)
-
-Now we can build Mosh without help of gosh.
-
-Added many procedures.
-
-Fixed many bugs.
-
-Now Mosh passes following "R6RS test suite".
-
-    mutable-strings, mutable-pairs,
-    contrib, programs, control, hashtables,
-    records/procedural, lists, enums
-    records/syntactic, sorting and unicode.
-
-  R6RS test suite written by PLT Scheme project.
-    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
-  Run like following.
-    mosh tests/r6rs/run/mutable-strings.sps
-
-Mosh 0.0.6 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://code.google.com/p/mosh-scheme/
-
-
-About This Release
-------------------
-
-Improved load speed of "R6RS batch mode" using psyntax.
-  Run with -b option like "cd r6rs-examples; mosh -b hello.ss"
-  There are some samples in mosh/r6rs-examples directory.
-
-Supported running "R6RS test suite".
-  R6RS test suite written by PLT Scheme project.
-    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
-  Run like following.
-    mosh -b tests/r6rs/run/mutable-strings.sps
-  Mosh 0.0.6 passed following tests.
-    mutable-strings, mutable-pairs,
-    contrib, programs, control, hashtables,
-    records/procedural, lists and enums.
-
-Implemented R6RS Hashtables.
-
-Implemented R6RS Records.
-
-Implemented R6RS Exceptions and conditions.
-
-Implemented R6RS List Utilities.
-
-Implemented R6RS Enumerations.
-
-Implemented dynamic-wind.
-
-Improved internal error system.
-
-Fixed bug of call/cc with multiple values.
-
-Applied READ_CHAR/grass.scm patch by IRIE Shinsuke.
-
-Added many procedures.
-
-Fixed many bugs.
-
-Mosh 0.0.5 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://code.google.com/p/mosh-scheme/
-
-
-About This Release
-------------------
-
-Added experimental "R6RS batch mode" using psyntax.
-  run with -b option like "cd r6rs-examples; mosh -b hello.ss"
-  There are some samples in mosh/r6rs-examples directory.
-
-Ported psyntax library.
-  psyntax is "The portable R6RS library and syntax-case system" by Abdulaziz Ghuloum and Kent Dybvig.
-
-Added SRFI 98 get-environment-variable and get-environment-variables.
-
-Improved stack trace.
-
-Improved (apply ...) not to use C native stack recursively.
-
-Improved profiler.
-
-Improved compilations speed.
-
-Improved procedure speed which is written in C++.
-
-Rewrote some procedures in C++ for perfomance.
-
-Added load option. run mosh with "-l".
-
-Added many procedures.
-  call-process
-  vector?
-  string
-  string->lines
-  filter-map
-  map-with-index
-  car+cdr
-  take
-  drop
-  take!
-  take-right
-  drop-right
-  drop-right!
-  integer?
-  fifth
-  sixth
-  seventh
-  eighth
-  ninth
-  tenth
-  xcons
-  make-list
-  list-tabulate
-  list-copy
-  list=
-  split-at
-  split-at!
-  not-pair?
-  last-pair
-  last
-  circular-list
-  proper-list?
-  circular-list?
-  dotted-list?.
-
-Fixed many bugs.
-
-Mosh 0.0.4 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://code.google.com/p/mosh-scheme/
-
-
-About This Release
-------------------
-
-Ported Andrew Wright' pattern match library.
-It's very useful.
-    (match ...)
-    (match-lambda ...)
-    (match-let ...)
-    (match-letrec ...)
-
-Added a sample application.
-    Grass language interpreter.(example/grass.scm)
-
-Added pre-compiled macro support.
-
-Rewrote multiple values system.
-
-Added many procedures.
-    (hash-table-keys ...)
-    (vector-for-each ...)
-    (hash-table-for-each ...)
-    (exit)
-    (string-ref ...)
-    (div ...)
-    (list? ...)
-    (macroexpand ...)
-    (procedure? ...)
-    (with-input-from-file ...)
-    (load ...) for internal use.
-    char>=?, char>?, char<=? and char<?.
-    cons*
-
-Added EOF handling for Ctrl-D to REPL.
-
-Fixed many bugs.
-    div bug (thx leque)
-    case bug (thx leque)
-    (read) can't read "...".
-    SEGV with (write '(quote))
-
-Mosh 0.0.3 Release Note
-============================
-
-What's Mosh
-----------------
-
-Mosh is A Fast R6RS Scheme interpreter.
-
-  Homepage:
-    http://code.google.com/p/mosh-scheme/
-
-
-About This Release
-------------------
-
-Added R6RS exceptions system.
-  (raise ...)
-  (raise-continuable ...)
-  (with-exception-handler ...)
-  (guard ...)
-
-Added a simple REPL (Read Eval Print Loop).
-
-Added (eval ...) procedure.
-
-Added division and modulo support (Fixnum only).
-
-Changed a stack frame structure for better stack trace.
-
-Fixed many bugs.
-  (apply proc ...) rest argument bug.
-  SEGV with stack overflow.
-  Regexp endian problem on OSX PPC (thx masa_edw).
-  (+) should be 0 and (*) should be 1 (thx leque).
-  cond clause like (cond ((3))).
+      - MSVC 2010 SP1 - Sometimes causes compiler's internal error. Repeat
+        compilation if this occur.

@@ -1,5 +1,5 @@
 (import (rnrs)
-        (except (mosh) condition-printer)
+        (mosh)
         (system)
         (mosh queue)
         (mosh concurrent)
@@ -66,7 +66,7 @@
 
                )
              '()
-             '((rnrs) (mosh concurrent) (except (mosh) condition-printer) (mosh test))
+             '((rnrs) (mosh concurrent) (mosh) (mosh test))
             )])
 
 (link pid)
@@ -90,12 +90,12 @@
 (join! pid)
 )
 
-(let ([pid2 (spawn-link (lambda (arg) (error 'unknown "hogehoge2")) '() '((rnrs) (mosh concurrent)))])
+(let ([pid2 (spawn-link (lambda (arg) (error 'unknown "hogehoge2")) '() '((rnrs) (mosh) (mosh concurrent)))])
   (receive
       [('exit why) (test-true (error? why))
        #;(raise why)]))
 
-(let ([pid (spawn (lambda (arg) (test-eq 1234 arg) (test-results)) 1234 '((rnrs) (mosh test) (mosh concurrent)))])
+(let ([pid (spawn (lambda (arg) (test-eq 1234 arg) (test-results)) 1234 '((rnrs) (mosh test) (mosh) (mosh concurrent)))])
   (join! pid))
 (test-results)
 

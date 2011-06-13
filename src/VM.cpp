@@ -120,14 +120,14 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     callBackTrampolines_(new EqHashTable),
     callBackTrampolinesUid_(0)
 {
-    stack_ = Object::makeObjectArray(stackSize);
-    values_ = Object::makeObjectArray(maxNumValues_);
+    stack_ = Object::makeObjectArrayLocal(stackSize);
+    values_ = Object::makeObjectArrayLocal(maxNumValues_);
     stackEnd_ = stack_ + stackSize;
     sp_ = stack_;
     fp_ = stack_;
     nameSpace_ = Object::makeEqHashTable();
     outerSourceInfo_   = L2(Object::False, Symbol::intern(UC("<top-level>")));
-    cProcs_ = Object::makeObjectArray(cProcNum);
+    cProcs_ = Object::makeObjectArrayLocal(cProcNum);
     for (int i = 0; i < cProcNum; i++) {
         cProcs_[i] = Object::makeCProcedure(cProcFunctions[i]);
     }
@@ -904,7 +904,7 @@ void VM::expandStack(int plusSize)
         fprintf(stderr, "Warning: Stack is growing to %ld MB\n", nextStackSize * sizeof(intptr_t) / 1024 / 1024);
     }
 
-    Object* nextStack = Object::makeObjectArray(nextStackSize);
+    Object* nextStack = Object::makeObjectArrayLocal(nextStackSize);
     if (NULL == nextStack) {
         // todo
         // handle stack overflow with guard

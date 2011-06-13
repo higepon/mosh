@@ -5,7 +5,6 @@
           (for (core with-syntax)       expand)
           (for (primitives for-all)     expand))
   
-#|
   ; NMOSH version
   (define-syntax let
     (lambda (x)
@@ -16,8 +15,8 @@
         ((_ f ((x v) ...) e1 e2 ...)
          (for-all identifier? (syntax (f x ...)))
          (syntax ((letrec ((f (lambda (x ...) e1 e2 ...))) f) v ...))))))
-|#
 
+#|
   (define-syntax let
     (lambda (x)
       (syntax-case x ()
@@ -27,6 +26,7 @@
         ((_ f ((x v) ...) e1 e2 ...)
          (for-all identifier? (syntax (f x ...)))
          (syntax ((letrec ((f (lambda (x ...) e1 e2 ...))) f) v ...))))))
+|#
   
   (define-syntax letrec
     (lambda (x)

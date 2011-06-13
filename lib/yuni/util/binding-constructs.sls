@@ -1,6 +1,7 @@
 (library (yuni util binding-constructs)
          (export 
            let-optionals*
+           rlet1
            let1
            define-values)
          (import (rnrs))
@@ -39,6 +40,11 @@
     ((_ obj tm body ...)
      (let ((obj tm))
        body ...))))
+
+(define-syntax rlet1
+  (syntax-rules ()
+    ((_ obj tm body ...)
+     (let1 obj tm body ... obj))))
 
 (define-syntax define-values
   (lambda (x)

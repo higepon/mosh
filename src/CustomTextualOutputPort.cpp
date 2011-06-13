@@ -107,6 +107,7 @@ void CustomTextualOutputPort::putChar(ucs4char c)
     text.toString()->data()[0] = c;
     const Object result = theVM_->callClosure3(writeDProc_, text, start, count);
     MOSH_ASSERT(result.isFixnum());
+    (void)result; 
     return;
 }
 

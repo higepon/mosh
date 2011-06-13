@@ -1,12 +1,12 @@
 (import (rnrs)
-        (except (mosh) condition-printer)
+        (mosh)
         (mosh concurrent)
         (mosh test))
 
 (let ([pid (spawn-link
             (lambda (arg) (car 3)) ;; this causes error
             '()
-            '((rnrs) (except (mosh) condition-printer) (mosh concurrent)))])
+            '((rnrs) (mosh) (mosh concurrent)))])
   (receive
     [('exit why)
      (test-true (process-error? why))
@@ -21,7 +21,7 @@
               (sleep 300)
               (car 3)) ;; this causes error
             '()
-            '((rnrs) (except (mosh) condition-printer) (mosh concurrent)))])
+            '((rnrs) (mosh) (mosh concurrent)))])
   (unlink pid)
   (test-eq 'timeout
     (receive

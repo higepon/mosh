@@ -28,6 +28,13 @@
 #cmakedefine SIZEOF_FLOAT @SIZEOF_FLOAT@
 #cmakedefine SIZEOF_DOUBLE @SIZEOF_DOUBLE@
 
+#ifndef CONFIG_ASM
+#ifdef HAVE_STDINT_H
+#ifndef  __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS
+#endif
+#include <stdint.h>
+#else
 #ifdef _MSC_VER
     #define INT8_MIN            _I8_MIN
     #define INT8_MAX            _I8_MAX
@@ -49,6 +56,8 @@
     #define UINT64_MAX          _UI64_MAX
     #define UINTPTR_MIN         _UI32_MIN
     #define UINTPTR_MAX         _UI32_MAX
+#endif
+#endif //HAVE_STDINT_H
 #endif
 
 #ifndef _WIN32 // FIXME: 

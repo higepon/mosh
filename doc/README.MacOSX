@@ -22,3 +22,4 @@ Alternatively, you can use CMake and XCode. See README.CMake for details.
 
 - Configure script may fail to recognise target architecture. set
   CC=i686-darwin10-gcc CXX=i686-darwin10-c++ or so to avoid this problem.
+- CMake builds does not support FFI callbacks.

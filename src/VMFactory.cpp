@@ -57,13 +57,26 @@ VM* VMFactory::create(int initialStackSize, bool isProfilerOn)
     // So we never share the standard ports.
 
     // N.B. For debug safety, we never close() the standard ports.
+#ifdef WIN32
+	// FIXME FIXME!! (memory leak -- new VM create which explicitly spec. in/out/error ports is needed.)
+	File* sin = new File(GetStdHandle(STD_INPUT_HANDLE));
+	File* sout = new File(GetStdHandle(STD_OUTPUT_HANDLE));
+	File* serror = new File(GetStdHandle(STD_ERROR_HANDLE));
+    const Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(sin),
+                                                          sin->isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
+    const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(sout),
+                                                           sout->isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
+    const Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(serror),
+                                                           serror->isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
+#else
+
     const Object inPort    = Object::makeTextualInputPort(new StandardInputPort,
                                                           File::STANDARD_IN.isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
     const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort,
                                                            File::STANDARD_OUT.isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
     const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort,
                                                            File::STANDARD_OUT.isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
-
+#endif
     VM* vm = new VM(initialStackSize, outPort, errorPort, inPort, isProfilerOn);
     vm->registerPort(outPort);
     vm->loadCompiler();

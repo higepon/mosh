@@ -173,6 +173,8 @@
   (vector->list vector->list)
   (set-source-info! (lambda e #f))
   %call-process
+  %confstr
+  %dup
   %start-process
   %get-closure-name
   (append append)
@@ -712,4 +714,8 @@
   annotated-pair?
   get-annotation
   set-annotation!
+
+  ;; for nmosh
+  pointer->object
+  object->pointer
   )

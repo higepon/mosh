@@ -2,7 +2,6 @@
          (export ~ := 
                  define*
                  lambda*
-                 define-composite
                  let-with let-with*
                  is-a?
                  typeof
@@ -75,12 +74,13 @@
 (define-syntax typeof
   (syntax-rules ()
     ((_ obj)
-     (minitype-typeof obj))))
+     (miniobj-typeof obj))))
 
 (define-syntax is-a?
   (syntax-rules ()
     ((_ obj type)
-     (minitype-predicate obj type))))
+     (and type (eq? type
+                    (miniobj-typeof obj))))))
 
 ; make
 (define-syntax make-apply-rule1!
@@ -142,9 +142,10 @@
   (if (is-a? id type)
     'ok
     (begin ;; FIXME
-      (display "type violation!!")(newline)
-      (display (list sym id-name type-name id type))(newline)
-      (car #f))))
+      (assertion-violation 'yuni-core
+                           "type violation"
+                           id-name
+                           type-name))))
 
 (define-syntax annotate-check
   (syntax-rules ()
@@ -160,29 +161,32 @@
 
 (define-syntax lambda*0-itr
   (syntax-rules ()
-    ((_ (cur ...) ((id bogus) rest0 ...) body ...)
-     (lambda*0-itr (cur ... id) (rest0 ...) body ...))
-    ((_ (cur ...) (id rest0 ...) body ...)
-     (lambda*0-itr (cur ... id) (rest0 ...) body ...))
-    ((_ (cur ...) () body ...)
-     (lambda (cur ...) body ...))))
+    ((_ sym (cur ...) (spec ...) ((id bogus) rest0 ...) body ...)
+     (lambda*0-itr sym (cur ... id) ((id bogus) spec ...) (rest0 ...) body ...))
+    ((_ sym (cur ...) (spec ...) ((id) rest0 ...) body ...)
+     (let ((proxy id))
+       (lambda*0-itr sym (cur ...) (spec ...) ((id proxy) rest0 ...) body ...)))
+    ((_ sym (cur ...) (spec ...) (id rest0 ...) body ...)
+     (lambda*0-itr sym (cur ... id) (spec ...) (rest0 ...) body ...))
+    ((_ sym (cur ...) (spec ...) () body ...)
+     (lambda (cur ...) 
+       (annotate-check sym spec) ...
+       (let () body ...)))))
 
 (define-syntax lambda*0
   (syntax-rules ()
-    ((_ (spec0 ...) body ...)
-     (lambda*0-itr () (spec0 ...) body ...))))
+    ((_ sym (spec0 ...) body ...)
+     (lambda*0-itr sym () () (spec0 ...) body ...))))
 
 (define-syntax lambda*
   (syntax-rules ()
     ((_ sym (spec0 ...) body ...)
-     (lambda*0 (spec0 ...)
-       (annotate-check sym spec0) ...
-       (let () body ...)))))
+     (lambda*0 'lambda (spec0 ...) body ...))))
 
 (define-syntax define*
   (syntax-rules ()
     ((_ (name spec0 ...) body ...)
-     (define name (lambda* 'name (spec0 ...) body ...)))
+     (define name (lambda*0 'name (spec0 ...) body ...)))
     ((_ name spec)
      (define-composite name spec))))
 

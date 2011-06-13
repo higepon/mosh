@@ -20,7 +20,7 @@ if test "" = "$CXXFLAGS"; then
     CXXFLAGS=" "
 fi
 
-AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh-scheme-$PACKAGE_VERSION")
+AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh-$PACKAGE_VERSION")
 
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES
@@ -101,14 +101,6 @@ dnl if test $have_onig = "no" ; then
 dnl     AC_CHECK_LIB([onig],[regexec],[LIBS="$LIBS -lonig" have_onig="yes"])
 dnl fi
 
-# option2 was disabled (mosh doesn't provide some required definition)
-dnl # option2: check for extlibs
-dnl if test -d ${srcdir}/extlibs/onig-5.9.2; then
-dnl     have_onig=yes
-dnl     local_onig_build=yes
-dnl     ONIG_CFLAGS="-I${srcdir}/extlibs/onig-5.9.2"
-dnl fi
-
 if test $have_onig = "no" ; then
     AC_MSG_ERROR([oniguruma not found, mosh requires oniguruma 5.x])
 fi
@@ -158,25 +150,25 @@ have_tr1_hashes=0
 have_ext_hashes=0
 AC_LANG([C++])
 AC_MSG_CHECKING([for hashed associative containers])
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #include <tr1/unordered_map>
 int main(int, char **)
 {
     std::tr1::unordered_map<int, int> m;
     m.insert(std::make_pair(1, 2));
 }
-],
+]])],
 [have_tr1_hashes=1],
 [have_tr1_hashes=0])
 
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #include <ext/hash_map>
 int main(int, char **)
 {
     __gnu_cxx::hash_map<int, int> m;
     m.insert(std::make_pair(1, 2));
 }
-],
+]])],
 [have_ext_hashes=1],
 [have_ext_hashes=0])
 AC_MSG_RESULT([$have_ext_hashes])
@@ -215,37 +207,49 @@ MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-point
 
 # Checks for O/S specific features
 
+has_gc_pthread=false
+has_gc_darwin=false
+has_gc_win32=false
 AC_MSG_CHECKING([check threads])
 case "$target_os" in
 *darwin*)
   AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
+  has_gc_pthread=true
+  has_gc_darwin=true
   ;;
 *linux*)
   AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+  has_gc_pthread=true
   ;;
 freebsd*)
   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
+  has_gc_pthread=true
   ;;
 netbsd*)
   AC_DEFINE(GC_NETBSD_THREADS,1,[Define to use NetBSD threads])
+  has_gc_pthread=true
   ;;
 cygwin)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
-  # gc-7.1 fix
-  ac_configure_args="$ac_configure_args --disable-shared CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
+  has_gc_pthread=true
+  has_gc_win32=true
   ;;
 
 mingw*)
   AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
+  has_gc_win32=true
   ;;
 *)
   AC_MSG_ERROR([Please modify configure.ac for $target_os])
   ;;
 esac
 
+AM_CONDITIONAL(GC_PTHREAD, $has_gc_pthread)
+AM_CONDITIONAL(GC_DARWIN, $has_gc_darwin)
+AM_CONDITIONAL(GC_WIN32, $has_gc_win32)
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
 MOSH_LDADD_ARCH="-ldl -lpthread"
@@ -280,14 +284,14 @@ i[[3456]]86|pentium)
           fi
           ;;
        *freebsd*)
-         MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+         MOSH_OPTS="$MOSH_INTEL_OPTS"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *netbsd*)
-         MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+         MOSH_OPTS="$MOSH_INTEL_OPTS"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
-       *mingw*)
+       *mingw*) #FIXME: now broken
          MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc -static-libstdc++  -fwide-exec-charset=ucs-4le" #forcing WinXP & Gcc >= 4.5
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
          ;;
@@ -297,7 +301,7 @@ i[[3456]]86|pentium)
 	 ;;
 
         *)
-          MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
+          MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer" # -mfpmath=sse -msse3 -march=$host_cpu
           ;;
         esac
 
@@ -344,9 +348,10 @@ i[[3456]]86|pentium)
 
 AC_MSG_CHECKING([whether to enable MinGW support])
 case "$host_os" in
-*mingw*)
+*mingw*) #FIXME: now broken
         mingw32=true
         AC_MSG_RESULT([yes])
+        AC_MSG_WARN([MinGW support with this configure is now broken. Use CMake instead])
 	AC_CHECK_TOOL(WINDRES, windres)
 	ac_configure_args="$ac_configure_args --disable-shared --enable-threads=win32 CFLAGS=\"$CFLAGS -DGC_THREADS\" win32_threads=true"
 
@@ -357,6 +362,36 @@ case "$host_os" in
 	;;
 esac
 AM_CONDITIONAL(MINGW32, test x$mingw32 = xtrue)
+
+AC_MSG_CHECKING([whether to enable kqueue support])
+case "$host_os" in
+freebsd*)
+        kqueuestub=true
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([HAVE_KQUEUE], 1, [BSD Kqueue support.])
+
+	;;
+*)
+        kqueuestub=false
+        AC_MSG_RESULT([no])
+	;;
+esac
+AM_CONDITIONAL(KQUEUE, test x$kqueuestub = xtrue)
+
+AC_MSG_CHECKING([whether to enable ptrace support])
+case "$host_os" in
+freebsd*)
+        ptracestub_common=true
+        AC_MSG_RESULT([yes(common)])
+        AC_DEFINE([HAVE_PTRACE_COMMON], 1, [Common ptrace support.])
+
+	;;
+*)
+        ptracestub_common=false
+        AC_MSG_RESULT([no])
+	;;
+esac
+AM_CONDITIONAL(PTRACE_COMMON, test x$ptracestub_common = xtrue)
 
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)
@@ -413,5 +448,4 @@ case "$target_in" in
 esac
 
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_SUBDIRS([extlibs/gc-7.1])
 AC_OUTPUT(src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)

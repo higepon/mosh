@@ -30,8 +30,16 @@
  */
 
 
+#ifndef MONA
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+#include <stdlib.h>
+
 #ifndef _WIN32
 #include <dirent.h>
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> // necesary for os-constant procedure.
@@ -41,19 +49,13 @@
 #include <mach-o/dyld.h> /* _NSGetExecutablePath */
 #include <string.h>
 #endif /* __APPLE__ */
-
 #ifdef MONA
 #include <monapi.h>
 #endif
 #ifdef __FreeBSD__
 #include <dlfcn.h>
-#include <sys/types.h>
 #include <sys/sysctl.h>
-extern int main(int argc, char *argv[]);
 #endif /* __FreeBSD__ */
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdlib.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
@@ -688,7 +690,8 @@ bool File::isExecutable(const ucs4string& path)
 bool File::deleteFileOrDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
-    return DeleteFileW(utf32ToUtf16(path))?true:false;
+	const wchar_t* wpath = utf32ToUtf16(path);
+    return (DeleteFileW(wpath)||RemoveDirectoryW(wpath))?true:false;
 #elif defined(MONA)
     return monapi_file_delete(utf32toUtf8(path)) == M_OK;
 #else
@@ -944,7 +947,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     }
     isErrorOccured = true;
     return UC("");
-#elif defined(__linux__) || defined(__CYGWIN__)
+#elif defined(__linux__) || defined(__CYGWIN__) || defined(__NetBSD__)
     char path[4096];
     int ret = readlink("/proc/self/exe", path, sizeof(path));
     if (ret != -1) {
@@ -1208,25 +1211,25 @@ bool scheme::isDirectory(const ucs4string& path)
 // Analyze waitpid() return values to provide information for CALL-PROCESS,
 // WAITPID, SPAWN etc.
 Object scheme::processExitValue(int statVal) {
-#ifdef MONA
-    return Object::False;
-#else
+#if !defined(_WIN32)&&!defined(MONA)
     if (WIFEXITED(statVal)) {
         return Bignum::makeInteger(WEXITSTATUS(statVal));
     } else {
         return Object::False;
     }
+#else
+    return Object::False;
 #endif
 }
 
 Object scheme::processTerminationSignal(int statVal) {
-#ifdef MONA
-    return Object::False;
-#else
+#if !defined(_WIN32)&&!defined(MONA)
     if (WIFSIGNALED(statVal)) {
         return Bignum::makeInteger(WTERMSIG(statVal));
     } else {
         return Object::False;
     }
+#else
+    return Object::False;
 #endif
 }

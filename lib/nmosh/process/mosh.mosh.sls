@@ -5,6 +5,7 @@
                  process-stdout/mosh
                  process-stderr/mosh)
          (import (rnrs)
+                 (mosh)
                  (srfi :8)
                  (mosh process))
 

@@ -97,6 +97,7 @@ protected:
     Object errorPort_;
 };
 
+#ifndef _WIN32
 TEST_F(FFITest, loadAndlookup) {
 
     void* handle = FFI::open("./lib/libffitest.so.1.0");
@@ -128,6 +129,7 @@ TEST_F(VMErrorPortTest, loadAndlookupScheme) {
     const Object notFound = internalFfiLookupEx(theVM_, 2, args);
     ASSERT_TRUE(notFound.isFalse());
 }
+#endif
 
 
 #ifdef ARCH_IA32

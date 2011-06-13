@@ -636,11 +636,14 @@ namespace scheme {
 
         Thread() : lastError_(0)
         {
+#ifdef _WIN32
+			thread_ = 0;
+#endif
         }
         virtual ~Thread()
         {
 #ifdef _WIN32
-            CloseHandle(thread_);
+            if(thread_) CloseHandle(thread_);
 #endif
         }
 

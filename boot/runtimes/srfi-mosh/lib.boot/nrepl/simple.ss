@@ -2,10 +2,9 @@
 	 (export nrepl)
 	 (import (rnrs)
                  (nrepl simple io)
-		 (only (mosh) set-symbol-value!)
 		 (nmosh condition-printer)
 		 (nmosh minidebug)
-		 (primitives ex:destructive-eval! ex:interaction-environment exit)) ;;NMOSH only..
+		 (primitives ex:destructive-eval! ex:interaction-environment exit set-symbol-value!)) ;;NMOSH only..
 
 ;-------------------------------------------------------------------------
 ; simple REPL (driver loop)

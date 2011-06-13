@@ -1,3 +1,4 @@
+#define CONFIG_ASM
 #include "config.h"
 
 #ifdef ARCH_IA32

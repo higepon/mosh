@@ -238,7 +238,6 @@ Object scheme::rxmatchSubstringEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::regMatchProxy(VM* theVM, int argc, const Object* argv)
 {
-    const Object match = argv[0];
     if (argc == 2 && argv[1] == Symbol::AFTER) {
         return rxmatchAfterEx(theVM, 1, argv);
     } else if (argc == 2 && argv[1] == Symbol::BEFORE) {

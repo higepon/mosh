@@ -9,6 +9,7 @@
 (define %nmosh-prefixless-mode #t)
 (define %nmosh-portable-mode #f)
 (define %loadpath "lib.rnrs:lib.boot:../../../lib")
+(define (%getpid) 0)
 
 (define raise-syntax-violation (lambda e 
 				 (display "SYNTAX-ERROR!!")(newline)
