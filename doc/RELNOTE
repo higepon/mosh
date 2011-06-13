@@ -46,7 +46,8 @@ Changes:
         VisualStudio 2008
 
     Build system:
-        Test suite now supports out-of-tree builds.
+        Test suite now supports out-of-source builds.
+        "mosh -v" now includes git tree information for every configuration.
 
     Psyntax-mosh (mosh):
         "make install" no longer performs cache update in $HOME/.mosh.
