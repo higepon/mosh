@@ -298,8 +298,8 @@ MAINTAINERCLEANFILES = $(GENERATED)
 # update: lib/mosh/queue.ss.mosh-fasl
 
 doc:
-	mosh misc/scripts/gen-doc-from-r6rs.scm
-	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
+	mosh misc/scripts/gen-doc-from-r6rs.scm $(R6RS_DOC_PATH)
+	$(NATURALDOCS) -i . -o HTML doc/html -p doc/config -s pink -xi tools
 
 .PHONY: doc test 
 .PHONY: ptest ntest testB testR testL ntestB ntestR ntestL install Xtest testD
