@@ -32,6 +32,8 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "SString.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "ProcedureMacro.h"
 #include "ErrorProcedures.h"
 #include "VM.h"

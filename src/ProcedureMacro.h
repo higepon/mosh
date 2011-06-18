@@ -267,7 +267,7 @@ inline const char* nth(int index) {
 
 #define checkArgumentLength(required)   \
     if (argc != required) { \
-        callWrongNumberOfArgumentsViolationAfter(theVM, procedureName, required, argc); \
+        callWrongNumberOfArgumentsViolationAfter(theVM, procedureName, required, argc, Pair::arrayToList(argv, argc)); \
         return Object::Undef;\
     } \
 

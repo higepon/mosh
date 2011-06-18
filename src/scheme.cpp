@@ -139,9 +139,7 @@ void mosh_init()
 
 #ifdef MONA
 #if 0
-    const char* MAP_FILE_PATH = "/APPS/MOSH.APP/MOSH.MAP";
-    uint32_t pid = syscall_get_pid();
-    intptr_t ret = syscall_stack_trace_enable(pid, MAP_FILE_PATH);
+    intptr_t ret = monapi_enable_stacktrace("/APPS/MOSH.APP/MOSH.MAP");
     if (ret != M_OK) {
         fprintf(stderr, "syscall_stack_trace_enable error %d\n", ret);
         exit(-1);
