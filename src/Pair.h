@@ -180,7 +180,7 @@ struct Pair
         return ret;
     }
 
-    static Object arrayToList(Object* array, int size)
+    static Object arrayToList(const Object* array, int size)
     {
         Object p = Object::Nil;
         for (int i = size - 1; i >= 0; i--) {
