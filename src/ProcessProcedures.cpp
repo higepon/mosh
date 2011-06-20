@@ -162,7 +162,10 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
 // in : binary input port or #f. #f means "Use stdin".
 Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
 {
+#ifdef MONA
     DeclareProcedureName("%exec");
+    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list1(argv[0]));
+#else
     checkArgumentLength(3);
     argumentAsString(0, command);
     argumentCheckList(1, args);
@@ -196,6 +199,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     
     // If we ever return we have failed by definition.
     return Object::makeFixnum(errno);
+#endif
 }
 
 Object scheme::internalGetpidEx(VM* theVM, int argc, const Object* argv)
