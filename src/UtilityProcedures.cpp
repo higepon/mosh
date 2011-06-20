@@ -890,8 +890,9 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
                                                      &tid,
                                                      MonAPI::System::getProcessStdinID(),
                                                      outHandle);
+    logprintf("monapi_process_execute_file_get_tid<%s> result=%d\n", cmd->data().ascii_c_str(), result);
     if (result != M_OK) {
-        callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
+        return callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
     }
     // todo values
     return Bignum::makeIntegerFromSigned<intptr_t>(monapi_process_wait_terminated(tid));
@@ -1074,8 +1075,12 @@ Object scheme::lookupNongenerativeRtdEx(VM* theVM, int argc, const Object* argv)
     return nongenerativeRtds.ref(argv[0], Object::False);
 }
 
-Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv) {
+Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv)
+{
     DeclareProcedureName("%confstr");
+#ifdef MONA
+    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list1(argv[0]));
+#else
     checkArgumentLength(1);
     argumentAsFixnum(0, name);
 
@@ -1114,5 +1119,6 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv) {
 #else
     (void) name;
     return Object::False;
+#endif
 #endif
 }
