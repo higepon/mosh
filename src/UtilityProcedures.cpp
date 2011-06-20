@@ -864,17 +864,25 @@ Object scheme::internalStartProcessEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%call-process");
-    checkArgumentLength(1);
+    checkArgumentLengthBetween(1, 2);
 
     argumentAsString(0, cmd);
 #ifdef MONA
     uint32_t tid;
+    uint32_t outHandle;
+    if (argc == 2) {
+        argumentAsPointer(1, s);
+        MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
+        outHandle = stream->handle();
+    } else {
+        outHandle = MonAPI::System::getProcessStdoutID();
+    }
     MonAPI::Stream* s = MonAPI::System::getStdoutStream();
     int result = monapi_process_execute_file_get_tid(cmd->data().ascii_c_str(),
                                                      MONAPI_TRUE,
                                                      &tid,
                                                      MonAPI::System::getProcessStdinID(),
-                                                     MonAPI::System::getProcessStdoutID());
+                                                     outHandle);
     if (result != M_OK) {
         callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
     }
