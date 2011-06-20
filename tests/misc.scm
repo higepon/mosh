@@ -4,6 +4,11 @@
         (monapi)
         (mosh test))
 
+;; Issue 201.
+(test-error assertion-violation? (assert #f))
+(test-equal #t (assert #t))
+(test-equal "test string" (assert "test string"))
+
 ;; Issue 195.
 (with-syntax ((a 1))
  (define a 1)
@@ -77,6 +82,9 @@
 (test-eq #f (string->number ""))
 (test-eq 1  (expt -1 (/ 4 2)))
 
+(test-error assertion-violation? (char=? #\x))
+
+;; Issue 213
 (test-error assertion-violation? (apply + 1))
 
 (let ([port (open-string-input-port "\"hige\"hage")])

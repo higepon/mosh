@@ -9,14 +9,13 @@ runtest-for-developer:
 	$(MOSH_TARGET) tests/dbi.scm
 	$(MOSH_TARGET) tests/http.scm
 	$(MOSH_TARGET) tests/socket.scm
-	$(MOSH_TARGET) tests/print.scm
+	$(MOSH_TARGET) tests/print-socket.scm
 	$(MOSH_TARGET) tests/memcached.scm
 
 runtest: 
 	$(MOSH_TARGET) --loadpath=".:./tests/mylib" tests/use-foo.scm # test : separated loadpath
 	$(MOSH_TARGET) -5 src/all-tests.scm
 	$(MOSH_TARGET) tests/misc.scm
-	$(MOSH_TARGET) tests/annotated-pair.scm
 	$(MOSH_TARGET) tests/template.scm
 	$(MOSH_TARGET) tests/testing.scm
 	$(MOSH_TARGET) tests/comment.scm
@@ -42,11 +41,13 @@ runtest:
 	$(MOSH_TARGET) tests/number.scm
 	$(MOSH_TARGET) tests/cgi.scm
 	$(MOSH_TARGET) tests/shorten.scm
-	$(MOSH_TARGET) tests/process.scm
 	! $(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_bad_regexp.scm 2>/dev/null
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm
 	! $(MOSH_TARGET) tests/error-with-circular.scm 2>/dev/null
+	$(MOSH_TARGET) tests/process.scm
+	$(MOSH_TARGET) tests/annotated-pair.scm
+	$(MOSH_TARGET) tests/print.scm
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/tests/ffi.scm)
@@ -62,3 +63,4 @@ runtest-mosh:
 runtest-nmosh:
 	$(MOSH_TARGET) tests/nmosh.scm
 	$(MOSH_TARGET) tests/nrepl.scm
+	$(MOSH_TARGET) tests/nmosh-test-stack-trace.sps

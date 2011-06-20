@@ -14,14 +14,10 @@
            ;(yuni util messages)
            )
 
-(define-composite library-import
-                  (name original-name library-name))
-(define-composite library-export
-                  (name original-name))
-(define-composite library
-                  (name exports imports path code))
-(define-composite library-env
-                  (search-path* flavor* library-file*))
+(define* library-import (name original-name library-name))
+(define* library-export (name original-name))
+(define* library (name exports imports path code))
+(define* library-env (search-path* flavor* library-file*))
 
 (define* (library-name (l library))
   (let-with l (name) name))

@@ -292,6 +292,16 @@ inline Object* Object::makeObjectArray(int size)
 #endif
 }
 
+inline Object* Object::makeObjectArrayLocal(int size)
+{
+#ifdef USE_BOEHM_GC
+    return static_cast<Object *>
+        (GC_MALLOC_IGNORE_OFF_PAGE(sizeof(Object *)*size));
+#else
+    return new Object[size];
+#endif
+}
+
 // private
 inline uint8_t Object::tag() const
 {

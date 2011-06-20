@@ -34,7 +34,8 @@
                        syntax-rules let transcoded-port make-transcoder utf-8-codec if eof-object?
                        list->string reverse cons read-char map pair? car cdr begin do = length +)
           (only (srfi :98) get-environment-variable)
-          (only (system) %spawn %waitpid %pipe)
+          (only (system) %waitpid %pipe)
+          (only (mosh process) spawn)
           (only (mosh) format string-split set-current-directory! current-directory))
 
 (define-syntax def-alias
@@ -122,14 +123,14 @@
          es ...
          v))))
 
-(define (spawn command args)
-  (let-values  ([(pid cin cout cerr) (%spawn command args (list #f #f #f))])
-    (%waitpid pid)
-    #f))
+;(define (spawn command args)
+;  (let-values  ([(pid cin cout cerr) (%spawn command args (list #f #f #f))])
+;    (%waitpid pid)
+;    #f))
 
 (define (spawn->string command args)
   (let-values ([(in out) (%pipe)])
-    (let-values ([(pid cin cout cerr) (%spawn command args (list #f out #f))])
+    (let-values ([(pid cin cout cerr) (spawn command args (list #f out #f))])
       (close-port out)
       (begin0
         (port->string (transcoded-port in (make-transcoder (utf-8-codec))))
@@ -151,7 +152,7 @@
     (syntax-case x ()
       [(_ (cmd1 args1) (cmd2 args2) ...)
        #'(let-values ([(in1 out1) (%pipe)])
-           (%spawn cmd1 args1 (list #f out1 #f))
+           (spawn cmd1 args1 (list #f out1 #f))
            (close-port out1)
            (pipe "internal" in1 (cmd2 args2) ...)
            (do ([i 0 (+ i 1)])
@@ -159,11 +160,11 @@
              (%waitpid -1)))]
       [(_ "internal" in (cmd args))
        #'(begin
-           (%spawn cmd args (list in #f #f))
+           (spawn cmd args (list in #f #f))
            (close-port in))]
       [(_ "internal" in (cmd1 args1) (cmd2 args2) (cmd3 args3) ...)
        #'(let-values ([(in1 out1) (%pipe)])
-           (%spawn cmd1 args1 (list in out1 #f))
+           (spawn cmd1 args1 (list in out1 #f))
            (close-port out1)
            (pipe "internal" in1 (cmd2 args2) (cmd3 args3) ...))]
       )))
@@ -173,7 +174,7 @@
     (syntax-case x ()
       [(_ out (cmd1 args1) (cmd2 args2) ...)
        #'(let-values ([(in1 out1) (%pipe)])
-           (%spawn cmd1 args1 (list #f out1 #f))
+           (spawn cmd1 args1 (list #f out1 #f))
            (close-port out1)
            ($pipe "internal" out in1 (cmd2 args2) ...)
            (do ([i 0 (+ i 1)])
@@ -181,12 +182,12 @@
              (%waitpid -1)))]
       [(_ "internal" out in (cmd args))
        #'(begin
-           (%spawn cmd args (list in out #f))
+           (spawn cmd args (list in out #f))
            (close-port out)
            (close-port in))]
       [(_ "internal" out in (cmd1 args1) (cmd2 args2) (cmd3 args3) ...)
        #'(let-values ([(in1 out1) (%pipe)])
-           (%spawn cmd1 args1 (list in out1 #f))
+           (spawn cmd1 args1 (list in out1 #f))
            (close-port out1)
            ($pipe "internal" out in1 (cmd2 args2) (cmd3 args3) ...))]
       )))

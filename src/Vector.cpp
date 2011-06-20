@@ -46,7 +46,7 @@ Vector::Vector(Object pair)
     MOSH_ASSERT(pair.isPair() || pair.isNil());
     num_ = Pair::length(pair);
     MOSH_ASSERT(num_ >= 0);
-    objects_ = Object::makeObjectArray(num_);
+    objects_ = Object::makeObjectArrayLocal(num_);
     MOSH_ASSERT(objects_ != NULL);
     int i = 0;
     for (Object o = pair; !o.isNil(); o = o.cdr()) {

@@ -41,7 +41,7 @@ class Stack EXTEND_GC
 public:
     Stack(Object* src, int size) : size_(size)
     {
-        stack_ = Object::makeObjectArray(size_);
+        stack_ = Object::makeObjectArrayLocal(size_);
         memcpy(stack_, src, size_ * sizeof(Object));
     }
     ~Stack() {} // not virtual

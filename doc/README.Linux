@@ -12,6 +12,16 @@ mosh on Linux
 - make
 - sudo make install
 
+
+1. Install (Fedora or other RPM based)
+--------------------------------------
+
+Mosh archive has an RPM specfile at misc/dist/rpm/Fedora.spec.
+It's worth to try.
+
+In Fedora, you might want to enable SElinux "allow_execheap" option to use
+FFI(Foreign Function Interface).
+
 1. Install (Other distributions)
 --------------------------------
 

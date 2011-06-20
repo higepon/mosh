@@ -47,6 +47,9 @@
 #include <sys/time.h>
 #endif
 #ifndef _WIN32
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/time.h>
 #include <sys/resource.h>
 #endif
 
@@ -332,10 +335,10 @@ Object scheme::numberTostringEx(VM* theVM, int argc, const Object* argv)
 Object scheme::charEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char=?");
-    checkArgumentLengthAtLeast(1);
+    checkArgumentLengthAtLeast(2);
     argumentAsChar(0, startCharacter);
 
-    for (int i = 0; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         argumentAsChar(i, currentCharacter);
         if (startCharacter != currentCharacter) {
             return Object::False;
@@ -857,6 +860,7 @@ Object scheme::internalStartProcessEx(VM* theVM, int argc, const Object* argv)
     }
     return Object::Undef;
 #else
+    (void) cmd;
     return callAssertionViolationAfter(theVM, procedureName, "not implmented", L1(argv[0]));
 #endif
 }
@@ -867,7 +871,10 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
 
     argumentAsString(0, cmd);
-#ifdef MONA
+#ifdef _WIN32
+        callAssertionViolationAfter(theVM, procedureName, "not supported", L1(argv[0]));
+        return Object::Undef;
+#elif defined(MONA)
     uint32_t tid;
     uint32_t outHandle;
     if (argc == 2) {
@@ -1065,4 +1072,47 @@ Object scheme::lookupNongenerativeRtdEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("lookup-nongenerative-rtd");
     checkArgumentLength(1);
     return nongenerativeRtds.ref(argv[0], Object::False);
+}
+
+Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv) {
+    DeclareProcedureName("%confstr");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, name);
+
+#ifndef _WIN32
+    Object val;    // return value of this procedure
+    int save_errno  = errno;
+
+    size_t size = confstr(name, NULL, 0);
+    ucs4string result = ucs4string(size);
+    char *buf = result.ascii_c_str();
+    size_t ret = confstr(name, buf, size);
+
+    // Handle two error cases which we need to distinguish thru errno
+    if (ret == 0) {
+        // error
+        val = Object::False;
+        if (errno != save_errno) {
+            switch(errno){
+                case EINVAL:
+                    callErrorAfter(theVM, procedureName, "invalid name", 
+                            L1(argv[0]));
+                    break;
+                default:
+                    callErrorAfter(theVM, procedureName, "unknown error", 
+                            L1(argv[0]));
+                    break;
+            }
+        }
+    } else {
+        // Can't call makeString on 'result' as 'buf' is now a separate piece
+        // of memory
+        val = Object::makeString(buf);
+    }
+    
+    return val;
+#else
+    (void) name;
+    return Object::False;
+#endif
 }

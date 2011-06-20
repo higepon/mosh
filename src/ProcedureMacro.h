@@ -169,7 +169,7 @@
 #define argumentAsVector(index, variableName) castArgument(index, variableName, isVector, vector, Vector*, toVector)
 #define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)
 
-#define argumentAsAnnotatedPair(index, variableName) castArgument(index, variableName, isAnnotatedPair, pointer, AnnotatedPair*, toAnnotatedPair)
+#define argumentAsAnnotatedPair(index, variableName) castArgument(index, variableName, isAnnotatedPair, AnnotatedPair, AnnotatedPair*, toAnnotatedPair)
 #define argumentAsPointer(index, variableName) castArgument(index, variableName, isPointer, pointer, Pointer*, toPointer)
 #define argumentAsSocket(index, variableName) castArgument(index, variableName, isSocket, socket, Socket*, toSocket)
 #define argumentAsSimpleStruct(index, variableName) castArgument(index, variableName, isSimpleStruct, simple-struct, SimpleStruct*, toSimpleStruct)

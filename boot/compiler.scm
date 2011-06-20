@@ -128,7 +128,7 @@
   `(caddr ,o))
 
 (define-macro (dolist a . body)
-  `(begin (for-each (lambda (,(first a)) ,@body) ,(second a)) '()))
+  `(begin (for-each (lambda (,(car a)) ,@body) ,(cadr a)) '()))
 
 (define-macro (do . sexp)
   (match sexp
@@ -911,7 +911,8 @@
             (rec more)
             ($it))]
       [else
-       (error 'compiler "syntax-error: malformed and:" sexp)]))
+       ;; was: (error 'compiler "syntax-error: malformed and:" sexp)
+       (error 'compiler "syntax-error: malformed and:" s)]))
   (rec test*))
 
 (define (pass1/or->iform test* lvars tail?)
@@ -925,7 +926,8 @@
             ($it)
             (rec more))]
       [else
-       (error 'compiler "syntax-error: malformed or:" sexp)]))
+       ;; was: (error 'compiler "syntax-error: malformed or:" sexp)
+       (error 'compiler "syntax-error: malformed or:" s)]))
   (rec test*))
 
 (define (pass1/cond->iform sexp lvars tail?)
@@ -1580,7 +1582,9 @@
                  (zero? ($lvar.set-count ($local-ref.lvar init-val))))
                (when (eq? iform init-val)
                  (error "mosh" "circular reference appeared in letrec bindings:"
-                        (lvar.sym lvar)))
+                        ;; was: (lvar.sym lvar)
+                        ($lvar.sym lvar)
+                        ))
                ($lvar.ref-count--! lvar)
                ($lvar.ref-count++! ($local-ref.lvar init-val))
                ($local-ref.copy iform init-val)
@@ -1770,25 +1774,6 @@
 
 (define (pass2/register insn proc)
   (vector-set! pass2/dispatch-table insn proc))
-
-(pass2/register $CONST         pass2/empty)
-(pass2/register $LET           pass2/$let)
-(pass2/register $SEQ           pass2/$seq)
-(pass2/register $LAMBDA        pass2/$lambda)
-(pass2/register $LOCAL-REF     pass2/$local-ref)
-(pass2/register $LOCAL-ASSIGN  pass2/$local-assign)
-(pass2/register $GLOBAL-REF    pass2/empty)
-(pass2/register $GLOBAL-ASSIGN pass2/$global-assign)
-(pass2/register $UNDEF         pass2/empty)
-(pass2/register $IF            pass2/$if)
-(pass2/register $ASM           pass2/$asm)
-(pass2/register $DEFINE        pass2/$define)
-(pass2/register $CALL          pass2/$call)
-(pass2/register $CALL-CC       pass2/empty)
-(pass2/register $LABEL         pass2/empty)
-(pass2/register $LIST          pass2/empty)
-(pass2/register $IT            pass2/empty)
-(pass2/register $RECEIVE       pass2/$receive)
 
 
 (define (pass2/optimize iform closures)
@@ -3293,24 +3278,6 @@
     (pass3/rec cb ($label.body iform)locals frees can-frees sets tail depth display-count)]))
 
 
-(pass3/register $CONST         pass3/$const)
-(pass3/register $LAMBDA        pass3/$lambda)
-(pass3/register $LOCAL-REF     pass3/$local-ref)
-(pass3/register $LOCAL-ASSIGN  pass3/$local-assign)
-(pass3/register $GLOBAL-ASSIGN pass3/$global-assign)
-(pass3/register $GLOBAL-REF    pass3/$global-ref)
-(pass3/register $SEQ           pass3/$seq)
-(pass3/register $UNDEF         pass3/$undef)
-(pass3/register $IF            pass3/$if)
-(pass3/register $ASM           pass3/$asm)
-(pass3/register $DEFINE        pass3/$define)
-(pass3/register $CALL          pass3/$call)
-(pass3/register $CALL-CC       pass3/$call-cc)
-(pass3/register $LET           pass3/$let)
-(pass3/register $LIST          pass3/$list)
-(pass3/register $IT            pass3/$it)
-(pass3/register $RECEIVE       pass3/$receive)
-(pass3/register $LABEL       pass3/$label)
 
 ;; depth is the depth of frame, used for 'jump' and 'embeded' call and indicate the size of frame to discard.
 (define (pass3/rec cb iform locals frees can-frees sets tail depth display-count)
@@ -3599,6 +3566,43 @@
 (define (compile-no-optimize sexp)
   (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) '() #t))))
 
+(pass2/register $CONST         pass2/empty)
+(pass2/register $LET           pass2/$let)
+(pass2/register $SEQ           pass2/$seq)
+(pass2/register $LAMBDA        pass2/$lambda)
+(pass2/register $LOCAL-REF     pass2/$local-ref)
+(pass2/register $LOCAL-ASSIGN  pass2/$local-assign)
+(pass2/register $GLOBAL-REF    pass2/empty)
+(pass2/register $GLOBAL-ASSIGN pass2/$global-assign)
+(pass2/register $UNDEF         pass2/empty)
+(pass2/register $IF            pass2/$if)
+(pass2/register $ASM           pass2/$asm)
+(pass2/register $DEFINE        pass2/$define)
+(pass2/register $CALL          pass2/$call)
+(pass2/register $CALL-CC       pass2/empty)
+(pass2/register $LABEL         pass2/empty)
+(pass2/register $LIST          pass2/empty)
+(pass2/register $IT            pass2/empty)
+(pass2/register $RECEIVE       pass2/$receive)
+
+(pass3/register $CONST         pass3/$const)
+(pass3/register $LAMBDA        pass3/$lambda)
+(pass3/register $LOCAL-REF     pass3/$local-ref)
+(pass3/register $LOCAL-ASSIGN  pass3/$local-assign)
+(pass3/register $GLOBAL-ASSIGN pass3/$global-assign)
+(pass3/register $GLOBAL-REF    pass3/$global-ref)
+(pass3/register $SEQ           pass3/$seq)
+(pass3/register $UNDEF         pass3/$undef)
+(pass3/register $IF            pass3/$if)
+(pass3/register $ASM           pass3/$asm)
+(pass3/register $DEFINE        pass3/$define)
+(pass3/register $CALL          pass3/$call)
+(pass3/register $CALL-CC       pass3/$call-cc)
+(pass3/register $LET           pass3/$let)
+(pass3/register $LIST          pass3/$list)
+(pass3/register $IT            pass3/$it)
+(pass3/register $RECEIVE       pass3/$receive)
+(pass3/register $LABEL       pass3/$label)
 (cond-expand
  [vm-outer?
   (define (main args)

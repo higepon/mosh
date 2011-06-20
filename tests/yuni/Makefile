@@ -9,3 +9,4 @@ test-run:
 	$(MOSH_TARGET) --loadpath=../../lib packunpack-octet.ss
 	$(MOSH_TARGET) --loadpath=../../lib core.ss
 	$(MOSH_TARGET) --loadpath=../../lib peg.ss
+	$(MOSH_TARGET) --loadpath=../../lib config.sps

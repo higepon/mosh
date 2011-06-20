@@ -624,7 +624,6 @@ Object scheme::codeBuilderPutInsnArg0DEx(VM* theVM, int argc, const Object* argv
 {
     DeclareProcedureName("code-builder-put-insn-arg0!");
     checkArgumentLength(2);
-    const Object cb = argv[0];
 
     argumentAsCodeBuilder(0, codeBuilder);
     const Object instruction = argv[1];

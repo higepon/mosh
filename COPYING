@@ -30,7 +30,7 @@ Copyright and condition of use of main portion of the source:
 
 -----------------------------------------------------------------------------
 
-Copyright of pass2 at compiler.scm form Gauche ------------------------------
+Copyright of pass2 at compiler.scm from Gauche ------------------------------
 
     Copyright (c) 2000-2007  Shiro Kawai  <shiro@acm.org>
 
@@ -61,12 +61,13 @@ Copyright of pass2 at compiler.scm form Gauche ------------------------------
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Copyright of gc-7.1/* -------------------------------------------------------
+Copyright of extlibs/gc-cvs -------------------------------------------------
 
-    Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
+    Copyright (c) 1988, 1989 Hans-J. Boehm, Alan J. Demers
     Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
     Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
-    Copyright (c) 1999 by Hewlett-Packard Company. All rights reserved.
+    Copyright (c) 1999-2011 by Hewlett-Packard Development Company.
+    Copyright (c) 1998 by Fergus Henderson.  All rights reserved.
 
     THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
     OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -77,16 +78,42 @@ Copyright of gc-7.1/* -------------------------------------------------------
     provided the above notices are retained, and a notice that the code was
     modified is included with the above copyright notice.
 
-Copyright of quasiquote expansion --------------------------------------------
+Copyright of extlibs/onig-5.9.2 ---------------------------------------------
+
+   Copyright (c) 2002-2007  K.Kosako  <sndgk393 AT ybb DOT ne DOT jp>
+   All rights reserved.
+  
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+   2. Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+  
+   THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+   OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+   OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+   SUCH DAMAGE.
+
+Copyright of quasiquote expansion -------------------------------------------
     
     Copyright (c) 1996-2002 Brian D. Carlstrom
 
-Copyright of sort ------------------------------------------------------------
+Copyright of sort -----------------------------------------------------------
 
    Copyright (c) Oliver Laumann 
      http://www-rn.informatik.uni-bremen.de/software/elk/dist.html
 
-Copyright of SRFI ----------------------------------------------------------
+Copyright of SRFI -----------------------------------------------------------
 
    Copyright (c) 2009 Derick Eddington
 
@@ -112,7 +139,7 @@ Copyright of SRFI ----------------------------------------------------------
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
    DEALINGS IN THE SOFTWARE.
 
-Copyright of FFI and string-titlecase ------------------------------------------
+Copyright of FFI and string-titlecase ---------------------------------------
 
 Copyright (c) 2004-2008 Yoshikatsu Fujita. All rights reserved.
 Copyright (c) 2004-2008 LittleWing Company Limited. All rights reserved.
@@ -141,7 +168,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
-Copyright of nmosh R6RS Runtime ------------------------------------------------
+Copyright of nmosh R6RS Runtime ---------------------------------------------
 
  nmosh runtime and folloing libraries are based on R6RS Libraries and Macros 
 6.0.2 see http://www.het.brown.edu/people/andre/macros/ for detail.
@@ -167,7 +194,41 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Copyright of nmosh R6RS standard libraries -------------------------------------
+Copyright of getopt_longU() -------------------------------------------------
+
+ getopt_longU() function is based on PostgreSQL.
+
+   Portions Copyright (c) 1987, 1993, 1994
+   The Regents of the University of California.  All rights reserved.
+  
+   Portions Copyright (c) 2003
+   PostgreSQL Global Development Group
+  
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+   2. Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+   3. Neither the name of the University nor the names of its contributors
+      may be used to endorse or promote products derived from this software
+      without specific prior written permission.
+  
+   THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+   OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+   OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+   SUCH DAMAGE.
+
+Copyright of nmosh R6RS standard libraries ----------------------------------
 
 - (rnrs records syntactic) 
   (rnrs exceptions) and R6RS exception handling procedures embedded in nmosh
@@ -196,7 +257,7 @@ Copyright of nmosh R6RS standard libraries -------------------------------------
     liability, or expense arising from, or in any way related to the
     use of this software.
 
-Copyright of (json) and (packrat) libraries ------------------------------------
+Copyright of (json) and (packrat) libraries ---------------------------------
 
 - (json)
 
@@ -253,9 +314,9 @@ Copyright of (json) and (packrat) libraries ------------------------------------
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-Copyright of (irregex) library -------------------------------------------------
+Copyright of (irregex) library ----------------------------------------------
 
-   BSD-style license: http://synthcode.com/license.txt
+    BSD-style license: http://synthcode.com/license.txt
 
     Copyright (c) 2005-2010 Alex Shinn
     All rights reserved.
@@ -281,4 +342,68 @@ Copyright of (irregex) library -------------------------------------------------
     THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
     THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Copyright of (yuni lib ssax) library ----------------------------------------
+
+This software includes R6RS port of SSAX library by Derick Eddington.
+
+    Copyright (c) 2008-2010 Derick Eddington.  All rights reserved.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    Except as contained in this notice, the name(s) of the above copyright
+    holders shall not be used in advertising or otherwise to promote the sale,
+    use or other dealings in this Software without prior written authorization.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
+Copyright of (yuni text peg) library and test -------------------------------
+
+(yuni text peg) library is based on peg.scm from Gauche.
+
+  peg.scm - Parser Expression Grammar Parser
+ 
+    Copyright (c) 2006 Rui Ueyama (rui314@gmail.com)
+    Copyright (c) 2008-2010  Shiro Kawai  <shiro@acm.org>
+ 
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+ 
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+ 
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+ 
+    3. Neither the name of the authors nor the names of its contributors
+       may be used to endorse or promote products derived from this
+       software without specific prior written permission.
+ 
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+    TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 

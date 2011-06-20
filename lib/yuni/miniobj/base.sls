@@ -1,6 +1,14 @@
 (library (yuni miniobj base)
-         (export define-miniobj-ref define-miniobj-set!)
+         (export define-miniobj-typeof define-miniobj-ref define-miniobj-set!)
          (import (rnrs))
+
+(define-syntax define-miniobj-typeof
+  (syntax-rules ()
+    ((_ name ref0 ref1 ... refnext term)
+     (define-miniobj-ref name ref0 ref1 ... (lambda (obj) (refnext obj term))))
+    ((_ name ref0 term)
+     (define (name obj) (ref0 obj term)))))
+
 (define-syntax define-miniobj-ref
   (syntax-rules ()
     ((_ name ref0 ref1 ... refnext term)

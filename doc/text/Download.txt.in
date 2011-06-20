@@ -6,7 +6,7 @@ http://code.google.com/p/mosh-scheme/downloads/list
 
 Operating Systems:
 
-Mosh runs on Linux/Unix, Mac OS X and Windows.
+Mosh runs on Linux, FreeBSD, NetBSD, Mac OS X, Cygwin and Windows.
 
 Install on Windows:
 
@@ -14,7 +14,7 @@ Just run mosh-setup.exe and follow the wizard.
 
 or
 
-Build on Visual C++ 2008 SP1 or 2010 (See doc/README.CMake)
+Build on Visual Studio 2010 (See doc/README.CMake)
 
 
 Additional Software:

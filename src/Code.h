@@ -39,7 +39,7 @@ namespace scheme {
 class Code EXTEND_GC
 {
 public:
-    Code(int size) : size_(size), index_(0), code_(Object::makeObjectArray(size))
+    Code(int size) : size_(size), index_(0), code_(Object::makeObjectArrayLocal(size))
     {
     }
 

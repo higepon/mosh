@@ -3801,25 +3801,6 @@
       (and (string=? (host-os) "mona") "/MEM")
       (try-create "/tmp")))
 
-
-(define (%spawn command args . io-list)
-  (define (parse-io-list l)
-    (cond
-     [(null? l)
-      (values #f #f #f)]
-     [else
-      (let ([l (car l)])
-      (unless (= (length l) 3)
-        (assertion-violation '%spawn "io-list list length should be 3"))
-      (unless (for-all (lambda (p) (or (binary-port? p)  (not p))) l)
-        (assertion-violation '%spawn "list of binary port or #f required"))
-      (apply values l))]))
-  (receive (in out err) (parse-io-list io-list)
-    (let1 pid (%fork)
-      (if (zero? pid)
-          (%exec command args in out err)
-          (values pid in out err)))))
-
 (define (expand-path path)
   (if (or (zero? (string-length path)) (char=? (string-ref path 0) #\/))
       path

@@ -21,8 +21,15 @@
   (and (pair? x) (eq? pffi-mark (car x))))
 
 (define (pffi-lookup lib func)
+  (define (complain)
+    (assertion-violation 'pffi-lookup
+                         "PFFI function not avaliable"
+                         func
+                         (pffi-slot lib)))
   (let ((plib (assoc (pffi-slot lib) pffi-feature-set)))
+    (unless plib (complain))
     (let ((pfn (assoc func (cdr plib))))
+      (unless pfn (complain))
       (cdr pfn))))
 
 (define-syntax pffi-c-function

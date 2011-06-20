@@ -7,8 +7,19 @@
 
 (include "./misc/scripts/r6rs-symbols.dat")
 
-(define r6rs-dir (string-append (get-environment-variable "HOME") "/Desktop/r6rs/document/"))
-(define out-dir (string-append (get-environment-variable "HOME") "/mosh.git/doc/text/"))
+(define r6rs-dir
+  (let ((args (cdr (command-line))))
+    (when (null? args)
+      (error 'r6rs-dir
+             "Please provide the location of R6RS TeX sources as an argument."))
+
+    (string-append (first args) "/document/")))
+
+(when (not (file-directory? r6rs-dir))
+  (error "R6RS directory does not exist" r6rs-dir))
+
+(define out-dir (string-append (current-directory) "/doc/text/"))
+
 
 (define files '(("base.tex"
                  1

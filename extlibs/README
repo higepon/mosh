@@ -1,20 +1,21 @@
 This directory includes some library distribution for convenience.
 
- - gc-7.1 - Boehm GC
-      For: autotools, CMake, MonaOS
+ - gc-cvs - Boehm GC
+      For: autotools, CMake
 
       Boehm GC is (currently) only GC for Mosh and is always used.
-      For autotools(configure) builds, this is deletion candidate.
-      See Issue 156 for this progress.
-      http://code.google.com/p/mosh-scheme/issues/detail?id=156
+
+      Slightly patched :
+         misc.c => gc_misc.c renamed.
+         Cygwin workaround at gc_cpp.h was commented out.
 
  - onig-5.9.2 - oniguruma
       For: CMake, MonaOS
 
-      oniguruma is regular expression library.
+      Oniguruma is regular expression library.
       This won't used at all in autotools(configure) builds.
       Please install oniguruma development package (like `onigruma-devel`)
       and see if `onig-config` command exists for autotools build.
 
-      slightly patched, see : http://d.hatena.ne.jp/nurse/20100826
+      Slightly patched, see : http://d.hatena.ne.jp/nurse/20100826
 

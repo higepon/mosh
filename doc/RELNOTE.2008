@@ -1,0 +1,278 @@
+Mosh 0.0.7 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Implemented R6RS Sorting.
+
+Implemented R6RS Unicode.
+
+Implemented R6RS Bytevectors(Almost).
+
+Updated psyntax to the newest version. (Thanks to Leppie)
+
+Added library loading support.
+
+Added SRFI 8 and SRFI 98 support.
+
+Added UTF16/UTF32 Codec.
+
+Added R6RS Read Eval Print Loop.
+  mosh>(import (srfi :98))
+  #<unspecified>
+  mosh>(get-environment-variable "HOME")
+  "/Users/taro"
+
+Added stack auto expansion system for stack over flow.
+
+Improved load speed by Fasl(Fast loading).
+
+Improved read speed by rewriting read using bison and re2c.
+It becomes much faster.
+
+Improved g++ compilation speed of Mosh.
+
+Added library serialization system.(experimental)
+
+Now we can build Mosh without help of gosh.
+
+Added many procedures.
+
+Fixed many bugs.
+
+Now Mosh passes following "R6RS test suite".
+
+    mutable-strings, mutable-pairs,
+    contrib, programs, control, hashtables,
+    records/procedural, lists, enums
+    records/syntactic, sorting and unicode.
+
+  R6RS test suite written by PLT Scheme project.
+    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
+  Run like following.
+    mosh tests/r6rs/run/mutable-strings.sps
+
+Mosh 0.0.6 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Improved load speed of "R6RS batch mode" using psyntax.
+  Run with -b option like "cd r6rs-examples; mosh -b hello.ss"
+  There are some samples in mosh/r6rs-examples directory.
+
+Supported running "R6RS test suite".
+  R6RS test suite written by PLT Scheme project.
+    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
+  Run like following.
+    mosh -b tests/r6rs/run/mutable-strings.sps
+  Mosh 0.0.6 passed following tests.
+    mutable-strings, mutable-pairs,
+    contrib, programs, control, hashtables,
+    records/procedural, lists and enums.
+
+Implemented R6RS Hashtables.
+
+Implemented R6RS Records.
+
+Implemented R6RS Exceptions and conditions.
+
+Implemented R6RS List Utilities.
+
+Implemented R6RS Enumerations.
+
+Implemented dynamic-wind.
+
+Improved internal error system.
+
+Fixed bug of call/cc with multiple values.
+
+Applied READ_CHAR/grass.scm patch by IRIE Shinsuke.
+
+Added many procedures.
+
+Fixed many bugs.
+
+Mosh 0.0.5 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Added experimental "R6RS batch mode" using psyntax.
+  run with -b option like "cd r6rs-examples; mosh -b hello.ss"
+  There are some samples in mosh/r6rs-examples directory.
+
+Ported psyntax library.
+  psyntax is "The portable R6RS library and syntax-case system" by Abdulaziz Ghuloum and Kent Dybvig.
+
+Added SRFI 98 get-environment-variable and get-environment-variables.
+
+Improved stack trace.
+
+Improved (apply ...) not to use C native stack recursively.
+
+Improved profiler.
+
+Improved compilations speed.
+
+Improved procedure speed which is written in C++.
+
+Rewrote some procedures in C++ for perfomance.
+
+Added load option. run mosh with "-l".
+
+Added many procedures.
+  call-process
+  vector?
+  string
+  string->lines
+  filter-map
+  map-with-index
+  car+cdr
+  take
+  drop
+  take!
+  take-right
+  drop-right
+  drop-right!
+  integer?
+  fifth
+  sixth
+  seventh
+  eighth
+  ninth
+  tenth
+  xcons
+  make-list
+  list-tabulate
+  list-copy
+  list=
+  split-at
+  split-at!
+  not-pair?
+  last-pair
+  last
+  circular-list
+  proper-list?
+  circular-list?
+  dotted-list?.
+
+Fixed many bugs.
+
+Mosh 0.0.4 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Ported Andrew Wright' pattern match library.
+It's very useful.
+    (match ...)
+    (match-lambda ...)
+    (match-let ...)
+    (match-letrec ...)
+
+Added a sample application.
+    Grass language interpreter.(example/grass.scm)
+
+Added pre-compiled macro support.
+
+Rewrote multiple values system.
+
+Added many procedures.
+    (hash-table-keys ...)
+    (vector-for-each ...)
+    (hash-table-for-each ...)
+    (exit)
+    (string-ref ...)
+    (div ...)
+    (list? ...)
+    (macroexpand ...)
+    (procedure? ...)
+    (with-input-from-file ...)
+    (load ...) for internal use.
+    char>=?, char>?, char<=? and char<?.
+    cons*
+
+Added EOF handling for Ctrl-D to REPL.
+
+Fixed many bugs.
+    div bug (thx leque)
+    case bug (thx leque)
+    (read) can't read "...".
+    SEGV with (write '(quote))
+
+Mosh 0.0.3 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Added R6RS exceptions system.
+  (raise ...)
+  (raise-continuable ...)
+  (with-exception-handler ...)
+  (guard ...)
+
+Added a simple REPL (Read Eval Print Loop).
+
+Added (eval ...) procedure.
+
+Added division and modulo support (Fixnum only).
+
+Changed a stack frame structure for better stack trace.
+
+Fixed many bugs.
+  (apply proc ...) rest argument bug.
+  SEGV with stack overflow.
+  Regexp endian problem on OSX PPC (thx masa_edw).
+  (+) should be 0 and (*) should be 1 (thx leque).
+  cond clause like (cond ((3))).

@@ -1,13 +1,19 @@
 (define ERRPORT (current-error-port))
+(define DEBUGGING #f)
 (define (PCK . obj)
   (if %verbose
     (begin 
-      (display "-> " ERRPORT)
-      (for-each (lambda (e)
-		  (display e ERRPORT)
-		  (display " " ERRPORT))
-		obj)
-      (newline ERRPORT))))
+      (if (not DEBUGGING)
+        (begin 
+          (display "-> " ERRPORT)
+          (for-each (lambda (e)
+                      (display e ERRPORT)
+                      (display " " ERRPORT))
+                    obj)
+          (newline ERRPORT))))))
+
+(define (DEBUGMODE-ON)
+  (set! DEBUGGING #t))
 
 ;;------------------------------------------------
 ;; definitions
@@ -420,7 +426,7 @@
   (define (append-prefix-execpath-rel l)
     (let ((pth (mosh-executable-path)))
       (if pth
-        (append-prefix-x l (string-append pth "../lib"))
+        (append-prefix-x l (string-append pth (standard-library-path)))
         '())))
   (define (append-prefix-stdlibpath l)
     (append-prefix-x l (standard-library-path)))

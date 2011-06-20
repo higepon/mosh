@@ -67,6 +67,13 @@ extern "C" const unsigned int nmosh_image_size;
 extern "C" const uint8_t* psyntax_mosh_image_ptr;
 extern "C" unsigned int psyntax_mosh_image_size;
 #endif
+
+#ifdef TEST_SRCDIR
+#define SRCDIR TEST_SRCDIR
+#else
+#define SRCDIR ""
+#endif
+
 using namespace scheme;
 
 class VMTest : public testing::Test {
@@ -109,7 +116,7 @@ protected:
 
 
 TEST_F(VMTest, StackTrace1) {
-    theVM_->loadFileWithGuard(UC("./tests/stack-trace1.scm"));
+    theVM_->loadFileWithGuard(UC(SRCDIR "./tests/stack-trace1.scm"));
     EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
                  "\n"
                  " Condition components:\n"
@@ -122,13 +129,13 @@ TEST_F(VMTest, StackTrace1) {
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
                  "    2. sys-display: <subr>\n"
-                 "    3. (a):  <transcoded-textual-input-port <binary-input-port ./tests/stack-trace1.scm>>:7\n"
-                 "    4. (b):  <transcoded-textual-input-port <binary-input-port ./tests/stack-trace1.scm>>:12\n\n",
+                 "    3. (a):  <transcoded-textual-input-port <binary-input-port " SRCDIR "./tests/stack-trace1.scm>>:7\n"
+                 "    4. (b):  <transcoded-textual-input-port <binary-input-port " SRCDIR "./tests/stack-trace1.scm>>:12\n\n",
                  theVM_->getLastError().toString()->data().ascii_c_str());
 }
 
 TEST_F(VMTest, StackTrace2) {
-    theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./tests/stack-trace2.scm"));
+    theVM_->setValueString(UC("*command-line-args*"), Pair::list1(SRCDIR "./tests/stack-trace2.scm"));
 #ifdef WITH_NMOSH_DEFAULTS
     theVM_->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, false);
 #else

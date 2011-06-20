@@ -4,7 +4,8 @@
 ;; A numeric string that uniquely identifies this run in the universe
 ;NMOSH: it MUST be filesystem-safe (used by cache-system)
 (define (ex:unique-token) 
-  (number->compact-form (car (get-timeofday))))
+  (string-append (number->compact-form (car (get-timeofday)))
+                 (number->compact-form (%getpid))))
 
 ;; The letrec black hole and corresponding setter.
 

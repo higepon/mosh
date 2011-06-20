@@ -26,35 +26,179 @@
 #include "Closure.h"
 #include "VM-inl.h"
 
-#if not defined(_WIN32) && not defined(MONA)
-#include "mosh_terminal.h"
+#if !defined(_WIN32) && !defined(MONA)
+#define HAVE_TERMINAL // this should be done in configure..
+#endif
+
+#ifndef MONA
+#define HAVE_BDWGC_STUBS
+#endif
+
+#ifdef _WIN32
+#define HAVE_AIO_WIN32
+#include "aio_win32.h"
+#endif
+
+#ifdef HAVE_TERMINAL
+#include "posix/terminal/mosh_terminal.h"
+#endif
+
+#ifdef HAVE_BDWGC_STUBS
+#include "generic/boehmgc-stubs.h"
+#endif 
+
+#ifdef HAVE_KQUEUE
+#include "bsd/kqueue/kqueue_stubs.h"
+#endif
+
+#ifdef HAVE_PTRACE_COMMON
+#include "posix/ptrace/ptrace_common.h"
 #endif
 
 using namespace scheme;
-
-#ifdef _WIN32
-Object stub_win32_process_pipe(VM* theVM, int argc, const Object* argv);
-Object stub_win32_process_redirected_child(VM* theVM, int argc, const Object* argv);
-Object stub_win32_handle_read(VM* theVM, int argc, const Object* argv);
-Object stub_win32_handle_write(VM* theVM, int argc, const Object* argv);
-Object stub_win32_handle_close(VM* theVM, int argc, const Object* argv);
-Object stub_win32_process_wait(VM* theVM, int argc, const Object* argv);
-Object stub_win32_named_pipe_create(VM* theVM, int argc, const Object* argv);
-Object stub_win32_named_pipe_wait(VM* theVM, int argc, const Object* argv);
-#endif
 
 #define NIL Object::Nil
 #define CONS(x,y) Object::cons((x),(y))
 #define SYM(x) Symbol::intern(UC(x))
 #define PTR(x) Object::makePointer((void*)x)
 #define FUNC(x,y) CONS(SYM(x),PTR(y))
+#define FN(x) FUNC(#x,x)
 
-#ifndef WIN32
+
+#ifdef HAVE_TERMINAL
 #define LIBDATA_TERMINAL CONS(SYM("terminal"), \
 CONS(FUNC("terminal_acquire",terminal_acquire), \
 CONS(FUNC("terminal_release",terminal_release), \
 CONS(FUNC("terminal_getsize",terminal_getsize), \
 CONS(FUNC("terminal_isatty",terminal_isatty),NIL)))))
+#endif
+
+#ifdef HAVE_PTRACE_COMMON 
+#define LIBDATA_PTRACE_COMMON CONS(SYM("ptrace-common"), \
+CONS(FN(call_ptrace), \
+CONS(FN(ptrace_traceme), \
+CONS(FN(ptrace_write), \
+CONS(FN(ptrace_read), \
+CONS(FN(ptrace_continue), \
+CONS(FN(ptrace_singlestep), \
+CONS(FN(ptrace_attach), \
+CONS(FN(ptrace_detatch), \
+CONS(FN(ptrace_regsize), \
+CONS(FN(ptrace_getregs), \
+CONS(FN(ptrace_setregs), \
+CONS(FN(ptrace_fpregsize), \
+CONS(FN(ptrace_getfpregs), \
+CONS(FN(ptrace_setfpregs), NIL))))))))))))))) 
+#endif
+
+#ifdef HAVE_AIO_WIN32
+#define LIBDATA_AIO_WIN32 CONS(SYM("aio-win32"), \
+CONS(FN(win32_handle_close), \
+CONS(FN(win32_iocp_create), \
+CONS(FN(win32_iocp_assoc), \
+CONS(FN(win32_iocp_pop), \
+CONS(FN(win32_overlapped_alloc), \
+CONS(FN(win32_overlapped_free), \
+CONS(FN(win32_overlapped_setmydata), \
+CONS(FN(win32_overlapped_getmydata), \
+CONS(FN(win32_handle_read_async), \
+CONS(FN(win32_handle_write_async), \
+CONS(FN(win32_process_redirected_child2), \
+CONS(FN(win32_create_named_pipe_async), \
+CONS(FN(win32_wait_named_pipe_async), \
+CONS(FN(win32_process_wait_async), \
+CONS(FN(win32_sockaddr_storage_size), \
+CONS(FN(win32_socket_create), \
+CONS(FN(win32_socket_close), \
+CONS(FN(win32_addrinfoex_free), \
+CONS(FN(win32_addrinfoex_read), \
+CONS(FN(win32_socket_connect), \
+CONS(FN(win32_socket_accept), \
+CONS(FN(win32_socket_bind), \
+CONS(FN(win32_socket_listen), \
+CONS(FN(win32_getaddrinfo), \
+CONS(FN(win32_finalization_handler_get), \
+CONS(FN(win32_finalization_handler_create), \
+	NIL)))))))))))))))))))))))))))
+
+#define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
+CONS(FN(win32_messagebox) ,\
+CONS(FN(win32_window_move) ,\
+CONS(FN(win32_window_show) ,\
+CONS(FN(win32_window_hide) ,\
+CONS(FN(win32_window_settitle) ,\
+CONS(FN(win32_window_close) ,\
+CONS(FN(win32_window_destroy) ,\
+CONS(FN(win32_registerwindowclass) ,\
+CONS(FN(win32_window_alloc) ,\
+CONS(FN(win32_window_create) ,\
+CONS(FN(win32_window_fitbuffer) ,\
+CONS(FN(win32_getmonitorinfo) ,\
+CONS(FN(win32_window_updaterects) ,\
+CONS(FN(win32_window_createbitmap) ,\
+CONS(FN(win32_window_getclientrect_x) ,\
+CONS(FN(win32_window_getclientrect_y) ,\
+CONS(FN(win32_dc_create) ,\
+CONS(FN(win32_dc_dispose) ,\
+CONS(FN(win32_dc_selectobject) ,\
+CONS(FN(win32_dc_transform) ,\
+CONS(FN(win32_dc_settransform) ,\
+CONS(FN(win32_gdi_deleteobject) ,\
+CONS(FN(win32_pen_create) ,\
+CONS(FN(win32_brush_create) ,\
+CONS(FN(win32_font_create) ,\
+CONS(FN(win32_dc_draw) ,\
+CONS(FN(win32_dc_measure_text) ,\
+	NIL))))))))))))))))))))))))))))
+
+#define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
+CONS(FN(win32_get_processor_count), \
+CONS(FN(win32_get_ansi_codepage), \
+CONS(FN(win32_multibyte_to_widechar), \
+CONS(FN(win32_measure_multibyte_to_widechar), \
+CONS(FN(win32_mypath), \
+	NIL))))))
+#endif
+
+#define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \
+CONS(FN(create_weak_vector), \
+CONS(FN(weak_vector_ref), \
+CONS(FN(weak_vector_set), \
+CONS(FN(register_disappearing_link_wv), \
+CONS(FN(register_finalizer), \
+CONS(FN(register_disappearing_link), \
+CONS(FN(gcollect),NIL))))))))
+
+#ifdef HAVE_KQUEUE
+#define LIBDATA_KQUEUE CONS(SYM("kqueue-stubs"), \
+CONS(FN(kq_create), \
+CONS(FN(kevent_alloc), \
+CONS(FN(kevent_offset), \
+CONS(FN(kevent_dispose), \
+CONS(FN(kevent_set_readevent), \
+CONS(FN(kevent_set_writeevent), \
+CONS(FN(kevent_set_enableuserevent), \
+CONS(FN(kevent_set_triggeruserevent), \
+CONS(FN(kevent_ident), \
+CONS(FN(kevent_type), \
+CONS(FN(kevent_decode_fd), \
+CONS(FN(kevent_exec), \
+CONS(FN(socket_sizeof_sockaddr_storage), \
+CONS(FN(socket_getaddrinfo), \
+CONS(FN(socket_create), \
+CONS(FN(socket_freeaddrinfo), \
+CONS(FN(socket_bind), \
+CONS(FN(socket_accept), \
+CONS(FN(socket_listen), \
+CONS(FN(socket_connect), \
+CONS(FN(socket_addrinfo_read), \
+CONS(FN(socket_setnodelay), \
+CONS(FN(fd_read), \
+CONS(FN(fd_write), \
+CONS(FN(fd_close), \
+CONS(FN(fd_setnonblock), \
+CONS(FN(fd_pipe), \
+    NIL))))))))))))))))))))))))))))
 #endif
 
 Object
@@ -63,8 +207,22 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     Object tmp;
 
     tmp = Object::Nil;
-#if not defined(WIN32) && not defined(MONA)
+#ifdef HAVE_PTRACE_COMMON
+	tmp = Object::cons(LIBDATA_PTRACE_COMMON,tmp);
+#endif
+#ifdef HAVE_KQUEUE
+	tmp = Object::cons(LIBDATA_KQUEUE,tmp);
+#endif
+#ifdef HAVE_BDWGC_STUBS
+	tmp = Object::cons(LIBDATA_BOEHMGC_STUBS,tmp);
+#endif
+#ifdef HAVE_TERMINAL
     tmp = Object::cons(LIBDATA_TERMINAL,tmp);
+#endif
+#ifdef HAVE_AIO_WIN32
+	tmp = Object::cons(LIBDATA_AIO_WIN32,tmp);
+	tmp = Object::cons(LIBDATA_WIN32_GUI,tmp);
+    tmp = Object::cons(LIBDATA_WIN32_MISC,tmp);
 #endif
     return tmp;
 }
@@ -77,14 +235,4 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 void
 register_stubs(VM* theVM){
     theVM->setValueString(UC("%get-pffi-feature-set"),Object::makeCProcedure(stub_get_pffi_feature_set));
-#ifdef _WIN32
-    theVM->setValueString(UC("%win32_process_pipe"),Object::makeCProcedure(stub_win32_process_pipe));
-    theVM->setValueString(UC("%win32_process_redirected_child"),Object::makeCProcedure(stub_win32_process_redirected_child));
-    theVM->setValueString(UC("%win32_handle_read"),Object::makeCProcedure(stub_win32_handle_read));
-    theVM->setValueString(UC("%win32_handle_write"),Object::makeCProcedure(stub_win32_handle_write));
-    theVM->setValueString(UC("%win32_handle_close"),Object::makeCProcedure(stub_win32_handle_close));
-    theVM->setValueString(UC("%win32_process_wait"),Object::makeCProcedure(stub_win32_process_wait));
-    theVM->setValueString(UC("%win32_named_pipe_create"),Object::makeCProcedure(stub_win32_named_pipe_create));
-    theVM->setValueString(UC("%win32_named_pipe_wait"),Object::makeCProcedure(stub_win32_named_pipe_wait));
-#endif
 }

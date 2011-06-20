@@ -54,7 +54,11 @@ public:
 
     virtual ~ExecutableMemory()
     {
+#ifndef _WIN32
         delete[] addr_;
+#else
+		VirtualFree(addr_,0,MEM_RELEASE);
+#endif
     }
 
     int size() const { return size_; }

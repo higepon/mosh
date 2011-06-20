@@ -1,4 +1,4 @@
-(import (rnrs) (nmosh runlib) (nmosh startup) (only (mosh) set-symbol-value! symbol-value))
+(import (rnrs) (nmosh runlib) (nmosh startup) (primitives set-symbol-value! symbol-value))
 
 ; mosh initialize from psyntax
 (set-symbol-value!

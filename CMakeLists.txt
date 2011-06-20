@@ -6,13 +6,18 @@ PROJECT(mosh)
 include(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
 include(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 include(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
-
 ENABLE_TESTING()
+
+
 
 # mosh/nmosh select
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
 option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
 option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
+# option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
+option(MOSH_DEBUG_VERSION "build Debug version of mosh interpreter" OFF)
+option(MOSH_GC_PARALLEL_MARK "Boehm GC: Turn on parallel-marking" OFF)
+set(MOSH_EXECUTABLE_NAME "nmosh" CACHE STRING "Interpreter executable name")
 
 # only ONE runtime source will be allowed.
 set(nmosh_runtime_src
@@ -34,9 +39,18 @@ if(MOSH_PORTABLE)
     add_definitions(-DWITH_NMOSH_PORTABLE)
     if(NOT MOSH_PREFIXLESS)
         # silently enable prefix-less mode.
+        message(STATUS "Prefix-less mode was silently enabled.")
         add_definitions(-DWITH_NMOSH_PREFIXLESS)
-    endif(MOSH_PREFIXLESS)
+    endif()
 endif(MOSH_PORTABLE)
+
+if(MOSH_GC_PARALLEL_MARK)
+    add_definitions(-DPARALLEL_MARK)
+endif(MOSH_GC_PARALLEL_MARK)
+
+if(MOSH_DEBUG_VERSION)
+    add_definitions(-DDEBUG_VERSION)
+endif(MOSH_DEBUG_VERSION)
 
 if(MOSH_PREFIXLESS)
     add_definitions(-DWITH_NMOSH_PREFIXLESS)
@@ -54,10 +68,17 @@ endif()
 set(MOSH_VERSION "0.2.7" CACHE STRING "mosh release version string")
 # set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
 set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
-set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
+
+if(MOSH_PORTABLE)
+    set(MOSH_LIB_PATH "/lib")
+elseif(MOSH_PREFIXLESS)
+    set(MOSH_LIB_PATH "../share/${MOSH_NAME}/${MOSH_VERSION}/lib")
+else()
+    set(MOSH_LIB_PATH "${CMAKE_INSTALL_PREFIX}/share/${MOSH_NAME}/${MOSH_VERSION}/lib")
+endif()
 
 mark_as_advanced(MOSH_WITH_NMOSH 
-    MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH)
+    MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH MOSH_DEBUG_VERSION)
 
 add_definitions(-DHAVE_CONFIG_H
     -DMOSH_LIB_PATH=\"${MOSH_LIB_PATH}\"
@@ -76,8 +97,12 @@ add_definitions(-DHAVE_CONFIG_H
     -DGC_GCJ_SUPPORT=1
     -DJAVA_FINALIZATION=1
     -DUSE_I686_PREFETCH
+    -DDONT_ADD_BYTE_AT_END=1
     )
 
+if(NOT CMAKE_HOST_WIN32)
+    add_definitions(-DHANDLE_FORK=1)
+endif(NOT CMAKE_HOST_WIN32)
 
 # OS Settings
 if(CMAKE_HOST_WIN32)
@@ -98,10 +123,13 @@ if(CMAKE_HOST_WIN32)
         add_definitions(-D_CRT_SECURE_NO_WARNINGS) #nasty
     else() # MayBE MinGW
         set(arch_libs ${arch_libs} shlwapi ws2_32)
-        add_definitions(-static-libgcc)
+        set(MOSH_ADDFLAGS "-fwide-exec-charset=ucs-4le -static-libgcc -Wno-deprecated")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MOSH_ADDFLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} ${MOSH_ADDFLAGS}")
+        #add_definitions(-static-libgcc)
         #add_definitions(-static-libstdc++)
-        add_definitions(-Wno-deprecated)
-        add_definitions(-fwide-exec-charset=ucs-4le)
+        #add_definitions(-Wno-deprecated)
+        #add_definitions(-fwide-exec-charset=ucs-4le)
         add_definitions(-DMOSH_MINGW32)
         add_definitions(-DHAVE_EXT_HASHES=1)
     endif(MSVC)
@@ -136,7 +164,8 @@ add_definitions(
     -DGC_NOT_DLL
     -DONIG_EXTERN=extern
     )
-set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/src/win/include")
+set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/src/win/include"
+    "${PROJECT_SOURCE_DIR}/src/win32")
 endif(CMAKE_HOST_WIN32)
 
 # includes
@@ -218,46 +247,47 @@ endif(GMP_SEARCH)
 # => gc_srcs
 
 set(gc_core_srcs
-extlibs/gc-7.1/allchblk.c
-extlibs/gc-7.1/alloc.c
-extlibs/gc-7.1/blacklst.c
-extlibs/gc-7.1/checksums.c
-extlibs/gc-7.1/dbg_mlc.c
-extlibs/gc-7.1/dyn_load.c
-extlibs/gc-7.1/finalize.c
-extlibs/gc-7.1/gc_dlopen.c
-extlibs/gc-7.1/gcj_mlc.c
-extlibs/gc-7.1/headers.c
-extlibs/gc-7.1/malloc.c
-extlibs/gc-7.1/mallocx.c
-extlibs/gc-7.1/mark.c
-extlibs/gc-7.1/mark_rts.c
-extlibs/gc-7.1/misc.c
-extlibs/gc-7.1/new_hblk.c
-extlibs/gc-7.1/obj_map.c
-extlibs/gc-7.1/os_dep.c
-extlibs/gc-7.1/mach_dep.c
-extlibs/gc-7.1/pcr_interface.c
-extlibs/gc-7.1/ptr_chck.c
-extlibs/gc-7.1/real_malloc.c
-extlibs/gc-7.1/reclaim.c
-extlibs/gc-7.1/specific.c
-extlibs/gc-7.1/stubborn.c
-extlibs/gc-7.1/typd_mlc.c
-extlibs/gc-7.1/backgraph.c
-extlibs/gc-7.1/thread_local_alloc.c
-extlibs/gc-7.1/libatomic_ops-1.2/src/atomic_ops.c
+extlibs/gc-cvs/allchblk.c
+extlibs/gc-cvs/alloc.c
+extlibs/gc-cvs/blacklst.c
+extlibs/gc-cvs/checksums.c
+extlibs/gc-cvs/dbg_mlc.c
+extlibs/gc-cvs/dyn_load.c
+extlibs/gc-cvs/finalize.c
+extlibs/gc-cvs/gc_dlopen.c
+extlibs/gc-cvs/gcj_mlc.c
+extlibs/gc-cvs/headers.c
+extlibs/gc-cvs/malloc.c
+extlibs/gc-cvs/mallocx.c
+extlibs/gc-cvs/mark.c
+extlibs/gc-cvs/mark_rts.c
+extlibs/gc-cvs/gc_misc.c
+extlibs/gc-cvs/new_hblk.c
+extlibs/gc-cvs/obj_map.c
+extlibs/gc-cvs/os_dep.c
+extlibs/gc-cvs/mach_dep.c
+extlibs/gc-cvs/pcr_interface.c
+extlibs/gc-cvs/ptr_chck.c
+extlibs/gc-cvs/real_malloc.c
+extlibs/gc-cvs/reclaim.c
+extlibs/gc-cvs/specific.c
+extlibs/gc-cvs/stubborn.c
+extlibs/gc-cvs/typd_mlc.c
+extlibs/gc-cvs/backgraph.c
+extlibs/gc-cvs/thread_local_alloc.c
+extlibs/gc-cvs/libatomic_ops/src/atomic_ops.c
 )
 
 set(gc_pthread_srcs
-extlibs/gc-7.1/pthread_support.c
-extlibs/gc-7.1/pthread_stop_world.c
+extlibs/gc-cvs/pthread_start.c
+extlibs/gc-cvs/pthread_support.c
+extlibs/gc-cvs/pthread_stop_world.c
 )
 set(gc_darwin_srcs
-extlibs/gc-7.1/darwin_stop_world.c
+extlibs/gc-cvs/darwin_stop_world.c
 )
 set(gc_win32_srcs
-extlibs/gc-7.1/win32_threads.c
+extlibs/gc-cvs/win32_threads.c
 )
 
 if(WIN32)
@@ -333,14 +363,21 @@ ${MOSH_ONIG_DIR}/enc/cp1251.c
 
 # mosh
 
-include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-7.1/include extlibs/gc-7.1/libatomic_ops-1.2/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest src/posix/terminal)
+include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-cvs/include extlibs/gc-cvs/libatomic_ops/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest src/posix/terminal src/generic)
 
-if(CMAKE_COMPILER_IS_GNUC)
-    set(ffi_stub cmake/ffi_stub.S)
-else()
-    message(STATUS "FFI stub was disabled (build without call-back support)")
-    add_definitions(-DWITHOUT_FFI_STUB)
-endif(CMAKE_COMPILER_IS_GNUC)
+if(CMAKE_COMPILER_IS_GNUCC)
+    if(XCODE)
+        add_definitions(-DWITHOUT_FFI_STUB)
+    else(XCODE)
+        set(ffi_stub cmake/ffi_stub.S)
+        set_source_files_properties(${ffi_stub} PROPERTIES LANGUAGE C)
+    endif(XCODE)
+elseif(WIN32)
+    if(CMAKE_CL_64)
+        message(STATUS "FFI stub was disabled (build without call-back support)")
+        add_definitions(-DWITHOUT_FFI_STUB)
+    endif()
+endif(CMAKE_COMPILER_IS_GNUCC)
 
 set(mosh_core_hdrs
 src/Code.h
@@ -467,7 +504,7 @@ src/VMFactory.h
 src/SimpleStruct.h
 )
 
-set(mosh_core_srcs
+set(mosh_core_cxxsrcs
 src/OSCompat.h
 src/Transcoder.cpp
 src/EqvHashTable.cpp
@@ -552,21 +589,22 @@ src/OSCompatThread.cpp
 src/VMFactory.cpp
 src/OSCompat.cpp
 src/stubs.cpp
-${ffi_stub}
 src/posix/terminal/terminal.c
+src/generic/boehmgc-stubs.c
 )
+
+set(mosh_core_srcs ${mosh_core_cxxsrcs} ${ffi_stub})
 
 if(CMAKE_HOST_WIN32)
 set(mosh_win32_srcs
-src/win32/process.c
-src/win32/process_stub.cpp)
+src/win32/process.c)
 source_group(win32 FILES ${mosh_win32_srcs})
 set(mosh_core_srcs 
 ${mosh_core_srcs}
 ${mosh_win32_srcs}
 src/win/win.cpp
 src/win/mosh.rc)
-set_source_files_properties(${mosh_core_srcs}
+set_source_files_properties(${mosh_core_cxxsrcs}
     PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif(CMAKE_HOST_WIN32)
 
@@ -580,7 +618,7 @@ set_source_files_properties(src/main.cpp src/TestingSignalHandler.cpp
 endif(WIN32)
 source_group(gc FILES ${gc_srcs})
 source_group(oniguruma FILES ${onig_srcs})
-add_executable(${TARGET_FLAVOR} 
+add_executable(${MOSH_EXECUTABLE_NAME}
     ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
@@ -588,7 +626,7 @@ add_executable(${TARGET_FLAVOR}
     ${mosh_runtime_src}
     src/main.cpp)
 
-target_link_libraries(${TARGET_FLAVOR} ${GMP_LIBRARY} ${arch_libs})
+target_link_libraries(${MOSH_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
 
 # tests
 
@@ -604,15 +642,15 @@ add_library(testingmosh EXCLUDE_FROM_ALL
 # GC tests
 macro(add_gcguitest testname)
 if(MSVC)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL WIN32 ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL WIN32 ${PROJECT_SOURCE_DIR}/extlibs/gc-cvs/tests/${testname}.c)
 else(MSVC)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-cvs/tests/${testname}.c)
 endif(MSVC)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gcguitest)
 macro(add_gctest testname)
-add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-7.1/tests/${testname}.c)
+add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-cvs/tests/${testname}.c)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
@@ -667,9 +705,17 @@ file(COPY ${PROJECT_SOURCE_DIR}/src/all-tests.scm DESTINATION ${PROJECT_BINARY_D
 file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_DIR}/src)
 
 
-install(TARGETS ${TARGET_FLAVOR} DESTINATION bin)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
-    DESTINATION share/mosh/${MOSH_VERSION})
-if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
-    install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
+if(MOSH_PORTABLE)
+    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION .)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib DESTINATION .)
+    if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
+        install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION .)
+    endif()
+else()
+    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION bin)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
+        DESTINATION share/mosh/${MOSH_VERSION})
+    if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
+        install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
+    endif()
 endif()
