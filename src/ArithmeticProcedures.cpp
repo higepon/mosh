@@ -432,7 +432,7 @@ Object scheme::finitePEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentCheckReal(0, real);
     if (real.isFlonum()) {
-        return Object::makeBool(!real.toFlonum()->isInfinite());
+        return Object::makeBool(!real.toFlonum()->isInfinite() && !real.toFlonum()->isNan());
     } else {
         return Object::True;
     }
