@@ -1955,6 +1955,7 @@
        [(= $IT t)            cnt]
        [(= $LIST t)          cnt]
        [(= $RECEIVE t)       (sum-items (+ cnt 1) ($receive.vals iform) ($receive.body iform))]
+       [(= $CALL-CC t)       cnt]
        [else
         (error 'compiler (format "[internal error] iform-count-size-upto: unknown iform tag:~a" (tag iform)))]
        )))
