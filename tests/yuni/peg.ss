@@ -377,17 +377,13 @@
   (succ "aa"  '(#\a))
   (succ "bb," '(#\b))
   (succ "cc,Z" '(#\c))
-#| ;; compiler error
   (fail "cc,dZ" '(4 char-set:lower-case))
-|#
   (succ "ee,ff," '(#\e #\f))
   (succ "ggZ"  '(#\g))
   (succ "hh,," '(#\h))
   (succ "ii,jjZ"  '(#\i #\j))
 
-#| ;; compiler error
   (fail "kk,ll,mZ" '(7 char-set:lower-case))
-|#
 
   (test-succ "$sep-end-by (min)" '(#\a #\b)
              ($sep-end-by ($seq ($one-of char-set:lower-case) ($one-of char-set:lower-case))

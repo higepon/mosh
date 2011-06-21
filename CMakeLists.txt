@@ -65,7 +65,10 @@ if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${mosh_runtime_src})
     message(FATAL_ERROR "this ${TARET_FLAVOR} tree is not configured properly. Please install release version of mosh and run ./gen-git-build.sh")
 endif()
 
-set(MOSH_VERSION "0.2.7" CACHE STRING "mosh release version string")
+set(MOSH_VERSION_MAJOR "0")
+set(MOSH_VERSION_MINOR "2")
+set(MOSH_VERSION_MICRO "8")
+set(MOSH_VERSION "${MOSH_VERSION_MAJOR}.${MOSH_VERSION_MINOR}.${MOSH_VERSION_MICRO}" CACHE STRING "mosh release version string")
 # set(MOSH_BUGREPORT "bogus" CACHE STRING "bugreport mail address")
 set(MOSH_NAME "mosh" CACHE STRING "mosh PACKAGE_NAME")
 
@@ -719,3 +722,25 @@ else()
         install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION bin)
     endif()
 endif()
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Mosh")
+SET(CPACK_PACKAGE_VENDOR "Mosh project")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+SET(CPACK_PACKAGE_VERSION_MAJOR ${MOSH_VERSION_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${MOSH_VERSION_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${MOSH_VERSION_MICRO})
+
+if(WIN32 AND NOT UNIX)
+    SET(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/misc/logo/mosh.ico")
+elseif(APPLE)
+    SET(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/misc/logo/mosh.icns")
+    SET(CPACK_BUNDLE_STARTUP_COMMAND
+        "${CMAKE_CURRENT_SOURCE_DIR}/misc/dist/mac/bundle-mosh-run.sh")
+    SET(CPACK_BUNDLE_NAME "Mosh") # Match misc/dist/mac/bundle-mosh-run.sh
+    SET(CPACK_BUNDLE_PLIST
+        "${CMAKE_CURRENT_SOURCE_DIR}/misc/dist/mac/Info.plist")
+    SET(CPACK_GENERATOR "Bundle")
+endif()
+SET(CPACK_PACKAGE_EXECUTABLES ${MOSH_EXECUTABLE_NAME})
+INCLUDE(CPack)
