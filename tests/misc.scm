@@ -107,6 +107,7 @@
 (test-equal "ABC DEF" (message->string #x443214))
 (test-equal "ABC D1F" (message->string #x443d14))
 (test-false (finite? +nan.0))
+(test-false (flfinite? +nan.0))
 
 (test-results)
 

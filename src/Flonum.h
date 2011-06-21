@@ -95,6 +95,7 @@ public:
     Object toExact() const;
     bool isNan() const { return isnan(value_) != 0; }
     bool isInfinite() const { return isinf(value_) != 0; }
+    bool isFinite() const { return !isInfinite() && !isNan(); }
 
     Object numerator() const;
     Object denominator() const;

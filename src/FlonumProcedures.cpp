@@ -380,7 +380,7 @@ Object scheme::flfinitePEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("flfinite?");
     checkArgumentLength(1);
     argumentAsFlonum(0, flonum);
-    return Object::makeBool(!flonum->isInfinite());
+    return Object::makeBool(flonum->isFinite());
 }
 
 Object scheme::flevenPEx(VM* theVM, int argc, const Object* argv)
