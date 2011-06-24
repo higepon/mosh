@@ -67,6 +67,30 @@
 (test-equal (hello person1) "Hello I'm higepon.")
 (test-equal (hello painter2) "Don't touch me <Paul>.")
 
+; Testing CALL-NEXT-METHOD
+(define-generic hello2)
+(define-method hello2 ((p <person>))
+  "Hello from the superclass")
+
+(define-method hello2 ((p <painter>))
+  (call-next-method))
+
+(test-equal (hello2 person1) "Hello from the superclass")
+(test-equal (hello2 painter2) "Hello from the superclass")
+
+; Testing NEXT-METHOD? predicate
+(define-generic hello3)
+(define-method hello3 ((p <person>))
+  (test-false next-method?)
+  "Hello from the superclass")
+
+(define-method hello3 ((p <painter>))
+  (test-true next-method?)
+  (call-next-method))
+
+(test-equal (hello3 person1) "Hello from the superclass")
+(test-equal (hello3 painter2) "Hello from the superclass")
+
 ;; template method pattern
 (define-generic work)
 (define-generic collect)
