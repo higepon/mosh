@@ -32,4 +32,4 @@ Bug fixes:
 
     rnrs:
         Fixed Issue 215 reported by mrc.mgg:
-            finite? was returned #t for NaNs.
+            finite? and flfinite? were returned #t for NaNs.
