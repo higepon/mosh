@@ -20,7 +20,9 @@ About This Release
 
 Changes:
 
-    (none)
+    TinyCLOS:
+        A bool value next-method? available within method definition. See
+        Issue 216 for details.
 
 Bug fixes:
 
