@@ -13,14 +13,16 @@ Mosh is A Fast R6RS Scheme interpreter.
     http://mosh.monaos.org/
 
   Developed by:
-    Higepon, kokosabu, herumi and OKUMURA Yuki.
+    Higepon, kokosabu, herumi, OKUMURA Yuki and David Banks.
 
 About This Release
 ------------------
 
 Changes:
 
-    (none)
+    TinyCLOS:
+        A bool value next-method? available within method definition. See
+        Issue 216 for details.
 
 Bug fixes:
 
@@ -30,4 +32,4 @@ Bug fixes:
 
     rnrs:
         Fixed Issue 215 reported by mrc.mgg:
-            finite? was returned #t for NaNs.
+            finite? and flfinite? were returned #t for NaNs.

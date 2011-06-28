@@ -92,7 +92,7 @@
                                           %generic
                                           (cdr %next-methods)
                                           #,@qargs ?arg ... #,rest-args))))
-                            (next-method?
+                            (#,next-method?
                              (not (null? %next-methods)))) 
                         . #,body))))))))
       (syntax-case x (quote)
