@@ -717,11 +717,7 @@ Object scheme::standardLibraryPathEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("standard-library-path");
     checkArgumentLength(0);
-#ifdef MONA
-    return Object::makeString(UC("/APPS/MOSH/LIB"));
-#else
     return Object::makeString(UC(MOSH_LIB_PATH));
-#endif
 }
 
 Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)

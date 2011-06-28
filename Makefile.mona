@@ -13,7 +13,7 @@ include mona/Makefile.onig.inc
 ADDTARGETDEP = $(ONIG_DIR) $(BOEHM_GC_DIR)
 ADDLINKDEP   = $(ONIG_OBJECTS) $(GC_OBJECTS)
 ADDLINK      = $(ONIG_OBJECTS) $(GC_OBJECTS) -lssl-imp -lcrypto-imp -lgmp-imp -l monalibc-imp --enable-auto-import
-ADDCFLAGS    = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\"" -DMOSH_LIB_PATH="\"/LIBS/MOSH\"" -U__CYGWIN32__ -mno-stack-arg-probe -DDEBUG_VERSION -DLINE_FEED_CODE_LF=1 -O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=i686 #-msse2 -mfpmath=sse
+ADDCFLAGS    = -D USE_BOEHM_GC -D PACKAGE_VERSION="\"0.2.6\"" -DMOSH_LIB_PATH="\"/LIBS/MOSH/\"" -U__CYGWIN32__ -mno-stack-arg-probe -DDEBUG_VERSION -DLINE_FEED_CODE_LF=1 -O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=i686 #-msse2 -mfpmath=sse
 ADDINCLUDE   = -I ./extlibs/onig-5.9.2 -I $(BOEHM_GC_DIR)/include
 CLEANFILES   = $(ONIG_OBJECTS) $(GC_OBJECTS) .BOOT
 
