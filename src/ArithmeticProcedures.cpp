@@ -571,16 +571,25 @@ Object scheme::maxEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("max");
     checkArgumentLengthAtLeast(1);
     Object maxNumber = Flonum::NEGATIVE_INF;
+    bool isExact = true;
     for (int i = 0; i < argc; i++) {
         argumentCheckReal(i, number);
-        if (number.isFlonum() && (number.toFlonum())->isNan()) {
+        bool isFlonum = number.isFlonum();
+        if (isFlonum && (number.toFlonum())->isNan()) {
             return number;
+        }
+        if (isFlonum) {
+            isExact = false;
         }
         if (Arithmetic::gt(number, maxNumber)) {
             maxNumber = number;
         }
     }
-    return maxNumber;
+    if (isExact) {
+        return maxNumber;
+    } else {
+        return Arithmetic::inexact(maxNumber);
+    }
 }
 
 Object scheme::minEx(VM* theVM, int argc, const Object* argv)
