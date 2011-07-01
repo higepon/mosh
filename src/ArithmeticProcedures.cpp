@@ -1103,8 +1103,7 @@ Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
                 return Object::Undef;
             }
-            Flonum f(fmod(x.toFixnum(), value));
-            return f.toExact();
+            return Object::makeFlonum(fmod(x.toFixnum(), value));
         } else if (y.isBignum()) { // fixnum, bignum
             if (Arithmetic::eq(y, Object::makeFixnum(0))) {
                 callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
@@ -1128,8 +1127,7 @@ Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
                 return Object::Undef;
             }
-            Flonum f(::fmod(x.toFlonum()->value(),y.toFixnum()));
-            return f.toExact();
+            return Object::makeFlonum(::fmod(x.toFlonum()->value(),y.toFixnum()));
         } else if (y.isFlonum()) { // flonum, flonum
             const double value = y.toFlonum()->value();
             if (0.0 == value) {
@@ -1139,8 +1137,7 @@ Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
             Flonum f(::fmod(x.toFlonum()->value(), value));
             return f.toExact();
         } else if (y.isBignum()) { // flonum, bignum
-            Flonum f(::fmod(x.toFlonum()->value(), y.toBignum()->toDouble()));
-            return f.toExact();
+            return Object::makeFlonum(::fmod(x.toFlonum()->value(), y.toBignum()->toDouble()));
         } else if (y.isCompnum()) { // flonum, compnum
             if (y.toCompnum()->isReal()) {
                 Object arguments[2];
@@ -1165,8 +1162,7 @@ Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
                 return Object::Undef;
             }
-            Flonum f(::fmod(y.toBignum()->toDouble(), x.toFlonum()->value()));
-            return f.toExact();
+            return Object::makeFlonum(::fmod(y.toBignum()->toDouble(), x.toFlonum()->value()));
         } else if (y.isBignum()) {
             return Bignum::remainder(x.toBignum(), y.toBignum());
         } else if (y.isCompnum()) { // bignum, compnum
