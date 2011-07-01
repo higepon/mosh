@@ -109,5 +109,7 @@
 (test-false (finite? +nan.0))
 (test-false (flfinite? +nan.0))
 
+(test-false (eqv? 4.0 4))
+
 (test-results)
 
