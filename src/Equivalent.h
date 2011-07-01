@@ -48,7 +48,13 @@ namespace scheme {
                 if (o1.isFlonum() && o2.isFlonum()) {
                     return Flonum::eqv(o1.toFlonum(), o2.toFlonum());
                 } else {
-                    return Arithmetic::eq(o1, o2);
+                    bool isExact1 = Arithmetic::isExact(o1);
+                    bool isExact2 = Arithmetic::isExact(o2);
+                    if ((isExact1 && !isExact2) || (!isExact1 && isExact2)) {
+                        return false;
+                    } else {
+                        return Arithmetic::eq(o1, o2);
+                    }
                 }
             } else {
                 return false;
