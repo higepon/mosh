@@ -61,6 +61,7 @@
 (define-c-defined-const-uint32_t MSG_READ_READY)
 (define-c-defined-const-uint32_t MSG_WRITE_READY)
 (define-c-defined-const-uint32_t MSG_TEXT)
+(define-c-defined-const-uint32_t MSG_NAME)
 (define-size-of char)
 (define-size-of bool)
 (define-size-of short)

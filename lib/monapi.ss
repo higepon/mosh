@@ -58,7 +58,8 @@
           MSG_TIMER
           MSG_READ_READY
           MSG_WRITE_READY
-          MSG_TEXT)
+          MSG_TEXT
+          MSG_NAME)
   (import (rnrs) (mosh) (system))
 
 #|
@@ -178,6 +179,14 @@
     MSG_TEXT
 |#
 (define MSG_TEXT (os-constant 'MSG_TEXT))
+
+#|
+    Constant: MSG_TEXT
+
+    MSG_TEXT
+|#
+(define MSG_NAME (os-constant 'MSG_NAME))
+
 
 #|
     Constant: MSG_STOP
