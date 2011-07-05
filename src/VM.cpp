@@ -617,7 +617,7 @@ Object VM::compile(Object code)
 
 Object VM::getStackTraceObj()
 {
-#ifdef MONA
+#if 0
     monapi_warn("stack trace is currently disabled, since it causes gc crash.");
     return Object::Nil;
 #else
@@ -697,7 +697,7 @@ Object VM::getStackTraceObj()
 
 Object VM::getStackTrace()
 {
-#ifdef MONA
+#if 0
     monapi_warn("stack trace is currently disabled, since it causes gc crash.");
     return Object::Nil;
 #else
