@@ -2,6 +2,7 @@
         (mosh)
         (srfi :8)
         (monapi)
+        (shorten)
         (mosh test))
 
 ;; Issue 201.
@@ -110,6 +111,26 @@
 (test-false (flfinite? +nan.0))
 
 (test-false (eqv? 4.0 4))
+
+;; Section 11.3 of R6RS
+(let ([only-once #t]
+      [v0 (vector 1 2 3 4 5 6)]
+      [cl '()]
+      [old-v1 #f])
+  (let ([v1 (vector-map
+             (^e
+              (call/cc
+               (^c
+                (set! cl (cons c cl))
+                (* e e))))
+             v0)])
+    (when only-once
+      (set! only-once #f)
+      (set! old-v1 v1)
+      ((car (reverse cl)) 'x))
+    (test-equal '#(1 2 3 4 5 6) v0)
+    (test-equal '#(1 4 9 16 25 36) old-v1)
+    (test-equal '#(x 4 9 16 25 36) v1)))
 
 (test-results)
 

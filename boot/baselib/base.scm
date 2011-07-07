@@ -303,6 +303,12 @@
               (else
                (assertion-violation 'fold-right "expected same length proper lists" (cons* proc seed lst1 lst2)))))))
 
+(define vector-map
+  (lambda (proc vec1 . vec2)
+    (list->vector
+     (apply map proc (vector->list vec1)
+            (map vector->list vec2)))))
+
 ;; Originaly from Ypsilon Scheme end
 
 (define (list->string l)
@@ -321,15 +327,6 @@
            (map vector->list v2)))
 
 ;; Originaly from Chicken Scheme.
-(define vector-map
-  (lambda (f vec . vecs)
-    (let* ((n (vector-length vec))
-           (vr (make-vector n)))
-      (if (pair? vecs)
-          (if (null? (cdr vecs))        ; special case binary f, too
-              (letrec ((loop (lambda (i vec1) (if (= i n) (begin #f vr) (begin (vector-set! vr i (f (vector-ref vec i) (vector-ref vec1 i))) (loop (+ 1 i) vec1)))))) (loop 0 (car vecs)))
-              (letrec ((loop (lambda (i) (if (= i n) (begin #f vr) (begin (vector-set! vr i (apply f (vector-ref vec i) (map (lambda (v) (vector-ref v i)) vecs))) (loop (+ 1 i))))))) (loop 0)))
-          (letrec ((loop (lambda (i) (if (= i n) (begin #f vr) (begin (vector-set! vr i (f (vector-ref vec i))) (loop (+ 1 i))))))) (loop 0))))))
 
 ;; ; used internal
 (define (foldr2 binop start l1 l2)
