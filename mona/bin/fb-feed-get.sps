@@ -63,14 +63,18 @@
                 (if (assoc-ref m "likes") (assoc-ref (vector->list (assoc-ref m "likes")) "count") 0)
                 (assoc-ref m "id")
                 (if (assoc-ref m "comments") (assoc-ref (vector->list (assoc-ref m "comments")) "count") 0))
-        (and-let*
-            ([comment* (assoc-ref m "comments")]
-             [comment* (assoc-ref (vector->list comment*) "data")])
-          (for-each
-           (^c
-            (format p "~a:~a;" (assoc-ref (vector->list (assoc-ref (vector->list c) "from")) "id") (clean-body (assoc-ref (vector->list c) "message")))
-            )
-           (if comment* comment* '())))
+        (cond
+         [(assoc-ref m "comments")
+          (and-let*
+              ([comment* (assoc-ref m "comments")]
+               [comment* (assoc-ref (vector->list comment*) "data")])
+            (for-each
+             (^c
+              (format p "~a:~a;" (assoc-ref (vector->list (assoc-ref (vector->list c) "from")) "id") (clean-body (assoc-ref (vector->list c) "message")))
+              )
+             (if comment* comment* '())))]
+         [else
+          (display "$" p)])
         (newline p)
         ]
        [else '()]))
