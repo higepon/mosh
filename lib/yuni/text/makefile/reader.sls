@@ -42,8 +42,7 @@
        ($return content)))
 
 (define target-unquoted
-  ;($many-till anychar ($or cr lf space ($c #\:)))
-  ($many ($none-of (list->char-set '(#\newline #\space #\:)))))
+  ($many ($none-of (list->char-set '(#\newline #\space #\:))) 1))
 
 (define quoted-name
   ($many ($none-of (list->char-set '(#\")))))
@@ -55,43 +54,53 @@
                         ows
                         ($return (list->string name))))
 
-(define targetname* ($many targetname))
+(define targetname* ($many targetname 1))
 
 (define tgt* ($many ($none-of (list->char-set '(#\:)))))
 
 (define prereq-unquoted
   ;; FIXME: should exclude space
-  ($many ($none-of (list->char-set '(#\newline #\;)))))
+  ($many ($none-of (list->char-set '(#\newline #\;))) 1))
 
-(define prereqname ($do (name ($or target-quoted prereq-unquoted))
+(define prereqname ($do (name ($or target-quoted 
+                                   prereq-unquoted))
                         ows
                         ($return (list->string name))))
 
 (define prereq* ($many prereqname 1))
 
 (define targetpat 
-  ($do ;(target-names targetname*) ;; FIXME!
-       (target-names targetname)
+  ($do (target-names targetname*)
        ows
        (($c #\:))
        ows
-       (prereqs ($optional prereqname))
+       (prereqs ($optional prereq* '()))
        ows
-       (commands ($optional cmd-line))
+       (command ($optional cmd-line '()))
        eol
-       ($return `((target ,(list target-names)
-                          ,(list prereqs))
-                  ,@(if commands (list commands) '())
-                  ))))
+       ($return (cons `(recipe ,target-names ,prereqs)
+                      command))))
 
 (define recipe ($do (target targetpat)
                     (commands ($many commandpat))
-                    ($return (append target commands))))
+                    ($return 
+                      (let ((tgt (car target))
+                            (cmd (cdr target)))
+                        (if (pair? cmd)
+                          (append tgt (cons cmd commands))
+                          (append tgt commands))))))
+
+(define include ($do (($string "include"))
+                     ws
+                     (line ($many ($none-of (list->char-set '(#\newline)))))
+                     (($c #\newline))
+                     ($return `(include ,(list->string line)))))
 
 ;; makefile
 (define makefile-item ($do owsl
-                           (content ($or ($try recipe) 
-                                         ($try macro)))
+                           (content ($or ($try macro)
+                                         ($try recipe) 
+                                         ($try include)))
                            owsl
                            ($return content)))
 
@@ -106,9 +115,11 @@
           (skip-comment))))
     (define (skip-return)
       (let ((c (peek-char port)))
-        (when (or (char=? c #\newline) (char=? c #\return))
-          (read-char port)
-          (skip-return))))
+        (cond
+          ((or (char=? c #\newline) (char=? c #\return))
+           (read-char port)
+           (skip-return))
+          (else (put-char p #\\)))))
     (define (loop)
       (let ((c (read-char port)))
         (if (eof-object? c)
@@ -129,7 +140,6 @@
 
 (define-reader (makefile-read port)
                (let ((s (pass1 port)))
-                 (display s)(newline)
                  (peg-parse-string makefile s)))
 
 )
