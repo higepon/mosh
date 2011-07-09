@@ -28,6 +28,7 @@
 ;
 (import (rnrs)
         (mosh control)
+        (srfi :2)
         (match)
         (mosh)
         (system)
@@ -41,6 +42,9 @@
 
 (define temp-file (string-append (get-environment-variable "HOME") "/TEMP/fb.data"))
 
+(define (clean-body b)
+  (regexp-replace-all #/\n/ b ""))
+
 (when (file-exists? temp-file)
     (delete-file temp-file))
 
@@ -52,12 +56,22 @@
     (^(m)
       (cond
        [(and (assoc-ref m "message") (assoc-ref m "from"))
-        (format p "~a$~a$~a$~a$~a$~a\n"
+        (format p "~a$~a$~a$~a$~a$~a$"
                 (assoc-ref (vector->list (assoc-ref m "from")) "id")
                 (assoc-ref (vector->list (assoc-ref m "from")) "name")
-                (regexp-replace-all #/\n/ (assoc-ref m "message") "")
+                (clean-body (assoc-ref m "message"))
                 (if (assoc-ref m "likes") (assoc-ref (vector->list (assoc-ref m "likes")) "count") 0)
                 (assoc-ref m "id")
-                (if (assoc-ref m "comments") (assoc-ref (vector->list (assoc-ref m "comments")) "count") 0))]
+                (if (assoc-ref m "comments") (assoc-ref (vector->list (assoc-ref m "comments")) "count") 0))
+        (and-let*
+            ([comment* (assoc-ref m "comments")]
+             [comment* (assoc-ref (vector->list comment*) "data")])
+          (for-each
+           (^c
+            (format p "~a:~a;" (assoc-ref (vector->list (assoc-ref (vector->list c) "from")) "id") (clean-body (assoc-ref (vector->list c) "message")))
+            )
+           (if comment* comment* '())))
+        (newline p)
+        ]
        [else '()]))
     json))))
