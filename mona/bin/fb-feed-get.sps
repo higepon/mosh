@@ -74,7 +74,7 @@
               )
              (if comment* comment* '())))]
          [else
-          (display "$" p)])
+          (display ";" p)])
         (newline p)
         ]
        [else '()]))
