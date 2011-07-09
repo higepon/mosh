@@ -35,7 +35,7 @@
           (match)
           (json))
 
-;; This library is undocumented. APIs is subject to change without notice.
+;; This library is undocumented. APIs are subject to change without notice.
 
 (define (fb-get-token code client-id client-secret redirect-uri)
   (let1 tokens (http-get->utf8 (format "https://graph.facebook.com/oauth/access_token?client_id=~a&redirect_uri=~a&client_secret=~a&code=~a"

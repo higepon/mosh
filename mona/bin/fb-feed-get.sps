@@ -52,11 +52,12 @@
     (^(m)
       (cond
        [(and (assoc-ref m "message") (assoc-ref m "from"))
-        (format p "~a$~a$~a$~a$~a\n"
+        (format p "~a$~a$~a$~a$~a$~a\n"
                 (assoc-ref (vector->list (assoc-ref m "from")) "id")
                 (assoc-ref (vector->list (assoc-ref m "from")) "name")
                 (regexp-replace-all #/\n/ (assoc-ref m "message") "")
                 (if (assoc-ref m "likes") (assoc-ref (vector->list (assoc-ref m "likes")) "count") 0)
-                (assoc-ref m "id"))]
+                (assoc-ref m "id")
+                (if (assoc-ref m "comments") (assoc-ref (vector->list (assoc-ref m "comments")) "count") 0))]
        [else '()]))
     json))))
