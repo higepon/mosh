@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (facebook)
-  (export fb-news fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path fb-friend fb-post-like)
+  (export fb-news fb-news->json fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path fb-friend fb-post-like)
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -61,7 +61,18 @@
             (error 'call-json-api (format "facebook API error: ~a ~a:~a" status (car it) (cdr it)) `(,api ,token))
             (error 'call-json-api "facebook API error: unknown error" `(,api ,token)))])))
 
+(define (call-json-api->json id api token)
+  (let-values (([body status header*] (http-get->utf8 (format "https://graph.facebook.com/~a/~a?access_token=~a" id api token))))
+    (case status
+      [(200)
+       body]
+      [else
+       (aif (assoc "WWW-Authenticate" header*)
+            (error 'call-json-api (format "facebook API error: ~a ~a:~a" status (car it) (cdr it)) `(,api ,token))
+            (error 'call-json-api "facebook API error: unknown error" `(,api ,token)))])))
 
+(define (fb-news->json token)
+  (call-json-api->json 'me 'home token))
 
 (define (fb-friends token)
   (call-json-api 'me 'friends token))

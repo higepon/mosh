@@ -41,12 +41,19 @@
    read))
 
 (define temp-file (string-append (get-environment-variable "HOME") "/TEMP/fb.data"))
+(define temp-json (string-append (get-environment-variable "HOME") "/TEMP/fb.json"))
 
 (define (clean-body b)
   (regexp-replace-all #/\n/ b ""))
 
 (when (file-exists? temp-file)
     (delete-file temp-file))
+
+(let1 json (fb-news->json fb-token)
+  (call-with-port
+   (open-output-file temp-json)
+   (^p
+    (display json p))))
 
 (let1 json (fb-news fb-token)
   (call-with-port
