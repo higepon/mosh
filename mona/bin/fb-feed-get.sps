@@ -40,14 +40,10 @@
    (open-input-file (string-append (get-environment-variable "HOME") "/fb.token"))
    read))
 
-(define temp-file (string-append (get-environment-variable "HOME") "/TEMP/fb.data"))
 (define temp-json (string-append (get-environment-variable "HOME") "/TEMP/fb.json"))
 
-(define (clean-body b)
-  (regexp-replace-all #/\n/ b ""))
-
-(when (file-exists? temp-file)
-    (delete-file temp-file))
+(when (file-exists? temp-json)
+    (delete-file temp-json))
 
 (let1 json (fb-news->json fb-token)
   (call-with-port
@@ -55,34 +51,3 @@
    (^p
     (display json p))))
 
-(let1 json (fb-news fb-token)
-  (call-with-port
-   (open-output-file temp-file)
-   (^p
-   (for-each
-    (^(m)
-      (cond
-       [(and (assoc-ref m "message") (assoc-ref m "from"))
-        (format p "~a$~a$~a$~a$~a$~a$"
-                (assoc-ref (vector->list (assoc-ref m "from")) "id")
-                (assoc-ref (vector->list (assoc-ref m "from")) "name")
-                (clean-body (assoc-ref m "message"))
-                (if (assoc-ref m "likes") (assoc-ref (vector->list (assoc-ref m "likes")) "count") 0)
-                (assoc-ref m "id")
-                (if (assoc-ref m "comments") (assoc-ref (vector->list (assoc-ref m "comments")) "count") 0))
-        (cond
-         [(assoc-ref m "comments")
-          (and-let*
-              ([comment* (assoc-ref m "comments")]
-               [comment* (assoc-ref (vector->list comment*) "data")])
-            (for-each
-             (^c
-              (format p "~a:~a;" (assoc-ref (vector->list (assoc-ref (vector->list c) "from")) "id") (clean-body (assoc-ref (vector->list c) "message")))
-              )
-             (if comment* comment* '())))]
-         [else
-          (display ";" p)])
-        (newline p)
-        ]
-       [else '()]))
-    json))))
