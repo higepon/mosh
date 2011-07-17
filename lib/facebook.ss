@@ -130,7 +130,7 @@
       [(200) #t]
       [else
        (aif (assoc "WWW-Authenticate" header*)
-            (error 'call-json-api (format "facebook API error: ~a:~a" (car it) (cdr it)) `(,"feed" ,token))
-            (error 'call-json-api "facebook API error: unknown error" `(,"feed" ,token)))])))
+            (error 'fb-post-like (format "facebook API error: ~a:~a" (car it) (cdr it)) `(("token" . ,token) ("object-id" . ,object-id)))
+            (error 'fb-post-like "facebook API error: unknown error" `(("token" . ,token) ("object-id" . ,object-id))))])))
 
 )
