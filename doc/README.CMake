@@ -8,7 +8,7 @@ LIMITATIONS
 - Performance may _NOT_ optimal when compared with standard build.
 - Not every mosh features are supported. (eg. FFI call-back in Win64)
 - we recommend standard (autotools) build (ie. ./configure && make) for
-  system-installed (ie. /usr/local/mosh) mosh.
+  system-installed (ie. /usr/local/bin/mosh) mosh.
 - Scheme code tests and some C++ tests are not covered by CTest.
 
 0. Supported platform
@@ -34,7 +34,6 @@ setup GMP:
 -    MSVC: Download MPIR 2.x from http://www.mpir.org and build with MSVC
            then set MOSH_GMP_DIR to this
            (c:\XXXXXX\mpir-2.x.x\build.vc10\Win32\Release)
--   MinGW: Download GMP 5.x from http://gmplib.org/ and build it.
 
 2. Configuration
 ----------------
