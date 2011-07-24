@@ -77,7 +77,6 @@
 (define (fb-comments->json token post_id)
   (call-json-api->json post_id 'comments token))
 
-
 (define (fb-friends token)
   (call-json-api 'me 'friends token))
 
