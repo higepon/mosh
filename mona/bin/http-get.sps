@@ -36,6 +36,8 @@
 (define (main args)
   (let ([uri (second args)]
         [path (third args)])
+    (when (file-exists? path)
+      (delete-file path))
     (call-with-port
      (open-file-output-port path)
      (^p
