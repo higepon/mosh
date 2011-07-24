@@ -36,10 +36,9 @@
 (define (main args)
   (let ([uri (second args)]
         [path (third args)])
-    (unless (file-exists? path)
-      (call-with-port
-       (open-file-output-port path)
-        (^p
-         (put-bytevector p (http-get uri)))))))
+    (call-with-port
+     (open-file-output-port path)
+     (^p
+      (put-bytevector p (http-get uri))))))
 
 (main (command-line))

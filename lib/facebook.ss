@@ -27,7 +27,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (facebook)
-  (export fb-news fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path fb-friend fb-post-like fb-post-comment fb-news->json )
+  (export fb-comments->json fb-news fb-friends fb-picture fb-post-feed fb-user fb-get-token fb-picture-path fb-friend fb-post-like fb-post-comment fb-news->json )
   (import (rnrs)
           (mosh)
           (mosh control)
@@ -73,6 +73,10 @@
 
 (define (fb-news->json token)
   (call-json-api->json 'me 'home token))
+
+(define (fb-comments->json token post_id)
+  (call-json-api->json post_id 'comments token))
+
 
 (define (fb-friends token)
   (call-json-api 'me 'friends token))
