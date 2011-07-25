@@ -52,6 +52,7 @@
     %ffi-free
     %ffi-make-c-callback-trampoline
     %ffi-free-c-callback-trampoline
+    %ffi-close
     shared-errno
     pointer?
     integer->pointer
@@ -185,6 +186,7 @@
       %ffi-free
       %ffi-make-c-callback-trampoline
       %ffi-free-c-callback-trampoline
+      %ffi-close
       shared-errno
       pointer?
       integer->pointer

@@ -540,6 +540,7 @@
   %ffi-free
   %ffi-make-c-callback-trampoline
   %ffi-free-c-callback-trampoline
+  %ffi-close
   host-os
   output-port?
   textual-port?

@@ -606,6 +606,11 @@
     (test-equal 5.0 ((c-function libffitest double double10_2 double double double double double double double double double double)
                      10.0 9.0 8.0 7.0 6.0 5.0 4.0 3.0 2.0 1.0))
 
+    (test-true (begin (close-shared-library libffitest) #t))
+
+    ; This test happens to work on my machine, but is far from standard.
+    ;(test-error assertion-violation? (close-shared-library (malloc 0)))
+
 ))
 
 (test-results)

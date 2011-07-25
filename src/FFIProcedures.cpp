@@ -1094,6 +1094,26 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
+// (close-shared-library handle) => #<void>
+// There's no real reason for this library to have the internal prefix, as it's
+// simply exported unmodified - we do this merely for consistency with the other
+// dl* wrappers.
+// Win32's FreeLibrary() function inverts the exit status, but since we only
+// support POSIX presently, assume zero result indicates success.
+Object scheme::internalFfiCloseEx(VM* theVM, int argc, const Object* argv) {
+    DeclareProcedureName("close-shared-library");    // user visible name
+    checkArgumentLength(1);
+    argumentAsPointer(0, handle);
+    int result = FFI::close((void*) handle->pointer());
+    if (result != 0) {
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
+                                    "cannot close shared library");
+    }
+
+    return Object::Undef;
+}
+
 
 // (pointer? obj) => boolean
 Object scheme::pointerPEx(VM* theVM, int argc, const Object* argv)

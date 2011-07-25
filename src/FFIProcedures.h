@@ -41,6 +41,7 @@ Object internalFfiFreeEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiLookupEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiOpenEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiCloseEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv);

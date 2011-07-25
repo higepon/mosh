@@ -105,7 +105,9 @@
     Foreign Function Interface Library
 |#
 (library (mosh ffi)
-  (export make-c-function c-function open-shared-library find-shared-library (rename (%ffi-lookup lookup-shared-library))
+  (export make-c-function c-function open-shared-library find-shared-library
+          (rename (%ffi-lookup lookup-shared-library)
+                  (%ffi-close close-shared-library))
           pointer->string pointer->c-function string->utf8z
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-unsigned-short size-of-int size-of-unsigned-int size-of-long size-of-unsigned-long
@@ -332,6 +334,21 @@
 
     Errors:
       Raise error when can't load library
+|#
+
+#|
+    Function: close-shared-library
+
+    Close shared library.
+
+    Prototype:
+    > (close-shared-library library)
+
+    Parameters:
+      library - Shared library pointer returned by open-shared-library.
+
+    Errors:
+      Raises an error when unable to close library.
 |#
 
 
