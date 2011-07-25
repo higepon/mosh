@@ -45,6 +45,7 @@ Object internalFfiCloseEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiErrorEx(VM* theVM, int argc, const Object* argv);
 Object sharedErrnoEx(VM* theVM, int argc, const Object* argv);
 
 Object pointerPEx(VM* theVM, int argc, const Object* argv);

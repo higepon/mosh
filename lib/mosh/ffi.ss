@@ -107,7 +107,8 @@
 (library (mosh ffi)
   (export make-c-function c-function open-shared-library find-shared-library
           (rename (%ffi-lookup lookup-shared-library)
-                  (%ffi-close close-shared-library))
+                  (%ffi-close close-shared-library)
+                  (%ffi-error shared-library-error))
           pointer->string pointer->c-function string->utf8z
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-unsigned-short size-of-int size-of-unsigned-int size-of-long size-of-unsigned-long
@@ -350,6 +351,21 @@
     Errors:
       Raises an error when unable to close library.
 |#
+
+#|
+    Function: shared-library-error
+
+    Get a description of the last error that occurred during loading a shared
+    library.
+
+    Prototype:
+    > (shared-library-error)
+
+    Returns:
+      A platform-dependent string describing the error, or #f if one is not
+      available.
+|#
+
 
 
 #|

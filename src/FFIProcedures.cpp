@@ -1114,6 +1114,17 @@ Object scheme::internalFfiCloseEx(VM* theVM, int argc, const Object* argv) {
     return Object::Undef;
 }
 
+Object scheme::internalFfiErrorEx(VM* theVM, int argc, const Object* argv) {
+    DeclareProcedureName("shared-library-error");
+    checkArgumentLength(0);
+    const char *message = FFI::lastError();
+    if (message == NULL) {
+        return Object::False;
+    } else {
+        return Object::makeString(message);
+    }
+}
+
 
 // (pointer? obj) => boolean
 Object scheme::pointerPEx(VM* theVM, int argc, const Object* argv)
