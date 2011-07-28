@@ -92,7 +92,6 @@ Object scheme::internalMonapiMessageReplyEx(VM* theVM, int argc, const Object* a
     info.header = header;
 
     const char* data = str->length() == 0 ? NULL : (const char*)str->data();
-    logprintf("data=%x", data);
     int ret = MonAPI::Message::reply(&info, arg2, arg3, data);
     if (ret == M_OK) {
         return Object::Undef;

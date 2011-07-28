@@ -890,7 +890,6 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
                                                      &tid,
                                                      MonAPI::System::getProcessStdinID(),
                                                      outHandle);
-    logprintf("monapi_process_execute_file_get_tid<%s> result=%d\n", cmd->data().ascii_c_str(), result);
     if (result != M_OK) {
         return callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
     }
