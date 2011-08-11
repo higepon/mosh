@@ -874,13 +874,13 @@
                                (not (= len (closure-arg-length a))))
                           (errorf "Values received ~a values than expected" (if (> len (closure-arg-length a)) "more" "fewer")))
                       (pair-args->stack stack new-sp 0 args)
-                      (VM `#(CALL, len HALT) 0 a fp c stack new-sp))]
+                      (VM `#(CALL , len HALT) 0 a fp c stack new-sp))]
                    [else
                     (let* ([len (length args)]
                            [shift-len (if (> len 1) (- len 1) 0)]
                            [new-sp (+ sp shift-len)]); 正しい?(begin (format #t "sp=~d shift-len=~d\n" sp shift-len)(shift-args-to-top stack sp 0 shift-len))])
                       (pair-args->stack stack new-sp 0 args)
-                      (VM `#(CALL, len HALT) 0 a fp c stack new-sp))]))]
+                      (VM `#(CALL , len HALT) 0 a fp c stack new-sp))]))]
                ;;---------------------------- LIST -----------------------------
                [(LIST)
                 (val1)
