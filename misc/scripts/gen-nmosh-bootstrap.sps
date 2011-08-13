@@ -95,7 +95,7 @@
     (if (and (list? x) (eq? 'define-macro (car x)))
       (cons 'define (cdr x))
       x))
-  (write-library "lib/nmosh/boot/src-config.sls"
+  (write-library "boot/r6rs/nmosh/boot/src-config.sls"
                  (make library-spec
                    (name '(nmosh boot src-config))
                    (export '(src-free-vars instructions))
@@ -104,7 +104,7 @@
                            (define instructions (quote ,instructions))))
                    (comment '("nothing"))))
   (receive (macro proc) (split-source code)
-    (write-library "lib/nmosh/boot/compiler.sls"
+    (write-library "boot/r6rs/nmosh/boot/compiler.sls"
                    (make library-spec
                          (name '(nmosh boot compiler))
                          (export (remq 'top-level-macros (export-all proc)))
@@ -131,7 +131,7 @@
                          (comment '("nothing"))))
 
     (let ((macro-code (map conv macro)))
-      (write-library "lib/nmosh/boot/compiler-macro.sls"
+      (write-library "boot/r6rs/nmosh/boot/compiler-macro.sls"
                      (make library-spec
                            (name '(nmosh boot compiler-macro))
                            (export (export-all macro-code))
@@ -146,7 +146,7 @@
                            (comment '("nothing"))))))
 
   (receive (macro proc) (split-source vm-code)
-    (write-library "lib/nmosh/boot/vm.sls"
+    (write-library "boot/r6rs/nmosh/boot/vm.sls"
                    (make library-spec
                      (name '(nmosh boot vm))
                      (export '(vm/apply))
@@ -163,7 +163,7 @@
                      (code proc)
                      (comment '("nothing"))))
     (let ((macro-code (map conv macro)))
-      (write-library "lib/nmosh/boot/vm-macro.sls"
+      (write-library "boot/r6rs/nmosh/boot/vm-macro.sls"
                      (make library-spec
                        (name '(nmosh boot vm-macro))
                        (export (export-all macro-code))
