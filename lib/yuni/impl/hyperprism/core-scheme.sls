@@ -21,46 +21,39 @@
 (define-syntax core:if
   (syntax-rules ()
     ((_ exp true)
-     (core-form if 
-                (expand-form exp)
-                (expand-form true)))
+     (core-form if exp true))
     ((_ exp true false)
-     (core-form if
-                (expand-form exp)
-                (expand-form true)
-                (expand-form false)))))
+     (core-form if exp true false))))
 
 (define-syntax core:set!
   (syntax-rules ()
     ((_ obj value)
-     (core-form set!
-                (expand-form obj)
-                (expand-form value)))))
+     (core-form set! obj value))))
+
+(define-syntax core:begin
+  (syntax-rules ()
+    ((_ form ...)
+     (core-form begin (begin form ...)))))
 
 (define-syntax core:define
   (syntax-rules ()
-    ((_ name def ...)
-     (core-extend-define (name)
-                         (core-form define 
-                                    (expand-form name)
-                                    (expand-body def ...))))))
+    ((_ name def value)
+     (define def value))))
 
 (define-syntax core:lambda
   (syntax-rules ()
     ((_ (name ...) body ...)
      (core-extend (name ...)
-                  (core-form lambda
-                             ((expand-form name) ...)
-                             (expand-body body ...))))
+                  (core-form lambda (name ...)
+                             (core-body body ...))))
+    ((_ (name ... . tail) body ...)
+     (core-extend (name ... tail)
+                  (core-form lambda (name ... . tail)
+                             (core-body body ...))))
     ((_ name body ...)
      (core-extend (name)
-                  (core-form lambda
-                             (expand-form name)
-                             (expand-body body ...))))))
+                  (core-form lambda name
+                             (core-body body ...))))))
 
-(define-syntax core:begin
-  (syntax-rules ()
-    ((_ form ...)
-     (core-form begin (expand-begin form ...)))))
 
 )

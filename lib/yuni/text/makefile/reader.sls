@@ -138,8 +138,21 @@
               (loop))))))
     (loop)))
 
+(define (check-empty-makefile s)
+  (define len (string-length s))
+  (define (itr c)
+    (if (= c len)
+      '()
+      (let ((r (string-ref s c)))
+        (if (char-whitespace? r)
+          (itr (+ c 1))
+          #f))))
+  (itr 0))
+
 (define-reader (makefile-read port)
                (let ((s (pass1 port)))
-                 (peg-parse-string makefile s)))
+                 ;; check if s is empty string...
+                 (or (check-empty-makefile s)
+                     (peg-parse-string makefile s))))
 
 )

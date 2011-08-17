@@ -25,8 +25,8 @@
   (syntax-rules ()
     ((_ (name . arg) body ...)
      (core:define name (lambda arg body ...)))
-    ((_ name body ...)
-     (core:define name body ...))))
+    ((_ name body value)
+     (core:define name body value))))
 
 (define-syntax letrec
   (syntax-rules ()
