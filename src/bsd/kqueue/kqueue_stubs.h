@@ -24,11 +24,6 @@ int socket_connect(int fd,void* name,int len);
 int socket_accept(int fd,void* name,unsigned int* len);
 void socket_addrinfo_read(void* aip,int *ret_family,void** ret_addr,int* ret_len,void** ret_next);
 void socket_setnodelay(int fd);
-int fd_read(int fd,void* buf,int len);
-int fd_write(int fd,void* buf,int len);
-int fd_close(int fd);
-void fd_setnonblock(int fd);
-int fd_pipe(int* in,int* out);
 
 #ifdef __cplusplus
 }

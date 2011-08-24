@@ -190,7 +190,10 @@ src/OSCompatThread.h src/OSCompatThread.cpp \
 src/VMFactory.cpp src/VMFactory.h \
 src/SimpleStruct.h \
 src/OSCompat.h src/OSCompat.cpp \
-src/stubs.cpp src/posix/terminal/terminal.c src/generic/boehmgc-stubs.c
+src/stubs.cpp src/posix/terminal/terminal.c src/generic/boehmgc-stubs.c \
+src/posix/spawn/posixspawn.c src/posix/environ/mosh-environ.c \
+src/posix/fd/posix_fd.c \
+src/bsd/kqueue/kqueue_stubs.c
 
 if FFI_I386
 MOSH_CORE_SRCS += src/ffi_stub_i386.S
@@ -202,10 +205,6 @@ endif
 
 if MINGW32
 MOSH_CORE_SRCS += src/win32/process.c
-endif
-
-if KQUEUE
-MOSH_CORE_SRCS += src/bsd/kqueue/kqueue_stubs.c
 endif
 
 if PTRACE_COMMON

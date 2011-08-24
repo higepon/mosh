@@ -55,6 +55,14 @@
 #include "posix/ptrace/ptrace_common.h"
 #endif
 
+#ifdef HAVE_POSIX_SPAWN
+#include "posix/spawn/posixspawn.h"
+#endif
+
+#ifdef HAVE_FCNTL
+#include "posix/fd/posix_fd.h"
+#endif
+
 using namespace scheme;
 
 #define NIL Object::Nil
@@ -193,12 +201,28 @@ CONS(FN(socket_listen), \
 CONS(FN(socket_connect), \
 CONS(FN(socket_addrinfo_read), \
 CONS(FN(socket_setnodelay), \
+    NIL)))))))))))))))))))))))
+#endif
+
+#ifdef HAVE_FCNTL
+#define LIBDATA_POSIX_FD CONS(SYM("posix-fd"), \
 CONS(FN(fd_read), \
 CONS(FN(fd_write), \
 CONS(FN(fd_close), \
 CONS(FN(fd_setnonblock), \
 CONS(FN(fd_pipe), \
-    NIL))))))))))))))))))))))))))))
+    NIL))))))
+#endif
+
+#ifdef HAVE_POSIX_SPAWN
+#define LIBDATA_POSIX_SPAWN CONS(SYM("posixspawn"), \
+CONS(FN(posixspawn_spawn), \
+CONS(FN(posixspawn_fileactionssize), \
+CONS(FN(posixspawn_fileactions_init), \
+CONS(FN(posixspawn_fileactions_destroy), \
+CONS(FN(posixspawn_fileactions_adddup2), \
+CONS(FN(posixspawn_fileactions_addclose), \
+    NIL)))))))
 #endif
 
 Object
@@ -213,6 +237,9 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 #ifdef HAVE_KQUEUE
 	tmp = Object::cons(LIBDATA_KQUEUE,tmp);
 #endif
+#ifdef HAVE_FCNTL
+	tmp = Object::cons(LIBDATA_POSIX_FD,tmp);
+#endif
 #ifdef HAVE_BDWGC_STUBS
 	tmp = Object::cons(LIBDATA_BOEHMGC_STUBS,tmp);
 #endif
@@ -223,6 +250,9 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 	tmp = Object::cons(LIBDATA_AIO_WIN32,tmp);
 	tmp = Object::cons(LIBDATA_WIN32_GUI,tmp);
     tmp = Object::cons(LIBDATA_WIN32_MISC,tmp);
+#endif
+#ifdef HAVE_POSIX_SPAWN
+    tmp = Object::cons(LIBDATA_POSIX_SPAWN,tmp);
 #endif
     return tmp;
 }
