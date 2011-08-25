@@ -1,4 +1,4 @@
-(library (nmosh win32 gui)
+(library (nmosh pffi win32 gui)
          (export win32_messagebox
                  win32_window_move
                  win32_window_show
@@ -30,10 +30,10 @@
                  integer->hwnd)
          (import (rnrs)
                  (yuni core)
-                 (mosh ffi)
                  (nmosh ffi box)
-                 (nmosh win32 aio) ;; for win32-handle
-                 (nmosh win32 util)
+                 (nmosh pffi interface)
+                 (nmosh pffi win32 aio) ;; for win32-handle
+                 (nmosh pffi win32 util)
                  (prefix (nmosh stubs win32-gui) stub:))
 
 (define* HWND (handle))

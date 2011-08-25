@@ -1,4 +1,4 @@
-(library (nmosh win32 handle)
+(library (nmosh pffi win32 handle)
          (export 
            win32-handle?
            win32-handle-pipe
@@ -9,7 +9,7 @@
                              %win32_handle_read
                              %win32_handle_write
                              %win32_handle_close)
-                 (mosh ffi)
+                 (nmosh pffi interface)
                  (rnrs))
 
 (define win32-handle? pointer?)

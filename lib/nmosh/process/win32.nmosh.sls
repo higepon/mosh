@@ -8,9 +8,9 @@
                              %win32_process_wait)
                  (srfi :8)
                  (rnrs)
-                 (mosh ffi)
-                 (nmosh win32 handle)
-                 (nmosh win32 util))
+                 (nmosh pffi interface)
+                 (nmosh pffi win32 handle)
+                 (nmosh pffi win32 util))
 
 
 (define (handle-read-all h)

@@ -1,12 +1,12 @@
-(library (nmosh win32 util)
+(library (nmosh pffi win32 util)
          (export null-pointer
                  string->utf16-bv
                  mbcs->string
                  mbcs->string/cp
                  nmosh-executable-path)
          (import (rnrs)
-                 (nmosh win32 misc)
-                 (mosh ffi))
+                 (nmosh pffi win32 misc)
+                 (nmosh pffi interface))
 
 (define null-pointer (integer->pointer 0))
 

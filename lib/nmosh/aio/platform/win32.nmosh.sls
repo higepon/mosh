@@ -31,12 +31,10 @@
          (import (rnrs)
                  (srfi :8)
                  (yuni core)
-                 (mosh ffi)
-                 (primitives object->pointer
-                             pointer->object)
+                 (nmosh pffi interface)
                  (nmosh gensym)
-                 (nmosh win32 gui)
-                 (nmosh win32 aio))
+                 (nmosh pffi win32 gui)
+                 (nmosh pffi win32 aio))
 
 (define* Q (iocp evt io-objects))
 

@@ -1,4 +1,4 @@
-(library (nmosh win32 aio)
+(library (nmosh pffi win32 aio)
          (export win32_iocp_create
                  win32_iocp_pop
                  win32_iocp_assoc
@@ -35,10 +35,10 @@
                  )
          (import (rnrs)
                  (srfi :8)
-                 (mosh ffi)
                  (yuni core)
                  (nmosh ffi box)
-                 (nmosh win32 util)
+                 (nmosh pffi interface)
+                 (nmosh pffi win32 util)
                  (nmosh finalizers)
                  (prefix (nmosh stubs aio-win32) stub:))
 

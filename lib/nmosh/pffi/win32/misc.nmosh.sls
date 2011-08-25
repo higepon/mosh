@@ -1,4 +1,4 @@
-(library (nmosh win32 misc)
+(library (nmosh pffi win32 misc)
          (export
            win32_get_processor_count
            win32_get_ansi_codepage

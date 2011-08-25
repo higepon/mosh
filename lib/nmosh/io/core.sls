@@ -8,7 +8,7 @@
            launch!)
          (import (nmosh io master-queue)
                  (nmosh aio platform win32)
-                 (nmosh win32 util) ;; mbcs
+                 (nmosh pffi win32 util) ;; mbcs
                  (yuni core)
                  (shorten)
                  (rnrs))

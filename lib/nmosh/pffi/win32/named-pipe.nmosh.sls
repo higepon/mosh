@@ -1,9 +1,9 @@
-(library (nmosh win32 named-pipe)
+(library (nmosh pffi win32 named-pipe)
          (export win32-named-pipe-create
                  win32-named-pipe-wait)
          (import 
            (rnrs)
-           (nmosh win32 util)
+           (nmosh pffi win32 util)
            (primitives %win32_named_pipe_wait %win32_named_pipe_create))
 
 (define (win32-named-pipe-create name)
