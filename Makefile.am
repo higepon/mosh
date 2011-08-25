@@ -192,7 +192,8 @@ src/SimpleStruct.h \
 src/OSCompat.h src/OSCompat.cpp \
 src/stubs.cpp src/posix/terminal/terminal.c src/generic/boehmgc-stubs.c \
 src/posix/spawn/posixspawn.c src/posix/environ/mosh-environ.c \
-src/posix/fd/posix_fd.c \
+src/posix/fd/posix_fd.c src/posix/poll/posix_poll.c \
+src/posix/socket/posix_socket.c \
 src/bsd/kqueue/kqueue_stubs.c
 
 if FFI_I386

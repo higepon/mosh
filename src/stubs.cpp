@@ -63,6 +63,14 @@
 #include "posix/fd/posix_fd.h"
 #endif
 
+#ifdef HAVE_POLL
+#include "posix/poll/posix_poll.h"
+#endif
+
+#ifdef HAVE_SOCKET
+#include "posix/socket/posix_socket.h"
+#endif
+
 using namespace scheme;
 
 #define NIL Object::Nil
@@ -191,6 +199,11 @@ CONS(FN(kevent_ident), \
 CONS(FN(kevent_type), \
 CONS(FN(kevent_decode_fd), \
 CONS(FN(kevent_exec), \
+    NIL)))))))))))))
+#endif
+
+#ifdef HAVE_SOCKET
+#define LIBDATA_POSIX_SOCKET CONS(SYM("posix-socket"), \
 CONS(FN(socket_sizeof_sockaddr_storage), \
 CONS(FN(socket_getaddrinfo), \
 CONS(FN(socket_create), \
@@ -201,7 +214,25 @@ CONS(FN(socket_listen), \
 CONS(FN(socket_connect), \
 CONS(FN(socket_addrinfo_read), \
 CONS(FN(socket_setnodelay), \
-    NIL)))))))))))))))))))))))
+    NIL)))))))))))
+#endif
+
+#ifdef HAVE_POLL
+#define LIBDATA_POSIX_POLL CONS(SYM("posix-poll"), \
+CONS(FN(poll_alloc), \
+CONS(FN(poll_dispose), \
+CONS(FN(poll_exec), \
+CONS(FN(poll_set_fd), \
+CONS(FN(poll_set_pollin), \
+CONS(FN(poll_unset_pollin), \
+CONS(FN(poll_set_pollout), \
+CONS(FN(poll_unset_pollout), \
+CONS(FN(poll_get_pollin), \
+CONS(FN(poll_get_pollout), \
+CONS(FN(poll_get_pollerr), \
+CONS(FN(poll_get_pollhup), \
+CONS(FN(poll_get_pollnval), \
+    NIL))))))))))))))
 #endif
 
 #ifdef HAVE_FCNTL
@@ -254,6 +285,13 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 #ifdef HAVE_POSIX_SPAWN
     tmp = Object::cons(LIBDATA_POSIX_SPAWN,tmp);
 #endif
+#ifdef HAVE_POLL
+    tmp = Object::cons(LIBDATA_POSIX_POLL,tmp);
+#endif
+#ifdef HAVE_SOCKET
+    tmp = Object::cons(LIBDATA_POSIX_SOCKET,tmp);
+#endif
+
     return tmp;
 }
 
