@@ -14,7 +14,7 @@
 /* globals */
 int sigchld_handler_fd;
 
-static void*
+static void
 handler(int sig){
     unsigned int buf = 0;
     if(0<sigchld_handler_fd){
