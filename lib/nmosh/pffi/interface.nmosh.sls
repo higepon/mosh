@@ -6,6 +6,7 @@
            object->pointer
            pointer->object
            bytevector-pointer
+           size-of-pointer
            pointer-copy!)
          (import (rnrs)
                  (mosh ffi)

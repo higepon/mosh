@@ -4,7 +4,6 @@
 #include "posix/fd/posix_fd.h"
 
 #include <stdio.h>
-/* BSD kqueue stubs */
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -58,6 +57,8 @@ fd_setnonblock(int fd){
 
 int
 fd_pipe(int* in, int* out){
+    /* NB: created pipe may be unidirectional.
+     * if you are doing self-pipe, READ "in" and WRITE to "out" */
     int fds[2];
     int e;
     e = pipe(fds);

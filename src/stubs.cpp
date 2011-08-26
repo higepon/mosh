@@ -71,6 +71,10 @@
 #include "posix/socket/posix_socket.h"
 #endif
 
+#ifdef HAVE_SIGACTION
+#include "posix/sigchld_handler/sigchld_handler.h"
+#endif
+
 using namespace scheme;
 
 #define NIL Object::Nil
@@ -256,6 +260,11 @@ CONS(FN(posixspawn_fileactions_addclose), \
     NIL)))))))
 #endif
 
+#ifdef HAVE_SIGACTION
+#define LIBDATA_POSIX_SIGCHLD_HANDLER CONS(SYM("posix-sigchld-handler"), \
+CONS(FN(sigchld_handler_install),NIL))
+#endif
+
 Object
 stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     //DeclareProcedureName("%get-pffi-feature-set");
@@ -290,6 +299,9 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 #endif
 #ifdef HAVE_SOCKET
     tmp = Object::cons(LIBDATA_POSIX_SOCKET,tmp);
+#endif
+#ifdef HAVE_SIGACTION
+    tmp = Object::cons(LIBDATA_POSIX_SIGCHLD_HANDLER,tmp);
 #endif
 
     return tmp;

@@ -25,7 +25,7 @@
 (define* fd (value))
 
 (define (int->fd x)
-  (unless (< 0 x)
+  (unless (<= 0 x)
     (assertion-violation 'int->fd "invalid argument" x))
   (make fd (value x)))
 

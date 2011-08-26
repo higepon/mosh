@@ -98,7 +98,7 @@
          (bv (make-bytevector len))
          (ret-box (make-int-box)))
     (int-box-set! ret-box len)
-    (let ((r (stub:socket_accept (int->fd fd)
+    (let ((r (stub:socket_accept (fd->int fd)
                                  bv
                                  ret-box)))
       (if (< r 1)

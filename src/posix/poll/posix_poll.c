@@ -8,7 +8,13 @@
 
 void*
 poll_alloc(int count){
-    return malloc(sizeof(struct pollfd));
+    struct pollfd* p;
+    int i;
+    p = (struct pollfd *)malloc(sizeof(struct pollfd) * count);
+    for(i=0;i!=count;i++){
+        p[i].fd = -1;
+    }
+    return p;
 }
 
 void
