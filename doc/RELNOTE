@@ -29,6 +29,11 @@ Bug fixes:
     Build system:
         (mosh mysql) and (mosh config) was not installed properly.
 
+    Reader:
+        Fixed Issue 221 reported and patched by David Banks:
+            "."(period) was not treated as a delimiter. For example, "#t.#f"
+            readed as #t. 
+
     VM:
         VM Compiler error "[internal error] iform-count-size-upto: unknown
         iform tag:13" was fixed.

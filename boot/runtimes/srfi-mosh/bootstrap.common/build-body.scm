@@ -33,7 +33,7 @@
     ;(dumpdbg)
     ;(dumpsrc outfile)
     (display "compile...")(newline)
-    (let ((vec (compile-to-codevector/toplevel outfile)))
+    (let ((vec (compile-to-codevector-native/toplevel outfile)))
       ;(dumpvec vec)
       (display "writing boot image...")(newline)
       (write-cobj 'nmosh p (obj->fasl vec))

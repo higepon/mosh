@@ -7,18 +7,3 @@ NOTE
 "./configure" build was deprecated in 0.2.7 release.
 Please try CMake build(see also README.CMake).
 
-STATUS
-------
-
-NOT supported :
-- profiler
-- unix process functions (fork, waitpid, ...)
-
-PREREQUISITES
--------------
-
-- MinGW (tested by 4.5.1 TDM)
-- gnu MP library
-
-TDM-GCC (http://tdm-gcc.tdragon.net/) is recommended.
-

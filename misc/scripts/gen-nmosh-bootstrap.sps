@@ -3,14 +3,31 @@
         (srfi :8)
         (yuni core)
         (yuni util library-writer)
-        (yuni util files))
+        (yuni util files)
+        (nmosh bootstrap stubs))
 
 (define src (file->sexp-list "boot/compiler.scm"))
 
+(define vm-src (file->sexp-list "boot/vm.scm"))
+
+(define free-vars (fetch-free-vars-scm "boot/free-vars.scm"))
+
+(define instructions (fetch-instruction-scm "src/instruction.scm"))
+
+;; FIXME: we drop first vm? section at compiler.scm.
+(define first-vm? #t)
+
 (define (do-cond-expand frm)
+  (define (expand-vm? sym)
+    (and (eq? sym 'vm?)
+         (cond
+           (first-vm? (set! first-vm? #f) #f)
+           (else #t))))
   (define (expand x)
     (if (pair? x)
-      (if (and (pair? (car x)) (eq? 'mosh (caar x)))
+      (if (and (pair? (car x)) 
+               (or (eq? 'mosh (caar x))
+                   (expand-vm? (caar x))))
         (cdar x)
         (expand (cdr x)))
       '()))
@@ -33,12 +50,36 @@
       (cons (car x) (filter-source (cdr x))))
     '()))
 
+(define (vm-filter-source x)
+  ;; only top level affected
+  (define (proc e)
+    (if (pair? e)
+      (case (car e) ((use load set! load-free-vars vm-init if cond) #f) (else #t))
+      #t))
+  (define (proc2 e)
+    (not (and (pair? e) (eq? 'define (car e)) 
+              (pair? (cadr e))
+              (case (caadr e)
+                ((main vm-test load-file compile-string)
+                 #t)
+                (else #f)))))
+  (filter proc2 (filter proc x)))
+
 (define (split-source frm)
   (define (target? x)
     (and (list? x) (eq? 'define-macro (car x))))
   (partition target? frm))
 
-(let ((code (filter-source (do-cond-expand src))))
+(define (patch-free-vars-decl frm)
+  (if (pair? frm)
+    (cons (patch-free-vars-decl (car frm))
+          (patch-free-vars-decl (cdr frm)))
+    (if (eq? '*free-vars-decl* frm)
+      '(get-free-vars)
+      frm)))
+
+(let ((code (filter-source (do-cond-expand src)))
+      (vm-code (vm-filter-source (filter-source vm-src))))
   (define (export-name x)
     (and (list? x) (eq? 'define (car x))
          (let ((name (cadr x)))
@@ -54,8 +95,16 @@
     (if (and (list? x) (eq? 'define-macro (car x)))
       (cons 'define (cdr x))
       x))
+  (write-library "boot/r6rs/nmosh/boot/src-config.sls"
+                 (make library-spec
+                   (name '(nmosh boot src-config))
+                   (export '(src-free-vars instructions))
+                   (import '((rnrs)))
+                   (code `((define src-free-vars (quote ,free-vars))
+                           (define instructions (quote ,instructions))))
+                   (comment '("nothing"))))
   (receive (macro proc) (split-source code)
-    (write-library "lib/nmosh/boot/compiler.sls"
+    (write-library "boot/r6rs/nmosh/boot/compiler.sls"
                    (make library-spec
                          (name '(nmosh boot compiler))
                          (export (remq 'top-level-macros (export-all proc)))
@@ -65,54 +114,63 @@
                                    (rnrs mutable-pairs)
                                    (yuni util binding-constructs)
                                    (nmosh boot compiler-macro)
+                                   (nmosh bootstrap bogus-command-line)
+                                   (nmosh bootstrap vm-apply)
+                                   (yuni compat gensym)
+                                   (except (nmosh bootstrap stubs) errorf)
                                    (match)
+                                   (only (srfi :1) append! split-at fold)
                                    (srfi :8)
-                                   (primitives 
-                                     *free-vars-decl*
-                                     code-builder-append!
-                                     code-builder-put-insn-arg1!
-                                     code-builder-put-extra1! 
-                                     code-builder-put-extra2! 
-                                     pass3/find-sets
-                                     code-builder-emit
-                                     code-builder-put-insn-arg0!
-                                     code-builder-put-insn-arg2!
-                                     code-builder-put-extra3!
-                                     code-builder-put-extra4!
-                                     code-builder-put-extra5!
-                                     make-code-builder
-                                     pass1/find-symbol-in-lvars
-                                     hashtable-for-each
-                                     *command-line-args*
-                                     annotated-cons
-                                     fold
-                                     split-at
-                                     print
-                                     gensym
-                                     ungensym
-                                     format
-                                     foldr2
-                                     append!
-                                     push!
-                                     source-info
-                                     set-source-info!
-                                     vm/apply
-                                     pass4/fixup-labels)))
-                         (code proc)
+                                   (except (mosh) 
+                                           make-file-options
+                                           get-command-line)
+                                   (rename (only (rnrs) fold-right)
+                                           (fold-right foldr2))
+                                     ))
+                         (code (patch-free-vars-decl proc))
                          (comment '("nothing"))))
 
     (let ((macro-code (map conv macro)))
-      (write-library "lib/nmosh/boot/compiler-macro.sls"
+      (write-library "boot/r6rs/nmosh/boot/compiler-macro.sls"
                      (make library-spec
                            (name '(nmosh boot compiler-macro))
                            (export (export-all macro-code))
                            (import '((for (except (rnrs) do) run expand)
                                      (for (match) expand run)
-                                     (for (primitives gensym) expand)
+                                     (for (yuni compat gensym) expand)
                                      (nmosh util define-macro)
                                      (for (yuni util binding-constructs) expand)
                                      (for (nmosh util syntax-error) expand)
                                      ))
                            (code macro)
-                           (comment '("nothing")))))))
+                           (comment '("nothing"))))))
+
+  (receive (macro proc) (split-source vm-code)
+    (write-library "boot/r6rs/nmosh/boot/vm.sls"
+                   (make library-spec
+                     (name '(nmosh boot vm))
+                     (export '(vm/apply))
+                     (import '((except (rnrs) do)
+                               (only (srfi :1) first second third append-map)
+                               (only (nmosh boot compiler) $map1 $lvar compile-partial pass4)
+                               (mosh control)
+                               (match)
+                               (srfi :48)
+                               (srfi :8)
+                               (nmosh bootstrap vm-stubs)
+                               (nmosh bootstrap stubs)
+                               (for (nmosh boot vm-macro) run expand)))
+                     (code proc)
+                     (comment '("nothing"))))
+    (let ((macro-code (map conv macro)))
+      (write-library "boot/r6rs/nmosh/boot/vm-macro.sls"
+                     (make library-spec
+                       (name '(nmosh boot vm-macro))
+                       (export (export-all macro-code))
+                       (import '((for (except (rnrs) do) run expand)
+                                 (for (match) expand run)
+                                 (for (nmosh util syntax-error) expand)
+                                 (nmosh util define-macro)))
+                       (code macro)
+                       (comment '("nothing")))))))
 

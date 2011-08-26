@@ -2,7 +2,7 @@
         (rnrs)
         (yuni core) (yuni util files)
         (srfi :48)
-        (mosh pp) (nmosh ffi pffi)
+        (mosh pp) 
         (shorten))
 
 (define targets '("src/ext" "src/posix" "src/win32" "src/generic"

@@ -1,18 +1,21 @@
 (library (nmosh bootstrap util)
 	 (export read-all
-		 compile-to-codevector
-		 compile-to-codevector/toplevel
+		 compile-to-codevector-native
+		 ;compile-to-codevector/toplevel
+		 compile-to-codevector-native/toplevel
 		 obj->fasl
 		 fasl->obj
 		 write-cobj)
 
-	 (import (only (mosh) format) 
+	 (import (only (mosh) format make-instruction make-compiler-instruction) 
 		 (rnrs) (srfi :8) (srfi :42) 
          #|
          (only 
            (nmosh boot compiler)
            compile compile-w/o-halt)
          |#
+         ;(nmosh bootstrap stubs)
+         ;(nmosh bootstrap compiler)
          (primitives
            compile compile-w/o-halt)
 		 (primitives 
@@ -31,10 +34,28 @@
   (let ((s (call-with-string-output-port (lambda (port) (do-write-cobj name port bv)))))
     (put-string p s)))
 
+
+(define (extract obj)
+  (cond
+   [(vector? obj)
+    (vector-map extract obj)]
+   [(and (pair? obj) (eq? (car obj) '*insn*))
+    (make-instruction (cadr obj))]
+   [(and (pair? obj) (eq? (car obj) '*compiler-insn*))
+    (make-compiler-instruction (cadr obj))]
+   [(list? obj)
+    (map extract obj)]
+   [else obj]))
+
+#|
 (define (compile-to-codevector/toplevel l)
+  (list->vector (extract (compile-to-sexp l))))
+|#
+
+(define (compile-to-codevector-native/toplevel l)
   (compile l))
 
-(define (compile-to-codevector l)
+(define (compile-to-codevector-native l)
   (compile-w/o-halt l))
 
 (define (obj->fasl obj)

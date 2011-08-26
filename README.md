@@ -37,6 +37,7 @@ Following autotools version works.
     % git clone git://github.com/higepon/mosh.git
     % cd mosh
     % ./gen-git-build.sh
+    % ./configure
     % make
     % make check
     % make install

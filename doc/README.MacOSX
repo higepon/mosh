@@ -1,5 +1,5 @@
-mosh on MacOS X
-===============
+mosh on Mac OS X
+================
 
 1. Install
 ----------
@@ -11,7 +11,11 @@ To install this source package:
 - Install following using MacPorts:
   oniguruma5
   gmp
-- ./configure CFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
+- 10.5 or 10.6: ./configure CFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
+  10.7        : ./configure CFLAGS=-I/opt/local/include \
+                            LDFLAGS=-L/opt/local/lib \
+                            CC=gcc-4.2 CXX=g++-4.2
+
 - make
 - sudo make install
 
@@ -20,6 +24,7 @@ Alternatively, you can use CMake and XCode. See README.CMake for details.
 2. Limitations
 --------------
 
-- Configure script may fail to recognise target architecture. set
-  CC=i686-darwin10-gcc CXX=i686-darwin10-c++ or so to avoid this problem.
+- (10.5 and maybe 10.6): Configure script may fail to recognise target 
+  architecture. set CC=i686-darwin10-gcc CXX=i686-darwin10-c++ or so 
+  to avoid this problem.
 - CMake builds does not support FFI callbacks.

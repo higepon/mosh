@@ -38,6 +38,7 @@
     (display (format-comment (if (string? comment) 
                                (list comment)
                                comment)) p)
+    (display ";; GENERATED CODE. Do Not Edit.\n" p)
     (display "(library " p)
     (write name p)
     (newline p)
