@@ -66,7 +66,7 @@
     static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
 #endif
 #ifdef MONA
-    inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
+    static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
 #endif
 /*~C99 isnan/isinf */
 
