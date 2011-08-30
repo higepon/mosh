@@ -194,6 +194,7 @@ src/stubs.cpp src/posix/terminal/terminal.c src/generic/boehmgc-stubs.c \
 src/posix/spawn/posixspawn.c src/posix/environ/mosh-environ.c \
 src/posix/fd/posix_fd.c src/posix/poll/posix_poll.c \
 src/posix/socket/posix_socket.c src/posix/sigchld_handler/sigchld_handler.c \
+src/posix/debugee/posix_debugee.c \
 src/bsd/kqueue/kqueue_stubs.c
 
 if FFI_I386

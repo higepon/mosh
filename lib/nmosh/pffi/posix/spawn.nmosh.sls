@@ -30,7 +30,7 @@
 (define (posixspawn_spawn path fileactions argv envp) ;; => pid/errno
   (let* ((out-pid (make-int-box))
          (r (stub:posixspawn_spawn out-pid
-                                   (string->utf8 path)
+                                   (string->utf8/null path)
                                    fileactions
                                    (construct-string-ptrs argv)
                                    (construct-string-ptrs envp))))

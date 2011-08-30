@@ -75,6 +75,10 @@
 #include "posix/sigchld_handler/sigchld_handler.h"
 #endif
 
+#ifdef HAVE_VFORK
+#include "posix/debugee/posix_debugee.h"
+#endif
+
 using namespace scheme;
 
 #define NIL Object::Nil
@@ -265,6 +269,17 @@ CONS(FN(posixspawn_fileactions_addclose), \
 CONS(FN(sigchld_handler_install),NIL))
 #endif
 
+#ifdef HAVE_VFORK
+#define LIBDATA_POSIX_DEBUGEE CONS(SYM("posix-debugee"), \
+CONS(FN(debugee_spawn), \
+CONS(FN(debugee_fileactionssize), \
+CONS(FN(debugee_fileactions_init), \
+CONS(FN(debugee_fileactions_destroy), \
+CONS(FN(debugee_fileactions_adddup2), \
+CONS(FN(debugee_fileactions_addclose), \
+    NIL)))))))
+#endif
+
 Object
 stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     //DeclareProcedureName("%get-pffi-feature-set");
@@ -303,7 +318,9 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 #ifdef HAVE_SIGACTION
     tmp = Object::cons(LIBDATA_POSIX_SIGCHLD_HANDLER,tmp);
 #endif
-
+#ifdef HAVE_VFORK
+    tmp = Object::cons(LIBDATA_POSIX_DEBUGEE,tmp);
+#endif
     return tmp;
 }
 

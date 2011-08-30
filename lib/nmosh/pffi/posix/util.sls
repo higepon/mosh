@@ -1,10 +1,18 @@
 (library (nmosh pffi posix util)
          (export
+           string->utf8/null
            construct-string-ptrs)
          (import (rnrs)
                  (shorten)
                  (srfi :42)
                  (nmosh pffi interface))
+
+(define (string->utf8/null x)
+  (let* ((bv (string->utf8 x))
+         (len (bytevector-length bv)))
+    (let ((r (make-bytevector (+ 1 len) 0)))
+      (bytevector-copy! bv 0 r 0 len)
+      r)))
 
 (define (construct-string-ptrs l)
   (let* ((c (length l))
@@ -12,7 +20,8 @@
                    bytevector-u32-native-set!
                    bytevector-u64-native-set!))
          (bv (make-bytevector (* size-of-pointer (+ c 1))))
-         (r (list->vector (map (^e (bytevector-pointer (string->utf8 e))) l))))
+         (r (list->vector (map (^e (bytevector-pointer (string->utf8/null e)))
+                               l))))
     (do-ec (: i c)
            (setter bv
                    (* size-of-pointer i)

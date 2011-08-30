@@ -395,7 +395,7 @@ AM_CONDITIONAL(PTRACE_COMMON, test x$ptracestub_common = xtrue)
 
 # check for POSIX functions for NMosh stubs
 # We use "execve" for environ
-AC_CHECK_FUNCS([posix_spawn execve ptrace fcntl poll socket sigaction])
+AC_CHECK_FUNCS([posix_spawn execve ptrace fcntl poll socket sigaction vfork])
 
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)
