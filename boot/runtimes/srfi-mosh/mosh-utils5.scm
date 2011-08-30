@@ -16,6 +16,24 @@
   (set! DEBUGGING #t))
 
 ;;------------------------------------------------
+;; library aliasing
+;;------------------------------------------------
+(define library-rename-table '())
+(define (set-library-rename-table! spec)
+  (set! library-rename-table spec))
+
+(define (rename-library spec)
+  (let ((x (assoc spec library-rename-table)))
+    (cond
+      (x 
+        (let ((newname (cdr x)))
+          (PCK "alias: " spec "=>" newname)
+          newname))
+      (else 
+        ;(PCK "not renamed: " spec)
+        spec))))
+
+;;------------------------------------------------
 ;; definitions
 ;;------------------------------------------------
 

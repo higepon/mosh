@@ -2023,7 +2023,9 @@
               (-
                (let ((library-ref (library-ref import-set)))
                  (if library-ref
-                     (let* ((library (ex:lookup-library (syntax->datum library-ref) #f)) ;MOSH: pass recompile flag
+                     (let* ((library (ex:lookup-library 
+                                       (rename-library
+                                         (syntax->datum library-ref)) #f)) ;MOSH: pass recompile flag
                             (exports (ex:library-exports library))
                             (imports
                              (map (lambda (mapping)
@@ -2036,7 +2038,7 @@
                                                           (binding-library binding)))))
                                   (adjuster (map (lambda (name) (cons name name))
                                                  (map car exports))))))
-                       (values (syntax->datum library-ref)
+                       (values (rename-library (syntax->datum library-ref))
                                levels
                                imports))
                      (syntax-violation 'import "Invalid import set" import-set)))))))))
