@@ -132,5 +132,24 @@
     (test-equal '#(1 4 9 16 25 36) old-v1)
     (test-equal '#(x 4 9 16 25 36) v1)))
 
+;; Issue 224: segfault with nested hashtables
+(let ()
+(define-record-type mystruct
+ (fields id
+         state))
+
+(define (add-a-struct! ht)
+ (let* ((sid 53)
+        (this (make-mystruct sid
+                             (make-hashtable equal-hash equal?))))
+   (hashtable-set! ht sid this)
+   (let ((state (mystruct-state this)))
+     (hashtable-ref state "something" #t)   ; this line makes SEGV likely
+     #f)))
+
+(let ((ht1 (make-eqv-hashtable)))
+   (add-a-struct! ht1)
+   (test-equal '#(53) (hashtable-keys ht1))
+))
 (test-results)
 

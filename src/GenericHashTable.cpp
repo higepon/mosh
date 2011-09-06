@@ -142,6 +142,7 @@ Object GenericHashTable::copy(bool mutableP)
 
 Object GenericHashTable::keys()
 {
+    prepareFunctions();
     Object v = Object::makeVector(map_.size());
     int i = 0;
     for (GenericMap::const_iterator it = map_.begin(); it != map_.end(); ++it, i++) {
