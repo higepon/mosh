@@ -51,3 +51,6 @@ Bug fixes:
             map.
 
         Various procedures fixed for returning correct exact/inexact value.
+
+        Fixed Issue 224 reported by David Banks:
+            hashtable-ref could cause segfaults.
