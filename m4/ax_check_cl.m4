@@ -41,19 +41,21 @@ AC_REQUIRE([AC_PROG_SED])dnl
 dnl AC_REQUIRE([ACX_PTHREAD])dnl
 
 AC_LANG_PUSH([C])
-AX_LANG_COMPILER_MS
-AS_IF([test X$ax_compiler_ms = Xno],
-      [CL_CFLAGS="${PTHREAD_CFLAGS}"; CL_LIBS="${PTHREAD_LIBS} -lm"])
+dnl AX_LANG_COMPILER_MS
+dnl AS_IF([test X$ax_compiler_ms = Xno],
+dnl      [CL_CFLAGS="${PTHREAD_CFLAGS}"; CL_LIBS="${PTHREAD_LIBS} -lm"])
 
 #
 # Use x_includes and x_libraries if they have been set (presumably by
 # AC_PATH_X).
 #
-AS_IF([test X$no_x != Xyes],
-      [AS_IF([test -n "$x_includes"],
-             [CL_CFLAGS="-I$x_includes $CL_CFLAGS"])]
-       AS_IF([test -n "$x_libraries"],
-             [CL_LIBS="-L$x_libraries -lX11 $CL_LIBS"]))
+
+# mosh: removed X temporally (breaks OSX Lion builds)
+dnl AS_IF([test X$no_x != Xyes],
+dnl        [AS_IF([test -n "$x_includes"],
+dnl             [CL_CFLAGS="-I$x_includes $CL_CFLAGS"])]
+dnl         AS_IF([test -n "$x_libraries"],
+dnl             [CL_LIBS="-L$x_libraries -lX11 $CL_LIBS"]))
 
 ax_save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CL_CFLAGS $CPPFLAGS"
@@ -102,7 +104,8 @@ AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
                                              [ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_dylib_flag"; break])])])
 done
 
-AS_IF([test "X$ax_cv_check_cl_libcl" = Xno -a X$no_x = Xyes],
+dnl AS_IF([test "X$ax_cv_check_cl_libcl" = Xno -a X$no_x = Xyes],
+AS_IF([test "X$ax_cv_check_cl_libcl" = Xno],
       [LIBS='-framework OpenCL'
       AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
                      [ax_cv_check_cl_libcl=$LIBS])])
