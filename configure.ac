@@ -401,6 +401,7 @@ AC_CHECK_FUNCS([posix_spawn execve ptrace fcntl poll socket sigaction vfork])
 
 # OpenCL plugin
 AX_CHECK_CL
+AM_CONDITIONAL(MOSH_OPENCL, test x$no_cl = x)
 
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)

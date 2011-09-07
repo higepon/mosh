@@ -392,6 +392,15 @@ check: test
 MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTARGS)"
 NMOSHBIN ="NMOSH_CACHEDIR=$(abs_builddir)/nmosh-cache MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
 
+.PHONY: mosh-plugins
+
+if MOSH_OPENCL
+mosh-plugins: $(top_builddir)/plugins/mosh_opencl.mplg
+$(top_builddir)/plugins/mosh_opencl.mplg: $(top_srcdir)/src/ext/khronos/OpenCL/mosh_opencl.c
+	mkdir -p $(top_builddir)/plugins
+	$(CC) -std=c99 -Wall -fPIC @SHLIB_SO_LDFLAGS@ $(GLOBAL_CFLAGS) @CL_CFLAGS@ @CL_LIBS@ $< -o $@
+endif
+
 test: ptest ntest
 Xtest: ptest ntest testD ntestD
 ptest: testB testR testL
