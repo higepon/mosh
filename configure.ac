@@ -397,6 +397,11 @@ AM_CONDITIONAL(PTRACE_COMMON, test x$ptracestub_common = xtrue)
 # We use "execve" for environ
 AC_CHECK_FUNCS([posix_spawn execve ptrace fcntl poll socket sigaction vfork])
 
+# check for plugin support
+
+# OpenCL plugin
+AX_CHECK_CL
+
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)
 

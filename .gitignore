@@ -143,7 +143,8 @@ GTAGS
 work.scm
 
 # autotools
-automake/*
+automake/corelibs.mk
+automake/dist-git-revision.mk
 
 # test
 nmosh-cache
