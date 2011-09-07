@@ -27,6 +27,7 @@ sigchld_handler_install(int fd){
     struct sigaction a;
     sigchld_handler_fd = fd;
     a.sa_handler = handler;
+    a.sa_flags = SA_RESTART;
     sigaction(SIGCHLD,&a,NULL);
 }
 
