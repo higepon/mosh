@@ -398,7 +398,7 @@ if MOSH_OPENCL
 mosh-plugins: $(top_builddir)/plugins/mosh_opencl.mplg
 $(top_builddir)/plugins/mosh_opencl.mplg: $(top_srcdir)/src/ext/khronos/OpenCL/mosh_opencl.c
 	mkdir -p $(top_builddir)/plugins
-	$(CC) -std=c99 -Wall -fPIC @SHLIB_SO_LDFLAGS@ $(GLOBAL_CFLAGS) @CL_CFLAGS@ @CL_LIBS@ $< -o $@
+	$(CC) -std=c99 -Wall -fPIC @SHLIB_SO_LDFLAGS@ $(GLOBAL_CFLAGS) @CL_CFLAGS@ -DMOSHEXPORT= @CL_LIBS@ $< -o $@
 endif
 
 test: ptest ntest

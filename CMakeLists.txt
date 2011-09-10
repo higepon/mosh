@@ -2,13 +2,13 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
 PROJECT(mosh)
-include(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
-include(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
-include(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
+include(CheckIncludeFile)
+include(CheckFunctionExists)
+include(CheckTypeSize)
 ENABLE_TESTING()
-
-
 
 # mosh/nmosh select
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
@@ -630,6 +630,21 @@ add_executable(${MOSH_EXECUTABLE_NAME}
     src/main.cpp)
 
 target_link_libraries(${MOSH_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
+
+# Plugins
+
+# OpenCL
+find_package( OpenCL )
+
+if(OPENCL_INCLUDE_DIRS)
+    set(_mplg_opencl src/ext/khronos/OpenCL/mosh_opencl.c)
+    add_definitions(-DHAVE_CL)
+    include_directories(AFTER ${OPENCL_INCLUDE_DIRS})
+    add_library(mosh_opencl MODULE 
+        ${_mplg_opencl})
+    target_link_libraries(mosh_opencl ${OPENCL_LIBRARIES})
+    install(TARGETS mosh_opencl DESTINATION plugins)
+endif()
 
 # tests
 

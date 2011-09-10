@@ -1,17 +1,17 @@
 #include <config.h>
 
-#ifdef HAVE_CL_CL_H
-#include <CL/cl.h>
+#if defined(HAVE_CL)||defined(HAVE_CL_CL_H)||defined(HAVE_OPENCL_CL_H)
 #define __HAVE_CL 1
-#endif
-
-#ifdef HAVE_OPENCL_CL_H
+#ifdef __APPLE__
 #include <OpenCL/cl.h>
-#define __HAVE_CL 1
+#else
+#include <CL/cl.h>
+#endif
 #endif
 
 #ifdef __HAVE_CL
 
+MOSHEXPORT
 int
 mcl_platformcount(void){
     /* took from AMD sample */
