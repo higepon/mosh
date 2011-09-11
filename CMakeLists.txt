@@ -10,6 +10,8 @@ include(CheckFunctionExists)
 include(CheckTypeSize)
 ENABLE_TESTING()
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # mosh/nmosh select
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
 option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
@@ -643,6 +645,7 @@ if(OPENCL_INCLUDE_DIRS)
     add_library(mosh_opencl MODULE 
         ${_mplg_opencl})
     target_link_libraries(mosh_opencl ${OPENCL_LIBRARIES})
+    set_target_properties(mosh_opencl PROPERTIES FOLDER Plugins)
     install(TARGETS mosh_opencl DESTINATION plugins)
 endif()
 
@@ -657,6 +660,9 @@ add_library(testingmosh EXCLUDE_FROM_ALL
     src/TestingSignalHandler.cpp
     src/TestingVM.cpp)
 
+set_target_properties(testinggc PROPERTIES FOLDER Test)
+set_target_properties(testingmosh PROPERTIES FOLDER Test)
+
 # GC tests
 macro(add_gcguitest testname)
 if(MSVC)
@@ -665,11 +671,13 @@ else(MSVC)
 add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-cvs/tests/${testname}.c)
 endif(MSVC)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
+set_target_properties(gctest${testname} PROPERTIES FOLDER Test)
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gcguitest)
 macro(add_gctest testname)
 add_executable(gctest${testname} EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/extlibs/gc-cvs/tests/${testname}.c)
 target_link_libraries(gctest${testname} testinggc ${arch_libs})
+set_target_properties(gctest${testname} PROPERTIES FOLDER Test)
 add_test(gctest-${testname} gctest${testname})
 endmacro(add_gctest)
 
@@ -694,6 +702,7 @@ set_source_files_properties(src/${testname}
 endif(WIN32)
 add_executable(moshtest${testname} EXCLUDE_FROM_ALL ${gtest_srcs} src/${testname}.cpp)
 target_link_libraries(moshtest${testname} testingmosh testinggc ${GMP_LIBRARY} ${arch_libs})
+set_target_properties(moshtest${testname} PROPERTIES FOLDER Test)
 add_test(mosh-${testname} moshtest${testname})
 endmacro(add_moshcoretest)
 
