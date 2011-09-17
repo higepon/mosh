@@ -645,7 +645,11 @@ if(OPENCL_INCLUDE_DIRS)
     add_library(mosh_opencl MODULE 
         ${_mplg_opencl})
     target_link_libraries(mosh_opencl ${OPENCL_LIBRARIES})
-    set_target_properties(mosh_opencl PROPERTIES FOLDER Plugins)
+    set_target_properties(mosh_opencl PROPERTIES 
+        FOLDER Plugins
+        PREFIX ""
+        SUFFIX ".mplg"
+        )
     install(TARGETS mosh_opencl DESTINATION plugins)
 endif()
 
