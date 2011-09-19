@@ -115,7 +115,7 @@
 
 (define item ($many ($or dquoted
                          quoted
-                         escaped
+                         ;escaped
                          ($try special)
                          s
                          anychar)))

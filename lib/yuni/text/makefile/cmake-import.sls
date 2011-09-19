@@ -64,11 +64,14 @@
     ((and (pair? l)
           (string? (car l))
           (string=? (car l) "cd"))
-     (unless (eq? (caddr l) 'dand)
-       (assertion-violation 'expand-template
-                            "unknown setdir format"
-                            l))
-     `(setdir ,(cadr l) ,(expand-template (cdddr l))))
+     (let ((m (if (string=? "/d" (cadr l)) ;; drop MinGW Make cd /d option
+                (cons (car l) (cddr l))
+                l)))
+       (unless (eq? (caddr m) 'dand)
+         (assertion-violation 'expand-template
+                              "unknown setdir format"
+                              l))
+       `(setdir ,(cadr m) ,(expand-template (cdddr m)))))
     ((and (pair? l)
           (string? (car l))
           (string=? (car l) "echo"))
