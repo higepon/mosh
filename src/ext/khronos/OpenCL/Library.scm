@@ -1,7 +1,21 @@
 (mosh-opencl
   c-function-table
   *internal*
+  (plugin: mosh_opencl)
   (libname: mosh-opencl)
   (header: "mosh_opencl.h")
   #(ret name args)
-  (int mcl_platformcount))
+  (int mcl_platform_count)
+  (int mcl_platform_id_size)
+  (int mcl_clGetPlatformIDs (int void* void*))
+  (int mcl_platform_profile_size (void*))
+  (int mcl_platform_version_size (void*))
+  (int mcl_platform_name_size (void*))
+  (int mcl_platform_vendor_size (void*))
+  (int mcl_platform_extensions_size (void*))
+  (int mcl_platform_profile (void* void* int void*))
+  (int mcl_platform_version (void* void* int void*))
+  (int mcl_platform_name (void* void* int void*))
+  (int mcl_platform_vendor (void* void* int void*))
+  (int mcl_platform_extensions (void* void* int void*))
+  )

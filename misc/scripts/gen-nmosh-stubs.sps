@@ -27,6 +27,7 @@
   (define filename)
   (define internal? #f)
   (define myname #f)
+  (define plugin-name #f)
   (define libname)
   (define constants '())
   (define exports '())
@@ -85,9 +86,14 @@
     (pp '(import (mosh ffi) (rnrs) (nmosh ffi pffi) (nmosh ffi stublib)) p)
 
     ;; emit globals (handle for shared-library or pffi)
-    (if internal?
-      (format p "\n\n(define %library (make-pffi-ref '~a))\n" libname)
-      (format p "\n\n(define-ffi-library %library ~a ~a)\n" libname libname))
+    (cond
+      (plugin-name
+        (format p "\n\n(define %library (make-pffi-ref/plugin '~a))\n" 
+                plugin-name))
+      (internal?
+        (format p "\n\n(define %library (make-pffi-ref '~a))\n" libname))
+      (else
+        (format p "\n\n(define-ffi-library %library ~a ~a)\n" libname libname)))
 
     (newline p)
 
@@ -108,6 +114,11 @@
 
   ;; collect internal?
   (for-each-tablesym '*internal* (^ _ (set! internal? #t)))
+
+  ;; collect plugin name
+  (for-each (^e (let ((name (table-metadata-ref e 'plugin:)))
+                  (when name (set! plugin-name name))))
+            table*)
 
   ;; collect myname
   (for-each (^e (let ((name (table-metadata-ref e 'libname:)))

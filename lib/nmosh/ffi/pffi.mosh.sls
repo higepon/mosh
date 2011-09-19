@@ -1,7 +1,11 @@
 (library (nmosh ffi pffi)
-         (export make-pffi-ref pffi-c-function)
+         (export make-pffi-ref 
+                 make-pffi-ref/plugin
+                 plugin-path
+                 pffi-c-function)
          (import (rnrs)
-                 (srfi :48)
+                 (yuni util files)
+                 (mosh)
                  (nmosh global-flags)
                  (mosh ffi))
 
@@ -13,6 +17,20 @@
 
 (define (make-pffi-ref slot)
   `(,pffi-mark ,slot))
+
+(define (plugin-path)
+  (let ((f (get-global-flag '%nmosh-prefixless-mode)))
+    (if f
+      (let ((basepath (path-dirname (mosh-executable-path))))
+        (path-append basepath "plugins"))
+      (path-append (standard-library-path) "plugins"))))
+
+(define (make-pffi-ref/plugin name)
+  (let* ((stdpath (plugin-path))
+         (plugin-file (path-append stdpath (string-append
+                                             (symbol->string name)
+                                             ".mplg"))))
+    (open-shared-library plugin-file)))
 
 (define (pffi-slot obj)
   (and (pffi? obj) (cadr obj)))
