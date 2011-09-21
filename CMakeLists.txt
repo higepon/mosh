@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+# FIXME: trick
+set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION com.apple.compilers.llvm.clang.1_0)
+
 PROJECT(mosh)
 include(CheckIncludeFile)
 include(CheckFunctionExists)
