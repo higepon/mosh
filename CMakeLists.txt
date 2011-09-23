@@ -636,6 +636,27 @@ add_executable(${MOSH_EXECUTABLE_NAME}
 
 target_link_libraries(${MOSH_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
 
+macro(generate_applet_cmd appletname)
+    set(filename "${CMAKE_CURRENT_BINARY_DIR}/nmosh-run-${appletname}.cmd")
+    file(WRITE ${filename} "@echo off\n")
+    file(APPEND ${filename} "%~dp0${MOSH_EXECUTABLE_NAME} -T ${appletname} %*\n")
+    if(MOSH_PORTABLE)
+        install(FILES ${filename} DESTINATION .)
+    else(MOSH_PORTABLE)
+        install(FILES ${filename} DESTINATION bin)
+    endif(MOSH_PORTABLE)
+    unset(filename)
+endmacro(generate_applet_cmd)
+
+macro(generate_applet appletname)
+    # FIXME: We don't install appletinvoker at UNIX platforms
+    if(WIN32)
+        generate_applet_cmd(${appletname})
+    endif(WIN32)
+endmacro(generate_applet)
+
+# generate_applet(debug-expand)
+
 # Plugins
 
 # OpenCL
