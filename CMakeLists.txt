@@ -658,24 +658,45 @@ endmacro(generate_applet)
 # generate_applet(debug-expand)
 
 # Plugins
+macro(add_mosh_plugin nam)
+    add_library(${nam} MODULE ${ARGN})
+    set_target_properties(${nam} PROPERTIES
+        FOLDER Plugins
+        PREFIX ""
+        SUFFIX ".mplg")
+    install(TARGETS ${nam} DESTINATION plugins)
+endmacro(add_mosh_plugin)
 
 # OpenCL
 find_package( OpenCL )
 
 if(OPENCL_INCLUDE_DIRS)
-    set(_mplg_opencl src/ext/khronos/OpenCL/mosh_opencl.c)
     add_definitions(-DHAVE_CL)
+    add_mosh_plugin(mosh_opencl src/ext/khronos/OpenCL/mosh_opencl.c)
     include_directories(AFTER ${OPENCL_INCLUDE_DIRS})
-    add_library(mosh_opencl MODULE 
-        ${_mplg_opencl})
     target_link_libraries(mosh_opencl ${OPENCL_LIBRARIES})
-    set_target_properties(mosh_opencl PROPERTIES 
-        FOLDER Plugins
-        PREFIX ""
-        SUFFIX ".mplg"
-        )
-    install(TARGETS mosh_opencl DESTINATION plugins)
 endif()
+
+# Curses
+find_package( Curses )
+
+
+if(CURSES_FOUND)
+    option(MOSHPLUGIN_CURSES "build nmosh curses plugin" ON)
+else(CURSES_FOUND)
+    option(MOSHPLUGIN_CURSES "build nmosh curses plugin" OFF)
+endif(CURSES_FOUND)
+
+if(MOSHPLUGIN_CURSES)
+    add_mosh_plugin(mosh_curses src/ext/curses/mosh_curses.c)
+    if(CURSES_LIBRARIES)
+        target_link_libraries(mosh_curses ${CURSES_LIBRARIES})
+        include_directories(AFTER ${CURSES_INCLUDE_DIR})
+    else(CURSES_LIBRARIES)
+        target_link_libraries(mosh_curses ${CURSES_LIBRARY})
+        include_directories(AFTER ${CURSES_INCLUDE_PATH})
+    endif(CURSES_LIBRARIES)
+endif(MOSHPLUGIN_CURSES)
 
 # tests
 
