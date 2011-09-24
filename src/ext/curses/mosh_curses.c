@@ -54,7 +54,7 @@ mcur_acquire(void){
     cbreak();
     nonl();
     keypad(stdscr, TRUE);
-    nodelay(stdscr, TRUE);
+    /* nodelay(stdscr, TRUE); */
     if(has_colors()){ start_color(); }
 }
 
