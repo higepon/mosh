@@ -32,7 +32,11 @@
            mcur_attroff
            mcur_attrset
            mcur_print
-
+           mcur_pdcurses
+           mcur_set_title
+           mcur_key_resize
+           mcur_key_mouse
+           mcur_resize_term
            )
          (import
            (rnrs)
@@ -84,5 +88,20 @@
 (define mcur_attroff stub:mcur_attroff)
 (define mcur_attrset stub:mcur_attrset)
 (define mcur_print stub:mcur_print)
+
+(define (mcur_pdcurses)
+  (let ((r (stub:mcur_pdcurses)))
+    (case
+      ((0) #f)
+      ((1) #t)
+      (else (assertion-violation
+              'mcur_pdcurses
+              "invalid status value"
+              r)))))
+
+(define mcur_set_title stub:mcur_set_title)
+(define mcur_key_resize stub:mcur_key_resize)
+(define mcur_key_mouse stub:mcur_key_mouse)
+(define mcur_resize_term stub:mcur_resize_term)
 
 )

@@ -249,4 +249,41 @@ mcur_print(char *s){
     printw(s);
 }
 
+MOSHEXPORT
+int
+mcur_pdcurses(void){
+#ifdef PDCURSES
+    return 1;
+#else
+    return 0;
+#endif
+}
 
+MOSHEXPORT
+void
+mcur_set_title(char *s){
+#ifdef PDCURSES
+    PDC_set_title(s);
+#endif
+}
+
+MOSHEXPORT
+int
+mcur_key_mouse(void){
+    return KEY_MOUSE;
+}
+
+MOSHEXPORT
+int
+mcur_key_resize(void){
+    return KEY_RESIZE;
+}
+
+
+MOSHEXPORT
+void
+mcur_resize_term(void){
+#ifdef PDCURSES
+    resize_term(0,0);
+#endif
+}
