@@ -141,7 +141,7 @@
 
 (define-syntax size/octet/normalized
   (syntax-rules ()
-    ((_ clause0 ...)
+    ((_ bogus clause0 ...)
      (+ (clause-size clause0) ...))))
 
 (define-syntax size/octet
