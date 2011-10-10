@@ -5,11 +5,13 @@
 		 (nmosh condition-printer)
 		 (nmosh minidebug)
                  (nmosh global-flags)
+                 (nmosh library-alias)
 		 (primitives ca-load DEBUGMODE-ON set-symbol-value!))
 
 (define (startup)
   (set-symbol-value! '%nmosh-failproc enter-debugger)
   (set-symbol-value! 'show-profile show-profile)
+  (init-library-alias-table)
   (let ((cl (command-line)))
     (cond
       ((<= 1 (length cl))

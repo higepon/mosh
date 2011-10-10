@@ -19,6 +19,7 @@
         (nmosh global-flags)
         (nmosh conditions) (nmosh condition-printer) (nmosh runlib) 
 	(nmosh minidebug) 
+        (nmosh library-alias)
 	(nmosh startup)
         (nmosh gensym)
         (nrepl simple io)
