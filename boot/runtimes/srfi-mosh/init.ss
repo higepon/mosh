@@ -1,13 +1,15 @@
-(import (rnrs) (nmosh runlib) (nmosh startup) (primitives set-symbol-value! symbol-value))
+(import (rnrs) (nmosh runlib) 
+        (nmosh startup) (primitives set-symbol-value! symbol-value))
 
 ; mosh initialize from psyntax
 (set-symbol-value!
   'create-non-continuable-violation
   (lambda (c)
-    (condition (make-non-continuable-violation)
-	       (make-who-condition 'raise)
-	       (make-message-condition "returned from non-continuable exception")
-	       (make-irritants-condition (list c)))))
+    (condition 
+      (make-non-continuable-violation)
+      (make-who-condition 'raise)
+      (make-message-condition "returned from non-continuable exception")
+      (make-irritants-condition (list c)))))
 
 (set-symbol-value! 'trace-printer write)
 
