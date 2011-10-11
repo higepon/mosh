@@ -7,8 +7,8 @@
            ;; process
            launch!)
          (import (nmosh io master-queue)
-                 (nmosh aio platform win32)
-                 (nmosh pffi win32 util) ;; mbcs
+                 (nmosh aio platform)
+                 (nmosh pffi locale)
                  (yuni core)
                  (shorten)
                  (rnrs))
@@ -165,7 +165,7 @@
              (recv/bin (car bin))
              (finish/bin (cdr bin)))
         (define (finish)
-          (mbcs->string (finish/bin)))
+          (host-string->string (finish/bin)))
         (cons recv/bin finish)))
     (define (create-g+s type)
       (define (string-type? x)

@@ -9,6 +9,12 @@
   '(
     (("win32")
      .
+     [ (nmosh pffi locale) . (nmosh pffi win32 locale) ])
+    (("cygwin" "linux" "bsd" "darwin")
+     .
+     [ (nmosh pffi locale) . (nmosh pffi posix locale) ])
+    (("win32")
+     .
      [ (nmosh aio platform) . (nmosh aio platform win32) ])
     (("bsd")
      .
