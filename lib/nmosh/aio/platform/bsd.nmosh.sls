@@ -17,7 +17,9 @@
                  (yuni core)
                  (srfi :8)
                  (srfi :42)
-                 (nmosh bsd kqueue))
+                 (nmosh pffi posix fd)
+                 (nmosh pffi posix socket)
+                 (nmosh pffi bsd kqueue))
 
 (define q-depth 16)
 (define* Q
@@ -56,7 +58,7 @@
     (define (do-fd-assoc/read fd) (queue-fd-assoc/read! Q fd proc))
     (case type
       ((pipe/in)
-       (receive (in out) (fd-pipe)
+       (receive (in out) (fd_pipe)
          (touch! io-object
                  (fd-pass in)
                  (fd-proc out))
@@ -69,8 +71,9 @@
 (define* (dispose-io-object (io-object))
   (let-with io-object (Q fd-proc)
     (queue-fd-close Q fd-proc)
-    (touch! (realized? #f)
-            (Q #f))))
+    (touch! io-object
+      (realized? #f)
+      (Q #f))))
 
 ;; read/write
 
@@ -177,6 +180,7 @@
            result-proc)
   ;; FIXME
 
+  'ok
   )
 
 
