@@ -886,6 +886,10 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     case WM_MOUSEWHEEL:
         post_window_event(whd,6,GET_WHEEL_DELTA_WPARAM(wParam));
         return 0;
+//FIXME: MinGW fix..
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x20e
+#endif
     case WM_MOUSEHWHEEL:
         post_window_event(whd,7,GET_WHEEL_DELTA_WPARAM(wParam));
         return 0;
