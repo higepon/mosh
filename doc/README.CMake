@@ -19,7 +19,7 @@ In short, it's win32 only. Other platforms are may or may not work.
 - Microsoft Visual Studio 2010 SP1
 - Apple Xcode 3.x and Mac OS X 10.6 (amd64/i386 only)
 - Unix Makefile with GCC/G++ 4.3 or later
-- MinGW Makefile with TDM-GCC 4.5 or later
+- MinGW Makefile with TDM-GCC 4.6 or later
 
 Other CMake generators are not tested.
 
@@ -33,7 +33,9 @@ setup GMP:
            You can build GMP.framework with misc/dist/mac/build-framework.sh
 -    MSVC: Download MPIR 2.x from http://www.mpir.org and build with MSVC
            then set MOSH_GMP_DIR to this
-           (c:\XXXXXX\mpir-2.x.x\build.vc10\Win32\Release)
+           (c:\XXXXXX\mpir-2.x.x\build.vc10\dll\Win32\Release)
+           or
+           (c:\XXXXXX\mpir-2.x.x\build.vc10\lib\Win32\Release)
 
 2. Configuration
 ----------------

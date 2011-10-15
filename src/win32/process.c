@@ -15,7 +15,93 @@
 #include "aio_win32.h"
 
 #ifndef WSAID_ACCEPTEX
-#error Your MinGW/Win32 runtime is too old... Try Mingw-w64 with -m32 option.
+
+// Took from libuv, MinGW64.
+
+
+typedef struct addrinfoW {
+  int ai_flags;
+  int ai_family;
+  int ai_socktype;
+  int ai_protocol;
+  size_t ai_addrlen;
+  PWSTR ai_canonname;
+  struct sockaddr *ai_addr;
+  struct addrinfoW *ai_next;
+} ADDRINFOW,*PADDRINFOW;
+
+
+DECLSPEC_IMPORT int WSAAPI GetAddrInfoW(const wchar_t* node,
+                                        const wchar_t* service,
+                                        const ADDRINFOW* hints,
+                                        PADDRINFOW* result);
+
+DECLSPEC_IMPORT void WSAAPI FreeAddrInfoW(PADDRINFOW pAddrInfo);
+
+
+#define WSAID_ACCEPTEX                                \
+{0xb5367df1, 0xcbac, 0x11cf,                          \
+    {0x95, 0xca, 0x00, 0x80, 0x5f, 0x48, 0xa1, 0x92}}
+
+#define WSAID_CONNECTEX                               \
+{0x25a207b9, 0xddf3, 0x4660,                          \
+    {0x8e, 0xe9, 0x76, 0xe5, 0x8c, 0x74, 0x06, 0x3e}}
+
+#define WSAID_GETACCEPTEXSOCKADDRS                    \
+{0xb5367df2, 0xcbac, 0x11cf,                          \
+    {0x95, 0xca, 0x00, 0x80, 0x5f, 0x48, 0xa1, 0x92}}
+
+#define WSAID_DISCONNECTEX                            \
+{0x7fda2e11, 0x8630, 0x436f,                          \
+    {0xa0, 0x31, 0xf5, 0x36, 0xa6, 0xee, 0xc1, 0x57}}
+
+#define WSAID_TRANSMITFILE                            \
+{0xb5367df0, 0xcbac, 0x11cf,                          \
+    {0x95, 0xca, 0x00, 0x80, 0x5f, 0x48, 0xa1, 0x92}}
+
+typedef BOOL PASCAL (*LPFN_ACCEPTEX)
+    (SOCKET sListenSocket,
+     SOCKET sAcceptSocket,
+     PVOID lpOutputBuffer,
+     DWORD dwReceiveDataLength,
+     DWORD dwLocalAddressLength,
+     DWORD dwRemoteAddressLength,
+     LPDWORD lpdwBytesReceived,
+     LPOVERLAPPED lpOverlapped);
+
+typedef BOOL PASCAL (*LPFN_CONNECTEX)
+    (SOCKET s,
+     const struct sockaddr* name,
+     int namelen,
+     PVOID lpSendBuffer,
+     DWORD dwSendDataLength,
+     LPDWORD lpdwBytesSent,
+     LPOVERLAPPED lpOverlapped);
+
+typedef void PASCAL (*LPFN_GETACCEPTEXSOCKADDRS)
+    (PVOID lpOutputBuffer,
+     DWORD dwReceiveDataLength,
+     DWORD dwLocalAddressLength,
+     DWORD dwRemoteAddressLength,
+     LPSOCKADDR* LocalSockaddr,
+     LPINT LocalSockaddrLength,
+     LPSOCKADDR* RemoteSockaddr,
+     LPINT RemoteSockaddrLength);
+
+typedef BOOL PASCAL (*LPFN_DISCONNECTEX)
+    (SOCKET hSocket,
+     LPOVERLAPPED lpOverlapped,
+     DWORD dwFlags,
+     DWORD reserved);
+
+typedef BOOL PASCAL (*LPFN_TRANSMITFILE)
+    (SOCKET hSocket,
+     HANDLE hFile,
+     DWORD nNumberOfBytesToWrite,
+     DWORD nNumberOfBytesPerSend,
+     LPOVERLAPPED lpOverlapped,
+     LPTRANSMIT_FILE_BUFFERS lpTransmitBuffers,
+     DWORD dwFlags);
 #endif
 
 char* errorpos; // FIXME: for debugging
