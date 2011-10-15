@@ -669,13 +669,20 @@ endmacro(add_mosh_plugin)
 
 # OpenCL
 find_package( OpenCL )
-
-if(OPENCL_INCLUDE_DIRS)
-    add_definitions(-DHAVE_CL)
-    add_mosh_plugin(mosh_opencl src/ext/khronos/OpenCL/mosh_opencl.c)
-    include_directories(AFTER ${OPENCL_INCLUDE_DIRS})
-    target_link_libraries(mosh_opencl ${OPENCL_LIBRARIES})
+if(OPENCL_FOUND)
+    option(MOSHPLUGIN_OPENCL "build nmosh OpenCL plugin" ON)
+else()
+    option(MOSHPLUGIN_OPENCL "build nmosh OpenCL plugin" OFF)
 endif()
+
+if(MOSHPLUGIN_OPENCL)
+    if(OPENCL_INCLUDE_DIRS)
+        add_definitions(-DHAVE_CL)
+        add_mosh_plugin(mosh_opencl src/ext/khronos/OpenCL/mosh_opencl.c)
+        include_directories(AFTER ${OPENCL_INCLUDE_DIRS})
+        target_link_libraries(mosh_opencl ${OPENCL_LIBRARIES})
+    endif()
+endif(MOSHPLUGIN_OPENCL)
 
 # Curses
 find_package( Curses )
