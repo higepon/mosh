@@ -145,6 +145,7 @@ ByteVector* ByteArrayBinaryOutputPort::toByteVector()
 {
     ByteVector* ret = new ByteVector(buffer_);
     buffer_.clear();
+    position_ = 0;
     return ret;
 }
 
