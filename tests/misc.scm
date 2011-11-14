@@ -151,5 +151,17 @@
    (add-a-struct! ht1)
    (test-equal '#(53) (hashtable-keys ht1))
 ))
+
+;; open-bytevector-output-port
+(receive (port proc) (open-bytevector-output-port)
+  (let*  ((bogus0 (put-bytevector port #vu8(1 2 3 4)))
+          (ans0 (proc))
+          (bogus1 (put-bytevector port #vu8(5)))
+          (bogus2 (put-bytevector port #vu8(6)))
+          (ans1 (proc)))
+    (test-equal #vu8(1 2 3 4) ans0)
+    (test-equal #vu8(5 6) ans1)
+    ))
+
 (test-results)
 
