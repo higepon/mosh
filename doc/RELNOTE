@@ -54,3 +54,6 @@ Bug fixes:
 
         Fixed Issue 224 reported by David Banks:
             hashtable-ref could cause segfaults.
+
+        Bytevector buffer port opened by open-bytevector-output-port was broken
+        when the value outputted multiple times.
