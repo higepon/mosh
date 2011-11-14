@@ -48,6 +48,7 @@ runtest:
 	$(MOSH_TARGET) tests/process.scm
 	$(MOSH_TARGET) tests/annotated-pair.scm
 	$(MOSH_TARGET) tests/print.scm
+	$(MOSH_TARGET) tests/jsonmsgpack.scm
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/tests/ffi.scm)
