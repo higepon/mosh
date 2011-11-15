@@ -55,7 +55,8 @@
     ((#f) (buf #xc2))
     (else
       (cond
-        ((null? obj) (buf #xc0))
+        ((null? obj)  ;; NB: Pack null as zero length array..
+         (buf #x90))
         ((and (exact? obj) (integer? obj)) 
          (cond
            ((<= 0 obj 127)
@@ -241,14 +242,15 @@
              (case sym
                ((map-start) (next (vector)))
                ((array-start) (next (list))))
-             (set! dispatch/proc
-               (map/array sym 
-                          (case sym
-                            ((map-start) (* size 2))
-                            ((array-start) size))
-                          (lambda (obj)
-                            (next obj)
-                            (set! dispatch/proc self)))))))
+             (begin
+               (set! dispatch/proc
+                 (map/array sym 
+                            (case sym
+                              ((map-start) (* size 2))
+                              ((array-start) size))
+                            (lambda (obj)
+                              (set! dispatch/proc self)
+                              (next obj))))))))
         (else (next obj))))
     self)
   (define (root obj)
