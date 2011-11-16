@@ -129,6 +129,7 @@
             (fd (cadar ev-queue))
             (evt (cddar ev-queue))
             (d (cdr ev-queue)))
+        (display (list 'DISPATCH fd evt))
         (touch! Q (ev-queue d))
         (proc fd evt)))))
 

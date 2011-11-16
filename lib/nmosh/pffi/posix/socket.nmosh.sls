@@ -62,7 +62,7 @@
 ;; mode 0/4/6, proto 0/1(TCP)/2(UDP)
 (define (socket_getaddrinfo name service mode proto)
   (let ((ret (make-ptr-box))
-        (service (if (number? service) (number->string service))))
+        (service (if (number? service) (number->string service) service)))
     (let ((r (stub:socket_getaddrinfo name service ret mode proto)))
       ;; FIXME: handle error
       (if (= 0 r)
