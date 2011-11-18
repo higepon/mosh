@@ -11,6 +11,28 @@
                  resolve-socketname/4
                  resolve-socketname/6
                  queue-listen
-                 queue-accept)
+                 queue-accept
+                 queue-connect
+                 
+                 queue-process-launch
+                 discard
+                 pipe/in
+                 
+                 )
          (import (nmosh aio impl posix posix-socket)
-                 (nmosh aio impl posix queue-fd-poll)))
+                 (nmosh aio impl posix queue-fd-poll)
+                 (rnrs))
+         
+(define (queue-process-launch . x)
+  (assertion-violation 'queue-process-launch
+                       "unimplemented"))
+
+(define (discard . x)
+  (assertion-violation 'discard
+                       "unimplemented"))
+         
+(define (pipe/in . x)
+  (assertion-violation 'pipe/in
+                       "unimplemented"))
+         
+)

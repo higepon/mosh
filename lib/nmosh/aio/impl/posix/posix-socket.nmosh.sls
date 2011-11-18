@@ -33,18 +33,33 @@
   (receive (new-fd inetname) (socket_accept fd)
     (callback new-fd inetname)))
 
+(define BLKSIZE 16)
+
 (define (do-read fd callback)
-  (let* ((buf (make-bytevector 65536))
-         (len (fd_read fd buf 65536)))
-    (callback fd buf len)))
+  (let* ((buf (make-bytevector BLKSIZE))
+         (len (fd_read fd buf BLKSIZE)))
+    (if (= len 0)
+      (begin
+        ;; something wrong
+        (fd_close fd)
+        (callback fd #f #f))
+      (callback fd buf len))))
 
 (define (queue-read0 Q fd callback)
-  (queue-register-fd/read Q fd (^[fd event] (do-read fd callback))))
+  (queue-register-fd/read Q fd 
+                          (^[fd event] 
+                            (case event
+                              ((NVAL HUP ERROR)
+                               (fd_close fd)
+                               (queue-unregister-fd Q fd)
+                               (callback fd #f #f))
+                              (else
+                                (do-read fd callback))))))
 
 (define (subbytevector bv off)
   (define len (- (bytevector-length bv) off))
   (define out (make-bytevector len))
-  (bytevector-copy! bv off len out 0)
+  (bytevector-copy! bv off out 0 len)
   out)
 
 (define (queue-write0 Q fd data callback)
@@ -54,14 +69,15 @@
   (define (proc fd event)
     (let* ((out (subbytevector data off))
            (size (fd_write fd out (bytevector-length out))))
+      ;(display (list 'q-write out))(newline)
       (assert (<= 0 size))
       (set! off (+ off size))
       (when (= off len)
-        (queue-unregister-fd Q fd)
+        (queue-unregister-fd/write Q fd)
         (callback fd))))
   (cond
-    ((= 0 data)
-     (callback fd 0))
+    ((= 0 len) 
+     (callback fd))
     (else
       (queue-register-fd/write Q fd proc))))
 

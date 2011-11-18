@@ -14,7 +14,9 @@
            queue-register-fd/read
            queue-register-fd/write
            queue-register-fd/read+write
-           queue-unregister-fd)
+           queue-unregister-fd
+           queue-unregister-fd/write
+           )
          (import
            (rnrs)
            (yuni core)
@@ -24,7 +26,7 @@
 
 (define initial-queue-size 1)
 
-(define* Q (pollfds n io-objects ev-queue))
+(define* Q (pollfds n io-handler/read io-handler/write ev-queue))
 
 (define* (queue-dispose (Q))
   (let-with Q (pollfds)
@@ -41,34 +43,41 @@
     (make Q
       (pollfds p)
       (n initial-queue-size)
-      (io-objects (make-vector initial-queue-size #f))
+      (io-handler/read (make-vector initial-queue-size #f))
+      (io-handler/write (make-vector initial-queue-size #f))
       (ev-queue '()))))
 
 (define* (q-resize! (old-queue Q) new-n)
   (let-with old-queue ((old-pollfds pollfds) 
                        (old-n n) 
-                       (old-io-objects io-objects)
+                       (old-io-handler/read io-handler/read)
+                       (old-io-handler/write io-handler/write)
                        (old-ev-queue ev-queue))
     (define (new-obj)
       (let ((p (pollfds-init new-n))
-            (new-io-objects (make-vector new-n #f)))
+            (new-io-handler/read (make-vector new-n #f)) 
+            (new-io-handler/write (make-vector new-n #f)) )
         (let loop ((c 0) (t 0))
           (when (< c old-n)
             (if (poll_get_fd old-pollfds c)
               (begin
                 (poll_copy! old-pollfds c p t)
-                (vector-set! new-io-objects
+                (vector-set! new-io-handler/read
                              t
-                             (vector-ref old-io-objects c))
+                             (vector-ref old-io-handler/read c))
+                (vector-set! new-io-handler/write
+                             t
+                             (vector-ref old-io-handler/write c))
                 (loop (+ c 1) (+ t 1)))
               (loop (+ c 1) t))))
         (poll_dispose old-pollfds)
-        (values p new-io-objects)))
-    (receive (new-pollfds new-io-objects) (new-obj)
+        (values p new-io-handler/read new-io-handler/write)))
+    (receive (new-pollfds new-io-handler/read new-io-handler/write) (new-obj)
       (touch! old-queue
         (pollfds new-pollfds)
         (n new-n)
-        (io-objects new-io-objects)
+        (io-handler/read new-io-handler/read)
+        (io-handler/write new-io-handler/write)
         (ev-queue old-ev-queue)))))
 
 (define* (q-scanfd (Q) fd) ;; => n / #f
@@ -79,24 +88,33 @@
                (itr (+ c 1)))))
     (itr 0)))
 
+(define* (q-scanfd/write (Q) fd) ;; => n / #f
+  (let-with Q (pollfds n io-handler/write)
+    (define (itr c)
+      (and (< c n)
+           (or (and (eq? (poll_get_fd pollfds c) fd) 
+                    (vector-ref io-handler/write c)
+                    c)
+               (itr (+ c 1)))))
+    (itr 0)))
+
 (define* (q-scanfree (Q)) ;; => n / #f
   (q-scanfd Q #f))
 
-(define* (q-register-fd! (Q) fd proc) ;; => n
+(define* (q-register-fd! (Q) fd) ;; => n
   (let ((c (q-scanfree Q)))
     (cond
       (c
-        (let-with Q (pollfds io-objects)
-          (vector-set! io-objects c proc)
+        (let-with Q (pollfds)
           (poll_set_fd pollfds c fd)
           c))
       (else
         (let-with Q (n)
           (q-resize! Q (+ n 3))
-          (q-register-fd! Q fd proc))))))
+          (q-register-fd! Q fd))))))
 
-(define* (q-scan (Q) r) ;; => ((proc fd . events) ...)
-  (let-with Q (n pollfds io-objects)
+(define* (q-scan (Q) r) ;; => (((proc/read . proc/write) fd . events) ...)
+  (let-with Q (n pollfds io-handler/read io-handler/write)
     (define (scan cur c rest)
       (if (and (> rest 0) (< c n))
         (let ((nval? (poll_get_pollnval pollfds c))
@@ -112,7 +130,8 @@
                          (out? 'WRITE)
                          (else #f))))
             (if n
-              (scan (cons (cons (vector-ref io-objects c)
+              (scan (cons (cons (cons (vector-ref io-handler/read c)
+                                      (vector-ref io-handler/write c)) 
                                 (cons (poll_get_fd pollfds c)
                                       n))
                           cur)
@@ -125,13 +144,32 @@
 (define* (queue-dispatch (Q))
   (let-with Q (ev-queue)
     (if (pair? ev-queue)
-      (let ((proc (caar ev-queue))
+      (let ((proc/read (caaar ev-queue))
+            (proc/write (cdaar ev-queue))
             (fd (cadar ev-queue))
             (evt (cddar ev-queue))
             (d (cdr ev-queue)))
-        (display (list 'DISPATCH fd evt))
+        ;(display (list 'DISPATCH fd evt))
         (touch! Q (ev-queue d))
-        (proc fd evt)))))
+        (case evt
+          ((NVAL HUP ERROR)
+           ;; warn?
+           (assert #f)
+           (when proc/write (proc/read fd evt))
+           (when proc/read (proc/read fd evt)))
+          ((READ READ+WRITE)
+           (when proc/write (proc/write fd evt))
+           (when proc/read (proc/read fd evt)))
+          ((WRITE)
+           (when proc/write (proc/write fd evt))))))))
+
+(define* (q-set-read-proc (Q) c proc)
+  (let-with Q (io-handler/read)
+    (vector-set! io-handler/read c proc)))
+
+(define* (q-set-write-proc (Q) c proc)
+  (let-with Q (io-handler/write)
+    (vector-set! io-handler/write c proc)))
 
 (define* (queue-wait/timeout (Q) timeout)
   (let-with Q (ev-queue pollfds n)
@@ -147,19 +185,23 @@
 (define* (queue-wait (Q))
   (queue-wait/timeout Q -1))
 
-(define* (queue-register-fd/read+write (Q) fd proc)
-  (let ((c (q-register-fd! Q fd proc)))
+(define* (queue-register-fd/read+write (Q) fd read-proc write-proc)
+  (let ((c (q-register-fd! Q fd)))
+    (q-set-read-proc Q c read-proc)
+    (q-set-write-proc Q c write-proc)
     (let-with Q (pollfds)
       (poll_set_pollin pollfds c)
       (poll_set_pollout pollfds c))))
 
 (define* (queue-register-fd/read (Q) fd proc)
-  (let ((c (q-register-fd! Q fd proc)))
+  (let ((c (q-register-fd! Q fd)))
+    (q-set-read-proc Q c proc)
     (let-with Q (pollfds)
       (poll_set_pollin pollfds c))))
 
 (define* (queue-register-fd/write (Q) fd proc)
-  (let ((c (q-register-fd! Q fd proc)))
+  (let ((c (q-register-fd! Q fd)))
+    (q-set-write-proc Q c proc)
     (let-with Q (pollfds)
       (poll_set_pollout pollfds c))))
 
@@ -170,8 +212,21 @@
                            "fd not found in queue"
                            Q
                            fd))
-    (let-with Q (pollfds io-objects)
+    (let-with Q (pollfds)
       (poll_set_fd pollfds c #f)
-      (vector-set! io-objects c #f))))
+      (q-set-read-proc Q c #f)
+      (q-set-write-proc Q c #f))))
+
+(define* (queue-unregister-fd/write (Q) fd)
+  (let ((c (q-scanfd/write Q fd)))
+    (unless c
+      (assertion-violation 'queue-unregister-fd
+                           "fd not found in queue"
+                           Q
+                           fd))
+    (let-with Q (pollfds)
+      (poll_set_fd pollfds c #f)
+      (q-set-read-proc Q c #f)
+      (q-set-write-proc Q c #f))))
 
 )
