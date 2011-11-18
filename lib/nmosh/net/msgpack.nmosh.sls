@@ -1,28 +1,31 @@
 (library (nmosh net msgpack)
-         (export 
-           make-msgpack-client-socket
-           mainloop0 ;; temp
-           )
+         (export make-msgpack-client-socket)
          (import (rnrs)
                  (shorten)
-                 (mosh socket) ;; temp
+                 (nmosh io tcp0)
                  (yuni binary codec msgpack))
 ;;  
-(define sock) ;; temp
-(define deser) ;; temp
-(define (make-msgpack-client-socket name port recv-callback) ;; => (^[obj])
-  (set! deser (make-msgpack-deserializer recv-callback))
-  (let ((s (make-client-socket name port)))
-    (set! sock s)
-    (lambda (obj)
-      (for-each (^e (socket-send s (car e))) 
-                (generate-msgpack-buffer obj)))))
-
-(define (mainloop0)
-  (let ((bv (socket-recv sock 65536)))
-    (when (and  (bytevector? bv) (< 0  (bytevector-length bv))) 
-      (display (list 'RECV bv))(newline)
-      (deser (cons bv (bytevector-length bv))) 
-      (mainloop0))))
+(define (make-msgpack-client-socket name port recv-callback write-callback error-callback)
+  (let ((deser (make-msgpack-deserializer recv-callback)))
+    (define (reader fd buf len)
+      (if buf
+        (deser (cons buf len))
+        (error-callback fd)))
+    (make-client-socket 
+      name port 
+      (^[fd] 
+        (when write-callback
+          (let ()  ;; why ??
+            (define (writer obj callback)
+              (define (send-step cur)
+                (^[fd] 
+                  (if (pair? cur)
+                    (let ((bv (caar cur))
+                          (next (cdr cur)))
+                      (socket-write fd bv (send-step next)))
+                    (callback))))
+              ((send-step (generate-msgpack-buffer obj)) fd)) 
+            (write-callback writer))) 
+        (start-read fd reader)))))
 
 )
