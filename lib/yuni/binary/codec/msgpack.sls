@@ -279,14 +279,15 @@
   (define cur-buf-off)
   (define state #f) ;; = #f | raw-head | raw | int | uint | float?
   (define wait 0)
+  (define bufconsumed 0)
   (define width 1) 
   (define (procdata bv off len)
-    (define (next consumed)
-      (when (< 1 (- len off))
-        (procdata bv (+ off consumed) len)))
+    (define (next)
+      (when (< 0 (- len bufconsumed))
+        (procdata bv bufconsumed len)))
     (define (imm obj)
       (callback obj)
-      (next 1))
+      (next))
     (define-syntax define-state
       (syntax-rules ()
         ((_ name)
@@ -297,7 +298,7 @@
              (set! state 'name) 
              (set! wait w) 
              (set! width w) 
-             (next oldwidth))))))
+             (next))))))
     (define-state int)
     (define-state uint)
     (define-state short)
@@ -312,7 +313,7 @@
         (set! cur-buf '())
         (set! state #f) 
         (set! width 1)
-        (next oldwidth)))
+        (next)))
     (define (readuint)
       (case width 
         ((1) (bv-u8 cur-buf))
@@ -335,10 +336,12 @@
         (let ((len (- (bytevector-length bv) off)))
           (cond 
             ((< len wait)
+             (set! bufconsumed 0) ;; Eat all.
              (set! wait (- wait len))
              (bytevector-copy! bv off cur-buf cur-buf-off len)
              (set! cur-buf-off (+ cur-buf-off len)))
             (else
+              (set! bufconsumed (+ bufconsumed wait))
               (bytevector-copy! bv off cur-buf cur-buf-off wait)
               (case state
                 ((raw-head)
@@ -370,6 +373,7 @@
                                        "invalid state"
                                        state))))))) 
       (else
+        (set! bufconsumed (+ bufconsumed 1)) ;; We always consume a byte here..
         (let ((header (bytevector-u8-ref bv off)))
           (cond
             ((<= 0 header 127)
@@ -412,6 +416,7 @@
     (let ((data (car buf))
           (size (cdr buf)))
       (unless (= size 0)
+        (set! bufconsumed 0)
         (procdata data 0 size))))) 
 
 )
