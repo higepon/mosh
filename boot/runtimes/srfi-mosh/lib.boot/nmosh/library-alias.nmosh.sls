@@ -18,7 +18,11 @@
      [ (nmosh aio platform) . (nmosh aio platform win32) ])
     (("bsd")
      .
-     [ (nmosh aio platform) . (nmosh aio platform bsd) ])))
+     [ (nmosh aio platform) . (nmosh aio platform bsd) ])
+    (("cygwin")
+     .
+     [ (nmosh aio platform) . (nmosh aio platform cygwin) ])
+    ))
 
 (define (calc-table)
   (define os (host-os))
