@@ -5,7 +5,8 @@
            io-dispatch-sync
 
            ;; process
-           launch!)
+           ;launch!
+           )
          (import (nmosh io master-queue)
                  (nmosh aio platform)
                  (nmosh pffi locale)
@@ -38,6 +39,7 @@
 ;; FIXME: io-dispatch should dispach all queued events..
 (define io-dispatch io-dispatch/one)
 
+#|
 (define (do-plet-lookup obj sym default)
   (let ((p (assoc sym obj)))
     (if p 
@@ -234,4 +236,5 @@
             (pass/in stderr/bin)
             (pass/result finish)))))
 
+|#
 )
