@@ -1,0 +1,77 @@
+(library (nmosh aio impl win32 handle-ops)
+         (export 
+           ;; internal
+           handle->stream
+
+           ;; external
+           queue-read0
+           queue-write0
+           )
+         (import (rnrs)
+                 (yuni core)
+                 (srfi :8)
+                 (nmosh pffi interface)
+                 (nmosh pffi win32 aio)
+                 (nmosh aio impl win32 queue-iocp))
+
+;; stream object for Win32 handle
+
+
+;; Q callback == (^[bytes ovl key-obj] ...)
+
+(define* win32-handle-stream (ovl/read ovl/write buf/read h))
+
+(define BLKSIZE 4096)
+
+(define* (handle->stream (Q) (win32-handle))
+  (let ((stream (make win32-handle-stream
+                      (ovl/read (win32_overlapped_alloc))
+                      (ovl/write (win32_overlapped_alloc))
+                      (h win32-handle))))
+    (queue-register-handle Q win32-handle generic-callback stream)
+    stream))
+
+(define (generic-callback bytes ovl key)
+  (display (list 'GEN-CALLBACK bytes ovl key))(newline)
+  (let ((callback (win32_overlapped_getmydata ovl)))
+    (callback bytes)))
+
+(define* (queue-read0 (Q) (win32-handle-stream) cb)
+  ;; cb = (^[handle buf len] ...)
+  (define buf (make-bytevector BLKSIZE))
+  (let-with win32-handle-stream (ovl/read h)
+    (define (callback bytes)
+      (define next-buf (make-bytevector BLKSIZE))
+      ;; Queue next read
+      (~ win32-handle-stream 'buf/read := next-buf)
+      (win32_handle_read_async h
+                               0 ;; FIXME: Feed offset
+                               BLKSIZE
+                               next-buf
+                               ovl/read)
+      ;; callback
+      (cb win32-handle-stream 
+          (~ win32-handle-stream 'buf/read)
+          bytes))
+    (win32_overlapped_setmydata ovl/read (object->pointer callback))
+    (~ win32-handle-stream 'buf/read := buf)
+    (win32_handle_read_async h
+                             0 ;; FIXME: Feed offset
+                             BLKSIZE
+                             buf
+                             ovl/read)))
+
+(define* (queue-write0 (Q) (win32-handle-stream) data cb)
+  ;; cb = (^[handle] ...)
+  (define (callback bytes)
+    (cb win32-handle-stream))
+  (define buflen (bytevector-length data))
+  (let-with win32-handle-stream (ovl/write h)
+    (win32_overlapped_setmydata ovl/write (object->pointer callback))
+    (win32_handle_write_async h
+                              0 ;; FIXME: Feed offset
+                              buflen
+                              data
+                              ovl/write)))
+
+)
