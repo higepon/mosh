@@ -82,7 +82,7 @@
       (queue-register-fd/write Q fd proc))))
 
 ;; Resolve API
-(define (resolve-socketname** name service mode proto) ;; => (inetname ...)
+(define (resolve-socketname**/sync name service mode proto) ;; => (inetname ...)
   (define (addrinfo->list addrinfo)
     (if addrinfo
       (receive (inetname next) (socket_addrinfo_read addrinfo)
@@ -96,12 +96,17 @@
         l)
       #f)))
 
-(define (resolve-socketname/4 name service)
-  (resolve-socketname** name service 4 0))
+;; FIXME:
+(define (resolve-socketname** Q name service mode proto cb)
+  (cb (resolve-socketname**/sync name service mode proto)))
 
-(define (resolve-socketname/6 name service)
-  (resolve-socketname** name service 6 0))
+(define (resolve-socketname/4 Q name service cb)
+  (resolve-socketname** Q name service 4 0 cb))
 
+(define (resolve-socketname/6 Q name service cb)
+  (resolve-socketname** Q name service 6 0 cb))
+
+#|
 (define (resolve-socketname* name service)
   (resolve-socketname** name service 0 0))
 
@@ -122,5 +127,6 @@
 
 (define (resolve-socketname/UDP6 name service)
   (resolve-socketname** name service 6 2))
+|#
 
 )

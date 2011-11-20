@@ -19,15 +19,21 @@
   (queue-accept nmosh-io-master-queue fd callback))
 
 (define (make-server-socket name port callback)
+  (define (do-listen inetname)
+    (queue-listen nmosh-io-master-queue (car inetname) callback))
+
   ;; callback = (^[fd])
-  (define inetname (car (resolve-socketname/4 name port)))
-  (queue-listen nmosh-io-master-queue inetname callback))
+  (resolve-socketname/4 nmosh-io-master-queue
+                        name port
+                        do-listen))
 
 (define (make-client-socket name port callback)
   ;; callback = (^[fd])
-  (let* ((inetname (car (resolve-socketname/4 name port)))
-         (sock (queue-connect nmosh-io-master-queue inetname callback))) 
-    'ok))
+  (define (do-connect inetname)
+    (queue-connect nmosh-io-master-queue (car inetname) callback)  )
+  (resolve-socketname/4 nmosh-io-master-queue
+                        name port
+                        do-connect))
 
 (define (start-read fd callback)
   ;; callback = (^[fd buf len])
