@@ -54,6 +54,7 @@
 
 (define* (queue-listen Q (inetname) callback)
   (define my-ovl (win32_overlapped_alloc))
+  (define sockaddr-size (+ 16 (win32_sockaddr_storage_size)))
   (define listen-sock (socket/TCP))
   (define accept-sock (socket/TCP))
   (define accept-buffer (make-bytevector BLKSIZE))
@@ -66,16 +67,17 @@
     (win32_socket_bind listen-sock sockaddr len)
     (win32_socket_listen listen-sock))
   ;; Register callback
-  (queue-register-handle Q listen-sock listen-callback listen-socket)
+  (queue-register-handle Q listen-sock listen-callback listen)
 
   ;; Enqueue accept action
   (win32_socket_accept acceptex listen-sock accept-sock 
                        accept-buffer
-                       0 ;; Do not perform receive action
+                       (* 2 sockaddr-size) ;; Do not perform receive action
                        my-ovl))
 
 (define (queue-accept Q fd callback)
-  (callback (handle->stream Q (~ fd 'accept-sock))))
+  ;(display (list 'ACCEPT fd callback))(newline)
+  (callback (handle->stream Q (~ fd 'accept-sock)) 'BOGUS))
 
 (define (capture ptr len)
   (define bv (make-bytevector len))

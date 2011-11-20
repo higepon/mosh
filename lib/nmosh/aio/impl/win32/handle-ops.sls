@@ -42,15 +42,17 @@
   (define (check x)
     (when (= 0 x)
       (assert #f)))
+  ;(display (list 'READ: cb))(newline)
   (let-with win32-handle-stream (ovl/read h)
     (define (callback bytes)
       (define next-buf (make-bytevector BLKSIZE))
-      ;; Queue next read
-      (~ win32-handle-stream 'buf/read := next-buf)
       ;; callback
       (cb win32-handle-stream 
           (~ win32-handle-stream 'buf/read)
-          bytes)
+          (pointer->integer bytes))
+      ;; Queue next read
+      (~ win32-handle-stream 'buf/read := next-buf)
+      (win32_overlapped_setmydata ovl/read (object->pointer callback))
       (check (win32_handle_read_async h
                                       0 ;; FIXME: Feed offset
                                       BLKSIZE
