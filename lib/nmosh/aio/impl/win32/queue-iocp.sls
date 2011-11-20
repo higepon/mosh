@@ -29,16 +29,17 @@
   (queue-wait/timeout Q -1))
 
 (define* (queue-register-handle (Q) handle cb key-obj)
-  (define key (object->pointer key-obj))
+  (define key (pointer->integer (object->pointer key-obj)))
   (let-with Q (iocp handles callbacks)
     ;; FIXME: Log handles here..
-    (hashtable-set! callbacks key-obj cb)
-    (hashtable-set! handles key-obj handle)
-    (win32_iocp_assoc iocp handle key)))
+    (hashtable-set! callbacks key cb)
+    (hashtable-set! handles key handle)
+    ;(display (list 'REGISTER-handle handle cb key))(newline)
+    (win32_iocp_assoc iocp handle (integer->pointer key))))
 
 (define (call-callback ht evt)
   (let-with evt (bytes key ovl)
-    (let ((cb (hashtable-ref ht key)))
+    (let ((cb (hashtable-ref ht (pointer->integer key))))
       (and (procedure? cb)
            (cb bytes 
                ovl

@@ -62,7 +62,7 @@
                        (accept-sock accept-sock)
                        (callback callback)))
   (let-with inetname (sockaddr len) 
-    (display (list 'BIND: sockaddr len))(newline)
+    ;(display (list 'BIND: sockaddr len))(newline)
     (win32_socket_bind listen-sock sockaddr len)
     (win32_socket_listen listen-sock))
   ;; Register callback
@@ -84,7 +84,7 @@
 
 (define (addrinfo-read-step addrinfo) ;; (inetname next/#f)
   (receive (family addr namelen next) (win32_addrinfoex_read addrinfo)
-    (display (list 'ADDR: addr namelen))(newline)
+    ;(display (list 'ADDR: addr namelen))(newline)
     (values
       (make inetname
             (family family)
