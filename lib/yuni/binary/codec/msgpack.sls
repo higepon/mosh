@@ -5,6 +5,12 @@
                  (srfi :42)
                  (srfi :8))
 
+;; debug
+(define (dump bv size)
+  (define dump (make-bytevector size))
+  (bytevector-copy! bv 0 dump 0 size)
+  (display (list 'DUMP: dump))(newline))
+
 ;; Buffer (for R6RS)
 
 (define (bnot x)
@@ -415,6 +421,7 @@
   (lambda (buf)
     (let ((data (car buf))
           (size (cdr buf)))
+      ;(dump data size)
       (unless (= size 0)
         (set! bufconsumed 0)
         (procdata data 0 size))))) 
