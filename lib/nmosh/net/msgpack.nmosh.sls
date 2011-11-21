@@ -21,48 +21,40 @@
 
     (when write-callback
       (let ()  ;; why ??
-        (define in-progress? (make-parameter #f))
-        (define queue (make-parameter '()))
+        (define in-progress? #f)
+        (define queue '())
+        (define seg/queue '())
+        (define seg/callback '())
         (define (writer obj callback)
-          (define (send-step callback cur)
-            (^[fd] 
-              (cond 
-                ((pair? cur) 
-                 (let ((bv (caar cur))
-                       (next (cdr cur)))
-                   (socket-write fd bv 
-                                 (^[fd] 
-                                   ((send-step callback next) fd))))) 
-                (else
-                  ;; Enqueue next object
-                  (when (in-progress?)
-                    (cond
-                      ((pair? queue)
-                       (let ((callback (cdar (queue)))
-                             (sendobj (caar (queue))))
-                         ;(write (list 'DeQ: (length (queue)) obj callback))(newline)
-                         (first-step callback sendobj))
-                       (queue (cdr (queue)))
-                       (unless (pair? (queue))
-                         (in-progress? #f)))
-                      (else (in-progress? #f))))
-
-                  ;; callback
-                  (callback)))))
-
-          (define (first-step callback sendobj)
-            (let ((l (generate-msgpack-buffer sendobj)))
-              ((send-step callback l) fd)))  
+          (define (send-callback fd)
+            (cond
+              ((pair? seg/queue)
+               (socket-write fd (caar seg/queue) send-callback)
+               (set! seg/queue (cdr seg/queue)))
+              (else
+                ;; Callback
+                (seg/callback)
+                (cond
+                  ((pair? queue)
+                   (set! seg/queue (generate-msgpack-buffer (caar queue))) 
+                   (set! seg/callback (cdar queue)) 
+                   (set! queue (cdr queue)) 
+                   ;; Kick next
+                   (send-callback fd))
+                  (else 
+                    (set! in-progress? #f)
+                    (set! seg/callback #f))))))
 
           (cond
-            ((in-progress?)
-             ;(write (list 'EnQ: (length (queue)) obj callback))(newline)
-              (queue (append (queue) (list (cons 
-                                             obj
-                                             callback)))))
+            (in-progress?
+             (set! queue (append queue (list (cons 
+                                               obj
+                                               callback)))))
             (else
-              (in-progress? #t)
-              (first-step callback obj))))
+              (set! in-progress? #t)
+              (set! seg/queue (generate-msgpack-buffer obj))
+              (set! seg/callback callback)
+              (send-callback fd))))
 
         (write-callback writer))) 
     (start-read fd reader)))
