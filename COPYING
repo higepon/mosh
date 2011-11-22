@@ -3,7 +3,9 @@ In short, Mosh is distributed under so called "2-clause BSD license".
 Copyright and condition of use of main portion of the source:
 -----------------------------------------------------------------------------
 
-    Copyright (c) 2008-2009  Higepon(Taro Minowa) <higepon@users.sourceforge.jp>
+    Copyright (c) 2008-2011  Higepon(Taro Minowa) <higepon@users.sourceforge.jp>
+    Copyright (c) 2008-2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
+    Copyright (c) 2010,2011  Yuki OKUMURA         <mjt@cltn.org>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -80,7 +82,7 @@ Copyright of extlibs/gc-cvs -------------------------------------------------
 
 Copyright of extlibs/onig-5.9.2 ---------------------------------------------
 
-   Copyright (c) 2002-2007  K.Kosako  <sndgk393 AT ybb DOT ne DOT jp>
+   Copyright (c) 2002-2009  K.Kosako  <sndgk393 AT ybb DOT ne DOT jp>
    All rights reserved.
   
    Redistribution and use in source and binary forms, with or without
@@ -138,6 +140,233 @@ Copyright of SRFI -----------------------------------------------------------
    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
    DEALINGS IN THE SOFTWARE.
+
+Copyright of SRFI-1 ---------------------------------------------------------
+
+
+   Copyright (c) 1998, 1999 by Olin Shivers. You may do as you please with
+   this code as long as you do not remove this copyright notice or
+   hold me liable for its use. Please send bug reports to shivers@ai.mit.edu.
+
+Copyright of SRFI-13 and SRFI-14 --------------------------------------------
+
+   Copyright (c) 1988-1994 Massachusetts Institute of Technology.
+
+   This material was developed by the Scheme project at the Massachusetts
+   Institute of Technology, Department of Electrical Engineering and
+   Computer Science.  Permission to copy and modify this software, to
+   redistribute either the original software or a modified version, and
+   to use this software for any purpose is granted, subject to the
+   following restrictions and understandings.
+   
+   1. Any copy made of this software must include this copyright notice
+   in full.
+
+   2. Users of this software agree to make their best efforts (a) to
+   return to the MIT Scheme project any improvements or extensions that
+   they make, so that these may be included in future releases; and (b)
+   to inform MIT of noteworthy uses of this software.
+
+   3. All materials developed as a consequence of the use of this
+   software shall duly acknowledge such use, in accordance with the usual
+   standards of acknowledging credit in academic research.
+
+   4. MIT has made no warrantee or representation that the operation of
+   this software will be error-free, and MIT is under no obligation to
+   provide any services, by way of maintenance, update, or otherwise.
+
+   5. In conjunction with products arising from the use of this material,
+   there shall be no use of the name of the Massachusetts Institute of
+   Technology nor of any adaptation thereof in any advertising,
+   promotional, or sales literature without prior written consent from
+   MIT in each case.
+
+   Copyright (c) 1998, 1999, 2000 Olin Shivers. All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+   2. Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+   3. The name of the authors may not be used to endorse or promote products
+      derived from this software without specific prior written permission.
+   ;;;
+   THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
+   IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+   IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Copyright of SRFI-19 --------------------------------------------------------
+
+   Copyright (C) I/NET, Inc. (2000, 2002, 2003). All Rights Reserved.
+
+   This document and translations of it may be copied and furnished to others,
+   and derivative works that comment on or otherwise explain it or assist in 
+   its implementation may be prepared, copied, published and distributed, in 
+   whole or in part, without restriction of any kind, provided that the above 
+   copyright notice and this paragraph are included on all such copies and 
+   derivative works.
+   However, this document itself may not be modified in any way, such as by
+   removing the copyright notice or references to the Scheme Request For
+   Implementation process or editors, except as needed for the purpose of
+   developing SRFIs in which case the procedures for copyrights defined in 
+   the SRFI process must be followed, or as required to translate it into 
+   languages other than English.
+
+   The limited permissions granted above are perpetual and will not be revoked
+   by the authors or their successors or assigns.
+   
+   This document and the information contained herein is provided on an "AS IS"
+   basis and THE AUTHOR AND THE SRFI EDITORS DISCLAIM ALL WARRANTIES, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES 
+   OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Copyright of SRFI-27 and SRFI-37 --------------------------------------------
+
+   Copyright (c) 2002 Anthony Carrico All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+   2. Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+   3. The name of the authors may not be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
+   IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+   IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Copyright of SRFI-64 --------------------------------------------------------
+
+   Copyright (c) 2005, 2006 Per Bothner
+
+   Permission is hereby granted, free of charge, to any person
+   obtaining a copy of this software and associated documentation
+   files (the "Software"), to deal in the Software without
+   restriction, including without limitation the rights to use, copy,
+   modify, merge, publish, distribute, sublicense, and/or sell copies
+   of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+Copyright of SRFI-67 --------------------------------------------------------
+
+   Copyright (c) 2005 Sebastian Egner and Jens Axel S{\o}gaard.
+
+   Permission is hereby granted, free of charge, to any person obtaining
+   a copy of this software and associated documentation files (the
+   ``Software''), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to
+   permit persons to whom the Software is furnished to do so, subject to
+   the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+   LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+   OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Copyright of SRFI-78 --------------------------------------------------------
+
+   Copyright (c) 2005-2006 Sebastian Egner
+
+   Permission is hereby granted, free of charge, to any person obtaining
+   a copy of this software and associated documentation files (the
+   ``Software''), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to
+   permit persons to whom the Software is furnished to do so, subject to
+   the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+   LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+   OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Copyright of SRFI-99 --------------------------------------------------------
+
+   Copyright (C) William D Clinger 2008. All Rights Reserved.
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. REMEMBER, THERE IS NO
+   SCHEME UNDERGROUND. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+   LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+   CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Copyright of TinyCLOS -------------------------------------------------------
+
+   Copyright (c) 1992 Xerox Corporation. All Rights Reserved.  
+
+   Use, reproduction, and preparation of derivative works are permitted.
+   Any copy of this software or of any derivative work must include the
+   above copyright notice of Xerox Corporation, this paragraph and the
+   one after it.  Any distribution of this software or derivative works
+   must comply with all applicable United States export control laws.
+   
+   This software is made available AS IS, and XEROX CORPORATION DISCLAIMS
+   ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+   PURPOSE, AND NOTWITHSTANDING ANY OTHER PROVISION CONTAINED HEREIN, ANY
+   LIABILITY FOR DAMAGES RESULTING FROM THE SOFTWARE OR ITS USE IS
+   EXPRESSLY DISCLAIMED, WHETHER ARISING IN CONTRACT, TORT (INCLUDING
+   NEGLIGENCE) OR STRICT LIABILITY, EVEN IF XEROX CORPORATION IS ADVISED
+   OF THE POSSIBILITY OF SUCH DAMAGES.
 
 Copyright of FFI and string-titlecase ---------------------------------------
 
