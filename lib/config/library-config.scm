@@ -162,6 +162,44 @@
   [(srfi :37) (srfi :37 args-fold) srfi-extra]
 )
 
+(srfi-r7b
+  ;; SRFIs for R7RS bridge
+  (legend: 
+    (alias-name => "name of library")
+    (library-name => "library true name"))
+  #(alias-name library-name interface-level)
+  [(srfi i0) (srfi :0)]
+  [(srfi i6) (srfi :6)]
+  [(srfi i9) (srfi :9)]
+  [(srfi i19) (srfi :19)]
+  [(srfi i23) (srfi :23)]
+  [(srfi i39) (srfi :39)]
+  [(srfi i98) (srfi :98)]
+)
+
+(r7rs-bridge
+  (legend: 
+    (alias-name => "name of library")
+    (library-name => "library true name"))
+  #(alias-name library-name interface-level)
+  [(scheme base) (r7b-impl base)]
+  [(scheme case-lambda) (r7b-impl case-lambda)]
+  [(scheme char) (r7b-impl char)]
+  [(scheme char normalization) (r7b-impl char normalization)]
+  [(scheme complex) (r7b-impl complex)]
+  [(scheme division) (r7b-impl division)]
+  [(scheme eval) (r7b-impl eval)]
+  [(scheme file) (r7b-impl file)]
+  [(scheme inexact) (r7b-impl inexact)]
+  [(scheme lazy) (r7b-impl lazy)]
+  [(scheme load) (r7b-impl load)]
+  [(scheme process-context) (r7b-impl process-context)]
+  [(scheme read) (r7b-impl read)]
+  [(scheme repl) (r7b-impl repl)]
+  [(scheme time) (r7b-impl time)]
+  [(scheme write) (r7b-impl write)]
+)
+
 (rnrs
   (legend: 
     (alias-name => "name of library")
