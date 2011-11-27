@@ -7,14 +7,16 @@
            unquote
 
            ;; syntax
-           seq)
+           seq
+           ;; procedure
+           apply/async)
          (import (yuni scheme))
          (begin
 ;;
 
-;; In (yuni sync) library, every job-enqueue procedures should have
+;; In (yuni async) library, every job-enqueue procedures should have
 ;; (^[arg0 arg1 ... callback] ...)
-;; signature. (callback should be placed at last argument of procedure.)
+;; signature. (callback should be placed at last argument of the procedure.)
 
 ;; WARNING: This library intentionally flatten program's nest.
 ;; For programer's viewpoint, this effectively breaks lexical scoping rules..
@@ -108,5 +110,48 @@
        (names ... name) (checks ... name) (obj ...) next))
     ((_ err id (names ...) checks (name obj ...) next)
      (%seq/gencallback err id (names ... name) checks (obj ...) next))))
+
+;; async apply
+;; proc should return true. (returning #f will abort process in progress)
+(define (apply/async limit proc param callback)
+  ;; callback = (^[lis] ...)
+  (define len (length param))
+  (define input (list->vector param))
+  (define v (make-vector len #f))
+  (define count 0)
+  (define jobs 0)
+  (define count-finish 0)
+  (define abort? #f)
+  (define (job-finish) ;; hook
+    (set! jobs (- jobs 1)))
+  (define (last-job?) ;; => #t/#f
+    (set! count-finish (+ 1 count-finish))
+    (= count-finish len))
+  (define (enqueue)
+    (if abort?
+      (if (last-job?)
+        (callback (vector->list v))
+        (next))
+      (let* ((par (vector-ref input count))
+             (idx count)
+             (cb (^ x 
+                    (vector-set! v idx x)
+                    (job-finish)
+                    (if (last-job?)
+                      (callback (vector->list v))
+                      (next)))))
+        (set! jobs (+ jobs 1))
+        (let ((r (apply proc (append par (list cb)))))
+          (unless r
+            (set! jobs 0)
+            (set! abort? #t))))))
+  (define (next)
+    (unless (or (= count len) 
+                (and limit (= jobs limit)))
+      (enqueue)
+      (set! count (+ count 1))
+      (next))
+    (not abort?))
+  (next)) 
 
 ))
