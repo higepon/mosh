@@ -2,6 +2,7 @@
 (library (r7b-impl base)
          (export
 
+_
 ;; from R7RS draft 4
 * + - ... / < <= = => > >= abs and append apply assoc assq assv begin
 binary-port?  boolean? bytevector-copy bytevector-copy! bytevector-copy-partial
@@ -131,8 +132,9 @@ write-bytevector write-char write-partial-bytevector write-u8 zero?
 
 (define (list-set! l k obj) 
   (define (itr cur count)
-    (unless (= count k) (itr (cdr cur) (+ count 1)))
-    (set-car! cur obj))
+    (if (= count k) 
+      (set-car! cur obj)
+      (itr (cdr cur) (+ count 1))))
   (itr l 0))
 
 (define make-list
