@@ -3,7 +3,8 @@
         (nmosh io core)
         (nmosh net msgpack))
 
-(define (err obj) (assert #f))
+(define (err obj) 
+  (display "client connection lost.\n"))
 
 (define (starter fd inetname)
   (define writer #f)
