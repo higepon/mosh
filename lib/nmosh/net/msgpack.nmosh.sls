@@ -29,8 +29,9 @@
           (define (send-callback fd)
             (cond
               ((pair? seg/queue)
-               (socket-write fd (caar seg/queue) send-callback)
-               (set! seg/queue (cdr seg/queue)))
+               (let ((sendseg (caar seg/queue)))
+                 (set! seg/queue (cdr seg/queue))
+                 (socket-write fd sendseg send-callback)))
               (else
                 ;; Callback
                 (seg/callback)

@@ -5,6 +5,7 @@
            start-read
            socket-write
            socket-accept
+           socket-close
            )
          (import (rnrs)
                  (shorten)
@@ -42,6 +43,9 @@
 (define (socket-write fd data callback)
   ;; callback = (^[fd])
   (queue-write0 nmosh-io-master-queue fd data callback))
+
+(define (socket-close fd)
+  (queue-close0 nmosh-io-master-queue fd))
 
 )
 

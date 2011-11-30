@@ -6,6 +6,7 @@
            ;; external
            queue-read0
            queue-write0
+           queue-close0
            )
          (import (rnrs)
                  (yuni core)
@@ -81,5 +82,11 @@
                                      buflen
                                      data
                                      ovl/write))))
+
+(define* (queue-close0 (Q) (win32-handle-stream))
+  (let-with win32-handle-stream (ovl/read ovl/write h)
+    (win32_overlapped_free ovl/read)
+    (win32_overlapped_free ovl/write)
+    (win32_handle_close h)))
 
 )

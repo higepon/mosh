@@ -10,6 +10,7 @@
 
                  queue-write0
                  queue-read0
+                 queue-close0
                  resolve-socketname/4
                  resolve-socketname/6
                  queue-listen

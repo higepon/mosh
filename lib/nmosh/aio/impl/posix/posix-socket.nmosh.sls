@@ -5,6 +5,7 @@
            queue-connect
            queue-read0
            queue-write0
+           queue-close0
            resolve-socketname/4
            resolve-socketname/6
            )
@@ -33,15 +34,16 @@
   (receive (new-fd inetname) (socket_accept fd)
     (callback new-fd inetname)))
 
-(define BLKSIZE 16)
+(define BLKSIZE (* 128 1024))
 
-(define (do-read fd callback)
+(define (do-read Q fd callback)
   (let* ((buf (make-bytevector BLKSIZE))
          (len (fd_read fd buf BLKSIZE)))
-    (if (= len 0)
+    (if (<= len 0)
       (begin
         ;; something wrong
         (fd_close fd)
+        (queue-unregister-fd Q fd)
         (callback fd #f #f))
       (callback fd buf len))))
 
@@ -54,7 +56,7 @@
                                (queue-unregister-fd Q fd)
                                (callback fd #f #f))
                               (else
-                                (do-read fd callback))))))
+                                (do-read Q fd callback))))))
 
 (define (subbytevector bv off)
   (define len (- (bytevector-length bv) off))
@@ -70,16 +72,24 @@
     (let* ((out (subbytevector data off))
            (size (fd_write fd out (bytevector-length out))))
       ;(display (list 'q-write out))(newline)
-      (assert (<= 0 size))
-      (set! off (+ off size))
-      (when (= off len)
-        (queue-unregister-fd/write Q fd)
-        (callback fd))))
+      (cond
+        ((<= 0 size)
+         (set! off (+ off size)) 
+         (when (= off len)
+           (queue-unregister-fd/write Q fd)
+           (callback fd)))
+        (else
+          (queue-unregister-fd/write Q fd)
+          (callback #f)))))
   (cond
     ((= 0 len) 
      (callback fd))
     (else
       (queue-register-fd/write Q fd proc))))
+
+(define (queue-close0 Q fd)
+  (queue-unregister-fd Q fd)
+  (fd_close fd))
 
 ;; Resolve API
 (define (resolve-socketname**/sync name service mode proto) ;; => (inetname ...)

@@ -154,8 +154,8 @@
         (case evt
           ((NVAL HUP ERROR)
            ;; warn?
-           (assert #f)
-           (when proc/write (proc/read fd evt))
+           ;(assert #f)
+           (when proc/write (proc/write fd evt))
            (when proc/read (proc/read fd evt)))
           ((READ READ+WRITE)
            (when proc/write (proc/write fd evt))
@@ -207,15 +207,11 @@
 
 (define* (queue-unregister-fd (Q) fd)
   (let ((c (q-scanfd Q fd)))
-    (unless c
-      (assertion-violation 'queue-unregister-fd
-                           "fd not found in queue"
-                           Q
-                           fd))
-    (let-with Q (pollfds)
-      (poll_set_fd pollfds c #f)
-      (q-set-read-proc Q c #f)
-      (q-set-write-proc Q c #f))))
+    (when c
+      (let-with Q (pollfds)
+        (poll_set_fd pollfds c #f)
+        (q-set-read-proc Q c #f)
+        (q-set-write-proc Q c #f)))))
 
 (define* (queue-unregister-fd/write (Q) fd)
   (let ((c (q-scanfd/write Q fd)))
