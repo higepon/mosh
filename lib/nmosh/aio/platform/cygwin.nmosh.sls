@@ -21,6 +21,7 @@
                  
                  )
          (import (nmosh aio impl posix posix-socket)
+                 (nmosh aio impl posix fd-ops)
                  (nmosh aio impl posix queue-fd-poll)
                  (rnrs))
          
