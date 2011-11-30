@@ -6,6 +6,7 @@
                  win32_overlapped_free
                  win32_overlapped_getmydata
                  win32_overlapped_setmydata
+                 win32_overlapped_geterror
                  win32_handle_read_async
                  win32_handle_write_async
                  win32_process_redirected_child2
@@ -115,6 +116,7 @@
 (define win32_overlapped_free stub:win32_overlapped_free)
 (define win32_overlapped_getmydata stub:win32_overlapped_getmydata)
 (define win32_overlapped_setmydata stub:win32_overlapped_setmydata)
+(define win32_overlapped_geterror stub:win32_overlapped_geterror)
 
 (define* (win32_handle_read_async (h win32-handle)
                                   offset

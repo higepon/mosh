@@ -330,6 +330,12 @@ win32_overlapped_getmydata(void* p){
 }
 
 int
+win32_overlapped_geterror(void* p){
+	OVERLAPPED* ovl = (OVERLAPPED *)p;
+	return ovl->Internal;
+}
+
+int
 win32_handle_read_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol){
 	BOOL b;
 	int err;

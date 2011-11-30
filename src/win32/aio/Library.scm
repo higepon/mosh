@@ -11,6 +11,7 @@
   (void win32_overlapped_free (void*))
   (void* win32_overlapped_getmydata (void*))
   (void win32_overlapped_setmydata (void* void*))
+  (int win32_overlapped_geterror (void*))
   (int win32_handle_close (void*))
   (int win32_handle_read_async (void* int int int void* void*))
   (int win32_handle_write_async (void* int int int void* void*))

@@ -10,6 +10,7 @@ void* win32_overlapped_alloc(void);
 void win32_overlapped_free(void *p);
 void* win32_overlapped_getmydata(void* p);
 void win32_overlapped_setmydata(void* p,void* q);
+int win32_overlapped_geterror(void* p);
 int win32_handle_read_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol);
 int win32_handle_write_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol);
 uintptr_t win32_process_redirected_child2(wchar_t *spec,wchar_t* dir,wchar_t* std_in,wchar_t* std_out,wchar_t* std_err,int in_enable,int out_enable,int err_enable);

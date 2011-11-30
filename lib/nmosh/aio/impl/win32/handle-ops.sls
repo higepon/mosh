@@ -17,12 +17,11 @@
 
 ;; stream object for Win32 handle
 
-
 ;; Q callback == (^[bytes ovl key-obj] ...)
 
 (define* win32-handle-stream (ovl/read ovl/write buf/read h))
 
-(define BLKSIZE 4096)
+(define BLKSIZE (* 128 1024))
 
 (define* (handle->stream (Q) (win32-handle))
   (let ((stream (make win32-handle-stream
@@ -35,30 +34,40 @@
 (define (generic-callback bytes ovl key)
   (let ((callback (pointer->object (win32_overlapped_getmydata ovl))))
     (assert (procedure? callback))
-    (callback bytes)))
+    (if (= 0 (win32_overlapped_geterror ovl)) 
+      (callback bytes)
+      (callback #f))))
 
 (define* (queue-read0 (Q) (win32-handle-stream) cb)
   ;; cb = (^[handle buf len] ...)
   (define buf (make-bytevector BLKSIZE))
   (define (check x)
     (when (= 0 x)
-      (assert #f)))
+      (cb #f #f)))
   ;(display (list 'READ: cb))(newline)
   (let-with win32-handle-stream (ovl/read h)
     (define (callback bytes)
       (define next-buf (make-bytevector BLKSIZE))
+      ;; FIXME: trust bytes..?
       ;; callback
-      (cb win32-handle-stream 
-          (~ win32-handle-stream 'buf/read)
-          (pointer->integer bytes))
-      ;; Queue next read
-      (~ win32-handle-stream 'buf/read := next-buf)
-      (win32_overlapped_setmydata ovl/read (object->pointer callback))
-      (check (win32_handle_read_async h
-                                      0 ;; FIXME: Feed offset
-                                      BLKSIZE
-                                      next-buf
-                                      ovl/read)))
+      (let ((err (win32_overlapped_geterror ovl/read)))
+        (cond
+          ((= err 0)
+           (cb win32-handle-stream 
+               (~ win32-handle-stream 'buf/read)
+               (pointer->integer bytes)) 
+           ;; Queue next read
+           (~ win32-handle-stream 'buf/read := next-buf) 
+           (win32_overlapped_setmydata ovl/read (object->pointer callback)) 
+           (check (win32_handle_read_async h
+                                           0 ;; FIXME: Feed offset
+                                           BLKSIZE
+                                           next-buf
+                                           ovl/read)))
+          (else
+            (cb win32-handle-stream
+                #f
+                #f)))))
     (win32_overlapped_setmydata ovl/read (object->pointer callback))
     (~ win32-handle-stream 'buf/read := buf)
     (check (win32_handle_read_async h
@@ -68,12 +77,14 @@
                                     ovl/read))))
 
 (define* (queue-write0 (Q) (win32-handle-stream) data cb)
-  ;; cb = (^[handle] ...)
+  ;; cb = (^[handle/#f] ...)
   (define (check x)
     (when (= 0 x)
-      (assert #f)))
+      (cb #f)))
   (define (callback bytes)
-    (cb win32-handle-stream))
+    (if bytes
+      (cb win32-handle-stream)
+      (cb #f)) )
   (define buflen (bytevector-length data))
   (let-with win32-handle-stream (ovl/write h)
     (win32_overlapped_setmydata ovl/write (object->pointer callback))
@@ -85,8 +96,9 @@
 
 (define* (queue-close0 (Q) (win32-handle-stream))
   (let-with win32-handle-stream (ovl/read ovl/write h)
-    (win32_overlapped_free ovl/read)
-    (win32_overlapped_free ovl/write)
+    ;; FIXME: Free it..
+    ;(win32_overlapped_free ovl/read)
+    ;(win32_overlapped_free ovl/write)
     (win32_handle_close h)))
 
 )

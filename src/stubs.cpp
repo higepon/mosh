@@ -125,6 +125,7 @@ CONS(FN(win32_overlapped_alloc), \
 CONS(FN(win32_overlapped_free), \
 CONS(FN(win32_overlapped_setmydata), \
 CONS(FN(win32_overlapped_getmydata), \
+CONS(FN(win32_overlapped_geterror), \
 CONS(FN(win32_handle_read_async), \
 CONS(FN(win32_handle_write_async), \
 CONS(FN(win32_process_redirected_child2), \
@@ -143,7 +144,7 @@ CONS(FN(win32_socket_listen), \
 CONS(FN(win32_getaddrinfo), \
 CONS(FN(win32_finalization_handler_get), \
 CONS(FN(win32_finalization_handler_create), \
-	NIL)))))))))))))))))))))))))))
+	NIL))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
 CONS(FN(win32_messagebox) ,\

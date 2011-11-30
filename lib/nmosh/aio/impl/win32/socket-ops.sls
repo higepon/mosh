@@ -50,7 +50,7 @@
   (let-with key (ovl callback)
     (callback key)))
 
-(define BLKSIZE 4096)
+(define BLKSIZE (* 64 1024))
 
 (define* (queue-listen Q (inetname) callback)
   (define my-ovl (win32_overlapped_alloc))
