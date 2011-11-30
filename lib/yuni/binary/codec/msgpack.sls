@@ -298,13 +298,12 @@
       (syntax-rules ()
         ((_ name)
          (define (name w)
-           (let ((oldwidth width))
-             (set! cur-buf (make-bytevector w)) 
-             (set! cur-buf-off 0) 
-             (set! state 'name) 
-             (set! wait w) 
-             (set! width w) 
-             (next))))))
+           (set! cur-buf (make-bytevector w)) 
+           (set! cur-buf-off 0) 
+           (set! state 'name) 
+           (set! wait w) 
+           (set! width w) 
+           (next)))))
     (define-state int)
     (define-state uint)
     (define-state short)
@@ -314,12 +313,11 @@
     (define-state array-head)
     (define-state map-head)
     (define (head) ;; init state
-      (let ((oldwidth width))
-        ;; explicitly unlink cur-buf here..
-        (set! cur-buf '())
-        (set! state #f) 
-        (set! width 1)
-        (next)))
+      ;; explicitly unlink cur-buf here..
+      (set! cur-buf '())
+      (set! state #f) 
+      (set! width 1)
+      (next))
     (define (readuint)
       (case width 
         ((1) (bv-u8 cur-buf))
@@ -339,13 +337,13 @@
        ;; ???
        'done)
       (state
-        (let ((len (- (bytevector-length bv) off)))
+        (let ((avail (- len off)))
           (cond 
-            ((< len wait)
-             (set! bufconsumed 0) ;; Eat all.
-             (set! wait (- wait len))
-             (bytevector-copy! bv off cur-buf cur-buf-off len)
-             (set! cur-buf-off (+ cur-buf-off len)))
+            ((< avail wait)
+             ;; Eat all. Don't call head/next
+             (set! wait (- wait avail))
+             (bytevector-copy! bv off cur-buf cur-buf-off avail)
+             (set! cur-buf-off (+ cur-buf-off avail)))
             (else
               (set! bufconsumed (+ bufconsumed wait))
               (bytevector-copy! bv off cur-buf cur-buf-off wait)
