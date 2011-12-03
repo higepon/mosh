@@ -1,4 +1,4 @@
-(library (nmosh aio platform cygwin)
+(library (nmosh aio platform posix)
          (export queue
                  queue-dispose
                  queue-wait/timeout

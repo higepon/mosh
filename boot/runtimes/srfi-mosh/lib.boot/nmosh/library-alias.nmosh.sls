@@ -13,13 +13,13 @@
     (("cygwin" "linux" "bsd" "darwin")
      .
      [ (nmosh pffi locale) . (nmosh pffi posix locale) ])
-    (("win32")
+    (("win32") ;; IOCP + Win32 GUI
      .
      [ (nmosh aio platform) . (nmosh aio platform win32) ])
-    (("bsd")
+    (("bsd" "darwin" "linux") ;; Posix for now.
      .
-     [ (nmosh aio platform) . (nmosh aio platform bsd) ])
-    (("cygwin")
+     [ (nmosh aio platform) . (nmosh aio platform posix) ])
+    (("cygwin") ;; Cygwin has no Posix-spawn. Uses vfork().
      .
      [ (nmosh aio platform) . (nmosh aio platform cygwin) ])
     ))

@@ -77,6 +77,7 @@
 
 #ifdef HAVE_VFORK
 #include "posix/debugee/posix_debugee.h"
+#include "posix/wait3/wait3.h" // FIXME: 
 #endif
 
 using namespace scheme;
@@ -279,6 +280,10 @@ CONS(FN(debugee_fileactions_destroy), \
 CONS(FN(debugee_fileactions_adddup2), \
 CONS(FN(debugee_fileactions_addclose), \
     NIL)))))))
+#define LIBDATA_POSIX_WAIT3 CONS(SYM("wait3"), \
+CONS(FN(size_rusage), \
+CONS(FN(try_wait3), \
+     NIL)))
 #endif
 
 Object
@@ -321,6 +326,7 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 #endif
 #ifdef HAVE_VFORK
     tmp = Object::cons(LIBDATA_POSIX_DEBUGEE,tmp);
+    tmp = Object::cons(LIBDATA_POSIX_WAIT3,tmp);
 #endif
     return tmp;
 }

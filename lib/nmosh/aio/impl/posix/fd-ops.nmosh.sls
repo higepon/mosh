@@ -26,7 +26,10 @@
   (queue-register-fd/read Q fd
                           (^[fd event]
                             (case event
-                              ((NVAL HUP ERROR)
+                              ((NVAL) ;; invalid fd
+                               (queue-unregister-fd Q fd)
+                               (callback fd #f #f))
+                              ((HUP ERROR)
                                (fd_close fd)
                                (queue-unregister-fd Q fd)
                                (callback fd #f #f))
