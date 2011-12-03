@@ -11,7 +11,7 @@
 (define (buffer-callback) ;; => callback proc
   (receive (port proc) (open-bytevector-output-port)
     (let ((cb (^[fd buf len]
-                (write (list 'LEN: len))(newline)
+                ;(write (list 'LEN: len))(newline)
                 (when buf
                   (put-bytevector port buf 0 len)))))
       (values cb proc))))
