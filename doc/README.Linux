@@ -1,13 +1,15 @@
 mosh on Linux
 =============
 
-1. Install (Ubuntu, Debian)
----------------------------
+1. Install (Mint, Ubuntu and Debian)
+------------------------------------
 
-- Install following packages using apt:
-  g++ or your preferred compiler
+- Install following packages using apt-get:
+  g++   (or your preferred compiler)
   libgmp3-dev
   libonig-dev or libonig2-dev
+  libncursesw5-dev
+
 - ./configure 
 - make
 - sudo make install
