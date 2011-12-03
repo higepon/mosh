@@ -123,11 +123,11 @@
               (in? (poll_get_pollin pollfds c))
               (out? (poll_get_pollout pollfds c)))
           (let ((n (cond (nval? 'NVAL)
-                         (hup? 'HUP)
                          (err? 'ERROR)
                          ((and in? out?) 'READ+WRITE)
                          (in? 'READ)
                          (out? 'WRITE)
+                         (hup? 'HUP)
                          (else #f))))
             (if n
               (scan (cons (cons (cons (vector-ref io-handler/read c)
