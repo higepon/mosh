@@ -4,7 +4,9 @@
         (nmosh io core)
         (nmosh net msgpack))
 
-(define (err obj) (assert #f))
+(define (err obj) 
+  (display (list 'DISCONNECTED: obj))(newline)
+  (exit -1))
 
 (define count 0)
 (define vcount 0)
