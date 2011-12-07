@@ -36,19 +36,17 @@
   (let* ((sock (socket/TCP))
          (str (handle->stream Q sock))
          (my-ovl (win32_overlapped_alloc)))
-    (define (connected bytes)
-      ;; FIXME: free my-ovl here
+    (define (connected err bytes ovl key)
+      (win32_overlapped_free my-ovl)
       (callback str))
     (win32_overlapped_setmydata my-ovl (object->pointer connected))
+    (queue-register-handle Q sock str)
     (let-with name (sockaddr len)
       (win32_socket_connect connectex sock sockaddr len my-ovl))))
 
 
 (define* listen-socket (ovl callback buf accept-sock))
 
-(define (listen-callback bytes ovl key)
-  (let-with key (ovl callback)
-    (callback key)))
 
 (define BLKSIZE (* 64 1024))
 
@@ -56,24 +54,33 @@
   (define my-ovl (win32_overlapped_alloc))
   (define sockaddr-size (+ 16 (win32_sockaddr_storage_size)))
   (define listen-sock (socket/TCP))
-  (define accept-sock (socket/TCP))
-  (define accept-buffer (make-bytevector BLKSIZE))
   (define listen (make listen-socket 
                        (ovl my-ovl)
-                       (accept-sock accept-sock)
+                       (accept-sock #f)
                        (callback callback)))
+  (define (enqueue-action)
+    (define accept-sock (socket/TCP))
+    (define accept-buffer (make-bytevector BLKSIZE))
+    (~ listen 'accept-sock := accept-sock)
+    ;; Enqueue accept action
+    (win32_socket_accept acceptex listen-sock accept-sock 
+                         accept-buffer
+                         (* 2 sockaddr-size) ;; Do not perform receive action
+                         my-ovl))
+
+  (define (listen-callback err bytes ovl key)
+    (callback listen)
+    (enqueue-action))
+
   (let-with inetname (sockaddr len) 
     ;(display (list 'BIND: sockaddr len))(newline)
+    ;; FIXME: check errors
     (win32_socket_bind listen-sock sockaddr len)
     (win32_socket_listen listen-sock))
   ;; Register callback
-  (queue-register-handle Q listen-sock listen-callback listen)
-
-  ;; Enqueue accept action
-  (win32_socket_accept acceptex listen-sock accept-sock 
-                       accept-buffer
-                       (* 2 sockaddr-size) ;; Do not perform receive action
-                       my-ovl))
+  (win32_overlapped_setmydata my-ovl (object->pointer listen-callback))
+  (queue-register-handle Q listen-sock listen)
+  (enqueue-action))
 
 (define (queue-accept Q fd callback)
   ;(display (list 'ACCEPT fd callback))(newline)

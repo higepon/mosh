@@ -11,6 +11,7 @@
                  queue-write0
                  queue-read0
                  queue-close0
+                 queue-spawn0
                  resolve-socketname/4
                  resolve-socketname/6
                  queue-listen
@@ -41,6 +42,7 @@
                  (nmosh aio impl win32 handle-ops)
                  (nmosh aio impl win32 queue-iocp)
                  (nmosh aio impl win32 socket-ops)
+                 (nmosh aio impl win32 process-ops)
                  )
 
 

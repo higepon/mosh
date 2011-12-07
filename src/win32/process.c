@@ -270,10 +270,12 @@ int
 win32_iocp_assoc(uintptr_t iocp,uintptr_t in,uintptr_t key){
 	HANDLE h = (HANDLE)in;
 	HANDLE ret;
+	int r;
 
 	ret = CreateIoCompletionPort(h,(HANDLE)iocp,key,0);
 	if(ret == NULL){
 		// error
+		r = GetLastError();
 		return 0;
 	}
 	return 1;
@@ -282,6 +284,7 @@ win32_iocp_assoc(uintptr_t iocp,uintptr_t in,uintptr_t key){
 int
 win32_iocp_pop(uintptr_t iocp, intptr_t timeout_in,uintptr_t ret_bytestrans, uintptr_t ret_key, uintptr_t ret_overlapped){
 	BOOL b;
+	int r;
 	DWORD timeout;
 	timeout = (timeout_in == -1)?INFINITE:timeout_in;
 	
@@ -290,6 +293,7 @@ win32_iocp_pop(uintptr_t iocp, intptr_t timeout_in,uintptr_t ret_bytestrans, uin
 	// So we should handle the result even if we get FALSE here..
 	b = GetQueuedCompletionStatus((HANDLE)iocp,(LPDWORD)ret_bytestrans,(PULONG_PTR)ret_key,(LPOVERLAPPED *)ret_overlapped,timeout);
 	if(!b){
+		r = GetLastError();
 		return 0;
 	}else{
 		return 1;
@@ -332,27 +336,31 @@ win32_overlapped_getmydata(void* p){
 int
 win32_overlapped_geterror(void* p){
 	OVERLAPPED* ovl = (OVERLAPPED *)p;
-	return ovl->Internal;
+	DWORD err = ovl->Internal;
+	//ovl->Internal = 0;
+	return err;
 }
 
 int
 win32_handle_read_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr_t length,uintptr_t buf,uintptr_t ol){
 	BOOL b;
 	int err;
+	DWORD out_len;
 	OVERLAPPED* ovl = (OVERLAPPED *)ol;
+	ZeroMemory(ovl,sizeof(OVERLAPPED));
 	ovl->Offset = offsetL;
 	ovl->OffsetHigh = offsetH;
 	ovl->hEvent = NULL;
-	b = ReadFile((HANDLE)h,(void*)buf,length,NULL,ovl);
+	b = ReadFile((HANDLE)h,(void*)buf,length,&out_len,ovl);
 	if(!b){
 		err = GetLastError();
 		if(err == ERROR_IO_PENDING){
-			return 1;
+			return -1; // Queued
 		}else{
-			return 0;
+			return -2;
 		}
 	}else{
-		return 1;
+		return out_len;
 	}
 }
 
@@ -361,19 +369,21 @@ win32_handle_write_async(uintptr_t h,uintptr_t offsetL,uintptr_t offsetH,uintptr
 	BOOL b;
 	int err;
 	OVERLAPPED* ovl = (OVERLAPPED *)ol;
+	DWORD out_len;
+	ZeroMemory(ovl,sizeof(OVERLAPPED));
 	ovl->Offset = offsetL;
 	ovl->OffsetHigh = offsetH;
 	ovl->hEvent = NULL;
-	b = WriteFile((HANDLE)h,(void *)buf,length,NULL,ovl);
+	b = WriteFile((HANDLE)h,(void *)buf,length,&out_len,ovl);
 	if(!b){
 		err = GetLastError();
 		if(err == ERROR_IO_PENDING){
-			return 1;
+			return -1; // Queued
 		}else{
-			return 0;
+			return -2;
 		}
 	}else{
-		return 1;
+		return out_len;
 	}
 }
 
@@ -410,14 +420,15 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 	int err;
 	BOOL r;
 	HANDLE h;
-	HANDLE ex_out, ex_err;
+	HANDLE ex_in,ex_out, ex_err;
+	ex_in = 0;
 	ex_out = 0;
 	ex_err = 0;
 
 	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
 	ZeroMemory(&si, sizeof(STARTUPINFOW));
 
-	si.cb = sizeof(STARTUPINFO);
+	si.cb = sizeof(STARTUPINFOW);
 	si.dwFlags = STARTF_USESTDHANDLES;
 	switch(in_mode){
 	case 0:
@@ -429,6 +440,7 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 		h = open_for_input(std_in,OPEN_EXISTING);
 		if(h == INVALID_HANDLE_VALUE) return 0;
 		si.hStdInput = h;
+		ex_in = h;
 		break;
     case 4:
         si.hStdInput = (HANDLE)std_in;
@@ -485,6 +497,10 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 	//FIXME: should we use CREATE_NO_WINDOW ?
 	r = CreateProcessW(NULL, spec, NULL, NULL, TRUE, 0, NULL, dir, &si, &pi);
 
+	if(ex_in != 0){
+		CloseHandle(ex_in);
+	}
+
 	if(ex_out != 0){
 		CloseHandle(ex_out);
 	}
@@ -494,6 +510,7 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 	}
 
 	if (! r){
+		r = GetLastError();
 		OSERROR("CreateProcess");
 		return 0;
 	}
@@ -515,13 +532,14 @@ int
 win32_wait_named_pipe_async(uintptr_t h, uintptr_t ovl){
 	BOOL b;
 	int err;
+	ZeroMemory((OVERLAPPED*)ovl,sizeof(OVERLAPPED));
 	b = ConnectNamedPipe((HANDLE)h,(OVERLAPPED *)ovl);
 	err = GetLastError();
 	if(!b){
 		if (err == ERROR_IO_PENDING){
 			return 1;
 		}else if(err == ERROR_PIPE_CONNECTED){
-			return 1;
+			return 2; /* Already connected */
 		}else{
 			return 0;
 		}
@@ -612,6 +630,7 @@ win32_finalization_handler_create(void* iocp, void* key, void* ptr){
 
 int
 win32_process_wait_async(uintptr_t h,uintptr_t iocp,uintptr_t key, uintptr_t overlapped){
+	ZeroMemory((OVERLAPPED*)overlapped,sizeof(OVERLAPPED));
 	invoke_thread_waiter((HANDLE)h,(HANDLE)iocp,key,overlapped);
 	return 1;
 }
@@ -655,6 +674,7 @@ win32_socket_create(int mode,int proto,uintptr_t ret_connectex,uintptr_t ret_acc
 	GUID guidConnectEx = WSAID_CONNECTEX;
 	GUID guidAcceptEx = WSAID_ACCEPTEX;
 	DWORD bogus;
+	DWORD one = 1;
 	uintptr_t ret;
 	switch(mode){
 	case 0:
@@ -682,6 +702,9 @@ win32_socket_create(int mode,int proto,uintptr_t ret_connectex,uintptr_t ret_acc
 		break;
 	}	
 	ret = (uintptr_t)socket(aaf,atype,aproto);
+
+	// Mark as non-blocking
+	ioctlsocket(ret,FIONBIO,&one);
 
 	if(atype == SOCK_STREAM){
 		WSAIoctl(ret,SIO_GET_EXTENSION_FUNCTION_POINTER,&guidConnectEx,sizeof(GUID),(void *)ret_connectex,sizeof(void*),&bogus,NULL,NULL);
@@ -774,6 +797,7 @@ win32_socket_connect(uintptr_t func,uintptr_t s,uintptr_t saddr,int namelen,uint
 	ZeroMemory(&sin,sizeof(sin));
 	sin.sin_family = AF_INET;
 	ret = bind((SOCKET)s,(const struct sockaddr *)&sin,sizeof(sin));
+	ZeroMemory((OVERLAPPED*)overlapped,sizeof(OVERLAPPED));
 	b = con((SOCKET)s,(const struct sockaddr *)saddr,namelen,NULL,0,NULL,(OVERLAPPED *)overlapped);
 	if(b){
 		return 1;
@@ -795,6 +819,7 @@ win32_socket_accept(uintptr_t func,uintptr_t slisten,uintptr_t saccept,uintptr_t
 	int err;
 	int addrlen = sizeof(SOCKADDR_STORAGE)+16;
 	int datasize = bufsize - addrlen - addrlen;
+	ZeroMemory((OVERLAPPED*)overlapped,sizeof(OVERLAPPED));
 	b = acc((SOCKET)slisten,(SOCKET)saccept,(void *)buf,datasize,addrlen,addrlen,&len,(OVERLAPPED *)overlapped);
 	if(!b){
 		err = WSAGetLastError();

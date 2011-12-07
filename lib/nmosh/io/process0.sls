@@ -28,8 +28,8 @@
        (writer stdin))))
   (define (cb pid code signal)
     (callback
-      (if (= signal 0) code #f) 
-      (if (= signal 0) #f signal)
+      (if (or (not signal) (= signal 0)) code #f) 
+      (if (or (not signal) (= signal 0)) #f signal)
       (and out-proc (out-proc))
       (and err-proc (err-proc))))
 

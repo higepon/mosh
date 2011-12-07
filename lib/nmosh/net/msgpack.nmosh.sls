@@ -28,23 +28,26 @@
         (define (writer obj callback)
           (define (send-callback fd)
             (cond
+              ((not fd)
+               (error-callback fd))
               ((pair? seg/queue)
                (let ((sendseg (caar seg/queue)))
                  (set! seg/queue (cdr seg/queue))
                  (socket-write fd sendseg send-callback)))
               (else
-                ;; Callback
-                (seg/callback)
-                (cond
-                  ((pair? queue)
-                   (set! seg/queue (generate-msgpack-buffer (caar queue))) 
-                   (set! seg/callback (cdar queue)) 
-                   (set! queue (cdr queue)) 
-                   ;; Kick next
-                   (send-callback fd))
-                  (else 
-                    (set! in-progress? #f)
-                    (set! seg/callback #f))))))
+                (let ((my-callback seg/callback))
+                  (cond
+                    ((pair? queue)
+                     (set! seg/queue (generate-msgpack-buffer (caar queue))) 
+                     (set! seg/callback (cdar queue)) 
+                     (set! queue (cdr queue)) 
+                     ;; Kick next
+                     (send-callback fd))
+                    (else 
+                      (set! in-progress? #f)
+                      (set! seg/callback #f)))
+                  ;(display (list 'msgpack-call my-callback))(newline)
+                  (my-callback)))))
 
           (cond
             (in-progress?
@@ -54,6 +57,7 @@
             (else
               (set! in-progress? #t)
               (set! seg/queue (generate-msgpack-buffer obj))
+              ;(display (list 'msgpack-queue callback))(newline)
               (set! seg/callback callback)
               (send-callback fd))))
 

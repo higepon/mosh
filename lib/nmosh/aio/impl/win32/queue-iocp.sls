@@ -9,6 +9,7 @@
 
            ;queue-create+register-window
            queue-register-handle
+           queue-unregister-handle
 
            ;; internal
            Q
@@ -21,47 +22,64 @@
 
 
 (define* event (bytes key ovl))
-(define* Q (iocp evt handles callbacks ovls))
+(define* Q (iocp evt handles ovls))
 
 (define* (queue-peek (Q))
   (queue-wait/timeout Q 0))
 (define* (queue-wait (Q))
   (queue-wait/timeout Q -1))
 
-(define* (queue-register-handle (Q) handle cb key-obj)
-  (define key (pointer->integer (object->pointer key-obj)))
-  (let-with Q (iocp handles callbacks)
-    ;; FIXME: Log handles here..
-    (hashtable-set! callbacks key cb)
-    (hashtable-set! handles key handle)
-    ;(display (list 'REGISTER-handle handle cb key))(newline)
-    (win32_iocp_assoc iocp handle (integer->pointer key))))
+(define (generic-callback bytes ovl key)
+  (let ((callback (pointer->object (win32_overlapped_getmydata ovl))))
+    ;(display (list 'iocp-callback-for ovl callback))(newline)
+    (unless (procedure? callback)
+      (assertion-violation 'generic-callback
+                           "Invalid object set with ovl"
+                           callback))
+    (let ((err (win32_overlapped_geterror ovl)))
+      ;(display (list 'calling-back err))(newline)
+      (if (= 0 err)
+        (callback err bytes ovl key)
+        (callback err #f ovl #f)))))
 
-(define (call-callback ht evt)
+(define* (queue-register-handle (Q) handle key-obj) ;; => boolean
+  (define key (pointer->integer (object->pointer key-obj)))
+  (let-with Q (iocp handles)
+    (hashtable-set! handles key handle)
+    ;(display (list 'REGISTER-handle (handle->pointer handle) key))(newline)
+    (let ((r (win32_iocp_assoc iocp handle (integer->pointer key))))
+      (= r 0))))
+
+(define* (queue-unregister-handle (Q) handle key-obj)
+  (define key (pointer->integer (object->pointer key-obj)))
+  ;;(display (list 'UNREGISTER-handle (handle->pointer handle) key))(newline)
+  (let-with Q (handles)
+    (hashtable-delete! handles key)))
+
+(define (call-callback evt)
   (let-with evt (bytes key ovl)
-    (let ((cb (hashtable-ref ht (pointer->integer key))))
-      (and (procedure? cb)
-           (cb bytes 
-               ovl
-               (pointer->object key))))))
+    (generic-callback bytes 
+                      ovl
+                      (pointer->object key))))
 
 (define* (queue-dispatch (Q))
   (let-with Q (evt)
     (and evt
          (touch! Q (evt #f))
-         (let-with Q (callbacks)
-           (call-callback callbacks evt)))))
+         (call-callback evt))))
 
 (define* (queue-wait/timeout (Q) timeout)
   (let-with Q (evt iocp)
     (or evt ; if evt = true, thereis no need to wait
         (receive (ret bytes key ovl) (win32_iocp_pop iocp timeout)
           (cond
-            ((= ret 0) #f)
+            ((= 0 (pointer->integer ovl))
+             (display "something wrong(IOCP)..\n")
+             #f)
             (else
               (touch! Q
                 (evt (make event
-                           (bytes bytes)
+                           (bytes (if (= ret 0) #f bytes))
                            (key key)
                            (ovl ovl))))
               #t))))))
@@ -76,8 +94,7 @@
   (make Q
         (evt #f)
         (iocp (win32_iocp_create))
-        (handles (make-eq-hashtable))
-        (callbacks (make-eq-hashtable))))
+        (handles (make-eq-hashtable))))
 
 )
 
