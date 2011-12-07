@@ -41,4 +41,5 @@
   (int mcur_key_resize)
   (int mcur_key_mouse)
   (void mcur_resize_term)
+  (void* mcur_getkeyloop)
   )

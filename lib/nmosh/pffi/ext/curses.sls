@@ -37,6 +37,7 @@
            mcur_key_resize
            mcur_key_mouse
            mcur_resize_term
+           mcur_getkeyloop
            )
          (import
            (rnrs)
@@ -103,5 +104,6 @@
 (define mcur_key_resize stub:mcur_key_resize)
 (define mcur_key_mouse stub:mcur_key_mouse)
 (define mcur_resize_term stub:mcur_resize_term)
+(define mcur_getkeyloop stub:mcur_getkeyloop)
 
 )
