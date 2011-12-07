@@ -72,6 +72,7 @@ int win32_dc_measure_text(void* d,wchar_t* str,int len,int* x,int* y);
 void win32_getmonitorinfo(int id,int cmd,signed int *valid,signed int *x0,signed int* y0,signed int *x1,signed int *y1);
 
 // misc
+void win32_invoke_ffithread(HANDLE iocp,uintptr_t func,uintptr_t in0,uintptr_t in1,uintptr_t overlapped);
 int win32_get_processor_count(void);
 int win32_get_ansi_codepage(void);
 int win32_multibyte_to_widechar(int cp, void* input, int input_count, void* output, int output_count, int* output_size);

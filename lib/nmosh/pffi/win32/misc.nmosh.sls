@@ -4,7 +4,8 @@
            win32_get_ansi_codepage
            win32_multibyte_to_widechar
            win32_measure_multibyte_to_widechar
-           win32_mypath)
+           win32_mypath
+           win32_invoke_ffithread)
          (import (rnrs)
                  (nmosh ffi box)
                  (prefix (nmosh stubs win32-misc) stub:))
@@ -39,5 +40,8 @@
     (unless (= ret 1)
       (assertion-violation 'win32_mypath
                            "something wrong with win32_mypath"))))
+
+(define (win32_invoke_ffithread iocp func in0 in1 ovl)
+  (stub:win32_invoke_ffithread iocp func in0 in1 ovl))
 
 )

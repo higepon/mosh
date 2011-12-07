@@ -178,12 +178,13 @@ CONS(FN(win32_dc_measure_text) ,\
 	NIL))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
+CONS(FN(win32_invoke_ffithread), \
 CONS(FN(win32_get_processor_count), \
 CONS(FN(win32_get_ansi_codepage), \
 CONS(FN(win32_multibyte_to_widechar), \
 CONS(FN(win32_measure_multibyte_to_widechar), \
 CONS(FN(win32_mypath), \
-	NIL))))))
+	NIL)))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \

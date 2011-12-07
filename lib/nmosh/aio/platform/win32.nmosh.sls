@@ -7,6 +7,7 @@
                  queue-peek
                  queue-dispatch
                  
+                 queue-invoke-ffithread
 
                  queue-write0
                  queue-read0

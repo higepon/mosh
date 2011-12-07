@@ -7,6 +7,8 @@
            queue-dispatch
            queue-peek
 
+           queue-invoke-ffithread
+
            ;queue-create+register-window
            queue-register-handle
            queue-unregister-handle
@@ -18,6 +20,7 @@
                  (srfi :8)
                  (nmosh pffi interface)
                  (nmosh pffi win32 aio)
+                 (nmosh pffi win32 misc)
                  (yuni core))
 
 
@@ -60,7 +63,7 @@
   (let-with evt (bytes key ovl)
     (generic-callback bytes 
                       ovl
-                      (pointer->object key))))
+                      key)))
 
 (define* (queue-dispatch (Q))
   (let-with Q (evt)
@@ -89,6 +92,19 @@
     ;; FIXME: dispose all registered handle
     (win32_handle_close iocp)
     (touch! Q (iocp #f))))
+
+(define* (queue-invoke-ffithread (Q) func in0 in1 cb)
+  (define (callback err bytes ovl key)
+    ;; key = out0
+    ;; bytes = out1
+    (cb (pointer->integer key) (pointer->integer bytes)))
+  (define ovl (win32_overlapped_alloc))
+  (win32_overlapped_setmydata ovl (object->pointer callback))
+  (win32_invoke_ffithread (handle->pointer (~ Q 'iocp))
+                          func
+                          (integer->pointer in0)
+                          (integer->pointer in1)
+                          ovl))
 
 (define (queue) ;; => Q
   (make Q
