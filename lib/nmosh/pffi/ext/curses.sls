@@ -92,7 +92,7 @@
 
 (define (mcur_pdcurses)
   (let ((r (stub:mcur_pdcurses)))
-    (case
+    (case r
       ((0) #f)
       ((1) #t)
       (else (assertion-violation
