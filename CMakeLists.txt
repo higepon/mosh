@@ -19,7 +19,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(MOSH_WITH_NMOSH "build nmosh version of mosh interpreter" ON)
 option(MOSH_PORTABLE "build portable version of mosh interpreter" OFF)
 option(MOSH_PREFIXLESS "build prefix-less version of mosh interpreter" ON)
-# option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter(skymosh)" OFF)
+if(WIN32)
+option(MOSH_WITH_NMOSH_GUI "build GUI version of mosh interpreter" OFF)
+set(MOSH_GUI_EXECUTABLE_NAME "nmoshw" CACHE STRING "GUI Interpreter executable name")
+endif()
 option(MOSH_DEBUG_VERSION "build Debug version of mosh interpreter" OFF)
 option(MOSH_GC_PARALLEL_MARK "Boehm GC: Turn on parallel-marking" OFF)
 set(MOSH_EXECUTABLE_NAME "nmosh" CACHE STRING "Interpreter executable name")
@@ -633,8 +636,30 @@ add_executable(${MOSH_EXECUTABLE_NAME}
     ${mosh_core_hdrs}
     ${mosh_runtime_src}
     src/main.cpp)
-
 target_link_libraries(${MOSH_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
+
+if(MOSH_PORTABLE)
+    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION .)
+else()
+    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION bin)
+endif()
+
+if(MOSH_WITH_NMOSH_GUI)
+    add_executable(${MOSH_GUI_EXECUTABLE_NAME} WIN32
+    ${onig_srcs} 
+    ${gc_srcs} 
+    ${mosh_core_srcs} 
+    ${mosh_core_hdrs}
+    ${mosh_runtime_src}
+    src/win32/winmain.cpp)
+target_link_libraries(${MOSH_GUI_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
+endif()
+
+if(MOSH_PORTABLE)
+    install(TARGETS ${MOSH_GUI_EXECUTABLE_NAME} DESTINATION .)
+else()
+    install(TARGETS ${MOSH_GUI_EXECUTABLE_NAME} DESTINATION bin)
+endif()
 
 macro(generate_applet_cmd appletname)
     set(filename "${CMAKE_CURRENT_BINARY_DIR}/nmosh-run-${appletname}.cmd")
@@ -789,13 +814,11 @@ file(COPY ${PROJECT_SOURCE_DIR}/src/test-data.scm DESTINATION ${PROJECT_BINARY_D
 
 
 if(MOSH_PORTABLE)
-    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION .)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib DESTINATION .)
     if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
         install(FILES ${MOSH_GMP_DIR}/mpir.dll DESTINATION .)
     endif()
 else()
-    install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION bin)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib 
         DESTINATION share/mosh/${MOSH_VERSION})
     if(EXISTS ${MOSH_GMP_DIR}/mpir.dll)
