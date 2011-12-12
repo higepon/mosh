@@ -16,11 +16,13 @@
                  queue-connect
 
                  queue-spawn0
-                 
+
+                 queue-invoke-ffithread
                  )
          (import (nmosh aio impl posix posix-socket)
                  (nmosh aio impl posix fd-ops)
                  (nmosh aio impl posix queue-fd-poll)
+                 (nmosh aio impl posix thread-ops)
                  (nmosh aio impl cygwin process-ops))
          
          

@@ -78,6 +78,7 @@
 #ifdef HAVE_VFORK
 #include "posix/debugee/posix_debugee.h"
 #include "posix/wait3/wait3.h" // FIXME: 
+#include "posix/pthread/mosh_pthread.h" // FIXME:
 #endif
 
 using namespace scheme;
@@ -285,6 +286,9 @@ CONS(FN(debugee_fileactions_addclose), \
 CONS(FN(size_rusage), \
 CONS(FN(try_wait3), \
      NIL)))
+#define LIBDATA_POSIX_FFITHREAD CONS(SYM("posix-ffithread"), \
+CONS(FN(posix_invoke_ffithread), \
+     NIL))
 #endif
 
 Object
@@ -328,6 +332,7 @@ stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
 #ifdef HAVE_VFORK
     tmp = Object::cons(LIBDATA_POSIX_DEBUGEE,tmp);
     tmp = Object::cons(LIBDATA_POSIX_WAIT3,tmp);
+    tmp = Object::cons(LIBDATA_POSIX_FFITHREAD,tmp);
 #endif
     return tmp;
 }

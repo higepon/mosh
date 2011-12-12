@@ -197,7 +197,8 @@ src/posix/fd/posix_fd.c src/posix/poll/posix_poll.c \
 src/posix/socket/posix_socket.c src/posix/sigchld_handler/sigchld_handler.c \
 src/posix/debugee/posix_debugee.c \
 src/bsd/kqueue/kqueue_stubs.c \
-src/posix/wait3/wait3.c 
+src/posix/wait3/wait3.c \
+src/posix/pthread/mosh_pthread.c
 
 if FFI_I386
 MOSH_CORE_SRCS += src/ffi_stub_i386.S
