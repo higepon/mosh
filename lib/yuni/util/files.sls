@@ -14,6 +14,7 @@
            file->list
            file->sexp-list
            file->string-list
+           file->bytevector
            string-list->file
 
            ;; defined in file-ops
@@ -222,6 +223,11 @@
 (define (file->string-list pth)
   (file->list get-line pth))
 
+(define (file->bytevector pth)
+  (define p (open-file-input-port pth))
+  (define bv (get-bytevector-all p))
+  (close-port p)
+  bv)
 
 ;; To file op .. Always overwrite
 (define (string-list->file pth l)
