@@ -653,12 +653,13 @@ if(MOSH_WITH_NMOSH_GUI)
     ${mosh_runtime_src}
     src/win32/winmain.cpp)
 target_link_libraries(${MOSH_GUI_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
-endif()
 
 if(MOSH_PORTABLE)
     install(TARGETS ${MOSH_GUI_EXECUTABLE_NAME} DESTINATION .)
 else()
     install(TARGETS ${MOSH_GUI_EXECUTABLE_NAME} DESTINATION bin)
+endif()
+
 endif()
 
 macro(generate_applet_cmd appletname)
