@@ -20,7 +20,7 @@
                            c)))
   (check (fd_read fd out0 size-of-pointer))
   (check (fd_read fd out1 size-of-pointer))
-  (cb (ptr-box-ref out0) (ptr-box-ref out1)))
+  (cb (pointer->integer (ptr-box-ref out0)) (pointer->integer (ptr-box-ref out1))))
 
 (define (queue-invoke-ffithread Q func in0 in1 cb)
   (define (callback fd evt)
@@ -32,6 +32,7 @@
                              evt
                              (fd->int fd)))))
   (receive (in out) (fd_pipe)
-    (queue-register-fd/read Q in callback)))
+    (queue-register-fd/read Q in callback)
+    (ffithread-invoke (fd->int out) func (integer->pointer in0) (integer->pointer in1))))
 
 )

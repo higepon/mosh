@@ -1,4 +1,6 @@
 #include "config.h"
+#include <stdint.h>
+#include <wchar.h>
 
 /* PDCurses settings */
 #define PDC_WIDE 1

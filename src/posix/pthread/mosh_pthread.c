@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 
 typedef uintptr_t (*ffithread_callback_t)(uintptr_t in0,uintptr_t in1,
                                           uintptr_t* out0,uintptr_t* out1);
