@@ -32,7 +32,7 @@
                              evt
                              (fd->int fd)))))
   (receive (in out) (fd_pipe)
-    (queue-register-fd/read Q in callback)
-    (ffithread-invoke (fd->int out) func (integer->pointer in0) (integer->pointer in1))))
+    (ffithread-invoke (fd->int out) func (integer->pointer in0) (integer->pointer in1))
+    (queue-register-fd/read Q in callback)))
 
 )
