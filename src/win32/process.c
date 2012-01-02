@@ -442,7 +442,7 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 		si.hStdInput = h;
 		ex_in = h;
 		break;
-    case 4:
+        case 4:
         si.hStdInput = (HANDLE)std_in;
         break;
 	}
@@ -465,7 +465,7 @@ win32_process_redirected_child2(wchar_t* spec,wchar_t* dir, wchar_t* std_in, wch
 		si.hStdOutput = h;
 		ex_out = h;
 		break;
-    case 4:
+        case 4:
         si.hStdOutput = (HANDLE)std_out;
         ex_out = (HANDLE)std_out;
         break;
@@ -935,7 +935,7 @@ typedef struct{
     HANDLE iocp;
     HWND hWnd;
     HDC hBufferDataDC;
-	HBITMAP buffer;
+    HBITMAP buffer;
     CRITICAL_SECTION cs;
     int enable;
 }window_handler_data;
@@ -961,7 +961,7 @@ window_handler(void* p){
         p);
     whd->hWnd = hWnd;
     whd->enable = 1;
-    while(GetMessageW(&msg,hWnd,0,0)){
+    while(GetMessageW(&msg,0,0,0)){
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
         if(!whd->enable) return;
@@ -1002,70 +1002,84 @@ clearbuffer(window_handler_data* whd){
 LRESULT CALLBACK
 BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     window_handler_data* whd = (window_handler_data *)GetWindowLongPtr(hWnd,GWL_USERDATA);
-	PAINTSTRUCT ps;
-	HDC hDC;
-	RECT r;
+    PAINTSTRUCT ps;
+    HDC hDC;
+    RECT r;
+    LPARAM l;
+    int w,h;
+    BOOL b;
 
     switch(msg){
-	case WM_PAINT:
-		if(whd->hBufferDataDC){
-			hDC = BeginPaint(hWnd,&ps);
-			GetClientRect(hWnd,&r);
-            EnterCriticalSection(&whd->cs);
-			BitBlt(hDC,0,0,r.right,r.bottom,whd->hBufferDataDC,0,0,SRCCOPY);
-            LeaveCriticalSection(&whd->cs);
-			EndPaint(hWnd,&ps);
-		}
-		return 0;
-	case WM_ERASEBKGND:
-		return 0;
-    case WM_CREATE:
-        whd = (window_handler_data *)(((CREATESTRUCT *)lParam)->lpCreateParams);
-        SetWindowLongPtrW(hWnd,GWL_USERDATA,(LONG_PTR)whd);
-        post_window_event(whd,0,(uintptr_t)hWnd);
-        return 0;
-    case WM_DESTROY:
-		clearbuffer(whd);
-        post_window_event(whd,1,0);
-        whd->enable=0;
-        return 0;
-    case WM_CLOSE:
-        post_window_event(whd,2,0);
-        return 0;
-    case WM_CHAR:
-        post_window_event(whd,3,wParam); // UTF-16 keycode
-        return 0;
-    case WM_MOUSEMOVE:
-        post_window_event(whd,4,lParam);
-        return 0;
-    case WM_MOUSEWHEEL:
-        post_window_event(whd,6,GET_WHEEL_DELTA_WPARAM(wParam));
-        return 0;
+        case WM_PAINT:
+            hDC = BeginPaint(hWnd,&ps);
+            if(whd->hBufferDataDC){
+                GetClientRect(hWnd,&r);
+                EnterCriticalSection(&whd->cs);
+                b = BitBlt(hDC,0,0,r.right,r.bottom,whd->hBufferDataDC,0,0,SRCCOPY);
+                if(!b){
+                    printf("ERROR = %d\n",GetLastError());
+                }
+                LeaveCriticalSection(&whd->cs);
+            }
+            EndPaint(hWnd,&ps);
+            return 0;
+        case WM_ERASEBKGND:
+            return 0;
+        case WM_CREATE:
+            whd = (window_handler_data *)(((CREATESTRUCT *)lParam)->lpCreateParams);
+            SetWindowLongPtrW(hWnd,GWL_USERDATA,(LONG_PTR)whd);
+            post_window_event(whd,0,(uintptr_t)hWnd);
+            return 0;
+        case WM_DESTROY:
+            clearbuffer(whd);
+            post_window_event(whd,1,0);
+            whd->enable=0;
+            return 0;
+        case WM_CLOSE:
+            post_window_event(whd,2,0);
+            return 0;
+        case WM_CHAR:
+            post_window_event(whd,3,wParam); // UTF-16 keycode
+            return 0;
+        case WM_MOUSEMOVE:
+            post_window_event(whd,4,lParam);
+            return 0;
+        case WM_MOUSEWHEEL:
+            post_window_event(whd,6,GET_WHEEL_DELTA_WPARAM(wParam));
+            return 0;
 //FIXME: MinGW fix..
 #ifndef WM_MOUSEHWHEEL
 #define WM_MOUSEHWHEEL 0x20e
 #endif
-    case WM_MOUSEHWHEEL:
-        post_window_event(whd,7,GET_WHEEL_DELTA_WPARAM(wParam));
-        return 0;
-    case WM_SIZE:
-        post_window_event(whd,20,lParam);
-        return 0;
-	case WM_USER:
-		DestroyWindow(hWnd);
-		return 0;
-	case WM_ACTIVATE:
-		if(wParam == WA_INACTIVE){
-			post_window_event(whd,31,0);
-		}else{
-			post_window_event(whd,30,0);
-		}
-		goto do_default;
-    // mouse keys
-    // keyboard keys
+        case WM_MOUSEHWHEEL:
+            post_window_event(whd,7,GET_WHEEL_DELTA_WPARAM(wParam));
+            return 0;
+        case WM_SIZING:
+            r = *(RECT *)lParam;
+            w = r.right - r.left;
+            h = r.bottom - r.top;
+            l = (h << 16) + w;
+            // Post Sizing event
+            post_window_event(whd,20,l);
+
+            // Restore previous state
+            GetWindowRect(hWnd,(RECT *)lParam);
+            return 1;
+        case WM_USER:
+            DestroyWindow(hWnd);
+            return 0;
+        case WM_ACTIVATE:
+            if(wParam == WA_INACTIVE){
+                post_window_event(whd,31,0);
+            }else{
+                post_window_event(whd,30,0);
+            }
+            goto do_default;
+        // mouse keys
+        // keyboard keys
 do_default:
-    default:
-        return DefWindowProcW(hWnd, msg, wParam, lParam);
+        default:
+            return DefWindowProcW(hWnd, msg, wParam, lParam);
     }
 }
 
@@ -1077,21 +1091,24 @@ win32_window_move(void* hWnd,signed int x,signed int y,signed int w,signed int h
 
 void
 win32_window_fitbuffer(void* p){
-	window_handler_data* whd = (window_handler_data *)p;
-	RECT r;
-	HDC hBufferDataDC;
-	HBITMAP buffer;
+    window_handler_data* whd = (window_handler_data *)p;
+    RECT r;
+    HDC hDC;
+    HDC hBufferDataDC;
+    HBITMAP buffer;
     HWND hWnd = whd->hWnd;
-	GetClientRect(hWnd,&r);
+    GetClientRect(hWnd,&r);
 
-	clearbuffer(whd);
-	hBufferDataDC = CreateCompatibleDC(NULL);
-    
-	buffer = CreateCompatibleBitmap(hBufferDataDC,r.right,r.bottom);
+    clearbuffer(whd);
+    hBufferDataDC = CreateCompatibleDC(NULL);
+
+    hDC = GetDC(hWnd);
+    buffer = CreateCompatibleBitmap(hDC,r.right,r.bottom);
+    ReleaseDC(hWnd,hDC);
     SelectObject(hBufferDataDC,buffer);
 
     whd->hBufferDataDC = hBufferDataDC;
-	whd->buffer = buffer;
+    whd->buffer = buffer;
 }
 
 // 0 = not activate, 1 = activate
@@ -1104,6 +1121,7 @@ win32_window_show(void* hWnd,int cmd){
         break;
     case 0:
         sw = SW_SHOWNA;
+        break;
     }
     ShowWindow((HWND)hWnd,sw);
 	UpdateWindow((HWND)hWnd);
@@ -1154,10 +1172,9 @@ win32_window_create(void* iocp,void* overlapped){
     window_handler_data *whd = (window_handler_data *)overlapped;
     whd->iocp = iocp;
     whd->hBufferDataDC = 0;
-	whd->buffer = 0;
+    whd->buffer = 0;
     InitializeCriticalSection(&whd->cs);
-
-	_beginthread(window_handler,0,overlapped);
+    _beginthread(window_handler,0,overlapped);
 }
 
 typedef struct{
@@ -1254,8 +1271,35 @@ win32_window_updaterects(void* w,void* dc,int* rects, int count){
 
 void*
 win32_window_createbitmap(void *w,int x,int y){
+    HDC hDC;
+    HBITMAP hBitmap;
     window_handler_data *whd = (window_handler_data *)w;
-    return CreateCompatibleBitmap(whd->hBufferDataDC,x,y);
+    hDC = GetDC(whd->hWnd);
+    hBitmap = CreateCompatibleBitmap(hDC,x,y);
+    ReleaseDC(whd->hWnd,hDC);
+    return hBitmap;
+}
+
+void
+win32_window_getwindowrect(void* h,int* x0,int* y0,int* x1,int* y1){
+    HWND hWnd = (HWND)h;
+    RECT r;
+    GetWindowRect(hWnd,&r);
+    *x0 = r.left;
+    *y0 = r.top;
+    *x1 = r.right;
+    *y1 = r.bottom;
+}
+
+void
+win32_window_getclientrect(void* h,int* x0,int* y0,int* x1,int* y1){
+    HWND hWnd = (HWND)h;
+    RECT r;
+    GetClientRect(hWnd,&r);
+    *x0 = r.left;
+    *y0 = r.top;
+    *x1 = r.right;
+    *y1 = r.bottom;
 }
 
 int
@@ -1437,11 +1481,11 @@ win32_dc_draw(void* dc,void* bmpdc,intptr_t* ops,int len){
             SelectObject(hDC,(HGDIOBJ)arg[1]);
             p+=2;
             continue;
-// 31 BLT [HBITMAP XD YD X0 Y0 X1 Y1] // N.B. This cannot COPY on same bitmap
+// 31 BLT [XD YD X0 Y0 X1 Y1] // N.B. This cannot COPY on same bitmap
         case 31:
-            SelectObject(hBmpDC,(HGDIOBJ)arg[1]);
-            BitBlt(hDC,arg[4],arg[5],arg[6],arg[7],hBmpDC,arg[2],arg[3],SRCCOPY);
-            p+=8;
+            BitBlt(hDC,arg[3],arg[4],arg[5],arg[6],hBmpDC,arg[1],arg[2],
+                   SRCCOPY);
+            p+=7;
             continue;
         }
     }

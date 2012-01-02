@@ -1,5 +1,6 @@
 (library (nmosh io core)
          (export 
+           io-dispatch-loop/idle
            io-dispatch-loop
            io-dispatch
            io-dispatch-sync
@@ -27,7 +28,18 @@
      (queue-dispatch Q))
     ((timeout) 
      (queue-wait/timeout Q timeout)
-     (queue-dispatch Q timeout))))
+     (queue-dispatch Q))))
+
+(define (io-dispatch-loop/idle idle)
+  (define (proc)
+    (when (queue-wait/timeout Q 0)
+      (queue-dispatch Q)
+      (proc)))
+  (define (loop)
+    (proc)
+    (idle)
+    (loop))
+  (loop))
 
 (define-syntax io-dispatch-sync
   (syntax-rules ()

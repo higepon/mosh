@@ -38,6 +38,8 @@
                  ;; GUI related
                  ;queue-create-window
                  ;dispose-io-object
+                 queue-window-register
+                 queue-window-destroy
                  )
          (import (rnrs)
                  (nmosh aio impl win32 handle-ops)

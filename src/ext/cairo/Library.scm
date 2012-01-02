@@ -1,0 +1,21 @@
+(mosh-cairo
+  c-function-table
+  *internal*
+  (plugin: mosh_cairo)
+  (libname: mosh-cairo)
+  #(ret name args)
+  (void* mc_context_create (void*))
+  (void mc_context_destroy (void*))
+  (void mc_surface_destroy (void*))
+  (void mc_pattern_destroy (void*))
+  (void* mc_pattern_solid (double double double double))
+  (void* mc_pattern_surface (void*))
+  (void mc_kick (void* void* int void* int void* int void* int))
+  (void* mc_mem_create (int int))
+  (void* mc_mem_create_alpha (int int))
+  (void* mc_mem_png_load (char*))
+  (int mc_mem_png_save (void* char*))
+  (void* mc_win32_create (void*))
+  (void* mc_win32_create_alpha (void* int int))
+  (void* mc_win32_create_font (void*))
+  )

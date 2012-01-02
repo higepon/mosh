@@ -54,6 +54,8 @@ void win32_window_fitbuffer(void* wnd);
 
 void win32_window_updaterects(void* w,void* dc, int* rects, int count);
 void* win32_window_createbitmap(void *w,int x,int y);
+void win32_window_getwindowrect(void*,int*,int*,int*,int*);
+void win32_window_getclientrect(void*,int*,int*,int*,int*);
 int win32_window_getclientrect_x(void* h);
 int win32_window_getclientrect_y(void* h);
 void* win32_dc_create(void);

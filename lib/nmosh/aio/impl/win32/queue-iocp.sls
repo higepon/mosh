@@ -9,10 +9,11 @@
 
            queue-invoke-ffithread
 
-           ;queue-create+register-window
            queue-register-handle
            queue-unregister-handle
 
+           queue-window-register
+           queue-window-destroy
            ;; internal
            Q
            )
@@ -21,6 +22,7 @@
                  (nmosh pffi interface)
                  (nmosh pffi win32 aio)
                  (nmosh pffi win32 misc)
+                 (nmosh pffi win32 gui)
                  (yuni core))
 
 
@@ -77,7 +79,7 @@
         (receive (ret bytes key ovl) (win32_iocp_pop iocp timeout)
           (cond
             ((= 0 (pointer->integer ovl))
-             (display "something wrong(IOCP)..\n")
+             ;(display "something wrong(IOCP)..\n")
              #f)
             (else
               (touch! Q
@@ -112,5 +114,17 @@
         (iocp (win32_iocp_create))
         (handles (make-eq-hashtable))))
 
+
+(define* (queue-window-register (Q) w callback) ;; => hwnd
+  (win32_overlapped_setmydata w (object->pointer callback))
+  (let* ((hwnd (win32_window_create (~ Q 'iocp) w)))
+    hwnd))
+
+(define* (queue-window-destroy (Q) hwnd)
+  (win32_window_destroy hwnd)
+  ;; FIXME: Unregister it?
+  )
+
+(win32_registerwindowclass)
 )
 

@@ -731,6 +731,42 @@ if(MOSHPLUGIN_CURSES)
     endif(CURSES_LIBRARIES)
 endif(MOSHPLUGIN_CURSES)
 
+# Cairo
+
+# handwritten..
+
+set(CAIRO_LIBS "" CACHE STRING "additional cairo libraries")
+
+if(MSVC)
+    set(CAIROLIB "cairo.lib")
+else()
+    set(CAIROLIB "libcairo.so")
+endif()
+
+find_path(CAIRO_INCLUDE_DIR cairo.h
+    /usr/local/include/cairo
+    /usr/include/cairo
+    ~/Library/Frameworks
+    /Library/Frameworks)
+
+find_file(CAIRO_LIBRARY ${CAIROLIB}
+    /usr/local/lib
+    /usr/lib
+    ~/Library/Frameworks
+    /Library/Frameworks)
+
+if(CAIRO_INCLUDE_DIR)
+    option(MOSHPLUGIN_CAIRO "build nmosh cairo 2D vector graphics plugin" ON)
+else()
+    option(MOSHPLUGIN_CAIRO "build nmosh cairo 2D vector graphics plugin" OFF)
+endif()
+
+if(MOSHPLUGIN_CAIRO)
+    add_mosh_plugin(mosh_cairo src/ext/cairo/moshcairo.c)
+    target_link_libraries(mosh_cairo ${CAIRO_LIBS} ${CAIRO_LIBRARY})
+    include_directories(AFTER ${CAIRO_INCLUDE_DIR})
+endif()
+
 # tests
 
 add_library(testinggc EXCLUDE_FROM_ALL
