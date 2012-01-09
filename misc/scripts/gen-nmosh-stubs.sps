@@ -58,7 +58,7 @@
       (char=? #\* (list-ref (reverse (string->list str)) 0)))
     (let ((str (symbol->string sym)))
       (case sym 
-        ((int char* int* void* void) ;; verbatim output
+        ((int char* int* void* void double) ;; verbatim output
          sym)
         ((fn) 
          ;; callback is not always a callback..
