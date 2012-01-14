@@ -53,6 +53,27 @@
     (lambda (str) (and (string? str) (list->string (cdr (string->list str)))))
     (lambda (str) str)))
 
+;; Win32 path hack.
+
+(define (make-extended-path str)
+  ;; Win32 extened path won't allow slash as path-sep.
+  ;; So we map them to back-slashes
+  (string-append "\\\\?\\"
+                 (list->string
+                   (map (lambda (c) (if (char=? c #\/) #\\ c))
+                        (string->list str)))))
+
+(define path-absolute
+  (if (run-win32-np?)
+    (lambda (str)
+      (let ((head (and (< 1 (string-length str))
+                       (substring str 0 3))))
+        (if (and head (string=? "\\\\" head)
+                 (not (char=? #\: (string-ref head 1))))
+          str ;; return the path as-is if the path wasn't a absolute local path.
+          (make-extended-path str))))
+    (lambda (str) str)))
+
 (define (nmosh-cache-dir) 
   (let ((cpath (get-environment-variable "NMOSH_CACHEDIR")))
     (if cpath
@@ -80,18 +101,22 @@
       (string-append c "/")
       #f)))
 
-(define CACHEPATH (nmosh-cache-path))
+;; CACHEPATH includes trailing slash (or back-slash on Win32)
+(define CACHEPATH (path-absolute (nmosh-cache-path)))
 (define CACHEDIR (nmosh-cache-dir))
 
 (define has-cachepath? (and CACHEPATH CACHEDIR))
 
 (define absolute-path? 
-  (if (run-win32-np?) ;FIXME: support UNC pathes
+  (if (run-win32-np?)
     (lambda (pl)
       (let ((a (car pl)))
-        (and ; is a drive letter?
-          (= (string-length a) 2)
-          (char=? (cadr (string->list a)) #\:))))
+        (or
+          (and ; is a drive letter?
+            (= (string-length a) 2)
+            (char=? (cadr (string->list a)) #\:))
+          ;; ... or UNC path ?
+          (= (string-length a) 0))))
     (lambda (pl) (= 0 (string-length (car pl))) )))
 
 ;;------------------------------------------------
@@ -169,16 +194,39 @@
   (apply string-append 
          (insert-slash (fold-dotdot (omit-dot (omit-zerolen l))))))
 
-(define (make-absolute-path pth)
-  (let ((pl (strsep (pathfilter pth) #\/)))
-    (if (pair? pl)
-      (pathfinish
-        (compose-path (if (absolute-path? pl)
-                        (if (string=? "win32" (host-os)) ;FIXME FIXME FIXME!
-                          pl ; Include Drive letter
-                          (cdr pl)) ; Dispose heading /
-                        (append (strsep RUNPATH #\/) pl))))
-      "")))
+(define make-absolute-path
+  (if (run-win32-np?)
+    (lambda (pth)
+      (define pl (strsep (pathfilter pth) #\/))
+      (cond
+        ((and
+           pth
+           (< 4 (string-length pth))
+           (string=? "\\\\?\\" (substring pth 0 4)))
+         ;; If it was extended path, return it as-is
+         pth)
+        (else
+          (if (pair? pl) 
+            (path-absolute
+              (pathfinish
+                (compose-path
+                  ;; Standard absolute path (c:\hoge\fuga)
+                  (if (and (< 2 (string-length pth))
+                           (char=? #\: (string-ref pth 1)))
+                    pl
+                    (append (strsep RUNPATH #\/) pl)))))
+            ""))))
+    (lambda (pth)
+      ;; FIXME: To avoid psyntax-mosh bug
+      (define pl (strsep (pathfilter pth) #\/))
+      (if (pair? pl)
+        (path-absolute
+          (pathfinish
+            (compose-path
+              (if (absolute-path? pl)
+                (cdr pl)
+                (append (strsep RUNPATH #\/) pl)))))
+        ""))))
 
 (define (pathsep str)
   (strsep str CHR-ENVPATHSEP))
@@ -203,15 +251,28 @@
   (call-with-port (open-file-input-port fn) fasl-read))
 
 ; load cache or generate cache (and load them)
+(define pathchop
+  (if (run-win32-np?)
+    (lambda (pth)
+      (define l (string-length pth))
+      (or
+        (and (< 3 l)
+             (string=? "\\\\?\\"
+                       (substring pth 0 4))
+             (substring pth 4 l))
+        pth))
+    (lambda (pth) pth)))
+
 (define (ca-filename->cachename fn)
   (define (escape str)
     (list->string (map (lambda (e) (cond
                                      ((char=? e #\:) #\~)
+                                     ((char=? e #\\) #\~)
                                      ((char=? e #\/) #\~)
                                      ((char=? e #\~) #\@)
                                      (else e)))
                        (string->list str))))
-  (string-append CACHEPATH (escape fn) ".nmosh-cache"))
+  (string-append CACHEPATH (escape (pathchop fn)) ".nmosh-cache"))
 
 (define dbg-files '())
 (define (dbg-addfile fn cdn dfn)
@@ -511,8 +572,8 @@
     (if (null? l)
       #f
       (begin
-        ;(PCK 'check-file (car l))
-        (if (file-exists? (car l))
+        (PCK 'check-file (make-absolute-path (car l)))
+        (if (file-exists? (make-absolute-path (car l)))
           (car l)
           (check-files (cdr l))))))
   ; e.g. for (example test) :

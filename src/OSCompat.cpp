@@ -260,7 +260,7 @@ bool File::open(const ucs4string& file, int flags)
     default:
         MOSH_ASSERT(0);
     }
-    desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
+    desc_ = CreateFileW(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
 #elif defined(MONA)
     intptr_t mode = 0;
     if (flags & Create) {
