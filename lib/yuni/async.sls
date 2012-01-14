@@ -141,7 +141,9 @@
                       (callback (vector->list v))
                       (next)))))
         (set! jobs (+ jobs 1))
-        (let ((r (apply proc (append par (list cb)))))
+        (let ((r (if (list? par) 
+                   (apply proc (append par (list cb)))
+                   (proc par cb))))
           (unless r
             (set! jobs 0)
             (set! abort? #t))))))
