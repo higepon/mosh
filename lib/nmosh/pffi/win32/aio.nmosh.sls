@@ -25,6 +25,7 @@
                  win32_socket_accept
                  win32_socket_bind
                  win32_socket_listen
+                 win32_socket_getsockname
 
                  ;; GC related
                  win32_finalization_handler_alloc_overlapped
@@ -222,6 +223,7 @@
 
 ;; socket
 (define win32_sockaddr_storage_size stub:win32_sockaddr_storage_size)
+(define sockaddr-size (win32_sockaddr_storage_size))
 
 ;; mode = 0 .. UNSPEC, 4/6 = IP
 ;; proto = 1 .. TCP, 2 .. UDP
@@ -324,6 +326,11 @@
 
 (define* (win32_socket_listen/backlog-count (s win32-handle) l)
   (stub:win32_socket_listen (handle->pointer s) l))
+
+(define* (win32_socket_getsockname (s win32-handle)) ;; => bv
+  (define bv (make-bytevector sockaddr-size))
+  (stub:win32_socket_getsockname (handle->pointer s) bv sockaddr-size)
+  bv)
 
 (define win32_socket_listen
   (case-lambda

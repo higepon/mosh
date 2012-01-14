@@ -19,13 +19,21 @@
   ;; callback = (^[fd inetname])
   (queue-accept nmosh-io-master-queue fd callback))
 
-(define (make-server-socket name port callback)
+(define (make-server-socket name port socket-callback result-callback)
+  ;; result-callback = (^[success? inetname/message])
+  ;; socket-callback = (^[fd])
   (define (do-listen inetname)
-    (queue-listen nmosh-io-master-queue (car inetname) callback))
+    (cond ((pair? inetname)
+           (let ((lname (queue-listen nmosh-io-master-queue (car inetname) 
+                                      socket-callback)))
+             (if lname
+               (result-callback #t lname)
+               (result-callback #f "Listen failed"))) )
+          (else
+            (result-callback #f "Invalid name"))))
 
-  ;; callback = (^[fd])
   (resolve-socketname/4 nmosh-io-master-queue
-                        name port
+                        name (or port 0)
                         do-listen))
 
 (define (make-client-socket name port callback)
@@ -41,7 +49,7 @@
   (queue-read0 nmosh-io-master-queue fd callback))
 
 (define (socket-write fd data callback)
-  ;; callback = (^[fd])
+  ;; callback = (^[fd/#f])
   (queue-write0 nmosh-io-master-queue fd data callback))
 
 (define (socket-close fd)

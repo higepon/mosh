@@ -65,14 +65,19 @@
     (start-read fd reader)))
 
 ;;  
-(define (make-msgpack-server-socket name port accept-callback error-callback)
+(define (make-msgpack-server-socket name port 
+                                    accept-callback 
+                                    error-callback
+                                    result-callback)
   ;; accept-callback = (^[fd inetname] ...)
   ;; error-callback = (^[fd] ...)
+  ;; result-callback = (^[success? inetname/message])
   (make-server-socket
     name port
-    (^[fd]
-      (socket-accept fd (^[fd inetname]
-                          (accept-callback fd inetname))))))
+    (^[servfd]
+      (socket-accept servfd (^[fd inetname]
+                              (accept-callback servfd fd inetname))))
+    result-callback))
 
 ;;  
 (define (make-msgpack-client-socket name port recv-callback write-callback error-callback)

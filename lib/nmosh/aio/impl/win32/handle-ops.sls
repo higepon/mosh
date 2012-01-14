@@ -2,11 +2,12 @@
          (export 
            ;; internal
            handle->stream
+           win32-handle-stream
 
            ;; external
            queue-read0
            queue-write0
-           queue-close0
+           ; queue-close0 was moved to socket-ops
            )
          (import (rnrs)
                  (yuni core)
@@ -139,13 +140,5 @@
                                      buflen
                                      data
                                      ovl/write))))
-
-(define* (queue-close0 (Q) (win32-handle-stream))
-  (let-with win32-handle-stream (ovl/read ovl/write h)
-    (queue-unregister-handle Q h win32-handle-stream)
-    ;; FIXME: Free it..
-    ;(win32_overlapped_free ovl/read)
-    ;(win32_overlapped_free ovl/write)
-    (win32_handle_close h)))
 
 )

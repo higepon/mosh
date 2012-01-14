@@ -9,6 +9,7 @@
                  (nmosh pffi win32 aio)
                  (nmosh pffi win32 util)
                  (nmosh aio impl win32 handle-ops)
+                 (nmosh aio impl win32 socket-ops) ;; close0
                  (nmosh aio impl win32 queue-iocp))
 
 ;;

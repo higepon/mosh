@@ -15,6 +15,7 @@
                  queue-spawn0
                  resolve-socketname/4
                  resolve-socketname/6
+                 inetname-port
                  queue-listen
                  queue-accept
                  queue-connect

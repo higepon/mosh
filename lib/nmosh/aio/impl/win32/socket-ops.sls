@@ -4,6 +4,8 @@
            queue-connect
            queue-listen
            queue-accept
+           queue-close0
+           inetname-port
            resolve-socketname/4
            resolve-socketname/6
            )
@@ -45,18 +47,50 @@
       (win32_socket_connect connectex sock sockaddr len my-ovl))))
 
 
-(define* listen-socket (ovl callback buf accept-sock))
+(define* listen-socket (ovl callback buf listen-sock accept-sock))
 
+(define* (queue-close0/handle (Q) (win32-handle-stream))
+  (let-with win32-handle-stream (ovl/read ovl/write h)
+    (queue-unregister-handle Q h win32-handle-stream)
+    ;; FIXME: Free it..
+    ;(win32_overlapped_free ovl/read)
+    ;(win32_overlapped_free ovl/write)
+    (win32_handle_close h)))
+
+(define* (queue-close0/listen (Q) (listen-socket))
+  (let-with listen-socket (listen-sock)
+    (queue-close0/handle Q listen-sock)))
+
+(define (queue-close0 Q obj)
+  (cond
+    ((is-a? obj listen-socket)
+     ;(win32_overlapped_free (~ obj 'ovl))
+     (win32_handle_close (~ obj 'listen-sock)))
+    ((is-a? obj win32-handle-stream)
+     (queue-close0/handle Q obj))
+    ((not obj)
+     'do-nothing)
+    (else
+      (assertion-violation 'queue-close0
+                           "Invalid object for queue-close0"
+                           obj))))
 
 (define BLKSIZE (* 64 1024))
 
-(define* (queue-listen Q (inetname) callback)
+(define (makemyname in bv)
+  (make inetname
+        (family (~ in 'family))
+        (len (~ in 'len))
+        (sockaddr bv)))
+
+(define* (queue-listen Q (inetname) callback) ;; => inetname / #f
   (define my-ovl (win32_overlapped_alloc))
   (define sockaddr-size (+ 16 (win32_sockaddr_storage_size)))
   (define listen-sock (socket/TCP))
   (define listen (make listen-socket 
                        (ovl my-ovl)
                        (accept-sock #f)
+                       (listen-sock listen-sock)
                        (callback callback)))
   (define (enqueue-action)
     (define accept-sock (socket/TCP))
@@ -80,7 +114,10 @@
   ;; Register callback
   (win32_overlapped_setmydata my-ovl (object->pointer listen-callback))
   (queue-register-handle Q listen-sock listen)
-  (enqueue-action))
+  (enqueue-action)
+  (let* ((bv (win32_socket_getsockname listen-sock))
+         (myname (makemyname inetname bv)))
+    myname))
 
 (define (queue-accept Q fd callback)
   ;(display (list 'ACCEPT fd callback))(newline)
@@ -127,5 +164,12 @@
 (define (resolve-socketname/6 Q name service cb)
   (resolve-socketname** Q name service 6 1 cb))
 
+(define* (inetname-port (inetname))
+  (let-with inetname (family sockaddr)
+    (and
+      (= 4 (pointer->integer family))
+      (let ((a (bytevector-u8-ref sockaddr 2))
+            (b (bytevector-u8-ref sockaddr 3)))
+        (+ (* 256 a) b)))))
 
 )

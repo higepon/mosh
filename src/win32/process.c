@@ -206,6 +206,8 @@ win32_handle_write(HANDLE h,void *p,unsigned int len,unsigned int *res){
 int
 win32_handle_close(HANDLE h){
 	BOOL r;
+    /* Phew! */
+    closesocket((SOCKET)h);
 	r = CloseHandle(h);
 	if(!r){
 		OSERROR("CloseHandle");
@@ -847,6 +849,12 @@ win32_socket_connect(uintptr_t func,uintptr_t s,uintptr_t saddr,int namelen,uint
 			return 0;
 		}
 	}
+}
+
+int
+win32_socket_getsockname(uintptr_t s, uintptr_t buf,int bufsize){
+    int size = bufsize;
+    return getsockname((SOCKET)s, (struct sockaddr*)buf,&size);
 }
 
 int

@@ -143,10 +143,11 @@ CONS(FN(win32_socket_connect), \
 CONS(FN(win32_socket_accept), \
 CONS(FN(win32_socket_bind), \
 CONS(FN(win32_socket_listen), \
+CONS(FN(win32_socket_getsockname), \
 CONS(FN(win32_getaddrinfo), \
 CONS(FN(win32_finalization_handler_get), \
 CONS(FN(win32_finalization_handler_create), \
-	NIL))))))))))))))))))))))))))))
+	NIL)))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_GUI CONS(SYM("win32-gui"), \
 CONS(FN(win32_messagebox) ,\
