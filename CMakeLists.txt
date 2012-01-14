@@ -767,6 +767,12 @@ if(MOSHPLUGIN_CAIRO)
     include_directories(AFTER ${CAIRO_INCLUDE_DIR})
 endif()
 
+# Win32 plugins
+if(WIN32)
+    add_mosh_plugin(mosh_winmm src/win32/plugins/mm/moshmm.c)
+    target_link_libraries(mosh_winmm winmm)
+endif()
+
 # tests
 
 add_library(testinggc EXCLUDE_FROM_ALL
