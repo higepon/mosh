@@ -39,7 +39,7 @@
   (let-with win32-handle-stream (ovl/read h)
     (define (check queued-buf x)
       (cond 
-        ((= -2 x)
+        ((or (= -2 x) (= 0 x)) ;; 0 = EOF
          ;(display (list 'READ-FAIL0: (handle->pointer h)))(newline)
          (cb win32-handle-stream #f #f))
         ((= -1 x) 
