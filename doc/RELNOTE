@@ -24,6 +24,20 @@ Changes:
         A bool value next-method? available within method definition. See
         Issue 216 for details.
 
+    R7RS small:
+        A subset of R7RS small library is now included at (scheme base) and its 
+        friends.
+
+    nmosh:
+        nmosh now uses shortened filename for cache/debug-info. The shortened
+        filename will be prefixed with "@"(at).
+
+    Build system:
+        nmosh CMake builds now built with clang compiler on MacOS 10.7 or later.
+
+        Autotools and CMake builds will install additional plugins (some shared
+        objects suffixed with .mplg) for nmosh.
+
 Bug fixes:
 
     Build system:
@@ -32,7 +46,7 @@ Bug fixes:
     Reader:
         Fixed Issue 221 reported and patched by David Banks:
             "."(period) was not treated as a delimiter. For example, "#t.#f"
-            readed as #t. 
+            read as #t. 
 
     VM:
         VM Compiler error "[internal error] iform-count-size-upto: unknown
@@ -46,7 +60,7 @@ Bug fixes:
             eqv? was returned #t for (eqv? 4.0 4)
 
         Fixed vector-map problem reported by Eduardo Cavazos:
-            vector-map was not handle collectly when feeded procedure returned 
+            vector-map was not handle correctly when given procedure returned 
             multiple times. Now vector-map defined as vector variant of R6RS 
             map.
 
