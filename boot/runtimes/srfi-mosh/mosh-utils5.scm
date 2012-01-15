@@ -1,16 +1,16 @@
-(define ERRPORT (current-error-port))
+(define ERRPORT current-error-port)
 (define DEBUGGING #f)
 (define (PCK . obj)
   (if %verbose
     (begin 
       (if (not DEBUGGING)
         (begin 
-          (display "-> " ERRPORT)
+          (display "-> " (ERRPORT))
           (for-each (lambda (e)
-                      (display e ERRPORT)
-                      (display " " ERRPORT))
+                      (display e (ERRPORT))
+                      (display " " (ERRPORT)))
                     obj)
-          (newline ERRPORT))))))
+          (newline (ERRPORT)))))))
 
 (define (DEBUGMODE-ON)
   (set! DEBUGGING #t))
@@ -67,9 +67,8 @@
   (if (run-win32-np?)
     (lambda (str)
       (let ((head (and (< 1 (string-length str))
-                       (substring str 0 3))))
-        (if (and head (string=? "\\\\" head)
-                 (not (char=? #\: (string-ref head 1))))
+                       (substring str 0 2))))
+        (if (and head (string=? "\\\\" head))
           str ;; return the path as-is if the path wasn't a absolute local path.
           (make-extended-path str))))
     (lambda (str) str)))
@@ -220,12 +219,11 @@
       ;; FIXME: To avoid psyntax-mosh bug
       (define pl (strsep (pathfilter pth) #\/))
       (if (pair? pl)
-        (path-absolute
-          (pathfinish
-            (compose-path
-              (if (absolute-path? pl)
-                (cdr pl)
-                (append (strsep RUNPATH #\/) pl)))))
+        (pathfinish
+          (compose-path
+            (if (absolute-path? pl)
+              (cdr pl)
+              (append (strsep RUNPATH #\/) pl))))
         ""))))
 
 (define (pathsep str)
