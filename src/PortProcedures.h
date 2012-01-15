@@ -90,6 +90,7 @@ namespace scheme {
     Object currentOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object setCurrentInputPortDEx(VM* theVM, int argc, const Object* argv);
     Object setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv);
+    Object setCurrentErrorPortDEx(VM* theVM, int argc, const Object* argv);
     Object readCharEx(VM* theVM, int argc, const Object* argv);
     Object writeEx(VM* theVM, int argc, const Object* argv);
     Object writeSsEx(VM* theVM, int argc, const Object* argv);

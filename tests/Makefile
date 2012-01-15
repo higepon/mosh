@@ -65,3 +65,4 @@ runtest-nmosh:
 	$(MOSH_TARGET) tests/nmosh.scm
 	$(MOSH_TARGET) tests/nrepl.scm
 	$(MOSH_TARGET) tests/nmosh-test-stack-trace.sps
+	$(MOSH_TARGET) tests/nmosh-test-vm-ports.sps

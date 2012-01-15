@@ -152,6 +152,7 @@ public:
     Object getStackTrace();
     Object getStackTraceObj();
     void setCurrentOutputPort(Object port);
+    void setCurrentErrorPort(Object port);
     void setCurrentInputPort(Object port);
 
     Object idToTopLevelSymbol(Object id);

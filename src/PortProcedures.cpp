@@ -1755,6 +1755,16 @@ Object scheme::setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
+Object scheme::setCurrentErrorPortDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("set-current-error-port!");
+    checkArgumentLength(1);
+
+    argumentCheckTextualOutputPort(0, textualOutputPort);
+    theVM->setCurrentErrorPort(textualOutputPort);
+    return Object::Undef;
+}
+
 Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     static const Object port = Object::makeBinaryInputPort(new StandardInputPort());

@@ -720,4 +720,7 @@
   ;; for nmosh
   pointer->object
   object->pointer
+
+  ;; for 0.2.8
+  (set-current-error-port! current-error-port)
   )

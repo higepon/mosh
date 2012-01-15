@@ -895,6 +895,11 @@ void VM::setCurrentOutputPort(Object port)
     currentOutputPort_ = port;
 }
 
+void VM::setCurrentErrorPort(Object port)
+{
+    currentErrorPort_ = port;
+}
+
 void VM::expandStack(int plusSize)
 {
 
