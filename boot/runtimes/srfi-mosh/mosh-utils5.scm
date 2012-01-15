@@ -247,8 +247,15 @@
     (rename-file tmpfilename fn) ; MUST be on same file system
     (PCK 'CACHE "cache-write" tmpfilename '=> fn)))
 
-(define (ca-readobj fn)
-  (call-with-port (open-file-input-port fn) fasl-read))
+;; FIXME: version support (from 0.2.7)
+;; 0.2.7 cache doesn't have LONGNAME field
+(define (ca-readobj bfn fn)
+  (call-with-port (open-file-input-port fn) 
+                  (lambda (p)
+                    (define obj (fasl-read p))
+                    (and (eq? (caar obj) 'LONGNAME)
+                         (string=? (cdar obj) bfn)
+                         obj))))
 
 ; load cache or generate cache (and load them)
 (define pathchop
@@ -272,7 +279,7 @@
                                      ((char=? e #\~) #\@)
                                      (else e)))
                        (string->list str))))
-  (string-append CACHEPATH (escape (pathchop fn)) ".nmosh-cache"))
+  (string-append (escape (pathchop fn)) ".nmosh-cache"))
 
 (define dbg-files '())
 (define (dbg-addfile fn cdn dfn)
@@ -314,17 +321,26 @@
   (apply append 
          (apply append (map (lambda (e) (ca-scandeps-begin e)) code))))
 
-(define (ca-makecache code compiled-code syms fn cfn dfn name depfiles)
+(define (cachename-shorten fn)
+  (define l (string-length fn))
+  (if (< 200 l)
+    (string-append "@" (substring fn (- l 200) l)) 
+    fn))
+
+;; NB: LONGNAME must be first
+(define (ca-makecache code compiled-code syms fn bfn cfn dfn name depfiles)
   (ca-prepare-cache-dir)
   (let ((deps (ca-scandeps code)))
     (PCK 'DEPS deps)
     (PCK 'DEPFILES depfiles)
     (ca-writeobj cfn (list
+                       (cons 'LONGNAME bfn)
                        (cons 'MOSH-CODE compiled-code)
                        (cons 'DEPS (cons fn deps))
                        (cons 'DEPFILES depfiles))))
   (when dfn
     (ca-writeobj dfn (list
+                       (cons 'LONGNAME bfn)
                        (cons 'DBG-FILENAME fn)
                        (cons 'DBG-SOURCE code)
                        (cons 'DBG-SYMS syms)))))
@@ -435,15 +451,19 @@
 
 (define (ca-load/cache rfn recompile? name)
   (let* ((fn (make-absolute-path rfn))
-         (cfn (ca-filename->cachename fn))
+         (bfn (ca-filename->cachename fn))
+         (cfn (string-append CACHEPATH (cachename-shorten bfn)))
          (dfn (string-append cfn ".ndbg")))
     (dbg-addfile fn cfn dfn)
     (cond
       ((file-exists? cfn)
        (cond ((and (not recompile?) (file-newer? cfn fn))
               (PCK 'CACHE: 'loading.. cfn)
-              (let ((obj (ca-readobj cfn)))
+              (let ((obj (ca-readobj bfn cfn)))
                 (cond
+                  ((not obj)
+                   (PCK "CACHE: WARNING: Cache name conflict!")
+                   (ca-load/cache fn #t name))
                   ((ca-need-update? obj cfn)
                    (PCK 'CACHE: 'RECOMPILE!! cfn)
                    (ca-load/cache fn #t name))
@@ -465,7 +485,7 @@
           (cond
             (save?
               (PCK "Writing to" cfn)
-              (ca-makecache (reverse code) (reverse compiled-code) syms fn cfn dfn name deps))
+              (ca-makecache (reverse code) (reverse compiled-code) syms fn bfn cfn dfn name deps))
             (else
               (PCK "Cache was not saved due to user reqest")))
           (when (and (pair? compiled-code) 
@@ -572,7 +592,7 @@
     (if (null? l)
       #f
       (begin
-        (PCK 'check-file (make-absolute-path (car l)))
+        ;(PCK 'check-file (make-absolute-path (car l)))
         (if (file-exists? (make-absolute-path (car l)))
           (car l)
           (check-files (cdr l))))))
