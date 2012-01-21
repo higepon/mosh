@@ -73,38 +73,6 @@
           (make-extended-path str))))
     (lambda (str) str)))
 
-(define (nmosh-cache-dir) 
-  (let ((cpath (get-environment-variable "NMOSH_CACHEDIR")))
-    (if cpath
-      cpath
-      (if %nmosh-portable-mode
-        (string-append (pathfilter (mosh-executable-path)) "cache") 
-        (if (run-win32-np?) 
-          (let ((h (get-environment-variable "LOCALAPPDATA")))
-            (if h
-              (string-append h "\\nmosh-cache")
-              (let ((i (get-environment-variable "APPDATA")))
-                (if i
-                  (string-append i "\\nmosh-cache")
-                  #f))))
-          (let ((h (get-environment-variable "HOME")))
-            (if h
-              (string-append h "/.nmosh-cache")
-              #f)))))))
-
-(define mosh-cache-dir nmosh-cache-dir)
-
-(define (nmosh-cache-path) 
-  (let ((c (nmosh-cache-dir)))
-    (if c
-      (string-append c "/")
-      #f)))
-
-;; CACHEPATH includes trailing slash (or back-slash on Win32)
-(define CACHEPATH (path-absolute (nmosh-cache-path)))
-(define CACHEDIR (nmosh-cache-dir))
-
-(define has-cachepath? (and CACHEPATH CACHEDIR))
 
 (define absolute-path? 
   (if (run-win32-np?)
@@ -149,6 +117,7 @@
       r )
     '()
     ))
+
 ;;------------------------------------------------
 ;; path handling
 ;;------------------------------------------------
@@ -229,6 +198,42 @@
 (define (pathsep str)
   (strsep str CHR-ENVPATHSEP))
 
+(define (nmosh-cache-dir) 
+  (let ((cpath (get-environment-variable "NMOSH_CACHEDIR")))
+    (if cpath
+      cpath
+      (if %nmosh-portable-mode
+        (string-append (pathfilter (mosh-executable-path)) "cache") 
+        (if (run-win32-np?) 
+          (let ((h (get-environment-variable "LOCALAPPDATA")))
+            (if h
+              (string-append h "\\nmosh-cache")
+              (let ((i (get-environment-variable "APPDATA")))
+                (if i
+                  (string-append i "\\nmosh-cache")
+                  #f))))
+          (let ((h (get-environment-variable "HOME")))
+            (if h
+              (string-append h "/.nmosh-cache")
+              #f)))))))
+
+(define mosh-cache-dir nmosh-cache-dir)
+
+(define (nmosh-cache-path) 
+  (let ((c (nmosh-cache-dir)))
+    (if c
+      (string-append c "/")
+      #f)))
+
+;; CACHEPATH includes trailing slash (or back-slash on Win32)
+(define CACHEPATH 
+  (string-append (make-absolute-path (nmosh-cache-path))
+                 (if (run-win32-np?)
+                   "\\"
+                   "/")))
+(define CACHEDIR (nmosh-cache-dir))
+
+(define has-cachepath? (and CACHEPATH CACHEDIR))
 ; FIXME: handle exceptions
 (define tmpname-base (ex:unique-token))
 (define tmpname-counter 0)
