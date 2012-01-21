@@ -53,10 +53,11 @@
 (define do-absolute-path? 
   (if (run-win32-np?) ;FIXME: support UNC pathes
     (lambda (pl)
-      (let ((a (car pl)))
-	(and ; is a drive letter?
-	  (= (string-length a) 2)
-	  (char=? (cadr (string->list a)) #\:))))
+      (and (pair? pl)
+           (let ((a (car pl)))
+             (and ; is a drive letter?
+               (= (string-length a) 2)
+               (char=? (cadr (string->list a)) #\:)))))
     (lambda (pl) (= 0 (string-length (car pl))) )))
 
 
