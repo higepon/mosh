@@ -43,7 +43,7 @@ mc_pattern_surface(cairo_surface_t* s){
 
 MOSHEXPORT
 void
-mc_kick(cairo_t* cr,const char* ops,int count_ops,void* objs[],int count_objs,
+mc_kick(cairo_t* cr,const unsigned char* ops,int count_ops,void* objs[],int count_objs,
         double* vtxs, int count_vtxs,
         cairo_matrix_t mtxs[], int count_mtxs){
     int p_op = 0;
@@ -56,7 +56,7 @@ mc_kick(cairo_t* cr,const char* ops,int count_ops,void* objs[],int count_objs,
     double x,y,x0,y0,x1,y1;
 
 #define V(v) do{ v = vtxs[p_vtx]; p_vtx++; } while(0)
-#define _ID do{ r = 0; do { p_op++; r0 = ops[p_op]; r += r0; } \
+#define _ID do{ r = 0; do { p_op++; r0 = ops[p_op]; r <<= 7; r += r0; } \
     while(r0>=128); } while(0)
 #define O(v) do{ _ID; (void*)v = objs[r]; } while(0)
 #define M(v) do{ _ID; v = &mtxs[r]; } while(0)
@@ -112,7 +112,7 @@ mc_kick(cairo_t* cr,const char* ops,int count_ops,void* objs[],int count_objs,
                 cairo_fill_preserve(cr);
                 break;
             case Draw_StrokeWidth:
-				V(x);
+		V(x);
                 cairo_set_line_width(cr,x);
                 break;
             case Draw_SetTransform:
@@ -129,6 +129,7 @@ mc_kick(cairo_t* cr,const char* ops,int count_ops,void* objs[],int count_objs,
 
             case Source_SetTransform:
                 O(pat);
+                M(m);
                 cairo_pattern_set_matrix(pat, (const cairo_matrix_t *)m);
                 break;
 
