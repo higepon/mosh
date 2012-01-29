@@ -2,6 +2,7 @@
          (export 
            make-ptr-box
            ptr-box-ref
+           ptr-box-set!
            make-int-box
            int-box-ref
            int-box-set!
@@ -21,6 +22,8 @@
   (bytevector-s64-native-ref x 0))
 (define (box-64-set!-signed x v)
   (bytevector-s64-native-set! x 0 v))
+(define (box-64-set! x v)
+  (bytevector-u64-native-set! x 0 v))
 
 (define (make-array-64 n) (make-bytevector (* 8 n)))
 (define (array-64-ref x n)
@@ -46,6 +49,8 @@
   (bytevector-s32-native-ref x 0))
 (define (box-32-set!-signed x v)
   (bytevector-s32-native-set! x 0 v))
+(define (box-32-set! x v)
+  (bytevector-u32-native-set! x 0 v))
 
 ;; We need run-time dispatch here. Because nmosh64 may execute nmosh32 cached
 ;; code..
@@ -59,6 +64,10 @@
 (define ptr-box-ref
   (let ((ref (sel32/64 size-of-void* box-32-ref box-64-ref)))
     (lambda (x) (integer->pointer (ref x)))))
+(define ptr-box-set!
+  (let ((set (sel32/64 size-of-void* box-32-set! box-64-set!)))
+    (lambda (b x)
+      (set b (if (pointer? x) (pointer->integer x) x))))) 
 
 (define make-int-box (sel32/64 size-of-int make-box-32 make-box-64))
 (define int-box-ref (sel32/64 size-of-int box-32-ref-signed box-64-ref-signed))
