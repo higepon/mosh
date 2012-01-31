@@ -1561,3 +1561,8 @@ win32_mypath(wchar_t* buf,int len){
         return 1;
     }
 }
+
+int
+win32_setenv(wchar_t* var,wchar_t* val){
+    return SetEnvironmentVariableW(var,val);
+}

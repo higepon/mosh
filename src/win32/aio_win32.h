@@ -81,6 +81,7 @@ int win32_get_ansi_codepage(void);
 int win32_multibyte_to_widechar(int cp, void* input, int input_count, void* output, int output_count, int* output_size);
 int win32_measure_multibyte_to_widechar(int cp, void* input, int input_count);
 int win32_mypath(wchar_t* buf,int len);
+int win32_setenv(wchar_t* var,wchar_t val);
 
 #ifdef __cplusplus
 };
