@@ -83,7 +83,11 @@
     (format p ";; generated from ~a DO NOT EDIT!!\n" pth)
     (format p "(library (nmosh stubs ~a)\n" myname)
     (pp `(export ,@exports) p)
-    (pp '(import (mosh ffi) (rnrs) (nmosh ffi pffi) (nmosh ffi stublib)) p)
+    (pp `(import (mosh ffi) (rnrs) 
+                 ,(if plugin-name
+                    '(nmosh ffi pffi-plugin)
+                    '(nmosh ffi pffi))
+                 (nmosh ffi stublib)) p)
 
     ;; emit globals (handle for shared-library or pffi)
     (cond

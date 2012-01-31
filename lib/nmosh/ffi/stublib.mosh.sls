@@ -20,4 +20,5 @@
   (syntax-rules ()
     ((_ name spec libname)
      (define name (search-and-open-shared-libary 'spec 'libname)))))
+
 )

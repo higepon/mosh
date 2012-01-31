@@ -22,7 +22,16 @@
     (("cygwin") ;; Cygwin has no Posix-spawn. Uses vfork().
      .
      [ (nmosh aio platform) . (nmosh aio platform cygwin) ])
-    ))
+    (("win32") ;; Win32 only..
+     .
+     [ (nmosh ffi pffi-plugin platform)
+      . 
+      (nmosh ffi pffi-plugin platform win32) ])
+    (#t ;; rest
+     .
+     [ (nmosh ffi pffi-plugin platform)
+      . 
+      (nmosh ffi pffi-plugin platform null) ])))
 
 (define (calc-table)
   (define os (host-os))
@@ -35,7 +44,7 @@
           (itr (cons lib cur) d)
           (itr cur d)))
       cur))
-  (itr '() library-alias-table))
+  (itr '() (reverse library-alias-table)))
 
 (define (init-library-alias-table)
   (set-library-rename-table! (calc-table)))
