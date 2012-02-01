@@ -151,6 +151,13 @@ nmosh-cache
 /cache
 rbtree.dot
 
+# nmosh
+# generated libraries from misc/scripts/gen-nmosh-stubs.sps
+lib/nmosh/stubs/*
+
+# nmosh (deprecated)
+lib/nmosh/boot/*
+
 # msvc things
 Debug/*
 Release/*

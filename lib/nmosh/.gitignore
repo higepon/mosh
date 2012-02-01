@@ -1,5 +1,0 @@
-# generated libraries from misc/scripts/gen-nmosh-stubs.sps
-stubs/*
-
-# FIXME: remove when 0.3.0 released
-boot/*
