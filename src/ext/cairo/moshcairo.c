@@ -126,6 +126,10 @@ mc_kick(cairo_t* cr,const unsigned char* ops,int count_ops,void* objs[],int coun
             case Draw_Paint:
                 cairo_paint(cr);
                 break;
+            case Draw_PaintWithAlpha:
+                V(x);
+                cairo_paint_with_alpha(cr,x);
+                break;
 
             case Source_SetTransform:
                 O(pat);
