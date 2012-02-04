@@ -1007,6 +1007,16 @@ clearbuffer(window_handler_data* whd){
 // 20 : SIZE (WH)
 // 30 : active
 // 31 : inactive
+// Gestures
+// 40 : L down
+// 41 : L up
+// 42 : L double click
+// 43 : R down
+// 44 : R up
+// 45 : R double click
+// 46 : M down
+// 47 : M up
+// 48 : M double click
 LRESULT CALLBACK
 BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     window_handler_data* whd = (window_handler_data *)GetWindowLongPtr(hWnd,GWL_USERDATA);
@@ -1051,6 +1061,33 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
             return 0;
         case WM_MOUSEMOVE:
             post_window_event(whd,4,lParam);
+            return 0;
+        case WM_LBUTTONDOWN:
+            post_window_event(whd,40,lParam);
+            return 0;
+        case WM_LBUTTONUP:
+            post_window_event(whd,41,lParam);
+            return 0;
+        case WM_LBUTTONDBLCLK:
+            post_window_event(whd,42,lParam);
+            return 0;
+        case WM_RBUTTONDOWN:
+            post_window_event(whd,43,lParam);
+            return 0;
+        case WM_RBUTTONUP:
+            post_window_event(whd,44,lParam);
+            return 0;
+        case WM_RBUTTONDBLCLK:
+            post_window_event(whd,45,lParam);
+            return 0;
+        case WM_MBUTTONDOWN:
+            post_window_event(whd,46,lParam);
+            return 0;
+        case WM_MBUTTONUP:
+            post_window_event(whd,47,lParam);
+            return 0;
+        case WM_MBUTTONDBLCLK:
+            post_window_event(whd,48,lParam);
             return 0;
         case WM_MOUSEWHEEL:
             post_window_event(whd,6,GET_WHEEL_DELTA_WPARAM(wParam));
