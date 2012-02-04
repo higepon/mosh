@@ -199,7 +199,8 @@ CONS(FN(weak_vector_set), \
 CONS(FN(register_disappearing_link_wv), \
 CONS(FN(register_finalizer), \
 CONS(FN(register_disappearing_link), \
-CONS(FN(gcollect),NIL))))))))
+CONS(FN(gcollect), \
+CONS(FN(genable_incremental),NIL)))))))))
 
 #ifdef HAVE_KQUEUE
 #define LIBDATA_KQUEUE CONS(SYM("kqueue-stubs"), \

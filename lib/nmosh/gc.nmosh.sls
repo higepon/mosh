@@ -1,3 +1,3 @@
 (library (nmosh gc)
-         (export gcollect)
+         (export gcollect genable_incremental)
          (import (nmosh stubs boehmgc-stubs)))

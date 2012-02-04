@@ -10,4 +10,6 @@
   (void register_disappearing_link_wv (void* int void*))
   (void register_finalizer (void* void* void*))
   (void register_disappearing_link (void* void*))
-  (void gcollect))
+  (void gcollect)
+  (void genable_incremental)
+  )

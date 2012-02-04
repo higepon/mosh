@@ -10,6 +10,7 @@ void register_disappearing_link_wv(void** wv,int ref, void* obj);
 void register_finalizer(void* obj,void* fn, void* cd);
 void register_disappearing_link(void** link, void* obj);
 void gcollect(void);
+void genable_incremental(void);
 
 #ifdef __cplusplus
 }

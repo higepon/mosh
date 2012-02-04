@@ -77,3 +77,8 @@ void
 gcollect(void){
     GC_gcollect();
 }
+
+void
+genable_incremental(void){
+    GC_enable_incremental();
+}
