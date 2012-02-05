@@ -15,6 +15,7 @@ mmm_joy_read(int id,void* p){
     int res;
     JOYINFOEX* joy = (JOYINFOEX *)p;
     joy->dwSize = sizeof(JOYINFOEX);
+    joy->dwFlags = JOY_RETURNALL;
 
     res = joyGetPosEx(id,joy);
     if(res != JOYERR_NOERROR){
