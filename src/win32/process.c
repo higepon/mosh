@@ -1347,6 +1347,17 @@ win32_window_getclientrect(void* h,int* x0,int* y0,int* x1,int* y1){
     *y1 = r.bottom;
 }
 
+void
+win32_window_clienttoscreen(void* h,int x,int y,int* xr,int *yr){
+    HWND hWnd = (HWND)h;
+    POINT p;
+    p.x = x;
+    p.y = y;
+    ClientToScreen(hWnd,&p);
+    *xr = p.x;
+    *yr = p.y;
+}
+
 int
 win32_window_getclientrect_x(void* h){
     HWND hWnd = (HWND)h;

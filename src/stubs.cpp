@@ -168,6 +168,7 @@ CONS(FN(win32_window_getwindowrect) ,\
 CONS(FN(win32_window_getclientrect) ,\
 CONS(FN(win32_window_getclientrect_x) ,\
 CONS(FN(win32_window_getclientrect_y) ,\
+CONS(FN(win32_window_clienttoscreen),\
 CONS(FN(win32_dc_create) ,\
 CONS(FN(win32_dc_dispose) ,\
 CONS(FN(win32_dc_selectobject) ,\
@@ -179,7 +180,7 @@ CONS(FN(win32_brush_create) ,\
 CONS(FN(win32_font_create) ,\
 CONS(FN(win32_dc_draw) ,\
 CONS(FN(win32_dc_measure_text) ,\
-	NIL))))))))))))))))))))))))))))))
+	NIL)))))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
 CONS(FN(win32_invoke_ffithread), \

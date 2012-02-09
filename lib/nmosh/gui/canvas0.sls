@@ -6,6 +6,8 @@
            canvas-show
            canvas-update
            canvas-size
+           canvas-move
+           canvas-client->screen
            surface->png
            png->surface
            )
@@ -118,6 +120,22 @@
                   (~ canvas 'surface := 
                      (mc_win32_create (dc->pointer dc))))))
   )
+
+(define* (canvas-move (canvas) x y)
+  (let-with canvas (hwnd)
+    (receive (x0 y0 x1 y1) (win32_window_getwindowrect hwnd)
+      (let ((off-x (- x x0))
+            (off-y (- y y0)))
+        (win32_window_move hwnd
+                           x y
+                           ;; w
+                           (- x1 x0)
+                           ;; h
+                           (- y1 y0))))))
+
+(define* (canvas-client->screen (canvas) x y)
+  (let-with canvas (hwnd)
+    (win32_window_clienttoscreen hwnd x y)))
 
 (define* (canvas-show (canvas))
   (win32_window_show (~ canvas 'hwnd) 1))

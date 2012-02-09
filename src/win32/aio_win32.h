@@ -59,6 +59,7 @@ void win32_window_getwindowrect(void*,int*,int*,int*,int*);
 void win32_window_getclientrect(void*,int*,int*,int*,int*);
 int win32_window_getclientrect_x(void* h);
 int win32_window_getclientrect_y(void* h);
+void win32_window_clienttoscreen(void*,int,int,void*,void*);
 void* win32_dc_create(void);
 void win32_dc_dispose(void* d);
 void win32_dc_selectobject(void* d,void* obj);

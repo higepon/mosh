@@ -16,6 +16,7 @@
                  win32_window_createbitmap
                  win32_window_getclientrect
                  win32_window_getwindowrect
+                 win32_window_clienttoscreen
                  win32_dc_create
                  win32_dc_dispose
                  win32_dc_selectobject
@@ -153,6 +154,15 @@
             (int-box-ref y0)
             (int-box-ref x1)
             (int-box-ref y1))))
+
+(define* (win32_window_clienttoscreen (HWND) x y) ;; => x y
+  (let ((x0 (make-int-box))
+        (y0 (make-int-box)))
+    (stub:win32_window_clienttoscreen (hwnd->pointer HWND)
+                                      x y
+                                      x0 y0)
+    (values (int-box-ref x0)
+            (int-box-ref y0))))
 
 (define (win32_dc_create)
   (pointer->dc (stub:win32_dc_create)))

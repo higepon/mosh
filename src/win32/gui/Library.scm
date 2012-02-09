@@ -21,6 +21,7 @@
   (int win32_window_getclientrect (void* void* void* void* void*))
   (int win32_window_getclientrect_x (void*))
   (int win32_window_getclientrect_y (void*))
+  (int win32_window_clienttoscreen (void* int int void* void*))
   (void* win32_dc_create)
   (void win32_dc_dispose (void*))
   (void win32_dc_selectobject (void* void*))
