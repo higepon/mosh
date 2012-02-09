@@ -227,7 +227,7 @@ if(CMAKE_HOST_APPLE)
     # use GMP.framework
     # set(CMAKE_FRAMEWORK_PATH .)
 elseif(MSVC)
-    set(MOSH_GMP_DIR CACHE PATH "path to MPIR library (mpir/build.vcX/[lib|dll]/Win32/[Debug|Release])")
+    set(MOSH_GMP_DIR CACHE PATH "path to MPIR library (mpir-2.X.X/[lib|dll]/Win32/[Debug|Release])")
     set(GMP_INCLUDE_DIR ${MOSH_GMP_DIR})
     set(GMP_LIBRARY ${MOSH_GMP_DIR}/mpir.lib)
     set(GMP_SEARCH false)
@@ -249,7 +249,7 @@ endif (GMP_FOUND)
 else (GMP_SEARCH)
 # check gmp.h in GMP_INCLUDE_DIR
 if(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
-    message(SEND_ERROR "MPIR/GMP is not installed at ${GMP_INCLUDE_DIR}.. (gmp.h could not found. please build MPIR(http://www.mpir.org) first and specify mpir/build.vc[9|10]/[lib|dll]/Win32/[Debug|Release] to MOSH_GMP_DIR.")
+    message(SEND_ERROR "MPIR/GMP is not installed at ${GMP_INCLUDE_DIR}.. (gmp.h could not found. please build MPIR(http://www.mpir.org) first and specify mpir-2.X.X/[lib|dll]/Win32/[Debug|Release] to MOSH_GMP_DIR.")
 endif(NOT EXISTS ${GMP_INCLUDE_DIR}/gmp.h)
 endif(GMP_SEARCH)
 
