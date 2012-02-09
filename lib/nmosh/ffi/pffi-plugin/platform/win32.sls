@@ -5,10 +5,19 @@
                  (nmosh pffi win32 env))
 
 ;;
+;; FIXME:
+(define (try-get-path)
+  (let ((e (map (lambda (e)
+                  (cons (string-upcase (car e))
+                        (cdr e)))
+                (get-environment-variables))))
+    (let ((p (assoc "PATH" e)))
+      (cdr p))))
+
 (define (plugin-init plugin-path)
   ;; Add plugin path to PATH
   (setenv "PATH"
           (string-append plugin-path ";"
-                         (get-environment-variable "PATH")))) 
+                         (try-get-path)))) 
 
 )
