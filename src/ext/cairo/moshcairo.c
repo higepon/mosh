@@ -17,6 +17,12 @@ mc_context_destroy(cairo_t* cr){
 
 MOSHEXPORT
 void
+mc_context_disable_aa(cairo_t* cr){
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
+}
+
+MOSHEXPORT
+void
 mc_surface_destroy(cairo_surface_t* s){
     cairo_surface_destroy(s);
 }

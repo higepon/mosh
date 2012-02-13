@@ -5,6 +5,7 @@
   (libname: mosh-cairo)
   #(ret name args)
   (void* mc_context_create (void*))
+  (void mc_context_disable_aa (void*))
   (void mc_context_destroy (void*))
   (void mc_surface_destroy (void*))
   (void mc_pattern_destroy (void*))
