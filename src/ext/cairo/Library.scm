@@ -9,6 +9,7 @@
   (void mc_context_destroy (void*))
   (void mc_surface_destroy (void*))
   (void mc_pattern_destroy (void*))
+  (void mc_pattern_disable_aa (void*))
   (void* mc_pattern_solid (double double double double))
   (void* mc_pattern_surface (void*))
   (void mc_kick (void* void* int void* int void* int void* int))

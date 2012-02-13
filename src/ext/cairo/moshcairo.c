@@ -34,6 +34,12 @@ mc_pattern_destroy(cairo_pattern_t* p){
 }
 
 MOSHEXPORT
+void
+mc_pattern_disable_aa(cairo_pattern_t* p){
+    cairo_pattern_set_filter(p, CAIRO_FILTER_NEAREST);
+}
+
+MOSHEXPORT
 cairo_pattern_t*
 mc_pattern_solid(double r,double g,double b,double a){
     return cairo_pattern_create_rgba(r,g,b,a);
