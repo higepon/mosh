@@ -12,4 +12,6 @@
   (void register_disappearing_link (void* void*))
   (void gcollect)
   (void genable_incremental)
+  (int gcurrent_size)
+  (int gfree_size)
   )

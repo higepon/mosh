@@ -201,7 +201,9 @@ CONS(FN(register_disappearing_link_wv), \
 CONS(FN(register_finalizer), \
 CONS(FN(register_disappearing_link), \
 CONS(FN(gcollect), \
-CONS(FN(genable_incremental),NIL)))))))))
+CONS(FN(genable_incremental), \
+CONS(FN(gfree_size), \
+CONS(FN(gcurrent_size), NIL)))))))))))
 
 #ifdef HAVE_KQUEUE
 #define LIBDATA_KQUEUE CONS(SYM("kqueue-stubs"), \

@@ -11,6 +11,8 @@ void register_finalizer(void* obj,void* fn, void* cd);
 void register_disappearing_link(void** link, void* obj);
 void gcollect(void);
 void genable_incremental(void);
+int gcurrent_size(void);
+int gfree_size(void);
 
 #ifdef __cplusplus
 }

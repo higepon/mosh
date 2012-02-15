@@ -82,3 +82,13 @@ void
 genable_incremental(void){
     GC_enable_incremental();
 }
+
+int
+gcurrent_size(void){
+    return GC_get_heap_size();
+}
+
+int
+gfree_size(void){
+    return GC_get_free_bytes();
+}
