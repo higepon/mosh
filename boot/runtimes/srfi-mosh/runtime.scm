@@ -91,6 +91,7 @@
 
 (define ex:register-library! #f)
 (define ex:lookup-library    #f)
+(define ex:unload-libraries! #f)
 (let ((table '()))
   (set! ex:register-library! 
         (lambda (library)
@@ -111,7 +112,7 @@
 		      (fn (ca-load fn recompile? name) ;MOSH: recompile flg
 			  (ex:lookup-library name #f))
 		      (else (assertion-violation 'lookup-library "Library not loaded" name)))))))))
-  )
+  (set! ex:unload-libraries! (lambda () (set! table '()))))
 
 ;; Only instantiate part of the bootstrap library 
 ;; that would be needed for invocation at runtime.

@@ -210,6 +210,10 @@
 (define ex:uncompress                #f)
 (define ex:free=?                    #f)
 
+(define ex:expander-loaded? #t) ;NMOSH
+(define ex:expander-unload! #f) ;NMOSH
+
+
 (letrec-syntax
     ;; Not everyone has the same parameter API:
 
@@ -2825,6 +2829,15 @@
     (set! ex:uncompress                uncompress)
     (set! ex:free=?                    free=?)
 
+    ;; Unloader
+
+    (set! ex:expander-unload! 
+      (lambda ()
+        (set! ex:expander-loaded? #f)
+        (set! *usage-env* #f)
+        (set! *macro-table* #f)
+        (set! *env-table* #f)
+        (set! *DBG-SYMS* #f)))
     ) ; let
   ) ; letrec-syntax
 
