@@ -51,7 +51,7 @@ public:
         ,sourceInfo(sourceInfo)
         ,prev(Object::False)
     {
-        freeVariables = Object::makeObjectArray(freeVariablesNum);
+        freeVariables = Object::makeObjectArrayLocal(freeVariablesNum);
         for (int i = 0; i < freeVariablesNum; i++) {
             this->freeVariables[i] = freeVars[freeVariablesNum - i - 1];
         }
