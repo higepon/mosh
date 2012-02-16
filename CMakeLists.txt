@@ -767,6 +767,22 @@ if(MOSHPLUGIN_CAIRO)
     include_directories(AFTER ${CAIRO_INCLUDE_DIR})
 endif()
 
+# GTK2
+find_package(GTK)
+find_package(GTK2)
+option(MOSHPLUGIN_GOBJECT "build nmosh GObject plugin" OFF)
+if(MOSHPLUGIN_GOBJECT)
+    add_mosh_plugin(mosh_gobj src/ext/gobject/mgobj.c)
+    include_directories(AFTER ${GTK2_GLIB_INCLUDE_DIR})
+    if(NOT GTK2_GTHREAD_LIBRARY)
+        find_library(GTK2_GTHREAD_LIBRARY gthread-2.0)
+    endif()
+    target_link_libraries(mosh_gobj ${GTK2_GLIB_LIBRARY}
+        ${GTK2_GOBJECT_LIBRARY}
+        ${GTK2_GTHREAD_LIBRARY}
+        )
+endif()
+
 # Win32 plugins
 if(WIN32)
     add_mosh_plugin(mosh_winmm src/win32/plugins/mm/moshmm.c)
