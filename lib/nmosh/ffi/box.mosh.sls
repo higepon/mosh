@@ -2,6 +2,7 @@
          (export 
            make-ptr-box
            ptr-box-ref
+           ptr-box-ref-unsigned
            ptr-box-set!
            make-int-box
            int-box-ref
@@ -61,9 +62,11 @@
        ((4) p32)
        ((8) p64)))))
 (define make-ptr-box (sel32/64 size-of-void* make-box-32 make-box-64))
-(define ptr-box-ref
+(define ptr-box-ref-unsigned
   (let ((ref (sel32/64 size-of-void* box-32-ref box-64-ref)))
-    (lambda (x) (integer->pointer (ref x)))))
+    (lambda (x) (ref x))))
+(define (ptr-box-ref b) (integer->pointer (ptr-box-ref-unsigned b)))
+
 (define ptr-box-set!
   (let ((set (sel32/64 size-of-void* box-32-set! box-64-set!)))
     (lambda (b x)
