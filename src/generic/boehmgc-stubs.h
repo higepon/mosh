@@ -13,6 +13,7 @@ void gcollect(void);
 void genable_incremental(void);
 int gcurrent_size(void);
 int gfree_size(void);
+void gset_time_limit(int);
 
 #ifdef __cplusplus
 }

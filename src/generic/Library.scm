@@ -14,4 +14,5 @@
   (void genable_incremental)
   (int gcurrent_size)
   (int gfree_size)
+  (void gset_time_limit (int))
   )

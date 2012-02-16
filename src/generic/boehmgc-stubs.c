@@ -92,3 +92,8 @@ int
 gfree_size(void){
     return GC_get_free_bytes();
 }
+
+void
+gset_time_limit(int time){
+    GC_time_limit = time;
+}
