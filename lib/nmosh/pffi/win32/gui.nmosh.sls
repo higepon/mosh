@@ -28,6 +28,7 @@
                  win32_font_create
                  win32_dc_draw
                  win32_dc_measure_text
+                 win32_window_cursor_hide
 
                  ;integer-hwnd
                  make-hwnd
@@ -80,6 +81,10 @@
 (define* (win32_window_destroy (HWND))
   (stub:win32_window_destroy (hwnd->pointer HWND))
   (win32_overlapped_free (~ HWND 'ovl)))
+
+(define* (win32_window_cursor_hide (HWND))
+  ;; Fixme: wrong name..
+  (stub:win32_cursor_hide (hwnd->pointer HWND)))
 
 ;; you will need some sync on this.
 (define* (win32_window_fitbuffer p)

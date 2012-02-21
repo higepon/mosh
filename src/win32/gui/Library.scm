@@ -34,4 +34,5 @@
   (void* win32_dc_draw (void* void* void* int))
   (void* win32_dc_measure_text (void* void* int void* void*))
   (void win32_getmonitorinfo (int int void* void* void* void* void*))
+  (void win32_cursor_hide (void*))
   )

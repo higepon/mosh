@@ -180,7 +180,8 @@ CONS(FN(win32_brush_create) ,\
 CONS(FN(win32_font_create) ,\
 CONS(FN(win32_dc_draw) ,\
 CONS(FN(win32_dc_measure_text) ,\
-	NIL)))))))))))))))))))))))))))))))
+CONS(FN(win32_cursor_hide) ,\
+	NIL))))))))))))))))))))))))))))))))
 
 #define LIBDATA_WIN32_MISC CONS(SYM("win32-misc"), \
 CONS(FN(win32_invoke_ffithread), \

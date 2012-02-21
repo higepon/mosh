@@ -71,6 +71,7 @@ void* win32_brush_create(int r,int g,int b);
 void* win32_font_create(int h,int weight,int italicp,wchar_t* face);
 void win32_dc_draw(void* dc,void* bmpdc,intptr_t* ops,int len);
 int win32_dc_measure_text(void* d,wchar_t* str,int len,int* x,int* y);
+void win32_cursor_hide(void);
 
 
 void win32_getmonitorinfo(int id,int cmd,signed int *valid,signed int *x0,signed int* y0,signed int *x1,signed int *y1);

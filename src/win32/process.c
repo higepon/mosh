@@ -1113,6 +1113,9 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
         case WM_USER:
             DestroyWindow(hWnd);
             return 0;
+        case WM_USER+1:
+            SetCursor(NULL);
+            return 0;
         case WM_ACTIVATE:
             if(wParam == WA_INACTIVE){
                 post_window_event(whd,31,0);
@@ -1556,6 +1559,12 @@ win32_dc_measure_text(void* d,wchar_t* str,int len,int* x,int* y){
     *x=s.cx;
     *y=s.cy;
     return b;
+}
+
+void
+win32_cursor_hide(void* h){
+    HWND hWnd = (HWND)h;
+    PostMessage(hWnd,WM_USER+1,0,0);
 }
 
 /* misc */

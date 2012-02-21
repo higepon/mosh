@@ -8,6 +8,7 @@
            canvas-size
            canvas-move
            canvas-client->screen
+           canvas-cursor-hide
            surface->png
            png->surface
            )
@@ -132,6 +133,10 @@
                            (- x1 x0)
                            ;; h
                            (- y1 y0))))))
+
+(define* (canvas-cursor-hide (canvas))
+  (let-with canvas (hwnd)
+    (win32_window_cursor_hide hwnd)))
 
 (define* (canvas-client->screen (canvas) x y)
   (let-with canvas (hwnd)
