@@ -19,6 +19,7 @@
 #define Draw_LoadTransform 20
 #define Draw_Paint 21
 #define Draw_PaintWithAlpha 22
+#define Draw_SetOperator 23
 
 #define Source_SetTransform 101
 
