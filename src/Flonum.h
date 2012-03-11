@@ -65,6 +65,9 @@
     static inline double round(double x) { if (x >= 0) { return floor(x + 0.5); } else { return ceil(x - 0.5); } }
     static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
 #endif
+#ifdef MONA
+     inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
+#endif
 /*~C99 isnan/isinf */
 
 
