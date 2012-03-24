@@ -70,7 +70,7 @@ mc_kick(cairo_t* cr,const unsigned char* ops,int count_ops,void* objs[],int coun
 #define V(v) do{ v = vtxs[p_vtx]; p_vtx++; } while(0)
 #define _ID do{ r = 0; do { p_op++; r0 = ops[p_op]; r <<= 7; r += r0; } \
     while(r0>=128); } while(0)
-#define O(v) do{ _ID; (void*)v = objs[r]; } while(0)
+#define O(v) do{ _ID; v = objs[r]; } while(0)
 #define M(v) do{ _ID; v = &mtxs[r]; } while(0)
 
     for(p_op = 0;p_op<count_ops;p_op++){
