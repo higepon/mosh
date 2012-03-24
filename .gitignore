@@ -1,5 +1,5 @@
 # FIXME: temporal
-configure
+/configure
  
 # autoconf/autotools
 Makefile.in
