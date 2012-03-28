@@ -1629,3 +1629,46 @@ win32_querydosdevice(wchar_t* drive,wchar_t* buf,int len){
     return QueryDosDeviceW(drive,buf,len);
 }
 
+int
+win32_extent_size(int count){
+    return sizeof(DWORD)+sizeof(DISK_EXTENT)*count+16/*padding*/;
+}
+
+int
+win32_extent_get(wchar_t* partition, void* out,int len,int* out_len){
+    HANDLE hPartition;
+    BOOL b;
+	DWORD err;
+    hPartition = CreateFileW(partition,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,NULL);
+	err = GetLastError();
+    b = DeviceIoControl(hPartition,
+            IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
+            NULL,
+            0,
+            out,
+            len,
+            out_len,
+            NULL);
+	err = GetLastError();
+    return b;
+}
+
+int
+win32_extent_disknumber(void* p,int id){
+    VOLUME_DISK_EXTENTS* vde = (VOLUME_DISK_EXTENTS*)p;
+    return vde->Extents[id].DiskNumber;
+}
+void
+win32_extent_offset(void* p,int id,int *upper,unsigned int *lower){
+    VOLUME_DISK_EXTENTS* vde = (VOLUME_DISK_EXTENTS*)p;
+    *upper = vde->Extents[id].StartingOffset.u.HighPart;
+    *lower = vde->Extents[id].StartingOffset.u.LowPart;
+}
+
+void
+win32_extent_length(void* p,int id,int *upper,unsigned int *lower){
+    VOLUME_DISK_EXTENTS* vde = (VOLUME_DISK_EXTENTS*)p;
+    *upper = vde->Extents[id].ExtentLength.u.HighPart;
+    *lower = vde->Extents[id].ExtentLength.u.LowPart;
+}
+

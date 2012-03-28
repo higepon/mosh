@@ -1,0 +1,28 @@
+(library (nmosh pffi win32 partition)
+         (export win32_get_partition_layout)
+         (import (nmosh pffi win32 util)
+                 (nmosh ffi box)
+                 (rnrs)
+                 (nmosh stubs win32-misc))
+
+(define (win32_get_partition_layout name) ;; => ((diskno offset length) ...)
+  (let* ((len (win32_extent_size 16))
+         (buf (make-bytevector len))
+         (out-len (make-int-box)))
+    (let ((b (win32_extent_get (string->utf16-bv name)
+                      buf
+                      len
+                      out-len)))
+      (if (= b 0)
+        #f
+        (let ((a0 (make-int-box))
+              (a1 (make-int-box))
+              (b0 (make-int-box))
+              (b1 (make-int-box)))
+          (win32_extent_offset buf 0 a1 a0)
+          (win32_extent_length buf 0 b1 b0)
+          (let ((offset (+ (* 65536 65536 (int-box-ref a1)) (int-box-ref-unsigned a0)))
+                (len (+ (* 65536 65536 (int-box-ref b1)) (int-box-ref-unsigned b0 )))) 
+            (list (list (win32_extent_disknumber buf 0)
+                        offset len))))))))
+)

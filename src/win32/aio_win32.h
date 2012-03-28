@@ -85,6 +85,12 @@ int win32_measure_multibyte_to_widechar(int cp, void* input, int input_count);
 int win32_mypath(wchar_t* buf,int len);
 int win32_setenv(wchar_t* var,wchar_t val);
 int win32_querydosdevice(wchar_t*,wchar_t*,int);
+int win32_extent_size(int count);
+int win32_extent_get(wchar_t *partition,void* out,int len,int*out_len);
+int win32_extent_disknumber(void* p,int id);
+void win32_extent_offset(void* p,int id,int* upper,unsigned int* lower);
+void win32_extent_length(void* p,int id,int* upper,unsigned int* lower);
+
 
 #ifdef __cplusplus
 };

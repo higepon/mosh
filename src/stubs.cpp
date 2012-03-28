@@ -192,7 +192,12 @@ CONS(FN(win32_measure_multibyte_to_widechar), \
 CONS(FN(win32_mypath), \
 CONS(FN(win32_setenv), \
 CONS(FN(win32_querydosdevice), \
-	NIL)))))))))
+CONS(FN(win32_extent_size), \
+CONS(FN(win32_extent_get), \
+CONS(FN(win32_extent_disknumber), \
+CONS(FN(win32_extent_offset), \
+CONS(FN(win32_extent_length), \
+	NIL))))))))))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \
