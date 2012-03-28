@@ -6,6 +6,7 @@
            ptr-box-set!
            make-int-box
            int-box-ref
+           int-box-ref-unsigned
            int-box-set!
            make-ptr-array
            ptr-array-set!
@@ -74,6 +75,7 @@
 
 (define make-int-box (sel32/64 size-of-int make-box-32 make-box-64))
 (define int-box-ref (sel32/64 size-of-int box-32-ref-signed box-64-ref-signed))
+(define int-box-ref-unsigned (sel32/64 size-of-int box-32-ref box-64-ref))
 (define int-box-set! (sel32/64 size-of-int box-32-set!-signed box-64-set!-signed))
 
 (define make-ptr-array (sel32/64 size-of-void* make-array-32 make-array-64))
