@@ -1623,3 +1623,9 @@ int
 win32_setenv(wchar_t* var,wchar_t* val){
     return SetEnvironmentVariableW(var,val);
 }
+
+int
+win32_querydosdevice(wchar_t* drive,wchar_t* buf,int len){
+    return QueryDosDeviceW(drive,buf,len);
+}
+

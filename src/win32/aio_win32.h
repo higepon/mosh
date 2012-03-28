@@ -84,6 +84,7 @@ int win32_multibyte_to_widechar(int cp, void* input, int input_count, void* outp
 int win32_measure_multibyte_to_widechar(int cp, void* input, int input_count);
 int win32_mypath(wchar_t* buf,int len);
 int win32_setenv(wchar_t* var,wchar_t val);
+int win32_querydosdevice(wchar_t*,wchar_t*,int);
 
 #ifdef __cplusplus
 };

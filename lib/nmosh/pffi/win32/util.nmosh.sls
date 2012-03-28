@@ -1,6 +1,7 @@
 (library (nmosh pffi win32 util)
          (export null-pointer
                  string->utf16-bv
+                 utf16-bv->string
                  mbcs->string
                  mbcs->string/cp
                  nmosh-executable-path)

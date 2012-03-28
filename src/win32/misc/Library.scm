@@ -10,4 +10,5 @@
   (int win32_multibyte_to_widechar (int void* int void* int void*))
   (int win32_measure_multibyte_to_widechar (int void* int))
   (int win32_mypath (void* int))
-  (int win32_setenv (void* void*)))
+  (int win32_setenv (void* void*))
+  (int win32_querydosdevice (void* void* int)))

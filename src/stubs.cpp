@@ -191,7 +191,8 @@ CONS(FN(win32_multibyte_to_widechar), \
 CONS(FN(win32_measure_multibyte_to_widechar), \
 CONS(FN(win32_mypath), \
 CONS(FN(win32_setenv), \
-	NIL))))))))
+CONS(FN(win32_querydosdevice), \
+	NIL)))))))))
 #endif
 
 #define LIBDATA_BOEHMGC_STUBS CONS(SYM("boehmgc-stubs"), \
