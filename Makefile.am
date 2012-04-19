@@ -548,7 +548,7 @@ dist-hook:
 
 install-data-hook:
 	@echo Setting up plugins permission bit..
-	-@chmod +x $(MOSH_LIB_PATH)/plugins/*
+	-@chmod +x $(DESTDIR)$(MOSH_LIB_PATH)/plugins/*
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
