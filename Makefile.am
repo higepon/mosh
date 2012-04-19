@@ -16,19 +16,19 @@ GC_CFLAGS = \
 		-DHANDLE_FORK \
 		-DGC_NOT_DLL 
 
-GLOBAL_CFLAGS =  @ONIG_CFLAGS@ \
+GLOBAL_CFLAGS =  $(ONIG_CFLAGS) \
 		 -g \
 		 -Wall \
 		 -I src -I $(includedir) \
 		 -D MONA_SCHEME -D USE_BOEHM_GC \
-		 -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" \
+		 -D MOSH_LIB_PATH="\"$(MOSH_LIB_PATH)\"" \
 		 -D_FILE_OFFSET_BITS=64 -Wall -pipe $(DEBUG_FLAGS) \
 		 $(GC_CFLAGS) \
-		 @MOSH_OPTS@ # temp -Wno-deprecated
+		 $(MOSH_OPTS) # temp -Wno-deprecated
 
 GLOBAL_CXXFLAGS = -Wno-deprecated
 
-LIBS += @ONIG_LIBS@
+LIBS += $(ONIG_LIBS)
 
 include automake/dist-git-revision.mk
 
@@ -276,13 +276,13 @@ noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
 libmosh_main_a_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
 mosh_SOURCES = $(MOSH_CORE_SRCS)
-mosh_LDADD = libmosh_main.a $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+mosh_LDADD = libmosh_main.a $(REGEXP_LIB) $(MOSH_LDADD_ARCH)
 mosh_DEPENDENCIES = libmosh_main.a
 
 libnmosh_main_a_SOURCES = src/main.cpp src/nmosh_image.cpp 
 libnmosh_main_a_CXXFLAGS = $(GLOBAL_CFLAGS) $(GLOBAL_CXXFLAGS) -D WITH_NMOSH_DEFAULTS
 nmosh_SOURCES = $(MOSH_CORE_SRCS)
-nmosh_LDADD = libnmosh_main.a $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+nmosh_LDADD = libnmosh_main.a $(REGEXP_LIB) $(MOSH_LDADD_ARCH)
 nmosh_DEPENDENCIES = libnmosh_main.a
 
 libmosh_core_for_test_a_SOURCES = $(MOSH_CORE_SRCS)
@@ -314,7 +314,7 @@ MOSH_PLUGINS+= $(top_builddir)/plugins/mosh_opencl.mplg
 mosh-plugins: $(top_builddir)/plugins/mosh_opencl.mplg
 $(top_builddir)/plugins/mosh_opencl.mplg: $(top_srcdir)/src/ext/khronos/OpenCL/mosh_opencl.c
 	mkdir -p $(top_builddir)/plugins
-	$(CC) -std=c99 -Wall -fPIC @SHLIB_SO_LDFLAGS@ $(GLOBAL_CFLAGS) @CL_CFLAGS@ -DMOSHEXPORT= @CL_LIBS@ $< -o $@
+	$(CC) -std=c99 -Wall -fPIC $(SHLIB_SO_LDFLAGS) $(GLOBAL_CFLAGS) $(CL_CFLAGS) -DMOSHEXPORT= $(CL_LIBS) $< -o $@
 endif
 
 if MOSH_CURSES
@@ -322,12 +322,12 @@ MOSH_PLUGINS+= $(top_builddir)/plugins/mosh_curses.mplg
 mosh-plugins: $(top_builddir)/plugins/mosh_curses.mplg
 $(top_builddir)/plugins/mosh_curses.mplg: $(top_srcdir)/src/ext/curses/mosh_curses.c
 	mkdir -p $(top_builddir)/plugins
-	$(CC) -std=c99 -Wall -fPIC @SHLIB_SO_LDFLAGS@ $(GLOBAL_CFLAGS) -DMOSHEXPORT= $< @CURSES_LIB@ -o $@
+	$(CC) -std=c99 -Wall -fPIC $(SHLIB_SO_LDFLAGS) $(GLOBAL_CFLAGS) -DMOSHEXPORT= $< $(CURSES_LIB) -o $@
 endif
 
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
 
-datadir = @MOSH_LIB_PATH@
+datadir = $(MOSH_LIB_PATH)
 data_DATA = src/all-tests.scm
 nobase_data_DATA = ${mosh_core_libraries} ${MOSH_PLUGINS} #${mosh_core_fasl_libraries}
 
@@ -476,7 +476,7 @@ gtest_main.a : gtest-all.o gtest_main.o
 
 check_PROGRAMS=
 TEST_CXXFLAGS_     = $(GLOBAL_CFLAGS) $(GLOBAL_CXXFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/gtest -DGTEST_HAS_CLONE=0  -DTEST_SRCDIR="\"$(top_srcdir)/\""
-TEST_LDADD_        = libmosh_core_for_test.a gtest_main.a $(REGEXP_LIB)  @MOSH_LDADD_ARCH@
+TEST_LDADD_        = libmosh_core_for_test.a gtest_main.a $(REGEXP_LIB) $(MOSH_LDADD_ARCH)
 TEST_DEPENDENCIES_ = libmosh_core_for_test.a gtest_main.a
 
 TESTS += test_object
@@ -548,12 +548,12 @@ dist-hook:
 
 install-data-hook:
 	@echo Setting up plugins permission bit..
-	-@chmod +x @MOSH_LIB_PATH@/plugins/*
+	-@chmod +x $(MOSH_LIB_PATH)/plugins/*
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
 	$(CC) -g -std=c99 -Wall -fPIC -c $< -o src/ffitest.o
-	$(CC) -g -Wl @SHLIB_SO_LDFLAGS@ -o $@ src/ffitest.o
+	$(CC) -g -Wl $(SHLIB_SO_LDFLAGS) -o $@ src/ffitest.o
 
 # for flymake
 check-syntax:
