@@ -11,12 +11,12 @@ AC_CONFIG_HEADER([src/config.h])
 
 # we don't like default CFLAGS(-O2 -g).
 AC_SUBST(CFLAGS)
-if test "" = "$CFLAGS"; then
+if test -z "$CFLAGS"; then
     CFLAGS=" "
 fi
 
 AC_SUBST(CXXFLAGS)
-if test "" = "$CXXFLAGS"; then
+if test -z "$CXXFLAGS"; then
     CXXFLAGS=" "
 fi
 
@@ -78,7 +78,7 @@ LOCAL_ONIG=""
 if test $have_onig = no; then
     ONIGCONFIG=""
     AC_PATH_PROG(ONIGCONFIG,onig-config)
-    if test "" = "$ONIGCONFIG"; then
+    if test -z "$ONIGCONFIG"; then
         # put some warning here..
         ONIG_CFLAGS=""
         ONIG_LIBS=""
