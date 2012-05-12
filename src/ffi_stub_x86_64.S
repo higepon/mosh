@@ -60,7 +60,9 @@ arguments_loop:
         addq $8, %r13
         jmp arguments_loop
 arguments_done:
-        call *%rax
+        movq %rax,%r11
+        xor %al,%al
+        call *%r11
         movq %rbp, %rsp
         popq %rbp
         pop %r15
