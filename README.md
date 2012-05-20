@@ -45,7 +45,7 @@ Following autotools version works.
 ## Building on OSX Lion
 
     % CFLAGS='-arch i386 -m32'  ./configure --prefix=~/lib-for-mosh && make && make install # 32bit oniguruma
-    % ABI=32 ./configure --prefix=~/lib-for-mosh && make && make install n# 32bit libgmp
+    % ABI=32 ./configure --prefix=~/lib-for-mosh && make && make install # 32bit libgmp
     % git clone git://github.com/higepon/mosh.git
     % cd mosh
     % export PATH=/Users/taro/lib-for-mosh/bin:$PATH # for onig-config
