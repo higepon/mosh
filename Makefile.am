@@ -555,7 +555,7 @@ install-data-hook:
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
 	$(CC) -g -std=c99 -Wall -fPIC -c $< -o src/ffitest.o
-	$(CC) -g -Wl $(SHLIB_SO_LDFLAGS) -o $@ src/ffitest.o
+	$(CC) -g $(SHLIB_SO_LDFLAGS) -o $@ src/ffitest.o
 
 # for flymake
 check-syntax:
