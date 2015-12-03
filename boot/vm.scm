@@ -39,7 +39,7 @@
     (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0)))
 
 (define (apply-proc . args)
-  (let* ([proc (first args)]
+  (let* ([proc (car args)]
          [args (cdr args)]
          [adjusted_args (append
                          (take args (- (length args) 1))
