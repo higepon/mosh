@@ -887,7 +887,6 @@ Object File::size(const ucs4string& path)
         file.close();
         return Bignum::makeIntegerFromS64(ret);
     } else {
-        MOSH_ASSERT(false);
         return Object::Undef;
     }
 #else
@@ -895,7 +894,6 @@ Object File::size(const ucs4string& path)
     if (stat(utf32toUtf8(path), &st) == 0) {
         return Bignum::makeIntegerFromS64(st.st_size);
     } else {
-        MOSH_ASSERT(false);
         return Object::Undef;
     }
 #endif
