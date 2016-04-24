@@ -74,7 +74,16 @@ Socket* Socket::accept()
             break;
         }
     }
-    return new Socket(fd, Socket::SERVER, getAddressString((sockaddr*)&addr, addrlen));
+
+    bool isErrorOccurred = false;
+    ucs4string name = getAddressString((sockaddr*)&addr, addrlen, isErrorOccurred);
+
+    if (isErrorOccurred) {    // we couldn't resolve the name for some reason
+      setLastError();
+      return NULL;
+    } else {
+      return new Socket(fd, Socket::SERVER, name);
+    }
 }
 
 bool Socket::isOpen() const
@@ -303,9 +312,16 @@ Socket* Socket::createClientSocket(const char* node,
         }
         if (connect(fd, p->ai_addr, p->ai_addrlen) == 0) {
 
-            ucs4string addressString = getAddressString(p);
+          bool getAddressStringError = false;
+          ucs4string addressString = getAddressString(p, getAddressStringError);
+          if (getAddressStringError) {
+            errorMessage = UC("getnameinfo failed");
+            isErrorOccured = true;
+            return NULL;
+          } else {
             freeaddrinfo(result);
             return new Socket(fd, Socket::CLIENT, addressString);
+          }
         } else {
 #ifdef _WIN32
             lastError = WSAGetLastError();
@@ -423,9 +439,17 @@ Socket* Socket::createServerSocket(const char* service,
                 continue;
             }
         }
-        ucs4string addressString = getAddressString(p);
-        freeaddrinfo(result);
-        return new Socket(fd, Socket::SERVER, addressString);
+        bool getAddressStringError = false;
+        ucs4string addressString = getAddressString(p, getAddressStringError);
+        
+        if (getAddressStringError) {
+          errorMessage = UC("getnameinfo failed");
+          isErrorOccured = true;
+          return NULL;
+        } else {
+          freeaddrinfo(result);
+          return new Socket(fd, Socket::SERVER, addressString);
+        }
     }
     freeaddrinfo(result);
     isErrorOccured = true;
@@ -433,7 +457,10 @@ Socket* Socket::createServerSocket(const char* service,
     return NULL;
 }
 
-ucs4string Socket::getAddressString(const struct sockaddr* addr, socklen_t addrlen)
+ucs4string Socket::getAddressString(
+                                    const struct sockaddr* addr, socklen_t addrlen,
+                                    bool& isErrorOccurred)
+
 {
 #ifdef MONA
     return ucs4string::from_c_str("getAddressString not supported");
@@ -441,20 +468,27 @@ ucs4string Socket::getAddressString(const struct sockaddr* addr, socklen_t addrl
     int ret;
     char host[NI_MAXHOST];
     char serv[NI_MAXSERV];
-    do {
-        ret = getnameinfo(addr,
-                          addrlen,
-                          host, sizeof(host),
-                          serv, sizeof(serv), NI_NUMERICSERV);
-    } while (EAI_AGAIN == ret);
-    char name[NI_MAXSERV + NI_MAXHOST + 1];
-    snprintf(name, sizeof(name), "%s:%s", host, serv);
-    return ucs4string::from_c_str(name);
+
+    
+    ret = getnameinfo(addr,
+		      addrlen,
+		      host, sizeof(host),
+		      serv, sizeof(serv), NI_NUMERICSERV);
+
+    if (ret == 0) {
+      char name[NI_MAXSERV + NI_MAXHOST + 1];
+      snprintf(name, sizeof(name), "%s:%s", host, serv);
+      isErrorOccurred = false;
+      return ucs4string::from_c_str(name);
+    } else {
+      isErrorOccurred = true;
+        return UC("");
+    }
 #endif
 }
-ucs4string Socket::getAddressString(const struct addrinfo* addr)
+ucs4string Socket::getAddressString(const struct addrinfo* addr, bool& isErrorOccurred)
 {
-    return getAddressString(addr->ai_addr, addr->ai_addrlen);
+  return getAddressString(addr->ai_addr, addr->ai_addrlen, isErrorOccurred);
 }
 
 void Socket::setLastError()

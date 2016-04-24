@@ -93,8 +93,8 @@ namespace scheme {
                                           ucs4string& errorMessage);
 
     private:
-        static ucs4string getAddressString(const struct addrinfo* addr);
-        static ucs4string getAddressString(const struct sockaddr* addr, socklen_t addrlen);
+        static ucs4string getAddressString(const struct addrinfo* addr, bool& isErrorOccurred);
+        static ucs4string getAddressString(const struct sockaddr* addr, socklen_t addrlen, bool& isErrorOccurred);
         void setLastError();
         int socket_;
         int lastError_;
