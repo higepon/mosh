@@ -68,7 +68,7 @@ boot/match.h
 boot/*.scmc
 boot/*.scmc-e
 boot/psyntax_mosh_image.cpp
-boot/runtimes/psyntax-mosh/psyntax.*/*
+boot/runtimes/psyntax-mosh/psyntax/psyntax.scm
  
 # mosh(re2c)
 *.tab.cpp
