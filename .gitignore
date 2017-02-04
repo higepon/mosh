@@ -57,7 +57,6 @@ labels.cpp
 libffitest.so.1.0
 pmatch.h
 psyntax.h
-psyntax.scm
 cprocedures.cpp
 
 # mosh bootstrap
