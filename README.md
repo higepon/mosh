@@ -42,6 +42,10 @@ Following autotools version works.
     % make check
     % make install
 
+If you have issues during the `gen-git-build.sh` step, check that you have all
+the build dependencies installed.  Messages about unbound variables, presently
+`eq-hashtable-copy`, are symptomatic of this.
+
 ## Building on OSX Lion
 
     % CFLAGS='-arch i386 -m32'  ./configure --prefix=~/lib-for-mosh && make && make install # 32bit oniguruma

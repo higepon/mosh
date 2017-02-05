@@ -1,3 +1,4 @@
+
 .PHONY: all bootstrap always
 SRC_DIR=../src
 SCRIPTS_DIR=../misc/scripts
@@ -67,14 +68,8 @@ baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 free-vars-decl.scm: free-vars.scm
 	mosh --disable-acc $(SCRIPTS_DIR)/gen-free-vars-decl.scm $< > $@
 
-GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
-SVN_REPOS="http://mosh-scheme.googlecode.com/svn/branches"
-
 bootstrap:
-	svn checkout $(SVN_REPOS)/psyntax.$(GIT_BRANCH_NAME)/ runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME) || \
-	svn checkout $(SVN_REPOS)/psyntax.master/ runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
-	cp -p runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm runtimes/psyntax-mosh/
-
+	cp -p runtimes/psyntax-mosh/psyntax.master/psyntax.scm runtimes/psyntax-mosh/
 
 clean:
 	$(RM) *.scmc *.scmc-e *.scmc.fasl match.h baselib.h baselib.scm compiler-vm-cpp.scm compiler-vm.scm free-vars-decl.scm *image.cpp
