@@ -4,42 +4,34 @@
 # OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
 #
 # Permission is hereby granted to use or copy this program
-# for any purpose,  provided the above notices are retained on all copies.
+# for any purpose, provided the above notices are retained on all copies.
 # Permission to modify the code and to distribute modified code is granted,
 # provided the above notices are retained, and a notice that the code was
 # modified is included with the above copyright notice.
-#
-# Original author: Tom Tromey
-# Severely truncated by Hans-J. Boehm
-# Modified by: Grzegorz Jakacki <jakacki at acm dot org>
-# Modified by: Petter Urkedal <petter.urkedal@nordita.dk> (2005-04)
 
 ## Process this file with automake to produce Makefile.in.
+
+# Info (current:revision:age) for the Libtool versioning system.
+# These numbers should be updated at most once just before the release,
+# and, optionally, at most once during the development (after the release).
+LIBGC_VER_INFO = 6:0:5
+LIBGCCPP_VER_INFO = 6:0:5
 
 ## FIXME: `make distcheck' in this directory will not currently work.
 ##     This is most likely to the explicit flags passed to submakes.
 
 # We currently use the source files directly from libatomic_ops, if we
-# use the internal version.  This is done since libatomic_ops doesn't
-# use libtool, since it has no real use for it.  But that seems to make
-# it hard to use either the resulting object files or libraries.
-# Thus there seems too be no real reason to recursively build in the
+# use the internal version.
+# Thus there seems to be no real reason to recursively build in the
 # libatomic_ops directory.
-# if USE_INTERNAL_LIBATOMICS_OPS
-# SUBDIRS = @maybe_libatomic_ops@
-# else
-# SUBDIRS =
-# endif
 SUBDIRS =
 
 ACLOCAL_AMFLAGS = -I m4
-AM_CPPFLAGS = -I$(top_builddir)/include -I$(top_srcdir)/include
-if USE_INTERNAL_LIBATOMIC_OPS
-AM_CPPFLAGS += -I$(top_builddir)/libatomic_ops/src \
-	       -I$(top_srcdir)/libatomic_ops/src
-endif
+AM_CPPFLAGS = \
+    -I$(top_builddir)/include -I$(top_srcdir)/include \
+    $(ATOMIC_OPS_CFLAGS)
 
-# Initialize variables so that we can declare files locally.
+## Initialize variables so that we can declare files locally.
 EXTRA_DIST =
 lib_LTLIBRARIES =
 include_HEADERS =
@@ -56,93 +48,123 @@ pkgconfig_DATA = bdw-gc.pc
 # ---------
 
 lib_LTLIBRARIES += libgc.la
+
+if SINGLE_GC_OBJ
+
+libgc_la_SOURCES = extra/gc.c
+
+if PTHREAD_START_STANDALONE
+AM_CPPFLAGS += -DGC_PTHREAD_START_STANDALONE
+libgc_la_SOURCES += pthread_start.c
+endif
+
+else
+
+EXTRA_DIST += extra/gc.c
 libgc_la_SOURCES = \
-	allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
-	dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
-	malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
-	obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
-	specific.c stubborn.c typd_mlc.c \
-	backgraph.c thread_local_alloc.c
+    allchblk.c alloc.c blacklst.c dbg_mlc.c \
+    dyn_load.c finalize.c gc_dlopen.c headers.c \
+    mach_dep.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+    obj_map.c os_dep.c ptr_chck.c reclaim.c specific.c typd_mlc.c
 
 # C Library: Architecture Dependent
 # ---------------------------------
 
-if PTHREADS
-libgc_la_SOURCES += pthread_start.c pthread_support.c pthread_stop_world.c
-endif
-
-if DARWIN_THREADS
-libgc_la_SOURCES += darwin_stop_world.c
-endif
-
 if WIN32_THREADS
 libgc_la_SOURCES += win32_threads.c
+else
+if PTHREADS
+# Not Cygwin or MinGW.
+libgc_la_SOURCES += pthread_start.c pthread_support.c
+if DARWIN_THREADS
+libgc_la_SOURCES += darwin_stop_world.c
+else
+libgc_la_SOURCES += pthread_stop_world.c
+endif
+endif
+endif
+
+if THREAD_LOCAL_ALLOC
+libgc_la_SOURCES += thread_local_alloc.c
+endif
+
+if MAKE_BACK_GRAPH
+libgc_la_SOURCES += backgraph.c
+endif
+
+if CHECKSUMS
+libgc_la_SOURCES += checksums.c
+endif
+
+if ENABLE_GCJ_SUPPORT
+libgc_la_SOURCES += gcj_mlc.c
+endif
+
+if ENABLE_DISCLAIM
+libgc_la_SOURCES += fnlz_mlc.c
+endif
+
+## End of !SINGLE_GC_OBJ
 endif
 
 if USE_INTERNAL_LIBATOMIC_OPS
 nodist_libgc_la_SOURCES = libatomic_ops/src/atomic_ops.c
-endif
-
 if NEED_ATOMIC_OPS_ASM
-nodist_libgc_la_SOURCES = libatomic_ops/src/atomic_ops_sysdeps.S
+nodist_libgc_la_SOURCES += libatomic_ops/src/atomic_ops_sysdeps.S
+endif
 endif
 
 # Include THREADDLLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
 libgc_la_LIBADD = @addobjs@ $(THREADDLLIBS) $(UNWINDLIBS) $(ATOMIC_OPS_LIBS)
 libgc_la_DEPENDENCIES = @addobjs@
-libgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:3:0 -no-undefined
+libgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info $(LIBGC_VER_INFO) \
+    -no-undefined
 
-EXTRA_libgc_la_SOURCES = alpha_mach_dep.S \
-    mips_sgi_mach_dep.s mips_ultrix_mach_dep.s \
-    rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
-    sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
-
-
-# C++ Interface
-# -------------
+EXTRA_libgc_la_SOURCES = ia64_save_regs_in_stack.s sparc_mach_dep.S \
+    sparc_netbsd_mach_dep.s
 
 if CPLUSPLUS
+# C++ Interface
+# -------------
 lib_LTLIBRARIES += libgccpp.la
-pkginclude_HEADERS += include/gc_cpp.h include/gc_allocator.h
-libgccpp_la_SOURCES = gc_cpp.cc
-libgccpp_la_LIBADD = ./libgc.la
-libgccpp_la_LDFLAGS = -version-info 1:3:0 -no-undefined
+libgccpp_la_SOURCES = gc_badalc.cc gc_cpp.cc
+libgccpp_la_LIBADD = libgc.la
+libgccpp_la_LDFLAGS = -version-info $(LIBGCCPP_VER_INFO) -no-undefined
+if GC_TBA_LIBRARY
+# The same as libgccpp but contains only gc_badalc.o.
+lib_LTLIBRARIES += libgctba.la
+libgctba_la_SOURCES = gc_badalc.cc
+libgctba_la_LIBADD = libgc.la
+# Set the same version as for libgccpp.
+libgctba_la_LDFLAGS = -version-info $(LIBGCCPP_VER_INFO) -no-undefined
+endif
 endif
 
-# FIXME: If Visual C++ users use Makefile.am, this should go into
-# pkginclude_HEADERS with proper AM_CONDITIONALization.  Otherwise
-# delete this comment.
-EXTRA_DIST += gc_cpp.cpp
+EXTRA_DIST += gc_badalc.cpp gc_cpp.cpp
 
 
 # Misc
 # ----
 
 AM_CXXFLAGS = @GC_CFLAGS@
-AM_CFLAGS = @GC_CFLAGS@
+AM_CFLAGS = $(WERROR_CFLAGS) @GC_CFLAGS@
+
+CFLAGS += $(CFLAGS_EXTRA)
+CXXFLAGS += $(CFLAGS_EXTRA)
 
 ## FIXME: relies on internal code generated by automake.
 ## FIXME: ./configure --enable-dependency-tracking should be used
-#all_objs = @addobjs@ $(libgc_la_OBJECTS)
-#$(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
-#include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
-#include/gc_pthread_redirects.h include/gc_config_macros.h \
-#include/private/thread_local_alloc.h include/private_support.h \
-#include/private/pthread_stop_world.h \
-#include/gc_mark.h @addincludes@
 
 ## FIXME: we shouldn't have to do this, but automake forces us to.
 ## We use -Wp,-P to strip #line directives.  Irix `as' chokes on
 ## these.
-if COMPILER_XLC
-  ## XLC neither requires nor tolerates the unnecessary assembler goop
+if ASM_WITH_CPP_UNSUPPORTED
   ASM_CPP_OPTIONS =
 else
-  ## We use -Wp,-P to strip #line directives.  Irix `as' chokes on
-  ## these.
   ASM_CPP_OPTIONS = -Wp,-P -x assembler-with-cpp
 endif
+
 .s.lo:
 	$(LTCOMPILE) $(ASM_CPP_OPTIONS) -c $<
 
@@ -151,48 +173,27 @@ endif
 
 ## We need to add DEFS to assembler flags
 ## :FIXME: what if assembler does not accept -D... ?
-##     (use Autoconf to prepare ASDEFS ???)
+## (use Autoconf to prepare ASDEFS?)
 
 CCASFLAGS += $(DEFS)
-
-dist_noinst_SCRIPTS = callprocs configure.host
-    ## callprocs --- used by Makefile.{dj,direct}
-    ## configure.host --- used by Makefile.{am,dj,direct}
 
 # headers which are not installed
 # (see include/include.am for more)
 #
 
-# documentation which is not installed
-#
-EXTRA_DIST += README.QUICK
-
 # other makefiles
-# :GOTCHA: deliberately we do not include 'Makefile'
-EXTRA_DIST += BCC_MAKEFILE NT_MAKEFILE \
-    OS2_MAKEFILE PCR-Makefile digimars.mak EMX_MAKEFILE	\
-    Makefile.direct Makefile.dj	Makefile.DLLs SMakefile.amiga \
-    WCC_MAKEFILE build_atomic_ops.sh build_atomic_ops.sh.cygwin \
-    NT_STATIC_THREADS_MAKEFILE NT_X64_STATIC_THREADS_MAKEFILE \
-    NT_X64_THREADS_MAKEFILE CMakeLists.txt tests/CMakeLists.txt
+EXTRA_DIST += Makefile.direct NT_MAKEFILE WCC_MAKEFILE digimars.mak \
+    autogen.sh CMakeLists.txt Config.cmake.in
 
 # files used by makefiles other than Makefile.am
 #
-EXTRA_DIST += extra/add_gc_prefix.c extra/gc.c extra/gcname.c \
-    extra/if_mach.c extra/if_not_there.c hpux_test_and_clear.s gc.mak \
-    extra/MacOS.c MacProjects.sit.hqx mach_dep.c extra/setjmp_t.c \
-    extra/threadlibs.c extra/AmigaOS.c \
-    Mac_files/datastart.c Mac_files/dataend.c \
-    Mac_files/MacOS_config.h Mac_files/MacOS_Test_config.h \
-    include/private/msvc_dbg.h extra/msvc_dbg.c
-
-# The libatomic_ops library.  This is not ideal, since we pick up junk from
-# there.
-EXTRA_DIST += libatomic_ops
-
-# this is an auxiliary shell file used by Makefile and Makefile.direct
-#
-CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
+EXTRA_DIST += tools/if_mach.c tools/if_not_there.c tools/setjmp_t.c \
+    tools/threadlibs.c extra/MacOS.c extra/AmigaOS.c \
+    extra/symbian/global_end.cpp extra/symbian/global_start.cpp \
+    extra/symbian/init_global_static_roots.cpp extra/symbian.cpp \
+    extra/pcr_interface.c extra/real_malloc.c \
+    extra/Mac_files/datastart.c extra/Mac_files/dataend.c \
+    extra/Mac_files/MacOS_config.h extra/msvc_dbg.c tools/callprocs.sh
 
 #
 # :GOTCHA: GNU make rule for making .s out of .S is flawed,
@@ -203,6 +204,51 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 include include/include.am
 include cord/cord.am
 include tests/tests.am
-include doc/doc.am
-# Putting these at the top causes cord to be built first, and not find libgc.a
-# on HP/UX.  There may be a better fix.
+
+## Putting these at the top causes cord to be built first, and not find
+## libgc.a on HP/UX.  There may be a better fix.
+
+# Installed documentation.
+if ENABLE_DOCS
+dist_doc_DATA = \
+    AUTHORS \
+    LICENSE \
+    README.md \
+    doc/README.DGUX386 \
+    doc/README.Mac \
+    doc/README.OS2 \
+    doc/README.aix \
+    doc/README.amiga \
+    doc/README.arm.cross \
+    doc/README.autoconf \
+    doc/README.cmake \
+    doc/README.cords \
+    doc/README.darwin \
+    doc/README.emscripten \
+    doc/README.environment \
+    doc/README.ews4800 \
+    doc/README.hp \
+    doc/README.linux \
+    doc/README.macros \
+    doc/README.sgi \
+    doc/README.solaris2 \
+    doc/README.symbian \
+    doc/README.uts \
+    doc/README.win32 \
+    doc/README.win64 \
+    doc/debugging.md \
+    doc/finalization.md \
+    doc/gcdescr.md \
+    doc/gcinterface.md \
+    doc/leak.md \
+    doc/overview.md \
+    doc/porting.md \
+    doc/scale.md \
+    doc/simple_example.md \
+    doc/tree.md
+
+dist_man3_MANS = gc.man
+endif
+
+# A dummy target for mono build.
+test-bundle:

@@ -7,13 +7,10 @@
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
  *
  * Permission is hereby granted to use or copy this program
- * for any purpose,  provided the above notices are retained on all copies.
+ * for any purpose, provided the above notices are retained on all copies.
  * Permission to modify the code and to distribute modified code is granted,
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
- *
- * Original author: Bill Janssen
- * Heavily modified by Hans Boehm and others
  */
 
 #include "private/gc_priv.h"
@@ -43,16 +40,20 @@
 /* dlopen calls in either a multi-threaded environment, or if the       */
 /* library initialization code allocates substantial amounts of GC'ed   */
 /* memory.                                                              */
-static void disable_gc_for_dlopen(void)
-{
-  DCL_LOCK_STATE;
-  LOCK();
-  while (GC_incremental && GC_collection_in_progress()) {
-    GC_collect_a_little_inner(1000);
+#ifndef USE_PROC_FOR_LIBRARIES
+  static void disable_gc_for_dlopen(void)
+  {
+    DCL_LOCK_STATE;
+    LOCK();
+    while (GC_incremental && GC_collection_in_progress()) {
+      ENTER_GC();
+      GC_collect_a_little_inner(1000);
+      EXIT_GC();
+    }
+    ++GC_dont_gc;
+    UNLOCK();
   }
-  ++GC_dont_gc;
-  UNLOCK();
-}
+#endif
 
 /* Redefine dlopen to guarantee mutual exclusion with           */
 /* GC_register_dynamic_libraries.  Should probably happen for   */
@@ -81,7 +82,7 @@ GC_API void * WRAP_DLFUNC(dlopen)(const char *path, int mode)
 # ifndef USE_PROC_FOR_LIBRARIES
     GC_enable(); /* undoes disable_gc_for_dlopen */
 # endif
-  return(result);
+  return result;
 }
 
 #ifdef GC_USE_LD_WRAP

@@ -34,6 +34,10 @@ GC_DUMP_REGULARLY - Generate a GC debugging dump GC_dump() on startup
                     if you have a bug to report, but please include only the
                     last complete dump.
 
+GC_COLLECT_AT_MALLOC=<n> - Override the default value specified by
+                           GC_COLLECT_AT_MALLOC macro.  Has no effect unless
+                           GC is built with GC_COLLECT_AT_MALLOC defined.
+
 GC_BACKTRACES=<n> - Generate n random back-traces (for heap profiling) after
                     each GC.  Collector must have been built with
                     KEEP_BACK_PTRS.  This won't generate useful output unless
@@ -89,26 +93,24 @@ GC_PRINT_BACK_HEIGHT - Print max length of chain through unreachable objects
                      This feature is still somewhat experimental, and requires
                      that the collector have been built with MAKE_BACK_GRAPH
                      defined.  For details, see Boehm, "Bounding Space Usage
-                     of Conservative Garbage Collectors", POPL 2001, or
-                     http://lib.hpl.hp.com/techpubs/2001/HPL-2001-251.html .
+                     of Conservative Garbage Collectors", POPL 2001
+                     (http://www.hpl.hp.com/techreports/2001/HPL-2001-251.html).
 
-GC_RETRY_SIGNALS, GC_NO_RETRY_SIGNALS - Try to compensate for lost
-                     thread suspend signals in linux_threads.c.  On by
-                     default for GC_OSF1_THREADS, off otherwise.  Note
-                     that this does not work around a possible loss of
-                     thread restart signals.  This seems to be necessary for
-                     some versions of Tru64.  Since we've previously seen
+GC_RETRY_SIGNALS -   Try to compensate for lost
+                     thread suspend and restart signals (Pthreads only).
+                     On by default for OSF1 (Tru64) or if the library is
+                     sanitized, off otherwise.  Since we've previously seen
                      similar issues on some other operating systems, it
                      was turned into a runtime flag to enable last-minute
-                     work-arounds.
+                     work-arounds.  "0" value means "do not retry signals".
 
-GC_USE_GETWRITEWATCH=<n> - Only if MPROTECT_VDB and GWW_VDB are both defined
-                     (Win32 only).  Explicitly specify which strategy of
-                     keeping track of dirtied pages should be used.
-                     If n=0 then GetWriteWatch() is not used (falling back to
-                     protecting pages and catching memory faults strategy)
-                     else the collector tries to use GetWriteWatch-based
-                     strategy (GWW_VDB) first if available.
+GC_USE_GETWRITEWATCH=<n> - Only if MPROTECT_VDB and (GWW_VDB or SOFT_VDB) are
+                     both defined (Win32 and Linux only).  Explicitly specify
+                     which strategy of keeping track of dirtied pages should
+                     be used.  If n=0, then fall back to protecting pages and
+                     catching memory faults strategy), else the collector
+                     tries to use GetWriteWatch-based strategy (GWW_VDB) or
+                     soft-dirty bits strategy (SOFT_VDB) first if available.
 
 GC_DISABLE_INCREMENTAL - Ignore runtime requests to enable incremental GC.
                      Useful for debugging.
@@ -125,17 +127,17 @@ GC_ENABLE_INCREMENTAL - Turn on incremental collection at startup.  Note that,
                      to be transparent, it may cause unintended system call
                      failures.  Use with caution.
 
-GC_PAUSE_TIME_TARGET - Set the desired garbage collector pause time in msecs.
-                     This only has an effect if incremental collection is
-                     enabled.  If a collection requires appreciably more time
-                     than this, the client will be restarted, and the collector
-                     will need to do additional work to compensate.  The
-                     special value "999999" indicates that pause time is
-                     unlimited, and the incremental collector will behave
-                     completely like a simple generational collector.  If
-                     the collector is configured for parallel marking, and
-                     run on a multiprocessor, incremental collection should
-                     only be used with unlimited pause time.
+GC_PAUSE_TIME_TARGET - Set the desired garbage collector pause time in
+                     milliseconds (ms).  This only has an effect if incremental
+                     collection is enabled.  If a collection requires
+                     appreciably more time than this, the client will be
+                     restarted, and the collector will need to do additional
+                     work to compensate.  The special value "999999" indicates
+                     that pause time is unlimited, and the incremental
+                     collector will behave completely like a simple
+                     generational collector.  Any value, except for the given
+                     special one, disables parallel marker (almost fully) for
+                     now.
 
 GC_FULL_FREQUENCY - Set the desired number of partial collections between full
                     collections.  Matters only if GC_incremental is set.
@@ -145,10 +147,10 @@ GC_FREE_SPACE_DIVISOR - Set GC_free_space_divisor to the indicated value.
                       Setting it to larger values decreases space consumption
                       and increases GC frequency.
 
-GC_UNMAP_THRESHOLD - Set the desired memory blocks unmapping threshold (the
-                   number of sequential garbage collections for which
-                   a candidate block for unmapping should remain free).  The
-                   special value "0" completely disables unmapping.
+GC_UNMAP_THRESHOLD - Set the desired threshold of memory blocks unmapping
+                   (the number of sequential garbage collections during those
+                   a candidate block for unmapping should be marked as free).
+                   The special value "0" completely disables unmapping.
 
 GC_FORCE_UNMAP_ON_GCOLLECT - Turn "unmap as much as possible on explicit GC"
                 mode on (overrides the default value).  Has no effect on

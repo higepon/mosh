@@ -1,17 +1,17 @@
 /*
-	MacOS.c
-	
-	Some routines for the Macintosh OS port of the Hans-J. Boehm, Alan J. Demers
-	garbage collector.
-	
-	<Revision History>
-	
-	11/22/94  pcb  StripAddress the temporary memory handle for 24-bit mode.
-	11/30/94  pcb  Tracking all memory usage so we can deallocate it all at once.
-	02/10/96  pcb  Added routine to perform a final collection when
+        MacOS.c
+
+        Some routines for the Macintosh OS port of the Hans-J. Boehm, Alan J. Demers
+        garbage collector.
+
+        <Revision History>
+
+        11/22/94  pcb  StripAddress the temporary memory handle for 24-bit mode.
+        11/30/94  pcb  Tracking all memory usage so we can deallocate it all at once.
+        02/10/96  pcb  Added routine to perform a final collection when
 unloading shared library.
-	
-	by Patrick C. Beard.
+
+        by Patrick C. Beard.
  */
 /* Boehm, February 15, 1996 2:55 pm PST */
 
@@ -22,82 +22,86 @@ unloading shared library.
 #include <stdlib.h>
 #include <string.h>
 
+#define GC_BUILD
 #include "gc.h"
-#include "gc_priv.h"
+#include "private/gc_priv.h"
 
-// use 'CODE' resource 0 to get exact location of the beginning of global space.
+/* use 'CODE' resource 0 to get exact location of the beginning of global space. */
 
 typedef struct {
-	unsigned long aboveA5;
-	unsigned long belowA5;
-	unsigned long JTSize;
-	unsigned long JTOffset;
+        unsigned long aboveA5;
+        unsigned long belowA5;
+        unsigned long JTSize;
+        unsigned long JTOffset;
 } *CodeZeroPtr, **CodeZeroHandle;
 
-void* GC_MacGetDataStart()
+void* GC_MacGetDataStart(void)
 {
-	CodeZeroHandle code0 = (CodeZeroHandle)GetResource('CODE', 0);
-	if (code0) {
-		long belowA5Size = (**code0).belowA5;
-		ReleaseResource((Handle)code0);
-		return (LMGetCurrentA5() - belowA5Size);
-	}
-	fprintf(stderr, "Couldn't load the jump table.");
-	exit(-1);
-	return 0;
+        CodeZeroHandle code0 = (CodeZeroHandle)GetResource('CODE', 0);
+        if (code0) {
+                long belowA5Size = (**code0).belowA5;
+                ReleaseResource((Handle)code0);
+                return (LMGetCurrentA5() - belowA5Size);
+        }
+        fprintf(stderr, "Couldn't load the jump table.");
+        exit(-1);
+# if !defined(CPPCHECK)
+        return 0; /* to avoid compiler complain about missing return */
+# endif
 }
+
+#ifdef USE_TEMPORARY_MEMORY
 
 /* track the use of temporary memory so it can be freed all at once. */
 
 typedef struct TemporaryMemoryBlock TemporaryMemoryBlock, **TemporaryMemoryHandle;
 
 struct TemporaryMemoryBlock {
-	TemporaryMemoryHandle nextBlock;
-	char data[];
+        TemporaryMemoryHandle nextBlock;
+        char data[];
 };
 
 static TemporaryMemoryHandle theTemporaryMemory = NULL;
-static Boolean firstTime = true;
 
 void GC_MacFreeTemporaryMemory(void);
 
 Ptr GC_MacTemporaryNewPtr(size_t size, Boolean clearMemory)
 {
-	static Boolean firstTime = true;
-	OSErr result;
-	TemporaryMemoryHandle tempMemBlock;
-	Ptr tempPtr = nil;
-
-	tempMemBlock = (TemporaryMemoryHandle)TempNewHandle(size + sizeof(TemporaryMemoryBlock), &result);
-	if (tempMemBlock && result == noErr) {
-		HLockHi((Handle)tempMemBlock);
-		tempPtr = (**tempMemBlock).data;
-		if (clearMemory) memset(tempPtr, 0, size);
-		tempPtr = StripAddress(tempPtr);
-
-		// keep track of the allocated blocks.
-		(**tempMemBlock).nextBlock = theTemporaryMemory;
-		theTemporaryMemory = tempMemBlock;
-	}
-	
 #     if !defined(SHARED_LIBRARY_BUILD)
-	// install an exit routine to clean up the memory used at the end.
-	if (firstTime) {
-		atexit(&GC_MacFreeTemporaryMemory);
-		firstTime = false;
-	}
+        static Boolean firstTime = true;
 #     endif
-	
-	return tempPtr;
+        OSErr result;
+        TemporaryMemoryHandle tempMemBlock;
+        Ptr tempPtr = nil;
+
+        tempMemBlock = (TemporaryMemoryHandle)TempNewHandle(size + sizeof(TemporaryMemoryBlock), &result);
+        if (tempMemBlock && result == noErr) {
+                HLockHi((Handle)tempMemBlock);
+                tempPtr = (**tempMemBlock).data;
+                if (clearMemory) memset(tempPtr, 0, size);
+                tempPtr = StripAddress(tempPtr);
+
+                /* keep track of the allocated blocks. */
+                (**tempMemBlock).nextBlock = theTemporaryMemory;
+                theTemporaryMemory = tempMemBlock;
+        }
+
+#     if !defined(SHARED_LIBRARY_BUILD)
+        /* install an exit routine to clean up the memory used at the end. */
+        if (firstTime) {
+                atexit(&GC_MacFreeTemporaryMemory);
+                firstTime = false;
+        }
+#     endif
+
+        return tempPtr;
 }
 
-extern word GC_fo_entries; 
-
-static void perform_final_collection()
+static void perform_final_collection(void)
 {
   unsigned i;
   word last_fo_entries = 0;
-  
+
   /* adjust the stack bottom, because CFM calls us from another stack
      location. */
      GC_stackbottom = (ptr_t)&i;
@@ -110,7 +114,7 @@ static void perform_final_collection()
 }
 
 
-void GC_MacFreeTemporaryMemory()
+void GC_MacFreeTemporaryMemory(void)
 {
 # if defined(SHARED_LIBRARY_BUILD)
     /* if possible, collect all memory, and invoke all finalizers. */
@@ -118,39 +122,48 @@ void GC_MacFreeTemporaryMemory()
 # endif
 
     if (theTemporaryMemory != NULL) {
-	long totalMemoryUsed = 0;
-	TemporaryMemoryHandle tempMemBlock = theTemporaryMemory;
-	while (tempMemBlock != NULL) {
-		TemporaryMemoryHandle nextBlock = (**tempMemBlock).nextBlock;
-		totalMemoryUsed += GetHandleSize((Handle)tempMemBlock);
-		DisposeHandle((Handle)tempMemBlock);
-		tempMemBlock = nextBlock;
-	}
-	theTemporaryMemory = NULL;
+#     if !defined(SHARED_LIBRARY_BUILD)
+        long totalMemoryUsed = 0;
+#     endif
+        TemporaryMemoryHandle tempMemBlock = theTemporaryMemory;
+        while (tempMemBlock /* != NULL */) {
+                TemporaryMemoryHandle nextBlock = (**tempMemBlock).nextBlock;
+#             if !defined(SHARED_LIBRARY_BUILD)
+                totalMemoryUsed += GetHandleSize((Handle)tempMemBlock);
+#             endif
+                DisposeHandle((Handle)tempMemBlock);
+                tempMemBlock = nextBlock;
+        }
+        theTemporaryMemory = NULL;
 
 #       if !defined(SHARED_LIBRARY_BUILD)
-	  if (GC_print_stats) {
+          if (GC_print_stats) {
             fprintf(stdout, "[total memory used:  %ld bytes.]\n",
-                  totalMemoryUsed);
-            fprintf(stdout, "[total collections:  %ld.]\n", GC_gc_no);
-	  }
+                    totalMemoryUsed);
+            fprintf(stdout, "[total collections: %lu]\n",
+                    (unsigned long)GC_gc_no);
+          }
 #       endif
     }
 }
 
+#endif /* USE_TEMPORARY_MEMORY */
+
 #if __option(far_data)
 
-  void* GC_MacGetDataEnd()
+  void* GC_MacGetDataEnd(void)
   {
-	CodeZeroHandle code0 = (CodeZeroHandle)GetResource('CODE', 0);
-	if (code0) {
-		long aboveA5Size = (**code0).aboveA5;
-		ReleaseResource((Handle)code0);
-		return (LMGetCurrentA5() + aboveA5Size);
-	}
-	fprintf(stderr, "Couldn't load the jump table.");
-	exit(-1);
-	return 0;
+        CodeZeroHandle code0 = (CodeZeroHandle)GetResource('CODE', 0);
+        if (code0) {
+                long aboveA5Size = (**code0).aboveA5;
+                ReleaseResource((Handle)code0);
+                return (LMGetCurrentA5() + aboveA5Size);
+        }
+        fprintf(stderr, "Couldn't load the jump table.");
+        exit(-1);
+#   if !defined(CPPCHECK)
+        return 0;
+#   endif
   }
 
 #endif /* __option(far_data) */

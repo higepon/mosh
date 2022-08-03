@@ -22,13 +22,16 @@ instead of features.  In many cases, this is a mistake.
 Many of the tested configuration macros are at least somewhat defined in
 either include/private/gcconfig.h or in Makefile.direct.  Here is an attempt
 at documenting these macros:  (Thanks to Walter Bright for suggesting
-this.  This is a work in progress)
+this.)
 
 MACRO           EXPLANATION
 -----           -----------
 
 GC_DEBUG        Tested by gc.h.  Causes all-upper-case macros to
                 expand to calls to debug versions of collector routines.
+
+GC_NAMESPACE    Tested by gc_cpp.h. Causes gc_cpp symbols to be defined
+                in "boehmgc" namespace.
 
 GC_DEBUG_REPLACEMENT    Tested by gc.h. Causes GC_MALLOC/REALLOC() to be
                 defined as GC_debug_malloc/realloc_replacement().
@@ -40,6 +43,10 @@ GC_NO_THREAD_REDIRECTS  Tested by gc.h.  Prevents redirection of thread
 GC_NO_THREAD_DECLS      Tested by gc.h.  MS Windows only.  Do not declare
                 Windows thread creation routines and do not include windows.h.
 
+GC_DONT_INCLUDE_WINDOWS_H   Tested by gc.h.  MS Windows only.  Do not include
+                windows.h from gc.h (but Windows-specific thread creation
+                routines are declared).
+
 GC_UNDERSCORE_STDCALL   Tested by gc.h.  Explicitly prefix exported/imported
                 WINAPI (__stdcall) symbols with '_' (underscore).  Could be
                 used with MinGW (for x86) compiler (in conjunction with
@@ -49,6 +56,10 @@ _ENABLE_ARRAYNEW
                 #define'd by the Digital Mars C++ compiler when
                 operator new[] and delete[] are separately
                 overloadable. Used in gc_cpp.h.
+
+GC_NO_INLINE_STD_NEW    Tested by gc_cpp.cc and gc_cpp.h.  MS Windows only.
+                Define the system-wide new and delete operators in gccpp.dll
+                instead of providing an inline version of the operators.
 
 _DLL            Tested by gc_config_macros.h. Defined by Visual C++ if runtime
                 dynamic libraries are in use.  Used (only if none of GC_DLL,
@@ -76,11 +87,16 @@ GC_NOT_DLL      User-settable macro that overrides _DLL, e.g. if runtime
                 dynamic libraries are used, but the collector is in a static
                 library.  Tested by gc_config_macros.h.
 
-GC_REQUIRE_WCSDUP       Force GC to export GC_wcsdup() (the Unicode version
-                of GC_strdup); could be useful in the leak-finding mode.
+GC_MARKERS=<n>  Set the desired number of marker threads.  If not defined or
+                defined to zero, then the collector decides based on the
+                number of CPU cores.  Only if compiled with PARALLEL_MARK.
 
 
 These define arguments influence the collector configuration:
+
+GC_REQUIRE_WCSDUP       Force GC to export GC_wcsdup() (the Unicode version
+  of GC_strdup); could be useful in the leak-finding mode.  Clients should
+  define it before including gc.h if the function is needed.
 
 FIND_LEAK       Causes GC_find_leak to be initially set.  This causes the
   collector to assume that all inaccessible objects should have been
@@ -98,57 +114,62 @@ GC_ABORT_ON_LEAK        Causes the application to be terminated once leaked or
 
 SUNOS5SIGS      Solaris-like signal handling.  This is probably misnamed,
   since it really doesn't guarantee much more than POSIX.  Currently set only
-  for Solaris2.X, HPUX, and DRSNX.  Should probably be set for some other
-  platforms.
+  for DRSNX, FreeBSD, HP/UX and Solaris.
 
 PCR     Set if the collector is being built as part of the Xerox Portable
-  Common Runtime.
-
-USE_COMPILER_TLS  Assume the existence of __thread-style thread-local storage.
-  Set automatically for thread-local allocation with the HP/UX vendor
-  compiler.  Usable with gcc on sufficiently up-to-date ELF platforms.
-
-IMPORTANT: Any of the _THREADS options must normally also be defined in
-  the client before including gc.h.  This redefines thread primitives to
-  invoke the GC_ versions instead.  Alternatively, linker-based symbol
-  interception can be used on a few platforms.
+  Common Runtime.  The client might need to define PCR_NO_RENAME and
+  PCR_NO_HOSTDEP_ERR as well.
 
 GC_THREADS      Should set the appropriate one of the below macros,
   except GC_WIN32_PTHREADS, which must be set explicitly.  Tested by gc.h.
+  IMPORTANT: GC_THREADS macro (or the relevant platform-specific deprecated
+  one) must normally also be defined by the client before including gc.h.
+  This redefines thread primitives to invoke the GC_ wrappers instead.
+  Alternatively, linker-based symbol interception can be used on a few
+  platforms.
 
 GC_SOLARIS_THREADS      Enables support for Solaris pthreads.
-  Must also define _REENTRANT.
+  Must also define _REENTRANT.  Deprecated, use GC_THREADS instead.
 
 GC_IRIX_THREADS         Enables support for Irix pthreads.  See README.sgi.
+  Deprecated, use GC_THREADS instead.
 
 GC_HPUX_THREADS         Enables support for HP/UX 11 pthreads.
   Also requires _REENTRANT or _POSIX_C_SOURCE=199506L. See README.hp.
+  Deprecated, use GC_THREADS instead.
 
 GC_LINUX_THREADS        Enables support for Xavier Leroy's Linux threads
-  or NPTL threads. See README.linux.  _REENTRANT may also be required.
+  or NPTL threads.  See README.linux.  _REENTRANT may also be required.
+  Deprecated, use GC_THREADS instead.
 
-GC_OSF1_THREADS         Enables support for Tru64 pthreads.
+GC_OSF1_THREADS         Enables support for Tru64 pthreads.  Deprecated, use
+  GC_THREADS instead.
 
-GC_FREEBSD_THREADS      Enables support for FreeBSD pthreads.
-  Appeared to run into some underlying thread problems.
+GC_FREEBSD_THREADS      Enables support for FreeBSD pthreads.  Appeared to run
+  into some underlying thread problems.  Deprecated, use GC_THREADS instead.
 
-GC_NETBSD_THREADS       Enables support for NetBSD pthreads.
+GC_NETBSD_THREADS       Enables support for NetBSD pthreads.  Deprecated, use
+  GC_THREADS instead.
 
-GC_OPENBSD_THREADS      Enables support for OpenBSD pthreads.
+GC_OPENBSD_THREADS      Enables support for OpenBSD pthreads.  Deprecated,
+  use GC_THREADS instead.
 
-GC_DARWIN_THREADS       Enables support for Mac OS X pthreads.
+GC_DARWIN_THREADS       Enables support for Mac OS X pthreads.  Deprecated,
+  use GC_THREADS instead.
 
-GC_AIX_THREADS  Enables support for IBM AIX threads.
+GC_AIX_THREADS  Enables support for IBM AIX threads.  Deprecated, use
+  GC_THREADS instead.
 
 GC_DGUX386_THREADS      Enables support for DB/UX on I386 threads.
-  See README.DGUX386.  (Probably has not been tested recently.)
+  See README.DGUX386.  (Probably has not been tested recently.)  Deprecated,
+  use GC_THREADS instead.
 
-GC_WIN32_THREADS        Enables support for Win32 threads.  That makes sense
-  for this Makefile only under Cygwin.
+GC_WIN32_THREADS        Enables support for Win32 threads.  Deprecated,
+  use GC_THREADS instead.
 
-GC_WIN32_PTHREADS       Enables support for Ming32 pthreads.  This cannot be
-  enabled automatically by GC_THREADS, which would assume Win32 native
-  threads.
+GC_WIN32_PTHREADS       Enables support for pthreads-win32 (or other
+  non-Cygwin pthreads library for Windows).  This cannot be enabled
+  automatically by GC_THREADS, which would assume Win32 native threads.
 
 PTW32_STATIC_LIB        Causes the static version of the Mingw pthreads
   library to be used.  Requires GC_WIN32_PTHREADS.
@@ -166,11 +187,13 @@ SMALL_CONFIG    Tries to tune the collector for small heap sizes,
   statistic-printing code.  Turns off some optimization algorithms (like data
   prefetching in the mark routine).
 
+NO_CLOCK        Do not use system clock.  Disables some statistic printing.
+
 GC_DISABLE_INCREMENTAL  Turn off the incremental collection support.
 
-NO_INCREMENTAL  Causes the gctest program to not invoke the incremental
-  collector.  This has no impact on the generated library, only on the test
-  program.  (This is often useful for debugging failures unrelated to
+NO_INCREMENTAL  Causes the GC test programs to not invoke the incremental mode
+  of the collector.  This has no impact on the generated library, only on the
+  test programs.  (This is often useful for debugging failures unrelated to
   incremental GC.)
 
 LARGE_CONFIG    Tunes the collector for unusually large heaps.
@@ -189,13 +212,14 @@ DONT_ADD_BYTE_AT_END    Meaningful only with ALL_INTERIOR_POINTERS or
 
 NO_EXECUTE_PERMISSION   May cause some or all of the heap to not
   have execute permission, i.e. it may be impossible to execute
-  code from the heap.  Currently this only affects the incremental
-  collector on UNIX machines.  It may greatly improve its performance,
-  since this may avoid some expensive cache synchronization.  Alternatively,
-  GC_set_pages_executable can be called at the process initialization time.
+  code from the heap.  Affects the incremental collector and memory unmapping.
+  It may greatly improve the performance, since this may avoid some expensive
+  cache synchronization.  Portable clients should call
+  GC_set_pages_executable(1) at the process initialization time if the
+  execute permission is required.
 
 GC_NO_OPERATOR_NEW_ARRAY        Declares that the C++ compiler does not
-  support the  new syntax "operator new[]" for allocating and deleting arrays.
+  support the new syntax "operator new[]" for allocating and deleting arrays.
   See gc_cpp.h for details.  No effect on the C part of the collector.
   This is defined implicitly in a few environments.  Must also be defined
   by clients that use gc_cpp.h.
@@ -232,23 +256,32 @@ IGNORE_FREE     Turns calls to free into a no-op.  Only useful with
 NO_DEBUGGING    Removes GC_dump and the debugging routines it calls.
   Reduces code size slightly at the expense of debuggability.
 
+GC_DUMP_REGULARLY       Generate regular debugging dumps.
+
 DEBUG_THREADS   Turn on printing additional thread-support debugging
   information.
 
+GC_COLLECT_AT_MALLOC=<n>        Force garbage collection at every
+  GC_malloc_* call with the size greater than the specified value.
+  (Might be useful for application debugging or in find-leak mode.)
+
 JAVA_FINALIZATION       Makes it somewhat safer to finalize objects out of
-  order by specifying a nonstandard finalization mark procedure  (see
+  order by specifying a nonstandard finalization mark procedure (see
   finalize.c).  Objects reachable from finalizable objects will be marked
   in a separate post-pass, and hence their memory won't be reclaimed.
   Not recommended unless you are implementing a language that specifies
-  these semantics.  Since 5.0, determines only the initial value
+  these semantics.  Actually, the macro determines only the initial value
   of GC_java_finalization variable.
 
 FINALIZE_ON_DEMAND      Causes finalizers to be run only in response
-  to explicit GC_invoke_finalizers() calls.
-  In 5.0 this became runtime adjustable, and this only determines the
-  initial value of GC_finalize_on_demand.
+  to explicit GC_invoke_finalizers() calls.  Actually, the macro only
+  determines the initial value of GC_finalize_on_demand.
 
-ATOMIC_UNCOLLECTABLE    Includes code for GC_malloc_atomic_uncollectable.
+GC_NO_FINALIZATION      Exclude finalization support (for smaller code size).
+
+GC_TOGGLE_REFS_NOT_NEEDED       Exclude toggle-refs support.
+
+GC_ATOMIC_UNCOLLECTABLE Includes code for GC_malloc_atomic_uncollectable.
   This is useful if either the vendor malloc implementation is poor,
   or if REDIRECT_MALLOC is used.
 
@@ -272,22 +305,21 @@ USE_MMAP        Use MMAP instead of sbrk to get new memory.
   Works for Linux, FreeBSD, Cygwin, Solaris and Irix.
 
 USE_MUNMAP      Causes memory to be returned to the OS under the right
-  circumstances.  This currently disables VM-based incremental collection
-  (except for Win32 with GetWriteWatch() available).
-  Works under some Unix, Linux and Windows versions.
+  circumstances.  Works under some Unix, Linux and Windows versions.
   Requires USE_MMAP except for Windows.
 
-MUNMAP_THRESHOLD=<value>        Set the desired memory blocks unmapping
-  threshold (the number of sequential garbage collections for which
-  a candidate block for unmapping should remain free).
+USE_WINALLOC (Cygwin only)   Use Win32 VirtualAlloc (instead of sbrk or mmap)
+  to get new memory.  Useful if memory unmapping (USE_MUNMAP) is enabled.
+
+MUNMAP_THRESHOLD=<value>        Set the default threshold of memory blocks
+  unmapping (the number of sequential garbage collections during those
+  a candidate block for unmapping should be marked as free).  The special
+  value "0" completely disables unmapping.
 
 GC_FORCE_UNMAP_ON_GCOLLECT      Set "unmap as much as possible on explicit GC"
   mode on by default.  The mode could be changed at run-time.  Has no effect
   unless unmapping is turned on.  Has no effect on implicitly-initiated
   garbage collections.
-
-MMAP_STACKS (for Solaris threads)       Use mmap from /dev/zero rather than
-  GC_scratch_alloc() to get stack memory.
 
 PRINT_BLACK_LIST        Whenever a black list entry is added, i.e. whenever
   the garbage collector detects a value that looks almost, but not quite,
@@ -302,9 +334,9 @@ KEEP_BACK_PTRS  Add code to save back pointers in debugging headers
   for debugging/profiling purposes.  The gc_backptr.h interface is
   implemented only if this is defined.
 
-GC_ASSERTIONS   Enable some internal GC assertion checking.  Currently
-  this facility is only used in a few places.  It is intended primarily
-  for debugging of the garbage collector itself, but could also...
+GC_ASSERTIONS   Enable some internal GC assertion checking.  It is intended
+  primarily for debugging of the garbage collector itself, but could also
+  help to identify cases of incorrect GC usage by a client.
 
 DBG_HDRS_ALL    Make sure that all objects have debug headers.  Increases
   the reliability (from 99.9999% to 100% mod. bugs) of some of the debugging
@@ -325,32 +357,28 @@ SHORT_DBG_HDRS  Assume that all objects have debug headers.  Shorten
 SAVE_CALL_COUNT=<n>     Set the number of call frames saved with objects
   allocated through the debugging interface.  Affects the amount of
   information generated in leak reports.  Only matters on platforms
-  on which we can quickly generate call stacks, currently Linux/(X86 & SPARC)
-  and Solaris/SPARC and platforms that provide execinfo.h.
-  Default is zero.  On X86, client
-  code should NOT be compiled with -fomit-frame-pointer.
+  on which we can quickly generate call stacks, currently Linux/X86,
+  Linux/SPARC, Solaris/SPARC, and platforms that provide execinfo.h.
+  Default is zero.  On X86, client code should NOT be compiled with
+  -fomit-frame-pointer.
 
 SAVE_CALL_NARGS=<n>     Set the number of functions arguments to be saved
   with each call frame.  Default is zero.  Ignored if we don't know how to
   retrieve arguments on the platform.
 
-CHECKSUMS       Reports on erroneously clear dirty bits, and unexpectedly
-  altered stubborn objects, at substantial performance cost.  Use only for
-  debugging of the incremental collector.  Not compatible with USE_MUNMAP
-  or threads.
+CHECKSUMS       Reports on erroneously clear dirty bits (at a substantial
+  performance cost).  Use only for debugging of the incremental collector.
+  Not compatible with USE_MUNMAP or threads.
 
 GC_GCJ_SUPPORT  Includes support for gcj (and possibly other systems
   that include a pointer to a type descriptor in each allocated object).
-  Building this way requires an ANSI C compiler.
 
 USE_I686_PREFETCH       Causes the collector to issue Pentium III style
-  prefetch instructions.  No effect except on X86 Linux platforms.
-  Assumes a very recent gcc-compatible compiler and assembler.
-  (Gas prefetcht0 support was added around May 1999.)
+  prefetch instructions.  No effect except on Linux/X86 platforms.
   Empirically the code appears to still run correctly on Pentium II
   processors, though with no performance benefit.  May not run on other
-  X86 processors?  In some cases this improves performance by
-  15% or so.
+  X86 processors probably.  In some cases this improves performance by 15%
+  or so.
 
 USE_3DNOW_PREFETCH      Causes the collector to issue AMD 3DNow style
   prefetch instructions.  Same restrictions as USE_I686_PREFETCH.
@@ -373,23 +401,26 @@ GC_USE_DLOPEN_WRAP      Causes the collector to redefine malloc and
 THREAD_LOCAL_ALLOC      Defines GC_malloc(), GC_malloc_atomic() and
   GC_gcj_malloc() to use a per-thread set of free-lists. These then allocate
   in a way that usually does not involve acquisition of a global lock.
-  Recommended for multiprocessors.  Requires explicit GC_INIT() call, unless
-  REDIRECT_MALLOC is defined and GC_malloc is used first.
+  Recommended for multiprocessors.
 
 USE_COMPILER_TLS        Causes thread local allocation to use
   the compiler-supported "__thread" thread-local variables.  This is the
   default in HP/UX.  It may help performance on recent Linux installations.
   (It failed for me on RedHat 8, but appears to work on RedHat 9.)
 
+GC_ATTR_TLS_FAST        Use specific attributes for GC_thread_key like
+  __attribute__((tls_model("local-exec"))).
+
 PARALLEL_MARK   Allows the marker to run in multiple threads.  Recommended
   for multiprocessors.
 
-DONT_USE_SIGNALANDWAIT (Win32 only)     Use an alternate implementation for
-  marker threads (if PARALLEL_MARK defined) synchronization routines based
-  on InterlockedExchange() (instead of AO_fetch_and_add()) and on multiple
-  event objects (one per each marker instead of that based on Win32
-  SignalObjectAndWait() using a single event object).  This is the default
-  for WinCE.
+GC_BUILTIN_ATOMIC       Use GCC atomic intrinsics instead of libatomic_ops
+  primitives.
+
+GC_ALWAYS_MULTITHREADED     Force multi-threaded mode at GC initialization.
+
+GC_ENABLE_SUSPEND_THREAD (Linux only)   Turn on thread suspend/resume API
+support.
 
 GC_WINMAIN_REDIRECT (Win32 only)        Redirect (rename) an application
   WinMain to GC_WinMain; implement the "real" WinMain which starts a new
@@ -429,13 +460,9 @@ GC_PRINT_BACK_HEIGHT    Permanently turn on back-height printing mode
   (useful when NO_GETENV).  See the similar environment variable description
   in README.environment.  Requires MAKE_BACK_GRAPH defined.
 
-STUBBORN_ALLOC  Allows allocation of "hard to change" objects, and thus
-  makes incremental collection easier.  Was enabled by default until 6.0.
-  Rarely used, to my knowledge.
-
-HANDLE_FORK     Attempts to make GC_malloc() work in a child process fork()'ed
-  from a multithreaded parent.  Currently only supported by pthread_support.c.
-  (Similar code should work on Solaris or Irix, but it hasn't been tried.)
+HANDLE_FORK (Unix and Cygwin only)      Attempt by default to make GC_malloc()
+  work in a child process fork()'ed from a multi-threaded parent.  Not fully
+  POSIX-compliant and could be disabled at runtime (before GC_INIT).
 
 TEST_WITH_SYSTEM_MALLOC         Causes gctest to allocate (and leak) large
   chunks of memory with the standard system malloc.  This will cause the root
@@ -465,6 +492,9 @@ DARWIN_DONT_PARSE_STACK         Causes the Darwin port to discover thread
 
 GC_NO_THREADS_DISCOVERY (Darwin and Win32+DLL only)     Exclude DllMain-based
   (on Windows) and task-threads-based (on Darwin) thread registration support.
+
+GC_INSIDE_DLL (Win32 only)      Enable DllMain-based approach of threads
+  registering even in case GC_DLL is not defined.
 
 GC_DISCOVER_TASK_THREADS (Darwin and Win32+DLL only)    Compile the collector
   with the implicitly turned on task-threads-based (on Darwin) or
@@ -502,13 +532,18 @@ GC_DLL  Build dynamic-link library (or dynamic shared object).  For Unix this
   causes the exported symbols to have 'default' visibility (ignored unless
   GCC v4+) and the internal ones to have 'hidden' visibility.
 
+NO_MSGBOX_ON_ERROR (Win32 only)         Do not show Windows message box with
+  "OK" button on a GC fatal error.  Otherwise the client application is
+  terminated only once the user clicks "OK" button.  Useful for non-GUI (or
+  non-interactive) applications.
+
 DONT_USE_USER32_DLL (Win32 only)        Don't use "user32" DLL import library
   (containing MessageBox() entry); useful for a static GC library.
 
 GC_PREFER_MPROTECT_VDB  Choose MPROTECT_VDB manually in case of multiple
-  virtual dirty bit strategies are implemented (at present useful on Win32 and
-  Solaris to force MPROTECT_VDB strategy instead of the default GWW_VDB or
-  PROC_VDB ones).
+  virtual dirty bit strategies are implemented (at present useful on Win32,
+  Solaris and Linux to force MPROTECT_VDB strategy instead of the default
+  GWW_VDB, PROC_VDB or SOFT_VDB ones, respectively).
 
 GC_IGNORE_GCJ_INFO      Disable GCJ-style type information (useful for
   debugging on WinCE).
@@ -519,6 +554,11 @@ GC_PRINT_VERBOSE_STATS  Permanently turn on verbose logging (useful for
 GC_ONLY_LOG_TO_FILE     Don't redirect GC stdout and stderr to the log file
   specified by GC_LOG_FILE environment variable.  Has effect only when the
   variable is set (to anything other than "0").
+
+GC_ANDROID_LOG (Android only)   Output error/debug information to Android log.
+
+CONSOLE_LOG (Win32 only)        Output error/debug information to stdout and
+  stderr.
 
 GC_DONT_EXPAND  Don't expand the heap unless explicitly requested or forced to.
 
@@ -535,6 +575,9 @@ GC_INITIAL_HEAP_SIZE=<value>    Set the desired default initial heap size
 GC_FREE_SPACE_DIVISOR=<value>   Set alternate default GC_free_space_divisor
   value.
 
+GC_ALLOCD_BYTES_PER_FINALIZER=<value>   Set alternate default value of
+  GC_allocd_bytes_per_finalizer.
+
 GC_TIME_LIMIT=<milliseconds>    Set alternate default GC_time_limit value
   (setting this to GC_TIME_UNLIMITED will essentially disable incremental
   collection while leaving generational collection enabled).
@@ -545,18 +588,18 @@ GC_FULL_FREQ=<value>    Set alternate default number of partial collections
 NO_CANCEL_SAFE (Posix platforms with threads only)      Don't bother trying
   to make the collector safe for thread cancellation; cancellation is not
   used.  (Note that if cancellation is used anyway, threads may end up
-  getting cancelled in unexpected places.)  Even without this option,
+  getting canceled in unexpected places.)  Even without this option,
   PTHREAD_CANCEL_ASYNCHRONOUS is never safe with the collector.  (We could
   argue about its safety without the collector.)
 
 UNICODE (Win32 only)    Use the Unicode variant ('W') of the Win32 API instead
   of ANSI/ASCII one ('A').  Useful for WinCE.
 
-PLATFORM_ANDROID        Compile for Android NDK platform.
+HOST_ANDROID (or __ANDROID__)   Compile for Android NDK platform.
 
 SN_TARGET_PS3           Compile for Sony PS/3.
 
 USE_GET_STACKBASE_FOR_MAIN (Linux only)  Use pthread_attr_getstack() instead
   of __libc_stack_end (or instead of any hard-coded value) for getting the
-  primordial thread stack base (useful if the client modifies the program's
+  primordial thread stack bottom (useful if the client modifies the program's
   address space).
