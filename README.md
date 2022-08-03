@@ -16,6 +16,8 @@ See [INSTALL](https://github.com/higepon/mosh/blob/master/INSTALL) and [doc](htt
 On Windows, see [Build](http://mosh.monaos.org/files/doc/text/Download-txt.html).
 
 # Building the cutting-edge Mosh
+## Docker
+We have Docker support to setup Mosh devlopment enviroment. Please see docker/dev directory.
 ## Requirements
 
 - [Mosh current](http://storage.osdev.info/pub/mosh/mosh-current.tar.gz)

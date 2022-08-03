@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  mosh-0.2.7-bootstrap:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true      
+    volumes:
+      - type: bind
+        source: "./workspace"
+        target: "/workspace"        
