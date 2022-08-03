@@ -527,7 +527,9 @@ public:
 
     static Object mul(int n1, int n2)
     {
-        const fixedint ret = (fixedint)n1 * n2;
+        // On Apple Silicon the behaviour of multiplication overflow is undefined.
+        // We need to handle the overflow with the bigger type long.
+        const long ret = (fixedint)n1 * n2;
 
         /* Overflow check from Gauche */
         if ((n2 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
