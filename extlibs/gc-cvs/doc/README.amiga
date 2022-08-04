@@ -1,31 +1,30 @@
-===========================================================================
             Kjetil S. Matheussen's notes (28-11-2000)
-===========================================================================
-Compiles under SAS/C again. Should allso still compile under other
-amiga compilers without big changes. I haven't checked if it still
-works under gcc, because I don't have gcc for amiga. But I have
-updated 'Makefile', and hope it compiles fine.
+
+Compiles under SAS/C again. Should also still compile under other
+Amiga compilers without big changes. I haven't checked if it still
+works under gcc, because I don't have gcc for Amiga. But I have
+updated Makefile.direct, and hope it compiles fine.
 
 
 WHATS NEW:
 
 1.
-   Made a pretty big effort in preventing GCs allocating-functions from returning
-   chip-mem.
+   Made a pretty big effort in preventing GC allocating-functions from
+   returning chip-mem.
 
    The lower part of the new file AmigaOS.c does this in various ways, mainly by
    wrapping GC_malloc, GC_malloc_atomic, GC_malloc_uncollectable,
-   GC_malloc_atomic_uncollectable, GC_malloc_stubborn, GC_malloc_ignore_off_page
-   and GC_malloc_atomic_ignore_off_page. GC_realloc is allso wrapped, but
+   GC_malloc_atomic_uncollectable, GC_malloc_ignore_off_page
+   and GC_malloc_atomic_ignore_off_page. GC_realloc is also wrapped, but
    doesn't do the same effort in preventing to return chip-mem.
-   Other allocating-functions (f.ex. GC_*_typed_) can probably be
+   Other allocating-functions (e.g., GC_*_typed) can probably be
    used without any problems, but beware that the warn hook will not be called.
    In case of problems, don't define GC_AMIGA_FASTALLOC.
 
    Programs using more time actually using the memory allocated
    (instead of just allocate and free rapidly) have
    the most to earn on this, but even gctest now normally runs twice
-   as fast and uses less memory, on my poor 8MB machine.
+   as fast and uses less memory, on my poor 8 MB machine.
 
    The changes have only effect when there is no more
    fast-mem left. But with the way GC works, it
@@ -34,7 +33,7 @@ WHATS NEW:
    If you absolutely must call abort() instead of exit(), try calling
    the GC_amiga_free_all_mem function before abort().
 
-   New amiga-spesific compilation flags:
+   New Amiga-specific compilation flags:
 
    GC_AMIGA_FASTALLOC - By NOT defining this option, GC will work like before,
                         it will not try to force fast-mem out of the OS, and
@@ -45,11 +44,11 @@ WHATS NEW:
                        no effect if this flag is set.
 
    GC_AMIGA_GC - If gc returns NULL, do a GC_gcollect, and try again. This
-                 usually is a success with the standard GC configuration. 
-                 It is allso the most important flag to set to prevent
+                 usually is a success with the standard GC configuration.
+                 It is also the most important flag to set to prevent
                  GC from returning chip-mem. Beware that it slows down a lot
                  when a program is rapidly allocating/deallocating when
-                 theres either very little fast-memory left or verly little
+                 there's either very little fast-memory left or very little
                  chip-memory left. Its not a very common situation, but gctest
                  sometimes (very rare) use many minutes because of this.
 
@@ -63,15 +62,15 @@ WHATS NEW:
                          program, and prints out the info when the atexit-handler
                          is called.
 
-   My reccomendation is to set all this flags, except GC_AMIGA_PRINTSTATS and
+   My recommendation is to set all this flags, except GC_AMIGA_PRINTSTATS and
    GC_AMIGA_ONLYFAST.
 
    If your program demands high response-time, you should
-   not define GC_AMIGA_GC, and possible allso define GC_AMIGA_ONLYFAST.
+   not define GC_AMIGA_GC, and possible also define GC_AMIGA_ONLYFAST.
    GC_AMIGA_RETRY does not seem to slow down much.
 
-   Allso, when compiling up programs, and GC_AMIGA_FASTALLOC was not defined when
-   compilling gc, you can define GC_AMIGA_MAKINGLIB to avoid having these allocation-
+   Also, when compiling up programs, and GC_AMIGA_FASTALLOC was not defined when
+   compiling gc, you can define GC_AMIGA_MAKINGLIB to avoid having these allocation-
    functions wrapped. (see gc.h)
 
    Note that GC_realloc must not be called before any of
@@ -82,70 +81,67 @@ WHATS NEW:
    GC_AMIGA_FASTALLOC by letting the function go thru the new
    GC_amiga_allocwrapper_do function-pointer (see gc.h). Means that
    sending function-pointers, such as GC_malloc, GC_malloc_atomic, etc.,
-   for later to be called like f.ex this, (*GC_malloc_functionpointer)(size),
+   for later to be called, e.g., like this, (*GC_malloc_function_pointer)(size),
    will not wrap the function. This is normally not a big problem, unless
    all allocation function is called like this, which will cause the
    atexit un-allocating function never to be called. Then you either
    have to manually add the atexit handler, or call the allocation-
    functions function-pointer functions like this;
-   (*GC_amiga_allocwrapper_do)(size,GC_malloc_functionpointer).
+   (*GC_amiga_allocwrapper_do)(size,GC_malloc_function_pointer).
    There are probably better ways this problem could be handled, unfortunately,
    I didn't find any without rewriting or replacing a lot of the GC-code, which
    I really didn't want to. (Making new GC_malloc_* functions, and just
-   define f.ex GC_malloc as GC_amiga_malloc should allso work).
+   defining, e.g., GC_malloc as GC_amiga_malloc should work too).
 
 
-   New amiga-spesific function:
+   New Amiga-specific function:
 
      void GC_amiga_set_toany(void (*func)(void));
 
    'func' is a function that will be called right before gc has to change
-   allocation-method from MEMF_FAST to MEMF_ANY. Ie. when it is likely
+   allocation-method from MEMF_FAST to MEMF_ANY. I.e., when it is likely
    it will return chip-mem.
 
 
-2. A few small compiler-spesific additions to make it compile with SAS/C again.
+2. A few small compiler-specific additions to make it compile with SAS/C again.
 
-3. Updated and rewritten the smakefile, so that it works again and that
-   the "unnecesarry" 'SCOPTIONS' files could be removed. Allso included
-   the cord-smakefile stuff in the main smakefile, so that the cord smakefile
-   could be removed too. By writing smake -f Smakefile.smk, both gc.lib and
-   cord.lib will be made.
+3. To build the collector with SAS/C, create SMakefile including the following
+   specific content:
 
+IGNORE= IGNORE=85 IGNORE=154 IGNORE=161 IGNORE=100
+OPTIMIZE=optimize optimizetime optglobal optimizerdepth=100 optimizerpeephole optloop OPTSCHED optimizerinlocal optimizerrecurdepth=100
+OPT= $(OPTIMIZE) NOSTACKCHECK MAPHUNK NOVERSION NOICONS nodebug parm=reg
+
+DEFINE __USE_SYSBASE DEFINE AMIGA_SKIP_SEG DEFINE GC_ATOMIC_UNCOLLECTABLE
+DEFINE GC_AMIGA_FASTALLOC GC_AMIGA_RETRY GC_AMIGA_PRINTSTATS GC_AMIGA_GC
+
+DEFINE GC_AMIGA_MAKINGLIB
+DEFINE AMIGA IGNORE=100 IGNORE=161
 
 
 STILL MISSING:
 
 Programs can not be started from workbench, at least not for SAS/C. (Martin
 Tauchmanns note about that it now works with workbench is definitely wrong
-when concerning SAS/C). I guess it works if you use the old "#if 0'ed"-code,
-but I haven't tested it. I think the reason for MT to replace the
-"#if 0'ed"-code was only because it was a bit to SAS/C-spesific. But I
-don't know. An iconx-script solves this problem anyway.
+when concerning SAS/C).  An iconx-script solves this problem.
 
 
 BEWARE!
 
 -To run gctest, set the stack to around 200000 bytes first.
--SAS/C-spesific: cord will crash if you compile gc.lib with
+-SAS/C-specific: cord will crash if you compile gc.lib with
  either parm=reg or parm=both. (missing legal prototypes for
  function-pointers someplace is the reason I guess.).
 
 
 tested with software: Radium, http://www.stud.ifi.uio.no/~ksvalast/radium/
-
 tested with hardware: MC68060
 
 
--ksvalast@ifi.uio.no
-
-
-===========================================================================
-			   Martin Tauchmann's notes		(1-Apr-99)
-===========================================================================
+                           Martin Tauchmann's notes             (1-Apr-99)
 
 Works now, also with the GNU-C compiler V2.7.2.1. <ftp://ftp.unina.it/pub/amiga/geekgadgets/amiga/m68k/snapshots/971125/amiga-bin/>
-Modify the `Makefile`
+Modify the `Makefile.direct`
 CC=cc $(ABI_FLAG)
 to
 CC=gcc $(ABI_FLAG)
@@ -183,14 +179,8 @@ TESTED WITH HARDWARE
 MC68030
 
 
-CONTACT
+                           Michel Schinz's notes
 
-Please, contact me at <martintauchmann@bigfoot.com>, when you change the
-Amiga port. <http://martintauchmann.home.pages.de>
- 
-===========================================================================
-			   Michel Schinz's notes
-===========================================================================
 WHO DID WHAT
 
 The original Amiga port was made by Jesper Peterson. I (Michel Schinz)
@@ -203,18 +193,16 @@ TECHNICAL NOTES
 
 In addition to Jesper's notes, I have the following to say:
 
-- Starting with version 4.3, gctest checks to see if the code segment is
-  added to the root set or not, and complains if it is. Previous versions
-  of this Amiga port added the code segment to the root set, so I tried to
-  fix that. The only problem is that, as far as I know, it is impossible to
-  know which segments are code segments and which are data segments (there
-  are indeed solutions to this problem, like scanning the program on disk
-  or patch the LoadSeg functions, but they are rather complicated). The
-  solution I have chosen (see os_dep.c) is to test whether the program
-  counter is in the segment we are about to add to the root set, and if it
-  is, to skip the segment. The problems are that this solution is rather
-  awkward and that it works only for one code segment. This means that if
-  your program has more than one code segment, all of them but one will be
+- gctest checks to see if the code segment is added to the root set or not,
+  and complains if it is. The only problem is that, as far as I know, it is
+  impossible to know which segments are code segments and which are data
+  segments (there are indeed solutions to this problem, like scanning the
+  program on disk or patch the LoadSeg functions, but they are rather
+  complicated). The solution I have chosen (see os_dep.c) is to test whether
+  the program counter is in the segment we are about to add to the root set,
+  and if it is, to skip the segment. The problems are that this solution is
+  rather awkward and that it works only for one code segment. This means that
+  if your program has more than one code segment, all of them but one will be
   added to the root set. This isn't a big problem in fact, since the
   collector will continue to work correctly, but it may be slower.
 
@@ -228,15 +216,8 @@ In addition to Jesper's notes, I have the following to say:
   is loaded in memory, whether a segment is a code or a data segment,
   please let me know.
 
-PROBLEMS
 
-If you have any problem with this version, please contact me at
-schinz@alphanet.ch (but do *not* send long files, since we pay for
-every mail!).
-
-===========================================================================
-			  Jesper Peterson's notes
-===========================================================================
+                          Jesper Peterson's notes
 
 ADDITIONAL NOTES FOR AMIGA PORT
 
@@ -269,10 +250,10 @@ the SAS/C commercial development system.
 
 In keeping with the porting philosophy outlined above, this port
 will not behave well with Amiga specific code. Especially not inter-
-process comms via messages, and setting up public structures like
+process communications via messages, and setting up public structures like
 Intuition objects or anything else in the system lists. For the
 time being the use of this library is limited to single threaded
-ANSI/POSIX  compliant or near-complient code. (ie. Stick to stdio
+ANSI/POSIX compliant or near-compliant code. (i.e., stick to stdio
 for now). Given this limitation there is currently no mechanism for
 allocating "CHIP" or "PUBLIC" memory under the garbage collector.
 I'll add this after giving it considerable thought. The major
@@ -283,7 +264,7 @@ If you allocate your own stack in client code, you will have to
 assign the pointer plus stack size to GC_stackbottom.
 
 The initial stack size of the target program can be compiled in by
-setting the __stack symbol (see SAS documentaion). It can be over-
+setting the __stack symbol (see SAS documentation). It can be over-
 ridden from the CLI by running the AmigaDOS "stack" program, or from
 the WorkBench by setting the stack size in the tool types window.
 
@@ -304,19 +285,6 @@ THE GOOD NEWS
 The library as it stands is compatible with the GigaMem commercial
 virtual memory software, and probably similar PD software.
 
-The performance of "gctest" on an Amiga 2630 (68030 @ 25Mhz)
-compares favourably with an HP9000 with similar architecture (a 325
+The performance of "gctest" on an Amiga 2630 (68030 @ 25 MHz)
+compares favorably with an HP9000 with similar architecture (a 325
 with a 68030 I think).
-
------------------------------------------------------------------------
-
-The Amiga port has been brought to you by:
-
-Jesper Peterson.
-
-jep@mtiame.mtia.oz.au		(preferred, but 1 week turnaround)
-jep@orca1.vic.design.telecom.au (that's orca<one>, 1 day turnaround)
-
-At least one of these addresses should be around for a while, even
-though I don't work for either of the companies involved.
-
