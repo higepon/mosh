@@ -7,6 +7,7 @@ GC_CFLAGS = \
 	    -DTHREAD_LOCAL_ALLOC=1 \
 	    -DHAS_X86_THREAD_STATE64___RAX=1 \
 	    -DATOMIC_UNCOLLECTABLE=1 \
+	    -DGC_BUILTIN_ATOMIC=1 \
 	    -DNO_EXECUTE_PERMISSION=1 \
 	    -DALL_INTERIOR_POINTERS=1 \
 	    -DJAVA_FINALIZATION=1 \
@@ -231,20 +232,18 @@ $(BOEHM_GC_DIR)/malloc.c \
 $(BOEHM_GC_DIR)/mallocx.c \
 $(BOEHM_GC_DIR)/mark.c \
 $(BOEHM_GC_DIR)/mark_rts.c \
-$(BOEHM_GC_DIR)/gc_misc.c \
+$(BOEHM_GC_DIR)/misc.c \
 $(BOEHM_GC_DIR)/new_hblk.c \
 $(BOEHM_GC_DIR)/obj_map.c \
 $(BOEHM_GC_DIR)/os_dep.c \
 $(BOEHM_GC_DIR)/mach_dep.c \
-$(BOEHM_GC_DIR)/pcr_interface.c \
-$(BOEHM_GC_DIR)/real_malloc.c \
 $(BOEHM_GC_DIR)/reclaim.c \
 $(BOEHM_GC_DIR)/specific.c \
-$(BOEHM_GC_DIR)/stubborn.c \
 $(BOEHM_GC_DIR)/typd_mlc.c \
 $(BOEHM_GC_DIR)/backgraph.c \
-$(BOEHM_GC_DIR)/thread_local_alloc.c \
-$(BOEHM_GC_DIR)/libatomic_ops/src/atomic_ops.c 
+$(BOEHM_GC_DIR)/ptr_chck.c \
+$(BOEHM_GC_DIR)/gc_badalc.cc \
+$(BOEHM_GC_DIR)/thread_local_alloc.c
 
 GC_PTHREAD_SRCS = \
 $(BOEHM_GC_DIR)/pthread_start.c \
@@ -333,7 +332,7 @@ datadir = $(MOSH_LIB_PATH)
 data_DATA = src/all-tests.scm
 nobase_data_DATA = ${mosh_core_libraries} ${MOSH_PLUGINS} #${mosh_core_fasl_libraries}
 
-INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(BOEHM_GC_DIR)/libatomic_ops/src -I$(top_srcdir)/src
+INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(BOEHM_GC_DIR)/include/gc -I $(top_srcdir)/$(BOEHM_GC_DIR)/libatomic_ops/src -I$(top_srcdir)/src
 EXTRA_DIST     = \
 boot/vm.scm boot/baselib boot/compiler.scm \
 boot/free-vars.scm misc/scripts boot/baselib/match.scm doc \

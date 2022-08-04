@@ -5,7 +5,7 @@
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
  *
  * Permission is hereby granted to use or copy this program
- * for any purpose,  provided the above notices are retained on all copies.
+ * for any purpose, provided the above notices are retained on all copies.
  * Permission to modify the code and to distribute modified code is granted,
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
@@ -20,8 +20,8 @@
 
 STATIC void GC_CALLBACK GC_default_same_obj_print_proc(void * p, void * q)
 {
-    GC_err_printf("%p and %p are not in the same object\n", p, q);
-    ABORT("GC_same_obj test failed");
+    ABORT_ARG2("GC_same_obj test failed",
+               ": %p and %p are not in the same object", p, q);
 }
 
 void (GC_CALLBACK *GC_same_obj_print_proc) (void *, void *)
@@ -30,8 +30,8 @@ void (GC_CALLBACK *GC_same_obj_print_proc) (void *, void *)
 /* Check that p and q point to the same object.  Call           */
 /* *GC_same_obj_print_proc if they don't.                       */
 /* Returns the first argument.  (Return value may be hard       */
-/* to use,due to typing issues.  But if we had a suitable       */
-/* preprocessor ...)                                            */
+/* to use due to typing issues.  But if we had a suitable       */
+/* preprocessor...)                                             */
 /* Succeeds if neither p nor q points to the heap.              */
 /* We assume this is performance critical.  (It shouldn't       */
 /* be called by production code, but this can easily make       */
@@ -43,14 +43,14 @@ GC_API void * GC_CALL GC_same_obj(void *p, void *q)
     ptr_t base, limit;
     word sz;
 
-    if (!GC_is_initialized) GC_init();
+    if (!EXPECT(GC_is_initialized, TRUE)) GC_init();
     hhdr = HDR((word)p);
-    if (hhdr == 0) {
+    if (NULL == hhdr) {
         if (divHBLKSZ((word)p) != divHBLKSZ((word)q)
-            && HDR((word)q) != 0) {
+                && HDR((word)q) != NULL) {
             goto fail;
         }
-        return(p);
+        return p;
     }
     /* If it's a pointer to the middle of a large object, move it       */
     /* to the beginning.                                                */
@@ -62,16 +62,17 @@ GC_API void * GC_CALL GC_same_obj(void *p, void *q)
            hhdr = HDR(h);
         }
         limit = (ptr_t)h + hhdr -> hb_sz;
-        if ((ptr_t)p >= limit || (ptr_t)q >= limit || (ptr_t)q < (ptr_t)h ) {
+        if ((word)p >= (word)limit || (word)q >= (word)limit
+            || (word)q < (word)h) {
             goto fail;
         }
-        return(p);
+        return p;
     }
     sz = hhdr -> hb_sz;
     if (sz > MAXOBJBYTES) {
       base = (ptr_t)HBLKPTR(p);
       limit = base + sz;
-      if ((ptr_t)p >= limit) {
+      if ((word)p >= (word)limit) {
         goto fail;
       }
     } else {
@@ -90,19 +91,18 @@ GC_API void * GC_CALL GC_same_obj(void *p, void *q)
     /* If p is not inside a valid object, then either q is      */
     /* also outside any valid object, or it is outside          */
     /* [base, limit).                                           */
-    if ((ptr_t)q >= limit || (ptr_t)q < base) {
+    if ((word)q >= (word)limit || (word)q < (word)base) {
         goto fail;
     }
-    return(p);
+    return p;
 fail:
     (*GC_same_obj_print_proc)((ptr_t)p, (ptr_t)q);
-    return(p);
+    return p;
 }
 
 STATIC void GC_CALLBACK GC_default_is_valid_displacement_print_proc (void *p)
 {
-    GC_err_printf("%p does not point to valid object displacement\n", p);
-    ABORT("GC_is_valid_displacement test failed");
+    ABORT_ARG1("GC_is_valid_displacement test failed", ": %p not valid", p);
 }
 
 void (GC_CALLBACK *GC_is_valid_displacement_print_proc)(void *) =
@@ -122,37 +122,37 @@ GC_API void * GC_CALL GC_is_valid_displacement(void *p)
     struct hblk *h;
     word sz;
 
-    if (!GC_is_initialized) GC_init();
+    if (!EXPECT(GC_is_initialized, TRUE)) GC_init();
+    if (NULL == p) return NULL;
     hhdr = HDR((word)p);
-    if (hhdr == 0) return(p);
+    if (NULL == hhdr) return p;
     h = HBLKPTR(p);
     if (GC_all_interior_pointers) {
         while (IS_FORWARDING_ADDR_OR_NIL(hhdr)) {
            h = FORWARDED_ADDR(h, hhdr);
            hhdr = HDR(h);
         }
-    }
-    if (IS_FORWARDING_ADDR_OR_NIL(hhdr)) {
+    } else if (IS_FORWARDING_ADDR_OR_NIL(hhdr)) {
         goto fail;
     }
     sz = hhdr -> hb_sz;
     pdispl = HBLKDISPL(p);
     offset = pdispl % sz;
-    if ((sz > MAXOBJBYTES && (ptr_t)p >= (ptr_t)h + sz)
+    if ((sz > MAXOBJBYTES && (word)p >= (word)h + sz)
         || !GC_valid_offsets[offset]
-        || (ptr_t)p - offset + sz > (ptr_t)(h + 1)) {
+        || ((word)p + (sz - offset) > (word)(h + 1)
+            && !IS_FORWARDING_ADDR_OR_NIL(HDR(h + 1)))) {
         goto fail;
     }
-    return(p);
+    return p;
 fail:
     (*GC_is_valid_displacement_print_proc)((ptr_t)p);
-    return(p);
+    return p;
 }
 
 STATIC void GC_CALLBACK GC_default_is_visible_print_proc(void * p)
 {
-    GC_err_printf("%p is not a GC visible pointer location\n", p);
-    ABORT("GC_is_visible test failed");
+    ABORT_ARG1("GC_is_visible test failed", ": %p not GC-visible", p);
 }
 
 void (GC_CALLBACK *GC_is_visible_print_proc)(void * p) =
@@ -160,75 +160,76 @@ void (GC_CALLBACK *GC_is_visible_print_proc)(void * p) =
 
 #ifndef THREADS
 /* Could p be a stack address? */
-   STATIC GC_bool GC_on_stack(ptr_t p)
-   {
-        int dummy;
-#       ifdef STACK_GROWS_DOWN
-            if ((ptr_t)p >= (ptr_t)(&dummy) && (ptr_t)p < GC_stackbottom ) {
-                return(TRUE);
-            }
-#       else
-            if ((ptr_t)p <= (ptr_t)(&dummy) && (ptr_t)p > GC_stackbottom ) {
-                return(TRUE);
-            }
-#       endif
-        return(FALSE);
-   }
-#endif
+  STATIC GC_bool GC_on_stack(void *p)
+  {
+#   ifdef STACK_GROWS_DOWN
+      if ((word)p >= (word)GC_approx_sp()
+           && (word)p < (word)GC_stackbottom) {
+        return TRUE;
+      }
+#   else
+      if ((word)p <= (word)GC_approx_sp()
+           && (word)p > (word)GC_stackbottom) {
+        return TRUE;
+      }
+#   endif
+    return FALSE;
+  }
+#endif /* !THREADS */
 
 /* Check that p is visible                                              */
 /* to the collector as a possibly pointer containing location.          */
-/* If it isn't invoke *GC_is_visible_print_proc.                        */
+/* If it isn't, invoke *GC_is_visible_print_proc.                       */
 /* Returns the argument in all cases.  May erroneously succeed          */
 /* in hard cases.  (This is intended for debugging use with             */
 /* untyped allocations.  The idea is that it should be possible, though */
 /* slow, to add such a call to all indirect pointer stores.)            */
-/* Currently useless for multithreaded worlds.                          */
+/* Currently useless for the multi-threaded worlds.                     */
 GC_API void * GC_CALL GC_is_visible(void *p)
 {
     hdr *hhdr;
 
     if ((word)p & (ALIGNMENT - 1)) goto fail;
-    if (!GC_is_initialized) GC_init();
+    if (!EXPECT(GC_is_initialized, TRUE)) GC_init();
 #   ifdef THREADS
         hhdr = HDR((word)p);
-        if (hhdr != 0 && GC_base(p) == 0) {
+        if (hhdr != NULL && NULL == GC_base(p)) {
             goto fail;
         } else {
             /* May be inside thread stack.  We can't do much. */
-            return(p);
+            return p;
         }
 #   else
         /* Check stack first: */
-          if (GC_on_stack(p)) return(p);
+          if (GC_on_stack(p)) return p;
         hhdr = HDR((word)p);
-        if (hhdr == 0) {
-            if (GC_is_static_root(p)) return(p);
+        if (NULL == hhdr) {
+            if (GC_is_static_root(p)) return p;
             /* Else do it again correctly:      */
 #           if defined(DYNAMIC_LOADING) || defined(MSWIN32) \
                 || defined(MSWINCE) || defined(CYGWIN32) || defined(PCR)
               GC_register_dynamic_libraries();
-              if (GC_is_static_root(p))
-                return(p);
+              if (GC_is_static_root(p)) return p;
 #           endif
             goto fail;
         } else {
             /* p points to the heap. */
             word descr;
-            ptr_t base = GC_base(p);    /* Should be manually inlined? */
+            ptr_t base = (ptr_t)GC_base(p);
+                        /* TODO: should GC_base be manually inlined? */
 
-            if (base == 0) goto fail;
-            if (HBLKPTR(base) != HBLKPTR(p)) hhdr = HDR((word)p);
+            if (NULL == base) goto fail;
+            if (HBLKPTR(base) != HBLKPTR(p))
+                hhdr = HDR(base);
             descr = hhdr -> hb_descr;
     retry:
             switch(descr & GC_DS_TAGS) {
                 case GC_DS_LENGTH:
-                    if ((word)((ptr_t)p - (ptr_t)base) > (word)descr) goto fail;
+                    if ((word)p - (word)base > descr) goto fail;
                     break;
                 case GC_DS_BITMAP:
-                    if ((ptr_t)p - (ptr_t)base
-                         >= WORDS_TO_BYTES(BITMAP_BITS)
-                         || ((word)p & (sizeof(word) - 1))) goto fail;
+                    if ((word)p - (word)base >= WORDS_TO_BYTES(BITMAP_BITS)
+                        || ((word)p & (sizeof(word) - 1))) goto fail;
                     if (!(((word)1 << (WORDSZ - ((ptr_t)p - (ptr_t)base) - 1))
                           & descr)) goto fail;
                     break;
@@ -242,38 +243,39 @@ GC_API void * GC_CALL GC_is_visible(void *p)
                     } else {
                       ptr_t type_descr = *(ptr_t *)base;
                       descr = *(word *)(type_descr
-                              - (descr - (word)(GC_DS_PER_OBJECT
-                                          - GC_INDIR_PER_OBJ_BIAS)));
+                                        - (descr - (word)(GC_DS_PER_OBJECT
+                                           - GC_INDIR_PER_OBJ_BIAS)));
                     }
                     goto retry;
             }
-            return(p);
+            return p;
         }
 #   endif
 fail:
     (*GC_is_visible_print_proc)((ptr_t)p);
-    return(p);
+    return p;
 }
 
-GC_API void * GC_CALL GC_pre_incr (void **p, ptrdiff_t how_much)
+GC_API void * GC_CALL GC_pre_incr(void **p, ptrdiff_t how_much)
 {
     void * initial = *p;
     void * result = GC_same_obj((void *)((ptr_t)initial + how_much), initial);
 
     if (!GC_all_interior_pointers) {
-        (void) GC_is_valid_displacement(result);
-    }
-    return (*p = result);
-}
-
-GC_API void * GC_CALL GC_post_incr (void **p, ptrdiff_t how_much)
-{
-    void * initial = *p;
-    void * result = GC_same_obj((void *)((ptr_t)initial + how_much), initial);
-
-    if (!GC_all_interior_pointers) {
-        (void) GC_is_valid_displacement(result);
+        (void)GC_is_valid_displacement(result);
     }
     *p = result;
-    return(initial);
+    return result; /* updated pointer */
+}
+
+GC_API void * GC_CALL GC_post_incr(void **p, ptrdiff_t how_much)
+{
+    void * initial = *p;
+    void * result = GC_same_obj((void *)((ptr_t)initial + how_much), initial);
+
+    if (!GC_all_interior_pointers) {
+        (void)GC_is_valid_displacement(result);
+    }
+    *p = result;
+    return initial; /* original *p */
 }

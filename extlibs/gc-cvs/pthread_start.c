@@ -9,7 +9,7 @@
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
  *
  * Permission is hereby granted to use or copy this program
- * for any purpose,  provided the above notices are retained on all copies.
+ * for any purpose, provided the above notices are retained on all copies.
  * Permission to modify the code and to distribute modified code is granted,
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
@@ -22,7 +22,7 @@
 /* case at the top of the file.  FIXME: it's still unclear whether this */
 /* will actually cause the exit handler to be invoked last when         */
 /* thread_exit is called (and if -fexceptions is used).                 */
-#if defined(__GNUC__) && defined(__linux__)
+#if !defined(DONT_UNDEF_EXCEPTIONS) && defined(__GNUC__) && defined(__linux__)
   /* We undefine __EXCEPTIONS to avoid using GCC __cleanup__ attribute. */
   /* The current NPTL implementation of pthread_cleanup_push uses       */
   /* __cleanup__ attribute when __EXCEPTIONS is defined (-fexceptions). */
@@ -41,28 +41,25 @@
 #include <pthread.h>
 #include <sched.h>
 
-GC_INNER GC_thread GC_start_rtn_prepare_thread(void *(**pstart)(void *),
-                                        void **pstart_arg,
-                                        struct GC_stack_base *sb, void *arg);
-GC_INNER void GC_thread_exit_proc(void *arg);
-                                        /* defined in pthread_support.c */
-
 /* Invoked from GC_start_routine(). */
-void * GC_CALLBACK GC_inner_start_routine(struct GC_stack_base *sb, void *arg)
+GC_INNER_PTHRSTART void * GC_CALLBACK GC_inner_start_routine(
+                                        struct GC_stack_base *sb, void *arg)
 {
   void * (*start)(void *);
   void * start_arg;
   void * result;
-  GC_thread me = GC_start_rtn_prepare_thread(&start, &start_arg, sb, arg);
+  volatile GC_thread me =
+                GC_start_rtn_prepare_thread(&start, &start_arg, sb, arg);
 
 # ifndef NACL
     pthread_cleanup_push(GC_thread_exit_proc, me);
 # endif
   result = (*start)(start_arg);
-# ifdef DEBUG_THREADS
-    GC_log_printf("Finishing thread 0x%x\n", (unsigned)pthread_self());
+# if defined(DEBUG_THREADS) && !defined(GC_PTHREAD_START_STANDALONE)
+    GC_log_printf("Finishing thread %p\n", (void *)pthread_self());
 # endif
   me -> status = result;
+  GC_end_stubborn_change(me); /* cannot use GC_dirty */
 # ifndef NACL
     pthread_cleanup_pop(1);
     /* Cleanup acquires lock, ensuring that we can't exit while         */
