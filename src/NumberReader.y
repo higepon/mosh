@@ -121,6 +121,14 @@ static Object suffixToNumber(const ucs4string& text)
 }
 
 %}
+%code
+{
+  bool hasExplicitExact;
+}
+%initial-action
+{
+  hasExplicitExact = false;
+}
 %pure_parser
 %token END_OF_FILE PLUS MINUS SLASH DOT AT MY_NAN MY_INF IMAG
 %token RADIX_2 RADIX_8 RADIX_10 RADIX_16
@@ -366,10 +374,17 @@ sreal10   : PLUS  ureal10 { $$ = $2; }
           ;
 
 decimal10 : uinteger10String suffix {
+              // This should be exact because suffix is not present.
               if ($2.empty()) {
                   $$ = Bignum::makeInteger($1);
               } else {
-                  $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumberOld($2));
+                  if (hasExplicitExact) {
+                    // #e-1e1000
+                    $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumberOld($2));
+                  } else {
+                    // 1e10000
+                    $$ = ScannerHelper::applyExactness(-1, Arithmetic::mul(Bignum::makeInteger($1), suffixToNumberOld($2)));
+                  }
 // todo ("#e-1e-1000" (- (expt 10 -1000)))
 //                   int suffixNum = suffix($2);
 //                   Object z0 = Arithmetic::mul(Bignum::makeInteger($1),
@@ -446,7 +461,7 @@ digit10   : digit8
           ;
 
 exactness : /* empty */     { $$ = 0; }
-          | EXACT           { $$ = 1; }
+          | EXACT           { $$ = 1; hasExplicitExact = true; }
           | INEXACT         { $$ = -1; }
           ;
 
