@@ -11,7 +11,14 @@ To install this source package:
 - Install following using MacPorts:
   oniguruma5
   gmp
-- M1 Macs are experimentaly supported on 0.2.8_RC1.
+- M1 Macs are experimentaly supported on 0.2.8_RC1:
+```
+export CPATH=/opt/homebrew/include
+export LIBLARY_PATH=/opt/homebrew/lib
+./configure 
+make
+make test
+```
 - 10.5 or 10.6: ./configure CFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
   10.7        : ./configure CFLAGS=-I/opt/local/include \
                             LDFLAGS=-L/opt/local/lib \

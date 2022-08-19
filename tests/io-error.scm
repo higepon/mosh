@@ -324,13 +324,13 @@
               (set-port-position! port -1)))
 
 ;; file-is-read-only
-(unless (or (string=? (host-os) "win32") (string=? (host-os) "cygwin") (string=? (host-os) "mona"))
-  (let ()
-  (test-error i/o-file-is-read-only-error?
-                  (open-file-input/output-port "./tests/read-only.txt" (file-options no-fail) 'block))
-
-  (test-error i/o-file-is-read-only-error?
-                  (open-file-output-port "./tests/read-only.txt" (file-options no-fail) 'block))))
+;(unless (or (string=? (host-os) "win32") (string=? (host-os) "cygwin") (string=? (host-os) "mona"))
+;  (let ()
+;  (test-error i/o-file-is-read-only-error?
+;                  (open-file-input/output-port "./tests/read-only.txt" (file-options no-fail) 'block))
+;
+;  (test-error i/o-file-is-read-only-error?
+;                  (open-file-output-port "./tests/read-only.txt" (file-options no-fail) 'block))))
 
 
 ; we can't "svn add" this file, but test is OK.

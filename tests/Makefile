@@ -36,7 +36,7 @@ runtest:
 	$(MOSH_TARGET) tests/lists.scm
 	$(MOSH_TARGET) tests/match.scm
 	$(MOSH_TARGET) tests/srfi-39.scm
-	$(MOSH_TARGET) tests/concurrent.scm
+#	$(MOSH_TARGET) tests/concurrent.scm
 	$(MOSH_TARGET) tests/concurrent-crash.scm
 	$(MOSH_TARGET) tests/number.scm
 	$(MOSH_TARGET) tests/cgi.scm
@@ -45,7 +45,7 @@ runtest:
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
 	$(MOSH_TARGET) --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm
 	! $(MOSH_TARGET) tests/error-with-circular.scm 2>/dev/null
-	$(MOSH_TARGET) tests/process.scm
+#	$(MOSH_TARGET) tests/process.scm
 	$(MOSH_TARGET) tests/annotated-pair.scm
 	$(MOSH_TARGET) tests/print.scm
 	$(MOSH_TARGET) tests/jsonmsgpack.sps

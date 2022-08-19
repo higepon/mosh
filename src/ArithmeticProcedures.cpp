@@ -248,7 +248,6 @@ Object scheme::integerDivEx(VM* theVM, int argc, const Object* argv)
     if (n2.isFlonum()) {
         const double fn2 = n2.toFlonum()->value();
         if (0.0 == fn2) {
-            LOG2("[~a ~a]", n1, n2);
             callAssertionViolationAfter(theVM, procedureName, "div by 0.0 is not defined", Pair::list2(n1, n2));
             return Object::Undef;
         }

@@ -414,14 +414,14 @@ MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTAR
 NMOSHBIN ="NMOSH_CACHEDIR=$(abs_builddir)/nmosh-cache MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
 
 
-test: ptest ntest
+test: ptest # ntest
 Xtest: ptest ntest testD ntestD
 ptest: testB testR testL
 ntest: ntestB ntestR ntestL
 
-testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
+testB: ./mosh src/all-tests.scm # lib/libffitest.so.1.0 
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest)
-	(MOSH_TARGET=$(MOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-ffi)
+#	(MOSH_TARGET=$(MOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-ffi)
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-mosh)
 
 testL:
@@ -433,11 +433,11 @@ testR:
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/r6rs-test-suite)
 
 #check-am is Automake's internal target..
-testU: check-am
+#testU: check-am
 
-ntestB: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
+ntestB: ./nmosh src/all-tests.scm # lib/libffitest.so.1.0
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest)
-	(MOSH_TARGET=$(NMOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-ffi)
+#	(MOSH_TARGET=$(NMOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-ffi)
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-nmosh)
 
 ntestL:
