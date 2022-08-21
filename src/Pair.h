@@ -216,7 +216,7 @@ struct AnnotatedPair
     //   We will use GC_size to distinguish Pair and AnnotatedPair.
     //   But GC_size is not fully reliable. So we inject 2 more
     //   words here. (when debugging)
-    //void* bogus[2];
+    void* bogus[2];
     Object annotation;
 };
 
