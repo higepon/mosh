@@ -44,7 +44,7 @@
   (define memq2 memq)
   (define df (lambda a '#f))
   (define print-stack (lambda a '#f))
-  (define (source-info p) (let1 src (debug-source-info p) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
+  (define (source-info p) (let1 src (pair-attribute-get p 'source-info #f) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
   (define (make-list-with-src-slot lst) (apply extended-list lst))
   (define (set-source-info! a b)
     (cond
