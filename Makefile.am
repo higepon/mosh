@@ -1,22 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 # GLOBAL CFLAGS
 
-GC_CFLAGS = \
-	    -DGC_THREADS \
-	    -DLARGE_CONFIG=1 \
-	    -DTHREAD_LOCAL_ALLOC=1 \
-	    -DHAS_X86_THREAD_STATE64___RAX=1 \
-	    -DATOMIC_UNCOLLECTABLE=1 \
-	    -DGC_BUILTIN_ATOMIC=1 \
-	    -DNO_EXECUTE_PERMISSION=1 \
-	    -DALL_INTERIOR_POINTERS=1 \
-	    -DJAVA_FINALIZATION=1 \
-	    -DGC_GCJ_SUPPORT=1 \
-	    -DUSE_I686_PREFETCH \
-		-DDONT_ADD_BYTE_AT_END \
-		-DHANDLE_FORK \
-		-DGC_NOT_DLL 
-
+GC_CFLAGS = 
 GLOBAL_CFLAGS =  $(ONIG_CFLAGS) \
 		 -g \
 		 -Wall \
@@ -29,7 +14,7 @@ GLOBAL_CFLAGS =  $(ONIG_CFLAGS) \
 
 GLOBAL_CXXFLAGS = -Wno-deprecated
 
-LIBS += $(ONIG_LIBS)
+LIBS += $(ONIG_LIBS) -lgc -lgccpp
 
 include automake/dist-git-revision.mk
 
@@ -268,7 +253,7 @@ if GC_WIN32
 GC_SRCS += $(GC_WIN32_SRCS)
 endif
 
-MOSH_CORE_SRCS += $(GC_SRCS)
+#MOSH_CORE_SRCS += $(GC_SRCS)
 
 noinst_LIBRARIES = libmosh_main.a libnmosh_main.a libmosh_core_for_test.a
 

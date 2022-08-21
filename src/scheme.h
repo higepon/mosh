@@ -96,9 +96,9 @@ extern "C" {
    extern "C" {
        void* GC_dlopen(const char* path, int mode);
    }
-#  include <gc.h>
-#  include <gc_cpp.h>
-#  include <gc_allocator.h>
+#  include <gc/gc.h>
+#  include <gc/gc_cpp.h>
+#  include <gc/gc_allocator.h>
    template <class T1, class T2>
    class gc_map : public std::map<T1, T2, std::less<T1>, gc_allocator<std::pair<const T1, T2> > >, public gc { };
    template <class T1>
