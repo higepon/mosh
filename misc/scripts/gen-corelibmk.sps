@@ -22,8 +22,6 @@
     "automake/corelibs.mk"
     (^p (display "mosh_core_libraries = " p)
         (for-each (^e (display " \\\n" p) (display e p) ) l)
-        (display "\\\n$(top_builddir)/lib/mosh/config.ss" p)
-        (display "\\\n$(top_builddir)/lib/mosh/mysql.ss" p)
         (display "\n\n" p))))
 
 (output (filter (^e (let ((p (path-extension e)))
