@@ -33,48 +33,36 @@
 #define SCHEME_EQ_HASH_TABLE_
 
 #include "HashTable.h"
-
-#if HAVE_EXT_HASHES
-#include <ext/hash_map>
-struct hash_func
-{
-    size_t operator()(scheme::Object const & s) const
-    {
-        return static_cast<intptr_t>(s.val);
-    }
-};
-typedef __gnu_cxx::hash_map<scheme::Object,
-                            scheme::Object,
-                            hash_func,
-                            std::equal_to<scheme::Object>,
-                            gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
-
-#elif HAVE_TR1_HASHES
-#ifdef _WIN32
 #include <unordered_map>
-#include "gc_allocator.h"
-#else
-#include <tr1/unordered_map>
-#endif
+
+// #if 0 // HAVE_EXT_HASHES
+// #include <ext/hash_map>
+// struct hash_func
+// {
+//     size_t operator()(scheme::Object const & s) const
+//     {
+//         return static_cast<intptr_t>(s.val);
+//     }
+// };
+// typedef __gnu_cxx::hash_map<scheme::Object,
+//                             scheme::Object,
+//                             hash_func,
+//                             std::equal_to<scheme::Object>,
+//                             gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
+// #else
 struct hash_func
 {
     size_t operator()(scheme::Object const & s) const
     {
-        return std::tr1::hash<intptr_t>()(s.val);
+        return std::hash<intptr_t>()(s.val);
     }
 };
 
-typedef std::tr1::unordered_map<scheme::Object,
+typedef std::unordered_map<scheme::Object,
                                 scheme::Object,
                                 hash_func, std::equal_to<scheme::Object>,
                                 gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
-#else // std::map
-typedef std::map<scheme::Object,
-                 scheme::Object,
-                 std::less<scheme::Object>,
-                 gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
-#endif
-
+//#endif
 
 namespace scheme {
 

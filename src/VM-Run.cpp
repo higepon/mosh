@@ -58,7 +58,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
     pc_ = code;
     for (;;) {
         const Object insn = *pc_++;
-        SWITCH((int)insn.val) {
+        SWITCH((intptr_t)insn.val) {
         CASE(HALT)
         {
             return ac_;
