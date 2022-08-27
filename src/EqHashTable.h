@@ -35,21 +35,6 @@
 #include "HashTable.h"
 #include <unordered_map>
 
-// #if 0 // HAVE_EXT_HASHES
-// #include <ext/hash_map>
-// struct hash_func
-// {
-//     size_t operator()(scheme::Object const & s) const
-//     {
-//         return static_cast<intptr_t>(s.val);
-//     }
-// };
-// typedef __gnu_cxx::hash_map<scheme::Object,
-//                             scheme::Object,
-//                             hash_func,
-//                             std::equal_to<scheme::Object>,
-//                             gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
-// #else
 struct hash_func
 {
     size_t operator()(scheme::Object const & s) const
