@@ -414,7 +414,7 @@ MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTAR
 NMOSHBIN ="NMOSH_CACHEDIR=$(abs_builddir)/nmosh-cache MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
 
 
-test: ptest # ntest
+test: ptest ntest
 Xtest: ptest ntest testD ntestD
 ptest: testB testR testL
 ntest: ntestB ntestR ntestL
