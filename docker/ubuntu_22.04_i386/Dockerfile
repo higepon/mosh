@@ -16,8 +16,6 @@ RUN tar zvxf onig-5.9.6.tar.gz && cd onig-5.9.6 && rm config.sub && rm config.gu
 RUN git clone https://github.com/higepon/mosh.git mosh.git
 
 # Mosh 0.2.8 RC3
-RUN ls
-RUN pwd
 RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
 RUN tar zvxf mosh-0.2.8-rc3.tar.gz && cd mosh-0.2.8-rc3 && ./configure && make && make test && make install
 

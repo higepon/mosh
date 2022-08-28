@@ -1,12 +1,12 @@
 version: "3.9"
 
 services:
-  ubuntu_22.04_amd64:
+  ubuntu_22.04_i386:
     platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ubuntu-22.04_amd64
+    container_name: ubuntu-22.04-i386
     # To be able to debug using gdb    
     security_opt:
       - seccomp:unconfined      

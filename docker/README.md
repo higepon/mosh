@@ -1,8 +1,13 @@
 ### What is this?
-Docker container to build and test Mosh on Ubuntu 22.04.
+Docker containers mainly for Mosh developers. In each subdirectory you should be able to build a) Released stable version of Mosh and b) the git head of Mosh in the architecture. b) may fail due to the change in the head but the containers should help the debugging.
 
 ### How to use
+
+
 ```
+# Pick the architecture to use.
+cd ubuntu_22.04_amd64
+
 # Start and build the container
 make start
 

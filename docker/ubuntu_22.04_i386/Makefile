@@ -1,4 +1,4 @@
-SERVICE_NAME=ubuntu_22.04_amd64
+SERVICE_NAME=ubuntu_22.04_i386
 
 build:
 	docker-compose build $(SERVICE_NAME)
