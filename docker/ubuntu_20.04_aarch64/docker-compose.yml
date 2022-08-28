@@ -1,10 +1,15 @@
 version: "3.9"
 
 services:
-  mosh-0.2.7-bootstrap:
+  ubuntu_20.04_aarch64:
+    platform: linux/aarch64
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: ubuntu-20.04-aarch64
+    # To be able to debug using gdb    
+    security_opt:
+      - seccomp:unconfined      
     tty: true      
     volumes:
       - type: bind

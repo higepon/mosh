@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  ubuntu_20.04_amd64:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ubuntu-20.04-amd64
+    # To be able to debug using gdb    
+    security_opt:
+      - seccomp:unconfined      
+    tty: true      
+    volumes:
+      - type: bind
+        source: "./workspace"
+        target: "/workspace"        
