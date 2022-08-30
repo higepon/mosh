@@ -345,7 +345,7 @@ boot/runtimes/psyntax-mosh/psyntax-prefix.txt \
 doc/mosh.1 doc/mosh_config.1 \
 doc/RELNOTE lib src \
 tests src/call.inc.cpp ${GTEST_DIR} \
-doc README.md misc \
+doc README.md misc/ \
 boot/runtimes/srfi-mosh/Makefile \
 boot/runtimes/srfi-mosh/README \
 boot/runtimes/srfi-mosh/bootstrap.common \
