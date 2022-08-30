@@ -57,22 +57,28 @@ jobs:
         os: [macos-latest, macos-12]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
-    env:
-      CPATH: /opt/homebrew/include
-      LIBLARY_PATH: /opt/homebrew/lib
     steps:
-      - name: Instlall tools
+      - name: Install tools
         run: |
-          brew install gmp oniguruma automake re2c bison subversion gauche
+          brew install gmp oniguruma automake re2c bison gauche
+          # Override system's bison with newer version
+          echo "$HOMEBREW_PREFIX/opt/bison/bin" >> $GITHUB_PATH
+          # FIXME: Detect gnump with pkg-config
+          echo "LDFLAGS=-L$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
+          echo "CXXFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
+          # FIXME: Disable GC during CI for now
+          echo "GC_DONT_GC=1" >> $GITHUB_ENV
       - name: Install the latest stable Mosh
         run: |
-          wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
+          curl -OL https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
           tar zvxf mosh-0.2.8-rc3.tar.gz
           cd mosh-0.2.8-rc3
-          ./configure
+          ./configure --prefix=$HOME/opt/mosh
           make
           make test
           sudo make install
+          echo "$HOME/opt/mosh/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v3
       - name: Build and test the latest changes.
         run: |
@@ -82,3 +88,16 @@ jobs:
           make
           make test
           sudo make install
+      - name: Download/Extract packaging resources
+        run: |
+          cd $HOME/Desktop
+          curl -LO http://www.r6rs.org/final/r6rs.tar.gz
+          tar zxvf r6rs.tar.gz
+          mkdir -p $HOME/NaturalDocs-1.4
+          cd $HOME/NaturalDocs-1.4
+          curl -o naturaldocs.zip -L "https://osdn.net/frs/g_redir.php?m=jaist&f=naturaldocs%2FStable+Releases%2F1.4%2FNaturalDocs-1.4.zip"
+          unzip naturaldocs.zip
+      - name: Create dist
+        run: |
+          cd ${{ github.workspace }}
+          make dist
