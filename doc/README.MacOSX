@@ -11,7 +11,7 @@ To install this source package:
 - Install following using MacPorts:
   oniguruma5
   gmp
-- M1 Macs are experimentaly supported on 0.2.8_RC1:
+- M1 Macs are experimentaly supported on 0.2.8_RC3:
 ```
 export CPATH=/opt/homebrew/include
 export LIBLARY_PATH=/opt/homebrew/lib
