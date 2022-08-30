@@ -50,7 +50,7 @@ jobs:
           make test
           sudo make install
 
-  build-osx:
+  build-macos:
     strategy:
       fail-fast: false
       matrix:
