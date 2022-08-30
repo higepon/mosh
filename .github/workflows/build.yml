@@ -6,7 +6,11 @@ on:
 
 jobs:
   build-linux:
-    runs-on: [ubuntu-22.04, ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-12]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     env:
       LD_LIBRARY_PATH: /usr/local/lib
