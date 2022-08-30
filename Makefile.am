@@ -17,7 +17,7 @@ GC_CFLAGS = \
 		-DHANDLE_FORK \
 		-DGC_NOT_DLL 
 
-GLOBAL_CFLAGS =  $(ONIG_CFLAGS) \
+GLOBAL_CFLAGS =  $(ONIG_CFLAGS) $(GMP_CFLAGS) \
 		 -g \
 		 -Wall \
 		 -I src -I $(includedir) \
@@ -29,7 +29,7 @@ GLOBAL_CFLAGS =  $(ONIG_CFLAGS) \
 
 GLOBAL_CXXFLAGS = -Wno-deprecated -std=c++11
 
-LIBS += $(ONIG_LIBS)
+LIBS += $(ONIG_LIBS) $(GMP_LIBS)
 
 include automake/dist-git-revision.mk
 

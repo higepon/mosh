@@ -60,9 +60,9 @@ AC_ARG_WITH([r6rs-doc],
 LOCAL_CONFIGURE_ARGS="--host=$host --build=$build"
 
 ### GMP or MPIR(gmp API)
-
-AC_CHECK_LIB(gmp, __gmpz_init, ,
-  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])
+PKG_CHECK_MODULES([GMP], [gmp],,
+                  [AC_CHECK_LIB([gmp], [__gmpz_init], ,
+                                [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])])
 
 ### OpenSSL (optional)
 have_openssl=no
@@ -114,6 +114,11 @@ dnl # option1: try to link with current configuration
 dnl if test $have_onig = "no" ; then
 dnl     AC_CHECK_LIB([onig],[regexec],[LIBS="$LIBS -lonig" have_onig="yes"])
 dnl fi
+
+# Option2: use pkg-config
+if test $have_onig = no; then
+    PKG_CHECK_MODULES([ONIG], [oniguruma], have_onig=yes, have_onig=no)
+fi
 
 if test $have_onig = "no" ; then
     AC_MSG_ERROR([oniguruma not found, mosh requires oniguruma 5.x])
