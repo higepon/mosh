@@ -41,12 +41,12 @@ jobs:
           make
           make test
           make install
-    - uses: actions/checkout@v3
-    - name: Build and test the latest changes.
-      run: |
-        cd ${{ github.repository }}
-        ./gen-git-build.sh
-        ./configure
-        make
-        make test
-        sudo make install
+      - uses: actions/checkout@v3
+      - name: Build and test the latest changes.
+        run: |
+          cd ${{ github.repository }}
+          ./gen-git-build.sh
+          ./configure
+          make
+          make test
+          sudo make install
