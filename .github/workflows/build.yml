@@ -81,12 +81,9 @@ jobs:
       - name: Build and test the latest changes.
         run: |
           cd ${{ github.workspace }}
-          echo "$HOMEBREW_PREFIX/opt/bison/bin" > temp
-          cat $GITHUB_PATH >> temp
-          cat temp > $GITHUB_PATH
-          # Debug
-          which bison
-          bison --version
+          # Workaround to use homebrew bison: Pregenerate these
+          $HOMEBREW_PREFIX/opt/bison/bin/bison -p "number_yy" -d src/NumberReader.y -o src/NumberReader.tab.cpp
+          $HOMEBREW_PREFIX/opt/bison/bin/bison -d src/Reader.y -o src/Reader.tab.cpp
           ./gen-git-build.sh
           ./configure
           make -j$(sysctl -n hw.ncpu)
