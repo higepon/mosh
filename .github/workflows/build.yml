@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Instlall tools
         run: |
-          brew install gmp oniguruma automake re2c bison
+          brew install gmp oniguruma automake re2c bison subversion gauche
       - name: Install the latest stable Mosh
         run: |
           wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
