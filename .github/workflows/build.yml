@@ -30,6 +30,10 @@ jobs:
         with:
           path: $ONIGURUMA_PATH
           key: ${{ matrix.os }}-oniguruma
+      - name: Debug2
+        run: |
+          pwd
+          ls
       - name: Build Oniguruma
         if: steps.cache-oniguruma-linux.outputs.cache-hit != 'true'
         run: |
@@ -42,6 +46,10 @@ jobs:
           wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub && \
           ./configure && \
           make
+      - name: Debug3
+        run: |
+          pwd
+          ls
       - name: Install Oniguruma
         run: |
           cd $ONIGURUMA_PATH && \
@@ -74,6 +82,11 @@ jobs:
           make && \
           make test && \
           sudo make install
+      - name: Debug
+        run: |
+          pwd
+          ls
+
 
   build-macos:
     strategy:
