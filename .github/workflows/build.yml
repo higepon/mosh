@@ -63,6 +63,7 @@ jobs:
           brew install gmp oniguruma automake re2c bison gauche
           # FIXME: Hardcode this
           echo "HOMEBREW_PREFIX=/usr/local" >> $GITHUB_ENV
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
           # FIXME: Detect gnump with pkg-config
           echo "LDFLAGS=-L$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
           echo "CFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
@@ -83,9 +84,10 @@ jobs:
       - name: Build and test the latest changes.
         run: |
           cd ${{ github.workspace }}
-          # Workaround to use homebrew bison: Pregenerate these
-          $HOMEBREW_PREFIX/opt/bison/bin/bison -p "number_yy" -d src/NumberReader.y -o src/NumberReader.tab.cpp
-          $HOMEBREW_PREFIX/opt/bison/bin/bison -d src/Reader.y -o src/Reader.tab.cpp
+          # Debug
+          which bison
+          bison --version
+          # Generate build files
           ./gen-git-build.sh
           ./configure
           make -j$(sysctl -n hw.ncpu)
