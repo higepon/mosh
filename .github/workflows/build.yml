@@ -21,6 +21,9 @@ jobs:
         run: |
           sudo apt install -y gauche wget make libgmp-dev autoconf automake
           sudo apt install -y re2c bison subversion git
+      - name: Before cache
+        run: |
+          sudo apt install -y gauche wget make libgmp-dev autoconf automake
       - name: Cache Oniguruma
         id: cache-oniguruma-linux
         uses: actions/cache@v3
@@ -71,6 +74,13 @@ jobs:
           make
           make test
           sudo make install
+      - name: Debug
+        run: |
+          pwd
+          ls
+          echo $STABLE_MOSH_PATH
+          echo $ONIGURUMA_PATH
+  
 
   build-macos:
     strategy:
