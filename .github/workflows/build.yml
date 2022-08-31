@@ -31,7 +31,7 @@ jobs:
           path: $ONIGURUMA_PATH
           key: ${{ matrix.os }}-oniguruma
       - name: Build Oniguruma
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         if: steps.cache-oniguruma-linux.outputs.cache-hit != 'true'
         run: |
           wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz
@@ -44,7 +44,7 @@ jobs:
           ./configure
           make
       - name: Install Oniguruma
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           cd $ONIGURUMA_PATH
           sudo make install
@@ -55,7 +55,7 @@ jobs:
           path: $STABLE_MOSH_PATH
           key: ${{ matrix.os }}-$STABLE_MOSH_PATH
       - name: Build Stable Mosh
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         if: steps.cache-stable-mosh-linux.outputs.cache-hit != 'true'
         run: |
           wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
@@ -65,13 +65,13 @@ jobs:
           make
           make test
       - name: Install Stable Mosh
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           cd $STABLE_MOSH_PATH
           sudo make install
       - uses: actions/checkout@v3
       - name: Build and test the latest changes.
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           cd ${{ github.workspace }}
           ./gen-git-build.sh
@@ -108,7 +108,7 @@ jobs:
           key: ${{ matrix.os }}-$STABLE_MOSH_PATH
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-macos.outputs.cache-hit != 'true'
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           curl -OL https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
           tar zvxf mosh-0.2.8-rc3.tar.gz
@@ -117,13 +117,13 @@ jobs:
           make
           make test
       - name: Install Stable Mosh
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           cd $STABLE_MOSH_PATH
           sudo make install
       - uses: actions/checkout@v3
       - name: Build and test the latest changes.
-        working-directory: ~/
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           cd ${{ github.workspace }}
           ./gen-git-build.sh
