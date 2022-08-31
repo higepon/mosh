@@ -83,6 +83,8 @@ jobs:
       - name: Instlall tools
         run: |
           brew install gmp oniguruma automake re2c bison subversion gauche
+          # Use homebrew bison instead of /usr/bin/bison
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
           # FIXME: Detect gnump with pkg-config
           echo "LDFLAGS=-L$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
           echo "CFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
