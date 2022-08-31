@@ -32,19 +32,19 @@ jobs:
           key: ${{ matrix.os }}-${{ env.ONIGURUMA_PATH }}
       - name: Build Oniguruma
         if: steps.cache-oniguruma-linux.outputs.cache-hit != 'true'
-        run: |
-          wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz
-          tar zvxf onig-5.9.6.tar.gz
-          cd $ONIGURUMA_PATH && \
-          rm config.sub && \
-          rm config.guess && \
-          wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess && \
-          wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub && \
-          ./configure && \
+        run: >
+          wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz &&
+          tar zvxf onig-5.9.6.tar.gz &&
+          cd $ONIGURUMA_PATH &&
+          rm config.sub &&
+          rm config.guess &&
+          wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess &&
+          wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub &&
+          ./configure &&
           make
       - name: Install Oniguruma
-        run: |
-          cd $ONIGURUMA_PATH && \
+        run: >
+          cd $ONIGURUMA_PATH &&
           sudo make install
       - name: Cache Stable Mosh
         id: cache-stable-mosh-linux
@@ -54,33 +54,28 @@ jobs:
           key: ${{ matrix.os }}-${{ env.STABLE_MOSH_PATH }}
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-linux.outputs.cache-hit != 'true'
-        run: |
-          wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
-          tar zvxf mosh-0.2.8-rc3.tar.gz
-          cd $STABLE_MOSH_PATH && \
-          ./configure && \
-          make && \
+        run: >
+          wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz &&
+          tar zvxf mosh-0.2.8-rc3.tar.gz &&
+          cd $STABLE_MOSH_PATH &&
+          ./configure &&
+          make &&
           make test
       - name: Install Stable Mosh
-        run: |
-          cd $STABLE_MOSH_PATH && \
+        run: >
+          cd $STABLE_MOSH_PATH &&
           sudo make install
       - uses: actions/checkout@v3
         with:
           path: mosh-latest
       - name: Build and test the latest changes.
-        run: |
-          cd ${{ github.workspace }}/mosh-latest && \
-          ./gen-git-build.sh && \
-          ./configure && \
-          make && \
-          make test && \
+        run: >
+          cd ${{ github.workspace }}/mosh-latest &&
+          ./gen-git-build.sh &&
+          ./configure &&
+          make &&
+          make test &&
           sudo make install
-      - name: Debug
-        run: |
-          pwd
-          ls
-
 
   build-macos:
     strategy:
@@ -110,25 +105,25 @@ jobs:
           key: ${{ matrix.os }}-${{ env.STABLE_MOSH_PATH }}
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-macos.outputs.cache-hit != 'true'
-        run: |
-          curl -OL https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
-          tar zvxf mosh-0.2.8-rc3.tar.gz
-          cd $STABLE_MOSH_PATH && \
-          ./configure && \
-          make && \
+        run: >
+          curl -OL https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz &&
+          tar zvxf mosh-0.2.8-rc3.tar.gz &&
+          cd $STABLE_MOSH_PATH &&
+          ./configure &&
+          make &&
           make test
       - name: Install Stable Mosh
-        run: |
-          cd $STABLE_MOSH_PATH && \
+        run: >
+          cd $STABLE_MOSH_PATH &&
           sudo make install
       - uses: actions/checkout@v3
         with:
           path: mosh-latest
       - name: Build and test the latest changes.
-        run: |
-          cd ${{ github.workspace }}/mosh-latest && \
-          ./gen-git-build.sh && \
-          ./configure && \
-          make && \
-          make test && \
+        run: >
+          cd ${{ github.workspace }}/mosh-latest &&
+          ./gen-git-build.sh &&
+          ./configure &&
+          make &&
+          make test &&
           sudo make install
