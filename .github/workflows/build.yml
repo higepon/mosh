@@ -12,11 +12,12 @@ jobs:
         os: [ubuntu-22.04, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
-    env:
-      LD_LIBRARY_PATH: /usr/local/lib
-      ONIGURUMA_PATH: onig-5.9.6
-      STABLE_MOSH_PATH: mosh-0.2.8-rc3
     steps:
+      - name: Set env
+        run: |
+          echo "LDFLAGS=-L/usr/local/lib" >> $GITHUB_ENV
+          echo "STABLE_MOSH_PATH=mosh-0.2.8-rc3" >> $GITHUB_ENV
+          echo "ONIGURUMA_PATH=onig-5.9.6" >> $GITHUB_ENV
       - name: Install tools
         run: |
           sudo apt install -y gauche wget make libgmp-dev autoconf automake
@@ -85,9 +86,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     steps:
-      - name: Instlall tools
+      - name: Set env
         run: |
-          brew install gmp oniguruma automake re2c bison subversion gauche
           # Use homebrew bison instead of /usr/bin/bison
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
           # FIXME: Detect gnump with pkg-config
@@ -97,6 +97,9 @@ jobs:
           echo "STABLE_MOSH_PATH=mosh-0.2.8-rc3" >> $GITHUB_ENV
           # FIXME: Disable GC during CI for now
           echo "GC_DONT_GC=1" >> $GITHUB_ENV
+      - name: Instlall tools
+        run: |
+          brew install gmp oniguruma automake re2c bison subversion gauche
       - name: Cache Stable Mosh
         id: cache-stable-mosh-macos
         uses: actions/cache@v3
