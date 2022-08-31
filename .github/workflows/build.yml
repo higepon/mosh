@@ -79,13 +79,15 @@ jobs:
         os: [macos-latest, macos-12]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
-    env:
-      CPATH: /opt/homebrew/include
-      LIBLARY_PATH: /opt/homebrew/lib
     steps:
       - name: Instlall tools
         run: |
           brew install gmp oniguruma automake re2c bison subversion gauche
+          # FIXME: Detect gnump with pkg-config
+          echo "LDFLAGS=-L$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
+          echo "CFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
+          echo "CXXFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
+          echo "STABLE_MOSH_PATH=mosh-0.2.8-rc3" >> $GITHUB_ENV
           # FIXME: Disable GC during CI for now
           echo "GC_DONT_GC=1" >> $GITHUB_ENV
       - name: Cache Stable Mosh
