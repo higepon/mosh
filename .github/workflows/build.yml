@@ -26,7 +26,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: $ONIGURUMA_PATH
-          key: ${{ runner.os }}-oniguruma
+          key: ${{ matrix.os }}-oniguruma
       - name: Build Oniguruma
         if: steps.cache-oniguruma.outputs.cache-hit != 'true'
         run: |
@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: $STABLE_MOSH_PATH
-          key: ${{ runner.os }}-$STABLE_MOSH_PATH
+          key: ${{ matrix.os }}-$STABLE_MOSH_PATH
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh.outputs.cache-hit != 'true'
         run: |
