@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Set env
         run: |
-          echo "LDFLAGS=-L/usr/local/lib" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
           echo "STABLE_MOSH_PATH=mosh-0.2.8-rc3" >> $GITHUB_ENV
           echo "ONIGURUMA_PATH=onig-5.9.6" >> $GITHUB_ENV
       - name: Install tools
