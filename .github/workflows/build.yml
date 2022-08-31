@@ -116,7 +116,7 @@ jobs:
         run: |
           cd ${{ github.workspace }}
           ./gen-git-build.sh
-          ./configure PATH=/usr/local/bin:$PATH
+          ./configure
           make
           make test
           sudo make install
