@@ -109,14 +109,12 @@ jobs:
         run: |
           cd $STABLE_MOSH_PATH
           sudo make install
-      - name: Rename default bison to use homebrew bison.
-        run: sudo mv /usr/bin/bison /usr/bin/bison.old
       - uses: actions/checkout@v3
       - name: Build and test the latest changes.
         run: |
           cd ${{ github.workspace }}
           ./gen-git-build.sh
-          ./configure
+          ./configure PATH=/usr/local/bin:$PATH
           make
           make test
           sudo make install
