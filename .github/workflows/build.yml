@@ -74,7 +74,8 @@ jobs:
           cd $STABLE_MOSH_PATH && \
           sudo make install
       - uses: actions/checkout@v3
-        path: mosh-latest
+        with:
+          path: mosh-latest
       - name: Build and test the latest changes.
         run: |
           cd ${{ github.workspace }}/mosh-latest && \
@@ -129,7 +130,8 @@ jobs:
           cd $STABLE_MOSH_PATH && \
           sudo make install
       - uses: actions/checkout@v3
-        path: mosh-latest
+        with:
+          path: mosh-latest
       - name: Build and test the latest changes.
         run: |
           cd ${{ github.workspace }}/mosh-latest && \
