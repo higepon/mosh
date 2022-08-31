@@ -31,6 +31,7 @@ jobs:
         with:
           path: ${{ env.ONIGURUMA_PATH }}
           key: ${{ matrix.os }}-${{ env.ONIGURUMA_PATH }}
+          restore-keys: ${{ matrix.os }}-${{ env.ONIGURUMA_PATH }}
       - name: Build Oniguruma
         if: steps.cache-oniguruma-linux.outputs.cache-hit != 'true'
         run: >
@@ -53,6 +54,7 @@ jobs:
         with:
           path: ${{ env.STABLE_MOSH_PATH }}
           key: ${{ matrix.os }}-${{ env.STABLE_MOSH_PATH }}
+          restore-keys: ${{ matrix.os }}-${{ env.STABLE_MOSH_PATH }}
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-linux.outputs.cache-hit != 'true'
         run: >
@@ -106,6 +108,7 @@ jobs:
         with:
           path: ${{ env.STABLE_MOSH_PATH }}
           key: ${{ matrix.os }}-${{ env.STABLE_MOSH_PATH }}
+          restore-keys: ${{ matrix.os }}-${{ env.STABLE_MOSH_PATH }}
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-macos.outputs.cache-hit != 'true'
         run: >
