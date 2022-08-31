@@ -17,18 +17,18 @@ jobs:
       ONIGURUMA_PATH: onig-5.9.6
       STABLE_MOSH_PATH: mosh-0.2.8-rc3
     steps:
-      - name: Instlall tools
+      - name: Install tools
         run: |
           sudo apt install -y gauche wget make libgmp-dev autoconf automake
           sudo apt install -y re2c bison subversion git
       - name: Cache Oniguruma
-        id: cache-oniguruma
+        id: cache-oniguruma-linux
         uses: actions/cache@v3
         with:
           path: $ONIGURUMA_PATH
           key: ${{ matrix.os }}-oniguruma
       - name: Build Oniguruma
-        if: steps.cache-oniguruma.outputs.cache-hit != 'true'
+        if: steps.cache-oniguruma-linux.outputs.cache-hit != 'true'
         run: |
           wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz
           tar zvxf onig-5.9.6.tar.gz
@@ -44,13 +44,13 @@ jobs:
           cd $ONIGURUMA_PATH
           sudo make install
       - name: Cache Stable Mosh
-        id: cache-stable-mosh
+        id: cache-stable-mosh-linux
         uses: actions/cache@v3
         with:
           path: $STABLE_MOSH_PATH
           key: ${{ matrix.os }}-$STABLE_MOSH_PATH
       - name: Build Stable Mosh
-        if: steps.cache-stable-mosh.outputs.cache-hit != 'true'
+        if: steps.cache-stable-mosh-linux.outputs.cache-hit != 'true'
         run: |
           wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz
           tar zvxf mosh-0.2.8-rc3.tar.gz
@@ -86,6 +86,8 @@ jobs:
       - name: Instlall tools
         run: |
           brew install gmp oniguruma automake re2c bison subversion gauche
+          # FIXME: Disable GC during CI for now
+          echo "GC_DONT_GC=1" >> $GITHUB_ENV
       - name: Cache Stable Mosh
         id: cache-stable-mosh-macos
         uses: actions/cache@v3
@@ -105,6 +107,8 @@ jobs:
         run: |
           cd $STABLE_MOSH_PATH
           sudo make install
+      - name: Rename default bison to use homebrew bison.
+        run: sudo mv /usr/bin/bison /usr/bin/bison.old
       - uses: actions/checkout@v3
       - name: Build and test the latest changes.
         run: |
