@@ -14,22 +14,33 @@ jobs:
     timeout-minutes: 90
     env:
       LD_LIBRARY_PATH: /usr/local/lib
+      ONIGURUMA_PATH: onig-5.9.6
     steps:
       - name: Instlall tools
         run: |
           sudo apt install -y gauche wget make libgmp-dev autoconf automake
           sudo apt install -y re2c bison subversion git
-      - name: Install Oniguruma
+      - name: Cache oniguruma
+        id: cache-oniguruma
+        uses: actions/cache@v3
+        with:
+          path: $ONIGURUMA_PATH
+          key: ${{ runner.os }}-oniguruma
+      - name: Build Oniguruma
+        if: steps.cache-oniguruma.outputs.cache-hit != 'true'
         run: |
           wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz
           tar zvxf onig-5.9.6.tar.gz
-          cd onig-5.9.6
+          cd $ONIGURUMA_PATH
           rm config.sub
           rm config.guess
           wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess
           wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub
           ./configure
           make
+      - name: Install Oniguruma
+        run: |
+          cd $ONIGURUMA_PATH
           sudo make install
       - name: Install the latest stable Mosh
         run: |
