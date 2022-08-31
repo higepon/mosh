@@ -28,7 +28,7 @@ jobs:
         id: cache-oniguruma-linux
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/$ONIGURUMA_PATH
+          path: onig-5.9.6
           key: ${{ matrix.os }}-oniguruma
       - name: Debug2
         run: |
@@ -58,7 +58,7 @@ jobs:
         id: cache-stable-mosh-linux
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/$STABLE_MOSH_PATH
+          path: mosh-0.2.8-rc3
           key: ${{ matrix.os }}-$STABLE_MOSH_PATH
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-linux.outputs.cache-hit != 'true'
@@ -114,7 +114,7 @@ jobs:
         id: cache-stable-mosh-macos
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/$STABLE_MOSH_PATH
+          path: mosh-0.2.8-rc3
           key: ${{ matrix.os }}-$STABLE_MOSH_PATH
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-macos.outputs.cache-hit != 'true'
