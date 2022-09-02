@@ -60,9 +60,9 @@ public:
 
     static int checkBOM(ByteVector* bytevector);
 private:
-    bool isLittleEndian_;
-    const bool nativeIsLittleEndinan_;
-    const bool dontCheckBOM_;
+    bool isLittleEndian_{false};
+    const bool nativeIsLittleEndinan_{false};
+    const bool dontCheckBOM_{false};
 };
 
 } // namespace scheme

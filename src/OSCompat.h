@@ -128,7 +128,6 @@ namespace scheme {
         };
         File(Handle desc = INVALID_HANDLE_VALUE)
             : desc_(desc)
-            , lastError_(0)
 #ifdef _WIN32
             , prevC_(-1)
 #endif
@@ -179,7 +178,7 @@ namespace scheme {
 
     private:
         Handle desc_;
-        ErrorCode lastError_;
+        ErrorCode lastError_{0};
 #ifdef _WIN32
         int prevC_; // to keep half of wchar_t
 #endif

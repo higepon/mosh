@@ -49,7 +49,7 @@ public:
     ucs4char* currentToken() const;
 
 private:
-    ucs4char* buffer_;
+    ucs4char* buffer_{nullptr};
     ucs4char* cursor_;
     ucs4char* token_;
     ucs4char* limit_;

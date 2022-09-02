@@ -65,7 +65,7 @@
 using namespace scheme;
 
 TextualOutputPort::TextualOutputPort() :
-    isErrorOccured_(false),
+    
     errorMessage_(Object::Nil),
     irritants_(Object::Nil)
 {

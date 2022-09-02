@@ -43,10 +43,8 @@
 
 using namespace scheme;
 
-ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort() :
-    position_(0),
-    isClosed_(false),
-    isPseudoClosed_(false)
+ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort() 
+    
 {
 }
 

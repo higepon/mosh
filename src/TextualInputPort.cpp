@@ -51,8 +51,8 @@ using namespace scheme;
 TextualInputPort::TextualInputPort() :
     error_(Object::Nil),
     scanner_(new Scanner),
-    numberScanner_(new NumberScanner),
-    isStrictR6RsReaderMode_(false)
+    numberScanner_(new NumberScanner)
+    
 {
 }
 
