@@ -358,7 +358,7 @@ int64_t File::size()
 
     return monapi_file_get_file_size(desc_);
 #else
-    struct stat st{};
+    struct stat st;
     const int result = fstat(desc_, &st);
     setLastError();
     if (result != 0) {
@@ -641,7 +641,7 @@ bool File::isRegular(const ucs4string& path)
 #elif defined(MONA)
     return true;
 #else
-    struct stat st{};
+    struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
         return S_ISREG(st.st_mode);
     }
@@ -661,7 +661,7 @@ bool File::isSymbolicLink(const ucs4string& path)
 #elif defined(MONA)
     return false;
 #else
-    struct stat st{};
+    struct stat st;
     if (lstat(utf32toUtf8(path), &st) == 0) {
         return S_ISLNK(st.st_mode);
     }
@@ -759,7 +759,7 @@ Object File::modifyTime(const ucs4string& path)
         return Object::Undef;
     }
 #else
-    struct stat st{};
+    struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
 #if __DARWIN_64_BIT_INO_T
         return Arithmetic::add(Bignum::makeInteger(st.st_mtimespec.tv_nsec),
@@ -803,7 +803,7 @@ Object File::accessTime(const ucs4string& path)
         return Object::Undef;
     }
 #else
-    struct stat st{};
+    struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
 #if __DARWIN_64_BIT_INO_T
         return Arithmetic::add(Bignum::makeInteger(st.st_atimespec.tv_nsec),
@@ -848,7 +848,7 @@ Object File::changeTime(const ucs4string& path)
         return Object::Undef;
     }
 #else
-    struct stat st{};
+    struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
 #if __DARWIN_64_BIT_INO_T
         return Arithmetic::add(Bignum::makeInteger(st.st_ctimespec.tv_nsec),
@@ -890,7 +890,7 @@ Object File::size(const ucs4string& path)
         return Object::Undef;
     }
 #else
-    struct stat st{};
+    struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
         return Bignum::makeIntegerFromS64(st.st_size);
     } else {
@@ -1198,7 +1198,7 @@ bool scheme::isDirectory(const ucs4string& path)
     MOSH_ASSERT(false);
     return false;
 #else
-    struct stat st{};
+    struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {
         return S_ISDIR(st.st_mode) ? true : false;
     }

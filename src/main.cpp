@@ -82,12 +82,12 @@ extern "C" unsigned int psyntax_mosh_image_size;
 
 #ifdef WITH_NMOSH_DEFAULTS
 Object
-internalGetStackTraceObj(VM* vm, int  /*argc*/, const Object*  /*argv*/){
+internalGetStackTraceObj(VM* vm, int argc, const Object* argv){
 	//DeclareProcedureName("%get-stack-trace-obj");
 	return vm->getStackTraceObj();
 }
 Object
-internalGetNmoshDbgImage(VM*  /*vm*/, int  /*argc*/, const Object*  /*argv*/){
+internalGetNmoshDbgImage(VM* vm, int argc, const Object* argv){
     //DeclareProcedureName("%get-nmosh-dbg-image");
     return Object::Nil;
     //return FaslReader(vm, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();

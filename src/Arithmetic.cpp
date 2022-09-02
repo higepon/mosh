@@ -1520,7 +1520,7 @@ double FlonumUtil::prevfloat(double z)
 
 int64_t FlonumUtil::decode_double(double n, int* exp, int* sign)
 {
-    union { double f64; uint64_t u64; } datum{};
+    union { double f64; uint64_t u64; } datum;
     datum.f64 = n;
     uint64_t bits = datum.u64;
     uint64_t mant_bits = bits & (iexpt_2n52 - 1);

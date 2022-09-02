@@ -51,7 +51,7 @@ public:
 private:
 
     bool eofP_;
-    ucs4char dummy_{};
+    ucs4char dummy_;
     ucs4char* buffer_;
     ucs4char* cursor_;
     ucs4char* token_;

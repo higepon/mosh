@@ -229,7 +229,7 @@ private:
             union {
                 double   f64;
                 uint64_t u64;
-            } n{};
+            } n;
             n.u64 = fetchU64();
             return Object::makeFlonum(n.f64);
         }

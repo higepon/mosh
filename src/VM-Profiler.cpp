@@ -66,7 +66,7 @@ void VM::initProfiler()
         samples_[i] = Object::Nil;
         callSamples_[i] = Object::Nil;
     }
-    struct sigaction act{};
+    struct sigaction act;
     act.sa_handler = &signal_handler; // set signal_handler
     act.sa_flags = SA_RESTART;        // restart system call after signal handler
 
@@ -84,7 +84,7 @@ void VM::stopProfiler()
 void VM::startTimer()
 {
     const int INTERVAL_USEC = 10 * 1000;
-    struct itimerval tval{}, oval{};
+    struct itimerval tval, oval;
     tval.it_interval.tv_sec = 0;
     tval.it_interval.tv_usec = INTERVAL_USEC;
     tval.it_value.tv_sec = 0;
@@ -96,7 +96,7 @@ void VM::startTimer()
 void VM::stopTimer()
 {
     profilerRunning_ = false;
-    struct itimerval tval{}, oval{};
+    struct itimerval tval, oval;
     tval.it_interval.tv_sec = 0;
     tval.it_interval.tv_usec = 0;
     tval.it_value.tv_sec = 0;

@@ -33,7 +33,7 @@
 
 using namespace scheme;
 
-Object VM::runLoop(Object* code, jmp_buf  /*returnPoint*/, bool  /*returnTable*/ /* = false */)
+Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = false */)
 {
 #ifdef USE_DIRECT_THREADED_CODE
 #include "labels.cpp"

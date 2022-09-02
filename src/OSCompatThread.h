@@ -281,7 +281,7 @@ namespace scheme {
     {
         friend class ConditionVariable; // share the mutex_
     private:
-        pthread_mutex_t mutex_{};
+        pthread_mutex_t mutex_;
 
     public:
         Mutex()
@@ -340,7 +340,7 @@ namespace scheme {
         // Keeps track of whether we were broadcasting or signaling.  This
         // allows us to optimize the code if we're just signaling.
 #else
-        pthread_cond_t cond_{};
+        pthread_cond_t cond_;
 #endif
         ucs4string name_;
 
@@ -468,8 +468,8 @@ namespace scheme {
 #ifdef _WIN32
             return waitInternal(mutex, msecs);
 #else
-            struct timeval  now{};
-            struct timespec timeout{};
+            struct timeval  now;
+            struct timespec timeout;
             if (gettimeofday(&now, NULL) !=0 ) {
                 fprintf(stderr,"Fail to get current time\n");
                 exit(-1);
@@ -541,7 +541,7 @@ namespace scheme {
 #ifdef _WIN32
         DWORD key_;
 #else
-        pthread_key_t key_{};
+        pthread_key_t key_;
 #endif
     public:
         ThreadSpecificKey()
@@ -693,12 +693,12 @@ namespace scheme {
 #ifdef _WIN32
         HANDLE thread_;
 #else
-        pthread_t thread_{};
+        pthread_t thread_;
 #endif
         int lastError_;
     private:
         static ThreadSpecificKey* selfKey;
-        StubInfo* stubInfo_{};
+        StubInfo* stubInfo_;
 
     };
 

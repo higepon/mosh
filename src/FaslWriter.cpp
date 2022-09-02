@@ -239,7 +239,7 @@ void FaslWriter::putDatum(Object obj)
         union {
             double   dvalue;
             uint64_t uvalue;
-        } n{};
+        } n;
         n.dvalue = obj.toFlonum()->value();
         emitU8(Fasl::TAG_FLONUM);
         emitU64(n.uvalue);

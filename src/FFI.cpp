@@ -205,7 +205,7 @@ bool CStack::pushIntptr_t(intptr_t val)
 bool CStack::pushFloat(double val)
 {
     if (count_ < MAX_ARGC) {
-        union { float f32; uintptr_t u32; } n{};
+        union { float f32; uintptr_t u32; } n;
         n.f32 = (float)val;
         frame_[count_++] = n.u32;
         return true;
@@ -227,7 +227,7 @@ bool CStack::pushInt64_t(int64_t val)
             uint32_t low;
             uint32_t high;
         } u32;
-    } v{};
+    } v;
     v.value = val;
     frame_[count_++] = v.u32.low;
     frame_[count_++] = v.u32.high;
@@ -247,7 +247,7 @@ bool CStack::pushDouble(double val)
             uint32_t low;
             uint32_t high;
         } u32;
-    } v{};
+    } v;
     v.fvalue = val;
     frame_[count_++] = v.u32.low;
     frame_[count_++] = v.u32.high;

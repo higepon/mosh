@@ -49,7 +49,7 @@ typedef struct IOError
 
     IOError() {}
 
-    int type{};
+    int type;
     Object arg1;
     Object arg2;
     Object who;

@@ -412,7 +412,7 @@ public:
         union {
             float   fvalue;
             uint8_t data[sizeof(float)];
-        } n{};
+        } n;
         memcpy(n.data, data_ + index, sizeof(float));
         return n.fvalue;
     }
@@ -442,7 +442,7 @@ public:
         union {
             float   fvalue;
             uint8_t data[sizeof(float)];
-        } n{};
+        } n;
 
         for (size_t i = 0; i < sizeof(float); i++) {
             n.data[i] = data_[index + sizeof(float) - i - 1];
@@ -456,7 +456,7 @@ public:
         union {
             float   fvalue;
             uint8_t data[sizeof(float)];
-        } n{};
+        } n;
         n.fvalue = value;
         memcpy(data_ + index, n.data, sizeof(float));
     }
@@ -469,7 +469,7 @@ public:
         union {
             float   fvalue;
             uint8_t data[sizeof(float)];
-        } n{};
+        } n;
         n.fvalue = value;
         for (size_t i = 0; i < sizeof(float); i++) {
             data_[index + sizeof(float) - i - 1] = n.data[i];
@@ -499,7 +499,7 @@ public:
         union {
             double   fvalue;
             uint8_t data[sizeof(double)];
-        } n{};
+        } n;
         memcpy(n.data, data_ + index, sizeof(double));
         return n.fvalue;
     }
@@ -512,7 +512,7 @@ public:
         union {
             double   fvalue;
             uint8_t data[sizeof(double)];
-        } n{};
+        } n;
         for (size_t i = 0; i < sizeof(double); i++) {
             n.data[i] = data_[index + sizeof(double) - i - 1];
         }
@@ -541,7 +541,7 @@ public:
         union {
             double   fvalue;
             uint8_t data[sizeof(double)];
-        } n{};
+        } n;
         n.fvalue = value;
         memcpy(data_ + index, n.data, sizeof(double));
     }
@@ -554,7 +554,7 @@ public:
         union {
             double   fvalue;
             uint8_t data[sizeof(double)];
-        } n{};
+        } n;
         n.fvalue = value;
         for (size_t i = 0; i < sizeof(double); i++) {
             data_[index + sizeof(double) - i - 1] = n.data[i];

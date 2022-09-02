@@ -106,7 +106,7 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
         goto retry;                                                     \
     }
 
-ucs4char UTF8Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool  /*checkBOM*/ /* = false */)
+ucs4char UTF8Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM /* = false */)
 {
 retry:
     const int f = port->getU8();

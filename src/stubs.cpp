@@ -308,7 +308,7 @@ CONS(FN(posix_invoke_ffithread), \
 #endif
 
 Object
-stub_get_pffi_feature_set(VM*  /*theVM*/, int  /*argc*/, const Object*  /*argv*/){
+stub_get_pffi_feature_set(VM* theVM, int argc, const Object* argv){
     //DeclareProcedureName("%get-pffi-feature-set");
     Object tmp;
 

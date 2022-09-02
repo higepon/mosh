@@ -78,7 +78,7 @@ protected:
     bool isErrorOccured_;
     Object errorMessage_;
     Object irritants_;
-    int sharedId_{};
+    int sharedId_;
 };
 
 } // namespace scheme

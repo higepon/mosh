@@ -78,7 +78,7 @@ protected:
     ucs4string fileName_;
     bool isClosed_;
     bool isPseudoClosed_;
-    uint8_t* buffer_{};
+    uint8_t* buffer_;
     int64_t bufIdx_;
     int64_t position_;
 };

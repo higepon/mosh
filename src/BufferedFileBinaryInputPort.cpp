@@ -117,14 +117,14 @@ int BufferedFileBinaryInputPort::lookaheadU8()
     }
 }
 
-int64_t BufferedFileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool&  /*isErrorOccured*/)
+int64_t BufferedFileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
     const int64_t ret = readFromBuffer(buf, reqSize);
     position_ += ret;
     return ret;
 }
 
-int64_t BufferedFileBinaryInputPort::readAll(uint8_t** buf, bool&  /*isErrorOccured*/)
+int64_t BufferedFileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
     const int64_t restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
@@ -139,7 +139,7 @@ int64_t BufferedFileBinaryInputPort::readAll(uint8_t** buf, bool&  /*isErrorOccu
     return ret;
 }
 
-int64_t BufferedFileBinaryInputPort::readSome(uint8_t** buf, bool&  /*isErrorOccured*/)
+int64_t BufferedFileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     const int64_t bufferedSize = bufLen_ - bufIdx_;
 

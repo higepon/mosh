@@ -94,10 +94,10 @@ namespace scheme {
 
     private:
         Object parsed_;
-        TextualInputPort* port_{};
-        bool isStrictR6RSReader_{};
-        bool isSharedStructureReader_{};
-        bool isSharedStructureFound_{};
+        TextualInputPort* port_;
+        bool isStrictR6RSReader_;
+        bool isSharedStructureReader_;
+        bool isSharedStructureFound_;
         EqHashTable sharedObjects_;
     };
 
@@ -111,7 +111,7 @@ namespace scheme {
 
 typedef struct EXTEND_GC {
     union {
-        bool  boolValue{};
+        bool  boolValue;
         int   exactValue;
         int   intValue;
         ucs4char charValue;

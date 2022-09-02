@@ -77,7 +77,7 @@ int Latin1Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
     }
 }
 
-ucs4char Latin1Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool  /*checkBOM*/ /* = false */)
+ucs4char Latin1Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM /* = false */)
 {
 retry:
     const int f = port->getU8();

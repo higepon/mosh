@@ -246,9 +246,9 @@ private:
         Object ac;
         Object dc;
         Object cl;
-        Object* pc{};
-        int spOffset{};
-        int fpOffset{};
+        Object* pc;
+        int spOffset;
+        int fpOffset;
     } Registers;
 
     void saveRegisters(Registers* r)
@@ -309,19 +309,19 @@ protected:
     Object returnCode_[2];
     Object outerSourceInfo_;
 #ifdef ENABLE_PROFILER
-    intptr_t labelReturn_{};           // for profiler
+    intptr_t labelReturn_;           // for profiler
     static const int SAMPLE_NUM; // for profiler
-    Object* samples_{};            // for profiler
-    Object* callSamples_{};        // for profiler
+    Object* samples_;            // for profiler
+    Object* callSamples_;        // for profiler
     Object callHash_;            // for profiler
-    int totalSampleCount_{};       // for profiler
+    int totalSampleCount_;       // for profiler
     bool profilerRunning_;       // for profiler
 #endif
     const bool isProfiler_;      // for profiler
     const int maxNumValues_;
     int numValues_;
     Object* values_;
-    jmp_buf returnPoint_{};
+    jmp_buf returnPoint_;
     bool isR6RSMode_;
     Ports activePorts_;
     ucs4string name_;
@@ -332,19 +332,19 @@ protected:
     Object closureForEvaluate_;
     Object closureForApply_;
 
-    Code* applyCode_{};
-    Code* callClosure0Code_{};
-    Code* callClosure1Code_{};
-    Code* callClosure2Code_{};
-    Code* callClosure3Code_{};
-    Code* trigger0Code_{};
-    Code* trigger1Code_{};
-    Code* trigger2Code_{};
-    Code* trigger3Code_{};
-    Code* trigger4Code_{};
+    Code* applyCode_;
+    Code* callClosure0Code_;
+    Code* callClosure1Code_;
+    Code* callClosure2Code_;
+    Code* callClosure3Code_;
+    Code* trigger0Code_;
+    Code* trigger1Code_;
+    Code* trigger2Code_;
+    Code* trigger3Code_;
+    Code* trigger4Code_;
 
-    Code* callClosureByNameCode_{};
-    Code* callCode_{};
+    Code* callClosureByNameCode_;
+    Code* callCode_;
 
     ReaderContext* readerContext_;
     NumberReaderContext* numberReaderContext_;

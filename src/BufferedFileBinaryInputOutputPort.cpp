@@ -196,7 +196,7 @@ int BufferedFileBinaryInputOutputPort::lookaheadU8()
     }
 }
 
-int64_t BufferedFileBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool&  /*isErrorOccured*/)
+int64_t BufferedFileBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
     const int64_t readSize = readFromBuffer(buf, reqSize);
@@ -205,7 +205,7 @@ int64_t BufferedFileBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSi
     return readSize;
 }
 
-int64_t BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool&  /*isErrorOccured*/)
+int64_t BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
 
@@ -222,7 +222,7 @@ int64_t BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool&  /*isErr
     return readSize;
 }
 
-int64_t BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool&  /*isErrorOccured*/)
+int64_t BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
     const int64_t bufferedSize = bufferSize_ - bufferIndex_;

@@ -82,7 +82,7 @@ static void* gmp_alloc(size_t size)
     return malloc(size);
 }
 
-static void* gmp_realloc(void *ptr, size_t  /*oldSize*/, size_t newSize)
+static void* gmp_realloc(void *ptr, size_t oldSize, size_t newSize)
 {
     static uintptr_t totalSize = 0;
     totalSize += newSize;
@@ -95,7 +95,7 @@ static void* gmp_realloc(void *ptr, size_t  /*oldSize*/, size_t newSize)
 }
 
 
-static void gmp_free(void *ptr, size_t  /*size*/)
+static void gmp_free(void *ptr, size_t size)
 {
     free(ptr);
 }

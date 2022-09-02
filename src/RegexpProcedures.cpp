@@ -92,7 +92,7 @@ Object scheme::regexpPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isRegexp());
 }
 
-Object scheme::regexpTostringEx(VM* theVM, int  /*argc*/, const Object* argv)
+Object scheme::regexpTostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("regexp->string");
     argumentAsRegexp(0, regexp);

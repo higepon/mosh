@@ -62,7 +62,7 @@ public:
         return Object::Undef;
     }
 
-    bool setPosition(int64_t  /*position*/) override
+    bool setPosition(int64_t position) override
     {
         return false;
     }

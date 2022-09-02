@@ -65,7 +65,7 @@ class Bignum : public gc_cleanup
 
 // N.B. Don't expose the mpz_t to outside of this class and friend class Ratnum.
 private:
-    mpz_t value_{};
+    mpz_t value_;
 
     // N.B. mpz_t is shared between caller and this class.
     Bignum(mpz_t value)

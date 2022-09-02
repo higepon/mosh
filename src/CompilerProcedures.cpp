@@ -151,12 +151,12 @@ Object scheme::pass3CompileReferEx(VM* theVM, int argc, const Object* argv)
 }
 
 
-Object scheme::pass3FindFreeEx(VM* theVM, int  /*argc*/, const Object* argv)
+Object scheme::pass3FindFreeEx(VM* theVM, int argc, const Object* argv)
 {
     return findFree(theVM, argv[0], argv[1], argv[2]);
 }
 
-Object scheme::pass3FindSetsEx(VM* theVM, int  /*argc*/, const Object* argv)
+Object scheme::pass3FindSetsEx(VM* theVM, int argc, const Object* argv)
 {
     return findSets(theVM, argv[0], argv[1]);
 }
@@ -202,7 +202,7 @@ Object findFreeSeq(VM* theVM, Vector* v, Object l, Object canFrees, Object label
         return findFreeRecMap(theVM, l, canFrees, labelsSeen, seqBody);
 }
 
-Object findFreeLambda(VM* theVM, Vector* v, Object  /*l*/, Object canFrees, Object labelsSeen)
+Object findFreeLambda(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object lambdaBody = v->ref(6);
         const Object lambdaLvars = v->ref(5);
@@ -220,7 +220,7 @@ Object findFreeLocalAssign(VM* theVM, Vector* v, Object l, Object canFrees, Obje
         }
 }
 
-Object findFreeLocalRef(Vector* v, Object l, Object canFrees, Object  /*labelsSeen*/)
+Object findFreeLocalRef(Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object sym = v->ref(1).toVector()->ref(1);
         if (!memq(sym, l).isFalse()) {
@@ -232,7 +232,7 @@ Object findFreeLocalRef(Vector* v, Object l, Object canFrees, Object  /*labelsSe
         }
 }
 
-Object findFreeGlobalRef(Vector* v, Object  /*l*/, Object canFrees, Object  /*labelsSeen*/)
+Object findFreeGlobalRef(Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object sym = v->ref(1);
         if (existsInCanFrees(sym, canFrees)) {
@@ -502,12 +502,12 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
 }
 
 
-Object scheme::pass4FixupLabelsEx(VM*  /*theVM*/, int  /*argc*/, const Object* argv)
+Object scheme::pass4FixupLabelsEx(VM* theVM, int argc, const Object* argv)
 {
     return pass4FixupLabel(argv[0]);
 }
 
-Object scheme::makeCodeBuilderEx(VM*  /*theVM*/, int  /*argc*/, const Object*  /*argv*/)
+Object scheme::makeCodeBuilderEx(VM* theVM, int argc, const Object* argv)
 {
     return Object::makeCodeBuilder();
 }

@@ -197,7 +197,7 @@ Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
 // #endif
 }
 
-Object scheme::hostOsEx(VM* theVM, int argc, const Object*  /*argv*/)
+Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("host-os");
     checkArgumentLengthAtLeast(0);
@@ -387,7 +387,7 @@ Object scheme::fastEqualPEx(VM* theVM, int argc, const Object* argv)
 
 
 // todo from gauche
-Object scheme::digitTointegerEx(VM* theVM, int  /*argc*/, const Object* argv)
+Object scheme::digitTointegerEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("digit->integer");
     argumentAsChar(0, ch);
@@ -409,7 +409,7 @@ Object scheme::digitTointegerEx(VM* theVM, int  /*argc*/, const Object* argv)
     return Object::False;
 }
 
-Object scheme::getRemainingInputStringEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
+Object scheme::getRemainingInputStringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-remaning-input-string");
     callNotImplementedAssertionViolationAfter(theVM, procedureName);
@@ -586,8 +586,8 @@ Object scheme::getTimeofdayEx(VM* theVM, int argc, const Object* argv)
     int64_t nowMsec = MonAPI::Date::nowInMsec();
     return Object::cons(Object::makeBignum(nowMsec/1000), Object::makeBignum((nowMsec - (nowMsec/1000) * 1000) * 1000));
 #else
-    struct timeval tv{};
-    struct timezone tz{};
+    struct timeval tv;
+    struct timezone tz;
     gettimeofday(&tv, &tz);
     return Object::cons(Object::makeBignum(tv.tv_sec), Object::makeBignum(tv.tv_usec));
 #endif
@@ -607,7 +607,7 @@ Object scheme::pairPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isPair());
 }
 
-Object scheme::vectorEx(VM*  /*theVM*/, int argc, const Object* argv)
+Object scheme::vectorEx(VM* theVM, int argc, const Object* argv)
 {
     const Object vec = Object::makeVector(argc);
     Vector* const v = vec.toVector();
@@ -633,7 +633,7 @@ Object scheme::evalCompiledEx(VM* theVM, int argc, const Object* argv)
 }
 
 
-Object scheme::applyEx(VM*  /*theVM*/, int  /*argc*/, const Object*  /*argv*/)
+Object scheme::applyEx(VM* theVM, int argc, const Object* argv)
 {
     MOSH_FATAL("you should not call apply directory");
     return Object::Undef;
@@ -966,7 +966,7 @@ Object scheme::microsecondsEx(VM* theVM, int argc, const Object* argv)
     int64_t msec = MonAPI::Date::nowInMsec();
     uint64_t usec = msec * 1000;
 #else
-    struct timeval tv{};
+    struct timeval tv;
     gettimeofday(&tv, NULL);
     const uint64_t usec = static_cast<uint64_t>(tv.tv_sec) * 1000000 + static_cast<uint64_t>(tv.tv_usec);
 #endif
@@ -978,8 +978,8 @@ Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("local-tz-offset");
     checkArgumentLength(0);
-    struct tm localTime{};
-    struct tm utcTime{};
+    struct tm localTime;
+    struct tm utcTime;
     time_t current = time(NULL);
 #if defined(_WIN32) && !defined(MOSH_MINGW32)
     localtime_s(&localTime, &current);
@@ -1032,8 +1032,8 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
 
 #else
     checkArgumentLength(0);
-    struct timeval tv{};
-    struct rusage ru{};
+    struct timeval tv;
+    struct rusage ru;
     gettimeofday(&tv, NULL);
     getrusage(RUSAGE_SELF, &ru);
 

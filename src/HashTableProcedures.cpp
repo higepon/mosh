@@ -240,14 +240,14 @@ Object scheme::hashtableRefEx(VM* theVM, int argc, const Object* argv)
     return hashtable->ref(key, defaultVal);
 }
 
-Object scheme::makeEqHashtableEx(VM* theVM, int argc, const Object*  /*argv*/)
+Object scheme::makeEqHashtableEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-eq-hashtable");
     checkArgumentLengthBetween(0, 1);
     return Object::makeEqHashTable();
 }
 
-Object scheme::makeEqvHashtableEx(VM* theVM, int argc, const Object*  /*argv*/)
+Object scheme::makeEqvHashtableEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-eqv-hashtable");
     checkArgumentLengthBetween(0, 1);

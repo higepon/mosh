@@ -878,7 +878,7 @@ static int64_t callStubInt64_t(Pointer* func, CStack* cstack)
 #endif
 }
 
-Object scheme::internalFfiSupportedPEx(VM* theVM, int argc, const Object*  /*argv*/)
+Object scheme::internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-supported?");
     checkArgumentLengthAtLeast(0);
@@ -1523,7 +1523,7 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
 #define CALLBACK_CALL_TYPE_MASK         0xff00
 
 
-Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
+Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("free-c-callback-trampoline");
 
@@ -1547,7 +1547,7 @@ Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int  /*argc*/, co
 #endif
 }
 // (make-c-callback-trampoline type signatures proc)
-Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
+Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-c-callback-trampoline");
 
