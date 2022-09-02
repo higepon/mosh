@@ -302,17 +302,17 @@ int main(int argc, char *argv[])
 #ifdef WITH_NMOSH_PORTABLE
     theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(1));
 #else
-    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(0));
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(false));
 #endif
 
 #ifdef WITH_NMOSH_PREFIXLESS
     theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(1));
 #else
-    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(0));
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(false));
 #endif
 #else // WITH_NMOSH_DEFAULTS
-    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(0));
-    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(0));
+    theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(false));
+    theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(false));
 #endif
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));

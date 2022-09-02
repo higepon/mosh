@@ -1437,7 +1437,7 @@ double FlonumUtil::algorithmR(Object f, const int e, const double z0)
         x0 = Object::Undef;
         pow10e = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(-e));
     }
-    while (1) {
+    while (true) {
         if (isinf(z)) return z;
         int k;
         int sign;
