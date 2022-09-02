@@ -86,7 +86,7 @@ void CodeBuilder::putInstructionArgument2(Object instruction, Object argument1, 
     put(CodePacket(CodePacket::ARGUMENT2, instruction, argument1, argument2, Object::Undef));
 }
 
-void CodeBuilder::combineInstructionsArgument0(CodePacket codePacket)
+void CodeBuilder::combineInstructionsArgument0(const CodePacket& codePacket)
 {
     switch(codePacket.instructionImmediate()) {
 //     case Instruction::VECTOR_REF:
@@ -212,7 +212,7 @@ void CodeBuilder::combineInstructionsArgument0(CodePacket codePacket)
     }
 }
 
-void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
+void CodeBuilder::combineInstructionsArgument1(const CodePacket& codePacket)
 {
     const Object argument1 = codePacket.argument1();
     switch(codePacket.instructionImmediate()) {
@@ -547,7 +547,7 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     }
 }
 
-void CodeBuilder::combineInstructionsArgument2(CodePacket codePacket)
+void CodeBuilder::combineInstructionsArgument2(const CodePacket& codePacket)
 {
 //    const Object argument1 = codePacket.argument1();
     //const Object argument2 = codePacket.argument2();
@@ -576,7 +576,7 @@ void CodeBuilder::combineInstructionsArgument2(CodePacket codePacket)
 }
 
 
-void CodeBuilder::put(CodePacket codePacket)
+void CodeBuilder::put(const CodePacket& codePacket)
 {
     switch(codePacket.type()) {
     case CodePacket::ARGUMENT0:

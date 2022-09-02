@@ -97,10 +97,10 @@ public:
 
 private:
     void flush();
-    void put(CodePacket codePacket);
-    void combineInstructionsArgument2(CodePacket codePacket);
-    void combineInstructionsArgument1(CodePacket codePacket);
-    void combineInstructionsArgument0(CodePacket codePacket);
+    void put(const CodePacket& codePacket);
+    void combineInstructionsArgument2(const CodePacket& codePacket);
+    void combineInstructionsArgument1(const CodePacket& codePacket);
+    void combineInstructionsArgument0(const CodePacket& codePacket);
 
     CodePacket previousCodePacket_;
     Object labelDefinitions_;
