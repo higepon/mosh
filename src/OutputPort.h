@@ -48,7 +48,7 @@ public:
         BLOCK,
     };
 
-    ~OutputPort() override = default;
+    ~OutputPort() override {}
     virtual enum bufferMode bufferMode() const
     {
         return NONE;

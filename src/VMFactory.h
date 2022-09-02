@@ -39,8 +39,8 @@ namespace scheme {
 class VMFactory EXTEND_GC
 {
 public:
-    VMFactory() = default;
-    ~VMFactory() = default;
+    VMFactory() {}
+    ~VMFactory() {}
     VM* create(int initialStackSize, bool isProfilerOn);
 };
 

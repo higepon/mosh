@@ -116,7 +116,7 @@ enum ErrorHandlingMode
 class Object
 {
 public:
-    Object() = default;
+    Object() {}
     Object(const ucs4char* str);
     Object(const ucs4char* str, int length);
     Object(const ucs4string& str);

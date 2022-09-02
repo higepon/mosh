@@ -47,7 +47,7 @@ class HeapObject EXTEND_GC
 
 public:
     HeapObject(intptr_t type, intptr_t obj) : type(type), obj(obj) {}
-    ~HeapObject() = default; // not virtual
+    ~HeapObject() {} // not virtual
     intptr_t type;
     intptr_t obj;
     enum {

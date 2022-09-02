@@ -64,7 +64,8 @@ FileBinaryInputOutputPort::FileBinaryInputOutputPort(const ucs4string& file, int
 }
 
 FileBinaryInputOutputPort::~FileBinaryInputOutputPort()
-= default;
+{
+}
 
 // port interfaces
 bool FileBinaryInputOutputPort::hasPosition() const

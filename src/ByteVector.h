@@ -114,7 +114,7 @@ public:
     {
     }
 
-    ~ByteVector() = default;
+    ~ByteVector() {}
 
     uint8_t u8Ref(size_t index) const
     {

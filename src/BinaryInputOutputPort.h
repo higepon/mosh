@@ -44,7 +44,7 @@ namespace scheme {
 class BinaryInputOutputPort : public BinaryInputPort, public BinaryOutputPort
 {
 public:
-    ~BinaryInputOutputPort() override = default;
+    ~BinaryInputOutputPort() override {}
 };
 
 } // namespace scheme

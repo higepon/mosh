@@ -56,7 +56,8 @@ EqHashTable::EqHashTable() :
 }
 
 EqHashTable::~EqHashTable()
-= default;
+{
+}
 
 size_t EqHashTable::size() const
 {

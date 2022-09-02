@@ -49,7 +49,8 @@ EqvHashTable::EqvHashTable(VM* theVM) : GenericHashTable(theVM,
 }
 
 EqvHashTable::~EqvHashTable()
-= default;
+{
+}
 
 Object EqvHashTable::hashFunction() const
 {

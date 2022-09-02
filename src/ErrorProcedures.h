@@ -47,7 +47,7 @@ typedef struct IOError
         message(message),
         irritants(irritants) {}
 
-    IOError() = default;
+    IOError() {}
 
     int type;
     Object arg1;

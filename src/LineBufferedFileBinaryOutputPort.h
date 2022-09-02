@@ -43,7 +43,7 @@ public:
     LineBufferedFileBinaryOutputPort(File* file) : BufferedFileBinaryOutputPort(file) {}
     LineBufferedFileBinaryOutputPort(const ucs4string& file) : BufferedFileBinaryOutputPort(file) {}
     LineBufferedFileBinaryOutputPort(const ucs4string& file, int openFlags) : BufferedFileBinaryOutputPort(file, openFlags) {}
-    ~LineBufferedFileBinaryOutputPort() override = default;
+    ~LineBufferedFileBinaryOutputPort() override {}
 
     enum bufferMode bufferMode() const override
     {

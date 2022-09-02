@@ -41,7 +41,7 @@ class StandardErrorPort : public FileBinaryOutputPort
 {
 public:
     StandardErrorPort() : FileBinaryOutputPort(&File::STANDARD_ERR) {}
-    ~StandardErrorPort() override = default;
+    ~StandardErrorPort() override {}
 
     ucs4string toString() override
     {

@@ -41,7 +41,7 @@ class Regexp EXTEND_GC
 {
 public:
     Regexp(const ucs4string& pattern, bool caseFold, bool isSingleLine);
-    ~Regexp() = default;
+    ~Regexp() {}
 
     Object match(const ucs4string& text);
     const ucs4string& pattern() { return pattern_; }

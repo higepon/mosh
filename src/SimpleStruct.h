@@ -55,7 +55,7 @@ namespace scheme {
             }
         }
         // not virtual for size and performance
-        ~SimpleStruct() = default;
+        ~SimpleStruct() {}
 
         Object name() const { return name_; }
         int fieldCount() const { return fieldCount_; }

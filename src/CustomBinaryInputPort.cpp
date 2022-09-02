@@ -60,7 +60,8 @@ CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, const ucs4string& id, Ob
 }
 
 CustomBinaryInputPort::~CustomBinaryInputPort()
-= default;
+{
+}
 
 ucs4string CustomBinaryInputPort::toString()
 {

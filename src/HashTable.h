@@ -41,7 +41,7 @@ class Object;
 class HashTable EXTEND_GC
 {
 public:
-    virtual ~HashTable() = default;
+    virtual ~HashTable() {}
     virtual size_t size() const = 0;
     virtual Object ref(Object key, Object defaultValue) = 0;
     virtual void set(Object key, Object values) = 0;

@@ -41,7 +41,7 @@ class Port : public gc_cleanup // for closing port on destructors
 {
 public:
 
-    ~Port() override = default;
+    ~Port() override {}
     virtual bool hasPosition() const = 0;
     virtual bool hasSetPosition() const = 0;
     virtual Object position() const = 0;

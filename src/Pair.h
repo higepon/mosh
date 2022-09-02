@@ -50,7 +50,7 @@ struct Pair
         return len;
     }
 
-    ~Pair() = default;
+    ~Pair() {}
 
     static bool isList(Object p)
     {
