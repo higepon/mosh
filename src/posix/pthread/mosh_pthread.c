@@ -33,7 +33,10 @@ ffithread(void* arg){
         r = callback(in0,in1,&out0,&out1);
         memcpy(buf,&out0,sizeof(uintptr_t));
         memcpy(&buf[sizeof(uintptr_t)],&out1,sizeof(uintptr_t));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
         write(fd, buf, sizeof(buf));
+#pragma GCC diagnostic pop
         if(!r){
             return NULL;
         }

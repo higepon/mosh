@@ -18,7 +18,10 @@ static void
 handler(int sig){
     unsigned int buf = 0;
     if(0<sigchld_handler_fd){
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
         write(sigchld_handler_fd,&buf,1);
+#pragma GCC diagnostic pop
     }
 }
 
