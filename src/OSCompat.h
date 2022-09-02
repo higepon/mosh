@@ -111,8 +111,8 @@ namespace scheme {
             lastError_ = e;
         }
 
-        void operator=(const File&);
-        File(const File& rhs);
+        void operator=(const File&) = delete;
+        File(const File& rhs) = delete;
     public:
         enum Mode {
             Read            = 0x00000001,

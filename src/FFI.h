@@ -39,8 +39,8 @@ namespace scheme {
 class FFI EXTEND_GC
 {
 private:
-    FFI();
-    ~FFI();
+    FFI() = delete;
+    ~FFI() = delete;
 
 public:
     static void* open(const char* name);
