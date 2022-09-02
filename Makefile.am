@@ -27,7 +27,7 @@ GLOBAL_CFLAGS =  $(ONIG_CFLAGS) \
 		 $(GC_CFLAGS) \
 		 $(MOSH_OPTS) # temp -Wno-deprecated
 
-GLOBAL_CXXFLAGS = -Wno-deprecated
+GLOBAL_CXXFLAGS = -Wno-deprecated -std=c++11
 
 LIBS += $(ONIG_LIBS)
 
