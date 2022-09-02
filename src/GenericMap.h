@@ -71,13 +71,13 @@ typedef __gnu_cxx::hash_map<scheme::Object,
                             scheme::Object,
                             generic_hash_func,
                             generic_equal_to,
-                            gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
+                            gc_allocator<std::pair<const scheme::Object, scheme::Object> > > GenericMap;
 #else
 typedef std::unordered_map<scheme::Object,
                                 scheme::Object,
                                 generic_hash_func,
                                 generic_equal_to,
-                                gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
+                                gc_allocator<std::pair<const scheme::Object, scheme::Object> > > GenericMap;
 
 #endif
 
