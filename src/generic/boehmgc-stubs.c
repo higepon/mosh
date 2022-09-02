@@ -95,5 +95,9 @@ gfree_size(void){
 
 void
 gset_time_limit(int time){
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     GC_time_limit = time;
+#pragma GCC diagnostic pop
 }
+
