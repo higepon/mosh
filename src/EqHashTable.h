@@ -58,20 +58,20 @@ public:
     EqHashTable();
     virtual ~EqHashTable();
 
-    size_t size() const;
-    bool containsP(Object key);
-    Object ref(Object key, Object defaultVal);
-    void set(Object key, Object val);
-    void deleteD(Object key);
-    Object hashFunction() const;
-    Object equivalenceFunction() const;
+    size_t size() const override;
+    bool containsP(Object key) override;
+    Object ref(Object key, Object defaultVal) override;
+    void set(Object key, Object val) override;
+    void deleteD(Object key) override;
+    Object hashFunction() const override;
+    Object equivalenceFunction() const override;
     void insert(Object key, Object val);
     void eraseAllExcept(Object key);
     Object swap();
-    void clearD();
-    Object keys();
-    Object copy(bool mutableP);
-    bool mutableP() const;
+    void clearD() override;
+    Object keys() override;
+    Object copy(bool mutableP) override;
+    bool mutableP() const override;
     void setMutableP(bool mutableP);
 
 private:
