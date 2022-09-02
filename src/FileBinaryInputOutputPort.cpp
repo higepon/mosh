@@ -167,13 +167,13 @@ int FileBinaryInputOutputPort::lookaheadU8()
     }
 }
 
-int64_t FileBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
+int64_t FileBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool&  /*isErrorOccured*/)
 {
     const int64_t readSize = file_->read(buf, reqSize);
     return readSize;
 }
 
-int64_t FileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t FileBinaryInputOutputPort::readAll(uint8_t** buf, bool&  /*isErrorOccured*/)
 {
     const int64_t currentOffset = file_->seek(0, File::Current);
     MOSH_ASSERT(currentOffset >= 0);

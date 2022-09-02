@@ -93,7 +93,7 @@ int SocketBinaryInputOutputPort::pseudoClose()
     return MOSH_SUCCESS;
 }
 
-bool SocketBinaryInputOutputPort::setPosition(int64_t position)
+bool SocketBinaryInputOutputPort::setPosition(int64_t  /*position*/)
 {
     MOSH_ASSERT(false);
     return false;
@@ -153,7 +153,7 @@ int SocketBinaryInputOutputPort::lookaheadU8()
     return ret;
 }
 
-int64_t SocketBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
+int64_t SocketBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool&  /*isErrorOccured*/)
 {
     if (hasLastU8() && reqSize > 0) {
         buf[0] = getLastU8();
@@ -168,7 +168,7 @@ int64_t SocketBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bo
     return readSize;
 }
 
-int64_t SocketBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t SocketBinaryInputOutputPort::readAll(uint8_t** buf, bool&  /*isErrorOccured*/)
 {
     gc_vector<uint8_t> data;
     uint8_t readBuf[1024];

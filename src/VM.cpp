@@ -822,7 +822,7 @@ void VM::throwException(Object exception)
     longjmp(returnPoint_, -1);
 }
 
-void VM::showStack(int count, const char* file, int line)
+void VM::showStack(int  /*count*/, const char* file, int line)
 {
    printf("** STACK %s:%d\n", file, line);fflush(stdout);
 #ifdef DEBUG_VERSION

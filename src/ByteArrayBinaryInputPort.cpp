@@ -54,7 +54,7 @@ ucs4string ByteArrayBinaryInputPort::toString() {
     return UC("<byte-array-input-port>");
 }
 
-int64_t ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
+int64_t ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool&  /*isErrorOccured*/)
 {
     const int64_t restSize = size_ - index_;
     const int64_t sizeToRead = (reqSize > restSize) ? restSize : reqSize;
@@ -68,7 +68,7 @@ int64_t ByteArrayBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
     return readAll(buf, isErrorOccured);
 }
 
-int64_t ByteArrayBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t ByteArrayBinaryInputPort::readAll(uint8_t** buf, bool&  /*isErrorOccured*/)
 {
     const int64_t restSize = size_ - index_;
     uint8_t* dest = allocatePointerFreeU8Array(restSize);

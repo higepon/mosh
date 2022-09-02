@@ -1110,7 +1110,7 @@ Object scheme::listTransposeAddEx(VM* theVM, int argc, const Object* argv)
 
 // (list . obj)
 // gambit-benchmarks deriv requires this.
-Object scheme::listEx(VM* theVM, int argc, const Object* argv)
+Object scheme::listEx(VM*  /*theVM*/, int argc, const Object* argv)
 {
     Object obj = Object::Nil;
     for (int i = argc - 1; i >= 0; i--) {

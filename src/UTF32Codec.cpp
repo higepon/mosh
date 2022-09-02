@@ -72,7 +72,7 @@ UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 #endif
 }
 
-int UTF32Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
+int UTF32Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode  /*mode*/)
 {
     if (isLittleEndian_) {
         buf[0] = u;
@@ -98,7 +98,7 @@ int UTF32Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         goto retry;                                                     \
     }
 
-ucs4char UTF32Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM)
+ucs4char UTF32Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool  /*checkBOM*/)
 {
 retry:
     int a = port->getU8();

@@ -197,7 +197,7 @@ Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
 // #endif
 }
 
-Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)
+Object scheme::hostOsEx(VM* theVM, int argc, const Object*  /*argv*/)
 {
     DeclareProcedureName("host-os");
     checkArgumentLengthAtLeast(0);
@@ -387,7 +387,7 @@ Object scheme::fastEqualPEx(VM* theVM, int argc, const Object* argv)
 
 
 // todo from gauche
-Object scheme::digitTointegerEx(VM* theVM, int argc, const Object* argv)
+Object scheme::digitTointegerEx(VM* theVM, int  /*argc*/, const Object* argv)
 {
     DeclareProcedureName("digit->integer");
     argumentAsChar(0, ch);
@@ -409,7 +409,7 @@ Object scheme::digitTointegerEx(VM* theVM, int argc, const Object* argv)
     return Object::False;
 }
 
-Object scheme::getRemainingInputStringEx(VM* theVM, int argc, const Object* argv)
+Object scheme::getRemainingInputStringEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("get-remaning-input-string");
     callNotImplementedAssertionViolationAfter(theVM, procedureName);
@@ -607,7 +607,7 @@ Object scheme::pairPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isPair());
 }
 
-Object scheme::vectorEx(VM* theVM, int argc, const Object* argv)
+Object scheme::vectorEx(VM*  /*theVM*/, int argc, const Object* argv)
 {
     const Object vec = Object::makeVector(argc);
     Vector* const v = vec.toVector();
@@ -633,7 +633,7 @@ Object scheme::evalCompiledEx(VM* theVM, int argc, const Object* argv)
 }
 
 
-Object scheme::applyEx(VM* theVM, int argc, const Object* argv)
+Object scheme::applyEx(VM*  /*theVM*/, int  /*argc*/, const Object*  /*argv*/)
 {
     MOSH_FATAL("you should not call apply directory");
     return Object::Undef;

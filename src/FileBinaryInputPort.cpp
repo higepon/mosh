@@ -131,7 +131,7 @@ int FileBinaryInputPort::lookaheadU8()
     }
 }
 
-int64_t FileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
+int64_t FileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool&  /*isErrorOccured*/)
 {
     int64_t ret;
     if (hasAheadU8()) {
@@ -146,7 +146,7 @@ int64_t FileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isEr
     return ret;
 }
 
-int64_t FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t FileBinaryInputPort::readAll(uint8_t** buf, bool&  /*isErrorOccured*/)
 {
     const int64_t restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
@@ -172,7 +172,7 @@ int64_t FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
     }
 }
 
-int64_t FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t FileBinaryInputPort::readSome(uint8_t** buf, bool&  /*isErrorOccured*/)
 {
     uint8_t* dest = allocatePointerFreeU8Array(1);
     if (hasAheadU8()) {

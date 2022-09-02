@@ -83,7 +83,7 @@ Object TranscodedTextualInputOutputPort::position() const
     return Object::Undef;
 }
 
-bool TranscodedTextualInputOutputPort::setPosition(int64_t position)
+bool TranscodedTextualInputOutputPort::setPosition(int64_t  /*position*/)
 {
     return false;
 }

@@ -44,7 +44,7 @@
 
 using namespace scheme;
 
-Object scheme::sslSupportedPEx(VM* theVM, int argc, const Object* argv)
+Object scheme::sslSupportedPEx(VM*  /*theVM*/, int  /*argc*/, const Object*  /*argv*/)
 {
 #if HAVE_OPENSSL
     return Object::True;
@@ -77,7 +77,7 @@ Object scheme::socketSslizeDEx(VM* theVM, int argc, const Object* argv)
 #endif
 }
 
-Object scheme::internalMonapiMessageReplyEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiMessageReplyEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-message-reply");
 #ifdef MONA
@@ -103,7 +103,7 @@ Object scheme::internalMonapiMessageReplyEx(VM* theVM, int argc, const Object* a
 #endif
 }
 
-Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiNameWhereisEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-name-whereis");
 #ifdef MONA
@@ -120,7 +120,7 @@ Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* ar
 #endif
 }
 
-Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-message-receive");
 #ifdef MONA
@@ -150,7 +150,7 @@ Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object*
 }
 
 // (%monapi-message-send dest header arg1 arg2 arg3 str)
-Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiMessageSendEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-message-send");
 #ifdef MONA
@@ -173,7 +173,7 @@ Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* ar
 #endif
 }
 
-Object scheme::internalMonapiMessageSendReceiveEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiMessageSendReceiveEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-message-send-receive");
 #ifdef MONA
@@ -210,7 +210,7 @@ Object scheme::internalMonapiMessageSendReceiveEx(VM* theVM, int argc, const Obj
 #endif
 }
 
-Object scheme::internalMonapiNameAddDEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiNameAddDEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-name-add!");
 #ifdef MONA
@@ -227,7 +227,7 @@ Object scheme::internalMonapiNameAddDEx(VM* theVM, int argc, const Object* argv)
 #endif
 }
 
-Object scheme::internalMonapiStreamReadEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiStreamReadEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-stream-read");
 #ifdef MONA
@@ -244,7 +244,7 @@ Object scheme::internalMonapiStreamReadEx(VM* theVM, int argc, const Object* arg
 #endif
 }
 
-Object scheme::internalMonapiStreamWriteEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiStreamWriteEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-stream-write");
 #ifdef MONA
@@ -259,7 +259,7 @@ Object scheme::internalMonapiStreamWriteEx(VM* theVM, int argc, const Object* ar
 #endif
 }
 
-Object scheme::internalMonapiMakeStreamEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiMakeStreamEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-make-stream");
 #ifdef MONA
@@ -275,7 +275,7 @@ Object scheme::internalMonapiMakeStreamEx(VM* theVM, int argc, const Object* arg
 #endif
 }
 
-Object scheme::internalMonapiStreamHandleEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalMonapiStreamHandleEx(VM* theVM, int  /*argc*/, const Object*  /*argv*/)
 {
     DeclareProcedureName("monapi-stream-handle");
 #ifdef MONA

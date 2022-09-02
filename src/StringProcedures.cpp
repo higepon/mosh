@@ -253,7 +253,7 @@ Object scheme::stringAppendEx(VM* theVM, int argc, const Object* argv)
     return Object::makeString(ret);
 }
 
-Object scheme::stringSplitEx(VM* theVM, int argc, const Object* argv)
+Object scheme::stringSplitEx(VM* theVM, int  /*argc*/, const Object* argv)
 {
     DeclareProcedureName("string-split");
     argumentAsString(0, text);

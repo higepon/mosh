@@ -346,7 +346,7 @@ Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
     END_TRY
 }
 
-Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
+Object scheme::getStringAllEx(VM* theVM, int  /*argc*/, const Object* argv)
 {
     DeclareProcedureName("get-string-all");
     argumentAsTextualInputPort(0, in);
@@ -365,7 +365,7 @@ Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
     END_TRY
 }
 
-Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
+Object scheme::getStringNDEx(VM* theVM, int  /*argc*/, const Object* argv)
 {
     DeclareProcedureName("get-string-n!");
     argumentAsTextualInputPort(0, in);
@@ -854,19 +854,19 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
     END_TRY
 }
 
-Object scheme::openStringInputPortEx(VM* theVM, int argc, const Object* argv)
+Object scheme::openStringInputPortEx(VM* theVM, int  /*argc*/, const Object* argv)
 {
     DeclareProcedureName("string-input-port");
     argumentAsString(0, text);
     return Object::makeStringInputPort(text->data());
 }
 
-Object scheme::openOutputStringEx(VM* theVM, int argc, const Object* argv)
+Object scheme::openOutputStringEx(VM*  /*theVM*/, int  /*argc*/, const Object*  /*argv*/)
 {
     return  Object::makeStringOutputPort();
 }
 
-Object scheme::sysPortSeekEx(VM* theVM, int argc, const Object* argv)
+Object scheme::sysPortSeekEx(VM*  /*theVM*/, int  /*argc*/, const Object*  /*argv*/)
 {
     // todo
     return Object::UnBound;

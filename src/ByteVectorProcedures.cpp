@@ -815,7 +815,7 @@ Object scheme::u8ListTobytevectorEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
-Object scheme::bytevectorTou8ListEx(VM* theVM, int argc, const Object* argv)
+Object scheme::bytevectorTou8ListEx(VM* theVM, int  /*argc*/, const Object* argv)
 {
     DeclareProcedureName("bytevector->u8-list");
     argumentAsByteVector(0, bytevector);

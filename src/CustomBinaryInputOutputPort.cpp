@@ -142,7 +142,7 @@ int CustomBinaryInputOutputPort::lookaheadU8()
 }
 
 
-int64_t CustomBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
+int64_t CustomBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool&  /*isErrorOccured*/)
 {
     int64_t readSize;
     for (readSize = 0; readSize < reqSize; readSize++) {
@@ -155,7 +155,7 @@ int64_t CustomBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bo
     return readSize;
 }
 
-int64_t CustomBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t CustomBinaryInputOutputPort::readSome(uint8_t** buf, bool&  /*isErrorOccured*/)
 {
     const int v = getU8();
     if (EOF == v) {
@@ -168,7 +168,7 @@ int64_t CustomBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccure
     }
 }
 
-int64_t CustomBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t CustomBinaryInputOutputPort::readAll(uint8_t** buf, bool&  /*isErrorOccured*/)
 {
     gc_vector<uint8_t> accum;
     for (;;) {
