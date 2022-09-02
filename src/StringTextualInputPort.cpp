@@ -52,8 +52,7 @@ StringTextualInputPort::StringTextualInputPort(const ucs4string& str) :
 }
 
 StringTextualInputPort::~StringTextualInputPort()
-{
-}
+= default;
 
 int StringTextualInputPort::getLineNo() const
 {

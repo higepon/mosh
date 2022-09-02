@@ -63,8 +63,7 @@ CustomTextualInputPort::CustomTextualInputPort(VM* theVM, const ucs4string& id, 
 }
 
 CustomTextualInputPort::~CustomTextualInputPort()
-{
-}
+= default;
 
 ucs4char CustomTextualInputPort::getChar()
 {

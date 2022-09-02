@@ -44,7 +44,7 @@ public:
         stack_ = Object::makeObjectArrayLocal(size_);
         memcpy(stack_, src, size_ * sizeof(Object));
     }
-    ~Stack() {} // not virtual
+    ~Stack() = default; // not virtual
 
     int restore(Object* toStack)
     {

@@ -41,7 +41,7 @@ namespace scheme {
 class TextualInputOutputPort : public TextualOutputPort, public TextualInputPort
 {
 public:
-    ~TextualInputOutputPort() override {}
+    ~TextualInputOutputPort() override = default;
     Object position() const override = 0;
     bool setPosition(int64_t position) override = 0;
     bool hasPosition() const override = 0;

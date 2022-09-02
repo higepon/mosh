@@ -51,8 +51,7 @@ ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort() :
 }
 
 ByteArrayBinaryOutputPort::~ByteArrayBinaryOutputPort()
-{
-}
+= default;
 
 bool ByteArrayBinaryOutputPort::isClosed() const
 {

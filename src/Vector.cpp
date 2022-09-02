@@ -58,8 +58,7 @@ Vector::Vector(Object pair)
 
 
 Vector::~Vector()
-{
-}
+= default;
 
 Object* Vector::data()
 {

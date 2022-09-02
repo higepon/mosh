@@ -50,7 +50,7 @@ public:
         INVALID_FILENO = -1,
     };
 
-    ~BinaryPort() override {}
+    ~BinaryPort() override = default;
     virtual int open() = 0;
     virtual int pseudoClose() = 0;
     virtual File* getFile() = 0;

@@ -43,7 +43,7 @@ public:
     {
     }
 
-    ~Code() {}
+    ~Code() = default;
 
     void push(Object o)
     {

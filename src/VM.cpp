@@ -139,7 +139,7 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     initializeDynamicCode();
 }
 
-VM::~VM() {}
+VM::~VM() = default;
 
 void VM::initializeDynamicCode()
 {

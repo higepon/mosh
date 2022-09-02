@@ -58,8 +58,7 @@ SocketBinaryInputOutputPort::SocketBinaryInputOutputPort(Socket* socket) :
 }
 
 SocketBinaryInputOutputPort::~SocketBinaryInputOutputPort()
-{
-}
+= default;
 
 // port interfaces
 bool SocketBinaryInputOutputPort::hasPosition() const

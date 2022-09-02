@@ -58,8 +58,7 @@ public:
 
 
     ~Pointer()
-    {
-    }
+    = default;
 
     uintptr_t pointer() const
     {

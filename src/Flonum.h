@@ -81,8 +81,7 @@ public:
     }
 
     ~Flonum()
-    {
-    }
+    = default;
 
     static Object fromString(const ucs4string& text)
     {
