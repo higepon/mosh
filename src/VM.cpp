@@ -1051,7 +1051,7 @@ void VM::copyOptions(VM* destVM, VM* srcVM)
         // nmosh options
         UC("%nmosh-portable-mode"), UC("%nmosh-prefixless-mode")
     };
-    for (size_t i = 0; i < sizeof(options) / sizeof(ucs4char*); i ++) {
-        destVM->setValueString(options[i], srcVM->getGlobalValueOrFalse(options[i]));
+    for (auto & option : options) {
+        destVM->setValueString(option, srcVM->getGlobalValueOrFalse(option));
     }
 }

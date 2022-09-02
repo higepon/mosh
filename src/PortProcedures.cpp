@@ -1476,10 +1476,9 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
     ByteArrayBinaryOutputPort accum;
     TranscodedTextualOutputPort out(&accum, transcoder);
 
-    for (ucs4string::const_iterator it = text->data().begin();
-         it != text->data().end(); ++it) {
+    for (int it : text->data()) {
         TRY_WITHOUT_DSTR
-            out.putChar(*it);
+            out.putChar(it);
         CATCH(ioError)
             ioError.arg1 = Object::Nil;
             ioError.who = procedureName;

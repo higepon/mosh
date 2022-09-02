@@ -143,8 +143,8 @@ Object Transcoder::errorHandlingModeToSymbol(const enum ErrorHandlingMode errorH
 
 void Transcoder::putString(BinaryOutputPort* port, const ucs4string& s)
 {
-    for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
-        putChar(port, *it);
+    for (int it : s) {
+        putChar(port, it);
     }
 }
 

@@ -113,8 +113,8 @@ Object EqHashTable::swap()
 {
     // swap (key, value)
     Object ht = Object::makeEqHashTable();
-    for (ObjectMap::const_iterator it = table_.begin(); it != table_.end(); ++it) {
-        ht.toEqHashTable()->set(it->second, it->first);
+    for (auto it : table_) {
+        ht.toEqHashTable()->set(it.second, it.first);
     }
     return ht;
 }

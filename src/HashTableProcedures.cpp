@@ -75,8 +75,8 @@ int scheme::equalHash(Object obj)
 int scheme::stringHash(const ucs4string& str)
 {
     int hashValue = 0;
-    for (ucs4string::const_iterator it = str.begin(); it != str.end(); ++it) {
-        hashValue = (hashValue << 5) - hashValue + (unsigned char)(*it);
+    for (int it : str) {
+        hashValue = (hashValue << 5) - hashValue + (unsigned char)it;
     }
     return hashValue;
 }
@@ -84,8 +84,8 @@ int scheme::stringHash(const ucs4string& str)
 int scheme::stringCiHash(const ucs4string& str)
 {
     int hashValue = 0;
-    for (ucs4string::const_iterator it = str.begin(); it != str.end(); ++it) {
-        hashValue = (hashValue << 5) - hashValue + (unsigned char)toupper(*it);
+    for (int it : str) {
+        hashValue = (hashValue << 5) - hashValue + (unsigned char)toupper(it);
     }
     return hashValue;
 }
