@@ -1152,7 +1152,7 @@ Object scheme::integerTopointerEx(VM* theVM, int argc, const Object* argv)
     if (integer.isBignum()) {
         return Object::makePointer((void*)integer.toBignum()->toUintptr_t());
     } else {
-        return Object::makePointer((void*)integer.toFixnum());
+        return Object::makePointer((void*)((intptr_t)integer.toFixnum()));
     }
 }
 
