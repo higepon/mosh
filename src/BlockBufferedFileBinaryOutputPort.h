@@ -41,8 +41,8 @@ class BlockBufferedFileBinaryOutputPort : public BufferedFileBinaryOutputPort
 {
 public:
     BlockBufferedFileBinaryOutputPort(File* file) : BufferedFileBinaryOutputPort(file) {}
-    BlockBufferedFileBinaryOutputPort(ucs4string file) : BufferedFileBinaryOutputPort(file) {}
-    BlockBufferedFileBinaryOutputPort(ucs4string file, int openFlags) : BufferedFileBinaryOutputPort(file, openFlags) {}
+    BlockBufferedFileBinaryOutputPort(const ucs4string& file) : BufferedFileBinaryOutputPort(file) {}
+    BlockBufferedFileBinaryOutputPort(const ucs4string& file, int openFlags) : BufferedFileBinaryOutputPort(file, openFlags) {}
     ~BlockBufferedFileBinaryOutputPort() override {}
 
     enum bufferMode bufferMode() const override

@@ -32,6 +32,10 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "GenericHashTable.h"
+
+
+#include <utility>
+
 #include "Vector.h"
 #include "VM.h"
 #include "Bignum.h"
@@ -81,7 +85,7 @@ void GenericHashTable::prepareFunctions()
 
 void GenericHashTable::setMap(GenericMap map)
 {
-    map_ = map;
+    map_ = std::move(map);
 }
 
 void GenericHashTable::setMutableP(bool mutableP)
