@@ -43,7 +43,7 @@ using namespace scheme;
 
 
 StringTextualInputPort::StringTextualInputPort(const ucs4string& str) :
-    TextualInputPort(),
+    
     isClosed_(false),
     buffer_(str),
     index_(0),

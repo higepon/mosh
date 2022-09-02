@@ -49,7 +49,7 @@
 using namespace scheme;
 
 TranscodedTextualInputPort::TranscodedTextualInputPort(BinaryInputPort* port, Transcoder* coder)
-    : TextualInputPort(),
+    : 
       port_(port),
       transcoder_(coder),
       isClosed_(false)
