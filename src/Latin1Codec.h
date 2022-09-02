@@ -40,14 +40,14 @@ class Latin1Codec : public Codec
 {
 public:
     int putChar(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode);
-    int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
-    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
-    ucs4string getCodecName() const
+    int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) override;
+    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false) override;
+    ucs4string getCodecName() const override
     {
         return UC("latin-1-codec");
     }
 
-    enum Codec::Type type() const
+    enum Codec::Type type() const override
     {
         return Codec::Type(LATIN1);
     }

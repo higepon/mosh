@@ -64,10 +64,10 @@ public:
     virtual bool isErrorOccured() const;
     virtual Object errorMessage() const;
     virtual Object irritants() const;
-    virtual Object position() const;
-    virtual bool setPosition(int64_t position);
-    virtual bool hasPosition() const;
-    virtual bool hasSetPosition() const;
+    virtual Object position() const override;
+    virtual bool setPosition(int64_t position) override;
+    virtual bool hasPosition() const override;
+    virtual bool hasSetPosition() const override;
 
 protected:
     bool writeAbbreviated(Object obj);

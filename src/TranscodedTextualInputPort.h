@@ -42,13 +42,13 @@ public:
     TranscodedTextualInputPort(BinaryInputPort* port, Transcoder* coder);
     virtual ~TranscodedTextualInputPort();
 
-    ucs4char getChar();
-    int getLineNo() const;
-    void unGetChar(ucs4char c);
-    ucs4string toString();
-    int close();
-    bool isClosed() const;
-    Transcoder* transcoder() const;
+    ucs4char getChar() override;
+    int getLineNo() const override;
+    void unGetChar(ucs4char c) override;
+    ucs4string toString() override;
+    int close() override;
+    bool isClosed() const override;
+    Transcoder* transcoder() const override;
     Codec* codec() const;
 
 private:
