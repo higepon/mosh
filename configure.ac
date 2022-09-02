@@ -20,7 +20,21 @@ if test -z "$CXXFLAGS"; then
     CXXFLAGS=" "
 fi
 
-AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh-$PACKAGE_VERSION")
+AC_MSG_CHECKING(Program name)
+if test "${program_transform_name}" = "s,x,x,"; then
+    INSTALLNAME=AC_PACKAGE_NAME
+    AC_MSG_RESULT(use default)
+else
+    sedscript0=$(mktemp)
+    sedscript1=$(mktemp)
+    echo "${program_transform_name}" > $sedscript0
+    cat $sedscript0 | sed sX\\\$\\\$X\\\$Xg > $sedscript1
+    INSTALLNAME=`echo AC_PACKAGE_NAME|sed -f $sedscript1`
+    AC_MSG_RESULT($INSTALLNAME)
+    rm -f $sedscript0 $sedscript1
+fi
+AC_SUBST(INSTALLNAME)
+AC_SUBST(MOSH_LIB_PATH, "${datadir}/$INSTALLNAME-$PACKAGE_VERSION")
 
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES
