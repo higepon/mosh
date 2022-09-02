@@ -50,14 +50,14 @@ public:
 
 private:
 
-    bool eofP_;
+    bool eofP_{false};
     ucs4char dummy_;
     ucs4char* buffer_;
     ucs4char* cursor_;
     ucs4char* token_;
     ucs4char* limit_;
     ucs4char* marker_;
-    int bufferSize_;
+    int bufferSize_{32};
 };
 
 } // namespace scheme

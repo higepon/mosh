@@ -75,7 +75,7 @@ private:
     Object error_;
     Scanner* scanner_;
     NumberScanner* numberScanner_;
-    bool isStrictR6RsReaderMode_;
+    bool isStrictR6RsReaderMode_{false};
 };
 
 } // namespace scheme

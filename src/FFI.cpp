@@ -186,7 +186,7 @@ bool CStack::pushDouble(double val)
 }
 
 #else
-CStack::CStack() : count_(0)
+CStack::CStack()  
 {
     memset(frame_, 0, sizeof(frame_));
 }

@@ -43,7 +43,7 @@
 
 using namespace scheme;
 
-UTF16Codec::UTF16Codec() : isLittleEndian_(false), nativeIsLittleEndinan_(false), dontCheckBOM_(false)
+UTF16Codec::UTF16Codec()  
 {
 }
 

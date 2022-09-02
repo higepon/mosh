@@ -51,7 +51,7 @@ EqHashTable::EqHashTable() :
 #else
     table_(ObjectMap())
 #endif
-    , mutable_(true)
+     
 {
 }
 
