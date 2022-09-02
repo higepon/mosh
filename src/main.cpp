@@ -179,7 +179,6 @@ int main(int argc, char *argv[])
     ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;
-    bool isCompileString = false;
     bool isProfilerOn      = false;
     bool isR6RSBatchMode = true;
     bool disableAcc = false;
@@ -190,7 +189,6 @@ int main(int argc, char *argv[])
     bool invokeApplet = false;
     bool isGuruMode = false;
 #endif
-    ucs4char* initFile = NULL;
     ucs4char* loadPath = NULL;
 
    static struct optionU long_options[] = {
@@ -221,9 +219,6 @@ int main(int argc, char *argv[])
         case 'd':
             disableAcc = true;
             break;
-        case 'l':
-            initFile = optargU;
-            break;
         case 'L':
             loadPath = optargU;
             break;
@@ -241,9 +236,6 @@ int main(int argc, char *argv[])
             break;
         case 'p':
             isProfilerOn = true;
-            break;
-        case 'c':
-            isCompileString = true;
             break;
         case 'a':
             verbose = true;
