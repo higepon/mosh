@@ -48,7 +48,7 @@ UTF16Codec::UTF16Codec()
 }
 
 // constructor for UTF16_LE and UTF16_BE. (dontCheckBOM_ is true)
-UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE), nativeIsLittleEndinan_(false), dontCheckBOM_(true)
+UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE),  dontCheckBOM_(true)
 {
     MOSH_ASSERT(endianness == UTF_16BE || endianness == UTF_16LE);
 }
