@@ -402,14 +402,14 @@ private:
 
     static double iDiv0(double f1, double f2)
     {
-        const double div = iDiv(f1, f2);
+        const double divValue = iDiv(f1, f2);
         const double mod = iMod(f1, f2);
         if (mod < (fabs(f2) / 2.0)) {
-            return div;
+            return divValue;
         } else if (f2 > 0) {
-            return div + 1.0;
+            return divValue + 1.0;
         } else {
-            return div - 1.0;
+            return divValue - 1.0;
         }
     }
 
