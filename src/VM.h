@@ -83,7 +83,7 @@ public:
 
     bool isMainThread() const
     {
-        return NULL == thread_;
+        return nullptr == thread_;
     }
 
     ucs4string toString() const

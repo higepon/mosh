@@ -44,7 +44,7 @@ using namespace scheme;
 
 Object genericHashFunction;
 Object genericEquivalenceFunction;
-static VM* theVM = NULL; // todo multi thread
+static VM* theVM = nullptr; // todo multi thread
 
 int callHashFunction(Object hashFunction, Object key)
 {

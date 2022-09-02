@@ -359,7 +359,7 @@ namespace scheme {
                                          FALSE, // non-signaled initially
                                          NULL); // unnamed
 #else
-            pthread_cond_init(&cond_, NULL);
+            pthread_cond_init(&cond_, nullptr);
 #endif
         }
     public:
@@ -470,7 +470,7 @@ namespace scheme {
 #else
             struct timeval  now;
             struct timespec timeout;
-            if (gettimeofday(&now, NULL) !=0 ) {
+            if (gettimeofday(&now, nullptr) !=0 ) {
                 fprintf(stderr,"Fail to get current time\n");
                 exit(-1);
             }
@@ -553,7 +553,7 @@ namespace scheme {
                 ::exit(-1);
             }
 #else
-            if (pthread_key_create(&key_, NULL) != 0) {
+            if (pthread_key_create(&key_, nullptr) != 0) {
                 fprintf(stderr, "fatal : ThreadSpecificKey create\n");
                 ::exit(-1);
             }

@@ -346,7 +346,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const int freeVariablesNum = n.toFixnum();
 
             // create display closure
-            const Object display = Object::makeClosure(NULL, 0, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
+            const Object display = Object::makeClosure(nullptr, 0, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
             display.toClosure()->prev = dc_;
             dc_ = display;
             sp_ = sp_ - freeVariablesNum;
@@ -655,7 +655,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         CASE(READ)
         {
             bool errorOccured = false;
-            TextualInputPort* inputPort = NULL;
+            TextualInputPort* inputPort = nullptr;
             if (ac_.isNil()) {
                 inputPort = currentInputPort_.toTextualInputPort();
             } else {
@@ -683,7 +683,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(READ_CHAR)
         {
-            TextualInputPort* inputPort = NULL;
+            TextualInputPort* inputPort = nullptr;
             if (ac_.isNil()) {
                 inputPort = currentInputPort_.toTextualInputPort();
             } else {

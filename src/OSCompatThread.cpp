@@ -77,7 +77,7 @@ bool Thread::create(void* (*start)(void*), void* arg)
     thread_ = (HANDLE)GC_beginthreadex(0, 0, stubFunction,stubInfo_, 0, &threadId);
     return thread_ != 0;
 #else
-    if (GC_pthread_create(&thread_, NULL, stubFunction , stubInfo_) == 0) {
+    if (GC_pthread_create(&thread_, nullptr, stubFunction , stubInfo_) == 0) {
         return true;
     } else {
         setLastError();

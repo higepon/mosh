@@ -151,5 +151,5 @@ ByteVector* ByteArrayBinaryOutputPort::toByteVector()
 
 File* ByteArrayBinaryOutputPort::getFile()
 {
-    return NULL;
+    return nullptr;
 }

@@ -130,7 +130,7 @@ void null_gc_warn_proc(char* msg, GC_word arg){
 void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.
-    srandom(static_cast<unsigned int>(time(NULL)));
+    srandom(static_cast<unsigned int>(time(nullptr)));
 
 #if HAVE_OPENSSL
     SSL_load_error_strings();

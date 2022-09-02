@@ -312,7 +312,7 @@ Object scheme::socketAcceptEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsSocket(0, socket);
     Socket* ret = socket->accept();
-    if (NULL == ret) {
+    if (nullptr == ret) {
         return callIOErrorAfter(theVM, procedureName, socket->getLastErrorMessage(), L3(argv[0], argv[1], argv[2]));
     } else {
         return Object::makeSocket(ret);
@@ -407,8 +407,8 @@ Object scheme::makeClientSocketEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(3, ai_socktype);
     argumentAsFixnum(4, ai_flags);
     argumentAsFixnum(5, ai_protocol);
-    const char* node = NULL;
-    const char* service = NULL;
+    const char* node = nullptr;
+    const char* service = nullptr;
     if (nodeOrFalse.isString()) {
         node = nodeOrFalse.toString()->data().ascii_c_str();
     }
@@ -445,7 +445,7 @@ Object scheme::makeServerSocketEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, ai_family);
     argumentAsFixnum(2, ai_socktype);
     argumentAsFixnum(3, ai_protocol);
-    const char* service = NULL;
+    const char* service = nullptr;
     if (serviceOrFalse.isString()) {
         service = serviceOrFalse.toString()->data().ascii_c_str();
     }

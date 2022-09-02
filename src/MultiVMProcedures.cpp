@@ -54,12 +54,12 @@ static void* vmEntry(void* param);
 #ifndef MONA
 
 // this should be global and shared between VM instances.
-static EqHashTable* processes = NULL;
-ThreadSpecificKey* scheme::vmKey = NULL;
+static EqHashTable* processes = nullptr;
+ThreadSpecificKey* scheme::vmKey = nullptr;
 
 static EqHashTable* processesTable()
 {
-    if (NULL == processes) {
+    if (nullptr == processes) {
         processes = new EqHashTable;
     }
     return processes;

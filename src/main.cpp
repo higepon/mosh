@@ -160,7 +160,7 @@ void showUsage()
 #ifdef ENABLE_PROFILER
 void signal_handler(int signo)
 {
-    if (signo == SIGPROF && theVM != NULL) {
+    if (signo == SIGPROF && theVM != nullptr) {
         theVM->collectProfile();
     }
 }
@@ -189,19 +189,19 @@ int main(int argc, char *argv[])
     bool invokeApplet = false;
     bool isGuruMode = false;
 #endif
-    ucs4char* loadPath = NULL;
+    ucs4char* loadPath = nullptr;
 
    static struct optionU long_options[] = {
-       {UC("loadpath"), optional_argument, 0, 'L'},
-       {UC("help"), 0, 0, 'h'},
-       {UC("disable-acc"), 0, 0, 'd'},
-       {UC("clean-acc"), 0, 0, 'C'},
-       {UC("verbose"), 0, 0, 'a'},
+       {UC("loadpath"), optional_argument, nullptr, 'L'},
+       {UC("help"), 0, nullptr, 'h'},
+       {UC("disable-acc"), 0, nullptr, 'd'},
+       {UC("clean-acc"), 0, nullptr, 'C'},
+       {UC("verbose"), 0, nullptr, 'a'},
 #ifdef WITH_NMOSH_DEFAULTS
-       {UC("applet"), 0, 0, 'T'},
-       {UC("guru-mode"), 0, 0, 'G'},
+       {UC("applet"), 0, nullptr, 'T'},
+       {UC("guru-mode"), 0, nullptr, 'G'},
 #endif
-       {0, 0, 0, 0}
+       {nullptr, 0, nullptr, 0}
    };
 
    ucs4char** argvU = getCommandLine(argc, argv);
@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
 //             theVM->currentOutputPort().toTextualOutputPort()->display(compiled);
 //         }
     } else if (isR6RSBatchMode) {
-        if (NULL == loadPath) {
+        if (nullptr == loadPath) {
             theVM->setValueString(UC("%loadpath"), Object::False);
         } else {
             theVM->setValueString(UC("%loadpath"), Object::makeString(loadPath));

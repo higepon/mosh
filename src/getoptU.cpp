@@ -128,7 +128,7 @@ static ucs4char* strchrU(const ucs4char *p, int ch)
         if (*p == ch)
             return((ucs4char *)p);
         if (!*p)
-            return((ucs4char *)NULL);
+            return((ucs4char *)nullptr);
     }
     /* NOTREACHED */
 }
@@ -175,7 +175,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
 
             place++;
             namelen = strcspnU(place, UC("="));
-            for (i = 0; longopts[i].name != NULL; i++)
+            for (i = 0; longopts[i].name != nullptr; i++)
             {
                 if (strlenU(longopts[i].name) == namelen
                     && strncmpU(place, longopts[i].name, namelen) == 0)
@@ -204,7 +204,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
                     }
                     else
                     {
-                        optargU = NULL;
+                        optargU = nullptr;
                         if (place[namelen] != 0)
                         {
                             /* XXX error? */
@@ -217,7 +217,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
 
                     place = EMSG;
 
-                    if (longopts[i].flag == NULL)
+                    if (longopts[i].flag == nullptr)
                         return longopts[i].val;
                     else
                     {
@@ -253,7 +253,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
 
     if (oli[1] != ':')
     {                           /* don't need argument */
-        optargU = NULL;
+        optargU = nullptr;
         if (!*place)
             ++optindU;
     }

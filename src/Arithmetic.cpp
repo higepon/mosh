@@ -103,7 +103,7 @@ Object Arithmetic::numberToString(Object n, int radix)
         return Object::makeString(r->toString(radix));
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
-        return format(NULL, UC("~d~a~di"), Pair::list3(numberToString(c->real(), radix),
+        return format(nullptr, UC("~d~a~di"), Pair::list3(numberToString(c->real(), radix),
                                                       lt(c->imag(), Object::makeFixnum(0)) ? UC("") : UC("+"),
                                                       numberToString(c->imag(), radix)));
     } else {

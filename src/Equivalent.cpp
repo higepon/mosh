@@ -429,7 +429,7 @@ Object Equal::eP(EqHashTable** pht, Object x, Object y, Object k)
 //         (union-find ht x y))
 Object Equal::callUnionFind(EqHashTable** pht, Object x, Object y)
 {
-    if (*pht == NULL) {
+    if (*pht == nullptr) {
         *pht = new EqHashTable;
     }
     return unionFind(*pht, x, y);
@@ -691,7 +691,7 @@ Object Equal::fastP(EqHashTable** pht, Object x, Object y, Object k)
 //       (and (e? x y k) #t))
 bool Equal::interleaveP(Object x, Object y, Object k)
 {
-    EqHashTable* ht = NULL;
+    EqHashTable* ht = nullptr;
     if (eP(&ht, x, y, k).isFalse()) {
         return false;
     }

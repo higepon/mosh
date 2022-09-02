@@ -183,5 +183,5 @@ bool CustomBinaryOutputPort::setPosition(int64_t position)
 
 File* CustomBinaryOutputPort::getFile()
 {
-    return NULL;
+    return nullptr;
 }

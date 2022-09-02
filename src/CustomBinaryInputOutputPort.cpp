@@ -287,5 +287,5 @@ void CustomBinaryInputOutputPort::flush()
 
 File* CustomBinaryInputOutputPort::getFile()
 {
-    return NULL;
+    return nullptr;
 }

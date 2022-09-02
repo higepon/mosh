@@ -100,7 +100,7 @@ public:
 
     char* toString(int radix = 10) const
     {
-        return mpz_get_str(NULL, radix, value_);
+        return mpz_get_str(nullptr, radix, value_);
     }
 
     double toDouble() const

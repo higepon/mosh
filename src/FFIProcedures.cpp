@@ -1067,7 +1067,7 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
     ucs4string n = name->c_str();
     void* symbol = FFI::lookup((void*)handle->pointer(), n.ascii_c_str());
 
-    if (NULL == symbol) {
+    if (nullptr == symbol) {
         return Object::False;
     } else {
         return Object::makePointer(symbol);
@@ -1086,7 +1086,7 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsString(0, name);
     void* handle = FFI::open(name->data().ascii_c_str());
-    if (NULL == handle) {
+    if (nullptr == handle) {
         callAssertionViolationAfter(theVM, procedureName, "shared library not found", L2(FFI::lastError(), argv[0]));
         return Object::Undef;
     } else {
@@ -1118,7 +1118,7 @@ Object scheme::internalFfiErrorEx(VM* theVM, int argc, const Object* argv) {
     DeclareProcedureName("shared-library-error");
     checkArgumentLength(0);
     const char *message = FFI::lastError();
-    if (message == NULL) {
+    if (message == nullptr) {
         return Object::False;
     } else {
         return Object::makeString(message);

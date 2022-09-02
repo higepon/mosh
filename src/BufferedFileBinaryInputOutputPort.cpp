@@ -70,7 +70,7 @@ using namespace scheme;
 BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
     file_(new File),
     fileName_(file),
-    buffer_(NULL),
+    buffer_(nullptr),
     isDirty_(false),
     position_(0),
     isClosed_(false),

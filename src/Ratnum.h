@@ -105,7 +105,7 @@ public:
 
     char* toString(int radix = 10) const
     {
-        return mpq_get_str(NULL, radix, value);
+        return mpq_get_str(nullptr, radix, value);
     }
 
     double toDouble() const

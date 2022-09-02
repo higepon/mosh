@@ -111,7 +111,7 @@ namespace scheme {
 
     inline bool setCurrentVM(VM* vm)
     {
-        if (NULL == vmKey) {
+        if (nullptr == vmKey) {
             vmKey = new ThreadSpecificKey;
         }
         return Thread::setSpecific(vmKey, vm);

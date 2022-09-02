@@ -224,6 +224,6 @@ void FileBinaryInputOutputPort::flush()
 
 File* FileBinaryInputOutputPort::getFile()
 {
-    return NULL;
+    return nullptr;
 }
 

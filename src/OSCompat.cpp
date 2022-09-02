@@ -104,7 +104,7 @@ using namespace scheme;
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
 
-static EqHashTable* osConstants = NULL;
+static EqHashTable* osConstants = nullptr;
 
 void scheme::initOSConstants()
 {
@@ -922,7 +922,7 @@ ucs4char** scheme::getCommandLine(int argc, char* argv[])
     return argvU;
 #else
     ucs4char** argvU = new(GC) ucs4char*[argc + 1];
-    argvU[argc] = NULL;
+    argvU[argc] = nullptr;
     for (int i = 0; i < argc; i++) {
         argvU[i] = utf8ToUtf32(argv[i], strlen(argv[i])).strdup();
     }
@@ -1027,8 +1027,8 @@ ucs4char* scheme::getEnv(const ucs4string& key)
     return my_utf16ToUtf32(value).strdup();
 #else
     const char* value = getenv(utf32toUtf8(key));
-    if (NULL == value) {
-        return NULL;
+    if (nullptr == value) {
+        return nullptr;
     }
     return utf8ToUtf32(value, strlen(value)).strdup();
 #endif
@@ -1107,11 +1107,11 @@ Object scheme::readDirectory(const ucs4string& path)
     return ret;
 #else
     DIR* dir;
-    if (NULL == (dir = opendir(utf32toUtf8(path)))) {
+    if (nullptr == (dir = opendir(utf32toUtf8(path)))) {
         return Object::False;
     }
     Object ret = Object::Nil;
-    for (struct dirent* entry = readdir(dir); entry != NULL; entry = readdir(dir))
+    for (struct dirent* entry = readdir(dir); entry != nullptr; entry = readdir(dir))
     {
         ret = Object::cons(Object::makeString(entry->d_name), ret);
     }
@@ -1159,7 +1159,7 @@ Object scheme::getCurrentDirectory()
     return "/";
 #else
     char buf[PATH_MAX];
-    if (getcwd(buf, PATH_MAX) == NULL) {
+    if (getcwd(buf, PATH_MAX) == nullptr) {
         return Object::False;
     } else {
         return Object::makeString(buf);

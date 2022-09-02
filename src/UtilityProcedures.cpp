@@ -360,7 +360,7 @@ Object scheme::getEnvironmentVariableEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsString(0, text);
     const ucs4char* value = getEnv(text->data());
-    return NULL == value ? Object::False : Object::makeString(value);
+    return nullptr == value ? Object::False : Object::makeString(value);
 }
 
 Object scheme::getEnvironmentVariablesEx(VM* theVM, int argc, const Object* argv)
@@ -899,7 +899,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     const int BUFFER_SIZE = 1024;
     FILE* in = popen(cmd->data().ascii_c_str(), "r");
     char buffer[BUFFER_SIZE];
-    if (NULL == in) {
+    if (nullptr == in) {
         callAssertionViolationAfter(theVM, procedureName, "failed", L1(argv[0]));
         return Object::Undef;
     }
@@ -967,7 +967,7 @@ Object scheme::microsecondsEx(VM* theVM, int argc, const Object* argv)
     uint64_t usec = msec * 1000;
 #else
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     const uint64_t usec = static_cast<uint64_t>(tv.tv_sec) * 1000000 + static_cast<uint64_t>(tv.tv_usec);
 #endif
     return Bignum::makeIntegerFromU64(usec);
@@ -980,7 +980,7 @@ Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     struct tm localTime;
     struct tm utcTime;
-    time_t current = time(NULL);
+    time_t current = time(nullptr);
 #if defined(_WIN32) && !defined(MOSH_MINGW32)
     localtime_s(&localTime, &current);
     time_t l = mktime(&localTime);
@@ -1034,7 +1034,7 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     struct timeval tv;
     struct rusage ru;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     getrusage(RUSAGE_SELF, &ru);
 
     return Pair::list3(Object::makeFlonum((double)tv.tv_sec + tv.tv_usec / 1000000.0),
@@ -1087,7 +1087,7 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv)
     Object val;    // return value of this procedure
     int save_errno  = errno;
 
-    size_t size = confstr(name, NULL, 0);
+    size_t size = confstr(name, nullptr, 0);
     ucs4string result = ucs4string(size);
     char *buf = result.ascii_c_str();
     size_t ret = confstr(name, buf, size);

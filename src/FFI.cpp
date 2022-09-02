@@ -275,20 +275,20 @@ bool CStack::push(Object obj, ucs4char signature)
     if (obj.isFixnum()) {
         switch (signature) {
         case SIGNATURE_BOOL:
-            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT:
             return pushIntptr_t(obj.toFixnum());
         case SIGNATURE_FLOAT:
-            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_DOUBLE:
-            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT64:
             return pushInt64_t(obj.toFixnum());
         case SIGNATURE_POINTER:
-            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         default:
             MOSH_ASSERT(false);
@@ -298,20 +298,20 @@ bool CStack::push(Object obj, ucs4char signature)
     } else if (obj.isFlonum()) {
         switch (signature) {
         case SIGNATURE_BOOL:
-            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT:
-            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_FLOAT:
             return pushFloat(obj.toFlonum()->value());
         case SIGNATURE_DOUBLE:
             return pushDouble(obj.toFlonum()->value());
         case SIGNATURE_INT64:
-            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_POINTER:
-            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         default:
             MOSH_ASSERT(false);
@@ -320,20 +320,20 @@ bool CStack::push(Object obj, ucs4char signature)
     } else if (obj.isBignum()) {
         switch (signature) {
         case SIGNATURE_BOOL:
-            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT:
             return pushIntptr_t(obj.toBignum()->toS64());
         case SIGNATURE_FLOAT:
-            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_DOUBLE:
-            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT64:
             return pushInt64_t(obj.toBignum()->toS64());
         case SIGNATURE_POINTER:
-            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         default:
             MOSH_ASSERT(false);
@@ -343,19 +343,19 @@ bool CStack::push(Object obj, ucs4char signature)
     } else if (obj.isString()) {
         switch (signature) {
         case SIGNATURE_BOOL:
-            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT:
-            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_FLOAT:
-            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_DOUBLE:
-            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT64:
-            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_POINTER:
             return pushIntptr_t((intptr_t)(obj.toString()->data().ascii_c_str()));
@@ -367,19 +367,19 @@ bool CStack::push(Object obj, ucs4char signature)
     } else if (obj.isByteVector()) {
         switch (signature) {
         case SIGNATURE_BOOL:
-            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT:
-            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_FLOAT:
-            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_DOUBLE:
-            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT64:
-            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_POINTER:
             return pushIntptr_t((intptr_t)(obj.toByteVector()->data()));
@@ -390,19 +390,19 @@ bool CStack::push(Object obj, ucs4char signature)
     } else if (obj.isPointer()) {
         switch (signature) {
         case SIGNATURE_BOOL:
-            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT:
-            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_FLOAT:
-            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_DOUBLE:
-            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT64:
-            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_POINTER:
             return pushIntptr_t(obj.toPointer()->pointer());
@@ -415,19 +415,19 @@ bool CStack::push(Object obj, ucs4char signature)
         case SIGNATURE_BOOL:
             return pushIntptr_t(obj.isTrue() ? 1 : 0);
         case SIGNATURE_INT:
-            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_FLOAT:
-            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_DOUBLE:
-            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_INT64:
-            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         case SIGNATURE_POINTER:
-            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            lastError_ = format(nullptr, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
             return false;
         default:
             MOSH_ASSERT(false);

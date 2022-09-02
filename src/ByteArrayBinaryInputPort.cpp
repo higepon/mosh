@@ -106,5 +106,5 @@ Object ByteArrayBinaryInputPort::position() const
 
 File* ByteArrayBinaryInputPort::getFile()
 {
-    return NULL;
+    return nullptr;
 }

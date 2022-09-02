@@ -91,7 +91,7 @@ Object Regexp::irritants() const
 Object Regexp::match(const ucs4string& text)
 {
     OnigRegion* region= matchInternal(text);
-    if (NULL == region) {
+    if (nullptr == region) {
         return Object::False;
     } else {
         return Object::makeRegMatch(region, text);
@@ -108,7 +108,7 @@ OnigRegion* Regexp::matchInternal(const ucs4string& text)
     if (r >= 0) {
         return region;
     } else if (r == ONIG_MISMATCH) {
-        return NULL;
+        return nullptr;
     } else {
         char errorMessageBuffer[ONIG_MAX_ERROR_MESSAGE_LEN];
         onig_error_code_to_str((uint8_t*)errorMessageBuffer, r);
@@ -116,14 +116,14 @@ OnigRegion* Regexp::matchInternal(const ucs4string& text)
         errorMessage_ = errorMessageBuffer;
         irritants_ = L2(Object::makeString(text.data()),
                         Object::makeString(pattern_.data()));
-        return NULL;
+        return nullptr;
     }
 }
 
 ucs4string Regexp::replace(ucs4string& text, ucs4string& subst, bool& matched)
 {
     OnigRegion* const region = matchInternal(text);
-    if (NULL == region) {
+    if (nullptr == region) {
         matched = false;
         return text;
     }
@@ -152,7 +152,7 @@ Object Regexp::replaceAll(Object t, Object subst)
 
     for (;;) {
         OnigRegion* const region = matchInternal(targetString);
-        if (NULL == region) {
+        if (nullptr == region) {
             ret += targetString;
             break;
         }

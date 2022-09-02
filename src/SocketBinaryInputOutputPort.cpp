@@ -238,5 +238,5 @@ void SocketBinaryInputOutputPort::flush()
 
 File* SocketBinaryInputOutputPort::getFile()
 {
-    return NULL;
+    return nullptr;
 }

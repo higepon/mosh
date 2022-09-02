@@ -184,7 +184,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
         argv_[i] = pair.car().toString()->data().ascii_c_str();
         pair = pair.cdr();
     }
-    argv_[length] = (char*)NULL;
+    argv_[length] = (char*)nullptr;
 
     length = Pair::length(env);
     char** envp_ = new(GC) char*[length + 1];
@@ -193,7 +193,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
         envp_[i] = pair.car().toString()->data().ascii_c_str();
         pair = pair.cdr();
     }
-    envp_[length] = (char*)NULL;
+    envp_[length] = (char*)nullptr;
 
     execve(path_, (char* const*) argv_, (char* const*) envp_);
     

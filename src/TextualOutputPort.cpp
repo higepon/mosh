@@ -287,7 +287,7 @@ bool TextualOutputPort::writeAbbreviated(Object obj)
 
 template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Object o, EqHashTable* seen)
 {
-    if (seen != NULL) {
+    if (seen != nullptr) {
         Object seenState = seen->ref(o, Object::False);
         if (seenState.isTrue()) {
             seen->set(o, Object::makeFixnum(sharedId_));
@@ -468,7 +468,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
             putChar('(');
         }
         print<isHumanReadable>(theVM, o.car(), seen);
-        if (seen == NULL) {
+        if (seen == nullptr) {
             for (Object e = o.cdr(); ; e = e.cdr()) {
                 if (e.isPair() && e.car() == Symbol::UNQUOTE) {
                     if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
@@ -571,7 +571,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
     } else if (o.isCProcedure()) {
 
         // Reader.y doesn't have VM instance.
-        if (theVM != NULL) {
+        if (theVM != nullptr) {
             putString(UC("#<subr "));
             print<isHumanReadable>(theVM, theVM->getCProcedureName(o), seen);
             putString(UC(">"));
@@ -734,7 +734,7 @@ void TextualOutputPort::display(const VM* theVM, Object o, bool isSharedAware)
         sharedId_ = 1;
         print<true>(theVM, o, &seen);
     } else {
-        print<true>(theVM, o, NULL);
+        print<true>(theVM, o, nullptr);
     }
 }
 
@@ -746,6 +746,6 @@ void TextualOutputPort::putDatum(const VM* theVM, Object o, bool isSharedAware)
         sharedId_ = 1;
         print<false>(theVM, o, &seen);
     } else {
-        print<false>(theVM, o, NULL);
+        print<false>(theVM, o, nullptr);
     }
 }

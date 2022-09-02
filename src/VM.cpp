@@ -98,7 +98,7 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     ac_(Object::Nil),
     dc_(Object::Nil),
     cl_(Object::Nil),
-    pc_(NULL),
+    pc_(nullptr),
     stackSize_(stackSize),
     currentOutputPort_(outPort),
     currentErrorPort_(errorPort),
@@ -112,7 +112,7 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     numValues_(0),
     isR6RSMode_(false),
     name_(UC("")),
-    thread_(NULL),
+    thread_(nullptr),
     readerContext_(new ReaderContext),
     numberReaderContext_(new NumberReaderContext),
     errno_(0),
@@ -133,8 +133,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     }
 
     // initialize "On the fly" instructions array
-    closureForEvaluate_ = Object::makeClosure(NULL, 0, 0, false, cProcs_, cProcNum, 0, outerSourceInfo_);
-    closureForApply_ = Object::makeClosure(NULL, 0, 0, false, cProcs_, cProcNum, 1, outerSourceInfo_);;
+    closureForEvaluate_ = Object::makeClosure(nullptr, 0, 0, false, cProcs_, cProcNum, 0, outerSourceInfo_);
+    closureForApply_ = Object::makeClosure(nullptr, 0, 0, false, cProcs_, cProcNum, 1, outerSourceInfo_);;
 
     initializeDynamicCode();
 }
@@ -397,9 +397,9 @@ Object VM::evaluateUnsafe(Object* code, int codeSize, bool isCompiler /* = false
     ac_ = closureForEvaluate_;
     dc_ = closureForEvaluate_;
     cl_ = closureForEvaluate_;
-    fp_ = 0;
+    fp_ = nullptr;
     Object* const direct = getDirectThreadedCode(code, codeSize, isCompiler);
-    return runLoop(direct, NULL);
+    return runLoop(direct, nullptr);
 }
 
 Object VM::evaluateUnsafe(Vector* code, bool isCompiler /* = false */)
@@ -910,7 +910,7 @@ void VM::expandStack(int plusSize)
     }
 
     Object* nextStack = Object::makeObjectArrayLocal(nextStackSize);
-    if (NULL == nextStack) {
+    if (nullptr == nextStack) {
         // todo
         // handle stack overflow with guard
         callAssertionViolationImmidiaImmediately(this, "#<closure>", "stack overflow", L1(Object::makeFixnum(sp_ - stack_)));

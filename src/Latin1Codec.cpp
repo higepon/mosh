@@ -44,8 +44,8 @@ using namespace scheme;
 
 Codec* Latin1Codec::getCodec()
 {
-    static Codec* codec = NULL;
-    if (codec == NULL) {
+    static Codec* codec = nullptr;
+    if (codec == nullptr) {
         codec = new Latin1Codec();
     }
     return codec;

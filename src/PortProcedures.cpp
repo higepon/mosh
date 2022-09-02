@@ -207,8 +207,8 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 {
     DeclareProcedureName("open-file-input/output-port");
     checkArgumentLengthBetween(1, 4);
-    BinaryInputOutputPort* port = NULL;
-    Transcoder* transcoder = NULL;
+    BinaryInputOutputPort* port = nullptr;
+    Transcoder* transcoder = nullptr;
     int openFlags = 0;
 
     argumentAsString(0, path);
@@ -282,8 +282,8 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         }
     }
 
-    if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
-        if (transcoder == NULL) {
+    if ((port != nullptr) && (MOSH_SUCCESS == port->open())) {
+        if (transcoder == nullptr) {
             return Object::makeBinaryInputOutputPort(port);
         } else {
             return Object::makeTextualInputOutputPort(port, transcoder);
@@ -830,7 +830,7 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(0, 1);
 
     bool errorOccured = false;
-    TextualInputPort* inputPort = NULL;
+    TextualInputPort* inputPort = nullptr;
     if (0 == argc) {
         inputPort = theVM->currentInputPort().toTextualInputPort();
         checkPortIsOpen(inputPort, theVM->currentInputPort());
@@ -1556,8 +1556,8 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-output-port");
     checkArgumentLengthBetween(1, 4);
-    BinaryOutputPort* port = NULL;
-    Transcoder* transcoder = NULL;
+    BinaryOutputPort* port = nullptr;
+    Transcoder* transcoder = nullptr;
     int openFlags = 0;
 
     argumentAsString(0, path);
@@ -1629,8 +1629,8 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
         }
     }
 
-    if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
-        if (transcoder == NULL) {
+    if ((port != nullptr) && (MOSH_SUCCESS == port->open())) {
+        if (transcoder == nullptr) {
             const Object ret = Object::makeBinaryOutputPort(port);
             theVM->registerPort(ret);
             return ret;
@@ -1657,8 +1657,8 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-input-port");
     checkArgumentLengthBetween(1, 4);
-    BinaryInputPort* in = NULL;
-    Transcoder* transcoder = NULL;
+    BinaryInputPort* in = nullptr;
+    Transcoder* transcoder = nullptr;
 
     // N.B. As R6RS says, we ignore "file-options" for input-port.
     if (argc == 1) {
@@ -1704,8 +1704,8 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         }
     }
 
-    if ((in != NULL) && (MOSH_SUCCESS == in->open())) {
-        if (transcoder == NULL) {
+    if ((in != nullptr) && (MOSH_SUCCESS == in->open())) {
+        if (transcoder == nullptr) {
             return Object::makeBinaryInputPort(in);
         } else {
             return Object::makeTextualInputPort(in, transcoder);

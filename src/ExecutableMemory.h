@@ -48,7 +48,7 @@ namespace scheme {
 class ExecutableMemory
 {
 public:
-    ExecutableMemory(int size) : size_(size), addr_(NULL), roundAddr_(NULL), index_(0)
+    ExecutableMemory(int size) : size_(size), addr_(nullptr), roundAddr_(nullptr), index_(0)
     {
     }
 

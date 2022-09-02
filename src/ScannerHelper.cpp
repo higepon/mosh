@@ -74,7 +74,7 @@ int ScannerHelper::num16StringToInt(ucs4char* start, ucs4char* end)
         buf[i] = p[i];
     }
     errno = 0;
-    int64_t ret = strtoll(buf, NULL, 16);
+    int64_t ret = strtoll(buf, nullptr, 16);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
         || (errno != 0 && ret == 0)) {
         fprintf(stderr, "error num-16 buf=<%s>", buf);
@@ -92,7 +92,7 @@ int ScannerHelper::num10StringToInt(ucs4char* start, ucs4char* end)
         buf[i] = start[i];
     }
     errno = 0;
-    int64_t ret = strtoll(buf, NULL, 10);
+    int64_t ret = strtoll(buf, nullptr, 10);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
         || (errno != 0 && ret == 0)) {
         fprintf(stderr, "error num-10 buf=<%s>", buf);

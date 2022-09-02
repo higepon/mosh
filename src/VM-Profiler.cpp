@@ -70,7 +70,7 @@ void VM::initProfiler()
     act.sa_handler = &signal_handler; // set signal_handler
     act.sa_flags = SA_RESTART;        // restart system call after signal handler
 
-    if (sigaction(SIGPROF, &act, NULL) != 0) {
+    if (sigaction(SIGPROF, &act, nullptr) != 0) {
         callAssertionViolationImmidiaImmediately(this, "profiler", "sigaction failed");
     }
     startTimer();

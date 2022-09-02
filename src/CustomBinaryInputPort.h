@@ -56,7 +56,7 @@ public:
     bool hasSetPosition() const override;
     Object position() const override;
     bool setPosition(int64_t position) override;
-    File* getFile() override { return NULL; }
+    File* getFile() override { return nullptr; }
     ucs4string getLastErrorMessage() override
     {
         return UC("");

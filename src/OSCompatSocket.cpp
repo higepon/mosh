@@ -68,7 +68,7 @@ Socket* Socket::accept()
                 continue;
             } else {
                 setLastError();
-                return NULL;
+                return nullptr;
             }
         } else {
             break;
@@ -80,7 +80,7 @@ Socket* Socket::accept()
 
     if (isErrorOccurred) {    // we couldn't resolve the name for some reason
       setLastError();
-      return NULL;
+      return nullptr;
     } else {
       return new Socket(fd, Socket::SERVER, name);
     }
@@ -269,9 +269,9 @@ Socket* Socket::createClientSocket(const char* node,
     hints.ai_socktype = ai_socktype;
     hints.ai_flags = ai_flags;
     hints.ai_protocol = ai_protocol;
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
+    hints.ai_canonname = nullptr;
+    hints.ai_addr = nullptr;
+    hints.ai_next = nullptr;
     struct addrinfo* result;
     int ret;
     // TODO server socket?
@@ -295,12 +295,12 @@ Socket* Socket::createClientSocket(const char* node,
 #else
         errorMessage = ucs4string::from_c_str(gai_strerror(ret));
 #endif
-        return NULL;
+        return nullptr;
     }
 
     // there may be many addresses for one host
     int lastError = 0;
-    for (struct addrinfo* p = result; p != NULL; p = p->ai_next) {
+    for (struct addrinfo* p = result; p != nullptr; p = p->ai_next) {
         const int fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (-1 == fd) {
 #ifdef _WIN32
@@ -317,7 +317,7 @@ Socket* Socket::createClientSocket(const char* node,
           if (getAddressStringError) {
             errorMessage = UC("getnameinfo failed");
             isErrorOccured = true;
-            return NULL;
+            return nullptr;
           } else {
             freeaddrinfo(result);
             return new Socket(fd, Socket::CLIENT, addressString);
@@ -341,7 +341,7 @@ Socket* Socket::createClientSocket(const char* node,
     freeaddrinfo(result);
     isErrorOccured = true;
     errorMessage = getLastErrorMessageInternal(lastError);
-    return NULL;
+    return nullptr;
 }
 #if !defined(__CYGWIN__) && !defined(MONA)
 extern ucs4string my_utf16ToUtf32(const std::wstring& s);
@@ -361,15 +361,15 @@ Socket* Socket::createServerSocket(const char* service,
     hints.ai_flags = AI_PASSIVE;
 #endif
     hints.ai_protocol = ai_protocol;
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
+    hints.ai_canonname = nullptr;
+    hints.ai_addr = nullptr;
+    hints.ai_next = nullptr;
     struct addrinfo* result;
     int ret;
 
     // check temporary failure
     do {
-        ret = getaddrinfo(NULL, service, &hints, &result);
+        ret = getaddrinfo(nullptr, service, &hints, &result);
     } while (EAI_AGAIN == ret);
 
     if (ret != 0) {
@@ -381,11 +381,11 @@ Socket* Socket::createServerSocket(const char* service,
 #else
         errorMessage = ucs4string::from_c_str(gai_strerror(ret));
 #endif
-        return NULL;
+        return nullptr;
     }
     // there may be many addresses for one host
     int lastError = 0;
-    for (struct addrinfo* p = result; p != NULL; p = p->ai_next) {
+    for (struct addrinfo* p = result; p != nullptr; p = p->ai_next) {
         const int fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (-1 == fd) {
             lastError = errno;
@@ -445,7 +445,7 @@ Socket* Socket::createServerSocket(const char* service,
         if (getAddressStringError) {
           errorMessage = UC("getnameinfo failed");
           isErrorOccured = true;
-          return NULL;
+          return nullptr;
         } else {
           freeaddrinfo(result);
           return new Socket(fd, Socket::SERVER, addressString);
@@ -454,7 +454,7 @@ Socket* Socket::createServerSocket(const char* service,
     freeaddrinfo(result);
     isErrorOccured = true;
     errorMessage = getLastErrorMessageInternal(lastError);
-    return NULL;
+    return nullptr;
 }
 
 ucs4string Socket::getAddressString(
