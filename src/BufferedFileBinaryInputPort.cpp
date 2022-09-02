@@ -35,6 +35,10 @@
 #include <fcntl.h>
 #include <string.h> // memcpy
 #include <stdio.h>
+
+
+#include <utility>
+
 #include "Object.h"
 #include "Object-inl.h"
 #include "HeapObject.h"
@@ -55,7 +59,7 @@ BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(File* file) : file_(fil
     initializeBuffer();
 }
 
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), position_(0)
+BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : file_(new File), fileName_(std::move(file)), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
     file_->open(fileName_, File::Read);
     initializeBuffer();

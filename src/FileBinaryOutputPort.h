@@ -42,8 +42,8 @@ class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
     FileBinaryOutputPort(File* file);
-    FileBinaryOutputPort(ucs4string file);
-    FileBinaryOutputPort(ucs4string file, int openFlags);
+    FileBinaryOutputPort(const ucs4string& file);
+    FileBinaryOutputPort(const ucs4string& file, int openFlags);
     ~FileBinaryOutputPort() override;
 
     int putU8(uint8_t v) override;

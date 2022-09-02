@@ -33,6 +33,10 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "EqHashTable.h"
+
+
+#include <utility>
+
 #include "Vector.h"
 #include "OSCompatThread.h"
 #include "UtilityProcedures.h"
@@ -154,7 +158,7 @@ void EqHashTable::setMutableP(bool mutableP)
 
 void EqHashTable::setTable(ObjectMap i)
 {
-    table_ = i;
+    table_ = std::move(i);
 }
 
 ObjectMap EqHashTable::getTable() const
