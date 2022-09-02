@@ -155,7 +155,7 @@ socket_connect(int fd,void* name,int len){
 }
 
 int // 0:DELAY, 0<:fd, otherwise: error
-socket_accept(int fd,void* ret_name,int* ret_len){
+socket_accept(int fd,void* ret_name,socklen_t* ret_len){
     int ret;
     ret = accept(fd,ret_name,ret_len);
     if(ret < 0){
