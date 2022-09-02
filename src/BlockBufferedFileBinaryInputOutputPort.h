@@ -42,11 +42,11 @@ class BlockBufferedFileBinaryInputOutputPort : public BufferedFileBinaryInputOut
 public:
     BlockBufferedFileBinaryInputOutputPort(const ucs4string& filename, int openFlags) :
         BufferedFileBinaryInputOutputPort(filename, openFlags) {}
-    virtual ~BlockBufferedFileBinaryInputOutputPort() {}
+    ~BlockBufferedFileBinaryInputOutputPort() override {}
 
 protected:
     // N.B. writeToFile doesn't change the fd's position.
-    int64_t writeToBuffer(uint8_t* data, int64_t reqSize)
+    int64_t writeToBuffer(uint8_t* data, int64_t reqSize) override
     {
         if (reqSize > 0) {
             isDirty_ = true;

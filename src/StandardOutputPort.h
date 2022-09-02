@@ -44,36 +44,36 @@ class StandardOutputPort : public LineBufferedFileBinaryOutputPort
 {
 public:
     StandardOutputPort() : LineBufferedFileBinaryOutputPort(&File::STANDARD_OUT) {}
-    virtual ~StandardOutputPort()
+    ~StandardOutputPort() override
     {
     }
 
-    ucs4string toString()
+    ucs4string toString() override
     {
         return UC("standard-out-port");
     }
 
-    bool hasPosition() const
+    bool hasPosition() const override
     {
         return false;
     }
 
-    int close()
+    int close() override
     {
         flush();
         return MOSH_SUCCESS;
     }
 
-    bool hasSetPosition() const
+    bool hasSetPosition() const override
     {
         return false;
     }
 
-    Object position() const {
+    Object position() const override {
         return Object::Undef;
     }
 
-    bool setPosition(int64_t position)
+    bool setPosition(int64_t position) override
     {
         return false;
     }

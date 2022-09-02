@@ -46,28 +46,28 @@ public:
                                  Object getPositionProc,
                                  Object setPositionProc,
                                  Object closeProc);
-    virtual ~CustomTextualInputOutputPort();
+    ~CustomTextualInputOutputPort() override;
 
     // textual-input
-    ucs4char getChar();
-    int getLineNo() const;
-    void unGetChar(ucs4char c);
+    ucs4char getChar() override;
+    int getLineNo() const override;
+    void unGetChar(ucs4char c) override;
 
     // textual-output
-    void flush();
-    enum OutputPort::bufferMode bufferMode() const;
-    void putChar(ucs4char c);
+    void flush() override;
+    enum OutputPort::bufferMode bufferMode() const override;
+    void putChar(ucs4char c) override;
 
-    Transcoder* transcoder() const;
+    Transcoder* transcoder() const override;
 
     // Port interface
-    ucs4string toString();
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int64_t position);
-    int close();
-    bool isClosed() const;
+    ucs4string toString() override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    int close() override;
+    bool isClosed() const override;
 private:
     VM* theVM_;
     const ucs4string id_;

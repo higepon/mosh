@@ -46,32 +46,32 @@ public:
                                 Object getPositionProc,
                                 Object setPositionProc,
                                 Object closeProc);
-    virtual ~CustomBinaryInputOutputPort();
+    ~CustomBinaryInputOutputPort() override;
 
-    int getU8();
-    int lookaheadU8();
-    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured);
-    int64_t readSome(uint8_t** buf, bool& isErrorOccured);
-    int64_t readAll(uint8_t** buf, bool& isErrorOccured);
-    ucs4string toString();
-    int open();
-    int close();
-    int pseudoClose();
-    bool isClosed() const;
+    int getU8() override;
+    int lookaheadU8() override;
+    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured) override;
+    int64_t readSome(uint8_t** buf, bool& isErrorOccured) override;
+    int64_t readAll(uint8_t** buf, bool& isErrorOccured) override;
+    ucs4string toString() override;
+    int open() override;
+    int close() override;
+    int pseudoClose() override;
+    bool isClosed() const override;
 
     // out
-    int putU8(uint8_t v);
-    int64_t putU8(uint8_t* v, int64_t size);
-    int64_t putByteVector(ByteVector* bv, int64_t start = 0);
-    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
-    void flush();
+    int putU8(uint8_t v) override;
+    int64_t putU8(uint8_t* v, int64_t size) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start = 0) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count) override;
+    void flush() override;
 
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int64_t position);
-    File* getFile();
-    ucs4string getLastErrorMessage()
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    File* getFile() override;
+    ucs4string getLastErrorMessage() override
     {
         return UC("");
     }

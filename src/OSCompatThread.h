@@ -293,7 +293,7 @@ namespace scheme {
             pthread_mutexattr_destroy(&mattr);
         }
 
-        ~Mutex()
+        ~Mutex() override
         {
             pthread_mutex_destroy(&mutex_);
         }
@@ -373,7 +373,7 @@ namespace scheme {
             initialize();
         }
 
-        virtual ~ConditionVariable()
+        ~ConditionVariable() override
         {
 #ifdef _WIN32
             CloseHandle(sema_);
@@ -561,7 +561,7 @@ namespace scheme {
 
         }
 
-        virtual~ ThreadSpecificKey()
+        ~ ThreadSpecificKey() override
         {
 #ifdef _WIN32
             if (0 == TlsFree(key_)) {

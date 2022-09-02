@@ -40,7 +40,7 @@ class TranscodedTextualInputPort : public TextualInputPort
 {
 public:
     TranscodedTextualInputPort(BinaryInputPort* port, Transcoder* coder);
-    virtual ~TranscodedTextualInputPort();
+    ~TranscodedTextualInputPort() override;
 
     ucs4char getChar() override;
     int getLineNo() const override;

@@ -46,7 +46,7 @@ class TextualOutputPort : public OutputPort
 {
 public:
     TextualOutputPort();
-    virtual ~TextualOutputPort();
+    ~TextualOutputPort() override;
 
     virtual void putChar(ucs4char c)       = 0;
     virtual void flush()                   = 0;
@@ -64,10 +64,10 @@ public:
     virtual bool isErrorOccured() const;
     virtual Object errorMessage() const;
     virtual Object irritants() const;
-    virtual Object position() const override;
-    virtual bool setPosition(int64_t position) override;
-    virtual bool hasPosition() const override;
-    virtual bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
 
 protected:
     bool writeAbbreviated(Object obj);

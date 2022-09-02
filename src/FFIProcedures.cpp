@@ -83,7 +83,7 @@ public:
         SetLastError(vm_->getErrno());
 #endif
     }
-    ~SynchronizedErrno() {
+    ~SynchronizedErrno() override {
         vm_->setErrno(errno);
 #if _MSC_VER
         vm_->setErrno(GetLastError());

@@ -56,7 +56,7 @@ class EqHashTable : public HashTable
 
 public:
     EqHashTable();
-    virtual ~EqHashTable();
+    ~EqHashTable() override;
 
     size_t size() const override;
     bool containsP(Object key) override;

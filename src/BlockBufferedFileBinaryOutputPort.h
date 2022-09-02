@@ -43,15 +43,15 @@ public:
     BlockBufferedFileBinaryOutputPort(File* file) : BufferedFileBinaryOutputPort(file) {}
     BlockBufferedFileBinaryOutputPort(ucs4string file) : BufferedFileBinaryOutputPort(file) {}
     BlockBufferedFileBinaryOutputPort(ucs4string file, int openFlags) : BufferedFileBinaryOutputPort(file, openFlags) {}
-    virtual ~BlockBufferedFileBinaryOutputPort() {}
+    ~BlockBufferedFileBinaryOutputPort() override {}
 
-    virtual enum bufferMode bufferMode() const
+    enum bufferMode bufferMode() const override
     {
         return BLOCK;
     }
 
 protected:
-    int64_t writeToBuffer(uint8_t* data, int64_t reqSize)
+    int64_t writeToBuffer(uint8_t* data, int64_t reqSize) override
     {
         int64_t writeSize = 0;
         while (writeSize < reqSize) {

@@ -87,7 +87,7 @@ private:
     }
 
 public:
-    virtual ~Bignum()
+    ~Bignum() override
     {
         mpz_clear(value_);
     }

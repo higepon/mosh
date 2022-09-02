@@ -40,20 +40,20 @@ class StringTextualOutputPort : public TextualOutputPort
 {
 public:
     StringTextualOutputPort();
-    virtual ~StringTextualOutputPort();
-    void putChar(ucs4char c);
+    ~StringTextualOutputPort() override;
+    void putChar(ucs4char c) override;
     ucs4string getString();
-    virtual int close();
-    bool isClosed() const;
-    virtual void flush();
-    ucs4string toString();
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int64_t position);
+    int close() override;
+    bool isClosed() const override;
+    void flush() override;
+    ucs4string toString() override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
     void reset();
-    Transcoder* transcoder() const;
-    enum OutputPort::bufferMode bufferMode() const;
+    Transcoder* transcoder() const override;
+    enum OutputPort::bufferMode bufferMode() const override;
 
 private:
     bool isClosed_;

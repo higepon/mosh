@@ -49,11 +49,11 @@ public:
     UTF16Codec();
     UTF16Codec(int endianness);
 
-    int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
-    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
-    ucs4string getCodecName() const;
+    int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) override;
+    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false) override;
+    ucs4string getCodecName() const override;
 
-    enum Codec::Type type() const
+    enum Codec::Type type() const override
     {
         return Codec::Type(UTF16);
     }

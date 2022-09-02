@@ -40,19 +40,19 @@ class StringTextualInputPort : public TextualInputPort
 {
 public:
     StringTextualInputPort(const ucs4string& str);
-    ~StringTextualInputPort();
+    ~StringTextualInputPort() override;
 
-    ucs4char getChar();
-    void unGetChar(ucs4char c);
-    ucs4string toString();
-    int close();
-    bool isClosed() const;
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int64_t position);
-    int getLineNo() const;
-    Transcoder* transcoder() const;
+    ucs4char getChar() override;
+    void unGetChar(ucs4char c) override;
+    ucs4string toString() override;
+    int close() override;
+    bool isClosed() const override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    int getLineNo() const override;
+    Transcoder* transcoder() const override;
 
 private:
     bool isClosed_;

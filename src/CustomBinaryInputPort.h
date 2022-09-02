@@ -40,24 +40,24 @@ class CustomBinaryInputPort : public BinaryInputPort
 {
 public:
     CustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc);
-    virtual ~CustomBinaryInputPort();
+    ~CustomBinaryInputPort() override;
 
-    int getU8();
-    int lookaheadU8();
-    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured);
-    int64_t readSome(uint8_t** buf, bool& isErrorOccured);
-    int64_t readAll(uint8_t** buf, bool& isErrorOccured);
-    ucs4string toString();
-    int open();
-    int close();
-    int pseudoClose();
-    bool isClosed() const;
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int64_t position);
-    File* getFile() { return NULL; }
-    ucs4string getLastErrorMessage()
+    int getU8() override;
+    int lookaheadU8() override;
+    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured) override;
+    int64_t readSome(uint8_t** buf, bool& isErrorOccured) override;
+    int64_t readAll(uint8_t** buf, bool& isErrorOccured) override;
+    ucs4string toString() override;
+    int open() override;
+    int close() override;
+    int pseudoClose() override;
+    bool isClosed() const override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    File* getFile() override { return NULL; }
+    ucs4string getLastErrorMessage() override
     {
         return UC("");
     }

@@ -41,23 +41,23 @@ class StandardInputPort : public FileBinaryInputPort
 {
 public:
     StandardInputPort() : FileBinaryInputPort(&File::STANDARD_IN) {}
-    virtual ~StandardInputPort() {}
-    ucs4string toString()
+    ~StandardInputPort() override {}
+    ucs4string toString() override
     {
         return UC("<standard input port>");
     }
-    bool hasPosition() const
+    bool hasPosition() const override
     {
         return false;
     }
-    bool hasSetPosition() const
+    bool hasSetPosition() const override
     {
         return false;
     }
-    Object position() const {
+    Object position() const override {
         return Object::Undef;
     }
-    bool setPosition(int64_t position)
+    bool setPosition(int64_t position) override
     {
         return false;
     }

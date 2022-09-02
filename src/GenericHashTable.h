@@ -42,19 +42,19 @@ class GenericHashTable : public HashTable
 {
 public:
     GenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction);
-    ~GenericHashTable();
+    ~GenericHashTable() override;
 
-    size_t size() const;
-    Object ref(Object key, Object defaultValue);
-    void set(Object key, Object values);
-    void clearD();
-    void deleteD(Object key);
-    bool containsP(Object key);
-    Object copy(bool mutableP);
-    Object keys();
-    Object hashFunction() const;
-    Object equivalenceFunction() const;
-    bool mutableP() const;
+    size_t size() const override;
+    Object ref(Object key, Object defaultValue) override;
+    void set(Object key, Object values) override;
+    void clearD() override;
+    void deleteD(Object key) override;
+    bool containsP(Object key) override;
+    Object copy(bool mutableP) override;
+    Object keys() override;
+    Object hashFunction() const override;
+    Object equivalenceFunction() const override;
+    bool mutableP() const override;
 
     void prepareFunctions();
     void setMap(GenericMap map);

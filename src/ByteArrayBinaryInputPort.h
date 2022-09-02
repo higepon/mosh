@@ -41,34 +41,34 @@ class ByteArrayBinaryInputPort : public BinaryInputPort
 {
 public:
     ByteArrayBinaryInputPort(const uint8_t* buf, int64_t size);
-    ~ByteArrayBinaryInputPort();
+    ~ByteArrayBinaryInputPort() override;
 
     // profiler tells that this should be inlined
-    inline int getU8()
+    inline int getU8() override
     {
         if (index_ >= size_) return EOF;
         return buf_[index_++];
     }
 
-    inline int lookaheadU8()
+    inline int lookaheadU8() override
     {
         if (index_ >= size_) return EOF;
         return buf_[index_];
     }
 
-    ucs4string toString();
-    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured);
-    int64_t readSome(uint8_t** buf, bool& isErrorOccured);
-    int64_t readAll(uint8_t** buf, bool& isErrorOccured);
-    int open();
-    int close();
-    bool isClosed() const;
-    int pseudoClose();
-    bool hasPosition() const { return true; }
-    bool hasSetPosition() const { return true; }
-    Object position() const;
-    File* getFile();
-    bool setPosition(int64_t position)
+    ucs4string toString() override;
+    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured) override;
+    int64_t readSome(uint8_t** buf, bool& isErrorOccured) override;
+    int64_t readAll(uint8_t** buf, bool& isErrorOccured) override;
+    int open() override;
+    int close() override;
+    bool isClosed() const override;
+    int pseudoClose() override;
+    bool hasPosition() const override { return true; }
+    bool hasSetPosition() const override { return true; }
+    Object position() const override;
+    File* getFile() override;
+    bool setPosition(int64_t position) override
     {
         if (size_ == 0 && position == 0) {
             return true;
@@ -79,7 +79,7 @@ public:
             return true;
         }
     }
-    ucs4string getLastErrorMessage()
+    ucs4string getLastErrorMessage() override
     {
         return UC("");
     }

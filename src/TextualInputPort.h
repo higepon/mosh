@@ -46,7 +46,7 @@ class TextualInputPort : virtual public Port
 {
 public:
     TextualInputPort();
-    virtual ~TextualInputPort();
+    ~TextualInputPort() override;
 
     virtual ucs4char getChar() = 0;
     virtual int getLineNo() const = 0;
@@ -63,10 +63,10 @@ public:
     virtual Object getDatum(bool& errorOccured);
     virtual Scanner* scanner() const;
     virtual NumberScanner* numberScanner() const;
-    virtual bool hasPosition() const;
-    virtual bool hasSetPosition() const;
-    virtual Object position() const;
-    virtual bool setPosition(int64_t position);
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
 
     bool isStrictR6RsReaderMode() const;
     void setStrictR6RsReaderMode();

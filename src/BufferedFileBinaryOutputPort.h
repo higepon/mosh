@@ -43,25 +43,25 @@ public:
     BufferedFileBinaryOutputPort(File* file);
     BufferedFileBinaryOutputPort(const ucs4string& file);
     BufferedFileBinaryOutputPort(const ucs4string& file, int openFlags);
-    virtual ~BufferedFileBinaryOutputPort();
+    ~BufferedFileBinaryOutputPort() override;
 
-    int putU8(uint8_t v);
-    int64_t putU8(uint8_t* v, int64_t size);
-    int64_t putByteVector(ByteVector* bv, int64_t start = 0);
-    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
-    int open();
-    virtual int close();
-    int pseudoClose();
-    bool isClosed() const;
+    int putU8(uint8_t v) override;
+    int64_t putU8(uint8_t* v, int64_t size) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start = 0) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count) override;
+    int open() override;
+    int close() override;
+    int pseudoClose() override;
+    bool isClosed() const override;
     bool isPseudoClosed() const;
-    void flush();
-    ucs4string toString();
-    virtual bool hasPosition() const;
-    virtual bool hasSetPosition() const;
-    virtual Object position() const;
-    virtual bool setPosition(int64_t position);
-    File* getFile();
-    ucs4string getLastErrorMessage()
+    void flush() override;
+    ucs4string toString() override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    File* getFile() override;
+    ucs4string getLastErrorMessage() override
     {
         return file_->getLastErrorMessage();
     }

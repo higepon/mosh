@@ -68,7 +68,7 @@ public:
         mpq_canonicalize(value);
     }
 
-    virtual ~Ratnum()
+    ~Ratnum() override
     {
         mpq_clear(value);
     }

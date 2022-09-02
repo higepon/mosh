@@ -40,37 +40,37 @@ class BufferedFileBinaryInputOutputPort : public BinaryInputOutputPort
 {
 public:
     BufferedFileBinaryInputOutputPort(const ucs4string& file, int openFlags);
-    virtual ~BufferedFileBinaryInputOutputPort();
+    ~BufferedFileBinaryInputOutputPort() override;
 
     // port interfaces
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    int close();
-    int pseudoClose();
-    bool setPosition(int64_t position);
-    ucs4string toString();
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    int close() override;
+    int pseudoClose() override;
+    bool setPosition(int64_t position) override;
+    ucs4string toString() override;
 
     // binary port interfaces
-    int open();
-    bool isClosed() const;
+    int open() override;
+    bool isClosed() const override;
 
     // input interfaces
-    int getU8();
-    int lookaheadU8();
-    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured);
-    int64_t readSome(uint8_t** buf, bool& isErrorOccured);
-    int64_t readAll(uint8_t** buf, bool& isErrorOccured);
+    int getU8() override;
+    int lookaheadU8() override;
+    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured) override;
+    int64_t readSome(uint8_t** buf, bool& isErrorOccured) override;
+    int64_t readAll(uint8_t** buf, bool& isErrorOccured) override;
 
     // output interfaces
-    int putU8(uint8_t v);
-    int64_t putU8(uint8_t* v, int64_t size);
-    int64_t putByteVector(ByteVector* bv, int64_t start = 0);
-    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
-    void flush();
+    int putU8(uint8_t v) override;
+    int64_t putU8(uint8_t* v, int64_t size) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start = 0) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count) override;
+    void flush() override;
     void internalFlush();
-    File* getFile();
-    ucs4string getLastErrorMessage()
+    File* getFile() override;
+    ucs4string getLastErrorMessage() override
     {
         return file_->getLastErrorMessage();
     }

@@ -40,24 +40,24 @@ class CustomBinaryOutputPort : public BinaryOutputPort
 {
 public:
     CustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeProc, Object getPositionProc, Object setPositionDProc, Object closeProc);
-    virtual ~CustomBinaryOutputPort();
+    ~CustomBinaryOutputPort() override;
 
-    int putU8(uint8_t v);
-    int64_t putU8(uint8_t* v, int64_t size);
-    int64_t putByteVector(ByteVector* bv, int64_t start = 0);
-    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
-    int open();
-    int close();
-    int pseudoClose();
-    bool isClosed() const;
-    void flush();
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int64_t position);
-    ucs4string toString();
-    File* getFile();
-    ucs4string getLastErrorMessage()
+    int putU8(uint8_t v) override;
+    int64_t putU8(uint8_t* v, int64_t size) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start = 0) override;
+    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count) override;
+    int open() override;
+    int close() override;
+    int pseudoClose() override;
+    bool isClosed() const override;
+    void flush() override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    ucs4string toString() override;
+    File* getFile() override;
+    ucs4string getLastErrorMessage() override
     {
         return UC("");
     }

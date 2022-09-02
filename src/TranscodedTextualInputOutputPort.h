@@ -41,11 +41,11 @@ namespace scheme {
 class TextualInputOutputPort : public TextualOutputPort, public TextualInputPort
 {
 public:
-    virtual ~TextualInputOutputPort() {}
-    Object position() const = 0;
-    bool setPosition(int64_t position) = 0;
-    bool hasPosition() const = 0;
-    bool hasSetPosition() const = 0;
+    ~TextualInputOutputPort() override {}
+    Object position() const override = 0;
+    bool setPosition(int64_t position) override = 0;
+    bool hasPosition() const override = 0;
+    bool hasSetPosition() const override = 0;
 
 };
 
@@ -53,27 +53,27 @@ class TranscodedTextualInputOutputPort : public TextualInputOutputPort
 {
 public:
     TranscodedTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder);
-    virtual ~TranscodedTextualInputOutputPort();
+    ~TranscodedTextualInputOutputPort() override;
 
-    Object position() const;
-    bool setPosition(int64_t position);
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    int close();
-    bool isClosed() const;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    int close() override;
+    bool isClosed() const override;
 
     // TextualInputPort interfaces
-    ucs4char getChar();
-    int getLineNo() const;
-    void unGetChar(ucs4char c);
-    Transcoder* transcoder() const;
+    ucs4char getChar() override;
+    int getLineNo() const override;
+    void unGetChar(ucs4char c) override;
+    Transcoder* transcoder() const override;
 
     // TextualOutputPort interfaces
-    void putChar(ucs4char c);
-    void flush();
+    void putChar(ucs4char c) override;
+    void flush() override;
 
     // Port interfaces
-    ucs4string toString();
+    ucs4string toString() override;
 
 private:
     BinaryInputOutputPort* port_;

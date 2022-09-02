@@ -41,28 +41,28 @@ class StandardErrorPort : public FileBinaryOutputPort
 {
 public:
     StandardErrorPort() : FileBinaryOutputPort(&File::STANDARD_ERR) {}
-    virtual ~StandardErrorPort() {}
+    ~StandardErrorPort() override {}
 
-    ucs4string toString()
+    ucs4string toString() override
     {
         return UC("standard-error-port");
     }
 
-    bool hasPosition() const
+    bool hasPosition() const override
     {
         return false;
     }
 
-    bool hasSetPosition() const
+    bool hasSetPosition() const override
     {
         return false;
     }
 
-    Object position() const {
+    Object position() const override {
         return Object::Undef;
     }
 
-    bool setPosition(int64_t position)
+    bool setPosition(int64_t position) override
     {
         return false;
     }

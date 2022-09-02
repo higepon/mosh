@@ -45,20 +45,20 @@ public:
                             Object getPositionProc,
                             Object setPositionDProc,
                             Object closeProc);
-    virtual ~CustomTextualOutputPort();
+    ~CustomTextualOutputPort() override;
 
-    int close();
-    bool isClosed() const;
-    void flush();
-    enum OutputPort::bufferMode bufferMode() const;
-    void putChar(ucs4char c);
-    Transcoder* transcoder() const;
+    int close() override;
+    bool isClosed() const override;
+    void flush() override;
+    enum OutputPort::bufferMode bufferMode() const override;
+    void putChar(ucs4char c) override;
+    Transcoder* transcoder() const override;
 
-    ucs4string toString();
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int64_t position);
+    ucs4string toString() override;
+    bool hasPosition() const override;
+    bool hasSetPosition() const override;
+    Object position() const override;
+    bool setPosition(int64_t position) override;
 
 private:
     VM* theVM_;

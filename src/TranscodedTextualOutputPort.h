@@ -40,16 +40,16 @@ class TranscodedTextualOutputPort : public TextualOutputPort
 {
 public:
     TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
-    virtual ~TranscodedTextualOutputPort();
+    ~TranscodedTextualOutputPort() override;
 
-    int close();
-    bool isClosed() const;
-    void flush();
-    enum OutputPort::bufferMode bufferMode() const;
-    void putChar(ucs4char c);
+    int close() override;
+    bool isClosed() const override;
+    void flush() override;
+    enum OutputPort::bufferMode bufferMode() const override;
+    void putChar(ucs4char c) override;
     BinaryOutputPort* binaryPort() const;
-    Transcoder* transcoder() const;
-    ucs4string toString();
+    Transcoder* transcoder() const override;
+    ucs4string toString() override;
 
 private:
     BinaryOutputPort* port_;

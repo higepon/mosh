@@ -40,9 +40,9 @@ class EqvHashTable : public GenericHashTable
 {
 public:
     EqvHashTable(VM* theVM);
-    virtual ~EqvHashTable();
+    ~EqvHashTable() override;
 
-    Object hashFunction() const;
+    Object hashFunction() const override;
 };
 
 } // namespace scheme

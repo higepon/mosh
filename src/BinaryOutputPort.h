@@ -44,7 +44,7 @@ class BinaryOutputPort : virtual public BinaryPort,
                          virtual public OutputPort
 {
 public:
-    virtual ~BinaryOutputPort() {}
+    ~BinaryOutputPort() override {}
     virtual int putU8(uint8_t v) = 0;
     virtual int64_t putU8(uint8_t* v, int64_t size) = 0;
     virtual int64_t putByteVector(ByteVector* bv, int64_t start = 0) = 0;
