@@ -1,4 +1,4 @@
-#!@prefix@/bin/mosh
+#!@prefix@/bin/@INSTALLNAME@
 (import (rnrs)
         (mosh)
         (mosh config))
