@@ -40,7 +40,7 @@
 
 using namespace scheme;
 
-CodePacket::CodePacket() : 
+CodePacket::CodePacket() : packetType_(EMPTY),
                            instruction_(Object::Undef),
                            argument1_(Object::Undef),
                            argument2_(Object::Undef),

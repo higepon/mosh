@@ -56,9 +56,9 @@ public:
     enum OutputPort::bufferMode bufferMode() const override;
 
 private:
-    bool isClosed_{false};
+    bool isClosed_;
     ucs4string buffer_;
-    size_t index_{0};
+    size_t index_;
 };
 
 } // namespace scheme

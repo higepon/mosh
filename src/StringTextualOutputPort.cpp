@@ -38,7 +38,7 @@
 
 using namespace scheme;
 
-StringTextualOutputPort::StringTextualOutputPort()  
+StringTextualOutputPort::StringTextualOutputPort() : isClosed_(false), index_(0)
 {
 }
 

@@ -75,7 +75,7 @@ protected:
     bool isInteresting(Object obj);
     template<bool isHumanReadable> void print(const VM* theVM, Object o, EqHashTable* seen);
 
-    bool isErrorOccured_{false};
+    bool isErrorOccured_;
     Object errorMessage_;
     Object irritants_;
     int sharedId_;

@@ -67,9 +67,9 @@ public:
 
 protected:
     gc_vector<uint8_t> buffer_;
-    uintptr_t position_{0};
-    bool isClosed_{false};
-    bool isPseudoClosed_{false};
+    uintptr_t position_;
+    bool isClosed_;
+    bool isPseudoClosed_;
 };
 
 } // namespace scheme

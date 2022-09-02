@@ -113,7 +113,7 @@ private:
     bool pushFloat(double val);
 
     intptr_t frame_[MAX_ARGC];
-    int count_{0};
+    int count_;
 #ifdef ARCH_X86_64
     intptr_t xmm_[8];
     int xmmCount_;

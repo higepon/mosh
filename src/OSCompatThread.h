@@ -634,7 +634,7 @@ namespace scheme {
         }
 
 
-        Thread()  
+        Thread() : lastError_(0)
         {
 #ifdef _WIN32
 			thread_ = 0;
@@ -695,7 +695,7 @@ namespace scheme {
 #else
         pthread_t thread_;
 #endif
-        int lastError_{0};
+        int lastError_;
     private:
         static ThreadSpecificKey* selfKey;
         StubInfo* stubInfo_;

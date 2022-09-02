@@ -80,7 +80,7 @@ private:
 
 private:
     ObjectMap table_;
-    bool mutable_{true};
+    bool mutable_;
 };
 
 } // namespace scheme

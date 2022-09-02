@@ -66,7 +66,7 @@ public:
     Object argument3() const { return argument3_; }
 
 private:
-    Type packetType_{EMPTY};
+    Type packetType_;
     Object instruction_;
     Object argument1_;
     Object argument2_;

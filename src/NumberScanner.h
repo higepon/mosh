@@ -54,11 +54,11 @@ private:
     ucs4char* token_;
     ucs4char* limit_;
     ucs4char* marker_;
-    int bufferSize_{32};
+    int bufferSize_;
     enum conditon {
         INITIAL,
         IN_HEX,
-    } condition_{INITIAL};
+    } condition_;
 };
 
 } // namespace scheme
