@@ -45,7 +45,7 @@ struct hash_func
 
 typedef std::unordered_map<scheme::Object,
                                 scheme::Object,
-                                hash_func, std::equal_to<scheme::Object>,
+                                hash_func, std::equal_to<>,
                                 gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 //#endif
 
