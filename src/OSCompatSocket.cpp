@@ -56,7 +56,7 @@ Socket* Socket::accept()
 #ifdef MONA
     struct sockaddr_in addr;
 #else
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr{};
 #endif
     socklen_t addrlen = sizeof(addr);
 
@@ -263,7 +263,7 @@ Socket* Socket::createClientSocket(const char* node,
                                    bool& isErrorOccured,
                                    ucs4string& errorMessage)
 {
-    struct addrinfo hints;
+    struct addrinfo hints{};
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = ai_family;
     hints.ai_socktype = ai_socktype;
@@ -353,7 +353,7 @@ Socket* Socket::createServerSocket(const char* service,
                                    bool& isErrorOccured,
                                    ucs4string& errorMessage)
 {
-    struct addrinfo hints;
+    struct addrinfo hints{};
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = ai_family;
     hints.ai_socktype = ai_socktype;

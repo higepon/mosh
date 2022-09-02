@@ -44,7 +44,7 @@ class Symbol EXTEND_GC
 {
 private:
     const ucs4char* const name_;
-    ucs4char* savedName_;
+    ucs4char* savedName_{};
 
     // N.B.
     // Once this is static Symbols symbols.

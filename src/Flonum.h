@@ -110,7 +110,7 @@ public:
         union {
             double   dvalue;
             uint64_t uvalue;
-        } v;
+        } v{};
         v.dvalue = value_;
         return value_ == 0.0 && (v.uvalue >> 63);
     }

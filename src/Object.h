@@ -295,7 +295,7 @@ private:
     uint8_t tag() const;
 
 public:
-    intptr_t val; // public for performancs. val() const { return val; } is not be inlined with -O2
+    intptr_t val{}; // public for performancs. val() const { return val; } is not be inlined with -O2
 
     friend bool operator <(const Object o1, const Object o2)
     {

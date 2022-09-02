@@ -40,7 +40,7 @@ namespace scheme {
 class Ratnum : public gc_cleanup
 {
 private:
-    mpq_t value;
+    mpq_t value{};
 
     Ratnum(mpq_t rational)
     {

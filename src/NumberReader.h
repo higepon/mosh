@@ -60,7 +60,7 @@ namespace scheme {
         }
     private:
         Object parsed_;
-        TextualInputPort* port_;
+        TextualInputPort* port_{};
     };
 } // namespace scheme
 
