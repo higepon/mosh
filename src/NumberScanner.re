@@ -52,7 +52,7 @@
 #define YYGETCONDITION()  condition_
 #define YYSETCONDITION(s) condition_ = s
 #define YYCONDTYPE int
-#define YYDEBUG(state, ch)  yydebug(state, ch)
+//#define YYDEBUG(state, ch)  yydebug(state, ch)
 #define YYFILL(n) fill(n)
 extern YYSTYPE number_yylval;
 #define yylval number_yylval

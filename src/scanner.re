@@ -47,7 +47,7 @@
 #define YYMARKER marker_
 #define YYLIMIT limit_
 #define YYTOKEN token_
-#define YYDEBUG(state, ch)  yydebug(state, ch)
+//#define YYDEBUG(state, ch)  yydebug(state, ch)
 #define YYFILL(n) fill(n)
 
 using namespace scheme;
