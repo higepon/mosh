@@ -549,8 +549,8 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
 
 void CodeBuilder::combineInstructionsArgument2(CodePacket codePacket)
 {
-    const Object argument1 = codePacket.argument1();
-    const Object argument2 = codePacket.argument2();
+//    const Object argument1 = codePacket.argument1();
+    //const Object argument2 = codePacket.argument2();
     switch(codePacket.instructionImmediate()) {
 //     case Instruction::REFER_LOCAL_PUSH_CONSTANT:
 //     {
