@@ -496,9 +496,9 @@ static int resend_lost_signals(int n_live_threads,
 
 #ifdef HAVE_CLOCK_GETTIME
 # define TS_NSEC_ADD(ts, ns) \
-                (ts.tv_nsec += (ns), \
-                 (void)(ts.tv_nsec >= 1000000L*1000 ? \
-                       (ts.tv_nsec -= 1000000L*1000, ts.tv_sec++, 0) : 0))
+                ((ts).tv_nsec += (ns), \
+                 (void)((ts).tv_nsec >= 1000000L*1000 ? \
+                       ((ts).tv_nsec -= 1000000L*1000, (ts).tv_sec++, 0) : 0))
 #endif
 
 static void resend_lost_signals_retry(int n_live_threads,

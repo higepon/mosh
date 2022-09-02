@@ -1553,7 +1553,7 @@ int64_t FlonumUtil::decode_double(double n, int* exp, int* sign)
 //  In Proceedings of the ACM SIGPLAN '96 Conference on Programming Language Design and Implementation, pages 108--116.
 //
 //  Originally from Ypsilon Scheme
-#define array_sizeof(a) ((int)(sizeof(a)/sizeof(a[0])))
+#define array_sizeof(a) ((int)(sizeof(a)/sizeof((a)[0])))
 ucs4string FlonumUtil::flonumToUcs4String(double v, bool no_exponential)
 {
     char digits[32];

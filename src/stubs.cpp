@@ -86,7 +86,7 @@ using namespace scheme;
 #define NIL Object::Nil
 #define CONS(x,y) Object::cons((x),(y))
 #define SYM(x) Symbol::intern(UC(x))
-#define PTR(x) Object::makePointer((void*)x)
+#define PTR(x) Object::makePointer((void*)(x))
 #define FUNC(x,y) CONS(SYM(x),PTR(y))
 #define FN(x) FUNC(#x,x)
 
