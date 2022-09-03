@@ -84,7 +84,7 @@ jobs:
           make clean &&
           bear --version &&
           bear --help &&
-          bear make &&
+          bear --exclude src/ffi_stub_x86_64.S make &&
           run-clang-tidy -header-filter=src -quiet
       - name: Run clang-tidy and treat warnings as error using bear 3.x.
         if: matrix.os == 'ubuntu-22.04'
