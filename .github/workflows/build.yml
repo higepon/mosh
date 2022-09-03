@@ -81,8 +81,8 @@ jobs:
         run: >
           cd ${{ github.workspace }}/mosh-latest &&
           make clean &&
+          bear --version &&
           bear --help &&
-          ber --version &&
           bear make &&
           run-clang-tidy -header-filter=src -quiet
 
