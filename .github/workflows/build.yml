@@ -104,7 +104,7 @@ jobs:
           echo "Excluding .S file manually" &&
           mv compile_commands.json tmp.json &&
           jj -i tmp.json "#(file!="src/ffi_stub_x86_64.S")#" > compile_commands.json &&
-          run-clang-tidy -header-filter=src -quiet &&
+          run-clang-tidy -header-filter=src -quiet
 
   build-macos:
     strategy:
