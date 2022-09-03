@@ -231,14 +231,14 @@ int yyerror(char const *str)
         currentToken = UC("<end of file>");
     }
     if (prevError.isNil()) {
-        port->setError(format(NULL, UC("~a near [~a] at ~a:~d. "),
+        port->setError(format(nullptr, UC("~a near [~a] at ~a:~d. "),
                               Pair::list4(str,
                                           Object::makeString(currentToken),
                                           port->toString(),
                                           Object::makeFixnum(port->getLineNo()))));
 
     } else {
-        port->setError(format(NULL, UC("~a: ~a near [~a] at ~a:~d. "),
+        port->setError(format(nullptr, UC("~a: ~a near [~a] at ~a:~d. "),
                               Pair::list5(prevError,
                                           str,
                                           Object::makeString(currentToken),
