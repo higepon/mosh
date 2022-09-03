@@ -92,7 +92,8 @@ jobs:
           wget https://github.com/tidwall/jj/archive/refs/tags/v1.9.2.tar.gz &&
           tar zvxf v1.9.2.tar.gz &&
           cd jj-1.9.2/ &&
-          make
+          make &&
+          make install
       - name: Run clang-tidy and treat warnings as error using bear 3.x.
         if: matrix.os == 'ubuntu-22.04'
         run: >
