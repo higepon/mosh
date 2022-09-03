@@ -1,6 +1,6 @@
 ---
   # We follow what chromium is doing for clang-tidy.
-  # TODO(higepon): Enable google-explicit-constructor, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-transparent-functors, bugprone-string-integer-assignment, modernize-redundant-void-arg, modernize-use-bool-literals,
+  # TODO(higepon): Enable google-explicit-constructor, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-transparent-functors, bugprone-string-integer-assignment, modernize-redundant-void-arg, modernize-use-bool-literals, modernize-use-default-member-init,
   Checks:          '-*,
                     bugprone-argument-comment,
                     bugprone-assert-side-effect,
@@ -17,7 +17,6 @@
                     modernize-make-unique,
                     modernize-replace-random-shuffle,
                     modernize-shrink-to-fit,                  
-                    modernize-use-default-member-init,
                     modernize-use-emplace,
                     modernize-use-noexcept,
                     modernize-use-nullptr,
