@@ -77,7 +77,7 @@ jobs:
           make &&
           make test &&
           sudo make install
-      - name: Run clang-tidy and treat warnings as error.
+      - name: Run clang-tidy and treat warnings as error using bear 2.x.
         if: matrix.os == 'ubuntu-latest'
         run: >
           cd ${{ github.workspace }}/mosh-latest &&
@@ -86,7 +86,7 @@ jobs:
           bear --help &&
           bear make &&
           run-clang-tidy -header-filter=src -quiet
-      - name: Run clang-tidy and treat warnings as error.
+      - name: Run clang-tidy and treat warnings as error using bear 3.x.
         if: matrix.os == 'ubuntu-22.04'
         run: >
           cd ${{ github.workspace }}/mosh-latest &&
