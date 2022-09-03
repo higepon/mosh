@@ -78,12 +78,22 @@ jobs:
           make test &&
           sudo make install
       - name: Run clang-tidy and treat warnings as error.
+        if: runs-on != 'ubuntu-latest'
         run: >
           cd ${{ github.workspace }}/mosh-latest &&
           make clean &&
           bear --version &&
           bear --help &&
           bear make &&
+          run-clang-tidy -header-filter=src -quiet
+      - name: Run clang-tidy and treat warnings as error.
+        if: runs-on != 'ubuntu-latest'
+        run: >
+          cd ${{ github.workspace }}/mosh-latest &&
+          make clean &&
+          bear --version &&
+          bear --help &&
+          bear -- make &&
           run-clang-tidy -header-filter=src -quiet
 
   build-macos:
