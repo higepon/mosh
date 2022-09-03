@@ -21,7 +21,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt install -y gauche wget make libgmp-dev autoconf automake
-          sudo apt install -y re2c bison subversion git
+          sudo apt install -y re2c bison subversion git bear clang-tidy
       - name: Cache Oniguruma
         id: cache-oniguruma-linux
         uses: actions/cache@v3
@@ -76,6 +76,12 @@ jobs:
           make &&
           make test &&
           sudo make install
+      - name: Run clang-tidy and treat warnings as error.
+        run: >
+          cd ${{ github.workspace }}/mosh-latest &&
+          make clean &&
+          bear make &&
+          run-clang-tidy -header-filter=src -quiet
 
   build-macos:
     strategy:
