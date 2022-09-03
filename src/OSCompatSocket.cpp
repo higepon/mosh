@@ -102,7 +102,7 @@ bool Socket::sslize()
         return false;
     }
     ssl_ = SSL_new(ctx_);
-    if (ssl_ == nullptr {
+    if (ssl_ == nullptr) {
         return false;
     }
 
