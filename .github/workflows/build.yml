@@ -21,7 +21,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt update
-          sudo apt install -y gauche wget make libgmp-dev autoconf automake
+          sudo apt install -y gauche wget make libgmp-dev autoconf automake golang-go
           sudo apt install -y re2c bison subversion git bear clang-tidy
       - name: Cache Oniguruma
         id: cache-oniguruma-linux
@@ -86,6 +86,13 @@ jobs:
           bear --help &&
           bear --exclude src/ffi_stub_x86_64.S make &&
           run-clang-tidy -header-filter=src -quiet
+      - name: Install jj so that we can edit compile_commands.json.
+        if: matrix.os == 'ubuntu-22.04'
+        run: >
+          wget https://github.com/tidwall/jj/archive/refs/tags/v1.9.2.tar.gz &&
+          tar zvxf v1.9.2.tar.gz &&
+          cd jj-1.9.2/ &&
+          make
       - name: Run clang-tidy and treat warnings as error using bear 3.x.
         if: matrix.os == 'ubuntu-22.04'
         run: >
@@ -94,7 +101,10 @@ jobs:
           bear --version &&
           bear --help &&
           bear -- make &&
-          run-clang-tidy -header-filter=src -quiet
+          echo "Excluding .S file manually" &&
+          mv compile_commands.json tmp.json &&
+          jj -i tmp.json "#(file!="src/ffi_stub_x86_64.S")#" > compile_commands.json &&
+          run-clang-tidy -header-filter=src -quiet &&
 
   build-macos:
     strategy:
