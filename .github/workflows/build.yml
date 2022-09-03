@@ -105,7 +105,7 @@ jobs:
           echo "Excluding .S file manually" &&
           cp compile_commands.json tmp.json &&
           cat tmp.json &&
-          jj -i tmp.json '#(file!="*ffi_stub_x86_64.S")#' > compile_commands.json &&
+          jj -i tmp.json '#(file!%"*ffi_stub_x86_64.S")#' > compile_commands.json &&
           echo "jj successfully done" &&
           run-clang-tidy -header-filter=src -quiet
 
