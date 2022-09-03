@@ -98,11 +98,11 @@ bool Socket::sslize()
         return true;
     }
     ctx_ = SSL_CTX_new(SSLv23_client_method());
-    if (ctx_ == NULL) {
+    if (ctx_ == nullptr) {
         return false;
     }
     ssl_ = SSL_new(ctx_);
-    if (ssl_ == NULL) {
+    if (ssl_ == nullptr) {
         return false;
     }
 

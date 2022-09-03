@@ -60,7 +60,7 @@ using namespace scheme;
 extern VM* theVM;
 
 NumberScanner::NumberScanner() :
-                     buffer_(NULL),
+                     buffer_(nullptr),
                      cursor_(buffer_),
                      token_(buffer_),
                      limit_(buffer_),
@@ -79,7 +79,7 @@ void NumberScanner::fill(int n)
     TextualInputPort* const inputPort = currentVM()->numberReaderContext()->port();
     const int restCharCount = limit_ - token_;
     const int tokenOffset = token_ - buffer_;
-    if (buffer_ == NULL) {
+    if (buffer_ == nullptr) {
         buffer_ = new(GC) ucs4char[bufferSize_];
         cursor_ = buffer_;
         limit_ = buffer_;

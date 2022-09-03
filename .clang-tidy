@@ -1,0 +1,27 @@
+---
+  # We follow what chromium is doing for clang-tidy.
+  # TODO(higepon): Enable google-explicit-constructor, modernize-use-equals-default, modernize-use-equals-delete, modernize-use-transparent-functors, bugprone-string-integer-assignment, modernize-redundant-void-arg, modernize-use-bool-literals, modernize-use-default-member-init, readability-redundant-member-init
+  Checks:          '-*,
+                    bugprone-argument-comment,
+                    bugprone-assert-side-effect,
+                    bugprone-dangling-handle,
+                    bugprone-inaccurate-erase,
+                    bugprone-string-constructor,
+                    bugprone-unused-raii,
+                    bugprone-use-after-move,
+                    google-build-explicit-make-pair,
+                    modernize-avoid-bind,
+                    modernize-concat-nested-namespaces,
+                    modernize-loop-convert,
+                    modernize-make-shared,
+                    modernize-make-unique,
+                    modernize-replace-random-shuffle,
+                    modernize-shrink-to-fit,                  
+                    modernize-use-emplace,
+                    modernize-use-noexcept,
+                    modernize-use-nullptr,
+                    modernize-use-override'
+
+  WarningsAsErrors:  '*'
+  CheckOptions:
+...

@@ -10,7 +10,7 @@ ENV LD_LIBRARY_PATH="/usr/local/lib"
 WORKDIR /root
 
 RUN apt update # && apt -y upgrade
-RUN apt install -y gauche wget make libgmp-dev gcc g++ autoconf automake make
+RUN apt install -y gauche wget make libgmp-dev gcc g++ autoconf automake make bear golang-go
 RUN apt install -y re2c bison subversion autoconf automake git gdb g++
 
 # Oniguruma

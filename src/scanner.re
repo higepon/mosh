@@ -53,7 +53,7 @@
 using namespace scheme;
 
 Scanner::Scanner() : eofP_(false),
-                     buffer_(NULL),
+                     buffer_(nullptr),
                      cursor_(buffer_),
                      token_(buffer_),
                      limit_(buffer_),
@@ -97,7 +97,7 @@ void Scanner::fill(int n)
     const int restCharCount = limit_ - token_;
     const int tokenOffset = token_ - buffer_;
 
-    if (buffer_ == NULL) {
+    if (buffer_ == nullptr) {
         buffer_ = new(GC) ucs4char[bufferSize_];
         cursor_ = buffer_;
         limit_ = buffer_;
