@@ -87,7 +87,7 @@ jobs:
           bear make &&
           run-clang-tidy -header-filter=src -quiet
       - name: Run clang-tidy and treat warnings as error.
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: >
           cd ${{ github.workspace }}/mosh-latest &&
           make clean &&
