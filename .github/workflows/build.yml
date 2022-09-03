@@ -20,6 +20,7 @@ jobs:
           echo "ONIGURUMA_PATH=onig-5.9.6" >> $GITHUB_ENV
       - name: Install tools
         run: |
+          sudo apt update
           sudo apt install -y gauche wget make libgmp-dev autoconf automake
           sudo apt install -y re2c bison subversion git bear clang-tidy
       - name: Cache Oniguruma
@@ -81,6 +82,7 @@ jobs:
           cd ${{ github.workspace }}/mosh-latest &&
           make clean &&
           bear --help &&
+          ber --version &&
           bear make &&
           run-clang-tidy -header-filter=src -quiet
 
