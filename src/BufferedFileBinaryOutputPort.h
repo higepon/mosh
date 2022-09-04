@@ -40,8 +40,8 @@ namespace scheme {
 class BufferedFileBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    BufferedFileBinaryOutputPort(File* file);
-    BufferedFileBinaryOutputPort(const ucs4string& file);
+    explicit BufferedFileBinaryOutputPort(File* file);
+    explicit BufferedFileBinaryOutputPort(const ucs4string& file);
     BufferedFileBinaryOutputPort(const ucs4string& file, int openFlags);
     ~BufferedFileBinaryOutputPort() override;
 
