@@ -368,7 +368,7 @@ namespace scheme {
             initialize();
         }
 
-        ConditionVariable(const ucs4string& name) : name_(name)
+        explicit ConditionVariable(const ucs4string& name) : name_(name)
         {
             initialize();
         }
