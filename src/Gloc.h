@@ -40,7 +40,7 @@ class Gloc EXTEND_GC
 {
 public:
     ~Gloc();
-    Gloc(Object value) : value_(value) {}
+    explicit Gloc(Object value) : value_(value) {}
 
     Object value() const
     {
