@@ -45,7 +45,7 @@ public:
 
     ucs4string toString() override
     {
-        return UC("standard-error-port");
+        return ucs4string(UC("standard-error-port"));
     }
 
     bool hasPosition() const override

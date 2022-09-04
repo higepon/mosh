@@ -386,7 +386,7 @@ namespace scheme {
 
         ucs4string toString() const
         {
-            ucs4string ret = UC("#<condition-variable");
+            ucs4string ret(UC("#<condition-variable"));
             if (!name_.empty()) {
                 ret += UC(" ");
                 ret += name_;

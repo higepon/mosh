@@ -45,7 +45,7 @@ public:
     ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false) override;
     ucs4string getCodecName() const override
     {
-        return UC("utf-8-codec");
+        return ucs4string(UC("utf-8-codec"));
     }
 
     enum Codec::Type type() const override

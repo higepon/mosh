@@ -109,6 +109,11 @@ void TextualOutputPort::putString(String* str)
     putString(str->data());
 }
 
+void TextualOutputPort::putString(const ucs4char* str)
+{
+    putString(ucs4string(str));
+}
+
 void TextualOutputPort::putCharHandleSpecial(ucs4char c, bool inString)
 {
     const int ASCII_SPC = 32;
@@ -152,9 +157,14 @@ Object TextualOutputPort::irritants() const
     return irritants_;
 }
 
+void TextualOutputPort::format(const VM* theVM, const ucs4char* fmt, Object args)
+{
+    format(theVM, ucs4string(fmt), args);
+}
+
 void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object args)
 {
-    ucs4string buffer = UC("");
+    ucs4string buffer(UC(""));
     for (uint32_t i = 0; i < fmt.size(); i++) {
         if (fmt[i] == '~') {
             i++;
@@ -527,7 +537,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
     } else if (o.isSymbol()) {
         Symbol* symbol = o.toSymbol();
 //        Object s = symbol->toString();
-        const ucs4string& content = symbol->c_str();
+        const ucs4string& content = ucs4string(symbol->c_str());
         const ucs4char start = content[0];
         if ((start >= '0' && start <= '9') || (start == ' ')) {
             char buf[16];

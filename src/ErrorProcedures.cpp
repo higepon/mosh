@@ -176,6 +176,11 @@ Object scheme::throwIOError2(int type, const ucs4string& message, Object irritan
     return throwIOError2(type, Object(message), irritants);
 }
 
+Object scheme::throwIOError2(int type, const ucs4char* message, Object irritants /* = Object::Nil */)
+{
+    return throwIOError2(type, Object(message), irritants);
+}
+
 Object scheme::throwIOError2(int type, Object message, Object irritants /* = Object::Nil */)
 {
     ioError = IOError(type, message, irritants);
@@ -304,6 +309,16 @@ Object scheme::callAssertionViolationAfter(VM* theVM, const ucs4char* who, const
     return callAssertionViolationAfter(theVM, Object(who), Object(message), irritants);
 }
 
+Object scheme::callAssertionViolationAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants /* = Object::Nil */)
+{
+    return callAssertionViolationAfter(theVM, Object(who), Object(message), irritants);
+}
+
+Object scheme::callAssertionViolationAfter(VM* theVM, Object who, const ucs4char* message, Object irritants /* = Object::Nil */)
+{
+    return callAssertionViolationAfter(theVM, who, Object(message), irritants);
+}
+
 Object scheme::callAssertionViolationAfter(VM* theVM, const ucs4char* who, Object message, Object irritants /* = Object::Nil */)
 {
     return callAssertionViolationAfter(theVM, Object(who), message, irritants);
@@ -349,8 +364,14 @@ Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message
 
 Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, const ucs4string& message)
 {
-    return raiseAfter2(theVM, UC("undefined-violation"), who, Object(message));
+    return callUndefinedViolationAfter(theVM, who, Object(message));
 }
+
+Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, const ucs4char* message)
+{
+    return callUndefinedViolationAfter(theVM, who, Object(message));    
+}
+
 
 // we can't catch this!
 void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
@@ -488,6 +509,11 @@ Object scheme::callErrorAfter(VM* theVM, Object who, const ucs4string& message, 
 }
 
 Object scheme::callErrorAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object irritants /* = Object::Nil */)
+{
+    return raiseAfter3(theVM, UC("error"), Object(who), Object(message), irritants);
+}
+
+Object scheme::callErrorAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants /* = Object::Nil */)
 {
     return raiseAfter3(theVM, UC("error"), Object(who), Object(message), irritants);
 }

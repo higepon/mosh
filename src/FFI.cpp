@@ -117,7 +117,7 @@ bool CStack::pushIntptr_t(intptr_t val)
         frame_[count_++] = val;
         return true;
     } else {
-        lastError_ = UC("too many ffi arguments");
+        lastError_ = ucs4string(UC("too many ffi arguments"));
         return false;
     }
 }
@@ -155,7 +155,7 @@ bool CStack::pushFloat(double val)
         frame_[count_++] = v.value;
         return true;
     } else {
-        lastError_ = UC("too many ffi arguments");
+        lastError_ = ucs4string(UC("too many ffi arguments"));
         return false;
     }
 
@@ -180,7 +180,7 @@ bool CStack::pushDouble(double val)
         frame_[count_++] = v.uval;
         return true;
     } else {
-        lastError_ = UC("too many ffi arguments");
+        lastError_ = ucs4string(UC("too many ffi arguments"));
         return false;
     }
 }
@@ -197,7 +197,7 @@ bool CStack::pushIntptr_t(intptr_t val)
         frame_[count_++] = val;
         return true;
     } else {
-        lastError_ = UC("too many ffi arguments");
+        lastError_ = ucs4string(UC("too many ffi arguments"));
         return false;
     }
 }
@@ -210,7 +210,7 @@ bool CStack::pushFloat(double val)
         frame_[count_++] = n.u32;
         return true;
     } else {
-        lastError_ = UC("too many ffi arguments");
+        lastError_ = ucs4string(UC("too many ffi arguments"));
         return false;
     }
 }
@@ -218,7 +218,7 @@ bool CStack::pushFloat(double val)
 bool CStack::pushInt64_t(int64_t val)
 {
     if (MAX_ARGC - count_ < 2) {
-        lastError_ = UC("too many ffi int64_t arguments");
+        lastError_ = ucs4string(UC("too many ffi int64_t arguments"));
         return false;
     }
     union {
@@ -238,7 +238,7 @@ bool CStack::pushInt64_t(int64_t val)
 bool CStack::pushDouble(double val)
 {
     if (MAX_ARGC - count_ < 2) {
-        lastError_ = UC("too many ffi double arguments");
+        lastError_ = ucs4string(UC("too many ffi double arguments"));
         return false;
     }
     union {
@@ -433,7 +433,7 @@ bool CStack::push(Object obj, ucs4char signature)
             return false;
         }
     } else {
-        lastError_ = UC("unsupported ffi argument");
+        lastError_ = ucs4string(UC("unsupported ffi argument"));
         return false;
     }
 }

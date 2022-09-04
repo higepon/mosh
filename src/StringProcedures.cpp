@@ -217,13 +217,13 @@ Object scheme::stringTonumberEx(VM* theVM, int argc, const Object* argv)
         switch (radix) {
             case 2:
             {
-                ucs4string text = UC("#b");
+                ucs4string text(UC("#b"));
                 text += numberString;
                 return stringToNumber(text);
             }
             case 8:
             {
-                ucs4string text = UC("#o");
+                ucs4string text(UC("#o"));
                 text += numberString;
                 return stringToNumber(text);
             }
@@ -231,7 +231,7 @@ Object scheme::stringTonumberEx(VM* theVM, int argc, const Object* argv)
                 return stringToNumber(numberString);
             case 16:
             {
-                ucs4string text = UC("#x");
+                ucs4string text(UC("#x"));
                 text += numberString;
                 return stringToNumber(text);
             }

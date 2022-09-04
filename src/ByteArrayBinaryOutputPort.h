@@ -61,7 +61,7 @@ public:
     File* getFile() override;
     ucs4string getLastErrorMessage() override
     {
-        return UC("");
+        return ucs4string(UC(""));
     }
 
 

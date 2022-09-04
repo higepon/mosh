@@ -228,7 +228,7 @@ int yyerror(char const *str)
     const Object prevError = port->error();
     ucs4string currentToken = port->scanner()->currentToken();
     if (currentToken.empty()) {
-        currentToken = UC("<end of file>");
+        currentToken = ucs4string(UC("<end of file>"));
     }
     if (prevError.isNil()) {
         port->setError(format(nullptr, UC("~a near [~a] at ~a:~d. "),

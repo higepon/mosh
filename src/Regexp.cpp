@@ -130,7 +130,7 @@ ucs4string Regexp::replace(ucs4string& text, ucs4string& subst, bool& matched)
     const ucs4string beg = text.substr(0, region->beg[0] / sizeof(ucs4char));
     const ucs4string end = text.substr(region->end[0] / sizeof(ucs4char), text.size() - region->end[0] / sizeof(ucs4char));
     matched = true;
-    return (beg + subst + end).data();
+    return ucs4string((beg + subst + end).data());
 }
 
 Object Regexp::replace(Object t, Object subst)

@@ -1064,7 +1064,7 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
     argumentAsPointer(0, handle);
     argumentAsSymbol(1, name);
 
-    ucs4string n = name->c_str();
+    ucs4string n(name->c_str());
     void* symbol = FFI::lookup((void*)handle->pointer(), n.ascii_c_str());
 
     if (nullptr == symbol) {

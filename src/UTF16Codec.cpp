@@ -54,7 +54,7 @@ UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 
 ucs4string UTF16Codec::getCodecName() const
 {
-    return UC("<utf-16-codec>");
+    return ucs4string((UC("<utf-16-codec>")));
 }
 
 namespace {

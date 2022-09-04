@@ -86,6 +86,7 @@ extern bool isErrorBufInitialized;
 
     Object throwIOError2(int type, Object message, Object irritants = Object::Nil);
     Object throwIOError2(int type, const ucs4string& message, Object irritants = Object::Nil);
+    Object throwIOError2(int type, const ucs4char* message, Object irritants = Object::Nil);    
 
     Object callIOErrorAfter(VM* theVM, IOError e);
     Object callIOErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
@@ -118,9 +119,12 @@ extern bool isErrorBufInitialized;
     Object callAssertionViolationAfter(VM* theVM, const ucs4char* who, Object message, Object irritants = Object::Nil);  
     Object callAssertionViolationAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil); 
     Object callAssertionViolationAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object irritants = Object::Nil);
+    Object callAssertionViolationAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants = Object::Nil);
+    Object callAssertionViolationAfter(VM* theVM, Object who, const ucs4char* message, Object irritants = Object::Nil);
 
     Object callUndefinedViolationAfter(VM* theVM, Object who, Object message);
-    Object callUndefinedViolationAfter(VM* theVM, Object who, const ucs4string& message);    
+    Object callUndefinedViolationAfter(VM* theVM, Object who, const ucs4string& message);   
+    Object callUndefinedViolationAfter(VM* theVM, Object who, const ucs4char* message);     
 
     void callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationImmidiaImmediately(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants = Object::Nil);
@@ -164,7 +168,8 @@ extern bool isErrorBufInitialized;
     Object callErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     Object callErrorAfter(VM* theVM, const ucs4char* who, Object message, Object irritants = Object::Nil);    
     Object callErrorAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil);
-    Object callErrorAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object irritants = Object::Nil);    
+    Object callErrorAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants = Object::Nil);   
+    Object callErrorAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object irritants = Object::Nil);  
 } // namespace scheme
 
 #endif // SCHEME_VIOLATION_PROCEDURES_

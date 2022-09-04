@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
     theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(false));
 #endif
     if (isTestOption) {
-        theVM->loadFileWithGuard(UC("all-tests.scm"));
+        theVM->loadFileWithGuard(ucs4string(UC("all-tests.scm")));
 //     } else if (isCompileString) {
 //         ucs4string text
 //         const Object port = Object::makeStringInputPort((const uint8_t*)argvU[optindU], strlen(argv[optindU]));

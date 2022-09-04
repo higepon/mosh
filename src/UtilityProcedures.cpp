@@ -258,7 +258,7 @@ Object scheme::unGenSyms(Object symbols)
 Object scheme::unGenSym(Object symbol)
 {
     MOSH_ASSERT(symbol.isSymbol());
-    ucs4string symbolString = symbol.toSymbol()->c_str();
+    ucs4string symbolString(symbol.toSymbol()->c_str());
     gc_vector<ucs4string> splitted;
     symbolString.split('@', splitted);
     if (splitted.size() == 2) {
@@ -484,7 +484,7 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
         for (int i = 0; i < len; i++) {
             ibuf[i] = ubuf[i];
         }
-        ucs4string val = ibuf;
+        ucs4string val(ibuf);
         const Object sym = argv[1];
         if (sym.isSymbol()) {
             val += sym.toSymbol()->c_str();
@@ -931,7 +931,7 @@ Object scheme::internalGetClosureNameEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     return theVM->getClosureName(argv[0]);
 #else
-    return UC("<unknown>");
+    return ucs4string(("<unknown>"));
 #endif
 }
 

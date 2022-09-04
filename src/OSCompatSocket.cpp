@@ -168,9 +168,9 @@ ucs4string Socket::getLastErrorMessage() const
 ucs4string Socket::toString() const
 {
     if (address_.empty()) {
-        return UC("<socket>");
+        return ucs4string(UC("<socket>"));
     } else {
-        ucs4string ret = UC("<socket ");
+        ucs4string ret(UC("<socket "));
         if (type_ == CLIENT) {
             ret += UC("client ");
         } else {
@@ -315,7 +315,7 @@ Socket* Socket::createClientSocket(const char* node,
           bool getAddressStringError = false;
           ucs4string addressString = getAddressString(p, getAddressStringError);
           if (getAddressStringError) {
-            errorMessage = UC("getnameinfo failed");
+            errorMessage = ucs4string(UC("getnameinfo failed"));
             isErrorOccured = true;
             return nullptr;
           } else {
@@ -443,7 +443,7 @@ Socket* Socket::createServerSocket(const char* service,
         ucs4string addressString = getAddressString(p, getAddressStringError);
         
         if (getAddressStringError) {
-          errorMessage = UC("getnameinfo failed");
+          errorMessage = ucs4string(UC("getnameinfo failed"));
           isErrorOccured = true;
           return nullptr;
         } else {
@@ -482,7 +482,7 @@ ucs4string Socket::getAddressString(
       return ucs4string::from_c_str(name);
     } else {
       isErrorOccurred = true;
-        return UC("");
+        return ucs4string(UC(""));
     }
 #endif
 }

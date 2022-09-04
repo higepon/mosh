@@ -51,7 +51,7 @@ public:
         for (int i = 0; i < len + 1; i++) {
             p[i] = s[i];
         }
-        data_ = p;
+        data_ = ucs4string(p);
     }
     ucs4char charAt(int n);
     ucs4string& data() { return data_; }

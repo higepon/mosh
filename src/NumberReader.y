@@ -394,7 +394,7 @@ decimal10 : uinteger10String suffix {
               }
           }
           | DOT uinteger10String suffix {
-              ucs4string ret = UC(".");
+              ucs4string ret(UC("."));
               ret += $2;
               if (!$3.empty()) {
                   $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumberOld($3));
@@ -446,7 +446,7 @@ uinteger10 : uinteger10String { $$ = Bignum::makeInteger($1); }
 
 uinteger10String : digit10  {
                 const ucs4char ch = '0' + $1;
-                $$ = UC("");
+                $$ = ucs4string(UC(""));
                 $$ += ch;
            }
            | uinteger10String digit10  {
@@ -465,9 +465,9 @@ exactness : /* empty */     { $$ = 0; }
           | INEXACT         { $$ = -1; }
           ;
 
-suffix    : /* empty */     { $$ = UC(""); }
+suffix    : /* empty */     { $$ = ucs4string(UC("")); }
           | EXPONENT_MARKER {
-              ucs4string ret = UC("e");
+              ucs4string ret(UC("e"));
               ret += $1.substr(1, $1.size() - 1);
               $$ = ret;
           }
