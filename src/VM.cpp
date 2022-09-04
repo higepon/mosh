@@ -324,7 +324,7 @@ Object VM::getGlobalValue(Object id)
     if (val != notFound_) {
         return val.toGloc()->value();
     } else {
-        callAssertionViolationAfter(this, "symbol-value2", "unbound variable", L1(id));
+        callAssertionViolationAfter(this, UC("symbol-value2"), UC("unbound variable"), L1(id));
         return Object::Undef;
     }
 }
@@ -359,7 +359,7 @@ void VM::loadFileUnsafe(const ucs4string& file)
     bool readErrorOccured = false;
     for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
         if (readErrorOccured) {
-            callLexicalViolationImmidiaImmediately(this, "read", p->error());
+            callLexicalViolationImmidiaImmediately(this, UC("read"), p->error());
         }
         evaluateUnsafe(compile(o).toVector());
     }
@@ -377,8 +377,8 @@ void VM::loadFileWithGuard(const ucs4string& file)
             loadFileUnsafe(moshLibPath);
         } else {
             callAssertionViolationImmidiaImmediately(this,
-                                                     "load",
-                                                     "cannot find file in load path",
+                                                     UC("load"),
+                                                     UC("cannot find file in load path"),
                                                      L1(Object::makeString(file)));
         }
     CATCH_VM
@@ -828,7 +828,7 @@ void VM::showStack(int count, const char* file, int line)
         VM_LOG2("============================================\n~d: ~a\n", Object::makeFixnum(i), index(sp_, i));
     }
 #else
-    callAssertionViolationImmidiaImmediately(this, "vm", "don't use showStack");
+    callAssertionViolationImmidiaImmediately(this, UC("vm"), UC("don't use showStack"));
 #endif
 }
 
@@ -911,7 +911,7 @@ void VM::expandStack(int plusSize)
     if (nullptr == nextStack) {
         // todo
         // handle stack overflow with guard
-        callAssertionViolationImmidiaImmediately(this, "#<closure>", "stack overflow", L1(Object::makeFixnum(sp_ - stack_)));
+        callAssertionViolationImmidiaImmediately(this, UC("#<closure>"), UC("stack overflow"), L1(Object::makeFixnum(sp_ - stack_)));
     }
     memcpy(nextStack, stack_, sizeof(Object) * stackSize_);
     fp_ = nextStack + (fp_ - stack_);
@@ -945,7 +945,7 @@ Object VM::values(int num, const Object* v)
     }
     for (int i = 1; i < num; i++) {
         if (i >= maxNumValues_) {
-            callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(i)));
+            callAssertionViolationAfter(this, UC("values"), UC("too many values"), Pair::list1(Object::makeFixnum(i)));
             return Object::Undef;
         }
         values_[i - 1] = v[i];

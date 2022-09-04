@@ -217,7 +217,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 
     if (argc == 1) {
         if (isFileExist) {
-            return callIoFileAlreadyExistAfter(theVM, procedureName, "file already exists", argv[0]);
+            return callIoFileAlreadyExistAfter(theVM, procedureName, UC("file already exists"), argv[0]);
         }
 
         // default buffer mode is Block
@@ -233,16 +233,16 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 //        printf("emptyP=%d noCreateP=%d noTruncateP=%d noFailP=%d\n", emptyP, noCreateP, noTruncateP, noFailP);
 
         if (isFileExist && emptyP) {
-            return callIoFileAlreadyExistAfter(theVM, procedureName, "file already exists", argv[0]);
+            return callIoFileAlreadyExistAfter(theVM, procedureName, UC("file already exists"), argv[0]);
         } else if (noCreateP && noTruncateP) {
             if (!isFileExist) {
-                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
+                return callIoFileNotExistAfter(theVM, procedureName, UC("file-options no-create: file not exist"), argv[0]);
             }
         } else if (noCreateP) {
             if (isFileExist) {
                 openFlags |= File::Truncate;
             } else {
-                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
+                return callIoFileNotExistAfter(theVM, procedureName, UC("file-options no-create: file not exist"), argv[0]);
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
@@ -252,7 +252,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             openFlags |= File::Truncate;
         } else if (noTruncateP) {
             if (isFileExist) {
-                return callIoFileAlreadyExistAfter(theVM, procedureName, "file-options no-trucate: file already exists", argv[0]);
+                return callIoFileAlreadyExistAfter(theVM, procedureName, UC("file-options no-trucate: file already exists"), argv[0]);
             } else {
                 openFlags |= File::Truncate;
             }
@@ -270,7 +270,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             } else if (bufferMode == Symbol::NONE) {
                 port = new FileBinaryInputOutputPort(path->data(), openFlags);
             } else {
-                callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+                callErrorAfter(theVM, procedureName, UC("invalid buffer-mode option"), L1(argv[2]));
                 return Object::Undef;
             }
             if (argc == 4) {
@@ -375,12 +375,12 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
     argumentCheckExactInteger(3, count);
 
     if (!Arithmetic::fitsU32(start)) {
-        callAssertionViolationAfter(theVM, procedureName, "start value out of range", L1(argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("start value out of range"), L1(argv[2]));
         return Object::Undef;
     }
 
     if (!Arithmetic::fitsU32(count)) {
-        callAssertionViolationAfter(theVM, procedureName, "count value out of range", L1(argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, UC("count value out of range"), L1(argv[3]));
         return Object::Undef;
     }
 
@@ -388,7 +388,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
     const uint32_t u32Count = Arithmetic::toU32(count);
 
     if ((uint32_t)dest->length() < u32Count + u32Start) {
-        callAssertionViolationAfter(theVM, procedureName, "string must be a string with at least start + count elements.", L2(argv[2], argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, UC("string must be a string with at least start + count elements."), L2(argv[2], argv[3]));
         return Object::Undef;
     }
 
@@ -435,7 +435,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     argumentAsNonNegativeFixnum(1, size);
 
     if (size == 0) {
-        return "";
+        return Object("");
     }
 
     TRY_WITHOUT_DSTR
@@ -482,10 +482,10 @@ Object scheme::setPortPositionDEx(VM* theVM, int argc, const Object* argv)
         if (port->setPosition(position)) {
             return Object::Undef;
         } else {
-            return callIOInvalidPositionAfter(theVM, procedureName, "invalid port position", L2(argv[0], argv[1]), argv[1]);
+            return callIOInvalidPositionAfter(theVM, procedureName, UC("invalid port position"), L2(argv[0], argv[1]), argv[1]);
         }
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "port doesn't support set-port-position!", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("port doesn't support set-port-position!"), L1(argv[0]));
         return Object::Undef;
     }
 }
@@ -498,7 +498,7 @@ Object scheme::portPositionEx(VM* theVM, int argc, const Object* argv)
     if (port->hasPosition()) {
         return port->position();
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "port doesn't support port-position", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("port doesn't support port-position"), L1(argv[0]));
         return Object::Undef;
     }
 }
@@ -544,7 +544,7 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
             checkPortIsOpen(inout, port);
             return Object::makeBool(inout->lookaheadChar() == EOF);
         } else {
-            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("port"), port, L1(port));
             return Object::Undef;
         }
     CATCH(ioError)
@@ -882,7 +882,7 @@ Object scheme::closeOutputPortEx(VM* theVM, int argc, const Object* argv)
         port->close();
         return Object::Undef;
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "output port required", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("output port required"), L1(argv[0]));
         return Object::Undef;
     }
 }
@@ -896,7 +896,7 @@ Object scheme::closeInputPortEx(VM* theVM, int argc, const Object* argv)
         port->close();
         return Object::Undef;
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "input port required", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("input port required"), L1(argv[0]));
         return Object::Undef;
     }
 }
@@ -920,7 +920,7 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
 #ifdef MONA
     if (monapi_file_delete(text->data().ascii_c_str()) != M_OK) {
         callIoFileNameErrorAfter(theVM, procedureName,
-                                 "can't delete file",
+                                 UC("can't delete file"),
                                  argv[0]);
         return Object::Undef;
     } else {
@@ -929,7 +929,7 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
 #else
     if (-1 == unlink(text->data().ascii_c_str())) {
         callIoFileNameErrorAfter(theVM, procedureName,
-                                 "can't delete file",
+                                 UC("can't delete file"),
                                  argv[0]);
         return Object::Undef;
     } else {
@@ -1024,7 +1024,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
                 return Object::makeString(p->getString());
             }
         } else {
-            callAssertionViolationAfter(theVM, procedureName, "port and format string required");
+            callAssertionViolationAfter(theVM, procedureName, UC("port and format string required"));
             return Object::Undef;
         }
     CATCH(ioError)
@@ -1072,7 +1072,7 @@ Object scheme::fileTostringEx(VM* theVM, int argc, const Object* argv)
         }
         return Object(ret);
     } else {
-        return "";
+        return Object("");
     }
 }
 
@@ -1194,7 +1194,7 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
     checkPortIsOpen(binaryInputPort, argv[0]);
     argumentCheckExactInteger(1, count);
     if (!Arithmetic::fitsU32(count)) {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[1]));
         return Object::Undef;
     }
 
@@ -1208,7 +1208,7 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
     bool isErrorOccured = false;
     const uint32_t ret = static_cast<uint32_t>(binaryInputPort->readBytes(buffer, u32Count, isErrorOccured));
     if (isErrorOccured) {
-        callAssertionViolationAfter(theVM, procedureName, "read error");
+        callAssertionViolationAfter(theVM, procedureName, UC("read error"));
         return Object::Undef;
     } else if (ret == 0) {
         return Object::Eof;
@@ -1228,7 +1228,7 @@ Object scheme::getBytevectorAllEx(VM* theVM, int argc, const Object* argv)
     uint8_t* dest;
     const int64_t ret = binaryInputPort->readAll(&dest, isErrorOccured);
     if (isErrorOccured) {
-        callAssertionViolationAfter(theVM, procedureName, "read error");
+        callAssertionViolationAfter(theVM, procedureName, UC("read error"));
         return Object::Undef;
     } else if (ret == 0) {
         return Object::Eof;
@@ -1249,7 +1249,7 @@ Object scheme::getBytevectorSomeEx(VM* theVM, int argc, const Object* argv)
     uint8_t* dest;
     const int64_t ret = binaryInputPort->readSome(&dest, isErrorOccured);
     if (isErrorOccured) {
-        callAssertionViolationAfter(theVM, procedureName, "read error");
+        callAssertionViolationAfter(theVM, procedureName, UC("read error"));
         return Object::Undef;
     } else if (ret == 0) {
         return Object::Eof;
@@ -1271,12 +1271,12 @@ Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
     argumentCheckExactInteger(3, count);
 
     if (!Arithmetic::fitsU32(start)) {
-        callAssertionViolationAfter(theVM, procedureName, "start value out of range", L1(argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("start value out of range"), L1(argv[2]));
         return Object::Undef;
     }
 
     if (!Arithmetic::fitsU32(count)) {
-        callAssertionViolationAfter(theVM, procedureName, "count value out of range", L1(argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, UC("count value out of range"), L1(argv[3]));
         return Object::Undef;
     }
 
@@ -1284,14 +1284,14 @@ Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
     const uint32_t u32Count = Arithmetic::toU32(count);
 
     if (bv->length() < u32Count + u32Start) {
-        callAssertionViolationAfter(theVM, procedureName, "bytevector must be a bytevector with at least start + count elements.", L2(argv[2], argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, UC("bytevector must be a bytevector with at least start + count elements."), L2(argv[2], argv[3]));
         return Object::Undef;
     }
 
     bool isErrorOccured = false;
     const uint32_t ret = static_cast<uint32_t>(binaryInputPort->readBytes(bv->data() + u32Start, u32Count, isErrorOccured));
     if (isErrorOccured) {
-        callAssertionViolationAfter(theVM, procedureName, "read error");
+        callAssertionViolationAfter(theVM, procedureName, UC("read error"));
         return Object::Undef;
     } else if (ret == 0) {
         return Object::Eof;
@@ -1320,7 +1320,7 @@ Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
         inout->pseudoClose();
         return Object::makeTextualInputOutputPort(inout, transcoder);
     } else {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary port", port, L1(port));
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("binary port"), port, L1(port));
         return Object::Undef;
     }
 }
@@ -1374,7 +1374,7 @@ Object scheme::makeTranscoderEx(VM* theVM, int argc, const Object* argv)
     argumentCheckSymbol(1, style);
     EolStyle eolStyle;
     if (!Transcoder::validateEolStyle(style, eolStyle)) {
-        callAssertionViolationAfter(theVM, procedureName, "invalid eol-style", L1(argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, UC("invalid eol-style"), L1(argv[1]));
         return Object::Undef;
     }
     if (argc == 2) {
@@ -1383,7 +1383,7 @@ Object scheme::makeTranscoderEx(VM* theVM, int argc, const Object* argv)
     argumentCheckSymbol(2, errorHandlingMode);
     ErrorHandlingMode mode;
     if (!Transcoder::validateErrorHandlingMode(errorHandlingMode, mode)) {
-        callAssertionViolationAfter(theVM, procedureName, "invalid error-handling-mode", L1(argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("invalid error-handling-mode"), L1(argv[2]));
         return Object::Undef;
     }
     return Object::makeTranscoder(codec, eolStyle, mode);
@@ -1518,7 +1518,7 @@ Object scheme::sysGetBytevectorEx(VM* theVM, int argc, const Object* argv)
         BinaryOutputPort* out = reinterpret_cast<TranscodedTextualOutputPort*>(port.toTextualOutputPort())->binaryPort();
         return Object::makeByteVector(reinterpret_cast<ByteArrayBinaryOutputPort*>(out)->toByteVector());
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "bytevector-port required", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("bytevector-port required"), L1(argv[0]));
         return Object::Undef;
     }
 }
@@ -1567,7 +1567,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 
     if (argc == 1) {
         if (isFileExist) {
-            return callIoFileAlreadyExistAfter(theVM, procedureName, "file already exists", argv[0]);
+            return callIoFileAlreadyExistAfter(theVM, procedureName, UC("file already exists"), argv[0]);
         }
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryOutputPort(path->data(), openFlags);
@@ -1580,16 +1580,16 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
         const bool noFailP = isNoFail(fileOptions);
 
         if (isFileExist && emptyP) {
-            return callIoFileAlreadyExistAfter(theVM,  procedureName, "file already exists",argv[0]);
+            return callIoFileAlreadyExistAfter(theVM,  procedureName, UC("file already exists"),argv[0]);
         } else if (noCreateP && noTruncateP) {
             if (!isFileExist) {
-                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
+                return callIoFileNotExistAfter(theVM, procedureName, UC("file-options no-create: file not exist"), argv[0]);
             }
         } else if (noCreateP) {
             if (isFileExist) {
                 openFlags |= File::Truncate;
             } else {
-                return callIoFileNotExistAfter(theVM, procedureName, "file-options no-create: file not exist", argv[0]);
+                return callIoFileNotExistAfter(theVM, procedureName, UC("file-options no-create: file not exist"), argv[0]);
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
@@ -1599,7 +1599,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             openFlags |= File::Truncate;
         } else if (noTruncateP) {
             if (isFileExist) {
-                return callIoFileAlreadyExistAfter(theVM, procedureName, "file-options no-trucate: file already exists", argv[0]);
+                return callIoFileAlreadyExistAfter(theVM, procedureName, UC("file-options no-trucate: file already exists"), argv[0]);
             } else {
                 openFlags |= File::Truncate;
             }
@@ -1617,7 +1617,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             } else if (bufferMode == Symbol::NONE) {
                 port = new FileBinaryOutputPort(path->data(), openFlags);
             } else {
-                callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+                callErrorAfter(theVM, procedureName, UC("invalid buffer-mode option"), L1(argv[2]));
                 return Object::Undef;
             }
             if (argc == 4) {
@@ -1682,7 +1682,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         } else if (bufferMode == Symbol::NONE) {
             in = new FileBinaryInputPort(path->data());
         } else {
-            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+            callErrorAfter(theVM, procedureName, UC("invalid buffer-mode option"), L1(argv[2]));
             return Object::Undef;
         }
     } else if (argc == 4) {
@@ -1695,7 +1695,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         } else if (bufferMode == Symbol::NONE) {
             in = new FileBinaryInputPort(path->data());
         } else {
-            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+            callErrorAfter(theVM, procedureName, UC("invalid buffer-mode option"), L1(argv[2]));
             return Object::Undef;
         }
         argumentCheckTranscoderOrFalse(3, maybeTranscoder);
@@ -1796,7 +1796,7 @@ Object scheme::directoryListEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, path);
     const Object directories = readDirectory(path->data());
     if (directories.isFalse()) {
-        callAssertionViolationAfter(theVM, procedureName, "could't open dir", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("could't open dir"), L1(argv[0]));
         return Object::Undef;
     }
     return directories;
@@ -1941,7 +1941,7 @@ Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
         } else if (outputPort.isTextualInputOutputPort()) {
             outputPort.toTextualInputOutputPort()->flush();
         } else {
-            callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
+            callAssertionViolationAfter(theVM, procedureName, UC("output-port required"), L1(outputPort));
         }
         return Object::Undef;
     CATCH(ioError)
@@ -1963,7 +1963,7 @@ Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
     } else if (outputPort.isTextualPort()) {
         bufferMode = outputPort.toTextualOutputPort()->bufferMode();
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
+        callAssertionViolationAfter(theVM, procedureName, UC("output-port required"), L1(outputPort));
         return Object::Undef;
     }
 

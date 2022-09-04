@@ -78,7 +78,7 @@ int UTF8Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         if (mode == ErrorHandlingMode(RAISE_ERROR)) {
             printf("%s %s:%d %x\n", __func__, __FILE__, __LINE__, u);fflush(stdout);// debug
             exit(-1);
-            throwIOError2(IOError::ENCODE, "invalid utf-8 char byte sequence", Pair::list1(Object::makeChar(u)));
+            throwIOError2(IOError::ENCODE, UC("invalid utf-8 char byte sequence"), Pair::list1(Object::makeChar(u)));
             return 0;
         } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
             buf[0] = 0xff;
@@ -98,7 +98,7 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
 
 #define decodeError() \
     if (mode == ErrorHandlingMode(RAISE_ERROR)) { \
-        throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence");  \
+        throwIOError2(IOError::DECODE, UC("invalid utf-8 byte sequence"));  \
     } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {                    \
         return 0xFFFD;                                                  \
     } else {                                                            \

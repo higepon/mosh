@@ -120,7 +120,7 @@ public:
     explicit Object(const ucs4char* str);
     Object(const ucs4char* str, int length);
     explicit Object(const ucs4string& str);
-    Object(const char* str);
+    explicit Object(const char* str);
 
     bool isInputPort() const;
     bool isOutputPort() const;

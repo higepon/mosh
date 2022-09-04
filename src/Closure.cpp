@@ -48,7 +48,7 @@ using namespace scheme;
 Object Closure::sourceInfoString(VM* theVM)
 {
     if (sourceInfo.isFalse()) {
-        return "#<closure>";
+        return Object("#<closure>");
     } else if (sourceInfo.isPair()) {
         if (sourceInfo.car().isPair()) {
             return format(theVM, UC("~a :~a:~d"), Pair::list3(unGenSyms(sourceInfo.cdr()), sourceInfo.car().car(), sourceInfo.car().cdr().car()));
@@ -56,7 +56,7 @@ Object Closure::sourceInfoString(VM* theVM)
             return format(theVM, UC("~a : unknown location"), Pair::list1(unGenSyms(sourceInfo.cdr())));
         }
     } else {
-        return "#<closure>";
+        return Object("#<closure>");
     }
 }
 

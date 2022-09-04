@@ -309,7 +309,7 @@ Object scheme::flDivEx(VM* theVM, int argc, const Object* argv)
         bool isDiv0Error = false;
         const Object ret = Arithmetic::div(Object::makeFlonum(1.0), number, isDiv0Error);
         if (isDiv0Error) {
-            callAssertionViolationAfter(theVM, procedureName, "division by zero", L2(Object::makeFlonum(1.0), number));
+            callAssertionViolationAfter(theVM, procedureName, UC("division by zero"), L2(Object::makeFlonum(1.0), number));
             return Object::Undef;
         } else {
             return ret;
@@ -391,7 +391,7 @@ Object scheme::flevenPEx(VM* theVM, int argc, const Object* argv)
     if (flonum->isInteger()) {
         return Object::makeBool(flonum->isEven());
     } else {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "integer flonum", argv[0]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("integer flonum"), argv[0]);
         return Object::Undef;
     }
 }
@@ -404,7 +404,7 @@ Object scheme::floddPEx(VM* theVM, int argc, const Object* argv)
     if (flonum->isInteger()) {
         return Object::makeBool(flonum->isOdd());
     } else {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "integer flonum", argv[0]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("integer flonum"), argv[0]);
         return Object::Undef;
     }
 }

@@ -203,9 +203,9 @@ Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthAtLeast(0);
 // TODO
 #ifdef MONA
-    return "mona";
+    return Object("mona");
 #else
-    return MOSH_HOST_OS;
+    return Object(MOSH_HOST_OS);
 #endif
 }
 
@@ -316,14 +316,14 @@ Object scheme::numberTostringEx(VM* theVM, int argc, const Object* argv)
             if (radix == 10) {
                 return Arithmetic::numberToString(z, 10);
             } else {
-                callAssertionViolationAfter(theVM, procedureName, "radix should be 10 for flonum", L1(argv[1]));
+                callAssertionViolationAfter(theVM, procedureName, UC("radix should be 10 for flonum"), L1(argv[1]));
                 return Object::Undef;
             }
         } else {
             if (radix == 2 || radix == 8 || radix == 10 || radix == 16) {
                 return Arithmetic::numberToString(z, radix);
             } else {
-                callAssertionViolationAfter(theVM, procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
+                callAssertionViolationAfter(theVM, procedureName, UC("radix should be 2, 8, 10 ro 16"), L1(argv[1]));
                 return Object::Undef;
             }
         }
@@ -430,7 +430,7 @@ Object scheme::integerTocharEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsFixnum(0, integer);
     if (!ucs4string::isValidScalar(integer)) {
-        callAssertionViolationAfter(theVM, procedureName, "code point out of range", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("code point out of range"), L1(argv[0]));
         return Object::Undef;
     }
 
@@ -672,7 +672,7 @@ Object scheme::modEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, number2);
 
     if (0 == number2) {
-        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, UC("Dividing by zero"));
         return Object::Undef;
     }
     return Object::makeFixnum(mod(number1, number2));
@@ -856,12 +856,12 @@ Object scheme::internalStartProcessEx(VM* theVM, int argc, const Object* argv)
                                                      MonAPI::System::getProcessStdinID(),
                                                      stdoutHandle);
     if (result != M_OK) {
-        callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("can't execute process"), L1(argv[0]));
     }
     return Object::Undef;
 #else
     (void) cmd;
-    return callAssertionViolationAfter(theVM, procedureName, "not implmented", L1(argv[0]));
+    return callAssertionViolationAfter(theVM, procedureName, UC("not implmented"), L1(argv[0]));
 #endif
 }
 
@@ -872,7 +872,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, cmd);
 #ifdef _WIN32
-        callAssertionViolationAfter(theVM, procedureName, "not supported", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("not supported"), L1(argv[0]));
         return Object::Undef;
 #elif defined(MONA)
     uint32_t tid;
@@ -891,7 +891,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
                                                      MonAPI::System::getProcessStdinID(),
                                                      outHandle);
     if (result != M_OK) {
-        return callAssertionViolationAfter(theVM, procedureName, "can't execute process", L1(argv[0]));
+        return callAssertionViolationAfter(theVM, procedureName, UC("can't execute process"), L1(argv[0]));
     }
     // todo values
     return Bignum::makeIntegerFromSigned<intptr_t>(monapi_process_wait_terminated(tid));
@@ -900,7 +900,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     FILE* in = popen(cmd->data().ascii_c_str(), "r");
     char buffer[BUFFER_SIZE];
     if (nullptr == in) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("failed"), L1(argv[0]));
         return Object::Undef;
     }
 
@@ -914,7 +914,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
 
     int status = pclose(in);
     if (status == -1) {
-        callAssertionViolationAfter(theVM, procedureName, "failed. pclose returned error", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("failed. pclose returned error"), L1(argv[0]));
         return Object::Undef;
     }
 
@@ -990,7 +990,7 @@ Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
     time_t l = mktime(&localTime);
     utcTime = *gmtime(&l);
 #elif defined(MONA)
-    callAssertionViolationAfter(theVM, procedureName, "not implmented", L1(argv[0]));
+    callAssertionViolationAfter(theVM, procedureName, UC("not implmented"), L1(argv[0]));
     return Object::Undef;
 #else
     localtime_r(&current, &localTime);
@@ -1078,7 +1078,7 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%confstr");
 #ifdef MONA
-    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list1(argv[0]));
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not implmented"), Pair::list1(argv[0]));
 #else
     checkArgumentLength(1);
     argumentAsFixnum(0, name);
@@ -1099,11 +1099,11 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv)
         if (errno != save_errno) {
             switch(errno){
                 case EINVAL:
-                    callErrorAfter(theVM, procedureName, "invalid name", 
+                    callErrorAfter(theVM, procedureName, UC("invalid name"), 
                             L1(argv[0]));
                     break;
                 default:
-                    callErrorAfter(theVM, procedureName, "unknown error", 
+                    callErrorAfter(theVM, procedureName, UC("unknown error"), 
                             L1(argv[0]));
                     break;
             }

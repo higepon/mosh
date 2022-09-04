@@ -90,7 +90,7 @@ int UTF32Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 
 #define decodeError() \
     if (mode == ErrorHandlingMode(RAISE_ERROR)) {                             \
-        throwIOError2(IOError::DECODE, "invalid utf-16 byte sequence"); \
+        throwIOError2(IOError::DECODE, UC("invalid utf-16 byte sequence")); \
     } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {                                \
         return 0xFFFD;                                                  \
     } else {                                                            \

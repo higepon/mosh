@@ -65,7 +65,7 @@ int Latin1Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         return 1;
     } else {
         if (mode == ErrorHandlingMode(RAISE_ERROR)) {
-            throwIOError2(IOError::ENCODE, "invalid latin-1 char byte sequence", Pair::list1(Object::makeChar(u)));
+            throwIOError2(IOError::ENCODE, UC("invalid latin-1 char byte sequence"), Pair::list1(Object::makeChar(u)));
             return 0;
         } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
             buf[0] = '?';
@@ -86,7 +86,7 @@ retry:
         return (ucs4char)f;
      } else {
         if (mode == ErrorHandlingMode(RAISE_ERROR)) {
-            throwIOError2(IOError::DECODE, "invalid latin-1 byte sequence");
+            throwIOError2(IOError::DECODE, UC("invalid latin-1 byte sequence"));
         } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
             return 0xFFFD;
         } else {

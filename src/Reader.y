@@ -232,7 +232,7 @@ int yyerror(char const *str)
     }
     if (prevError.isNil()) {
         port->setError(format(nullptr, UC("~a near [~a] at ~a:~d. "),
-                              Pair::list4(str,
+                              Pair::list4(Object(str),
                                           Object::makeString(currentToken),
                                           Object(port->toString()),
                                           Object::makeFixnum(port->getLineNo()))));
@@ -240,7 +240,7 @@ int yyerror(char const *str)
     } else {
         port->setError(format(nullptr, UC("~a: ~a near [~a] at ~a:~d. "),
                               Pair::list5(prevError,
-                                          str,
+                                          Object(str),
                                           Object::makeString(currentToken),
                                           Object(port->toString()),
                                           Object::makeFixnum(port->getLineNo()))));

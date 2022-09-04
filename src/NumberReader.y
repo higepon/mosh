@@ -499,6 +499,6 @@ int number_yyerror(char const *str)
 {
   TextualInputPort* const port = currentVM()->numberReaderContext()->port();
   port->setError(format(nullptr, UC("~a near [~a] at ~a:~d. "),
-                        Pair::list4(str, Object::makeString(port->scanner()->currentToken()), Object(port->toString()), Object::makeFixnum(port->getLineNo()))));
+                        Pair::list4(Object(str), Object::makeString(port->scanner()->currentToken()), Object(port->toString()), Object::makeFixnum(port->getLineNo()))));
   return 0;
 }

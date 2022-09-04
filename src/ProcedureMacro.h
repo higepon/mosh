@@ -64,7 +64,7 @@
     } else if (obj ## variableName.isBinaryInputOutputPort()) { \
         variableName = obj ## variableName.toBinaryInputOutputPort(); \
     } else { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("port"), obj ## variableName); \
         return Object::Undef; \
     }
 
@@ -77,7 +77,7 @@
     } else if (obj ## variableName.isBinaryInputOutputPort()) { \
         variableName = obj ## variableName.toBinaryInputOutputPort(); \
     } else { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary-output-port", obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("binary-output-port"), obj ## variableName); \
         return Object::Undef; \
     }
 
@@ -89,7 +89,7 @@
     } else if (obj ## variableName.isBinaryInputOutputPort()) { \
         variableName = obj ## variableName.toBinaryInputOutputPort(); \
     } else { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary-input-port", obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("binary-input-port"), obj ## variableName); \
         return Object::Undef; \
     }
 
@@ -101,7 +101,7 @@
     } else if (obj ## variableName.isBignum()) { \
         variableName = obj ## variableName.toBignum()->toU32();    \
     } else { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "uint32", obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("uint32"), obj ## variableName); \
         return Object::Undef; \
     }
 
@@ -113,7 +113,7 @@
     } else if (obj ## variableName.isTextualInputOutputPort()) { \
         variableName = obj ## variableName.toTextualInputOutputPort(); \
     } else { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "textual-output-port", obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("textual-output-port"), obj ## variableName); \
         return Object::Undef; \
     }
 
@@ -125,7 +125,7 @@
     } else if (obj ## variableName.isTextualInputOutputPort()) { \
         variableName = obj ## variableName.toTextualInputOutputPort(); \
     } else { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "textual-input-port", obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("textual-input-port"), obj ## variableName); \
         return Object::Undef; \
     }
 
@@ -134,14 +134,14 @@
 #define checkType(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
     if (!variableName.pred()) { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required, variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC(#required), variableName); \
         return Object::Undef; \
     } \
 
 #define castArgument(index, variableName, pred, required, type, castFunction)    \
     const Object obj ## variableName = argv[index]; \
     if (!obj ## variableName.pred()) { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required, obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC(#required), obj ## variableName); \
         return Object::Undef; \
     } \
     type variableName = obj ## variableName.castFunction();
@@ -150,14 +150,14 @@
 #define checkTypeOrFalse(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
     if (!variableName.pred() && !variableName.isFalse()) { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required " or #f", variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC(#required " or #f"), variableName); \
         return Object::Undef; \
     } \
 
 #define checkTypeOr(index, variableName, pred1, pred2, required1, required2)  \
     const Object variableName = argv[index]; \
     if (!variableName.pred1() && !variableName.pred2()) { \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required1 " or " #required2, variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC(#required1 " or " #required2), variableName); \
         return Object::Undef; \
     } \
 

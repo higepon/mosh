@@ -133,7 +133,7 @@ Object scheme::bitwiseArithmeticShiftLeftEx(VM* theVM, int argc, const Object* a
     argumentAsFixnum(1, e2);
 
     if (e2 < 0) {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "fixnum greater than zero", argv[1]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("fixnum greater than zero"), argv[1]);
         return Object::Undef;
     } else {
         return Arithmetic::bitwiseShiftLeft(e1, static_cast<unsigned long>(e2));
@@ -148,7 +148,7 @@ Object scheme::bitwiseArithmeticShiftRightEx(VM* theVM, int argc, const Object* 
     argumentAsFixnum(1, e2);
 
     if (e2 < 0) {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "fixnum greater than zero", argv[1]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC("fixnum greater than zero"), argv[1]);
         return Object::Undef;
     } else {
         return Arithmetic::bitwiseShiftRight(e1, static_cast<unsigned long>(e2));

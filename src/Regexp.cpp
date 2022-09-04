@@ -68,7 +68,7 @@ Regexp::Regexp(const ucs4string& pattern, bool caseFold, bool isSingleLine) :
         char errorMessageBuffer[ONIG_MAX_ERROR_MESSAGE_LEN];
         onig_error_code_to_str((uint8_t*)errorMessageBuffer, r, &einfo_);
         isErrorOccured_ = true;
-        errorMessage_ = errorMessageBuffer;
+        errorMessage_ = Object(errorMessageBuffer);
         irritants_ = L1(Object::makeString(pattern.data()));
     }
 }
@@ -113,7 +113,7 @@ OnigRegion* Regexp::matchInternal(const ucs4string& text)
         char errorMessageBuffer[ONIG_MAX_ERROR_MESSAGE_LEN];
         onig_error_code_to_str((uint8_t*)errorMessageBuffer, r);
         isErrorOccured_ = true;
-        errorMessage_ = errorMessageBuffer;
+        errorMessage_ = Object(errorMessageBuffer);
         irritants_ = L2(Object::makeString(text.data()),
                         Object::makeString(pattern_.data()));
         return nullptr;
@@ -192,7 +192,7 @@ int RegMatch::matchStart(int index)
 {
     if (index < 0 || index >= region_->num_regs) {
         isErrorOccured_ = true;
-        errorMessage_ = "submatch index out of range";
+        errorMessage_ = Object("submatch index out of range");
         irritants_ = L1(Object::makeFixnum(index));
         return -1;
     }
@@ -203,7 +203,7 @@ int RegMatch::matchEnd(int index)
 {
     if (index < 0 || index >= region_->num_regs) {
         isErrorOccured_ = true;
-        errorMessage_ = "submatch index out of range";
+        errorMessage_ = Object("submatch index out of range");
         irritants_ = L1(Object::makeFixnum(index));
         return -1;
     }
@@ -214,7 +214,7 @@ Object RegMatch::matchAfter(int index)
 {
     if (index < 0 || index >= region_->num_regs) {
         isErrorOccured_ = true;
-        errorMessage_ = "submatch index out of range";
+        errorMessage_ = Object("submatch index out of range");
         irritants_ = L1(Object::makeFixnum(index));
         return Object::Undef;
     }
@@ -227,7 +227,7 @@ Object RegMatch::matchBefore(int index)
     if (index < 0 || index >= region_->num_regs)
     {
         isErrorOccured_ = true;
-        errorMessage_ = "submatch index out of range";
+        errorMessage_ = Object("submatch index out of range");
         irritants_ = L1(Object::makeFixnum(index));
         return Object::Undef;
     }
@@ -239,7 +239,7 @@ Object RegMatch::matchSubString(int index)
     if (index< 0 || index >= region_->num_regs)
     {
         isErrorOccured_ = true;
-        errorMessage_ = "submatch index out of range";
+        errorMessage_ = Object("submatch index out of range");
         irritants_ = L1(Object::makeFixnum(index));
         return Object::Undef;
     }

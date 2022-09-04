@@ -75,7 +75,7 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
     if (ch > 0x10FFFF) {
         if (mode == ErrorHandlingMode(RAISE_ERROR)) {
-            throwIOError2(IOError::ENCODE, "character out of utf16 range", L1(Object::makeChar(ch)));
+            throwIOError2(IOError::ENCODE, UC("character out of utf16 range"), L1(Object::makeChar(ch)));
         } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
             buf[0] = 0xff;
             buf[1] = 0xfd;
@@ -106,7 +106,7 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 
 #define decodeError() \
     if (mode == ErrorHandlingMode(RAISE_ERROR)) {                             \
-        throwIOError2(IOError::DECODE, "invalid utf-16 byte sequence"); \
+        throwIOError2(IOError::DECODE, UC("invalid utf-16 byte sequence")); \
     } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {                    \
         return 0xFFFD;                                                  \
     } else {                                                            \

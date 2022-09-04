@@ -194,7 +194,7 @@ Object scheme::throwEx(VM* theVM, int argc, const Object* argv)
 
 void scheme::callNotImplementedAssertionViolationAfter(VM* theVM, Object who, Object irritants /* = Object::Nil */)
 {
-    callAssertionViolationAfter(theVM, who, "not implemented", irritants);
+    callAssertionViolationAfter(theVM, who, UC("not implemented"), irritants);
 }
 
 void scheme::callNotImplementedAssertionViolationAfter(VM* theVM, const ucs4char* who, Object irritants /* = Object::Nil */)
@@ -212,6 +212,11 @@ void scheme::callWrongTypeOfArgumentViolationAfter(VM* theVM, Object who, Object
 void scheme::callWrongTypeOfArgumentViolationAfter(VM* theVM, const ucs4char* who, Object requiredType, Object gotValue, Object irritants /* = Object::Nil */)
 {
     callWrongTypeOfArgumentViolationAfter(theVM, Object(who), requiredType, gotValue, irritants);
+}
+
+void scheme::callWrongTypeOfArgumentViolationAfter(VM* theVM, const ucs4char* who, const ucs4char* requiredType, Object gotValue, Object irritants /* = Object::Nil */)
+{
+    callWrongTypeOfArgumentViolationAfter(theVM, Object(who), Object(requiredType), gotValue, irritants);
 }
 
 void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object who, int startCounts, int endCounts, int gotCounts, Object irritants /* = Object::Nil */)
@@ -265,8 +270,13 @@ void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Obj
                                        "    2. &who: ~e\n"
                                        "    3. &message: ~s\n"
                                        "    4. &irritants: ~e\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, UC(" WARNING: Error occured before (assertion-violation ...) defined\n"));
     theVM->throwException(condition);
+}
+
+void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants /* = Object::Nil */)
+{
+    callAssertionViolationImmidiaImmediately(theVM, Object(who), Object(message), irritants);
 }
 
 Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position)
@@ -277,6 +287,11 @@ Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message,
 Object scheme::callIOInvalidPositionAfter(VM* theVM, const ucs4char* who, Object message, Object irritants, Object position)
 {
     return callIOInvalidPositionAfter(theVM, Object(who), message, irritants, position);
+}
+
+Object scheme::callIOInvalidPositionAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants, Object position)
+{
+    return callIOInvalidPositionAfter(theVM, Object(who), Object(message), irritants, position);
 }
 
 Object scheme::callAssertionViolationAfter(VM* theVM, Object who, const ucs4string& message, Object irritants /* = Object::Nil */)
@@ -308,9 +323,9 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
                                       "    1. ~e\n"
                                       "    2. &who: ~e\n"
                                       "    3. &message: ~s\n"
-                                      "    4. &irritants: ~e\n"), Pair::list4("&assertion", who, message, irritants));
+                                      "    4. &irritants: ~e\n"), Pair::list4(Object("&assertion"), who, message, irritants));
 
-            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, UC(" WARNING: Error occured before (assertion-violation ...) defined\n"));
             theVM->throwException(condition);
         } else {
             Object condition = format(theVM,
@@ -319,7 +334,7 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
                                       "    1. ~e\n"
                                       "    2. &who: ~e\n"
                                       "    3. &message: ~s\n"
-                                      "    4. &irritants: ~e\n"), Pair::list4("&assertion", who, message, irritants));
+                                      "    4. &irritants: ~e\n"), Pair::list4(Object("&assertion"), who, message, irritants));
 
             theVM->setAfterTrigger1(procedure, condition);
         }
@@ -330,6 +345,11 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
 Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message)
 {
     return raiseAfter2(theVM, UC("undefined-violation"), who, message);
+}
+
+Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, const ucs4string& message)
+{
+    return raiseAfter2(theVM, UC("undefined-violation"), who, Object(message));
 }
 
 // we can't catch this!
@@ -343,8 +363,13 @@ void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Objec
                                  "    2. &who: ~e\n"
                                  "    3. &message: ~s\n"
                                  "    4. &irritants: ~e\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (lexical ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, UC(" WARNING: Error occured before (lexical ...) defined\n"));
     theVM->throwException(condition);
+}
+
+void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, const ucs4char* who, Object message, Object irritants /* = Object::Nil */)
+{
+    callLexicalViolationImmidiaImmediately(theVM, Object(who), message, irritants);
 }
 
 Object scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants)
@@ -382,6 +407,11 @@ Object scheme::callIoFileNameErrorAfter(VM* theVM, const ucs4char* who, Object m
     return callIoFileNameErrorAfter(theVM, Object(who), message, filename);
 }
 
+Object scheme::callIoFileNameErrorAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object filename)
+{
+    return callIoFileNameErrorAfter(theVM, Object(who), Object(message), filename);
+}
+
 Object scheme::callIoFileNotExistAfter(VM* theVM, Object who, Object message, Object filename)
 {
     return raiseAfter3(theVM, UC("raise-i/o-file-does-not-exist-error"), who, message, filename);
@@ -392,6 +422,11 @@ Object scheme::callIoFileNotExistAfter(VM* theVM, const ucs4char* who, Object me
     return callIoFileNotExistAfter(theVM, Object(who), message, filename);
 }
 
+Object scheme::callIoFileNotExistAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object filename)
+{
+    return callIoFileNotExistAfter(theVM, Object(who), Object(message), filename);
+}
+
 Object scheme::callIoFileAlreadyExistAfter(VM* theVM, Object who, Object message, Object filename)
 {
     return raiseAfter3(theVM, UC("raise-i/o-file-already-exists-error"), who, message, filename);
@@ -400,6 +435,11 @@ Object scheme::callIoFileAlreadyExistAfter(VM* theVM, Object who, Object message
 Object scheme::callIoFileAlreadyExistAfter(VM* theVM, const ucs4char* who, Object message, Object filename)
 {
     return callIoFileAlreadyExistAfter(theVM, Object(who), message, filename);
+}
+
+Object scheme::callIoFileAlreadyExistAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object filename)
+{
+    return callIoFileAlreadyExistAfter(theVM, Object(who), Object(message), filename);
 }
 
 Object scheme::callIoFileProtectionAfter(VM* theVM, Object who, Object message, Object filename)

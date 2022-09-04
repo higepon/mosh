@@ -179,7 +179,7 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
-                    errorMessage_ = "too few arguments for format string";
+                    errorMessage_ = Object("too few arguments for format string");
                     irritants_ = Pair::list1(Object::makeString(fmt));
                     return;
                 }
@@ -193,7 +193,7 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
-                    errorMessage_ = "too few arguments for format string";
+                    errorMessage_ = Object("too few arguments for format string");
                     irritants_ = Pair::list1(Object::makeString(fmt));
                     return;
                 }
@@ -208,7 +208,7 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
-                    errorMessage_ = "too few arguments for format string";
+                    errorMessage_ = Object("too few arguments for format string");
                     irritants_ = Pair::list1(Object::makeString(fmt));
                     return;
                 }
@@ -224,7 +224,7 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
-                    errorMessage_ = "too few arguments for format string";
+                    errorMessage_ = Object("too few arguments for format string");
                     irritants_ = Pair::list1(Object::makeString(fmt));
                     return;
                 }
