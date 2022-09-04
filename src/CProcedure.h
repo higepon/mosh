@@ -40,7 +40,7 @@ class CProcedure EXTEND_GC
 {
 public:
     CProcedure(Object (*proc)(VM* theVM, int, const Object*)) : proc(proc) {}
-    ~CProcedure() {}
+    ~CProcedure() = default;
 
     Object call(VM* theVM, int argc, const Object* argv)
     {

@@ -39,8 +39,7 @@
 using namespace scheme;
 
 StringTextualOutputPort::StringTextualOutputPort()  
-{
-}
+= default;
 
 StringTextualOutputPort::~StringTextualOutputPort()
 {

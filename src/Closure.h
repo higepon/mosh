@@ -57,7 +57,7 @@ public:
         }
     }
 
-    ~Closure() {} // not virtual
+    ~Closure() = default; // not virtual
 
     inline Object referFree(int n)
     {

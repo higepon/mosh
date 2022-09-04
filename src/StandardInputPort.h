@@ -41,7 +41,7 @@ class StandardInputPort : public FileBinaryInputPort
 {
 public:
     StandardInputPort() : FileBinaryInputPort(&File::STANDARD_IN) {}
-    ~StandardInputPort() override {}
+    ~StandardInputPort() override = default;
     ucs4string toString() override
     {
         return UC("<standard input port>");

@@ -65,8 +65,7 @@ CustomTextualOutputPort::CustomTextualOutputPort(VM* theVM,
 }
 
 CustomTextualOutputPort::~CustomTextualOutputPort()
-{
-}
+= default;
 
 ucs4string CustomTextualOutputPort::toString()
 {

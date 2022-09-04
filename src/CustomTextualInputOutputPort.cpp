@@ -70,8 +70,7 @@ CustomTextualInputOutputPort::CustomTextualInputOutputPort(VM* theVM,
 }
 
 CustomTextualInputOutputPort::~CustomTextualInputOutputPort()
-{
-}
+= default;
 
 ucs4char CustomTextualInputOutputPort::getChar()
 {

@@ -72,8 +72,7 @@ GenericHashTable::GenericHashTable(VM* vm, Object hashFunction, Object equivalen
 }
 
 GenericHashTable::~GenericHashTable()
-{
-}
+= default;
 
 void GenericHashTable::prepareFunctions()
 {

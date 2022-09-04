@@ -68,8 +68,7 @@ CustomBinaryInputOutputPort::CustomBinaryInputOutputPort(VM* theVM,
 }
 
 CustomBinaryInputOutputPort::~CustomBinaryInputOutputPort()
-{
-}
+= default;
 
 ucs4string CustomBinaryInputOutputPort::toString()
 {

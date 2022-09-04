@@ -39,7 +39,7 @@ class VM;
 class Callable EXTEND_GC
 {
 public:
-    virtual ~Callable() {}
+    virtual ~Callable() = default;
     virtual Object call(VM* vm, int argc, const Object* argv) = 0;
     Object returnCode[2]; // ugly
     virtual ucs4string toString() const { return UC("#<callable>"); }

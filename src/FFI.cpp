@@ -256,8 +256,7 @@ bool CStack::pushDouble(double val)
 
 #endif
 CStack::~CStack()
-{
-}
+= default;
 
 intptr_t* CStack::frame()
 {
