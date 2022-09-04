@@ -111,7 +111,7 @@ enum ErrorHandlingMode
 
 
 
-#define MAKE_CONST(n) ((n << 4) + 6)
+#define MAKE_CONST(n) Object((n << 4) + 6)
 
 class Object
 {
@@ -290,7 +290,7 @@ public:
     static const Object Ignore;
 
 private:
-    Object(intptr_t n) : val(n) {}
+    explicit Object(intptr_t n) : val(n) {}
     Object(int n, Object o); // for vector
     uint8_t tag() const;
 
