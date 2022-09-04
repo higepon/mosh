@@ -55,10 +55,10 @@ public:
     Transcoder* transcoder() const override;
 
 private:
-    bool isClosed_;
+    bool isClosed_{false};
     ucs4string buffer_;
-    ucs4string::size_type index_;
-    int lineNo_;
+    ucs4string::size_type index_{0};
+    int lineNo_{1};
 };
 
 } // namespace scheme

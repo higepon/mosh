@@ -39,7 +39,7 @@ namespace scheme {
 class UTF8Codec : public Codec
 {
 public:
-    UTF8Codec() {}
+    UTF8Codec() = default;
 
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) override;
     ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false) override;

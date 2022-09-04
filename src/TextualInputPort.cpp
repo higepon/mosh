@@ -57,8 +57,7 @@ TextualInputPort::TextualInputPort() :
 }
 
 TextualInputPort::~TextualInputPort()
-{
-}
+= default;
 
 void TextualInputPort::setStrictR6RsReaderMode()
 {

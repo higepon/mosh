@@ -38,7 +38,7 @@ class Box EXTEND_GC
 {
 public:
     Box(Object value) : value_(value) {}
-    ~Box() {} // not virtual
+    ~Box() = default; // not virtual
 
     Object value() { return value_; }
     void set(Object value) { value_ = value; }

@@ -48,7 +48,7 @@ public:
         UTF32,
         LATIN1,
     };
-    virtual ~Codec() {}
+    virtual ~Codec() = default;
     virtual int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) = 0;
     virtual ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false) = 0;
     virtual ucs4string getCodecName() const = 0;

@@ -633,20 +633,19 @@ namespace scheme {
 #endif
         }
 
-
+#ifdef _WIN32
         Thread()  
         {
-#ifdef _WIN32
 			thread_ = 0;
-#endif
         }
         virtual ~Thread()
         {
-#ifdef _WIN32
             if(thread_) CloseHandle(thread_);
-#endif
         }
-
+#else
+        Thread() = default;
+        virtual ~Thread() = default;
+#endif
         bool create(void* (*start)(void*), void* arg);
 
         bool join(void** returnValue)

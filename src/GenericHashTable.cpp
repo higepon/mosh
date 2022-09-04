@@ -66,14 +66,13 @@ bool callEquivalenceFunction(Object equivalenceFunction, Object o1, Object o2)
 GenericHashTable::GenericHashTable(VM* vm, Object hashFunction, Object equivalenceFunction) :
     vm_(vm),
     hashFunction_(hashFunction),
-    equivalenceFunction_(equivalenceFunction),
-    mutable_(true)
+    equivalenceFunction_(equivalenceFunction)
+    
 {
 }
 
 GenericHashTable::~GenericHashTable()
-{
-}
+= default;
 
 void GenericHashTable::prepareFunctions()
 {

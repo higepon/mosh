@@ -51,9 +51,8 @@ CustomTextualInputPort::CustomTextualInputPort(VM* theVM, const ucs4string& id, 
       getPositionProc_(getPositionProc),
       setPositionProc_(setPositionProc),
       closeProc_(closeProc),
-      buffer_(UC("")),
-      line_(1),
-      isClosed_(false)
+      buffer_(UC(""))
+      
 {
     MOSH_ASSERT(readProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());
@@ -63,8 +62,7 @@ CustomTextualInputPort::CustomTextualInputPort(VM* theVM, const ucs4string& id, 
 }
 
 CustomTextualInputPort::~CustomTextualInputPort()
-{
-}
+= default;
 
 ucs4char CustomTextualInputPort::getChar()
 {

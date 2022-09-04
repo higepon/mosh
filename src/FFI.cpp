@@ -101,7 +101,7 @@ const char* FFI::lastError()
 }
 
 #ifdef ARCH_X86_64
-CStack::CStack() : count_(0), xmmCount_(0), regCount_(0)
+CStack::CStack()  
 {
     memset(frame_, 0, sizeof(frame_));
     memset(xmm_, 0, sizeof(xmm_));
@@ -256,8 +256,7 @@ bool CStack::pushDouble(double val)
 
 #endif
 CStack::~CStack()
-{
-}
+= default;
 
 intptr_t* CStack::frame()
 {

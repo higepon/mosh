@@ -45,12 +45,10 @@ using namespace scheme;
 
 ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort() 
     
-{
-}
+= default;
 
 ByteArrayBinaryOutputPort::~ByteArrayBinaryOutputPort()
-{
-}
+= default;
 
 bool ByteArrayBinaryOutputPort::isClosed() const
 {

@@ -72,8 +72,7 @@ TextualOutputPort::TextualOutputPort() :
 }
 
 TextualOutputPort::~TextualOutputPort()
-{
-}
+= default;
 
 bool TextualOutputPort::isErrorOccured() const
 {

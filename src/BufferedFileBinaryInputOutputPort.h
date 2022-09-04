@@ -90,13 +90,13 @@ protected:
 
     File* file_;
     ucs4string fileName_;
-    uint8_t* buffer_;
-    bool isDirty_;
-    int64_t position_;
-    bool isClosed_;
-    bool isPseudoClosed_;
-    int64_t bufferSize_;
-    int64_t bufferIndex_;
+    uint8_t* buffer_{nullptr};
+    bool isDirty_{false};
+    int64_t position_{0};
+    bool isClosed_{false};
+    bool isPseudoClosed_{false};
+    int64_t bufferSize_{0};
+    int64_t bufferIndex_{0};
 };
 
 } // namespace scheme

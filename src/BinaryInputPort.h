@@ -41,7 +41,7 @@ class ByteVector;
 class BinaryInputPort : virtual public BinaryPort // for closing port on destructors, we extend gc_cleanup
 {
 public:
-    ~BinaryInputPort() override {}
+    ~BinaryInputPort() override = default;
     virtual int getU8() = 0;
     virtual int lookaheadU8() = 0;
     virtual int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured) = 0;

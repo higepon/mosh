@@ -63,8 +63,8 @@ private:
     const Object setPositionProc_;
     const Object closeProc_;
     ucs4string buffer_;
-    int line_;
-    bool isClosed_;
+    int line_{1};
+    bool isClosed_{false};
 };
 
 } // namespace scheme

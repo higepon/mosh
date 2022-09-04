@@ -56,16 +56,14 @@ using namespace scheme;
 
 FileBinaryInputOutputPort::FileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
     file_(new File),
-    fileName_(file),
-    isClosed_(false),
-    isPseudoClosed_(false)
+    fileName_(file)
+    
 {
     file_->open(file, File::Read | File::Write | File::Create | openFlags);
 }
 
 FileBinaryInputOutputPort::~FileBinaryInputOutputPort()
-{
-}
+= default;
 
 // port interfaces
 bool FileBinaryInputOutputPort::hasPosition() const

@@ -109,7 +109,7 @@ private:
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
-                text += fetchU32();
+                text += (ucs4char)fetchU32();
             }
             return Symbol::intern(text.strdup());
         }
@@ -159,7 +159,7 @@ private:
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
-                text += fetchU32();
+                text += (ucs4char)fetchU32();
             }
             return Object::makeString(text.strdup());
         }
@@ -169,7 +169,7 @@ private:
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
-                text += fetchU32();
+                text += (ucs4char)fetchU32();
             }
             return Object::makeString(text);
         }
@@ -199,7 +199,7 @@ private:
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
-                text += fetchU32();
+                text += (ucs4char)fetchU32();
             }
             ucs4string nameString = text;
             nameString += UC("-rtd$");
@@ -269,7 +269,7 @@ private:
             uint32_t len = fetchU32();
             ucs4string text;
             for (uint32_t i = 0; i < len; i++) {
-                text += fetchU32();
+                text += (ucs4char)fetchU32();
             }
             return Object::makeRegexp(text, false, false);
 
@@ -356,7 +356,7 @@ private:
     BinaryInputPort* inputPort_;
     VM* theVM_;
     EqHashTable* sharedObjects_;
-    bool isLinkNeeded_;
+    bool isLinkNeeded_{false};
 };
 
 

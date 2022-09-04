@@ -84,7 +84,7 @@ jobs:
           make clean &&
           bear --version &&
           bear --help &&
-          bear --exclude src/ffi_stub_x86_64.S make &&
+          bear --exclude src/ffi_stub_x86_64.S --exclude src/NumberReader.tab.cpp --exclude src/Reader.tab.cpp make &&
           run-clang-tidy -header-filter=src -quiet
       - name: Install jj so that we can edit compile_commands.json.
         if: matrix.os == 'ubuntu-22.04'
@@ -105,7 +105,8 @@ jobs:
           echo "Excluding .S file manually" &&
           cp compile_commands.json tmp.json &&
           cat tmp.json &&
-          jj -i tmp.json '#(file!%"*ffi_stub_x86_64.S")#' > compile_commands.json &&
+          jj -i tmp.json '#(file!%"*ffi_stub_x86_64.S")#' > tmp2.json &&
+          jj -i tmp2.json '#(file!%"*tab.cpp")#' > compile_commands.json &&
           echo "jj successfully done" &&
           run-clang-tidy -header-filter=src -quiet
 

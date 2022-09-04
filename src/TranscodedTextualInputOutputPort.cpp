@@ -54,9 +54,8 @@ using namespace scheme;
 
 TranscodedTextualInputOutputPort::TranscodedTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder)
   : port_(port),
-    transcoder_(coder),
-    line_(1),
-    isClosed_(false)
+    transcoder_(coder)
+    
 {
 }
 

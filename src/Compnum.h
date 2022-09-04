@@ -45,8 +45,7 @@ public:
     }
 
     ~Compnum()
-    {
-    }
+    = default;
 
     Object real() const { return real_; }
     Object imag() const { return imag_; }

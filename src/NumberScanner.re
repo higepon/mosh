@@ -60,19 +60,14 @@ using namespace scheme;
 extern VM* theVM;
 
 NumberScanner::NumberScanner() :
-                     buffer_(nullptr),
                      cursor_(buffer_),
                      token_(buffer_),
                      limit_(buffer_),
-                     marker_(buffer_),
-                     bufferSize_(32),
-                    condition_(INITIAL)
+                     marker_(buffer_)
 {
 }
 
-NumberScanner::~NumberScanner()
-{
-}
+NumberScanner::~NumberScanner() = default;
 
 void NumberScanner::fill(int n)
 {

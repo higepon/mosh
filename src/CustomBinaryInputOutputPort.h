@@ -88,9 +88,9 @@ private:
     const Object setPositionProc_;
     const Object closeProc_;
 
-    bool isClosed_;
-    bool isPseudoClosed_;
-    int aheadU8_;
+    bool isClosed_{false};
+    bool isPseudoClosed_{false};
+    int aheadU8_{EOF};
 };
 
 } // namespace scheme

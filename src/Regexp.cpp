@@ -51,7 +51,7 @@ extern VM* theVM;
 
 Regexp::Regexp(const ucs4string& pattern, bool caseFold, bool isSingleLine) :
     pattern_(pattern),
-    isErrorOccured_(false),
+    
     errorMessage_(Object::Nil),
     irritants_(Object::Nil)
 {
@@ -167,7 +167,7 @@ Object Regexp::replaceAll(Object t, Object subst)
 
 RegMatch::RegMatch(OnigRegion* region, const ucs4string& text) : region_(region),
                                                                  text_(text),
-                                                                 isErrorOccured_(false),
+                                                                 
                                                                  errorMessage_(Object::Nil),
                                                                  irritants_(Object::Nil)
 {

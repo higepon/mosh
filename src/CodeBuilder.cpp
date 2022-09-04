@@ -59,10 +59,10 @@ CodePacket::CodePacket(Type packetType, Object instruction, Object argument1, Ob
 
 
 
-CodeBuilder::CodeBuilder() : previousCodePacket_(CodePacket()),
+CodeBuilder::CodeBuilder() : 
                                labelDefinitions_(Object::Nil),
-                               labelReferences_(Object::Nil),
-                               code_(ObjectVector())
+                               labelReferences_(Object::Nil)
+                               
 {
 }
 

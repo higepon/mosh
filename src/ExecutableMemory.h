@@ -48,7 +48,7 @@ namespace scheme {
 class ExecutableMemory
 {
 public:
-    ExecutableMemory(int size) : size_(size), addr_(nullptr), roundAddr_(nullptr), index_(0)
+    ExecutableMemory(int size) : size_(size) 
     {
     }
 
@@ -111,9 +111,9 @@ public:
 
 private:
     int size_;
-    uint8_t* addr_;
-    uint8_t* roundAddr_;
-    int index_;
+    uint8_t* addr_{nullptr};
+    uint8_t* roundAddr_{nullptr};
+    int index_{0};
 };
 
 } // namespace scheme

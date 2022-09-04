@@ -50,16 +50,13 @@
 using namespace scheme;
 
 SocketBinaryInputOutputPort::SocketBinaryInputOutputPort(Socket* socket) :
-    socket_(socket),
-    isClosed_(false),
-    isPseudoClosed_(false),
-    lastU8_(0xffff)
+    socket_(socket)
+    
 {
 }
 
 SocketBinaryInputOutputPort::~SocketBinaryInputOutputPort()
-{
-}
+= default;
 
 // port interfaces
 bool SocketBinaryInputOutputPort::hasPosition() const

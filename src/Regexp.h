@@ -41,7 +41,7 @@ class Regexp EXTEND_GC
 {
 public:
     Regexp(const ucs4string& pattern, bool caseFold, bool isSingleLine);
-    ~Regexp() {}
+    ~Regexp() = default;
 
     Object match(const ucs4string& text);
     const ucs4string& pattern() { return pattern_; }
@@ -59,7 +59,7 @@ private:
     ucs4string pattern_;
     OnigRegexType* regexp_; // do not use regex_t..
     OnigErrorInfo einfo_;
-    bool isErrorOccured_;
+    bool isErrorOccured_{false};
     Object errorMessage_;
     Object irritants_;
 };
@@ -82,7 +82,7 @@ public:
 private:
     OnigRegion* region_;
     const ucs4string& text_;
-    bool isErrorOccured_;
+    bool isErrorOccured_{false};
     Object errorMessage_;
     Object irritants_;
 };

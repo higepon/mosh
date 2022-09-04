@@ -60,8 +60,8 @@ using namespace scheme;
 
 FaslWriter::FaslWriter(BinaryOutputPort* outputPort) :
                                                        sharedObjects_(new EqHashTable),
-                                                       outputPort_(outputPort),
-                                                       uid_(0)
+                                                       outputPort_(outputPort)
+                                                       
 {
 }
 

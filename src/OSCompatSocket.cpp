@@ -43,10 +43,10 @@ using namespace scheme;
 
 Socket::Socket(int fd, enum Type type, const ucs4string& address) :
     socket_(fd),
-    lastError_(0),
+    
     address_(address),
-    type_(type),
-    isSSL_(false)
+    type_(type)
+    
 {
 }
 

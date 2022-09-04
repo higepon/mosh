@@ -59,7 +59,7 @@
 
 using namespace scheme;
 
-FaslReader::FaslReader(VM* theVM, BinaryInputPort* inputPort) : inputPort_(inputPort), theVM_(theVM), sharedObjects_(new EqHashTable), isLinkNeeded_(false)
+FaslReader::FaslReader(VM* theVM, BinaryInputPort* inputPort) : inputPort_(inputPort), theVM_(theVM), sharedObjects_(new EqHashTable) 
 {
 }
 

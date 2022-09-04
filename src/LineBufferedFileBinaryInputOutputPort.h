@@ -41,7 +41,7 @@ class LineBufferedFileBinaryInputOutputPort : public BufferedFileBinaryInputOutp
 public:
     LineBufferedFileBinaryInputOutputPort(const ucs4string& filename, int openFlags) :
         BufferedFileBinaryInputOutputPort(filename, openFlags) {}
-    ~LineBufferedFileBinaryInputOutputPort() override {}
+    ~LineBufferedFileBinaryInputOutputPort() override = default;
 
 protected:
     // N.B. writeToFile doesn't change the fd's position.

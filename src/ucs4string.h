@@ -52,7 +52,7 @@ typedef std::basic_string< ucs4char, std::char_traits<ucs4char>, std::allocator<
 class ucs4string : public ucs4string_base
 {
 public:
-    ucs4string() {}
+    ucs4string() = default;
     ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
     ucs4string(const ucs4char* s) : ucs4string_base(s) {}
     ucs4string(const ucs4char* s, int n) : ucs4string_base(s, n) {}
