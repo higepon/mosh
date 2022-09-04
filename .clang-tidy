@@ -21,6 +21,7 @@
                     modernize-use-noexcept,
                     modernize-use-nullptr,
                     modernize-use-bool-literals,
+                    bugprone-string-integer-assignment
                     modernize-use-override'
 
   WarningsAsErrors:  '*'
