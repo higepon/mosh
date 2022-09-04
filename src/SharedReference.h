@@ -39,7 +39,7 @@ namespace scheme {
     class SharedReference EXTEND_GC
     {
     public:
-        SharedReference(int index) : index_(index)
+        explicit SharedReference(int index) : index_(index)
         {
         }
         int index() const
