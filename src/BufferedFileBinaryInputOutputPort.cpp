@@ -142,7 +142,7 @@ bool BufferedFileBinaryInputOutputPort::setPosition(int64_t position)
 
 ucs4string BufferedFileBinaryInputOutputPort::toString()
 {
-    ucs4string ret = UC("<binary-input/output-port ");
+    ucs4string ret(UC("<binary-input/output-port "));
     ret += fileName_;
     ret += UC(">");
     return ret;

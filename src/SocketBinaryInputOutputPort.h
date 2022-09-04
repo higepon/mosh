@@ -40,7 +40,7 @@ class Socket;
 class SocketBinaryInputOutputPort : public BinaryInputOutputPort
 {
 public:
-    SocketBinaryInputOutputPort(Socket* socket);
+    explicit SocketBinaryInputOutputPort(Socket* socket);
     ~SocketBinaryInputOutputPort() override;
 
     // port interfaces

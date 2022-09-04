@@ -47,7 +47,7 @@ public:
         NO_BOM
     };
     UTF16Codec();
-    UTF16Codec(int endianness);
+    explicit UTF16Codec(int endianness);
 
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) override;
     ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false) override;

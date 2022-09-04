@@ -37,7 +37,7 @@ namespace scheme {
 class Box EXTEND_GC
 {
 public:
-    Box(Object value) : value_(value) {}
+    explicit Box(Object value) : value_(value) {}
     ~Box() = default; // not virtual
 
     Object value() { return value_; }

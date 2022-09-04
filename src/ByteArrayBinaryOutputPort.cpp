@@ -108,7 +108,7 @@ void ByteArrayBinaryOutputPort::flush()
 
 ucs4string ByteArrayBinaryOutputPort::toString()
 {
-    return UC("<bytevector-output-port>");
+    return ucs4string(UC("<bytevector-output-port>"));
 }
 
 bool ByteArrayBinaryOutputPort::hasPosition() const

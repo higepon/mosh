@@ -52,7 +52,7 @@ public:
 class Pointer EXTEND_GC
 {
 public:
-    Pointer(void* pointer) : pointer_((uintptr_t)pointer)
+    explicit Pointer(void* pointer) : pointer_((uintptr_t)pointer)
     {
     }
 

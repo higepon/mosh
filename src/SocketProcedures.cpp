@@ -68,12 +68,12 @@ Object scheme::socketSslizeDEx(VM* theVM, int argc, const Object* argv)
     argumentAsSocket(0, socket);
 #if HAVE_OPENSSL
     if (!socket->sslize()) {
-        return callAssertionViolationAfter(theVM, procedureName, "can't sslize", L1(argv[0]));
+        return callAssertionViolationAfter(theVM, procedureName, UC("can't sslize"), L1(argv[0]));
     }
     return Object::Undef;
 #else
     (void) socket;
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -99,7 +99,7 @@ Object scheme::internalMonapiMessageReplyEx(VM* theVM, int argc, const Object* a
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -116,7 +116,7 @@ Object scheme::internalMonapiNameWhereisEx(VM* theVM, int argc, const Object* ar
         return Object::False;
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -145,7 +145,7 @@ Object scheme::internalMonapiMessageReceiveEx(VM* theVM, int argc, const Object*
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret));
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -169,7 +169,7 @@ Object scheme::internalMonapiMessageSendEx(VM* theVM, int argc, const Object* ar
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -206,7 +206,7 @@ Object scheme::internalMonapiMessageSendReceiveEx(VM* theVM, int argc, const Obj
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L3(argv[0], argv[1], argv[2]));
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -223,7 +223,7 @@ Object scheme::internalMonapiNameAddDEx(VM* theVM, int argc, const Object* argv)
         return callIOErrorAfter(theVM, procedureName, monapi_error_string(ret), L1(argv[0]));
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -240,7 +240,7 @@ Object scheme::internalMonapiStreamReadEx(VM* theVM, int argc, const Object* arg
     uint32_t readSize = stream->read(buf, sizeToRead, waitsDataCome);
     return Object::makeByteVector((char*)buf, readSize);
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -255,7 +255,7 @@ Object scheme::internalMonapiStreamWriteEx(VM* theVM, int argc, const Object* ar
     uint32_t writtenSize = stream->write(bv->data(), bv->length());
     return Bignum::makeIntegerFromU32(writtenSize);
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -271,7 +271,7 @@ Object scheme::internalMonapiMakeStreamEx(VM* theVM, int argc, const Object* arg
         return Object::makePointer(MonAPI::Stream::createFromHandle(handle));
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -284,7 +284,7 @@ Object scheme::internalMonapiStreamHandleEx(VM* theVM, int argc, const Object* a
     MonAPI::Stream* stream = (MonAPI::Stream*)(s->pointer());
     return Bignum::makeIntegerFromU32(stream->handle());
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not supported", Object::Nil);
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not supported"), Object::Nil);
 #endif
 }
 
@@ -367,7 +367,7 @@ Object scheme::socketRecvDEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(3, len);
     argumentAsFixnum(4, flags);
     if (bv->length() <= (size_t)start + len) {
-        return callAssertionViolationAfter(theVM, procedureName, "bytevector size is not enough", L1(argv[0]));
+        return callAssertionViolationAfter(theVM, procedureName, UC("bytevector size is not enough"), L1(argv[0]));
     }
     const int result = socket->receive(bv->data() + start, len, flags);
     if (-1 == result) {

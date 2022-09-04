@@ -146,7 +146,7 @@ Object scheme::pass3CompileReferEx(VM* theVM, int argc, const Object* argv)
             return Object::makeFixnum(0);
         }
     }
-    callAssertionViolationAfter(theVM, procedureName, "bug? Unknown lvar", L1(variable));
+    callAssertionViolationAfter(theVM, procedureName, UC("bug? Unknown lvar"), L1(variable));
     return Object::Undef;
 }
 
@@ -346,7 +346,7 @@ Object findFreeRec(VM* theVM, Object i, Object l, Object canFrees, Object labels
     case TAG_IT:
         return Object::Nil;
     default:
-        callAssertionViolationAfter(theVM, "find-free", "unknown iform", L1(v->ref(0)));
+        callAssertionViolationAfter(theVM, UC("find-free"), UC("unknown iform"), L1(v->ref(0)));
         return Object::Undef;
     }
     return Object::Undef;
@@ -495,7 +495,7 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     case TAG_IT:
         return Object::Nil;
     default:
-        callAssertionViolationAfter(theVM, "find-free", "unknown iform", L1(v->ref(0)));
+        callAssertionViolationAfter(theVM, UC("find-free"), UC("unknown iform"), L1(v->ref(0)));
         return Object::Undef;
     }
     return Object::Undef;
@@ -875,7 +875,7 @@ Object scheme::disasmEx(VM* theVM, int argc, const Object* argv)
     for (int i = 0; i < closure->size + Closure::HEADER_SIZE; i++) {
         const Object c = code[i];
         if (c.isInstruction()) {
-            LOG1("\n~a ", Instruction::toString(c.val));
+            LOG1("\n~a ", Object(Instruction::toString(c.val)));
         } else {
             LOG1("~a ", c);
         }
@@ -1138,7 +1138,7 @@ Object scheme::simpleStructSetDEx(VM* theVM, int argc, const Object* argv)
     } else {
         callAssertionViolationAfter(theVM,
                                     procedureName,
-                                    "index out of range",
+                                    UC("index out of range"),
                                                 L1(argv[1]));
         return Object::Undef;
     }
@@ -1155,7 +1155,7 @@ Object scheme::simpleStructRefEx(VM* theVM, int argc, const Object* argv)
     } else {
         callAssertionViolationAfter(theVM,
                                     procedureName,
-                                    "index out of range",
+                                    UC("index out of range"),
                                     L2(argv[0], argv[1]));
         return Object::Undef;
     }

@@ -157,7 +157,7 @@ Object Object::makeTextualInputOutputPort(BinaryInputOutputPort* port, Transcode
 Object Object::makeTextualInputFilePort(const ucs4char* file)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(file)
+                                                        reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(ucs4string(file))
                                                                                                     , createNativeTranscoder())))));
 }
 

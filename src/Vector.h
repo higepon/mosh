@@ -37,10 +37,10 @@ namespace scheme {
 class Vector EXTEND_GC
 {
 public:
-    Vector(int num);
+    explicit Vector(int num);
     Vector(int num, Object obj);
     Vector(int num, Object* objects);
-    Vector(Object pair);
+    explicit Vector(Object pair);
     ~Vector();
     void fill(Object obj);
     Object ref(int index) const;

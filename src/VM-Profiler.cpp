@@ -71,7 +71,7 @@ void VM::initProfiler()
     act.sa_flags = SA_RESTART;        // restart system call after signal handler
 
     if (sigaction(SIGPROF, &act, nullptr) != 0) {
-        callAssertionViolationImmidiaImmediately(this, "profiler", "sigaction failed");
+        callAssertionViolationImmidiaImmediately(this, UC("profiler"), UC("sigaction failed"));
     }
     startTimer();
 }
@@ -161,9 +161,9 @@ Object VM::getClosureName(Object closure)
     if (closure.isCProcedure()) {
         return getCProcedureName(closure);
     } else if (closure.isCallable()) {
-        return closure.toCallable()->toString();
+        return Object(closure.toCallable()->toString());
     } else if (closure.isClosure()) {
-        return "my-todo";
+        return Object("my-todo");
 //         const Object name = nameSpace->ref(closure, notFound_);
 //         if (name == notFound_) {
 //             return Object::False;

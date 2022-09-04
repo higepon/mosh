@@ -944,7 +944,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         }
     }
     isErrorOccured = true;
-    return UC("");
+    return ucs4string(UC(""));
 #elif defined(__linux__) || defined(__CYGWIN__) || defined(__NetBSD__)
     char path[4096];
     int ret = readlink("/proc/self/exe", path, sizeof(path));
@@ -956,7 +956,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         }
     }
     isErrorOccured = true;
-    return UC("");
+    return ucs4string(UC(""));
 #elif defined(__FreeBSD__)
     char path[PATH_MAX];
     size_t len = PATH_MAX;
@@ -971,7 +971,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         }
     }
     isErrorOccured = true;
-    return UC("");
+    return ucs4string(UC(""));
 #elif defined(__APPLE__)
     char path[MAXPATHLEN];
     uint32_t pathLen = MAXPATHLEN;
@@ -983,7 +983,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         }
     }
     isErrorOccured = true;
-    return UC("");
+    return ucs4string(UC(""));
 #elif defined(__sun)
     char path[4096];
     char procpath[64];
@@ -998,12 +998,12 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         }
     }
     isErrorOccured = true;
-    return UC("");
+    return ucs4string(UC(""));
 #elif defined(MONA)
-    return UC("/APPS");
+    return ucs4string(("/APPS"));
 #else
     isErrorOccured = true;
-    return UC("");
+    return ucs4string(UC(""));
 #endif
 }
 

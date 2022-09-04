@@ -88,7 +88,7 @@ public:
 
     ucs4string toString() const
     {
-        ucs4string ret = UC("#<vm ");
+        ucs4string ret(UC("#<vm "));
         ret += name_;
         char buf[32];
         snprintf(buf, sizeof(buf), " %lx", (unsigned long int)(uintptr_t)this);

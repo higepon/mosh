@@ -45,7 +45,7 @@
                         if (i == argc - 1) {
                             Object lastPair = argv[i];
                             if (!lastPair.isList()) {
-                                callAssertionViolationAfter(this, "apply", "last argument should be proper list", L1(lastPair));
+                                callAssertionViolationAfter(this, UC("apply"), UC("last argument should be proper list"), L1(lastPair));
                                 NEXT;
                             }
                             for (int j = 0;; j++) {
@@ -206,5 +206,5 @@
                 Object* nextPc = getDirectThreadedCode(code, codeSize);
                 pc_ = nextPc;
             } else {
-                callAssertionViolationAfter(this, "apply", "invalid application", L1(ac_));
+                callAssertionViolationAfter(this, UC("apply"), UC("invalid application"), L1(ac_));
             }

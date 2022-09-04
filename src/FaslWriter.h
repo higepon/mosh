@@ -40,7 +40,7 @@ namespace scheme {
 class FaslWriter EXTEND_GC
 {
 public:
-    FaslWriter(BinaryOutputPort* outputPort);
+    explicit FaslWriter(BinaryOutputPort* outputPort);
 
     void put(Object obj);
 private:

@@ -76,7 +76,7 @@ namespace scheme {
 class Flonum EXTEND_GC
 {
 public:
-    Flonum(double value) : value_(value)
+    explicit Flonum(double value) : value_(value)
     {
     }
 

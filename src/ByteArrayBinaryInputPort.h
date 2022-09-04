@@ -81,9 +81,8 @@ public:
     }
     ucs4string getLastErrorMessage() override
     {
-        return UC("");
+        return ucs4string(UC(""));
     }
-
 
 private:
     const uint8_t* const buf_;

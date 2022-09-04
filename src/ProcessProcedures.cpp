@@ -65,7 +65,7 @@ Object scheme::currentDirectoryEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     const Object path = getCurrentDirectory();
     if (path.isFalse()) {
-        callAssertionViolationAfter(theVM, procedureName, "current-directory failed", L1(getLastErrorMessage()));
+        callAssertionViolationAfter(theVM, procedureName, UC("current-directory failed"), L1(Object(getLastErrorMessage())));
         return Object::Undef;
     } else {
         return path;
@@ -80,7 +80,7 @@ Object scheme::setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv)
     if (setCurrentDirectory(path->data())) {
         return Object::Undef;
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(getLastErrorMessage(), argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("set-current-directory! failed"), L2(Object(getLastErrorMessage()), argv[0]));
         return Object::Undef;
     }
 }
@@ -90,13 +90,13 @@ Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%fork");
 #if defined(_WIN32) || defined(MONA)
-    callAssertionViolationAfter(theVM, procedureName, "can't fork");
+    callAssertionViolationAfter(theVM, procedureName, UC("can't fork"));
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(0);
     const pid_t pid = fork();
     if (-1 == pid) {
-        callAssertionViolationAfter(theVM, procedureName, "can't fork", L1(getLastErrorMessage()));
+        callAssertionViolationAfter(theVM, procedureName, UC("can't fork"), L1(Object(getLastErrorMessage())));
         return Object::Undef;
     }
 
@@ -128,7 +128,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
     int status;
     pid_t child = waitpid(target, &status, 0);
     if (-1 == child) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], getLastErrorMessage()));
+        callAssertionViolationAfter(theVM, procedureName, UC("failed"), L2(argv[0], Object(getLastErrorMessage())));
         return Object::Undef;
     }
 
@@ -142,13 +142,13 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%pipe");
 #if defined(_WIN32) || defined(MONA)
-    callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
+    callAssertionViolationAfter(theVM, procedureName, UC("pipe() failed"));
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(0);
     int fds[2];
     if (-1 == pipe(fds)) {
-        callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
+        callAssertionViolationAfter(theVM, procedureName, UC("pipe() failed"));
         return Object::Undef;
     }
     const Object fds_0 = Object::makeBinaryInputPort(new File(fds[0]));
@@ -164,7 +164,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%exec");
 #ifdef MONA
-    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list1(argv[0]));
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not implmented"), Pair::list1(argv[0]));
 #else
     checkArgumentLength(3);
     argumentAsString(0, command);
@@ -232,7 +232,7 @@ Object scheme::internalDupEx(VM* theVM, int argc, const Object* argv)
         } else {
             callAssertionViolationAfter(theVM,
                                         procedureName,
-                                        "invalid port type",
+                                        UC("invalid port type"),
                                         L1(argv[i]));
             return Object::Undef;
         }
@@ -282,7 +282,7 @@ Object scheme::processTerminateDEx(VM* theVM, int argc, const Object* argv)
         return Object::False;
     }
 #else
-    return callImplementationRestrictionAfter(theVM, procedureName, "not implmented", Pair::list1(argv[0]));
+    return callImplementationRestrictionAfter(theVM, procedureName, UC("not implmented"), Pair::list1(argv[0]));
 #endif
 
 }

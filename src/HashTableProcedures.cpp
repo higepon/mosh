@@ -108,7 +108,7 @@ Object scheme::hashtableDeleteDEx(VM* theVM, int argc, const Object* argv)
     if (hashtable->mutableP()) {
         hashtable->deleteD(key);
     } else {
-        callAssertionViolationAfter(theVM, Symbol::intern(procedureName), "can't delete an immutable hashtable.", L1(argv[0]));
+        callAssertionViolationAfter(theVM, Symbol::intern(procedureName), UC("can't delete an immutable hashtable."), L1(argv[0]));
         return Object::Undef;
     }
     return Object::Undef;
@@ -223,7 +223,7 @@ Object scheme::hashtableSetDEx(VM* theVM, int argc, const Object* argv)
     if (hashtable->mutableP()) {
         hashtable->set(key, val);
     } else {
-        callAssertionViolationAfter(theVM, Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Pair::list1(argv[0]));
+        callAssertionViolationAfter(theVM, Symbol::intern(procedureName), UC("can't hashtable-set! to immutable hashtable."), Pair::list1(argv[0]));
     }
     return Object::Undef;
 }
@@ -297,7 +297,7 @@ Object scheme::hashtableClearDEx(VM* theVM, int argc, const Object* argv)
         hashtable->clearD();
         return Object::Undef;
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "can't clear an immutable hashtable.", Pair::list1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("can't clear an immutable hashtable."), Pair::list1(argv[0]));
         return Object::Undef;
     }
 }

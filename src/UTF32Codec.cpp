@@ -50,7 +50,7 @@ UTF32Codec::UTF32Codec()
 #else
     isLittleEndian_ = true;
 #endif
-    codecName_ = UC("utf-32-codec");
+    codecName_ = ucs4string(UC("utf-32-codec"));
 }
 
 UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
@@ -59,15 +59,15 @@ UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 
 #if WORDS_BIGENDIAN
     if (endianness == UTF_32BE) {
-        codecName_ = UC("utf-32-codec");
+        codecName_ = ucs4string(UC("utf-32-codec"));
     } else if (endianness == UTF_32LE) {
-        codecName_ = UC("utf-32-codec(little)");
+        codecName_ = ucs4string(UC("utf-32-codec(little)"));
     }
 #else
     if (endianness == UTF_32BE) {
-        codecName_ = UC("utf-32-codec(big)");
+        codecName_ = ucs4string(UC("utf-32-codec(big)"));
     } else if (endianness == UTF_32LE) {
-        codecName_ = UC("utf-32-codec");
+        codecName_ = ucs4string(UC("utf-32-codec"));
     }
 #endif
 }
@@ -90,7 +90,7 @@ int UTF32Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 
 #define decodeError() \
     if (mode == ErrorHandlingMode(RAISE_ERROR)) {                             \
-        throwIOError2(IOError::DECODE, "invalid utf-16 byte sequence"); \
+        throwIOError2(IOError::DECODE, UC("invalid utf-16 byte sequence")); \
     } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {                                \
         return 0xFFFD;                                                  \
     } else {                                                            \

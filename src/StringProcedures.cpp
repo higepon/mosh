@@ -92,7 +92,7 @@ Object scheme::stringRefEx(VM* theVM, int argc, const Object* argv)
     } else {
         callAssertionViolationAfter(theVM,
                                     procedureName,
-                                    "index out of range",
+                                    UC("index out of range"),
                                     L2(Object::makeFixnum(text->length()),
                                        argv[1]
                                         ));
@@ -144,7 +144,7 @@ Object scheme::makeStringEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     argumentAsFixnum(0, stringSize);
     if (stringSize < 0) {
-        return callAssertionViolationAfter(theVM, procedureName, "size should be positive", L1(argv[0]));
+        return callAssertionViolationAfter(theVM, procedureName, UC("size should be positive"), L1(argv[0]));
     }
     if (2 == argc) {
         argumentAsChar(1, ch);
@@ -163,7 +163,7 @@ Object scheme::stringSetDEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, index);
     argumentAsChar(2, ch);
     if (index >= (int)text->data().size()) {
-        callAssertionViolationAfter(theVM, procedureName, "index out of range");
+        callAssertionViolationAfter(theVM, procedureName, UC("index out of range"));
     } else {
         text->data()[index] = ch;
     }
@@ -217,13 +217,13 @@ Object scheme::stringTonumberEx(VM* theVM, int argc, const Object* argv)
         switch (radix) {
             case 2:
             {
-                ucs4string text = UC("#b");
+                ucs4string text(UC("#b"));
                 text += numberString;
                 return stringToNumber(text);
             }
             case 8:
             {
-                ucs4string text = UC("#o");
+                ucs4string text(UC("#o"));
                 text += numberString;
                 return stringToNumber(text);
             }
@@ -231,12 +231,12 @@ Object scheme::stringTonumberEx(VM* theVM, int argc, const Object* argv)
                 return stringToNumber(numberString);
             case 16:
             {
-                ucs4string text = UC("#x");
+                ucs4string text(UC("#x"));
                 text += numberString;
                 return stringToNumber(text);
             }
             default:
-                callAssertionViolationAfter(theVM, procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
+                callAssertionViolationAfter(theVM, procedureName, UC("radix should be 2, 8, 10 ro 16"), L1(argv[1]));
                 return Object::Undef;
         }
     }

@@ -49,7 +49,7 @@ public:
 
     ucs4string toString() override
     {
-        return UC("standard-out-port");
+        return ucs4string(UC("standard-out-port"));
     }
 
     bool hasPosition() const override

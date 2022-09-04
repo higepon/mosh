@@ -85,30 +85,91 @@ extern bool isErrorBufInitialized;
     class VM;
 
     Object throwIOError2(int type, Object message, Object irritants = Object::Nil);
+    Object throwIOError2(int type, const ucs4string& message, Object irritants = Object::Nil);
+    Object throwIOError2(int type, const ucs4char* message, Object irritants = Object::Nil);    
+
     Object callIOErrorAfter(VM* theVM, IOError e);
     Object callIOErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callIOErrorAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil);
+    Object callIOErrorAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object irritants = Object::Nil);    
+
     Object callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position);
+    Object callIOInvalidPositionAfter(VM* theVM, const ucs4char* who, Object message, Object irritants, Object position);    
+    Object callIOInvalidPositionAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants, Object position);    
+
     Object callIOReadErrorAfter(VM* theVM, Object who, Object message, Object port);
+    Object callIOReadErrorAfter(VM* theVM, Object who, const ucs4char* message, const ucs4char* port);    
+    Object callIOReadErrorAfter(VM* theVM, const ucs4char* who, Object message, Object port);
+    Object callIOReadErrorAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object port);
+
     Object throwEx(VM* theVM, int argc, const Object* argv);
+
     Object callIoFileNotExistAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callIoFileNotExistAfter(VM* theVM, const ucs4char* who, Object message, Object filename);
+    Object callIoFileNotExistAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object filename);    
+
     Object callLexicalAndIOReadAfter(VM* theVM, Object who, Object message);
+    Object callLexicalAndIOReadAfter(VM* theVM, const ucs4char* who, Object message);    
+
     Object callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callIoFileNameErrorAfter(VM* theVM, const ucs4char* who, Object message, Object filename); 
+    Object callIoFileNameErrorAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object filename);    
+
     Object callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callAssertionViolationAfter(VM* theVM, const ucs4char* who, Object message, Object irritants = Object::Nil);  
+    Object callAssertionViolationAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil); 
+    Object callAssertionViolationAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object irritants = Object::Nil);
+    Object callAssertionViolationAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants = Object::Nil);
+    Object callAssertionViolationAfter(VM* theVM, Object who, const ucs4char* message, Object irritants = Object::Nil);
+
     Object callUndefinedViolationAfter(VM* theVM, Object who, Object message);
+    Object callUndefinedViolationAfter(VM* theVM, Object who, const ucs4string& message);   
+    Object callUndefinedViolationAfter(VM* theVM, Object who, const ucs4char* message);     
 
     void callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callAssertionViolationImmidiaImmediately(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants = Object::Nil);
+
     Object callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants);
+    Object callImplementationRestrictionAfter(VM* theVM, const ucs4char* who, Object message, Object irritants);
+    Object callImplementationRestrictionAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants);    
+
     void callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callLexicalViolationImmidiaImmediately(VM* theVM, const ucs4char* who, Object message, Object irritants = Object::Nil);    
+
     void callNotImplementedAssertionViolationAfter(VM* theVM, Object who, Object irritants = Object::Nil);
+    void callNotImplementedAssertionViolationAfter(VM* theVM, const ucs4char* who, Object irritants = Object::Nil);
+
     void callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsViolationAfter(VM* theVM, const ucs4char* who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);    
+
     void callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, const ucs4char* who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
+
     void callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, const ucs4char* who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);
+
     void callWrongTypeOfArgumentViolationAfter(VM* theVM, Object who, Object requiredType, Object gotValue, Object irritants = Object::Nil);
+    void callWrongTypeOfArgumentViolationAfter(VM* theVM, const ucs4char* who, Object requiredType, Object gotValue, Object irritants = Object::Nil);
+    void callWrongTypeOfArgumentViolationAfter(VM* theVM, const ucs4char* who, const ucs4char* requiredType, Object gotValue, Object irritants = Object::Nil);
 
     Object callIoFileAlreadyExistAfter(VM* theVM, Object who, Object message, Object filname);
+    Object callIoFileAlreadyExistAfter(VM* theVM, const ucs4char* who, Object message, Object filname);   
+    Object callIoFileAlreadyExistAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object filname);      
+
     Object callIoFileProtectionAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callIoFileProtectionAfter(VM* theVM, Object who, const ucs4string& message, Object filename);    
+    Object callIoFileProtectionAfter(VM* theVM, Object who, const ucs4string& message, Object filename);
+    Object callIoFileProtectionAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object filename);
+
     Object callIoFileReadOnlyAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callIoFileReadOnlyAfter(VM* theVM, Object who, const ucs4string& message, Object filename);
+    Object callIoFileReadOnlyAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object filename);
+
     Object callErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callErrorAfter(VM* theVM, const ucs4char* who, Object message, Object irritants = Object::Nil);    
+    Object callErrorAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil);
+    Object callErrorAfter(VM* theVM, const ucs4char* who, const ucs4char* message, Object irritants = Object::Nil);   
+    Object callErrorAfter(VM* theVM, const ucs4char* who, const ucs4string& message, Object irritants = Object::Nil);  
 } // namespace scheme
 
 #endif // SCHEME_VIOLATION_PROCEDURES_

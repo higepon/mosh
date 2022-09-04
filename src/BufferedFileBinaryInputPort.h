@@ -40,9 +40,9 @@ namespace scheme {
 class BufferedFileBinaryInputPort : public BinaryInputPort
 {
 public:
-    BufferedFileBinaryInputPort(File* file);
-    BufferedFileBinaryInputPort(ucs4string file);
-    BufferedFileBinaryInputPort(const char* file);
+    explicit BufferedFileBinaryInputPort(File* file);
+    explicit BufferedFileBinaryInputPort(ucs4string file);
+    explicit BufferedFileBinaryInputPort(const char* file);
     ~BufferedFileBinaryInputPort() override;
 
     ucs4string toString() override;

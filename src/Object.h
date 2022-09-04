@@ -111,16 +111,16 @@ enum ErrorHandlingMode
 
 
 
-#define MAKE_CONST(n) ((n << 4) + 6)
+#define MAKE_CONST(n) Object((n << 4) + 6)
 
 class Object
 {
 public:
     Object() = default;
-    Object(const ucs4char* str);
+    explicit Object(const ucs4char* str);
     Object(const ucs4char* str, int length);
-    Object(const ucs4string& str);
-    Object(const char* str);
+    explicit Object(const ucs4string& str);
+    explicit Object(const char* str);
 
     bool isInputPort() const;
     bool isOutputPort() const;
@@ -290,7 +290,7 @@ public:
     static const Object Ignore;
 
 private:
-    Object(intptr_t n) : val(n) {}
+    explicit Object(intptr_t n) : val(n) {}
     Object(int n, Object o); // for vector
     uint8_t tag() const;
 

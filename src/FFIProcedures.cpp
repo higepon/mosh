@@ -76,7 +76,7 @@ class SynchronizedErrno : public gc_cleanup
 {
     VM* vm_;
 public:
-    SynchronizedErrno(VM* vm) {
+    explicit SynchronizedErrno(VM* vm) {
         vm_ = vm;
         errno = vm_->getErrno();
 #if _MSC_VER
@@ -915,7 +915,7 @@ Object scheme::internalFfiCallEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("ffi-call");
 #ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    callAssertionViolationAfter(theVM, procedureName, UC("ffi not supported on this architecture"));
     return Object::Undef;
 #endif
 
@@ -927,7 +927,7 @@ Object scheme::internalFfiCallEx(VM* theVM, int argc, const Object* argv)
     CStack cstack;
     for (int i = 3; i < argc; i++) {
         if (!cstack.push(argv[i], signatures->charAt(i - 3))) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+            callAssertionViolationAfter(theVM, procedureName, UC("argument error"), L2(Object(cstack.getLastError()),
                                                                                    argv[i]));
             return Object::Undef;
         }
@@ -1045,7 +1045,7 @@ Object scheme::internalFfiCallEx(VM* theVM, int argc, const Object* argv)
     }
     default:
     {
-        callAssertionViolationAfter(theVM, UC("c-function"), "invalid return type", L1(argv[0]));
+        callAssertionViolationAfter(theVM, UC("c-function"), UC("invalid return type"), L1(argv[0]));
         return Object::Undef;
     }
     }
@@ -1056,7 +1056,7 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("lookup-shared-library");
 
 #ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    callAssertionViolationAfter(theVM, procedureName, UC("ffi not supported on this architecture"));
     return Object::Undef;
 #endif
 
@@ -1064,7 +1064,7 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
     argumentAsPointer(0, handle);
     argumentAsSymbol(1, name);
 
-    ucs4string n = name->c_str();
+    ucs4string n(name->c_str());
     void* symbol = FFI::lookup((void*)handle->pointer(), n.ascii_c_str());
 
     if (nullptr == symbol) {
@@ -1079,7 +1079,7 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("%ffi-open");
 
 #ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    callAssertionViolationAfter(theVM, procedureName, UC("ffi not supported on this architecture"));
     return Object::Undef;
 #endif
 
@@ -1087,7 +1087,7 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, name);
     void* handle = FFI::open(name->data().ascii_c_str());
     if (nullptr == handle) {
-        callAssertionViolationAfter(theVM, procedureName, "shared library not found", L2(FFI::lastError(), argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("shared library not found"), L2(Object(FFI::lastError()), argv[0]));
         return Object::Undef;
     } else {
         return Object::makePointer(handle);
@@ -1108,7 +1108,7 @@ Object scheme::internalFfiCloseEx(VM* theVM, int argc, const Object* argv) {
     if (result != 0) {
         callAssertionViolationAfter(theVM,
                                     procedureName,
-                                    "cannot close shared library");
+                                    UC("cannot close shared library"));
     }
 
     return Object::Undef;
@@ -1186,7 +1186,7 @@ template <typename T, typename S, bool isSigned> static Object pointerSet(const 
     argumentCheckExactInteger(2, v);
     if (!isSigned) {
         if (Arithmetic::lt(v, Object::makeFixnum(0))) {
-            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
             return Object::Undef;
         }
     }
@@ -1197,14 +1197,14 @@ template <typename T, typename S, bool isSigned> static Object pointerSet(const 
             if (v.toBignum()->fitsS64()) {
                 value = v.toBignum()->toS64();
             } else {
-                callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+                callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
                 return Object::Undef;
             }
         } else {
             if (v.toBignum()->fitsU64()) {
                 value = v.toBignum()->toU64();
             } else {
-                callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+                callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
                 return Object::Undef;
             }
         }
@@ -1215,7 +1215,7 @@ template <typename T, typename S, bool isSigned> static Object pointerSet(const 
     if (value >= static_cast<S>(min) && value <= static_cast<S>(max)) {
         pointer->set<T>(offset, static_cast<T>(value));
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
     }
     return Object::Undef;
 }
@@ -1276,7 +1276,7 @@ Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
     static const Object maxVal = Arithmetic::sub(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)),
                                            Object::makeFixnum(1));
     if (Arithmetic::lt(v, minVal) || Arithmetic::gt(v, maxVal)) {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
     }
     int64_t value;
     if (v.isBignum()) {
@@ -1507,7 +1507,7 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentCheckExactInteger(0, size);
     if (!Arithmetic::fitsU64(size)) { // FIXME: malloc cannot allocate full-64bit size (evenif we were on 64bit-os)
-        callAssertionViolationAfter(theVM, procedureName, "size out of range", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, UC("size out of range"), L1(argv[0]));
         return Object::Undef;
     }
     const uint64_t u64Size = Arithmetic::toU64(size);
@@ -1542,7 +1542,7 @@ Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const O
 #endif
     return Object::Undef;
 #else
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    callAssertionViolationAfter(theVM, procedureName, UC("ffi not supported on this architecture"));
     return Object::Undef;
 #endif
 }
@@ -1599,12 +1599,12 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
         break;
 #endif
     default:
-        callAssertionViolationAfter(theVM, procedureName, "invalid callback type specifier", L1(argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, UC("invalid callback type specifier"), L1(argv[1]));
         return Object::Undef;
     }
     return Object::makePointer(thunk);
 #else
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    callAssertionViolationAfter(theVM, procedureName, UC("ffi not supported on this architecture"));
     return Object::Undef;
 #endif
 }

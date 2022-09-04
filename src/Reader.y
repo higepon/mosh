@@ -228,21 +228,21 @@ int yyerror(char const *str)
     const Object prevError = port->error();
     ucs4string currentToken = port->scanner()->currentToken();
     if (currentToken.empty()) {
-        currentToken = UC("<end of file>");
+        currentToken = ucs4string(UC("<end of file>"));
     }
     if (prevError.isNil()) {
         port->setError(format(nullptr, UC("~a near [~a] at ~a:~d. "),
-                              Pair::list4(str,
+                              Pair::list4(Object(str),
                                           Object::makeString(currentToken),
-                                          port->toString(),
+                                          Object(port->toString()),
                                           Object::makeFixnum(port->getLineNo()))));
 
     } else {
         port->setError(format(nullptr, UC("~a: ~a near [~a] at ~a:~d. "),
                               Pair::list5(prevError,
-                                          str,
+                                          Object(str),
                                           Object::makeString(currentToken),
-                                          port->toString(),
+                                          Object(port->toString()),
                                           Object::makeFixnum(port->getLineNo()))));
     }
     return 0;

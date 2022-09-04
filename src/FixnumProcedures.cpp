@@ -261,7 +261,7 @@ Object scheme::fxdivEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
     if (0 == fx2) {
-        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, UC("Dividing by zero"));
         return Object::Undef;
     }
 
@@ -282,7 +282,7 @@ Object scheme::fxmodEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
     if (0 == fx2) {
-        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, UC("Dividing by zero"));
         return Object::Undef;
     }
 
@@ -303,7 +303,7 @@ Object scheme::fxdiv0Ex(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
     if (0 == fx2) {
-        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, UC("Dividing by zero"));
         return Object::Undef;
     }
 
@@ -324,7 +324,7 @@ Object scheme::fxmod0Ex(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
     if (0 == fx2) {
-        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, UC("Dividing by zero"));
         return Object::Undef;
     }
 
@@ -429,7 +429,7 @@ Object scheme::fxbitSetPEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
@@ -445,11 +445,11 @@ Object scheme::fxcopyBitEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(2, fx3);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
     if (fx3 != 0 && fx3 != 1) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
 
@@ -467,7 +467,7 @@ Object scheme::fxbitFieldEx(VM* theVM, int argc, const Object* argv)
     const bool isFx2OutOfRange = fx2 < 0 || fx2 >= Fixnum::BITS;
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || fx2 > fx3) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
 
@@ -486,7 +486,7 @@ Object scheme::fxcopyBitFieldEx(VM* theVM, int argc, const Object* argv)
     const bool isFx2OutOfRange = fx2 < 0 || fx2 >= Fixnum::BITS;
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || fx2 > fx3) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list4(argv[0], argv[1], argv[2], argv[3]));
         return Object::Undef;
     }
 
@@ -501,7 +501,7 @@ Object scheme::fxarithmeticShiftEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (::abs(fx2) >= Fixnum::BITS) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
@@ -527,7 +527,7 @@ Object scheme::fxarithmeticShiftLeftEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
@@ -548,7 +548,7 @@ Object scheme::fxarithmeticShiftRightEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
@@ -574,7 +574,7 @@ Object scheme::fxrotateBitFieldEx(VM* theVM, int argc, const Object* argv)
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     const bool isFx4OutOfRange = fx4 < 0 || fx4 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || isFx4OutOfRange || fx2 > fx3 || fx4 >= (fx3 - fx2) ) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list4(argv[0], argv[1], argv[2], argv[3]));
         return Object::Undef;
     }
 
@@ -592,7 +592,7 @@ Object scheme::fxreverseBitFieldEx(VM* theVM, int argc, const Object* argv)
     const bool isFx2OutOfRange = fx2 < 0 || fx2 >= Fixnum::BITS;
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || fx2 > fx3) {
-        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, UC("out of range"), Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
 

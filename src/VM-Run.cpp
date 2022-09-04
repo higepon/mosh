@@ -90,7 +90,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 pc_  = callCode_->code();
             } else {
                 if (! args.isPair()) {
-                    callAssertionViolationAfter(this, "apply", "bug?", L1(ac_));
+                    callAssertionViolationAfter(this, UC("apply"), UC("bug?"), L1(ac_));
                     NEXT;
                 }
                 const int length = Pair::length(args);
@@ -164,10 +164,10 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 if (ac_.isPair()) {
                     ac_ = ac_.car();
                 } else {
-                    callAssertionViolationAfter(this, "caar", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, UC("caar"), UC("pair required"), Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter(this, "caar", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, UC("caar"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -178,10 +178,10 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 if (ac_.isPair()) {
                     ac_ = ac_.car();
                 } else {
-                    callAssertionViolationAfter(this, "cadr", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, UC("cadr"), UC("pair required"), Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter(this, "cadr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, UC("cadr"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -193,7 +193,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 //             if (ac_.isPair()) {
 //                 ac_ = ac_.car();
 //             } else {
-//                 callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
+//                 callAssertionViolationAfter(UC("car"), UC("pair required"), Pair::list1(ac_));
 //             }
 //             NEXT1;
 //         }
@@ -205,7 +205,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 //             if (ac_.isPair()) {
 //                 ac_ = ac_.cdr();
 //             } else {
-//                 callAssertionViolationAfter("cdr", "pair required", Pair::list1(ac_));
+//                 callAssertionViolationAfter(UC("cdr"), UC("pair required"), Pair::list1(ac_));
 //             }
 //             NEXT1;
 //         }
@@ -222,7 +222,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             if (ac_.isPair()) {
                 ac_ = ac_.car();
             } else {
-                callAssertionViolationAfter(this, "car", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, UC("car"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -232,8 +232,8 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 push(ac_.car());
             } else {
                 // todo エラーにこれを入れれば便利じゃ？
-//                LOG1("cl=~a\n", dc_.toClosure()->sourceInfoString());
-                callAssertionViolationAfter(this, "car", "pair required", Pair::list1(ac_));
+//                LOG1(UC("cl=~a\n"), dc_.toClosure()->sourceInfoString());
+                callAssertionViolationAfter(this, UC("car"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -244,10 +244,10 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 if (ac_.isPair()) {
                     ac_ = ac_.cdr();
                 } else {
-                    callAssertionViolationAfter(this, "cdar", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, UC("cdar"), UC("pair required"), Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter(this, "cdar", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, UC("cdar"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -258,10 +258,10 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 if (ac_.isPair()) {
                     ac_ = ac_.cdr();
                 } else {
-                    callAssertionViolationAfter(this, "cddr", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, UC("cddr"), UC("pair required"), Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter(this, "cddr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, UC("cddr"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -270,7 +270,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             if (ac_.isPair()) {
                 ac_ = ac_.cdr();
             } else {
-                callAssertionViolationAfter(this, "cdr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, UC("cdr"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -286,7 +286,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             if (ac_.isPair()) {
                 push(ac_.cdr());
             } else {
-                callAssertionViolationAfter(this, "cdr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, UC("cdr"), UC("pair required"), Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -483,7 +483,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 VM_ASSERT(n.isFixnum());
                 ac_ = Object::makeVector(n.toFixnum(), ac_);
             } else {
-                callWrongTypeOfArgumentViolationAfter(this, "make-vector", "fixnum", L1(n));
+                callWrongTypeOfArgumentViolationAfter(this, UC("make-vector"), UC("fixnum"), L1(n));
             }
             NEXT1;
         }
@@ -507,7 +507,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             if (head.isList()) {
                 ac_ = Pair::append2(head, ac_);
             } else {
-                callWrongTypeOfArgumentViolationAfter(this, "append", "list", L1(head));
+                callWrongTypeOfArgumentViolationAfter(this, UC("append"), UC("list"), L1(head));
             }
             NEXT1;
         }
@@ -522,7 +522,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 const Object v = ac_;
                 ac_ = Arithmetic::add(n, v);
                 if (ac_.isFalse()) {
-                    callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, v));
+                    callWrongTypeOfArgumentViolationAfter(this, UC("+"), UC("number"), L2(n, v));
                 }
             }
             NEXT1;
@@ -537,7 +537,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 if (n.isNumber() && ac_.isNumber()) {
                     ac_ = Object::makeBool(Arithmetic::eq(n, ac_));
                 } else {
-                    callWrongTypeOfArgumentViolationAfter(this, "=", "number", L2(n, ac_));
+                    callWrongTypeOfArgumentViolationAfter(this, UC("="), UC("number"), L2(n, ac_));
                 }
             }
             NEXT1;
@@ -583,7 +583,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 
             ac_ = Arithmetic::mul(n, ac_);
             if (ac_.isFalse()) {
-                callAssertionViolationAfter(this, "*", "wrong type arguments", L2(n, ac_));
+                callAssertionViolationAfter(this, UC("*"), UC("wrong type arguments"), L2(n, ac_));
             }
             NEXT1;
         }
@@ -593,9 +593,9 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object n = pop();
             ac_ = Arithmetic::div(n, ac_, isDiv0Error);
             if (isDiv0Error) {
-                callAssertionViolationAfter(this, "/", "division by zero", L2(n, ac_));
+                callAssertionViolationAfter(this, UC("/"), UC("division by zero"), L2(n, ac_));
             } else if (ac_.isFalse()) {
-                callWrongTypeOfArgumentViolationAfter(this, "/", "number", L2(n, ac_));
+                callWrongTypeOfArgumentViolationAfter(this, UC("/"), UC("number"), L2(n, ac_));
             }
             NEXT1;
         }
@@ -609,7 +609,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             } else {
                 ac_ = Arithmetic::sub(n, ac_);
                 if (ac_.isFalse()) {
-                    callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+                    callWrongTypeOfArgumentViolationAfter(this, UC("-"), UC("number"), L2(n, ac_));
                 }
             }
             NEXT1;
@@ -625,7 +625,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 ac_ = Arithmetic::sub(n, ac_);
             }
             if (ac_.isFalse()) {
-                callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+                callWrongTypeOfArgumentViolationAfter(this, UC("-"), UC("number"), L2(n, ac_));
             }
             push(ac_);
             NEXT1;
@@ -640,7 +640,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             } else {
                 ac_ = Arithmetic::add(n, ac_);
                 if (ac_.isFalse()) {
-                    callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+                    callWrongTypeOfArgumentViolationAfter(this, UC("-"), UC("number"), L2(n, ac_));
                     NEXT1;
                 }
             }
@@ -664,18 +664,18 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 } else if (ac_.isTextualInputOutputPort()) {
                     inputPort = ac_.toTextualInputOutputPort();
                 } else {
-                    callAssertionViolationAfter(this, "read", "textual input port required", L1(ac_));
+                    callAssertionViolationAfter(this, UC("read"), UC("textual input port required"), L1(ac_));
                     NEXT1;
                 }
             }
             TRY_WITHOUT_DSTR
                 ac_ = inputPort->getDatum(errorOccured);
                 if (errorOccured) {
-                    callLexicalAndIOReadAfter(this, "read", inputPort->error());
+                    callLexicalAndIOReadAfter(this, UC("read"), inputPort->error());
                 }
             CATCH(ioError)
                 ioError.arg1 = (ac_.isNil()) ? currentInputPort_ : ac_;
-                ioError.who = "read";
+                ioError.who = Object("read");
                 callIOErrorAfter(this, ioError);
                 NEXT1;
             END_TRY
@@ -692,7 +692,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 } else if (ac_.isTextualInputOutputPort()) {
                     inputPort = ac_.toTextualInputOutputPort();
                 } else {
-                    callAssertionViolationAfter(this, "read", "textual input port required", L1(ac_));
+                    callAssertionViolationAfter(this, UC("read"), UC("textual input port required"), L1(ac_));
                     NEXT1;
                 }
             }
@@ -701,7 +701,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 ac_= c == EOF ? Object::Eof : Object::makeChar(c);
             CATCH(ioError)
                 ioError.arg1 = (ac_.isNil()) ? currentInputPort_ : ac_;
-                ioError.who = "read-char";
+                ioError.who = Object("read-char");
                 callIOErrorAfter(this, ioError);
                 NEXT1;
             END_TRY
@@ -743,7 +743,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 if (val == notFound_) {
                     callUndefinedViolationAfter(this,
                                                 L1(unGenSym(id)),
-                                                "unbound variable"
+                                                UC("unbound variable")
                                                 // R6RS mode requires demangle of symbol.
                                                 );
                 } else {
@@ -762,8 +762,8 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 const Object val = nameSpace->ref(id, notFound_);
                 if (val == notFound_) {
                     callAssertionViolationAfter(this,
-                                                "eval",
-                                                "unbound variable",
+                                                UC("eval"),
+                                                UC("unbound variable"),
                                                 // R6RS mode requires demangle of symbol.
                                                 L1(unGenSym(id)));
                 } else {
@@ -783,8 +783,8 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                 const Object val = nameSpace->ref(id, notFound_);
                 if (val == notFound_) {
                     callAssertionViolationAfter(this,
-                                                "eval",
-                                                "unbound variable",
+                                                UC("eval"),
+                                                UC("unbound variable"),
                                                 L1(unGenSym(id)));
                     NEXT1; // for error handling
                 } else {
@@ -927,7 +927,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             VM_ASSERT(argumentsLength.isFixnum());
             const int num = argumentsLength.toFixnum();
             if (num > maxNumValues_ + 1) {
-                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(argumentsLength));
+                callAssertionViolationAfter(this, UC("values"), UC("too many values"), Pair::list1(argumentsLength));
             }
             numValues_ = num;
             if (num != 0) {
@@ -996,7 +996,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         {
             const Object p = pop();
             if (!p.isPair()) {
-                callAssertionViolationAfter(this, "set-car!", "pair required", Pair::list1(p));
+                callAssertionViolationAfter(this, UC("set-car!"), UC("pair required"), Pair::list1(p));
                 NEXT1;
             }
 
@@ -1008,7 +1008,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         {
             const Object p = pop();
             if (!p.isPair()) {
-                callAssertionViolationAfter(this, "set-cdr!", "pair required", Pair::list1(p));
+                callAssertionViolationAfter(this, UC("set-cdr!"), UC("pair required"), Pair::list1(p));
                 NEXT1;
             }
             p.cdr() = ac_;
@@ -1195,20 +1195,20 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                         ac_ = v->ref(index);
                     } else {
                         callAssertionViolationAfter(this,
-                                                    "vector-ref",
-                                                    "index out of range",
+                                                    UC("vector-ref"),
+                                                    UC("index out of range"),
                                                     L1(ac_));
                     }
                 } else {
                     callAssertionViolationAfter(this,
-                                                "vector-ref",
-                                                "index exact integer required but got ",
+                                                UC("vector-ref"),
+                                                UC("index exact integer required but got "),
                                                 L1(ac_));
                 }
             } else {
                 callAssertionViolationAfter(this,
-                                            "vector-ref",
-                                            "vector required",
+                                            UC("vector-ref"),
+                                            UC("vector required"),
                                             L1(obj));
             }
             NEXT1;
@@ -1224,14 +1224,14 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                     ac_ = s->ref(index);
                 } else {
                     callAssertionViolationAfter(this,
-                                                "simple-struct-ref",
-                                                "index out of range",
+                                                UC("simple-struct-ref"),
+                                                UC("index out of range"),
                                                 L2(obj, ac_));
                 }
             } else {
                 callAssertionViolationAfter(this,
-                                            "simple-struct-ref",
-                                            "simple-struct required",
+                                            UC("simple-struct-ref"),
+                                            UC("simple-struct required"),
                                             L1(obj));
             }
             NEXT1;
@@ -1243,8 +1243,8 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 //             if (v.isVector()) {
 //                 ac_ = v.toVector()->ref(ac_.toFixnum());
 //             } else {
-//                 callAssertionViolationAfter("vector-ref",
-//                                             "vector required",
+//                 callAssertionViolationAfter(UC("vector-ref"),
+//                                             UC("vector required"),
 //                                             L1(v));
 //             }
 //             push(ac_);
@@ -1276,21 +1276,21 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                         ac_ = Object::Undef;
                     } else {
                         callAssertionViolationAfter(this,
-                                                    "vector-set!",
-                                                    "index out of range",
+                                                    UC("vector-set!"),
+                                                    UC("index out of range"),
                                                     L1(n));
                     }
                 } else {
                     callAssertionViolationAfter(this,
-                                                "vector-set!",
-                                                "index, number required",
+                                                UC("vector-set!"),
+                                                UC("index, number required"),
                                                 L1(n));
 
                 }
             } else {
                 callAssertionViolationAfter(this,
-                                            "vector-set!",
-                                            "vector required",
+                                            UC("vector-set!"),
+                                            UC("vector required"),
                                             L1(obj));
             }
             NEXT1;
@@ -1314,7 +1314,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             MOSH_ASSERT(numObject.isFixnum());
             const int num = numObject.toFixnum();
             if (num > maxNumValues_ + 1) {
-                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(num)));
+                callAssertionViolationAfter(this, UC("values"), UC("too many values"), Pair::list1(Object::makeFixnum(num)));
             } else {
                 numValues_ = num;
                 if (num >= 0) {
@@ -1345,15 +1345,15 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const int optarg  = optargObject.toFixnum();
             if (numValues_ < reqargs) {
                 callAssertionViolationAfter(this,
-                                            "receive",
-                                            "received fewer values than expected",
+                                            UC("receive"),
+                                            UC("received fewer values than expected"),
                                             L2(Object::makeFixnum(numValues_),
                                                Object::makeFixnum(reqargs)));
                 NEXT;
             } else if (optarg == 0 && numValues_ > reqargs) {
                 callAssertionViolationAfter(this,
-                                            "receive",
-                                            "received more values than expected",
+                                            UC("receive"),
+                                            UC("received more values than expected"),
                                             L2(Object::makeFixnum(numValues_),
                                                Object::makeFixnum(reqargs)));
                 NEXT;
@@ -1399,7 +1399,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(UNFIXED_JUMP)
         {
-            callAssertionViolationAfter(this, "UNFIXED_JUMP", "bug of VM");
+            callAssertionViolationAfter(this, UC("UNFIXED_JUMP"), UC("bug of VM"));
             NEXT;
         }
         CASE(STOP)
@@ -1414,7 +1414,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         DEFAULT
         {
-            callAssertionViolationAfter(this, "VM", "unknown instruction, bug of VM");
+            callAssertionViolationAfter(this, UC("VM"), UC("unknown instruction, bug of VM"));
             NEXT;
         }
         } // SWITCH

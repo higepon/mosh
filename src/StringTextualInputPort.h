@@ -39,7 +39,7 @@ namespace scheme {
 class StringTextualInputPort : public TextualInputPort
 {
 public:
-    StringTextualInputPort(const ucs4string& str);
+    explicit StringTextualInputPort(const ucs4string& str);
     ~StringTextualInputPort() override;
 
     ucs4char getChar() override;

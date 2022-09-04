@@ -42,7 +42,7 @@ class Ratnum : public gc_cleanup
 private:
     mpq_t value;
 
-    Ratnum(mpq_t rational)
+    explicit Ratnum(mpq_t rational)
     {
         value[0] = rational[0];
     }

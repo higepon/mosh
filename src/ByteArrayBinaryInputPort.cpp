@@ -51,7 +51,7 @@ ByteArrayBinaryInputPort::~ByteArrayBinaryInputPort()
 }
 
 ucs4string ByteArrayBinaryInputPort::toString() {
-    return UC("<byte-array-input-port>");
+    return ucs4string(UC("<byte-array-input-port>"));
 }
 
 int64_t ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)

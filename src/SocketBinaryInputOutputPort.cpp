@@ -98,7 +98,7 @@ bool SocketBinaryInputOutputPort::setPosition(int64_t position)
 
 ucs4string SocketBinaryInputOutputPort::toString()
 {
-    ucs4string ret = UC("<binary-input/output-port ");
+    ucs4string ret(UC("<binary-input/output-port "));
     ret += socket_->toString();
     ret += UC(">");
     return ret;

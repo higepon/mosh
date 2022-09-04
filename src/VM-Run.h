@@ -95,7 +95,7 @@
        if (n.isNumber() && ac_.isNumber()) {                                                \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
        } else {                                                                             \
-           callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_));    \
+           callWrongTypeOfArgumentViolationAfter(this, UC(#opstring), UC("number"), L2(n, ac_));    \
            NEXT1;                                                                           \
        }                                                                                    \
    }
@@ -110,7 +110,7 @@
        if (n.isNumber() && ac_.isNumber()) {                                                  \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
        } else {                                                                             \
-           callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_)); \
+           callWrongTypeOfArgumentViolationAfter(this, UC(#opstring), UC("number"), L2(n, ac_)); \
            NEXT;                                                                            \
        }                                                                                    \
    }

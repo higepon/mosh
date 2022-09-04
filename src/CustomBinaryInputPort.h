@@ -59,7 +59,7 @@ public:
     File* getFile() override { return nullptr; }
     ucs4string getLastErrorMessage() override
     {
-        return UC("");
+        return ucs4string(UC(""));
     }
 
 private:

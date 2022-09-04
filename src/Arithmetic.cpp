@@ -104,7 +104,7 @@ Object Arithmetic::numberToString(Object n, int radix)
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
         return format(nullptr, UC("~d~a~di"), Pair::list3(numberToString(c->real(), radix),
-                                                      lt(c->imag(), Object::makeFixnum(0)) ? UC("") : UC("+"),
+                                                      lt(c->imag(), Object::makeFixnum(0)) ? Object("") : Object("+"),
                                                       numberToString(c->imag(), radix)));
     } else {
         MOSH_ASSERT(false);
@@ -1562,9 +1562,9 @@ ucs4string FlonumUtil::flonumToUcs4String(double v, bool no_exponential)
     int e;
     int sign;
     int64_t f = decode_double(v, &e, &sign);
-    if (v == 0.0) return (sign > 0) ? UC("0.0") : UC("-0.0");
-    if (isnan(v)) return (sign > 0) ? UC("+nan.0") : UC("-nan.0");
-    if (isinf(v)) return (sign > 0) ? UC("+inf.0") : UC("-inf.0");
+    if (v == 0.0) return ucs4string((sign > 0) ? UC("0.0") : UC("-0.0"));
+    if (isnan(v)) return ucs4string((sign > 0) ? UC("+nan.0") : UC("-nan.0"));
+    if (isinf(v)) return ucs4string((sign > 0) ? UC("+inf.0") : UC("-inf.0"));
     if (sign == -1) v = -v;
     bool meven = ((f & 1) == 0);
     bool eq_mp_mm = true;

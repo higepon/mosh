@@ -48,7 +48,7 @@ namespace scheme {
 class ExecutableMemory
 {
 public:
-    ExecutableMemory(int size) : size_(size) 
+    explicit ExecutableMemory(int size) : size_(size) 
     {
     }
 

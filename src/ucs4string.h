@@ -53,8 +53,8 @@ class ucs4string : public ucs4string_base
 {
 public:
     ucs4string() = default;
-    ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
-    ucs4string(const ucs4char* s) : ucs4string_base(s) {}
+    explicit ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
+    explicit ucs4string(const ucs4char* s) : ucs4string_base(s) {}
     ucs4string(const ucs4char* s, int n) : ucs4string_base(s, n) {}
     ucs4string(ucs4string::const_iterator a, ucs4string::const_iterator b) : ucs4string_base(a, b) {}
     char* ascii_c_str() const;
