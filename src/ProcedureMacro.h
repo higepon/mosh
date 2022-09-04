@@ -196,7 +196,7 @@ inline const char* nth(int index) {
     if (variableName <= 0) {                                             \
         static char buf[64];                                            \
         sprintf(buf, "%s argument: positive integer", nth(index)); \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, ucs4string::from_c_str(buf), argv[index]); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, Object(ucs4string::from_c_str(buf)), argv[index]); \
         return Object::Undef;                                           \
     }
 
@@ -205,7 +205,7 @@ inline const char* nth(int index) {
     if (variableName < 0) {                                             \
         static char buf[64];                                            \
         sprintf(buf, "%s argument: non-negative integer", nth(index)); \
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, ucs4string::from_c_str(buf), argv[index]); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, Object(ucs4string::from_c_str(buf)), argv[index]); \
         return Object::Undef;                                           \
     }
 

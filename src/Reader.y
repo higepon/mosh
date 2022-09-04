@@ -234,7 +234,7 @@ int yyerror(char const *str)
         port->setError(format(nullptr, UC("~a near [~a] at ~a:~d. "),
                               Pair::list4(str,
                                           Object::makeString(currentToken),
-                                          port->toString(),
+                                          Object(port->toString()),
                                           Object::makeFixnum(port->getLineNo()))));
 
     } else {
@@ -242,7 +242,7 @@ int yyerror(char const *str)
                               Pair::list5(prevError,
                                           str,
                                           Object::makeString(currentToken),
-                                          port->toString(),
+                                          Object(port->toString()),
                                           Object::makeFixnum(port->getLineNo()))));
     }
     return 0;

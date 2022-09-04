@@ -116,7 +116,7 @@ Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
     if (isErrorOccured) {
         return Object::False;
     } else {
-        return path;
+        return Object(path);
     }
 // #if defined(_WIN32)
 // //    char path[MAX_PATH];
