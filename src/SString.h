@@ -37,10 +37,10 @@ namespace scheme {
 class String EXTEND_GC
 {
 public:
-    String(const ucs4char* s) : data_(s) {}
-    String(const ucs4char* s, int length) : data_(ucs4string(s, length)) {}
-    String(int n, ucs4char c = ' ') : data_(ucs4string(n, c)) {}
-    String(const char* s)
+    explicit String(const ucs4char* s) : data_(s) {}
+    explicit String(const ucs4char* s, int length) : data_(ucs4string(s, length)) {}
+    explicit String(int n, ucs4char c = ' ') : data_(ucs4string(n, c)) {}
+    explicit String(const char* s)
     {
         const int len = strlen(s);
 #ifdef USE_BOEHM_GC
