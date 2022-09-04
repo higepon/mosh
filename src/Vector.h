@@ -38,8 +38,8 @@ class Vector EXTEND_GC
 {
 public:
     explicit Vector(int num);
-    explicit Vector(int num, Object obj);
-    explicit Vector(int num, Object* objects);
+    Vector(int num, Object obj);
+    Vector(int num, Object* objects);
     explicit Vector(Object pair);
     ~Vector();
     void fill(Object obj);
