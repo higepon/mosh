@@ -76,7 +76,7 @@ class SynchronizedErrno : public gc_cleanup
 {
     VM* vm_;
 public:
-    SynchronizedErrno(VM* vm) {
+    explicit SynchronizedErrno(VM* vm) {
         vm_ = vm;
         errno = vm_->getErrno();
 #if _MSC_VER

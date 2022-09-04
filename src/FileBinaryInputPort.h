@@ -43,9 +43,9 @@ class File;
 class FileBinaryInputPort : public BinaryInputPort
 {
 public:
-    FileBinaryInputPort(File* file);
-    FileBinaryInputPort(const ucs4string& file);
-    FileBinaryInputPort(const char* file);
+    explicit FileBinaryInputPort(File* file);
+    explicit FileBinaryInputPort(const ucs4string& file);
+    explicit FileBinaryInputPort(const char* file);
     ~FileBinaryInputPort() override;
 
     ucs4string toString() override;

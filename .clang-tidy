@@ -2,7 +2,6 @@
   # Adapted from https://github.com/chromium/chromium/blob/main/.clang-tidy.
   # TODO(crbug.com/1282228): reenable google-readability-casting once it no
   # longer has as many false-positives.
-  # TODO(higepon): Re-enable google-explicit-constructor with a bunch of ucs4string issue.
   Checks:          '-*,
                     bugprone-argument-comment,
                     bugprone-assert-side-effect,
@@ -13,6 +12,7 @@
                     bugprone-unused-raii,
                     bugprone-use-after-move,
                     google-build-explicit-make-pair,
+                    google-explicit-constructor,
                     modernize-avoid-bind,
                     modernize-concat-nested-namespaces,
                     modernize-loop-convert,

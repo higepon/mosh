@@ -41,8 +41,8 @@ namespace scheme {
 class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    FileBinaryOutputPort(File* file);
-    FileBinaryOutputPort(const ucs4string& file);
+    explicit FileBinaryOutputPort(File* file);
+    explicit FileBinaryOutputPort(const ucs4string& file);
     FileBinaryOutputPort(const ucs4string& file, int openFlags);
     ~FileBinaryOutputPort() override;
 
