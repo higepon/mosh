@@ -56,7 +56,7 @@ private:
     static int criticalSection;
 
 public:
-    Symbol(const ucs4char* name) : name_(name)
+    explicit Symbol(const ucs4char* name) : name_(name)
     {
 #ifdef DEBUG_VERSION
         savedName_ = ucs4string(name).strdup();
