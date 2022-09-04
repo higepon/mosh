@@ -38,7 +38,7 @@ namespace scheme {
 
 class FFI EXTEND_GC
 {
-private:
+public:
     FFI() = delete;
     ~FFI() = delete;
 
