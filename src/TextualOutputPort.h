@@ -60,6 +60,7 @@ public:
     virtual void putString(const char* s);
     virtual void putDatum(const VM* theVM, Object o, bool isSharedAware = false);
     virtual void display(const VM* theVM, Object o, bool isSharedAware = false);
+    virtual void display(const VM* theVM, const ucs4char* o, bool isSharedAware = false);
     virtual void format(const VM* theVM, const ucs4string& fmt, Object args);
     virtual bool isErrorOccured() const;
     virtual Object errorMessage() const;

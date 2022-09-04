@@ -100,7 +100,7 @@ enum OutputPort::bufferMode CustomTextualOutputPort::bufferMode() const
 
 void CustomTextualOutputPort::putChar(ucs4char c)
 {
-    const Object text = UC(" ");
+    const Object text(" ");
     const Object start = Object::makeFixnum(0);
     const Object count = Object::makeFixnum(1);
     text.toString()->data()[0] = c;

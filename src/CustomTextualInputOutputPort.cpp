@@ -75,7 +75,7 @@ ucs4char CustomTextualInputOutputPort::getChar()
 {
     ucs4char c;
     if (buffer_.empty()) {
-        const Object text = UC(" ");
+        const Object text(" ");
         const Object start = Object::makeFixnum(0);
         const Object count = Object::makeFixnum(1);
         const Object result = theVM_->callClosure3(readProc_, text, start, count);
@@ -172,7 +172,7 @@ enum OutputPort::bufferMode CustomTextualInputOutputPort::bufferMode() const
 
 void CustomTextualInputOutputPort::putChar(ucs4char c)
 {
-    const Object text = UC(" ");
+    const Object text(" ");
     const Object start = Object::makeFixnum(0);
     const Object count = Object::makeFixnum(1);
     text.toString()->data()[0] = c;

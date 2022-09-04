@@ -927,7 +927,7 @@ Object scheme::internalFfiCallEx(VM* theVM, int argc, const Object* argv)
     CStack cstack;
     for (int i = 3; i < argc; i++) {
         if (!cstack.push(argv[i], signatures->charAt(i - 3))) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(Object(cstack.getLastError()),
                                                                                    argv[i]));
             return Object::Undef;
         }

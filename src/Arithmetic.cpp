@@ -104,7 +104,7 @@ Object Arithmetic::numberToString(Object n, int radix)
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
         return format(nullptr, UC("~d~a~di"), Pair::list3(numberToString(c->real(), radix),
-                                                      lt(c->imag(), Object::makeFixnum(0)) ? UC("") : UC("+"),
+                                                      lt(c->imag(), Object::makeFixnum(0)) ? Object("") : Object("+"),
                                                       numberToString(c->imag(), radix)));
     } else {
         MOSH_ASSERT(false);

@@ -724,7 +724,6 @@ loop:
     }
 }
 
-
 void TextualOutputPort::display(const VM* theVM, Object o, bool isSharedAware)
 {
     if (isSharedAware) {
@@ -735,6 +734,11 @@ void TextualOutputPort::display(const VM* theVM, Object o, bool isSharedAware)
     } else {
         print<true>(theVM, o, nullptr);
     }
+}
+
+void TextualOutputPort::display(const VM* theVM, const ucs4char* o, bool isSharedAware)
+{
+    display(theVM, Object(o), isSharedAware);
 }
 
 void TextualOutputPort::putDatum(const VM* theVM, Object o, bool isSharedAware)

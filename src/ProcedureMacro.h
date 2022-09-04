@@ -40,7 +40,7 @@
 
 #define checkPortIsOpen(port, obj) \
     if (port->isClosed()) { \
-        return callIOReadErrorAfter(theVM, obj, procedureName, "port is closed"); \
+        return callIOReadErrorAfter(theVM, obj, procedureName, UC("port is closed")); \
     }
 
 
