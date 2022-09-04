@@ -69,14 +69,8 @@ using namespace scheme;
 
 BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
     file_(new File),
-    fileName_(file),
-    buffer_(nullptr),
-    isDirty_(false),
-    position_(0),
-    isClosed_(false),
-    isPseudoClosed_(false),
-    bufferSize_(0),
-    bufferIndex_(0)
+    fileName_(file)
+    
 {
     file_->open(fileName_, File::Read | File::Write | File::Create | openFlags);
     initializeBuffer();

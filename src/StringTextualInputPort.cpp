@@ -44,10 +44,9 @@ using namespace scheme;
 
 StringTextualInputPort::StringTextualInputPort(const ucs4string& str) :
     
-    isClosed_(false),
-    buffer_(str),
-    index_(0),
-    lineNo_(1)
+    
+    buffer_(str)
+    
 {
 }
 

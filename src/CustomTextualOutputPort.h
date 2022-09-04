@@ -67,7 +67,7 @@ private:
     const Object getPositionProc_;
     const Object setPositionDProc_;
     const Object closeProc_;
-    bool isClosed_;
+    bool isClosed_{false};
 };
 
 } // namespace scheme

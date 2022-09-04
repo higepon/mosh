@@ -55,7 +55,7 @@ private:
     BinaryOutputPort* port_;
     Transcoder* transcoder_;
     const enum EolStyle eolStyle_;
-    bool isClosed_;
+    bool isClosed_{false};
 };
 
 } // namespace scheme

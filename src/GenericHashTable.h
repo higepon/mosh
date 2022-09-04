@@ -64,7 +64,7 @@ private:
     GenericMap map_;
     Object hashFunction_;
     Object equivalenceFunction_;
-    bool mutable_;
+    bool mutable_{true};
 };
 
 } // namespace scheme

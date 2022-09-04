@@ -78,8 +78,8 @@ private:
 
     File* file_;
     ucs4string fileName_;
-    bool isClosed_;
-    bool isPseudoClosed_;
+    bool isClosed_{false};
+    bool isPseudoClosed_{false};
 };
 
 } // namespace scheme

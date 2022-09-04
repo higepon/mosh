@@ -47,9 +47,8 @@ CustomBinaryOutputPort::CustomBinaryOutputPort(VM* theVM, const ucs4string& id, 
       writeDProc_(writeDProc),
       getPositionProc_(getPositionProc),
       setPositionDProc_(setPositionDProc),
-      closeProc_(closeProc),
-      isClosed_(false),
-      isPseudoClosed_(false)
+      closeProc_(closeProc)
+      
 {
     MOSH_ASSERT(writeDProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());

@@ -47,10 +47,8 @@ CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, const ucs4string& id, Ob
       readProc_(readProc),
       getPositionProc_(getPositionProc),
       setPositionProc_(setPositionProc),
-      closeProc_(closeProc),
-      isClosed_(false),
-      isPseudoClosed_(false),
-      aheadU8_(EOF)
+      closeProc_(closeProc)
+      
 {
     MOSH_ASSERT(readProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());

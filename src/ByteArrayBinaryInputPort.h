@@ -88,9 +88,9 @@ public:
 private:
     const uint8_t* const buf_;
     const int64_t size_;
-    int64_t index_;
-    bool isClosed_;
-    bool isPseudoClosed_;
+    int64_t index_{0};
+    bool isClosed_{false};
+    bool isPseudoClosed_{false};
 };
 
 } // namespace scheme

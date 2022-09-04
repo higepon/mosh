@@ -356,7 +356,7 @@ private:
     BinaryInputPort* inputPort_;
     VM* theVM_;
     EqHashTable* sharedObjects_;
-    bool isLinkNeeded_;
+    bool isLinkNeeded_{false};
 };
 
 

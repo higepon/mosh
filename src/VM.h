@@ -294,7 +294,7 @@ private:
     Object cl_;  // current closure register, used for profiler.
     Object* fp_; // frame pointer   register
     Object* sp_; // stack pointer   register
-    Object* pc_; // program counter register
+    Object* pc_{nullptr}; // program counter register
 protected:
 
     int stackSize_;
@@ -315,17 +315,17 @@ protected:
     Object* callSamples_;        // for profiler
     Object callHash_;            // for profiler
     int totalSampleCount_;       // for profiler
-    bool profilerRunning_;       // for profiler
+    bool profilerRunning_{false};       // for profiler
 #endif
     const bool isProfiler_;      // for profiler
-    const int maxNumValues_;
-    int numValues_;
+    const int maxNumValues_{256};
+    int numValues_{0};
     Object* values_;
     jmp_buf returnPoint_;
-    bool isR6RSMode_;
+    bool isR6RSMode_{false};
     Ports activePorts_;
     ucs4string name_;
-    Thread* thread_;
+    Thread* thread_{nullptr};
     Object* cProcs_;
 
     // on the fly instructions array.
@@ -351,11 +351,11 @@ protected:
 #if _MSC_VER
     uint32_t errno_;
 #else
-    int errno_;
+    int errno_{0};
 #endif
     Object dynamicWinders_;
     EqHashTable* callBackTrampolines_;
-    uintptr_t callBackTrampolinesUid_;
+    uintptr_t callBackTrampolinesUid_{0};
 };
 
 } // namespace scheme

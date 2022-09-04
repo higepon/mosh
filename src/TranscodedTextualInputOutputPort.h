@@ -78,8 +78,8 @@ public:
 private:
     BinaryInputOutputPort* port_;
     Transcoder* transcoder_;
-    int line_;
-    bool isClosed_;
+    int line_{1};
+    bool isClosed_{false};
 };
 
 } // namespace scheme

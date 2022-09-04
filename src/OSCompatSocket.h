@@ -97,10 +97,10 @@ namespace scheme {
         static ucs4string getAddressString(const struct sockaddr* addr, socklen_t addrlen, bool& isErrorOccurred);
         void setLastError();
         int socket_;
-        int lastError_;
+        int lastError_{0};
         ucs4string address_;
         enum Type type_;
-        bool isSSL_;
+        bool isSSL_{false};
 #if HAVE_OPENSSL
         SSL_CTX* ctx_;
         SSL* ssl_;

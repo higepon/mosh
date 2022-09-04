@@ -61,8 +61,8 @@ using namespace scheme;
 TranscodedTextualOutputPort::TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder)
   : port_(port),
     transcoder_(coder),
-    eolStyle_(coder->eolStyle()),
-    isClosed_(false)
+    eolStyle_(coder->eolStyle())
+    
 {
 }
 

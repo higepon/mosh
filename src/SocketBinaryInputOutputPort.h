@@ -91,9 +91,9 @@ private:
     }
 
     Socket* socket_;
-    bool isClosed_;
-    bool isPseudoClosed_;
-    uint16_t lastU8_;
+    bool isClosed_{false};
+    bool isPseudoClosed_{false};
+    uint16_t lastU8_{0xffff};
 };
 
 } // namespace scheme

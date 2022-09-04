@@ -59,7 +59,7 @@ private:
     ucs4string pattern_;
     OnigRegexType* regexp_; // do not use regex_t..
     OnigErrorInfo einfo_;
-    bool isErrorOccured_;
+    bool isErrorOccured_{false};
     Object errorMessage_;
     Object irritants_;
 };
@@ -82,7 +82,7 @@ public:
 private:
     OnigRegion* region_;
     const ucs4string& text_;
-    bool isErrorOccured_;
+    bool isErrorOccured_{false};
     Object errorMessage_;
     Object irritants_;
 };

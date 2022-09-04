@@ -98,27 +98,25 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     ac_(Object::Nil),
     dc_(Object::Nil),
     cl_(Object::Nil),
-    pc_(nullptr),
+    
     stackSize_(stackSize),
     currentOutputPort_(outPort),
     currentErrorPort_(errorPort),
     currentInputPort_(inputPort),
     errorObj_(Object::Nil),
 #ifdef ENABLE_PROFILER
-    profilerRunning_(false),
+    
 #endif
     isProfiler_(isProfiler),
-    maxNumValues_(256),
-    numValues_(0),
-    isR6RSMode_(false),
+    
     name_(UC("")),
-    thread_(nullptr),
+    
     readerContext_(new ReaderContext),
     numberReaderContext_(new NumberReaderContext),
-    errno_(0),
+    
     dynamicWinders_(Object::Nil),
-    callBackTrampolines_(new EqHashTable),
-    callBackTrampolinesUid_(0)
+    callBackTrampolines_(new EqHashTable)
+    
 {
     stack_ = Object::makeObjectArrayLocal(stackSize);
     values_ = Object::makeObjectArrayLocal(maxNumValues_);

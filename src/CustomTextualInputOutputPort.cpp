@@ -58,9 +58,8 @@ CustomTextualInputOutputPort::CustomTextualInputOutputPort(VM* theVM,
       getPositionProc_(getPositionProc),
       setPositionProc_(setPositionProc),
       closeProc_(closeProc),
-      buffer_(UC("")),
-      line_(1),
-      isClosed_(false)
+      buffer_(UC(""))
+      
 {
     MOSH_ASSERT(readProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());

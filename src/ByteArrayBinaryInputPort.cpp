@@ -41,7 +41,7 @@
 
 using namespace scheme;
 
-ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int64_t size) : buf_(buf), size_(size), index_(0), isClosed_(false), isPseudoClosed_(false)
+ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int64_t size) : buf_(buf), size_(size) 
 {
 }
 

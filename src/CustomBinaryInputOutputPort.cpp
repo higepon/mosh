@@ -54,10 +54,8 @@ CustomBinaryInputOutputPort::CustomBinaryInputOutputPort(VM* theVM,
       writeProc_(writeProc),
       getPositionProc_(getPositionProc),
       setPositionProc_(setPositionProc),
-      closeProc_(closeProc),
-      isClosed_(false),
-      isPseudoClosed_(false),
-      aheadU8_(EOF)
+      closeProc_(closeProc)
+      
 {
     MOSH_ASSERT(readProc_.isProcedure());
     MOSH_ASSERT(writeProc_.isProcedure());

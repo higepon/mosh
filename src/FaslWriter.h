@@ -59,7 +59,7 @@ private:
     ObjectVector sharedObjectVector_;
     BinaryOutputPort* outputPort_;
 
-    int uid_;
+    int uid_{0};
 };
 
 }; // namespace scheme

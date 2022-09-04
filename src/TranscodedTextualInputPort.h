@@ -55,7 +55,7 @@ private:
 
     BinaryInputPort* const port_;
     Transcoder* const transcoder_;
-    bool isClosed_;
+    bool isClosed_{false};
 };
 
 } // namespace scheme

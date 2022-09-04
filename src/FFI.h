@@ -115,9 +115,9 @@ private:
     int count_{0};
 #ifdef ARCH_X86_64
     intptr_t xmm_[8];
-    int xmmCount_;
+    int xmmCount_{0};
     intptr_t reg_[6];
-    int regCount_;
+    int regCount_{0};
 #endif
     ucs4string lastError_;
 };
