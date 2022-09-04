@@ -41,7 +41,7 @@ class Transcoder EXTEND_GC
 {
 public:
 
-    Transcoder(Codec* codec);
+    explicit Transcoder(Codec* codec);
     Transcoder(Codec* codec, EolStyle eolStyle);
     Transcoder(Codec* codec, EolStyle eolStyle, enum ErrorHandlingMode handlingMode);
 

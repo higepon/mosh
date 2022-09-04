@@ -65,7 +65,7 @@ public:
         }
     }
 
-    ByteVector(const gc_vector<uint8_t>& v) : length_(v.size())
+    explicit ByteVector(const gc_vector<uint8_t>& v) : length_(v.size())
     {
 #ifdef USE_BOEHM_GC
         data_ = new(PointerFreeGC) uint8_t[length_];
@@ -87,7 +87,7 @@ public:
         memcpy(data_, p, length);
     }
 
-    ByteVector(Object pair) : length_(Pair::length(pair))
+    explicit ByteVector(Object pair) : length_(Pair::length(pair))
     {
         MOSH_ASSERT(pair.isPair() || pair.isNil());
 

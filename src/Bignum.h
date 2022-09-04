@@ -68,7 +68,7 @@ private:
     mpz_t value_;
 
     // N.B. mpz_t is shared between caller and this class.
-    Bignum(mpz_t value)
+    explicit Bignum(mpz_t value)
     {
         value_[0] = value[0];
     }
@@ -92,7 +92,7 @@ public:
         mpz_clear(value_);
     }
 
-    Bignum(long value)
+    explicit Bignum(long value)
     {
         mpz_init(value_);
         mpz_set_si(value_, value);
