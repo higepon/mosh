@@ -65,7 +65,7 @@ Object scheme::currentDirectoryEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     const Object path = getCurrentDirectory();
     if (path.isFalse()) {
-        callAssertionViolationAfter(theVM, procedureName, "current-directory failed", L1(getLastErrorMessage()));
+        callAssertionViolationAfter(theVM, procedureName, "current-directory failed", L1(Object(getLastErrorMessage())));
         return Object::Undef;
     } else {
         return path;
@@ -80,7 +80,7 @@ Object scheme::setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv)
     if (setCurrentDirectory(path->data())) {
         return Object::Undef;
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(getLastErrorMessage(), argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(Object(getLastErrorMessage()), argv[0]));
         return Object::Undef;
     }
 }
@@ -96,7 +96,7 @@ Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     const pid_t pid = fork();
     if (-1 == pid) {
-        callAssertionViolationAfter(theVM, procedureName, "can't fork", L1(getLastErrorMessage()));
+        callAssertionViolationAfter(theVM, procedureName, "can't fork", L1(Object(getLastErrorMessage())));
         return Object::Undef;
     }
 
@@ -128,7 +128,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
     int status;
     pid_t child = waitpid(target, &status, 0);
     if (-1 == child) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], getLastErrorMessage()));
+        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], Object(getLastErrorMessage())));
         return Object::Undef;
     }
 

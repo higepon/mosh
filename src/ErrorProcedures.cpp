@@ -114,10 +114,14 @@ Object scheme::callIOReadErrorAfter(VM* theVM, Object who, Object message, Objec
     return raiseAfter3(theVM, UC("raise-i/o-read-error"), who, message, port);
 }
 
-
 Object scheme::callIOErrorAfter(VM* theVM, Object who, Object message, Object irritants)
 {
     return raiseAfter3(theVM, UC("raise-i/o-read-error"), who, message, irritants);
+}
+
+Object scheme::callIOErrorAfter(VM* theVM, Object who, const ucs4string& message, Object irritants)
+{
+    return callIOErrorAfter(theVM, who, Object(message), irritants);
 }
 
 Object scheme::callIOErrorAfter(VM* theVM, IOError e)
@@ -145,6 +149,11 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
 
     }
     return Object::Undef;
+}
+
+Object scheme::throwIOError2(int type, const ucs4string& message, Object irritants /* = Object::Nil */)
+{
+    return throwIOError2(type, Object(message), irritants);
 }
 
 Object scheme::throwIOError2(int type, Object message, Object irritants /* = Object::Nil */)
@@ -217,6 +226,11 @@ void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Obj
 Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position)
 {
     return raiseAfter4(theVM, UC("raise-i/o-invalid-position-error"), who, message, irritants, position);
+}
+
+Object scheme::callAssertionViolationAfter(VM* theVM, Object who, const ucs4string& message, Object irritants /* = Object::Nil */)
+{
+    return callAssertionViolationAfter(theVM, who, Object(message), irritants);
 }
 
 Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
@@ -305,12 +319,28 @@ Object scheme::callIoFileProtectionAfter(VM* theVM, Object who, Object message, 
     return raiseAfter3(theVM, UC("raise-i/o-file-protection-error"), who, message, filename);
 }
 
+Object scheme::callIoFileProtectionAfter(VM* theVM, Object who, const ucs4string& message, Object filename)
+{
+    return callIoFileProtectionAfter(theVM, who, Object(message), filename);
+}
+
+
 Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object who, Object message, Object filename)
 {
     return raiseAfter3(theVM, UC("raise-i/o-file-is-read-only-error"), who, message, filename);
 }
 
+Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object who, const ucs4string& message, Object filename)
+{
+    return callIoFileReadOnlyAfter(theVM, who, Object(message), filename);
+}
+
 Object scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
     return raiseAfter3(theVM, UC("error"), who, message, irritants);
+}
+
+Object scheme::callErrorAfter(VM* theVM, Object who, const ucs4string& message, Object irritants /* = Object::Nil */)
+{
+    return raiseAfter3(theVM, UC("error"), who, Object(message), irritants);
 }

@@ -161,7 +161,7 @@ Object VM::getClosureName(Object closure)
     if (closure.isCProcedure()) {
         return getCProcedureName(closure);
     } else if (closure.isCallable()) {
-        return closure.toCallable()->toString();
+        return Object(closure.toCallable()->toString());
     } else if (closure.isClosure()) {
         return "my-todo";
 //         const Object name = nameSpace->ref(closure, notFound_);

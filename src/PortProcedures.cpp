@@ -1070,7 +1070,7 @@ Object scheme::fileTostringEx(VM* theVM, int argc, const Object* argv)
         for (ucs4char ch = in->getChar(); ch != EOF; ch = in->getChar()) {
             ret += ch;
         }
-        return ret;
+        return Object(ret);
     } else {
         return "";
     }

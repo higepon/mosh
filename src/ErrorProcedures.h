@@ -85,8 +85,11 @@ extern bool isErrorBufInitialized;
     class VM;
 
     Object throwIOError2(int type, Object message, Object irritants = Object::Nil);
+    Object throwIOError2(int type, const ucs4string& message, Object irritants = Object::Nil);
+
     Object callIOErrorAfter(VM* theVM, IOError e);
     Object callIOErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callIOErrorAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil);    
     Object callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position);
     Object callIOReadErrorAfter(VM* theVM, Object who, Object message, Object port);
     Object throwEx(VM* theVM, int argc, const Object* argv);
@@ -94,7 +97,9 @@ extern bool isErrorBufInitialized;
     Object callLexicalAndIOReadAfter(VM* theVM, Object who, Object message);
     Object callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object filename);
     Object callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callAssertionViolationAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil);    
     Object callUndefinedViolationAfter(VM* theVM, Object who, Object message);
+    Object callUndefinedViolationAfter(VM* theVM, Object who, const ucs4string& message);    
 
     void callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     Object callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants);
@@ -107,8 +112,12 @@ extern bool isErrorBufInitialized;
 
     Object callIoFileAlreadyExistAfter(VM* theVM, Object who, Object message, Object filname);
     Object callIoFileProtectionAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callIoFileProtectionAfter(VM* theVM, Object who, const ucs4string& message, Object filename);    
+    Object callIoFileProtectionAfter(VM* theVM, Object who, const ucs4string& message, Object filename);
     Object callIoFileReadOnlyAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callIoFileReadOnlyAfter(VM* theVM, Object who, const ucs4string& message, Object filename);
     Object callErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callErrorAfter(VM* theVM, Object who, const ucs4string& message, Object irritants = Object::Nil);
 } // namespace scheme
 
 #endif // SCHEME_VIOLATION_PROCEDURES_
