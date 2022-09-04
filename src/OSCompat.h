@@ -127,7 +127,7 @@ namespace scheme {
             Current,
             End
         };
-        File(Handle desc = INVALID_HANDLE_VALUE)
+        explicit File(Handle desc = INVALID_HANDLE_VALUE)
             : desc_(desc)
 #ifdef _WIN32
             , prevC_(-1)
