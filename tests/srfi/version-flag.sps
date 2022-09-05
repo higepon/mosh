@@ -5,6 +5,7 @@
 
 (check-set-mode! 'report-failed)
 
+(write (version-alist))
 (check (list? (version-alist)) => #t)
 (check (string? (cadr (assq 'version (version-alist)))) => #t)
 
