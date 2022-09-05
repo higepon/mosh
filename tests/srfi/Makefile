@@ -3,7 +3,7 @@
 test-run:
 	$(MOSH_TARGET) --loadpath=../../lib and-let.sps
 	$(MOSH_TARGET) --loadpath=../../lib cut.sps
-	$(MOSH_TARGET) --loadpath=../../lib version-flag.sps
+	$(MOSH_TARGET) --loadpath=../../lib version.sps
 
 known-good:
 	$(MOSH_TARGET) --loadpath=../../lib eager-comprehensions.sps

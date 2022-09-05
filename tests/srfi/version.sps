@@ -1,11 +1,12 @@
 (import 
   (rnrs)
+  (mosh pp)
   (srfi :78 lightweight-testing)
-  (srfi :176 version-flag))
+  (srfi :176 version))
 
 (check-set-mode! 'report-failed)
 
-(write (version-alist))
+(pp (version-alist))
 (check (list? (version-alist)) => #t)
 (check (string? (cadr (assq 'version (version-alist)))) => #t)
 

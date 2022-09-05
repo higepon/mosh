@@ -1,4 +1,4 @@
-(library (srfi :176 version-flag)
+(library (srfi :176 version)
          (export version-alist)
          (import (rnrs) (only (mosh config) get-config))
 
@@ -6,10 +6,10 @@
   `((version ,(get-config "version"))
       (command "mosh")
       (scheme.id mosh)
-      (install-dir ,(string-append (get-config "prefix") "/bin"))
+      (install-dir ,(get-config "prefix"))
       (languages scheme r6rs)
       (encodings utf-8)
-      (cache-path ,(get-config "mosh-cache-dir"))
+      (mosh.cache-path ,(get-config "mosh-cache-dir"))
       (website "https://mosh.monaos.org/")
       (scheme.path ,(get-config "library-path"))
   ))
