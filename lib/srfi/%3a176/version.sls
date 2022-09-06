@@ -1,6 +1,8 @@
 (library (srfi :176 version)
          (export version-alist)
-         (import (rnrs) (only (mosh config) get-config))
+         (import (rnrs)
+                 (only (mosh config) get-config)
+                 (only (mosh) library-path))
 
 (define (version-alist)
   `((version ,(get-config "version"))
@@ -11,6 +13,6 @@
       (encodings utf-8)
       (mosh.cache-path ,(get-config "mosh-cache-dir"))
       (website "https://mosh.monaos.org/")
-      (scheme.path ,(get-config "library-path"))
+      (scheme.path ,@(library-path))
   ))
 )
