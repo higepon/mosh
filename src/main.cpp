@@ -110,6 +110,13 @@ void showVersion()
 #else
     printf("Mosh R6RS scheme interpreter, version %s\n", PACKAGE_VERSION);
 #endif
+    // SRFI-176.
+    printf("\n");
+    printf("(version \"" PACKAGE_VERSION "\")\n");
+    printf("(scheme.id mosh)\n");
+    printf("(languages scheme r6rs)\n");
+    printf("(encodings utf-8)\n");
+    printf("(website \"https://mosh.monaos.org/\")\n");
     exit(0);
 }
 
