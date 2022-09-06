@@ -2,11 +2,11 @@
          (export version-alist)
          (import (rnrs)
                  (only (mosh config) get-config)
-                 (only (mosh) library-path))
+                 (only (mosh) library-path mosh-executable-name))
 
 (define (version-alist)
   `((version ,(get-config "version"))
-      (command "mosh")
+      (command ,(mosh-executable-name))
       (scheme.id mosh)
       (install-dir ,(get-config "prefix"))
       (languages scheme r6rs)
