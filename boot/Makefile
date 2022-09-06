@@ -13,7 +13,7 @@ CORE_LIBS =                 \
 
 CORE_INCLUDE_LIBS = baselib/enum.scm baselib/condition.scm baselib/exception.scm baselib/records.scm
 
-TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp $(SRC_DIR)/nmosh_image.cpp compiler-vm-cpp.scm
+TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp $(SRC_DIR)/nmosh_image.cpp compiler-vm-cpp.scm free-vars-decl.scm
 
 all: $(TARGET)
 
