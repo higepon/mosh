@@ -357,8 +357,6 @@
             prefix)]
          [else prefix])))
 
-
-
   (current-precompiled-library-loader load-serialized-library)
 
 
@@ -414,7 +412,6 @@
 ;;                         (format (current-error-port) "** ERROR in command line option  '--loadpath': directory ~s not exist~%" path))))
 ;;                      (reverse (string-split paths #\:))))])
 
-
 #;  (library-path (append (library-path) (list (string-append (current-directory) "/lib")
                       (string-append (standard-library-path) "/lib")
                       )))
@@ -428,7 +425,7 @@
   (when (file-exists? (string-append (standard-library-path) "/lib"))
     (add-library-path! (string-append (standard-library-path) "/lib")))
 
-  (let ([prefix
+   (let ([prefix
            (lambda (ext ls)
              (append (map (lambda (x) (string-append ext x)) ls) ls))])
       (library-extensions
@@ -464,6 +461,7 @@
 ;  (load-r6rs-top-level (car (command-line)) 'load (cdr (command-line)))])
 
   (library-path (local-library-path (car (command-line))))
+
   (set! x* (with-input-from-file (car (command-line))
                 (lambda ()
                   (let f ()
