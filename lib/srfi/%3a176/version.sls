@@ -11,7 +11,7 @@
       (install-dir ,(get-config "prefix"))
       (languages scheme r6rs)
       (encodings utf-8)
-      (mosh.cache-path ,(get-config "mosh-cache-dir"))
+      (mosh.cache-dir ,(get-config "mosh-cache-dir"))
       (website "https://mosh.monaos.org/")
       (scheme.path ,@(library-path))
   ))
