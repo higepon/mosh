@@ -8,7 +8,7 @@ psyntax/library-manager.ss \
 psyntax/main.ss
 
 ROOT_DIR= ../../..
-MOSH=$(ROOT_DIR)/mosh
+MOSH=mosh
 
 # 1. Expand psyntax.scm using Mosh.
 # 2. Copy the generated psyntax.scm to /saved so that you can commit generated psyntax.scm just in case.
