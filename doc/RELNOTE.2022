@@ -20,4 +20,5 @@ About This Release
 
 Minor release to support M1 mac.
 
-extlib/: Updated Boehm GC to the latest.
+- Added SRFI 176 support. Huge thanks to Lassi Kortela.
+- extlib/: Updated Boehm GC to the latest.
