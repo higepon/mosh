@@ -15,7 +15,7 @@ CORE_INCLUDE_LIBS = baselib/enum.scm baselib/condition.scm baselib/exception.scm
 
 TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp $(SRC_DIR)/nmosh_image.cpp
 
-all: bootstrap $(TARGET)
+all: $(TARGET)
 
 always:
 	# always target
@@ -68,8 +68,9 @@ baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 free-vars-decl.scm: free-vars.scm
 	mosh --disable-acc $(SCRIPTS_DIR)/gen-free-vars-decl.scm $< > $@
 
-bootstrap:
-	cp -p runtimes/psyntax-mosh/psyntax.master/psyntax.scm runtimes/psyntax-mosh/
+# This is used only if expand is not working somehow.
+#bootstrap:
+#	cp -p runtimes/psyntax-mosh/psyntax.master/psyntax.scm runtimes/psyntax-mosh/
 
 clean:
 	$(RM) *.scmc *.scmc-e *.scmc.fasl match.h baselib.h baselib.scm compiler-vm-cpp.scm compiler-vm.scm free-vars-decl.scm *image.cpp
