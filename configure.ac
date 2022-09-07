@@ -39,7 +39,7 @@ AC_ARG_WITH([r6rs-doc],
   AC_HELP_STRING([--with-r6rs-doc=PATH],
                  [build R6RS docs from TeX source at PATH]),
   AC_SUBST([R6RS_DOC_PATH], "$withval"),
-  AC_SUBST([R6RS_DOC_PATH], "$HOME/Desktop/r6rs"))
+  AC_SUBST([R6RS_DOC_PATH], "$HOME/r6rs"))
 
 # Prerequisites
 
