@@ -108,8 +108,8 @@ jobs:
           ./configure --with-r6rs-doc=../r6rs &&
           make &&
           make test &&
-          make doc &&
-          sudo make install
+          sudo make install &&
+          make dist
       - name: Run clang-tidy and treat warnings as error using bear 2.x.
         if: matrix.os == 'ubuntu-latest'
         run: >
