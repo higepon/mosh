@@ -1,17 +1,16 @@
-mosh on Mac OS X
+mosh on macOS
 ================
 
 1. Install
 ----------
 
-(Homebrew includes mosh as a fomula. Say "brew install mosh" to install it.)
-
 To install this source package:
 
-- Install following using MacPorts:
-  oniguruma5
+- Install following using homebrea package:
+  oniguruma
   gmp
-- M1 Macs are experimentaly supported on 0.2.8_RC3:
+- M1 Macs are experimentaly supported on 0.2.8_RC3 or later.:
+
 ```
 export CPATH=/opt/homebrew/include
 export LIBLARY_PATH=/opt/homebrew/lib
@@ -19,15 +18,6 @@ export LIBLARY_PATH=/opt/homebrew/lib
 make
 make test
 ```
-- 10.5 or 10.6: ./configure CFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
-  10.7        : ./configure CFLAGS=-I/opt/local/include \
-                            LDFLAGS=-L/opt/local/lib \
-                            CC=gcc-4.2 CXX=g++-4.2
-
-- make
-- sudo make install
-
-Alternatively, you can use CMake and XCode. See README.CMake for details.
 
 2. Limitations
 --------------
@@ -36,3 +26,29 @@ Alternatively, you can use CMake and XCode. See README.CMake for details.
   architecture. set CC=i686-darwin10-gcc CXX=i686-darwin10-c++ or so 
   to avoid this problem.
 - CMake builds does not support FFI callbacks.
+
+3. Old versions
+- 10.5 or 10.6: ./configure CFLAGS=-I/opt/local/include LDFLAGS=-L/opt/local/lib
+  10.7        : ./configure CFLAGS=-I/opt/local/include \
+                            LDFLAGS=-L/opt/local/lib \
+                            CC=gcc-4.2 CXX=g++-4.2
+                         
+- make
+- sudo make install
+
+Alternatively, you can use CMake and XCode. See README.CMake for details.
+
+## Building on OSX Lion
+
+    % CFLAGS='-arch i386 -m32'  ./configure --prefix=~/lib-for-mosh && make && make install # 32bit oniguruma
+    % ABI=32 ./configure --prefix=~/lib-for-mosh && make && make install # 32bit libgmp
+    % git clone git://github.com/higepon/mosh.git
+    % cd mosh
+    % export PATH=/Users/taro/lib-for-mosh/bin:$PATH # for onig-config
+    % export CC=clang
+    % export CXX=clang++
+    % ./gen-git-build.sh
+    % CFLAGS='-arch i386' CXXFLAGS='-arch i386' LDFLAGS="-L/Users/higepon/lib-for-mosh/lib"  ./configure --without-nmosh-defaults
+    % make
+    % make check
+    % make install
