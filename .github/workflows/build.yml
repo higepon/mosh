@@ -146,6 +146,13 @@ jobs:
         with:
           name: source
           path: mosh-latest/mosh-*.tar.gz
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        if: |
+          startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            mosh-latest/mosh-*.tar.gz
 
   build-macos:
     strategy:
