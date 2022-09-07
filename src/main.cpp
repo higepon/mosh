@@ -110,6 +110,13 @@ void showVersion()
 #else
     printf("Mosh R6RS scheme interpreter, version %s\n", PACKAGE_VERSION);
 #endif
+    // SRFI-176.
+    printf("\n");
+    printf("(version \"" PACKAGE_VERSION "\")\n");
+    printf("(scheme.id mosh)\n");
+    printf("(languages scheme r6rs)\n");
+    printf("(encodings utf-8)\n");
+    printf("(website \"https://mosh.monaos.org/\")\n");
     exit(0);
 }
 
@@ -299,6 +306,7 @@ int main(int argc, char *argv[])
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
     theVM->setValueString(UC("%invoke-applet"),Object::makeBool(invokeApplet));
     theVM->setValueString(UC("%nmosh-guru-mode"),Object::makeBool(isGuruMode));
+    theVM->setValueString(UC("%mosh-executable-name"),Object("nmosh"));
 #ifdef WITH_NMOSH_PORTABLE
     theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(1));
 #else
@@ -313,6 +321,7 @@ int main(int argc, char *argv[])
 #else // WITH_NMOSH_DEFAULTS
     theVM->setValueString(UC("%nmosh-portable-mode"),Object::makeBool(false));
     theVM->setValueString(UC("%nmosh-prefixless-mode"),Object::makeBool(false));
+    theVM->setValueString(UC("%mosh-executable-name"),Object("mosh"));
 #endif
     if (isTestOption) {
         theVM->loadFileWithGuard(ucs4string(UC("all-tests.scm")));

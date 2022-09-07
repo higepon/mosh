@@ -952,7 +952,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         std::string chop(path, ret);
         int pos = chop.find_last_of('/');
         if (pos > 0) {
-            return ucs4string::from_c_str(chop.substr(0, pos + 1).c_str());
+            return ucs4string::from_c_str(chop.substr(0, pos).c_str());
         }
     }
     isErrorOccured = true;

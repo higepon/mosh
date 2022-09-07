@@ -15,6 +15,7 @@
     make-compiler-instruction
     source-info
     make-file-options
+    mosh-executable-name
     mosh-executable-path
     make-condition-variable
     condition-variable-wait!
@@ -88,6 +89,7 @@
       make-compiler-instruction
       source-info
       make-file-options
+      mosh-executable-name
       mosh-executable-path
       make-condition-variable
       condition-variable-wait!

@@ -68,6 +68,7 @@
  (include "free-vars-decl.scm")
  (define (make-list-with-src-slot lst) (if (pair? lst) (annotated-cons (car lst) (cdr lst)) lst))
  (define (command-line) *command-line-args*)
+ (define (mosh-executable-name) %mosh-executable-name)
  (define (get-command-line) *command-line-args*) ;; required for psyntax
  (define (errorf form . args) (error 'compiler (apply format form args)))
 

@@ -3311,7 +3311,7 @@
 [definition
   (define mosh 
     (string-append
-      (mosh-executable-path)
+      (mosh-executable-path) "/"
       (if (string=? (host-os) "win32") ".\\mosh.exe" "./mosh")))
 ]
 ;; with-input-from-file and current-input-port
