@@ -101,7 +101,7 @@ jobs:
         run: >
           cd ${{ github.workspace }}/mosh-latest &&
           ./gen-git-build.sh &&
-          ./configure &&
+          ./configure --with-r6rs-doc=/root/r6rs &&
           make &&
           make test &&
           make doc &&
