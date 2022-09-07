@@ -43,4 +43,4 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 Please see [doc](https://github.com/higepon/mosh/tree/master/doc) and [INSTALL](https://github.com/higepon/mosh/blob/master/INSTALL).
 
 ## Building mosh.git
-To build mosh.git you need release version mosh installed. You can see Please use and check [docker/dev](https://github.com/higepon/mosh/tree/master/docker/) to build.
+To build mosh.git you need to have release version mosh and some other tools installed. Please use and see [docker/dev](https://github.com/higepon/mosh/tree/master/docker/) to build.
