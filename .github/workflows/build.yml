@@ -53,7 +53,7 @@ jobs:
           mv NaturalDocs-1.4.zip ~/ &&
           mkdir -p ~/NaturalDocs-1.4 &&
           cd ~/NaturalDocs-1.4 &&
-          unzip ../NaturalDocs-1.4.zip
+          unzip -o ../NaturalDocs-1.4.zip
       - name: Cache Oniguruma
         id: cache-oniguruma-linux
         uses: actions/cache@v3
@@ -173,6 +173,7 @@ jobs:
           echo "CFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
           echo "CXXFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
           echo "STABLE_MOSH_PATH=mosh-0.2.8-rc3" >> $GITHUB_ENV
+          echo "NATURAL_DOCS_PATH=~/NaturalDocs-1.4" >> $GITHUB_ENV
           # FIXME: Disable GC during CI for now
           echo "GC_DONT_GC=1" >> $GITHUB_ENV
       - name: Instlall tools
@@ -205,7 +206,7 @@ jobs:
           mv NaturalDocs-1.4.zip ~/ &&
           mkdir -p ~/NaturalDocs-1.4 &&
           cd ~/NaturalDocs-1.4 &&
-          unzip ../NaturalDocs-1.4.zip
+          unzip -o ../NaturalDocs-1.4.zip
       - name: Cache Stable Mosh
         id: cache-stable-mosh-macos
         uses: actions/cache@v3
