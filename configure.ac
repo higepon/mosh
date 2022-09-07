@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.62)
-AC_INIT(mosh, 0.2.8, higepon@users.sourceforge.jp)
+AC_INIT(mosh, 0.2.8-rc4, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE([foreign])
@@ -53,7 +53,7 @@ AC_ARG_WITH([r6rs-doc],
   AC_HELP_STRING([--with-r6rs-doc=PATH],
                  [build R6RS docs from TeX source at PATH]),
   AC_SUBST([R6RS_DOC_PATH], "$withval"),
-  AC_SUBST([R6RS_DOC_PATH], "$HOME/Desktop/r6rs"))
+  AC_SUBST([R6RS_DOC_PATH], "$HOME/r6rs"))
 
 # Prerequisites
 

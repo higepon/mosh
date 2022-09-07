@@ -15,14 +15,44 @@ jobs:
     steps:
       - name: Set env
         run: |
+          pwd
           echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
           echo "STABLE_MOSH_PATH=mosh-0.2.8-rc3" >> $GITHUB_ENV
           echo "ONIGURUMA_PATH=onig-5.9.6" >> $GITHUB_ENV
+          echo "NATURAL_DOCS_PATH=~/NaturalDocs-1.4" >> $GITHUB_ENV
+          echo "R6RS_DOC_PATH=r6rs" >> $GITHUB_ENV          
       - name: Install tools
         run: |
           sudo apt update
           sudo apt install -y gauche wget make libgmp-dev autoconf automake golang-go
-          sudo apt install -y re2c bison subversion git bear clang-tidy
+          sudo apt install -y re2c bison git bear clang-tidy unzip
+      - name: Cache R6RS doc
+        id: cache-r6rs-doc-linux
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.R6RS_DOC_PATH }}
+          key: ${{ matrix.os }}-${{ env.R6RS_DOC_PATH }}
+          restore-keys: ${{ matrix.os }}-${{ env.R6RS_DOC_PATH }}  
+      - name: Get R6RS doc
+        if: steps.cache-r6rs-doc-linux.outputs.cache-hit != 'true'
+        run: >
+          wget http://www.r6rs.org/final/r6rs.tar.gz &&
+          tar zvxf r6rs.tar.gz
+      - name: Cache NaturalDocs
+        id: cache-natural-docs-linux
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.NATURAL_DOCS_PATH }}
+          key: ${{ matrix.os }}-${{ env.NATURAL_DOCS_PATH }}
+          restore-keys: ${{ matrix.os }}-${{ env.NATURAL_DOCS_PATH }}
+      - name: Install NaturalDocs
+        if: steps.cache-natural-docs-linux.outputs.cache-hit != 'true'
+        run: >
+          wget -O NaturalDocs-1.4.zip https://sourceforge.net/projects/naturaldocs/files/Stable%20Releases/1.4/NaturalDocs-1.4.zip/download &&
+          mv NaturalDocs-1.4.zip ~/ &&
+          mkdir ~/NaturalDocs-1.4 &&
+          cd ~/NaturalDocs-1.4 &&
+          unzip ../NaturalDocs-1.4.zip
       - name: Cache Oniguruma
         id: cache-oniguruma-linux
         uses: actions/cache@v3
@@ -71,12 +101,15 @@ jobs:
           path: mosh-latest
       - name: Build and test the latest changes.
         run: >
+          ls -la &&
+          ls -la ~/NaturalDocs-1.4 &&
           cd ${{ github.workspace }}/mosh-latest &&
           ./gen-git-build.sh &&
-          ./configure &&
+          ./configure --with-r6rs-doc=../r6rs &&
           make &&
           make test &&
-          sudo make install
+          sudo make install &&
+          make dist
       - name: Run clang-tidy and treat warnings as error using bear 2.x.
         if: matrix.os == 'ubuntu-latest'
         run: >
@@ -109,6 +142,18 @@ jobs:
           jj -i tmp2.json '#(file!%"*tab.cpp")#' > compile_commands.json &&
           echo "jj successfully done" &&
           run-clang-tidy -header-filter=src -quiet
+      - uses: actions/upload-artifact@v2
+        with:
+          name: source
+          path: mosh-latest/mosh-*.tar.gz
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        if: |
+          startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: mosh-latest/doc/RELNOTE.2022
+          files: |
+            mosh-latest/mosh-*.tar.gz
 
   build-macos:
     strategy:
