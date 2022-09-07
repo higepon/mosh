@@ -111,6 +111,17 @@ jobs:
           make test &&
           sudo make install &&
           make dist
+      - name: Build the generated dist package.
+        run: >
+          cp mosh-latest/mosh-*.tar.gz /tmp &&
+          cd /tmp &&
+          tar zvxf *.tar.gz &&
+          export DIST_DIR=`find . -type d -name "mosh-*" | head -1` &&
+          cd $DIST_DIR &&
+          ./configure --prefix=tmp &&
+          make &&
+          make test &&
+          make install
       - name: Run clang-tidy and treat warnings as error using bear 2.x.
         if: matrix.os == 'ubuntu-latest'
         run: >
