@@ -19,7 +19,7 @@ jobs:
           echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
           echo "STABLE_MOSH_PATH=mosh-0.2.8-rc3" >> $GITHUB_ENV
           echo "ONIGURUMA_PATH=onig-5.9.6" >> $GITHUB_ENV
-          echo "NATURAL_DOCS_PATH=NaturalDocs-1.4" >> $GITHUB_ENV
+          echo "NATURAL_DOCS_PATH=~/NaturalDocs-1.4" >> $GITHUB_ENV
           echo "R6RS_DOC_PATH=r6rs" >> $GITHUB_ENV          
       - name: Install tools
         run: |
@@ -49,8 +49,9 @@ jobs:
         if: steps.cache-natural-docs-linux.outputs.cache-hit != 'true'
         run: >
           wget -O NaturalDocs-1.4.zip https://sourceforge.net/projects/naturaldocs/files/Stable%20Releases/1.4/NaturalDocs-1.4.zip/download &&
-          mkdir NaturalDocs-1.4 &&
-          cd NaturalDocs-1.4 &&
+          mv NaturalDocs-1.4.zip ~/ &&
+          mkdir ~/NaturalDocs-1.4 &&
+          cd ~/NaturalDocs-1.4 &&
           unzip ../NaturalDocs-1.4.zip
       - name: Cache Oniguruma
         id: cache-oniguruma-linux
