@@ -100,6 +100,7 @@ jobs:
           path: mosh-latest
       - name: Build and test the latest changes.
         run: >
+          ls -la &&
           cd ${{ github.workspace }}/mosh-latest &&
           ./gen-git-build.sh &&
           ./configure --with-r6rs-doc=../r6rs &&
@@ -139,6 +140,10 @@ jobs:
           jj -i tmp2.json '#(file!%"*tab.cpp")#' > compile_commands.json &&
           echo "jj successfully done" &&
           run-clang-tidy -header-filter=src -quiet
+      - uses: actions/upload-artifact@v2
+        with:
+          name: source
+          path: mosh-latest/mosh-*.tar.gz
 
   build-macos:
     strategy:
