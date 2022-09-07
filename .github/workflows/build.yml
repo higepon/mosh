@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gauche wget make libgmp-dev autoconf automake golang-go
-          sudo apt install -y re2c bison subversion git bear clang-tidy unzip
+          sudo apt install -y re2c bison git bear clang-tidy unzip
       - name: Cache R6RS doc
         id: cache-r6rs-doc-linux
         uses: actions/cache@v3
