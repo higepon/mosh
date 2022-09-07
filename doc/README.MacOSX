@@ -6,10 +6,10 @@ mosh on macOS
 
 To install this source package:
 
-- Install following using homebrea package:
+- Install following using homebrew package:
   oniguruma
   gmp
-- M1 Macs are experimentaly supported on 0.2.8_RC3 or later.:
+- M1 Macs are experimentally supported on 0.2.8-RC3 or later.:
 
 ```
 export CPATH=/opt/homebrew/include
