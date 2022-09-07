@@ -26,27 +26,28 @@ jobs:
           sudo apt update
           sudo apt install -y gauche wget make libgmp-dev autoconf automake golang-go
           sudo apt install -y re2c bison git bear clang-tidy unzip
+      # We share r6rs & NaturalDocs between Ubuntu and macOS.
       - name: Cache R6RS doc
-        id: cache-r6rs-doc-linux
+        id: cache-r6rs-doc
         uses: actions/cache@v3
         with:
           path: ${{ env.R6RS_DOC_PATH }}
           key: ${{ matrix.os }}-${{ env.R6RS_DOC_PATH }}
           restore-keys: ${{ matrix.os }}-${{ env.R6RS_DOC_PATH }}  
       - name: Get R6RS doc
-        if: steps.cache-r6rs-doc-linux.outputs.cache-hit != 'true'
+        if: steps.cache-r6rs-doc.outputs.cache-hit != 'true'
         run: >
           wget http://www.r6rs.org/final/r6rs.tar.gz &&
           tar zvxf r6rs.tar.gz
       - name: Cache NaturalDocs
-        id: cache-natural-docs-linux
+        id: cache-natural-docs
         uses: actions/cache@v3
         with:
           path: ${{ env.NATURAL_DOCS_PATH }}
           key: ${{ matrix.os }}-${{ env.NATURAL_DOCS_PATH }}
           restore-keys: ${{ matrix.os }}-${{ env.NATURAL_DOCS_PATH }}
       - name: Install NaturalDocs
-        if: steps.cache-natural-docs-linux.outputs.cache-hit != 'true'
+        if: steps.cache-natural-doc.outputs.cache-hit != 'true'
         run: >
           wget -O NaturalDocs-1.4.zip https://sourceforge.net/projects/naturaldocs/files/Stable%20Releases/1.4/NaturalDocs-1.4.zip/download &&
           mv NaturalDocs-1.4.zip ~/ &&
@@ -176,7 +177,35 @@ jobs:
           echo "GC_DONT_GC=1" >> $GITHUB_ENV
       - name: Instlall tools
         run: |
-          brew install gmp oniguruma automake re2c bison subversion gauche
+          brew install gmp oniguruma automake re2c bison gauche unzip
+      # We share r6rs & NaturalDocs between Ubuntu and macOS.
+      - name: Cache R6RS doc
+        id: cache-r6rs-doc
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.R6RS_DOC_PATH }}
+          key: ${{ matrix.os }}-${{ env.R6RS_DOC_PATH }}
+          restore-keys: ${{ matrix.os }}-${{ env.R6RS_DOC_PATH }}  
+      - name: Get R6RS doc
+        if: steps.cache-r6rs-doc.outputs.cache-hit != 'true'
+        run: >
+          curl -OL http://www.r6rs.org/final/r6rs.tar.gz &&
+          tar zvxf r6rs.tar.gz
+      - name: Cache NaturalDocs
+        id: cache-natural-docs
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.NATURAL_DOCS_PATH }}
+          key: ${{ matrix.os }}-${{ env.NATURAL_DOCS_PATH }}
+          restore-keys: ${{ matrix.os }}-${{ env.NATURAL_DOCS_PATH }}
+      - name: Install NaturalDocs
+        if: steps.cache-natural-doc.outputs.cache-hit != 'true'
+        run: >
+          curl -L -o NaturalDocs-1.4.zip https://sourceforge.net/projects/naturaldocs/files/Stable%20Releases/1.4/NaturalDocs-1.4.zip/download &&
+          mv NaturalDocs-1.4.zip ~/ &&
+          mkdir ~/NaturalDocs-1.4 &&
+          cd ~/NaturalDocs-1.4 &&
+          unzip ../NaturalDocs-1.4.zip
       - name: Cache Stable Mosh
         id: cache-stable-mosh-macos
         uses: actions/cache@v3
@@ -207,4 +236,9 @@ jobs:
           ./configure &&
           make &&
           make test &&
-          sudo make install
+          sudo make install &&
+          make dist
+      - uses: actions/upload-artifact@v2
+        with:
+          name: source
+          path: mosh-latest/mosh-*.tar.gz
