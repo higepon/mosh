@@ -51,7 +51,7 @@ jobs:
         run: >
           wget -O NaturalDocs-1.4.zip https://sourceforge.net/projects/naturaldocs/files/Stable%20Releases/1.4/NaturalDocs-1.4.zip/download &&
           mv NaturalDocs-1.4.zip ~/ &&
-          mkdir ~/NaturalDocs-1.4 &&
+          mkdir -p ~/NaturalDocs-1.4 &&
           cd ~/NaturalDocs-1.4 &&
           unzip ../NaturalDocs-1.4.zip
       - name: Cache Oniguruma
@@ -203,7 +203,7 @@ jobs:
         run: >
           curl -L -o NaturalDocs-1.4.zip https://sourceforge.net/projects/naturaldocs/files/Stable%20Releases/1.4/NaturalDocs-1.4.zip/download &&
           mv NaturalDocs-1.4.zip ~/ &&
-          mkdir ~/NaturalDocs-1.4 &&
+          mkdir -p ~/NaturalDocs-1.4 &&
           cd ~/NaturalDocs-1.4 &&
           unzip ../NaturalDocs-1.4.zip
       - name: Cache Stable Mosh
