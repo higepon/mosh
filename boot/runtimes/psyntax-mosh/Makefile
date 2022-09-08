@@ -10,8 +10,6 @@ psyntax/main.ss
 ROOT_DIR= ../../..
 MOSH=mosh
 
-# 1. Expand psyntax.scm using Mosh.
-# 2. Copy the generated psyntax.scm to /saved so that you can commit generated psyntax.scm just in case.
+# Expand psyntax.scm using pre-installed stable Mosh.
 psyntax.scm: $(PSYNTAX_SOURCES)
 	MOSH_GENSYM_PREFIX=`$(MOSH) print-prefix.ss` $(MOSH) psyntax-buildscript-mosh.ss
-	cp psyntax.scm saved/
