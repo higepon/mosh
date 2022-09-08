@@ -26,7 +26,7 @@ jobs:
           sudo apt update
           sudo apt install -y gauche wget make libgmp-dev autoconf automake golang-go
           sudo apt install -y re2c bison git bear clang-tidy unzip
-      # We share r6rs & NaturalDocs between Ubuntu and macOS.
+      # We share r6rs & NaturalDocs cache between Ubuntu and macOS.
       - name: Cache R6RS doc
         id: cache-r6rs-doc
         uses: actions/cache@v3
@@ -86,6 +86,7 @@ jobs:
           restore-keys: ${{ matrix.os }}-${{ env.STABLE_MOSH_PATH }}
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-linux.outputs.cache-hit != 'true'
+        # TODO(higepon): Replace this with 0.2.8 when it's released.
         run: >
           wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc3/mosh-0.2.8-rc3.tar.gz &&
           tar zvxf mosh-0.2.8-rc3.tar.gz &&
