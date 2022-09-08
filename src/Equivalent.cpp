@@ -29,6 +29,10 @@
  *  $Id: Equivalent.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#if !defined(_WIN32) && !defined(MONA)
+#define _XOPEN_SOURCE 700 // for random (SUSv4)
+#endif
+
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"

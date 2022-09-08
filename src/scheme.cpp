@@ -32,8 +32,12 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h> // for socklen_t
+#elif !defined(MONA)
+#define _XOPEN_SOURCE 700 // for srandom(SUSv4)
 #endif
+
 #include <stdio.h>
+#include <stdlib.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
