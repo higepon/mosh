@@ -156,7 +156,7 @@ jobs:
           run-clang-tidy -header-filter=src -quiet
       - uses: actions/upload-artifact@v2
         with:
-          name: source
+          name: source-${{ matrix.os }}
           path: mosh-latest/mosh-*.tar.gz
       - name: Upload to release
         uses: softprops/action-gh-release@v1
@@ -253,5 +253,5 @@ jobs:
           make dist
       - uses: actions/upload-artifact@v2
         with:
-          name: source
+          name: source-${{ matrix.os }}
           path: mosh-latest/mosh-*.tar.gz
