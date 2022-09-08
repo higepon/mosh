@@ -29,6 +29,10 @@
  *  $Id: OSCompatSocket.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#if !defined(_WIN32) && !defined(MONA)
+#define _POSIX_C_SOURCE 200809L // for addrinfo (POSIX 2001)
+#endif
+
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
