@@ -31,6 +31,8 @@
 
 #ifdef MONA
 #include <monapi.h>
+#elif defined(__APPLE__)
+#define _DARWIN_C_SOURCE 1 // for struct timezone
 #elif !defined(_WIN32)
 #define _POSIX_C_SOURCE 200809L // for popen, confstr
 #endif
