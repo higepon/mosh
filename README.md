@@ -1,5 +1,5 @@
 ## What is Mosh?
-Mosh is a free and fast interpreter for Scheme as specified in the R6RS.(R6RS is the latest revision of the Scheme standard)
+Mosh is a free and fast interpreter for Scheme as specified in the R6RS.
 The current release of Mosh supports all of the features R6RS.
 See detailed information on http://mosh.monaos.org.
 
@@ -14,9 +14,6 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 
 #### Build and Install
 ```sh
-% export LDFLAGS=-L/opt/homebrew/lib
-% export CFLAGS=-I$/opt/homebrew/include
-% export CXXFLAGS=-I/opt/homebrew/include
 % ./configure
 % make
 % make test
@@ -24,19 +21,10 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 ```
 
 ### Ubuntu
+
 #### Install Dependences
 ```sh
-# gmp
-% apt install libgmp-dev 
-
-# oniguruma
-% wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz
-% tar zvxf onig-5.9.6.tar.gz
-% cd onig-5.9.6
-% ./configure
-% make
-% make test
-% sudo make install
+% apt install libgmp-dev libonig-dev
 ```
 
 ### Other Platforms

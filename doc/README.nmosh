@@ -13,7 +13,8 @@ Simply, you can use it as mosh.
 Compatibility notes
 -------------------
  - nmosh is based on Andre van Tonder's R6RS macro and runtime implementation
-   see http://www.het.brown.edu/people/andre/macros/ for more info.
+   see http://web.archive.org/web/20210306215506/http://www.het.brown.edu/people/andre/macros/
+   for more info.
  - nmosh does not support following features included in psyntax-based mosh:
    - shared structure notation(SRFI-38)
    - shared namespace between "expand" and "run" phases
@@ -97,7 +98,7 @@ nrepl will load (nmosh) library by default. (nmosh) contains :
    - ^  : (^(a b c) (+ a b c)) == (lambda (a b c) (+ a b c))
    - ^x : (^a (+ a 1)) == (lambda (a) (+ a 1))
 
-(nmosh) library should not used by top-level programs.
+(nmosh) library should not be used by top-level programs.
 
 Program loading
 ---------------
@@ -124,14 +125,15 @@ to debug loadpath problems.
 porting guide
 =============
 
-Unfortunately, your script does not work under nmosh (but works under mosh)
+In case your script does not work under nmosh but works under mosh,
 try following to fix them.
 
 "Attempt to use binding of [foo] in library () at invalid level 1."
 -------------------------------------------------------------------
 
 nmosh has more strict rule for library import levels. If you intended to use
-library function (other than from (rnrs)), specify import level in your script.
+library function (other than from (rnrs)) during macro invocation, specify 
+import level in your script.
 
 e.g.)
    change (import (some library)) to (import (for (some library) run expand)) 
@@ -162,9 +164,6 @@ e.g.)
          (load "some/library.sls")
          (load "program.sps") ; (some library) available from here
 
-Future version of nmosh will provide cache-friendly version of (gensym)
-and (include "...").
-
 Runtime features
 ================
 
@@ -192,7 +191,7 @@ Minidebug
 When unhandled exception occurs in "expand" or "run" phase, nmosh will invoke 
 (nmosh debugger) to show some debugging information.
 
-Default debugger referenced as "minidebug". Currently, minidebug does not 
+Default debugger is referenced as "minidebug". Currently, minidebug does not 
 contain any interactive debugging feature. 
 
 Minidebug will show stack trace like:
