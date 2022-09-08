@@ -933,7 +933,7 @@ Object scheme::internalGetClosureNameEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     return theVM->getClosureName(argv[0]);
 #else
-    return ucs4string(("<unknown>"));
+    return Object("<unknown>");
 #endif
 }
 
