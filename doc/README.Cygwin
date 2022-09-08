@@ -1,4 +1,4 @@
-mosh on Cygwin 1.7
+mosh on Cygwin 3.x
 ==================
 
 1. Install
@@ -8,15 +8,12 @@ mosh on Cygwin 1.7
   libonig-devel
   libgmp-devel
   make
-  gcc4
-- ./configure
+- ./configure --disable-profiler
 - make
 - make install
 
 2. Limitations
 --------------
 
-- Cygwin's default compiler (gcc3) is known to miscompile Mosh.
-  Please install gcc4 via setup.exe.
-- Mosh repeatedly prints GC warnings. 
-- Mosh FFI cannot use for Cygwin libc. Use MSVCRT.DLL instead.
+- Mosh repeatedly prints GC warnings 
+- Mosh FFI is not supported on Cygwin
