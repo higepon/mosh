@@ -34,12 +34,13 @@
 
 #include "scheme.h"
 
-#ifndef _WIN32
-#include <sys/mman.h>
-#else
+#ifdef _WIN32
 #include <windows.h>
+#elif defined(__CYGWIN__)
+#include <windows.h>
+#else
+#include <sys/mman.h>
 #endif
-
 
 namespace scheme {
 
@@ -87,7 +88,7 @@ public:
         size_t roundAddr = iaddr & ~(pageSize - static_cast<size_t>(1));
         roundAddr_ = (uint8_t*)roundAddr;
         return roundAddr_;
-#elif defined(__GNUC__) && !defined(MOSH_MINGW32)
+#elif defined(__GNUC__) && !defined(MOSH_MINGW32) && !defined(__CYGWIN__)
         // obsolete?
         addr_ = (uint8_t*)valloc(size_);
 
@@ -97,7 +98,7 @@ public:
         int mode = PROT_READ | PROT_WRITE | PROT_EXEC;
         roundAddr_ = (uint8_t*)roundAddr;
         return mprotect(reinterpret_cast<void*>(roundAddr), size_ + (iaddr - roundAddr), mode) == 0;
-#elif defined(_WIN32)
+#elif defined(_WIN32) || defined(__CYGWIN__)
 		// addr_ = new uint8_t[size_];
         // DWORD oldProtect;
         // roundAddr_ = addr_;

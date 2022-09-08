@@ -130,6 +130,6 @@ no_sse:
     popq        %rbp
     ret
 
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__CYGWIN__)
 .section .note.GNU-stack,"",%progbits
 #endif
