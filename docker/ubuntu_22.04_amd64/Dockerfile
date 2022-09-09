@@ -6,7 +6,7 @@ WORKDIR /root
 
 RUN apt update # && apt -y upgrade
 RUN apt install -y gauche wget make libgmp-dev gcc g++ autoconf automake make
-RUN apt install -y re2c bison subversion autoconf automake git gdb g++ bear clang-tidy
+RUN apt install -y re2c bison subversion autoconf automake git gdb g++ bear clang-tidy pkg-config
 
 # Oniguruma
 RUN wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz
