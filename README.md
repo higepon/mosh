@@ -30,5 +30,12 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 ### Other Platforms
 Please see [doc](https://github.com/higepon/mosh/tree/master/doc) and [INSTALL](https://github.com/higepon/mosh/blob/master/INSTALL).
 
-## Building mosh.git
+## For mosh developers
+### Building mosh.git
 To build mosh.git you need to have release version mosh and some other tools installed. Please use and see [docker/dev](https://github.com/higepon/mosh/tree/master/docker/) to build.
+
+### Make a release.
+1. Update verions in configur.ac.
+1. Make sure GitHub Actions are all green.
+1.```git tag mosh-0.2.8-rc3 -a -m "mosh-0.2.8-rc3"``` and ```git push origin mosh-0.2.8-rc3``` will trigger the release build.
+
