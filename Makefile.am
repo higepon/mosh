@@ -341,7 +341,6 @@ boot/runtimes/psyntax-mosh/psyntax.scm \
 boot/runtimes/psyntax-mosh/psyntax \
 boot/runtimes/psyntax-mosh/Makefile \
 boot/runtimes/psyntax-mosh/print-prefix.ss \
-boot/runtimes/psyntax-mosh/psyntax-prefix.txt \
 doc/mosh.1 doc/mosh_config.1 \
 doc/RELNOTE lib src \
 tests src/call.inc.cpp ${GTEST_DIR} \
