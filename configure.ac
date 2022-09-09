@@ -1,13 +1,13 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.62)
-AC_INIT(mosh, 0.2.8-rc4, higepon@users.sourceforge.jp)
-AC_CANONICAL_SYSTEM
+AC_PREREQ([2.71])
+AC_INIT([mosh],[0.2.8-rc4],[higepon@users.sourceforge.jp])
+AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/VM.h])
-AC_CONFIG_HEADER([src/config.h])
+AC_CONFIG_HEADERS([src/config.h])
 
 # we don't like default CFLAGS(-O2 -g).
 AC_SUBST(CFLAGS)
@@ -50,8 +50,7 @@ AC_CHECK_PROGS(NATURALDOCS,
   [perl ~/NaturalDocs-1.4/NaturalDocs])
 
 AC_ARG_WITH([r6rs-doc],
-  AC_HELP_STRING([--with-r6rs-doc=PATH],
-                 [build R6RS docs from TeX source at PATH]),
+  AS_HELP_STRING([--with-r6rs-doc=PATH],[build R6RS docs from TeX source at PATH]),
   AC_SUBST([R6RS_DOC_PATH], "$withval"),
   AC_SUBST([R6RS_DOC_PATH], "$HOME/r6rs"))
 
@@ -66,13 +65,10 @@ PKG_CHECK_MODULES([GMP], [gmp],,
 
 ### OpenSSL (optional)
 have_openssl=no
-AC_TRY_LINK([#include <openssl/opensslv.h>],
-    [ return OPENSSL_VERSION_NUMBER; ],
-    [
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <openssl/opensslv.h>]], [[ return OPENSSL_VERSION_NUMBER; ]])],[
         have_openssl=1
         LIBS="-lssl -lcrypto $LIBS"
-    ],
-    [
+    ],[
         AC_MSG_WARN("libssl not found. OpenSSL Disabled...")
         have_openssl=0
     ])
@@ -431,7 +427,7 @@ AC_SUBST(MOSH_LDADD_ARCH)
 
 
 AC_ARG_WITH(mysql,
-  AC_HELP_STRING([--with-mysql=FULL_PATH_TO_libmysqlclient]),
+  AS_HELP_STRING([--with-mysql=FULL_PATH_TO_libmysqlclient]),
   [
   AC_SUBST(PATH_TO_MYSQLCLIENT, "$withval")
   ],
@@ -446,7 +442,15 @@ AC_ARG_ENABLE(developer, AS_HELP_STRING([--enable-developer],
 AM_CONDITIONAL(DEVELOPER, test x$enable_developer = xtrue)
 
 # Checks for header files.
-AC_HEADER_STDC
+m4_warn([obsolete],
+[The preprocessor macro `STDC_HEADERS' is obsolete.
+  Except in unusual embedded environments, you can safely include all
+  ISO C90 headers unconditionally.])dnl
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h sys/time.h utmp.h tr1/unordered_map ext/hash_map unistd.h])
 AC_CHECK_HEADERS([sys/types.h sys/wait.h sys/stat.h])
 
@@ -457,7 +461,20 @@ AC_C_INLINE
 AC_C_BIGENDIAN
 AC_TYPE_INT8_T
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
+m4_warn([obsolete],
+[Update your code to rely only on HAVE_SYS_TIME_H,
+then remove this warning and the obsolete code below it.
+All current systems provide time.h; it need not be checked for.
+Not all systems provide sys/time.h, but those that do, all allow
+you to include it and time.h simultaneously.])dnl
+AC_CHECK_HEADERS_ONCE([sys/time.h])
+# Obsolete code to be removed.
+if test $ac_cv_header_sys_time_h = yes; then
+  AC_DEFINE([TIME_WITH_SYS_TIME],[1],[Define to 1 if you can safely include both <sys/time.h>
+	     and <time.h>.  This macro is obsolete.])
+fi
+# End of obsolete code.
+
 AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 AC_C_VOLATILE
@@ -481,4 +498,5 @@ case "$target_in" in
 esac
 
 AC_CONFIG_FILES([Makefile])
-AC_OUTPUT(src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)
+AC_CONFIG_FILES([src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt])
+AC_OUTPUT
