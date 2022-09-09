@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gauche wget make libgmp-dev autoconf automake golang-go
-          sudo apt install -y re2c bison git bear clang-tidy unzip
+          sudo apt install -y re2c bison git bear clang-tidy unzip libonig-dev
       # We share r6rs & NaturalDocs cache between Ubuntu and macOS.
       - name: Cache R6RS doc
         id: cache-r6rs-doc
@@ -54,29 +54,6 @@ jobs:
           mkdir -p ~/NaturalDocs-1.4 &&
           cd ~/NaturalDocs-1.4 &&
           unzip -o ../NaturalDocs-1.4.zip
-      - name: Cache Oniguruma
-        id: cache-oniguruma-linux
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.ONIGURUMA_PATH }}
-          key: ${{ matrix.os }}-${{ env.ONIGURUMA_PATH }}
-          restore-keys: ${{ matrix.os }}-${{ env.ONIGURUMA_PATH }}
-      - name: Build Oniguruma
-        if: steps.cache-oniguruma-linux.outputs.cache-hit != 'true'
-        run: >
-          wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz &&
-          tar zvxf onig-5.9.6.tar.gz &&
-          cd $ONIGURUMA_PATH &&
-          rm config.sub &&
-          rm config.guess &&
-          wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess &&
-          wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub &&
-          ./configure &&
-          make
-      - name: Install Oniguruma
-        run: >
-          cd $ONIGURUMA_PATH &&
-          sudo make install
       - name: Cache Stable Mosh
         id: cache-stable-mosh-linux
         uses: actions/cache@v3
