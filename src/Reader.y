@@ -56,7 +56,7 @@ using namespace scheme;
 extern int yylex(YYSTYPE *lvalp);
 extern int yyerror(const char *);
 %}
-%pure_parser
+%define api.pure
 %token <stringValue> IDENTIFIER
 %token <boolValue> SCHEME_BOOLEAN
 %token <stringValue> STRING
