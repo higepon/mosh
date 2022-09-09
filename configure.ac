@@ -60,9 +60,17 @@ AC_ARG_WITH([r6rs-doc],
 LOCAL_CONFIGURE_ARGS="--host=$host --build=$build"
 
 ### GMP or MPIR(gmp API)
-PKG_CHECK_MODULES([GMP], [gmp],,
-                  [AC_CHECK_LIB([gmp], [__gmpz_init], ,
-                                [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/.])])])
+have_gmp=no
+AC_CHECK_LIB([gmp], [__gmpz_init], have_gmp=yes GMP_LIBS=-lgmp,)
+
+# Fallback to pkg-config
+AS_IF([test $have_gmp = no], [
+       PKG_CHECK_MODULES([GMP], [gmp], have_gmp=yes,)
+])
+
+if test $have_gmp = no; then
+    AC_MSG_ERROR("GNU MP not found. see http://gmplib.org/.")
+fi
 
 ### OpenSSL (optional)
 have_openssl=no
@@ -115,10 +123,10 @@ dnl if test $have_onig = "no" ; then
 dnl     AC_CHECK_LIB([onig],[regexec],[LIBS="$LIBS -lonig" have_onig="yes"])
 dnl fi
 
-# Option2: use pkg-config
-if test $have_onig = no; then
-    PKG_CHECK_MODULES([ONIG], [oniguruma], have_onig=yes, have_onig=no)
-fi
+# option2: Use pkg-config
+AS_IF([test $have_onig = no], [
+       PKG_CHECK_MODULES([ONIG], [oniguruma], have_onig=yes,)
+])
 
 if test $have_onig = "no" ; then
     AC_MSG_ERROR([oniguruma not found, mosh requires oniguruma 5.x])
