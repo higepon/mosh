@@ -9,7 +9,7 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 ### macOS
 #### Install Dependences
 ```sh
-% brew install gmp oniguruma
+% brew install pkg-config gmp oniguruma
 ```
 
 #### Build and Install
@@ -24,7 +24,7 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 
 #### Install Dependences
 ```sh
-% apt install libgmp-dev libonig-dev
+% apt install pkg-config libgmp-dev libonig-dev
 ```
 
 #### Build and Install
