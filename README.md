@@ -27,6 +27,14 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 % apt install libgmp-dev libonig-dev
 ```
 
+#### Build and Install
+```sh
+% ./configure
+% make
+% make test
+% sudo make install
+```
+
 ### Other Platforms
 Please see [doc](https://github.com/higepon/mosh/tree/master/doc) and [INSTALL](https://github.com/higepon/mosh/blob/master/INSTALL).
 
