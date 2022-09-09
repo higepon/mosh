@@ -129,7 +129,7 @@ static Object suffixToNumber(const ucs4string& text)
 {
   hasExplicitExact = false;
 }
-%pure_parser
+%define api.pure
 %token END_OF_FILE PLUS MINUS SLASH DOT AT MY_NAN MY_INF IMAG
 %token RADIX_2 RADIX_8 RADIX_10 RADIX_16
 
