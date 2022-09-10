@@ -3911,7 +3911,7 @@
                (inv* (map library-spec inv*))
                (visit-proc (lambda () (visit! macro*)))
                (invoke-proc
-                (lambda () (eval-core (let ([x (expanded->core invoke-code)]) (display x)))))
+                (lambda () (eval-core (expanded->core invoke-code))))
                (visit-code (build-visit-code macro*))
                (invoke-code invoke-code))
            (install-library id name ver
