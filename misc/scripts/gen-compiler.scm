@@ -1,3 +1,17 @@
+(define (file->list proc pth)
+  (with-input-from-file
+    pth
+    (lambda ()
+      (define (itr cur)
+        (let ((r (proc (current-input-port))))
+          (if (eof-object? r)
+            (reverse cur)
+            (itr (cons r cur)))))
+      (itr '()))))
+
+(define (file->sexp-list pth)
+  (file->list read pth))
+
 (define (extract-quasiquote-vector obj)
   (match obj
   (('define (name . args) ('quasiquote #(pat ...)))
