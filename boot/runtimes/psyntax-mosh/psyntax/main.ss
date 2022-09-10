@@ -481,6 +481,8 @@
   (let ([compiled (compile-r6rs-top-level x*)])
     (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
       (serialize-all serialize-library compile-core-expr))
+    (display "compiled=")
+    (display compiled)
     (compiled))])
 
   )

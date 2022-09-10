@@ -1447,24 +1447,33 @@
 
 (verify-map)
 
-
+;; For each library entry (r (rnrs) #t #t)
+;; call install-libraryx`x`
 (let ((all-names (map car identifier->library-map))
+      ;; Create list of symbols corresponds to identifiers.
       (all-labels (map (lambda (x) (gensym)) identifier->library-map))
+      ;; List of either
+      ;;   `(core-prim identifier-name)
+      ;;      or
+      ;;;   macro-name from psyntax-system-macros
       (all-bindings (map (lambda (x)
                            (cond
                              ((macro-identifier x) => cadr)
                              (else `(core-prim . ,x))))
                          (map car identifier->library-map))))
+  ;;        List of (identifier-name . sym)
   (let ((export-subst (map cons all-names all-labels))
+        ;;  List of (sym . env)
         (export-env (map cons all-labels all-bindings)))
+    ;; legend-entry: Example  (r (rnrs) #t #t)
     (define (build-library legend-entry)
-      (let ((key (car legend-entry))
-            (name (cadr legend-entry))
+      (let ((key (car legend-entry)) ;; r
+            (name (cadr legend-entry)) ;; (rnrs)
             (visible? (caddr legend-entry))
             (required? (cadddr legend-entry)))
         (when required?
           (let ((id     (gensym))
-                (name       name)
+                (name       name) ;; (rnrs)
                 (version     (if (eq? (car name) 'rnrs) '(6) '()))
                 (import-libs '())
                 (visit-libs  '())
@@ -1475,6 +1484,8 @@
                               (values
                                 (get-export-subset key export-subst)
                                 '()))))
+              (format #t "subst ~a" subst)
+              (format #t "env ~a" env)
               (parameterize ((current-library-collection
                               bootstrap-collection))
                 (install-library
@@ -1482,6 +1493,7 @@
                    subst env values values #f #f visible? #f)))))))
     (for-each build-library library-legend)))
 
+;; set-symbol-value!: symbol => primitive 
 (let ()
   (define-syntax define-prims
     (syntax-rules ()

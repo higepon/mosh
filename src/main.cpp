@@ -125,7 +125,7 @@ Object activateR6RSMode(VM* vm, bool isDebugExpand)
 #ifdef WITH_NMOSH_DEFAULTS
     return vm->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, isDebugExpand);
 #else
-    return vm->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, isDebugExpand);
+    return vm->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, true /*isDebugExpand*/);
 #endif
 }
 
