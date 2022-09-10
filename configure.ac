@@ -5,7 +5,7 @@ AC_PREREQ(2.62)
 AC_INIT(mosh, 0.2.8-rc4, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_SRCDIR([src/VM.h])
 AC_CONFIG_HEADER([src/config.h])
 
