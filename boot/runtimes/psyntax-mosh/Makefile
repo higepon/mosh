@@ -12,4 +12,4 @@ MOSH=mosh
 
 # Expand psyntax.scm using pre-installed stable Mosh.
 psyntax.scm: $(PSYNTAX_SOURCES)
-	MOSH_GENSYM_PREFIX=`$(MOSH) print-prefix.ss` $(MOSH) psyntax-buildscript-mosh.ss
+	$(MOSH) psyntax-buildscript-mosh.ss
