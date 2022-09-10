@@ -34,6 +34,10 @@
   (except (mosh) library-path mosh-cache-dir)
   )
 
+;; To prevent symbol collision between psyntax and other process,
+;; We reserve P prefix for psyntax.
+;; See https://github.com/higepon/mosh/issues/40 for details.
+(gensym-prefix-set! 'P)
 
 ;; here we put libraries used in psyntax.
 (define scheme-library-files
@@ -1498,9 +1502,6 @@
     open-string-output-port identifier? free-identifier=? exists
     values call-with-values for-all null? cdr car pair? vector eq? bound-identifier=? reverse ellipsis-map assertion-violation))
 
-
-
-
 (let-values (((core* locs)
                (parameterize ((current-library-collection bootstrap-collection))
                  (expand-all scheme-library-files))))
@@ -1524,6 +1525,5 @@
 ))
 
 (display "Happy Happy Joy Joy\n")
-
 
 ;;; vim:syntax=scheme
