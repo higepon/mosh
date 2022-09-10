@@ -454,6 +454,10 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             return VECTOR_START;
         }
+        "#u8(" {
+            YYTOKEN = YYCURSOR;
+            return BYTE_VECTOR_START;
+        }
         "#vu8(" {
             YYTOKEN = YYCURSOR;
             return BYTE_VECTOR_START;
