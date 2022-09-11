@@ -1,3 +1,4 @@
+;; FIXME: This require profiler build to get sourcenames on cprocs
 (import (rnrs)
         (mosh test)
         (rnrs load))
