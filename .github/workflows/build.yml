@@ -271,4 +271,28 @@ jobs:
         shell: C:\cygwin\bin\bash.exe --noprofile --norc -o igncr -eo pipefail '{0}'
 
 
-
+  build-dist-alpine: # So we can check on musl
+    name: "Alpine chroot (Using Ubuntu bootstrap)"
+    needs: build-linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Setup Alpine chroot"
+        uses: jirutka/setup-alpine@v1
+      - name: "Install prerequisites"
+        run: apk add gcc g++ make gmp-dev oniguruma-dev pkgconfig
+        shell: alpine.sh --root {0}
+      - name: "Download artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: source-ubuntu-latest
+      - name: "Extract artifact"
+        run: tar xzv -C / -f ${{ env.mosh_latest }}.tar.gz
+        shell: alpine.sh --root {0}
+      - name: "Build & Test"
+        run: |
+          cd /${{ env.mosh_latest}} &&
+          ./configure &&
+          make -j4 &&
+          make test &&
+          make install
+        shell: alpine.sh --root {0}
