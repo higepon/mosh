@@ -68,7 +68,7 @@ jobs:
         # TODO(higepon): Replace this with 0.2.8 when it's released.
         run: >
           wget "https://github.com/higepon/mosh/releases/download/${{ env.mosh_stable }}/${{ env.mosh_stable }}.tar.gz" &&
-          tar zvxf "${{ env.mosh_stable }}" &&
+          tar zvxf "${{ env.mosh_stable }}.tar.gz" &&
           cd $STABLE_MOSH_PATH &&
           ./configure &&
           make &&
