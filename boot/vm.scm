@@ -1,15 +1,43 @@
-#!/usr/bin/env gosh
-(use gauche.test)
-(use srfi-1)
-;;(use util.match)
-(use gauche.sequence)
-(use file.util)
-(load "./baselib/match.scm")
-(set! debug-print-width 3000)
+(import (rnrs)
+        (except (psyntax system $bootstrap) pretty-print)
+        (match)
+        (only (srfi :1) take drop append!)
+        (mosh))
+
+(define (acons key val alist) (cons (cons key val) alist))        
+
+ (define-syntax let1  
+   (syntax-rules () 
+     ((_ var expr body ...) 
+      (let ((var expr)) body ...))))
+
+  (define-syntax define-macro
+     (lambda (x)
+       (syntax-case x ()
+         [(_ (name . params) body1 body2 ...)
+          #'(define-macro name (lambda params body1 body2 ...))]
+         [(_ name expander)
+          #'(define-syntax name
+              (lambda (y)
+                (syntax-case y ()
+                  ((k . args)
+                   (let ((lst (syntax->datum #'args)))
+                     (datum->syntax #'k (apply expander lst)))))))])))
+
+(define-macro (check-vm-paranoia pred)
+  `(unless ,pred
+     (errorf "** vm check paranoia ~a on ~a : ~a" (quote ,pred) debug-clause c)))
+
+
+
+;(set! debug-print-width 3000)
 
 (define alist-cons acons)
 
-(define (get-timeofday) (receive (a b) (sys-gettimeofday) (cons a b)))
+;(define (get-timeofday) (receive (a b) (sys-gettimeofday) (cons a b)))
+
+;(define (gensym) 'A)
+
 
 (define (foldr2 binop start l1 l2)
     (if (null? l1)
@@ -62,12 +90,12 @@
 
 
 (define (init-library-table)
-  (set! vm-instances (make-hash-table 'eq?))
-  (set! vm-name-space (make-hash-table 'eq?)))
+  (set! vm-instances (make-hashtable eq?))
+  (set! vm-name-space (make-hashtable eq?)))
 
-(load "./free-vars-decl.scm")
+(include "./free-vars-decl.scm")
 
-(load "./compiler-vm.scm")
+(include "./compiler-vm.scm")
 (define *free-vars* '())
 (define (load-free-vars)
   (match (car (file->sexp-list "./free-vars.scm"))
@@ -356,24 +384,17 @@
 
 (define undef (if #f #f))
 
-(define-macro (debug-case val . clauses)
-  `(case ,val
-     ,@(map (lambda (x) `(,(car x)
-                         (let1 debug-clause (quote ,(car x))
-                           ,@(cdr x))))
-            clauses)))
 
-(define-macro (check-vm-paranoia pred)
-  `(unless ,pred
-     (errorf "** vm check paranoia ~a on ~a : ~a" (quote ,pred) debug-clause c)))
+
+;(define-macro (check-vm-paranoia pred)
+;  `(unless ,pred
+;     (errorf "** vm check paranoia ~a on ~a : ~a" (quote ,pred) debug-clause c)))
 
 ;; (debug-case val
 ;;   ((a)
 ;;     (print debug-clause))
 ;;   (else
 ;;    'else))
-
-(define-macro (let-frame-size) 2)
 
 (define valuez (make-vector 100))
 (define num-valuez 1)
@@ -539,7 +560,7 @@
                    [else
                     '()])
 ;             (format (current-error-port) "~a\n" code)
-             (debug-case code
+             (case code
                ;;---------------------------- HALT -------------------------------
                [(HALT) a]
                [(VALUES)
@@ -1479,7 +1500,7 @@
    [else
     l]))
 
-(use gauche.sequence)
+;(use gauche.sequence)
 ;; (define (compile-file file . num?)
 ;;   (define *vm-instructions*
 ;;     (with-input-from-file "./instruction.scm"
@@ -1579,28 +1600,7 @@
 ;;    The size of compiler.cpp becomes bigger and difficult to compiler with g++.
 
 
-(define-macro (do . sexp)
-  (match sexp
-    [(((var init step ...) ...)
-         (test expr ...)
-       command ...)
-     `(letrec
-       ((loop
-         (lambda (,@var)
-           (if ,test
-               (begin
-                 #f ; avoid empty begin
-                 ,@expr)
-               (begin
-                 ,@command
-                 (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
-        (loop ,@init))]
-    [("step" x)
-     x]
-    [("step" x y)
-     y]
-    [else
-     (syntax-error "malformed do on mosh")]))
+
 
 (define default-allowed-macro '(define-simple-struct
                                 do
@@ -1692,3 +1692,5 @@
     (dump-vm-debug-info)]
    )
   0)
+
+(main (command-line))

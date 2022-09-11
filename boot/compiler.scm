@@ -22,21 +22,21 @@
   (define for-all every)
   (define (set-source-info! a b) a)]
  [vm?
-  (define (ungensym x) x)
-  (define-macro (import-only module . syms)
-    `(begin
-       ,@(map (lambda (sym) `(define ,sym (with-module ,module ,sym))) syms)))
-  (import-only gauche.internal extended-pair? extended-cons extended-list pair-attribute-get pair-attribute-set! pair-attributes)
+  ;(define (ungensym x) x)
+  ;(define-macro (import-only module . syms)
+    ;`(begin
+       ;,@(map (lambda (sym) `(define ,sym (with-module ,module ,sym))) syms)))
+  ;(import-only gauche.internal extended-pair? extended-cons extended-list pair-attribute-get pair-attribute-set! pair-attributes)
   (define *command-line-args* '())
-  (define (command-line) *command-line-args*)
-  (define make-eq-hashtable make-hash-table)
-  (define hashtable-set! hash-table-put!)
-  (define hashtable-ref hash-table-get)
-  (define hashtable-keys hash-table-keys)
-  (define hashtable-for-each (lambda (proc ht) (hash-table-for-each ht proc)))
+;  (define (command-line) *command-line-args*)
+;  (define make-eq-hashtable make-hash-table)
+;  (define hashtable-set! hash-table-put!)
+;  (define hashtable-ref hash-table-get)
+;  (define hashtable-keys hash-table-keys)
+;  (define hashtable-for-each (lambda (proc ht) (hash-table-for-each ht proc)))
   (define dd (lambda a '()))
-  (define pp (lambda a '()))
-  (define for-all every)
+  ;(define pp (lambda a '()))
+  ;(define for-all every)
   (define syntax-error error)
   (define find10 find)
   (define append2 append)
@@ -44,15 +44,15 @@
   (define memq2 memq)
   (define df (lambda a '#f))
   (define print-stack (lambda a '#f))
-  (define (source-info p) (let1 src (pair-attribute-get p 'source-info #f) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
-  (define (make-list-with-src-slot lst) (apply extended-list lst))
-  (define (set-source-info! a b)
-    (cond
-     [(extended-pair? a)
-       (pair-attribute-set! a 'source-info b)
-       a]
-     [else
-      a]))
+  ;(define (source-info p) (let1 src (pair-attribute-get p 'source-info #f) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
+  (define (make-list-with-src-slot lst) lst) ;(apply extended-list lst))
+;  (define (set-source-info! a b)
+    ;(cond
+;     [(extended-pair? a)
+       ;(pair-attribute-set! a 'source-info b)
+       ;a]
+;     [else
+ ;     a]))
   ]
  [vm-outer?
   (define dd (lambda a '()))
@@ -131,28 +131,7 @@
 (define-macro (dolist a . body)
   `(begin (for-each (lambda (,(car a)) ,@body) ,(cadr a)) '()))
 
-(define-macro (do . sexp)
-  (match sexp
-    [(((var init step ...) ...)
-         (test expr ...)
-       command ...)
-     `(letrec
-       ((loop
-         (lambda (,@var)
-           (if ,test
-               (begin
-                 #f ; avoid empty begin
-                 ,@expr)
-               (begin
-                 ,@command
-                 (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
-        (loop ,@init))]
-    [("step" x)
-     x]
-    [("step" x y)
-     y]
-    [else
-     (syntax-error "malformed do")]))
+
 
 (define-macro (acond . clauses)
   (if (null? clauses)
@@ -168,10 +147,7 @@
   `(let ((it ,test-form))
      (if it ,then-form ,@else-form)))
 
-(define (syntax-error msg)
-  (raise (format "syntax error: ~a" msg)))
-
-(define (alist-cons obj1 obj2 obj3) (cons (cons obj1 obj2) obj3))
+;(define (alist-cons obj1 obj2 obj3) (cons (cons obj1 obj2) obj3))
 
 ;;--------------------------------------------------------------------
 ;;
@@ -820,7 +796,7 @@
      [(eq? symbol ($lvar.sym (car lvars))) (car lvars)]
      [else
       (pass1/find-symbol-in-lvars symbol (cdr lvars))]))]
- [else #f])
+ [else (display #f)])
 
 (define (pass1/refer->iform symbol lvars)
   (acond
@@ -3533,16 +3509,18 @@
 (pass3/register $RECEIVE       pass3/$receive)
 (pass3/register $LABEL       pass3/$label)
 (cond-expand
- [vm-outer?
-  (define (main args)
-    (if (= (length args) 2)
-        (let1 port (open-string-input-port (second args))
-          (write (compile (read port))))))
-  (main (command-line))]
+ ;[vm-outer?
+  ;(define (main args)
+   ; (if (= (length args) 2)
+    ;    (let1 port (open-string-input-port (second args))
+     ;     (write (compile (read port))))))
+  ;(main (command-line))]
  [mosh
-  #f]
+  (display 'mosh)]
  [else
-  (define (main args)
-    (if (= (length args) 2)
-        (let1 port (open-string-input-port (second args))
-          (write (compile (read port))))))])
+  ;(define (main args)
+   ; (if (= (length args) 2)
+    ;    (let1 port (open-string-input-port (second args))
+          ;(write (compile (read port))))))])
+          (display 'else)]
+)
