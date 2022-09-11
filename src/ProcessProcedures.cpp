@@ -113,7 +113,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%waitpid");
 #if defined(_WIN32) || defined(MONA)
-    callAssertionViolationAfter(theVM, procedureName, "failed");
+    callAssertionViolationAfter(theVM, procedureName, UC("failed"));
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(1);
