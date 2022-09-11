@@ -677,6 +677,7 @@ bool File::isSymbolicLink(const ucs4string& path)
 bool File::isExecutable(const ucs4string& path)
 {
 #ifdef _WIN32
+#if 0
     if (isExist(path)) {
         const ucs4char* extensions[] = { UC(".COM"), UC(".EXE"), UC(".BAT"), UC(".VBS"), UC("VBE"),
                                          UC(".JS"), UC(".JSE"), UC(".WSF"), UC(".WSH"), UC(".MSC")};
@@ -686,6 +687,7 @@ bool File::isExecutable(const ucs4string& path)
             }
         }
     }
+#endif
     return false;
 #else
     return wrapped_access(path, X_OK);
