@@ -1,4 +1,6 @@
 name: Build
+env:
+  mosh_stable: mosh-0.2.8-rc4
 
 on:
   push:
@@ -17,7 +19,7 @@ jobs:
         run: |
           pwd
           echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
-          echo "STABLE_MOSH_PATH=mosh-0.2.8-rc4" >> $GITHUB_ENV
+          echo "STABLE_MOSH_PATH=${{ env.mosh_stable }}" >> $GITHUB_ENV
           echo "NATURAL_DOCS_PATH=~/NaturalDocs-1.4" >> $GITHUB_ENV
           echo "R6RS_DOC_PATH=r6rs" >> $GITHUB_ENV          
       - name: Install tools
@@ -64,8 +66,8 @@ jobs:
         if: steps.cache-stable-mosh-linux.outputs.cache-hit != 'true'
         # TODO(higepon): Replace this with 0.2.8 when it's released.
         run: >
-          wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc4/mosh-0.2.8-rc4.tar.gz &&
-          tar zvxf mosh-0.2.8-rc4.tar.gz &&
+          wget "https://github.com/higepon/mosh/releases/download/${{ env.mosh_stable }}/${{ env.mosh_stable }}.tar.gz" &&
+          tar zvxf "${{ env.mosh_stable }}" &&
           cd $STABLE_MOSH_PATH &&
           ./configure &&
           make &&
@@ -158,7 +160,7 @@ jobs:
         run: |
           # Use homebrew bison instead of /usr/bin/bison
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-          echo "STABLE_MOSH_PATH=mosh-0.2.8-rc4" >> $GITHUB_ENV
+          echo "STABLE_MOSH_PATH=${{ env.mosh_stable }}" >> $GITHUB_ENV
           echo "NATURAL_DOCS_PATH=~/NaturalDocs-1.4" >> $GITHUB_ENV
           echo "R6RS_DOC_PATH=r6rs" >> $GITHUB_ENV
           # FIXME: Disable GC during CI for now
@@ -204,8 +206,8 @@ jobs:
       - name: Build Stable Mosh
         if: steps.cache-stable-mosh-macos.outputs.cache-hit != 'true'
         run: >
-          curl -OL https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc4/mosh-0.2.8-rc4.tar.gz &&
-          tar zvxf mosh-0.2.8-rc4.tar.gz &&
+          curl -OL "https://github.com/higepon/mosh/releases/download/${{ env.mosh_stable }}/${{ env.mosh_stable }}.tar.gz" &&
+          tar zvxf "${{ env.mosh_stable }}.tar.gz" &&
           cd $STABLE_MOSH_PATH &&
           ./configure &&
           make &&
