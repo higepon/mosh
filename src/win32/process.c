@@ -7,6 +7,7 @@
 
 #include <process.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #define GC_NO_THREAD_REDIRECTS // we don't need override
 #include <gc.h>
@@ -1019,7 +1020,7 @@ clearbuffer(window_handler_data* whd){
 // 48 : M double click
 LRESULT CALLBACK
 BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
-    window_handler_data* whd = (window_handler_data *)GetWindowLongPtr(hWnd,GWL_USERDATA);
+    window_handler_data* whd = (window_handler_data *)GetWindowLongPtr(hWnd,GWLP_USERDATA);
     PAINTSTRUCT ps;
     HDC hDC;
     RECT r;
@@ -1045,7 +1046,7 @@ BaseWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
             return 0;
         case WM_CREATE:
             whd = (window_handler_data *)(((CREATESTRUCT *)lParam)->lpCreateParams);
-            SetWindowLongPtrW(hWnd,GWL_USERDATA,(LONG_PTR)whd);
+            SetWindowLongPtrW(hWnd,GWLP_USERDATA,(LONG_PTR)whd);
             post_window_event(whd,0,(uintptr_t)hWnd);
             return 0;
         case WM_DESTROY:
