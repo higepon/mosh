@@ -18,7 +18,6 @@ jobs:
           pwd
           echo "LD_LIBRARY_PATH=/usr/local/lib" >> $GITHUB_ENV
           echo "STABLE_MOSH_PATH=mosh-0.2.8-rc4" >> $GITHUB_ENV
-          echo "ONIGURUMA_PATH=onig-5.9.6" >> $GITHUB_ENV
           echo "NATURAL_DOCS_PATH=~/NaturalDocs-1.4" >> $GITHUB_ENV
           echo "R6RS_DOC_PATH=r6rs" >> $GITHUB_ENV          
       - name: Install tools
@@ -159,10 +158,6 @@ jobs:
         run: |
           # Use homebrew bison instead of /usr/bin/bison
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-          # FIXME: Detect gnump with pkg-config
-          echo "LDFLAGS=-L$HOMEBREW_PREFIX/lib" >> $GITHUB_ENV
-          echo "CFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
-          echo "CXXFLAGS=-I$HOMEBREW_PREFIX/include" >> $GITHUB_ENV
           echo "STABLE_MOSH_PATH=mosh-0.2.8-rc4" >> $GITHUB_ENV
           echo "NATURAL_DOCS_PATH=~/NaturalDocs-1.4" >> $GITHUB_ENV
           echo "R6RS_DOC_PATH=r6rs" >> $GITHUB_ENV
