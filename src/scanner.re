@@ -224,9 +224,8 @@ int Scanner::scan(YYSTYPE* yylval)
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
   DEFINING_SHARED        = "#" DIGIT+ "=";
   DEFINED_SHARED         = "#" DIGIT+ "#";
-  MNEMONIC_ESCAPE        = ('\\' [abtnr]);
-  /* R7RS doesn't have " here but r7rs-tests.scm requires it */
-  /* MNEMONIC_ESCAPE      = ('\\' [abtnr\"]); */
+  /* Per R7RS Small Errata, we allow \\\\ and \\\" here */
+  MNEMONIC_ESCAPE        = ('\\' [abtnr\\\"]);
   SYMBOL_ELEMENT         = [^\|\\] | "\\|" | INLINE_HEX_ESCAPE | MNEMONIC_ESCAPE;
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER | "|" SYMBOL_ELEMENT * "|";
 */
