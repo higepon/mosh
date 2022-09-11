@@ -171,7 +171,7 @@ int Scanner::scan(YYSTYPE* yylval)
   INTRA_LINE_WHITE_SPACE = "\t" | UNICODE_ZS;
   INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";
   /* We use "INTRA_LINE_WHITE_SPACE *" instead of "INTRA_LINE_WHITE_SPACE" defined in R6RS */
-  STRING_ELEMENT         = [^\"\\] | ('\\' [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE *) | INLINE_HEX_ESCAPE;
+  STRING_ELEMENT         = [^\"\\] | ('\\' [abtnvfr\"\\\|]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE *) | INLINE_HEX_ESCAPE;
   REGEXP_ELEMENT         = "\\\/" | [^/];
   DIGIT_2                = [0-1];
   DIGIT_8                = [0-7];
@@ -220,11 +220,15 @@ int Scanner::scan(YYSTYPE* yylval)
   INITIAL                = CONSTITUENT | SPECIAL_INITIAL | INLINE_HEX_ESCAPE | "-"; /* we allow '-' identifier for shell mode */
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
-  IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
   SHEBANG                = "#!" [^\n\X0000]* (LINE_ENDING | EOS);
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
   DEFINING_SHARED        = "#" DIGIT+ "=";
   DEFINED_SHARED         = "#" DIGIT+ "#";
+  MNEMONIC_ESCAPE        = ('\\' [abtnr]);
+  /* R7RS doesn't have " here but r7rs-tests.scm requires it */
+  /* MNEMONIC_ESCAPE      = ('\\' [abtnr\"]); */
+  SYMBOL_ELEMENT         = [^\|\\] | "\\|" | INLINE_HEX_ESCAPE | MNEMONIC_ESCAPE;
+  IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER | "|" SYMBOL_ELEMENT * "|";
 */
 
     int comment_count = 0;
