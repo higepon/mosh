@@ -1,6 +1,7 @@
 name: Build
 env:
-  mosh_stable: mosh-0.2.8-rc4
+  mosh_stable: mosh-0.2.8-rc4 # Stable tagname
+  mosh_latest: mosh-0.2.8-rc4 # Built package name
 
 on:
   push:
@@ -243,3 +244,31 @@ jobs:
         with:
           name: source-${{ matrix.os }}
           path: mosh-latest/mosh-*.tar.gz
+
+  build-dist-cygwin:
+    name: "Cygwin (Using Ubuntu bootstrap)"
+    needs: build-linux
+    runs-on: windows-latest
+    steps:
+      - name: "Setup Cygwin"
+        uses: cygwin/cygwin-install-action@49f298a7ebb00d4b3ddf58000c3e78eff5fbd6b9
+        with: # Perhaps we might want: git,cmake,automake,autoconf,libgc-devel as well later
+          packages: make,gcc-core,git,gcc-g++,libgmp-devel,libonig-devel,pkg-config
+      - name: "Download artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: source-ubuntu-latest
+          path: build
+      - name: "Extract artifact"
+        run: tar zxvf ${{ env.mosh_latest }}.tar.gz
+        shell: C:\cygwin\bin\bash.exe --noprofile --norc -o igncr -eo pipefail '{0}'
+        #run: cmake -E tar zxvf ${{ env.mosh_latest }}.tar.gz
+        working-directory: build
+      - name: "Build & Test"
+        working-directory: build/${{ env.mosh_latest }}
+        run: |
+          ./configure --disable-profiler && make -j4 && make test && make install
+        shell: C:\cygwin\bin\bash.exe --noprofile --norc -o igncr -eo pipefail '{0}'
+
+
+
