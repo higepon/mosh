@@ -1484,8 +1484,6 @@
                               (values
                                 (get-export-subset key export-subst)
                                 '()))))
-              (format #t "subst ~a" subst)
-              (format #t "env ~a" env)
               (parameterize ((current-library-collection
                               bootstrap-collection))
                 (install-library
