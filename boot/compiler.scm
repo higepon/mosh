@@ -33,15 +33,11 @@
   (define memq2 memq)
   (define df (lambda a '#f))
   (define print-stack (lambda a '#f))
-  (define (source-info p) (let1 src (pair-attribute-get p 'source-info #f) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
-  (define (make-list-with-src-slot lst) (apply extended-list lst))
-  (define (set-source-info! a b)
-    (cond
-     [(extended-pair? a)
-       (pair-attribute-set! a 'source-info b)
-       a]
-     [else
-      a]))
+  (define (make-list-with-src-slot lis)
+    (let recur ((lis lis))
+      (if (pair? lis)
+      (annotated-cons (car lis) (recur (cdr lis)))
+      lis)))
   ]
  [vm-outer?
   (define dd (lambda a '()))
