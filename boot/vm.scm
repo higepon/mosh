@@ -20,9 +20,7 @@
  (define-syntax let1  
    (syntax-rules () 
      ((_ var expr body ...) 
-      (let ((var expr)) body ...))))                     
-
-(define (get-timeofday) (receive (a b) (sys-gettimeofday) (cons a b)))
+      (let ((var expr)) body ...))))
 
 (define (foldr2 binop start l1 l2)
     (if (null? l1)
