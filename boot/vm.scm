@@ -1639,7 +1639,7 @@
 (define base-library "baselib/base.scm")
 (define match-library "baselib/match.scm")
 
-(define (main args)
+(define (mosh:main args)
   (set! *command-line-args* (cdr args))
   (cond
    ;; test
