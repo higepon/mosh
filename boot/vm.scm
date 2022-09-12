@@ -22,8 +22,6 @@
      ((_ var expr body ...) 
       (let ((var expr)) body ...))))                     
 
-(set! debug-print-width 3000)
-
 (define (get-timeofday) (receive (a b) (sys-gettimeofday) (cons a b)))
 
 (define (foldr2 binop start l1 l2)
