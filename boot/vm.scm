@@ -1,4 +1,5 @@
-(import (rnrs))
+(import (rnrs)
+        (only (mosh) include))
 
 (set! debug-print-width 3000)
 
@@ -60,9 +61,9 @@
   (set! vm-instances (make-hash-table 'eq?))
   (set! vm-name-space (make-hash-table 'eq?)))
 
-(load "./free-vars-decl.scm")
+(include "./free-vars-decl.scm")
 
-(load "./compiler-vm.scm")
+(include "./compiler-vm.scm")
 (define *free-vars* '())
 (define (load-free-vars)
   (match (car (file->sexp-list "./free-vars.scm"))
