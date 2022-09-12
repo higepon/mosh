@@ -23,10 +23,6 @@
   (define (set-source-info! a b) a)]
  [vm?
   (define (ungensym x) x)
-  (define-macro (import-only module . syms)
-    `(begin
-       ,@(map (lambda (sym) `(define ,sym (with-module ,module ,sym))) syms)))
-  (import-only gauche.internal extended-pair? extended-cons extended-list pair-attribute-get pair-attribute-set! pair-attributes)
   (define *command-line-args* '())
   (define (command-line) *command-line-args*)
   (define hashtable-for-each (lambda (proc ht) (hash-table-for-each ht proc)))
