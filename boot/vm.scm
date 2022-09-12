@@ -15,7 +15,12 @@
                 (syntax-case y ()
                   ((k . args)
                    (let ((lst (syntax->datum #'args)))
-                     (datum->syntax #'k (apply expander lst)))))))])))        
+                     (datum->syntax #'k (apply expander lst)))))))])))
+
+ (define-syntax let1  
+   (syntax-rules () 
+     ((_ var expr body ...) 
+      (let ((var expr)) body ...))))                     
 
 (set! debug-print-width 3000)
 
