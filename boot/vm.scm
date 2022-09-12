@@ -1,5 +1,6 @@
 (import 
   (rename (rnrs) (command-line mosh:command-line))
+  (only (psyntax system $bootstrap) gensym)
   (only (mosh) include))
 
  (define-syntax define-macro
