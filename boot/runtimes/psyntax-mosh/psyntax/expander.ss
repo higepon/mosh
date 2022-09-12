@@ -2960,7 +2960,7 @@
            (stx-error e
              "attempt to reference an unexportable variable"))
           (else
-            (stx-error e (format #f "invalid type/expression: ~a" (strip e '()))))))))
+            (stx-error e (format #f "invalid type/expression: type=~a ~a" type (strip e '()))))))))
 
   (define chi-set!
     (lambda (e r mr)
