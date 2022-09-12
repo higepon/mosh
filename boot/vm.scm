@@ -1,5 +1,6 @@
-(import (rnrs)
-        (only (mosh) include))
+(import 
+  (rename (rnrs) (command-line mosh:command-line))
+  (only (mosh) include))
 
  (define-syntax define-macro
      (lambda (x)
