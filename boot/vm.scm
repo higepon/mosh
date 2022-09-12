@@ -1679,3 +1679,5 @@
     (dump-vm-debug-info)]
    )
   0)
+
+(mosh:main (mosh:command-line))
