@@ -74,8 +74,8 @@
 
 
 (define (init-library-table)
-  (set! vm-instances (make-hash-table 'eq?))
-  (set! vm-name-space (make-hash-table 'eq?)))
+  (set! vm-instances (make-eq-hashtable))
+  (set! vm-name-space (make-eq-hashtable)))
 
 (include "./free-vars-decl.scm")
 
