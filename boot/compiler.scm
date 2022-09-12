@@ -32,7 +32,6 @@
   (define hashtable-for-each (lambda (proc ht) (hash-table-for-each ht proc)))
   (define dd (lambda a '()))
   (define pp (lambda a '()))
-  (define for-all every)
   (define syntax-error error)
   (define find10 find)
   (define append2 append)
