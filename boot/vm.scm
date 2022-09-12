@@ -1,3 +1,5 @@
+(import (rnrs))
+
 (load "./baselib/match.scm")
 (set! debug-print-width 3000)
 
