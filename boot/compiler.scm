@@ -25,7 +25,6 @@
   (define (ungensym x) x)
   (define *command-line-args* '())
   (define (command-line) *command-line-args*)
-  (define hashtable-for-each (lambda (proc ht) (hash-table-for-each ht proc)))
   (define dd (lambda a '()))
   (define pp (lambda a '()))
   (define find10 find)
