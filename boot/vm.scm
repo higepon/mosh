@@ -3,7 +3,7 @@
   (rename (rnrs) (command-line mosh:command-line) (do mosh:do))
   (only (psyntax system $bootstrap) gensym)
   (only (srfi :1) take drop)
-  (only (mosh) include annotated-cons))
+  (mosh))
 
  (define-syntax define-macro
      (lambda (x)

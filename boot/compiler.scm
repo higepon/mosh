@@ -22,7 +22,6 @@
   (define for-all every)
   (define (set-source-info! a b) a)]
  [vm?
-  (define (ungensym x) x)
   (define *command-line-args* '())
   (define (command-line) *command-line-args*)
   (define dd (lambda a '()))
