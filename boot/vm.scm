@@ -2,7 +2,7 @@
   (match)
   (rename (rnrs) (command-line mosh:command-line) (do mosh:do))
   (only (psyntax system $bootstrap) gensym)
-  (only (srfi :1) take drop)
+  (only (srfi :1) take drop append!)
   (mosh))
 
  (define-syntax define-macro
