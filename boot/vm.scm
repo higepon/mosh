@@ -1611,7 +1611,7 @@
     [("step" x y)
      y]
     [else
-     (syntax-error "malformed do on mosh")]))
+     (write "malformed do on mosh")]))
 
 (define default-allowed-macro '(define-simple-struct
                                 do
