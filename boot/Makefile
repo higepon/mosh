@@ -51,15 +51,15 @@ psyntax_mosh_image.cpp: psyntax-mosh-image.scmc
 	mosh --disable-acc $(SCRIPTS_DIR)/binary2cpp.scm $<.fasl $@
 
 psyntax-mosh-image.scmc: runtimes/psyntax-mosh/psyntax.scm compiler-vm.scm
-	gosh vm.scm compile-file-without-macro $< > $@
+	mosh vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
 match.scmc: baselib/match.scm compiler-vm.scm
-	gosh vm.scm compile-file-without-macro $< > $@
+	mosh vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
 baselib.scmc: baselib.scm compiler-vm.scm
-	gosh vm.scm compile-file-with-macro $< > $@
+	mosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
 baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
