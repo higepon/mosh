@@ -147,7 +147,7 @@
     [("step" x y)
      y]
     [else
-     (syntax-error "malformed do")]))
+     (write "malformed do")]))
 
 (define-macro (acond . clauses)
   (if (null? clauses)
