@@ -1,6 +1,6 @@
 (import 
   (match)
-  (rename (rnrs) (command-line mosh:command-line))
+  (rename (rnrs) (command-line mosh:command-line) (do mosh:do))
   (only (psyntax system $bootstrap) gensym)
   (only (mosh) include))
 
@@ -1588,30 +1588,6 @@
 ;; (3)code size
 ;;    If you pre-compile all of the macro that top-level-library has.
 ;;    The size of compiler.cpp becomes bigger and difficult to compiler with g++.
-
-
-(define-macro (do . sexp)
-  (match sexp
-    [(((var init step ...) ...)
-         (test expr ...)
-       command ...)
-     `(letrec
-       ((loop
-         (lambda (,@var)
-           (if ,test
-               (begin
-                 #f ; avoid empty begin
-                 ,@expr)
-               (begin
-                 ,@command
-                 (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
-        (loop ,@init))]
-    [("step" x)
-     x]
-    [("step" x y)
-     y]
-    [else
-     (write "malformed do on mosh")]))
 
 (define default-allowed-macro '(define-simple-struct
                                 do
