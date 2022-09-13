@@ -778,8 +778,8 @@
   ;;; - the shape of the expression (identifier, pair, or datum)
   ;;; - the binding of the identifier (for id-stx) or the type of
   ;;;   car of the pair.
-  (define (raise-unbound-error id)
-    (syntax-violation* #f "unbound identifier" id
+  (define (raise-unbound-error id e)
+    (syntax-violation* #f (format #f "unbound identifier at ~a" (source-info (stx-expr e))) id
       (make-undefined-violation)))
   (define syntax-type
     (lambda (e r)
@@ -790,7 +790,7 @@
                   (b (label->binding label r))
                   (type (binding-type b)))
              (unless label ;;; fail early.
-               (raise-unbound-error id))
+               (raise-unbound-error id e))
              (case type
                ((lexical core-prim macro macro! global local-macro
                  local-macro! global-macro global-macro!
@@ -805,7 +805,7 @@
                       (b (label->binding label r))
                       (type (binding-type b)))
                  (unless label ;;; fail early.
-                   (raise-unbound-error id))
+                   (raise-unbound-error id e))
                  (case type
                    ((define define-syntax core-macro begin macro
                       macro! local-macro local-macro! global-macro
@@ -1104,7 +1104,7 @@
          (let* ((lab (id->label id))
                 (b (label->binding lab r))
                 (type (binding-type b)))
-           (unless lab (raise-unbound-error id))
+           (unless lab (raise-unbound-error id e))
            (unless (and (eq? type '$rtd) (not (list? (binding-value b))))
              (stx-error e "not a record type"))
            (build-data no-source (binding-value b)))))))
@@ -1116,7 +1116,7 @@
          (let* ((lab (id->label id))
                 (b (label->binding lab r))
                 (type (binding-type b)))
-           (unless lab (raise-unbound-error id))
+           (unless lab (raise-unbound-error id e))
            (unless (and (eq? type '$rtd) (list? (binding-value b)))
              (stx-error e "not a record type"))
            (chi-expr (car (binding-value b)) r mr))))))
@@ -1128,7 +1128,7 @@
          (let* ((lab (id->label id))
                 (b (label->binding lab r))
                 (type (binding-type b)))
-           (unless lab (raise-unbound-error id))
+           (unless lab (raise-unbound-error id e))
            (unless (and (eq? type '$rtd) (list? (binding-value b)))
              (stx-error e "invalid type"))
            (chi-expr (cadr (binding-value b)) r mr))))))
