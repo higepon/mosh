@@ -31,7 +31,7 @@
   (psyntax library-manager)
   (psyntax expander)
   (except (system) make-parameter parameterize mosh-cache-dir)
-  (except (mosh) library-path mosh-cache-dir)
+  (except (mosh) library-path mosh-cache-dir load)
   )
 
 ;; To prevent symbol collision between psyntax and other process,
@@ -1199,7 +1199,7 @@
     ;;;
     (char-ready?                                )
     (interaction-environment                    )
-    (load                                       )
+    (load                     mosh)
     ;;;
     (void                     $boot)
     (gensym                   $boot)
