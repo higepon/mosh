@@ -296,3 +296,29 @@ jobs:
           make test &&
           make install
         shell: alpine.sh --root {0}
+
+  build-dist-fbsd:
+    name: "FreeBSD VM (Using Ubuntu bootstrap)"
+    needs: build-linux
+    runs-on: macos-12
+    steps:
+      - name: "Download artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: source-ubuntu-latest
+      - name: "Extract artifact"
+        run: |
+          tar xzv -f ${{ env.mosh_latest }}.tar.gz
+          rm ${{ env.mosh_latest }}.tar.gz
+      - name: "Build with VM"
+        uses: vmactions/freebsd-vm@7e9c9b4739d44e31230721d552f42b8e6a539d37
+        with:
+          usesh: true
+          copyback: false
+          prepare: |
+            pkg install -y gmake oniguruma pkgconf gmp
+          run: |
+            cd ${{ env.mosh_latest }}
+            ./configure
+            gmake -j4
+            gmake test
