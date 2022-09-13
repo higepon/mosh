@@ -131,7 +131,7 @@
 
   (define library-extensions
     (make-parameter
-      '(".sls" ".ss" ".scm")
+      '(".mosh.sls" ".sls" ".ss" ".scm")
       (lambda (x)
         (if (and (list? x) (for-all string? x))
             (map (lambda (x) x) x)
