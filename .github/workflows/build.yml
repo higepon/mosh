@@ -246,7 +246,7 @@ jobs:
           path: mosh-latest/mosh-*.tar.gz
 
   build-dist-cygwin:
-    name: "Cygwin (Using Ubuntu bootstrap)"
+    name: "Cygwin"
     needs: build-linux
     runs-on: windows-latest
     steps:
@@ -272,7 +272,7 @@ jobs:
 
 
   build-dist-alpine: # So we can check on musl
-    name: "Alpine chroot (Using Ubuntu bootstrap)"
+    name: "Alpine chroot"
     needs: build-linux
     runs-on: ubuntu-latest
     steps:
@@ -298,7 +298,7 @@ jobs:
         shell: alpine.sh --root {0}
 
   build-dist-fbsd:
-    name: "FreeBSD VM (Using Ubuntu bootstrap)"
+    name: "FreeBSD VM"
     needs: build-linux
     runs-on: macos-12
     steps:
