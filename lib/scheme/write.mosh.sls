@@ -4,6 +4,7 @@
 (library (scheme write)
          (export
              write-simple
+             write-shared
              write
              display
          )
