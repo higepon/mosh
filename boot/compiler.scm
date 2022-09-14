@@ -138,16 +138,6 @@
     [else
      (write "malformed do")]))
 
-(define-macro (acond . clauses)
-  (if (null? clauses)
-      '()
-      (let ((cl1 (car clauses))
-            (sym (gensym)))
-        `(let ((,sym ,(car cl1)))
-           (if ,sym
-               (let ((it ,sym)) ,@(cdr cl1))
-               (acond ,@(cdr clauses)))))))
-
 (define-macro (aif test-form then-form . else-form)
   `(let ((it ,test-form))
      (if it ,then-form ,@else-form)))
@@ -807,28 +797,25 @@
  [else #f])
 
 (define (pass1/refer->iform symbol lvars)
-  (acond
-   [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
-;    ($lvar.ref-count++! it)
-    ($local-ref it)]
-   [#t ($global-ref symbol)]))
+  (let1 it (pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
+    (if it
+      ($local-ref it)
+      ($global-ref symbol))))
 
 (define (pass1/assign symbol val lvars tail?)
  (match val
             [('lambda . more)
              (let1 iform (pass1/lambda->iform symbol val lvars)
-               (acond
-                [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
-                 ($lvar.set-count++! it)
-                 ($local-assign it iform)]
-                [#t ($global-assign symbol iform)]))]
+               (let1 it (pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
+                 (if it
+                     (begin ($lvar.set-count++! it) ($local-assign it iform))
+                     ($global-assign symbol iform))))]
             [else
     (let1 iform (pass1/sexp->iform val lvars tail?)
-       (acond
-        [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
-         ($lvar.set-count++! it)
-         ($local-assign it iform)]
-        [#t ($global-assign symbol iform)]))]))
+       (let1 it (pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
+         (if it 
+             (begin ($lvar.set-count++! it) ($local-assign it iform))
+             ($global-assign symbol iform))))]))
 
 (define (pass1/body->iform body lvars tail?)
   (let1 iforms ($map1-with-tail
@@ -961,11 +948,10 @@
 ;; this procedure is called from freeproc.cpp
 (define (pass1/macroexpand sexp)
   (let1 proc (first sexp)
-    (acond
-     [(and (symbol? proc) (assq proc top-level-macros))
-;      (display top-level-macros (current-error-port))
-      (pass1/expand (vm/apply (cdr it) (cdr sexp)))]
-     [#t sexp])))
+    (let1 it (and (symbol? proc) (assq proc top-level-macros))
+      (if it
+          (pass1/expand (vm/apply (cdr it) (cdr sexp)))
+           sexp))))
 
 ;; for checking performance with logging.
 (define-macro (case-with-time val . clauses)
@@ -1004,15 +990,13 @@
   `(imap (lambda (s) (pass1/s->i-non-tail s)) ,sexp))
 
 (define (pass1/call proc args lvars tail?)
-  (acond
-   [(and (symbol? proc)
-         (assq proc top-level-macros))
-    (pass1/s->i (vm/apply (cdr it) args))]
-   [#t
-    ($call (pass1/s->i proc)
+  (let1 it (and (symbol? proc) (assq proc top-level-macros))
+    (if it
+        (pass1/s->i (vm/apply (cdr it) args))
+        ($call (pass1/s->i proc)
            (pass1/map-s->i-non-tail args)
            tail?
-           #f)]))
+           #f))))
 
 (define (pass1/define sexp lvars tail?)
   (match sexp
