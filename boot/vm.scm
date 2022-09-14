@@ -1,10 +1,13 @@
 (import 
   (match)
   (rename (rnrs) (command-line mosh:command-line) (fold-left fold) (do mosh:do))
+  (rename (psyntax scheme-report-environment-5) (scheme-report-environment interaction-environment) (do pdo))
   (only (psyntax system $bootstrap) gensym)
   (only (srfi :1) take drop append! split-at)
   (srfi :8)
   (rnrs mutable-pairs)
+  (only (rnrs) letrec-syntax)
+  (only (mosh file) file->sexp-list)
   (mosh))
 
  (define-syntax define-macro
@@ -358,7 +361,7 @@
 (define (procedure-body proc)
   (cdr proc))
 
-(define regmatch-proxy
+#;(define regmatch-proxy
   (lambda a
     (let ([match (car a)]
           [rest  (cdr a)])
@@ -477,9 +480,9 @@
           [(regexp? a)
            (check-vm-paranoia (number? args-num))
            (VM `#(RETURN ,args-num HALT) 0 (apply rxmatch (cons a(stack->pair-args stack sp args-num))) fp c stack sp)]
-          [(regmatch? a)
-           (check-vm-paranoia (number? args-num))
-           (VM `#(RETURN ,args-num HALT) 0 (apply regmatch-proxy (cons a(stack->pair-args stack sp args-num))) fp c stack sp)]
+;          [(regmatch? a)
+;           (check-vm-paranoia (number? args-num))
+;           (VM `#(RETURN ,args-num HALT) 0 (apply regmatch-proxy (cons a(stack->pair-args stack sp args-num))) fp c stack sp)]
           [else
            (when (>= (+ sp (closure-max-stack a)) (vector-length stack))
              (format #t "stack overflow expand stack\n")

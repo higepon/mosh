@@ -2498,7 +2498,7 @@
 ;; code-builder synonym
 (define-macro (cput! cb . more)
   (match more
-    [() '()]
+    [() (quote '())]
     [(a b c d e . f)
      `(begin (code-builder-put-extra5! ,cb ,a ,b ,c ,d ,e)
              (cput! ,cb ,@f))]
