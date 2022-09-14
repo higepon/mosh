@@ -1,8 +1,10 @@
 (import 
   (match)
-  (rename (rnrs) (command-line mosh:command-line) (do mosh:do))
+  (rename (rnrs) (command-line mosh:command-line) (fold-left fold) (do mosh:do))
   (only (psyntax system $bootstrap) gensym)
   (only (srfi :1) take drop append!)
+  (srfi :8)
+  (rnrs mutable-pairs)
   (mosh))
 
  (define-syntax define-macro
