@@ -2,7 +2,7 @@
   (match)
   (rename (rnrs) (command-line mosh:command-line) (fold-left fold) (do mosh:do))
   (only (psyntax system $bootstrap) gensym)
-  (only (srfi :1) take drop append!)
+  (only (srfi :1) take drop append! split-at)
   (srfi :8)
   (rnrs mutable-pairs)
   (mosh))
@@ -270,7 +270,8 @@
        (vector-set! c 5 prev)
        prev))))
 
-
+(define (errorf . args)
+  (apply format (cons (current-error-port args))))
 
 (define-syntax index-closure
   (syntax-rules ()
