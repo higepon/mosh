@@ -3,10 +3,9 @@
 ;;   lib/r7b-impl/lazy.sls
 (library (scheme lazy)
          (export
-             lazy
-             force
-             eager
-             delay
+delay delay-force
+force make-promise
+promise?
          )
          (import
              (r7b-impl lazy)

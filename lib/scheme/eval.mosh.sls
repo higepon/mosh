@@ -3,8 +3,6 @@
 ;;   lib/r7b-impl/eval.sls
 (library (scheme eval)
          (export
-             scheme-report-environment
-             null-environment
              eval
              environment
          )
