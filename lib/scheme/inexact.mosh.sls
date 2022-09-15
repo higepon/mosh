@@ -3,12 +3,18 @@
 ;;   lib/r7b-impl/inexact.sls
 (library (scheme inexact)
          (export
-acos asin
-atan cos
-exp finite?
-infinite? log
-nan? sin
-sqrt tan
+             tan
+             sqrt
+             sin
+             nan?
+             log
+             infinite?
+             finite?
+             exp
+             cos
+             atan
+             asin
+             acos
          )
          (import
              (r7b-impl inexact)
