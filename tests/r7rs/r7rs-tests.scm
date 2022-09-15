@@ -546,7 +546,8 @@
 
 (test 'ok (let ((=> #f)) (cond (#t => 'ok))))
 
-(let ()
+; TODO(higepon): Duplicated x
+#;(let ()
   (define x 1)
   (let-syntax ()
     (define x 2)
