@@ -4,7 +4,7 @@
         (scheme inexact) (scheme complex) (scheme time)
         (scheme file) (scheme read) (scheme write)
         (scheme eval) (scheme process-context) (scheme case-lambda)
-        (srfi :64)
+        (rename (srfi :64) (test-equal test))
         )
 
 ;; R7RS test suite.  Covers all procedures and syntax in the small
