@@ -519,8 +519,7 @@
     ((_ _) 1)
     ((_ _ _) 2)
     ((_ . _) 'many)))
-#;(test '(2 0 many)
-    (list (count-to-2 a b) (count-to-2) (count-to-2 a b c d)))
+#;(test '(2 0 many) (list (count-to-2 a b) (count-to-2) (count-to-2 a b c d)))
 
 ; TODO(higepon): duplicate pattern variable
 #;(define-syntax count-to-2_
