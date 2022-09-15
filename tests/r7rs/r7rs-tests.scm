@@ -547,6 +547,7 @@
 (test 'ok (let ((=> #f)) (cond (#t => 'ok))))
 
 ; TODO(higepon): multiple definitions of identifier.
+; https://github.com/higepon/mosh/pull/78#discussion_r971948395
 #;(let ()
   (define x 1)
   (let-syntax ()
