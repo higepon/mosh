@@ -32,7 +32,11 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h> // for socklen_t
-#elif !defined(MONA)
+#elif defined(MONA)
+/* Do nothing */
+#elif defined(__NetBSD__)
+#define _NETBSD_SOURCE 1 // for C++ header work
+#else
 #define _XOPEN_SOURCE 700 // for srandom(SUSv4)
 #endif
 

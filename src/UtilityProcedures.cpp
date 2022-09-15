@@ -35,6 +35,8 @@
 #define _DARWIN_C_SOURCE 1 // for struct timezone
 #elif defined(__FreeBSD__)
 #define _XOPEN_SOURCE 700 // for gettimeofday
+#elif defined(__NetBSD__)
+#define _NETBSD_SOURCE 1 // for C++ headers work
 #elif !defined(_WIN32)
 #define _POSIX_C_SOURCE 200809L // for popen, confstr
 #endif

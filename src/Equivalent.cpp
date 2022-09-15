@@ -29,7 +29,9 @@
  *  $Id: Equivalent.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#if !defined(_WIN32) && !defined(MONA)
+#if defined(__NetBSD__)
+#define _NETBSD_SOURCE 1 // for C++ header work
+#elif !defined(_WIN32) && !defined(MONA)
 #define _XOPEN_SOURCE 700 // for random (SUSv4)
 #endif
 
