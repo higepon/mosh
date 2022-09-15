@@ -3,8 +3,8 @@
 ;;   lib/r7b-impl/write.mosh.sls
 (library (scheme write)
          (export
-             write-simple
              write-shared
+             write-simple
              write
              display
          )

@@ -6,6 +6,7 @@
              get-environment-variables
              get-environment-variable
              exit
+             emergency-exit
              command-line
          )
          (import
