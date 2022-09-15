@@ -37,6 +37,14 @@
 ;; however (chibi test) provides nicer output, timings, and
 ;; approximate equivalence for floating point numbers.
 
+(define-syntax test-values
+  (syntax-rules ()
+    ((_ expect expr)
+     (test-values #f expect expr))
+    ((_ name expect expr)
+     (test name (call-with-values (lambda () expect) (lambda results results))
+       (call-with-values (lambda () expr) (lambda results results))))))
+
 (test-begin "R7RS")
 
 (test-begin "4.1 Primitive expression types")
