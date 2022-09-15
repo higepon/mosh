@@ -180,7 +180,7 @@ vector         : VECTOR_START datum_list RIGHT_PAREN {
                         yyerror("vector terminated by bracket");
                         YYERROR;
                     }
-                    $$ = Object::makeVector(Pair::reverse($2));
+                    $$ = Object::cons(Symbol::QUOTE, Object::cons(Object::makeVector(Pair::reverse($2)), Object::Nil));
                }
                ;
 
