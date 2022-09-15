@@ -37,6 +37,14 @@
 ;; however (chibi test) provides nicer output, timings, and
 ;; approximate equivalence for floating point numbers.
 
+(define-syntax test-values
+  (syntax-rules ()
+    ((_ expect expr)
+     (test-values #f expect expr))
+    ((_ name expect expr)
+     (test name (call-with-values (lambda () expect) (lambda results results))
+       (call-with-values (lambda () expr) (lambda results results))))))
+
 (test-begin "R7RS")
 
 (test-begin "4.1 Primitive expression types")
@@ -511,7 +519,7 @@
     ((_ _) 1)
     ((_ _ _) 2)
     ((_ . _) 'many)))
-(test '(2 0 many)
+#;(test '(2 0 many)
     (list (count-to-2 a b) (count-to-2) (count-to-2 a b c d)))
 
 ; TODO(higepon): duplicate pattern variable
@@ -521,7 +529,7 @@
     ((_ _) 1)
     ((_ _ _) 2)
     ((x . y) 'fail)))
-(test '(2 0 fail fail)
+#;(test '(2 0 fail fail)
     (list (count-to-2_ _ _) (count-to-2_)
           (count-to-2_ a b) (count-to-2_ a b c d)))
 
