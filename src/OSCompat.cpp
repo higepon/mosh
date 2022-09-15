@@ -995,6 +995,10 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     }
     isErrorOccured = true;
     return ucs4string(UC(""));
+#elif defined(__OpenBSD__)
+    // FIXME: TODO
+    isErrorOccured = true;
+    return ucs4string(UC(""));
 #elif defined(__sun)
     char path[4096];
     char procpath[64];

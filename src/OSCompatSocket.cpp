@@ -33,6 +33,8 @@
 #define _DARWIN_C_SOURCE 1
 #elif defined(__NetBSD__)
 #define _NETBSD_SOURCE 1
+#elif defined(__OpenBSD__)
+#define _BSD_SOURCE 1
 #elif !defined(_WIN32) && !defined(MONA)
 #define _POSIX_C_SOURCE 200809L // for addrinfo (POSIX 2001)
 #endif
