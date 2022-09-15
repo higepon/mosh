@@ -322,3 +322,55 @@ jobs:
             ./configure
             gmake -j4
             gmake test
+
+  build-dist-nbsd:
+    name: "NetBSD VM"
+    needs: build-linux
+    runs-on: macos-12
+    steps:
+      - name: "Download artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: source-ubuntu-latest
+      - name: "Extract artifact"
+        run: |
+          tar xzv -f ${{ env.mosh_latest }}.tar.gz
+          rm ${{ env.mosh_latest }}.tar.gz
+      - name: "Build with VM"
+        uses: vmactions/netbsd-vm@8f54bcd9711f9b85d41efd8eddcbb74b0d8aeb63
+        with:
+          usesh: true
+          copyback: false
+          prepare: |
+            pkg_add pkgin
+            pkgin -y install gmake oniguruma gmp pkgconf
+          run: |
+            cd ${{ env.mosh_latest }}
+            ./configure
+            gmake -j4
+            gmake test
+
+  build-dist-obsd:
+    name: "OpenBSD VM (Build only)"
+    needs: build-linux
+    runs-on: macos-12
+    steps:
+      - name: "Download artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: source-ubuntu-latest
+      - name: "Extract artifact"
+        run: |
+          tar xzv -f ${{ env.mosh_latest }}.tar.gz
+          rm ${{ env.mosh_latest }}.tar.gz
+      - name: "Build with VM"
+        uses: vmactions/openbsd-vm@847a57cb2a0b10808205a7ca805b914a5daa29c0
+        with:
+          usesh: true
+          copyback: false
+          prepare: |
+            pkg_add pkgconf oniguruma gmp gmake
+          run: |
+            cd ${{ env.mosh_latest }}
+            ./configure
+            gmake -j4
