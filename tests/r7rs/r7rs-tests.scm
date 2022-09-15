@@ -603,7 +603,8 @@
   (test 'bound-identifier=? (m k)))
 
 ;; literal has priority to ellipsis (R7RS 4.3.2)
-(let ()
+;; TODO(higepon)
+#;(let ()
   (define-syntax elli-lit-1
     (syntax-rules ... (...)
       ((_ x)
