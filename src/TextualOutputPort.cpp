@@ -185,7 +185,7 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
             case 'D':
             {
                 if (args.isPair()) {
-                    display(theVM, args.car());
+                    display(theVM, args.car(), /* isSharedAware = */ true);
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
@@ -199,7 +199,7 @@ void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object ar
             case 'S':
             {
                 if (args.isPair()) {
-                    putDatum(theVM, args.car());
+                    putDatum(theVM, args.car(), /* isSharedAware = */true);
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
