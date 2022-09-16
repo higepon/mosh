@@ -48,7 +48,10 @@ runtest:
 #	$(MOSH_TARGET) tests/process.scm
 	$(MOSH_TARGET) tests/annotated-pair.scm
 	$(MOSH_TARGET) tests/print.scm
-	$(MOSH_TARGET) tests/jsonmsgpack.sps
+	$(MOSH_TARGET) tests/jsonmsgpack.sps	
+	# "invalid sytax error" should be shown with file name and line number.
+	# This grep pattern should work with both mosh and nmosh.
+	$(MOSH_TARGET) tests/invalid-syntax.scm 2>&1 >/dev/null | grep 'invalid-syntax.scm' -a10 -b10
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/tests/ffi.scm)

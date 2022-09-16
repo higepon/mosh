@@ -636,14 +636,40 @@
   ;;; It takes an stx's expr and marks.  If the marks contain
   ;;; a top-mark, then the expr is returned.
 
-  (define (strip-annotations x)
-    (cond
-      [(pair? x)
-       (cons (strip-annotations (car x))
-             (strip-annotations (cdr x)))]
-      [(vector? x) (vector-map strip-annotations x)]
-      [(annotation? x) (annotation-stripped x)]
-      [else x]))
+  ;; Mosh
+  ;; We added seen here because x can contain x itself in it such as #1=(#1#).
+  (define (strip-annotations x . seen)
+    (let ([seen (if (null? seen) (make-eq-hashtable) (car seen))])
+      (cond
+        ;; We've seen this annotated x and stripped version in the hashtable
+        [(hashtable-ref seen x #f)
+          (hashtable-ref seen x #f)]
+        [else
+          (cond
+            [(pair? x)
+              (let ([stripped (cons '() '())])
+                ;; N.B. We have to create cons reference first and set it in seen.
+                ;; Otherwise (strip-annotations (car x) seen) call can't capture parent cons.
+                (hashtable-set! seen x stripped)
+                (set-car! stripped (strip-annotations (car x) seen))
+                (set-cdr! stripped (strip-annotations (cdr x) seen))
+                stripped)]
+            [(vector? x)
+              (let ([stripped (make-vector (vector-length x))])
+                (hashtable-set! seen x stripped)
+                (let loop ([i 0])
+                  (cond
+                    [(= (vector-length stripped) i)
+                      stripped]
+                    [else
+                      (vector-set! stripped i (strip-annotations (vector-ref x i)))
+                      (loop (+ i 1))])))]
+            [(annotation? x)
+              (hashtable-set! seen x x)
+              (annotation-stripped x)]
+            [else
+              (hashtable-set! seen x x)
+              x])])))
 
   (define strip
     (lambda (x m*)
@@ -659,13 +685,7 @@
           (let f ((x x))
             (cond
               ((stx? x)
-               ;; Mosh
-               ;; #1=(#1#) with anotation data causes infinite loop
-               (when (pair? (stx-expr x))
-                 (set-source-info! (stx-expr x) #f)
-                 (set-source-info! (cdr (stx-expr x)) #f)
-                 (set-source-info! (car (stx-expr x)) #f))
-               (strip (stx-expr x) (stx-mark* x)))
+                 (strip (stx-expr x) (stx-mark* x)))
               [(annotation? x) (annotation-stripped x)]
               ((pair? x)
                (let ((a (f (car x))) (d (f (cdr x))))
