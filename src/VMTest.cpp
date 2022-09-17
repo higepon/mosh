@@ -147,8 +147,8 @@ TEST_F(VMTest, StackTrace2) {
                  "    1. throw: <subr>\n"
                  "    2. (raise c):  baselib.scm:940\n"
                  "    3. sys-display: <subr>\n"
-                 "    4. (a): <unknown location>\n"
-                 "    5. (b): <unknown location>\n"
+                 "    4. (a):  <transcoded-textual-input-port <binary-input-port ././tests/stack-trace2.scm>>:14\n"
+                 "    5. (b):  <transcoded-textual-input-port <binary-input-port ././tests/stack-trace2.scm>>:14\n"
                  "    6. eval: <subr>\n"
                  "    7. (<top-level>): <unknown location>\n\n",
                  theVM_->getLastError().toString()->data().ascii_c_str());
