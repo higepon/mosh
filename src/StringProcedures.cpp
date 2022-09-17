@@ -72,10 +72,35 @@ Object scheme::stringEx(VM* theVM, int argc, const Object* argv)
 Object scheme::stringCopyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-copy");
-    checkArgumentLength(1);
-
+    checkArgumentLengthBetween(1, 3);
     argumentAsString(0, text);
-    return Object::makeString(text->data());
+    if (argc == 1) {
+        return Object::makeString(text->data());
+    }
+    argumentAsFixnum(1, start);
+    if (start < 0 || start > text->length()) {
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
+                                    UC("start out of range"),
+                                    L2(Object::makeFixnum(text->length()),
+                                       argv[1]
+                                        ));
+        return Object::Undef;
+    }
+    if (argc == 2) {
+        return Object::makeString(text->data().substr(start, ucs4string::npos));
+    }
+    argumentAsFixnum(2, end);
+    if (end < 0 || start > end || end > text->length()) {
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
+                                    UC("end out of range"),
+                                    L2(Object::makeFixnum(text->length()),
+                                       argv[2]
+                                        ));
+        return Object::Undef;
+    }
+    return Object::makeString(text->data().substr(start, end - start));
 }
 
 
