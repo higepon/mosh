@@ -417,9 +417,19 @@ Object scheme::infinitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("infinite?");
     checkArgumentLength(1);
-    argumentCheckReal(0, real);
-    if (real.isFlonum()) {
-        return Object::makeBool(real.toFlonum()->isInfinite());
+    argumentCheckNumber(0, n);
+    if (n.isFlonum()) {
+        return Object::makeBool(n.toFlonum()->isInfinite());
+    } else if (n.isCompnum()) {
+        Object r = n.toCompnum()->real();
+        if (r.isFlonum() && r.toFlonum()->isInfinite()) {
+            return Object::True;
+        }
+        Object i = n.toCompnum()->imag();
+        if (i.isFlonum() && i.toFlonum()->isInfinite()) {
+            return Object::True;
+        }
+        return Object::False;
     } else {
         return Object::False;
     }
