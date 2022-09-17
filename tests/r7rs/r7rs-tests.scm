@@ -41,9 +41,35 @@
 (define-syntax test
   (syntax-rules ()
     ((_ expected expr)
-      (test-equal expected expected expr))
+      (test-equal (expr expected) #t (test-equal? expected expr)))
     ((_ name expected expr)
-      (test-equal name expected expr))))
+      (test-equal name #t (test-equal? expected expr)))))
+
+;; From (chibi test)
+(define (test-equal? expect res)
+  (or (equal? expect res)
+      (if (real? expect)
+          (and (inexact? expect)
+               (real? res)
+               ;; tests which expect an inexact value can
+               ;; accept an equivalent exact value
+               ;; (inexact? res)
+               (approx-equal? expect res (current-test-epsilon)))
+          (and (complex? res)
+               (complex? expect)
+               (test-equal? (real-part expect) (real-part res))
+               (test-equal? (imag-part expect) (imag-part res))))))
+
+(define current-test-epsilon (make-parameter 1e-5))
+
+(define (approx-equal? a b epsilon)
+  (cond
+   ((> (abs a) (abs b))
+    (approx-equal? b a epsilon))
+   ((zero? a)
+    (< (abs b) epsilon))
+   (else
+    (< (abs (/ (- a b) b)) epsilon))))
 
 (define-syntax test-values
   (syntax-rules ()
