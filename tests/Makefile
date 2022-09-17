@@ -52,6 +52,7 @@ runtest:
 	# "invalid sytax error" should be shown with file name and line number.
 	# This grep pattern should work with both mosh and nmosh.
 	$(MOSH_TARGET) tests/invalid-syntax.scm 2>&1 >/dev/null | grep 'invalid-syntax.scm' -A10 -B10
+	$(MOSH_TARGET) tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/tests/ffi.scm)
