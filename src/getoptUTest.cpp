@@ -113,14 +113,14 @@ TEST_F(MoshTest, getopt_longU_4) {
         {0, 0, 0, 0}
     };
 
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("--loadpath=my-library");
+    ucs4string argv1(UC("mosh"));
+    ucs4string argv2(UC("--loadpath=my-library"));
 
     const int argc = 2;
     ucs4char* argv[] = { argv1.strdup(), argv2.strdup() };
     int optionIndex = 0;
     ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
-    ucs4string path = optargU;
+    ucs4string path(optargU);
     EXPECT_TRUE(path == UC("my-library"));
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
 }
@@ -133,14 +133,14 @@ TEST_F(MoshTest, getopt_longU_5) {
     };
 
     const int argc = 3;
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("-L");
-    ucs4string argv3 = UC("my-library");
+    ucs4string argv1(UC("mosh"));
+    ucs4string argv2(UC("-L"));
+    ucs4string argv3(UC("my-library"));
     ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup() };
     int optionIndex = 0;
     ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU != NULL);
-    ucs4string path = optargU;
+    ucs4string path(optargU);
     EXPECT_TRUE(path == argv3);
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
 }
@@ -156,7 +156,7 @@ TEST_F(MoshTest, getopt_longU_6) {
     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("--loadpath=my-library") };
     int optionIndex = 0;
     ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:L:5rze"), long_options, &optionIndex));
-    ucs4string path = optargU;
+    ucs4string path(optargU);
     EXPECT_TRUE(path == UC("my-library"));
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:L:5rze"), long_options, &optionIndex));
 }
@@ -169,16 +169,16 @@ TEST_F(MoshTest, getopt_longU_7) {
     };
 
     const int argc = 3;
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("-p");
-    ucs4string argv3 = UC("test.scm");
+    ucs4string argv1(UC("mosh"));
+    ucs4string argv2(UC("-p"));
+    ucs4string argv3(UC("test.scm"));
     ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup() };
     int optionIndex = 0;
     ASSERT_EQ('p', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
-    ucs4string script = argv[optindU];
+    ucs4string script(argv[optindU]);
     EXPECT_TRUE(script == argv3);
 }
 
@@ -190,16 +190,16 @@ TEST_F(MoshTest, getopt_longU_8) {
     };
 
     const int argc = 3;
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("-p");
-    ucs4string argv3 = UC("あいう.scm");
+    ucs4string argv1(UC("mosh"));
+    ucs4string argv2(UC("-p"));
+    ucs4string argv3(UC("あいう.scm"));
     ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup() };
     int optionIndex = 0;
     ASSERT_EQ('p', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
-    ucs4string script = argv[optindU];
+    ucs4string script(argv[optindU]);
     EXPECT_TRUE(script == argv3);
 }
 
@@ -211,16 +211,16 @@ TEST_F(MoshTest, getopt_longU_9) {
     };
 
     const int argc = 3;
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("-あ");
-    ucs4string argv3 = UC("あいう.scm");
+    ucs4string argv1(UC("mosh"));
+    ucs4string argv2(UC("-あ"));
+    ucs4string argv3(UC("あいう.scm"));
     ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup() };
     int optionIndex = 0;
     ASSERT_EQ(0x3042, getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
-    ucs4string script = argv[optindU];
+    ucs4string script(argv[optindU]);
     EXPECT_TRUE(script == argv3);
 }
 
@@ -232,15 +232,15 @@ TEST_F(MoshTest, getopt_longU_10) {
     };
 
     const int argc = 3;
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("-5");
-    ucs4string argv3 = UC("あいう.scm");
+    ucs4string argv1(UC("mosh"));
+    ucs4string argv2(UC("-5"));
+    ucs4string argv3(UC("あいう.scm"));
     ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup() };
     int optionIndex = 0;
     ASSERT_EQ('5', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
     ASSERT_TRUE(optargU == NULL);
-    ucs4string script = argv[optindU];
+    ucs4string script(argv[optindU]);
     EXPECT_TRUE(script == argv3);
 }

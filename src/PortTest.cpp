@@ -105,10 +105,10 @@ TEST_F(PortTest, PortPredicate) {
 
 TEST_F(PortTest, StringInputPort) {
     bool isErrorOccured = false;
-    EXPECT_TRUE(Object::makeStringInputPort(UC("")).toTextualInputPort()->getDatum(isErrorOccured).isEof());
+    EXPECT_TRUE(Object::makeStringInputPort(ucs4string(UC(""))).toTextualInputPort()->getDatum(isErrorOccured).isEof());
     EXPECT_FALSE(isErrorOccured);
 
-    const Object obj = Object::makeStringInputPort(UC("3")).toTextualInputPort()->getDatum(isErrorOccured);
+    const Object obj = Object::makeStringInputPort(ucs4string(UC("3"))).toTextualInputPort()->getDatum(isErrorOccured);
     EXPECT_TRUE(obj.isFixnum());
     EXPECT_EQ(3, obj.toFixnum());
     EXPECT_FALSE(isErrorOccured);
@@ -126,12 +126,12 @@ TEST_F(PortTest, StandardPort) {
 }
 
 TEST_F(PortTest, FileBinary) {
-    FileBinaryOutputPort* out = new FileBinaryOutputPort(UC("/tmp/hoge.log"));
+    FileBinaryOutputPort* out = new FileBinaryOutputPort(ucs4string(UC("/tmp/hoge.log")));
     out->putU8(1);
     out->putU8(0);
     out->close();
 
-    FileBinaryInputPort* in = new FileBinaryInputPort(UC("/tmp/hoge.log"));
+    FileBinaryInputPort* in = new FileBinaryInputPort(ucs4string(UC("/tmp/hoge.log")));
     EXPECT_EQ(1, in->lookaheadU8());
     EXPECT_EQ(1, in->getU8());
     EXPECT_EQ(0, in->lookaheadU8());
@@ -142,12 +142,12 @@ TEST_F(PortTest, FileBinary) {
 }
 
 TEST_F(PortTest, BufferedFileBinary) {
-    BlockBufferedFileBinaryOutputPort* out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/hoge.log"));
+    BlockBufferedFileBinaryOutputPort* out = new BlockBufferedFileBinaryOutputPort(ucs4string(UC("/tmp/hoge.log")));
     out->putU8(1);
     out->putU8(0);
     out->close();
 
-    BufferedFileBinaryInputPort* in = new BufferedFileBinaryInputPort(UC("/tmp/hoge.log"));
+    BufferedFileBinaryInputPort* in = new BufferedFileBinaryInputPort(ucs4string(UC("/tmp/hoge.log")));
     EXPECT_EQ(1, in->lookaheadU8());
     EXPECT_EQ(1, in->getU8());
     EXPECT_EQ(0, in->lookaheadU8());

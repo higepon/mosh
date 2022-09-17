@@ -78,14 +78,14 @@ protected:
         Transcoder* transcoder = createNativeTranscoder();
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
-        Object errorPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/dev/null")), transcoder);
+        Object errorPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(ucs4string(UC("/dev/null"))), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         theVM_->loadCompiler();
     }
 
     virtual void Store(Object obj)
     {
-        BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test.tmp"));
+        BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(ucs4string(UC("/tmp/fasl-test.tmp")));
         FaslWriter writer(out);
         writer.put(obj);
         out->close();
@@ -93,7 +93,7 @@ protected:
 
     virtual Object Restore()
     {
-        BinaryInputPort* const in = new BufferedFileBinaryInputPort(UC("/tmp/fasl-test.tmp"));
+        BinaryInputPort* const in = new BufferedFileBinaryInputPort(ucs4string(UC("/tmp/fasl-test.tmp")));
         FaslReader reader(theVM_, in);
         return reader.get();
     }
@@ -115,7 +115,7 @@ TEST_F(FaslTest, Symbol) {
     const Object restored = StoreAndRestore(Symbol::intern(UC("hige")));
     ASSERT_TRUE(restored.isSymbol());
     EXPECT_TRUE(restored == Symbol::intern(UC("hige")));
-    ucs4string text = restored.toSymbol()->c_str();
+    ucs4string text(restored.toSymbol()->c_str());
     EXPECT_STREQ("hige", text.ascii_c_str());
 }
 
@@ -128,13 +128,13 @@ TEST_F(FaslTest, EqHashTable) {
     ht->set(Symbol::intern(UC("mobe")), Pair::list2(Object::makeFixnum(2), Symbol::intern(UC("hage"))));
 
     // Write
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test4.dat"));
+    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(ucs4string(UC("/tmp/fasl-test4.dat")));
     FaslWriter writer(out);
     writer.put(table);
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test4.dat"));
+    BinaryInputPort* const in = new FileBinaryInputPort(ucs4string(UC("/tmp/fasl-test4.dat")));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     ASSERT_TRUE(restored.isEqHashTable());
@@ -390,7 +390,7 @@ TEST_F(FaslTest, MultibyteString) {
 }
 
 TEST_F(FaslTest, SerializeBignum3) {
-    const Object num = Bignum::makeInteger(UC("-144115188075855873"));
+    const Object num = Bignum::makeInteger(ucs4string(UC("-144115188075855873")));
     ASSERT_TRUE(num.isBignum());
     size_t size = 0;
     uint8_t* data = num.toBignum()->serialize(&size);

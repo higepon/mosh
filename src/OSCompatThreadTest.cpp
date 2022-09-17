@@ -290,7 +290,7 @@ TEST_F(MoshTest, ConditionVariableName) {
 }
 
 TEST_F(MoshTest, ConditionVariableName2) {
-    ConditionVariable conditionVariable(UC("hige"));
+    ConditionVariable conditionVariable(ucs4string(UC("hige")));
     EXPECT_TRUE(UC("#<condition-variable hige>") == conditionVariable.toString());
 }
 
