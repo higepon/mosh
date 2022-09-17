@@ -47,7 +47,7 @@
     (syntax-rules ()
       ((_ ae fun-exp arg-exps)
         (let ([c (annotated-cons fun-exp arg-exps)])
-          (debugf build-application "fun-exp=~s arg-exps=~s ae=~s" fun-exp arg-exps (if ae (ae) ae))
+          ;(debugf build-application "fun-exp=~s arg-exps=~s ae=~s" fun-exp (and (pair? arg-exps) (car arg-exps)) (if ae (ae) ae))
           (set-source-info! c (if ae (ae) ae))
           c))))
 
@@ -98,7 +98,7 @@
       (if-wants-case-lambda
           `(case-lambda (,vars ,exp))
           (begin
-            (debugf build-lambda "vars=~a exp=~a ae=~a" vars exp (if ae (ae) ae))
+            (debugf build-lambda "vars=~a exp=~a ae=~a" vars (and (pair? exp) (car exp)) (if ae (ae) ae))
             (let ([lmbd `(lambda ,vars ,exp)])
               (annotated-cons (car lmbd) (cdr lmbd) (if ae (ae) #f)))))))
   (define build-case-lambda
@@ -197,7 +197,7 @@
   ;; So we use this build-library-letrec*.
   (define build-library-letrec*
     (lambda (ae name vars locs val-exps body-exp)
-      (debugf build-library-letrec* "vars=~s body-exp=~a val-exps=~s val-exps-src=~a ae=~s" vars body-exp val-exps (map source-info val-exps) (if ae (ae) ae))
+      ;(debugf build-library-letrec* "vars=~s body-exp=~a val-exps=~s val-exps-src=~a ae=~s" vars body-exp val-exps (map source-info val-exps) (if ae (ae) ae))
       `(begin
         ,@(map (lambda (var) `(set! ,var (unspecified))) vars)
         ,@(apply append (map (lambda (var loc val-exp)
