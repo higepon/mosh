@@ -66,8 +66,8 @@ protected:
 };
 
 TEST_F(MoshTest, getEnv) {
-    EXPECT_EQ(NULL, getEnv(UC("MOSH_NOT_EXIST_ENV")));
-    EXPECT_TRUE(NULL != getEnv(UC("PATH")));
+    EXPECT_EQ(NULL, getEnv(ucs4string(UC("MOSH_NOT_EXIST_ENV"))));
+    EXPECT_TRUE(NULL != getEnv(ucs4string(UC("PATH"))));
 }
 
 TEST_F(MoshTest, getEnvAlist) {
@@ -75,24 +75,24 @@ TEST_F(MoshTest, getEnvAlist) {
 }
 
 TEST_F(MoshTest, FileAccess) {
-    EXPECT_TRUE(File::isExist(UC("lib")));
-    EXPECT_TRUE(File::isWritable(UC("lib")));
-    EXPECT_TRUE(File::isReadable(UC("lib")));
+    EXPECT_TRUE(File::isExist(ucs4string(UC("lib"))));
+    EXPECT_TRUE(File::isWritable(ucs4string(UC("lib"))));
+    EXPECT_TRUE(File::isReadable(ucs4string(UC("lib"))));
 }
 
 TEST_F(MoshTest, utf32toUtf8) {
-    EXPECT_STREQ("abc", utf32toUtf8(UC("abc")));
+    EXPECT_STREQ("abc", utf32toUtf8(ucs4string(UC("abc"))));
 }
 
 TEST_F(MoshTest, readDirectory) {
-    const Object directories = readDirectory(UC("."));
+    const Object directories = readDirectory(ucs4string(UC(".")));
     ASSERT_TRUE(directories.isList());
 }
 
 TEST_F(MoshTest, createDirectory) {
-    const ucs4char* dir = UC("OSCompatTestDir");
+    ucs4string dir(UC("OSCompatTestDir"));
     ucs4string subdir = dir;
-    subdir += UC("/hige");
+    subdir += ucs4string(UC("/hige"));
     ASSERT_TRUE(createDirectory(dir));
     ASSERT_TRUE(createDirectory(subdir));
     const Object directories = readDirectory(dir);
@@ -105,8 +105,8 @@ TEST_F(MoshTest, createDirectory) {
 }
 
 TEST_F(MoshTest, renameFile) {
-    const ucs4char* dir = UC("OSCompatTestDir");
-    const ucs4char* dir2 = UC("OSCompatTestDir.bak");
+    ucs4string dir(UC("OSCompatTestDir"));
+    ucs4string dir2(UC("OSCompatTestDir.bak"));
     ASSERT_TRUE(createDirectory(dir));
     EXPECT_TRUE(File::isExist(dir));
     ASSERT_TRUE(File::rename(dir, dir2));
@@ -117,19 +117,19 @@ TEST_F(MoshTest, renameFile) {
 }
 
 TEST_F(MoshTest, isDirectory) {
-    const ucs4char* dir = UC("OSCompatTestDir");
+    ucs4string dir(UC("OSCompatTestDir"));
     ASSERT_TRUE(createDirectory(dir));
     EXPECT_TRUE(isDirectory(dir));
     ASSERT_TRUE(File::deleteFileOrDirectory(dir));
 }
 
 TEST_F(MoshTest, isDirectory2) {
-    EXPECT_FALSE(isDirectory(UC("main.cpp")));
+    EXPECT_FALSE(isDirectory(ucs4string(UC("main.cpp"))));
 }
 
 TEST_F(MoshTest, SymbolicLink) {
-    const ucs4char* file = UC("hige");
-    ASSERT_TRUE(File::createSymbolicLink(UC("."), file));
+    ucs4string file(UC("hige"));
+    ASSERT_TRUE(File::createSymbolicLink(ucs4string(UC(".")), file));
     EXPECT_FALSE(File::isRegular(file));
     EXPECT_TRUE(File::isSymbolicLink(file));
     ASSERT_TRUE(File::deleteFileOrDirectory(file));

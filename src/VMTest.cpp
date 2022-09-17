@@ -84,7 +84,7 @@ protected:
         Transcoder* transcoder = createNativeTranscoder();
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
-        Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
+        Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(ucs4string(UC("/dev/null"))), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         setCurrentVM(theVM_);
         theVM_->loadCompiler();
@@ -116,7 +116,7 @@ protected:
 
 
 TEST_F(VMTest, StackTrace1) {
-    theVM_->loadFileWithGuard(UC(SRCDIR "./tests/stack-trace1.scm"));
+    theVM_->loadFileWithGuard(ucs4string(UC(SRCDIR "./tests/stack-trace1.scm")));
     EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
                  "\n"
                  " Condition components:\n"
@@ -135,7 +135,7 @@ TEST_F(VMTest, StackTrace1) {
 }
 
 TEST_F(VMTest, StackTrace2) {
-    theVM_->setValueString(UC("*command-line-args*"), Pair::list1(SRCDIR "./tests/stack-trace2.scm"));
+    theVM_->setValueString(UC("*command-line-args*"), Pair::list1(Object(SRCDIR "./tests/stack-trace2.scm")));
 #ifdef WITH_NMOSH_DEFAULTS
     theVM_->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, false);
 #else
@@ -156,7 +156,7 @@ TEST_F(VMTest, StackTrace2) {
 
 
 TEST_F(VMTest, BinaryOutputPortFlush) {
-    Object outPort = Object::makeBinaryOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/binary-output.txt")));
+    Object outPort = Object::makeBinaryOutputPort(new BlockBufferedFileBinaryOutputPort(ucs4string(UC("/tmp/binary-output.txt"))));
     theVM_->registerPort(outPort);
     theVM_->flushAllPorts();
     EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_BINARY_OUTPUT_PORT);
@@ -164,7 +164,7 @@ TEST_F(VMTest, BinaryOutputPortFlush) {
 
 
 TEST_F(VMTest, BinaryInputOutputPortFlush) {
-    Object outPort = Object::makeBinaryInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/binary-input-output.txt"), 0));
+    Object outPort = Object::makeBinaryInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(ucs4string(UC("/tmp/binary-input-output.txt")), 0));
     theVM_->registerPort(outPort);
     theVM_->flushAllPorts();
     EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_BINARY_INPUT_OUTPUT_PORT);
@@ -173,7 +173,7 @@ TEST_F(VMTest, BinaryInputOutputPortFlush) {
 
 TEST_F(VMTest, TextualOutputPortFlush) {
     Transcoder* transcoder = createNativeTranscoder();
-    Object outPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/textual-output.txt")), transcoder);
+    Object outPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(ucs4string(UC("/tmp/textual-output.txt"))), transcoder);
     theVM_->registerPort(outPort);
     theVM_->flushAllPorts();
     EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_TEXTUAL_OUTPUT_PORT);
@@ -182,7 +182,7 @@ TEST_F(VMTest, TextualOutputPortFlush) {
 
 TEST_F(VMTest, TextualInputOutputPortFlush) {
     Transcoder* transcoder = createNativeTranscoder();
-    Object outPort = Object::makeTextualInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/textual-input-output.txt"), 0), transcoder);
+    Object outPort = Object::makeTextualInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(ucs4string(UC("/tmp/textual-input-output.txt")), 0), transcoder);
     theVM_->registerPort(outPort);
     theVM_->flushAllPorts();
     EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_TEXTUAL_INPUT_OUTPUT_PORT);

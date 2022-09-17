@@ -83,7 +83,7 @@ TEST_F(ObjectTest, ucs4char) {
 
 
 TEST_F(ObjectTest, ucs4string) {
-    ucs4string text = UC("hige");
+    ucs4string text(UC("hige"));
     EXPECT_EQ('h', text[0]);
     EXPECT_EQ('i', text[1]);
     EXPECT_EQ('g', text[2]);
@@ -218,7 +218,7 @@ TEST_F(ObjectTest, Symbol) {
     EXPECT_TRUE(hige.isSymbol());
     EXPECT_TRUE(hige2.isSymbol());
 
-    ucs4string text = hoge.toSymbol()->c_str();
+    ucs4string text(hoge.toSymbol()->c_str());
     EXPECT_STREQ("hoge", text.ascii_c_str());
 
     EXPECT_FALSE(hoge.isFalse());
