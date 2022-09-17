@@ -326,7 +326,24 @@ write-u8 zero?
  (define (features)
    '(r7rs mosh))
 
-(define (string->vector str) (list->vector (string->list str)))
+(define string->vector
+  (case-lambda
+    ((v start end)
+      (string->vector-partial v start end))
+    ((v start)
+      (string->vector-partial v start (string-length v)))
+    ((v)
+      (string->vector-partial v 0 (string-length v)))))
+
+(define (string->vector-partial s start end)
+  (let ((ret (make-vector (- end start))))
+    (define (itr cur)
+      (unless (= (+ start cur) end)
+        (vector-set! ret cur (string-ref s (+ start cur)))
+        (itr (+ cur 1))))
+    (itr 0)
+    ret))
+
 (define (vector->string vec) (list->string (vector->list vec)))
 
 (define (string-map proc . strs)
