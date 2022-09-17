@@ -41,7 +41,7 @@
 (define-syntax test
   (syntax-rules ()
     ((_ expected expr)
-      (test-equal (quote expected) expected expr))
+      (test-equal expected expected expr))
     ((_ name expected expr)
       (test-equal name expected expr))))
 
