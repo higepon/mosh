@@ -420,16 +420,6 @@ Object scheme::infinitePEx(VM* theVM, int argc, const Object* argv)
     argumentCheckNumber(0, n);
     if (n.isFlonum()) {
         return Object::makeBool(n.toFlonum()->isInfinite());
-    } else if (n.isCompnum()) {
-        Object r = n.toCompnum()->real();
-        if (r.isFlonum() && r.toFlonum()->isInfinite()) {
-            return Object::True;
-        }
-        Object i = n.toCompnum()->imag();
-        if (i.isFlonum() && i.toFlonum()->isInfinite()) {
-            return Object::True;
-        }
-        return Object::False;
     } else {
         return Object::False;
     }
@@ -442,15 +432,6 @@ Object scheme::finitePEx(VM* theVM, int argc, const Object* argv)
     argumentCheckNumber(0, n);
     if (n.isFlonum()) {
         return Object::makeBool(n.toFlonum()->isFinite());
-    } else if (n.isCompnum()) {
-        Object r = n.toCompnum()->real();
-        if (r.isFlonum() && r.toFlonum()->isFinite()) {
-            Object i = n.toCompnum()->imag();
-            if (i.isFlonum() && i.toFlonum()->isFinite()) {
-                return Object::True;
-            }
-        }
-        return Object::False;
     } else {
         return Object::True;
     }
@@ -463,16 +444,6 @@ Object scheme::nanPEx(VM* theVM, int argc, const Object* argv)
     argumentCheckNumber(0, n);
     if (n.isFlonum()) {
         return Object::makeBool(n.toFlonum()->isNan());
-    } else if (n.isCompnum()) {
-        Object r = n.toCompnum()->real();
-        if (r.isFlonum() && r.toFlonum()->isNan()) {
-            return Object::True;
-        }
-        Object i = n.toCompnum()->imag();
-        if (i.isFlonum() && i.toFlonum()->isNan()) {
-            return Object::True;
-        }
-        return Object::False;
     } else {
         return Object::False;
     }
