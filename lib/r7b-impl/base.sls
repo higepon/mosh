@@ -123,6 +123,7 @@ write-char write-string
 write-u8 zero?
    )
          (import (except (rnrs)
+                         vector-copy
                          case
                          syntax-rules
                          error
@@ -278,6 +279,24 @@ write-u8 zero?
 (define (write-string . args)
   (raise "write-string not supported"))
 
+(define vector-copy
+  (case-lambda
+    ((v start end)
+      (vector-copy-partial v start end))
+    ((v start)
+      (vector-copy-partial v start (vector-length v)))
+    ((v)
+      (vector-copy-partial v 0 (vector-length v)))))
+
+(define (vector-copy-partial v start end)
+  (let ((ret (make-vector (- end start))))
+    (define (itr cur)
+      (unless (= (+ start cur) end)
+        (vector-set! ret cur (vector-ref v (+ start cur)))
+        (itr (+ cur 1))))
+    (itr 0)
+    ret))
+
 (define (vector-copy! . args)
   (raise "vector-copy! not supported"))
 
@@ -309,7 +328,6 @@ write-u8 zero?
 
 (define (string->vector str) (list->vector (string->list str)))
 (define (vector->string vec) (list->string (vector->list vec)))
-(define (vector-copy vec) (list->vector (vector->list vec)))
 
 (define (string-map proc . strs)
   (list->string (apply map proc (map string->list strs))))
