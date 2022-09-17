@@ -88,7 +88,7 @@ Object scheme::stringCopyEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
     if (argc == 2) {
-        return Object::makeString(text->data().substr(start, ucs4string::npos));
+        return Object::makeString(text->data().substr(start, text->length() - start));
     }
     argumentAsFixnum(2, end);
     if (end < 0 || start > end || end > text->length()) {
