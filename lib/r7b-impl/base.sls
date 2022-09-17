@@ -126,7 +126,8 @@ write-u8 zero?
                          case
                          syntax-rules
                          error
-                         define-record-type)
+                         define-record-type
+                         string->list)
                  (rnrs mutable-pairs)
                  (rnrs mutable-strings)
                  (rnrs r5rs)
@@ -135,7 +136,7 @@ write-u8 zero?
                  (srfi i23)
                  (srfi i9)
                  (srfi i39)
-                 (only (srfi :13) string-copy!)
+                 (only (srfi :13) string-copy! string->list)
                  (only (srfi :43) vector-append)
                  (only (r7b-impl division) floor/ floor-quotient floor-remainder truncate/ truncate-remainder truncate-quotient)
                  (r7b-util bytevector-buffer)
