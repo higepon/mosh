@@ -4,7 +4,7 @@
         (scheme inexact) (scheme complex) (scheme time)
         (scheme file) (scheme read) (scheme write)
         (scheme eval) (scheme process-context) (scheme case-lambda)
-        (rename (srfi :64) (test-equal test))
+        (srfi :64)
         (only (rnrs r5rs (6)) null-environment)
         )
 
@@ -37,6 +37,13 @@
 ;;
 ;; however (chibi test) provides nicer output, timings, and
 ;; approximate equivalence for floating point numbers.
+
+(define-syntax test
+  (syntax-rules ()
+    ((_ expected expr)
+      (test-equal (quote expected) expected expr))
+    ((_ name expected expr)
+      (test-equal name expected expr))))
 
 (define-syntax test-values
   (syntax-rules ()
