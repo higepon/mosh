@@ -24,17 +24,32 @@
     build-global-assignment build-global-definition build-lambda
     build-case-lambda build-let build-primref build-foreign-call
     build-data build-sequence build-void build-letrec build-letrec*
-    build-global-define build-library-letrec* build-and build-or build-named-let)
-  (import (rnrs) (psyntax compat) (psyntax config) (mosh))
+    build-global-define build-library-letrec* build-and build-or build-named-let
+    debugf)
+  (import (rnrs) (psyntax compat) (psyntax config) (mosh)
+          (only (system) get-environment-variable))
+
+  ; Debug format output.
+  (define-syntax debugf
+      (syntax-rules ()
+        ((_ who message args ...)
+          (when (get-environment-variable "MOSH_DEBUG")
+            (format (current-error-port) (string-append "[~a]: " message "\n") 'who args ...)))))
 
   (define (build-global-define x)
     (if-wants-global-defines
-      `(define ,x '#f)
+      (begin
+        (debugf build-global-define "x=~a" x)
+        `(define ,x '#f))
       (build-void)))
+
   (define-syntax build-application
     (syntax-rules ()
       ((_ ae fun-exp arg-exps)
-       `(,fun-exp . ,arg-exps))))
+        (let ([c (annotated-cons fun-exp arg-exps)])
+          (debugf build-application "fun-exp=~s arg-exps=~s ae=~s" fun-exp arg-exps (if ae (ae) ae))
+          (set-source-info! c (if ae (ae) ae))
+          c))))
 
   (define-syntax build-and
     (syntax-rules ()
@@ -55,21 +70,37 @@
       ((_ ae var) var)))
   (define-syntax build-lexical-assignment
     (syntax-rules ()
-      ((_ ae var exp) `(set! ,var ,exp))))
+      ((_ ae var exp)
+        (begin
+          (debugf build-lexical-assignment "build-lexical-assignment exp=~s var=~s ae=~s" exp var (if ae (ae) ae))
+          `(set! ,var ,exp)))))
   (define-syntax build-global-reference
     (syntax-rules ()
-      ((_ ae var) var)))
+      ((_ ae var)
+        (begin
+          (debugf build-global-reference "build-global-reference var=~s ae=~s" var (if ae (ae) ae))
+           var))))
   (define-syntax build-global-assignment
-    (syntax-rules ()
-      ((_ ae var exp) `(set! ,var ,exp))))
+    (syntax-rules ()   
+      ((_ ae var exp) 
+        (begin
+          (debugf build-global-assignment "var=~s exp=~s ae=~s\n" var exp (if ae (ae) ae))
+          `(set! ,var ,exp)))))
   (define-syntax build-global-definition
     (syntax-rules ()
-      ((_ ae var exp) (build-global-assignment ae var exp))))
+      ((_ ae var exp)
+        (begin
+          (debugf build-global-definition "build-global-definition var=~s exp=~s ae=~s" var exp (if ae (ae) ae))
+          (build-global-assignment ae var exp)))))
+
   (define build-lambda
     (lambda (ae vars exp) 
       (if-wants-case-lambda
           `(case-lambda (,vars ,exp))
-          `(lambda ,vars ,exp))))
+          (begin
+            (debugf build-lambda "vars=~a exp=~a ae=~a" vars exp (if ae (ae) ae))
+            (let ([lmbd `(lambda ,vars ,exp)])
+              (annotated-cons (car lmbd) (cdr lmbd) (if ae (ae) #f)))))))
   (define build-case-lambda
     (if-wants-case-lambda
       (lambda (ae vars* exp*)
@@ -166,6 +197,7 @@
   ;; So we use this build-library-letrec*.
   (define build-library-letrec*
     (lambda (ae name vars locs val-exps body-exp)
+      (debugf build-library-letrec* "vars=~s body-exp=~a val-exps=~s val-exps-src=~a ae=~s" vars body-exp val-exps (map source-info val-exps) (if ae (ae) ae))
       `(begin
         ,@(map (lambda (var) `(set! ,var (unspecified))) vars)
         ,@(apply append (map (lambda (var loc val-exp)
