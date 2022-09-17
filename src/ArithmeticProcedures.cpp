@@ -439,9 +439,18 @@ Object scheme::finitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("finite?");
     checkArgumentLength(1);
-    argumentCheckReal(0, real);
-    if (real.isFlonum()) {
-        return Object::makeBool(real.toFlonum()->isFinite());
+    argumentCheckNumber(0, n);
+    if (n.isFlonum()) {
+        return Object::makeBool(n.toFlonum()->isFinite());
+    } else if (n.isCompnum()) {
+        Object r = n.toCompnum()->real();
+        if (r.isFlonum() && r.toFlonum()->isFinite()) {
+            Object i = n.toCompnum()->imag();
+            if (i.isFlonum() && i.toFlonum()->isFinite()) {
+                return Object::True;
+            }
+        }
+        return Object::False;
     } else {
         return Object::True;
     }
