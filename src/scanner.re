@@ -181,7 +181,7 @@ int Scanner::scan(YYSTYPE* yylval)
   UINTEGER_8             = DIGIT_8 +;
   UINTEGER_10            = DIGIT_10 +;
   UINTEGER_16            = DIGIT_16 +;
-  NAN_INF                = "nan.0" | "inf.0";
+  NAN_INF                = "nan.0" | "inf.0" | "INF.0" | "NAN.0";
   SIGN                   = [\+\-]?;
   EXPONENT_MARKER        = [eEsSfFdDlL];
   MANTISSA_WIDTH         = ("|" (DIGIT_10)+)?;
