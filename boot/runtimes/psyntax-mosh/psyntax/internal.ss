@@ -20,7 +20,7 @@
 
 (library (psyntax internal)
   (export current-primitive-locations compile-core-expr-to-port expanded->core compile-core-expr)
-  (import (rnrs) (psyntax compat)
+  (import (rnrs) (psyntax compat) (only (mosh) annotated-cons source-info)
           ; comment out for mosh
           ;(ironscheme pretty-print)
           )
@@ -69,7 +69,9 @@
                   (cons (car x) (map f (cdr x))))
                 (cdr x))))
            ((lambda)
-            (cons* 'lambda (cadr x) (map f (cddr x))))
+            ;; keep source info here
+            (let ([tmp (cons* 'lambda (cadr x) (map f (cddr x)))])
+              (annotated-cons (car tmp) (cdr tmp) (source-info x))))
            ((letrec)
             (let ((bindings (cadr x)) (body* (cddr x)))
               (let ((lhs* (map car bindings)) (rhs* (map cadr bindings)))

@@ -54,7 +54,7 @@
     (psyntax internal)
     (rename (except (mosh) library-path make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
-    (only (system) same-marks? same-marks*? id->real-label join-wraps)
+    (only (system) same-marks? same-marks*? id->real-label join-wraps get-environment-variable)
     (prefix (rnrs syntax-case) sys.))
 
   (define file-options-macro
@@ -993,7 +993,8 @@
         ((_ (id . fmls) b b* ...) (id? id)
          (begin
            (verify-formals fmls x)
-           (values id (cons 'defun (cons fmls (cons b b*))))))
+           (debugf parse-define "x=~a src=~a" (and (stx? x) (stx-expr x)) (source-info (and (stx? x) (stx-expr x))))
+           (values id (cons 'defun (annotated-cons fmls (cons b b*) (source-info (and (stx? x) (stx-expr x))))))))
         ((_ id val) (id? id)
          (values id (cons 'expr val)))
         ((_ id) (id? id)
@@ -2906,7 +2907,7 @@
       (syntax-match e  ()
         ((rator rands ...)
          (let ((rator (chi-expr rator r mr)))
-           (build-application no-source
+           (build-application (lambda () (source-info (stx-expr e))) ;  no-source
              rator
              (chi-expr* rands r mr)))))))
 
@@ -3061,12 +3062,14 @@
     (let ((fmls (car x)) (body* (cdr x)))
       (let-values (((fmls body)
                     (chi-lambda-clause fmls fmls body* r mr)))
-        (build-lambda no-source fmls body))))
+        (debugf chi-defun "source-info-x=~a" (source-info x))
+        (build-lambda (lambda () (source-info x)) fmls body))))
 
   (define chi-rhs
     (lambda (rhs r mr)
       (case (car rhs)
-        ((defun) (chi-defun (cdr rhs) r mr))
+        ((defun)
+          (chi-defun (cdr rhs) r mr))
         ((expr)
          (let ((expr (cdr rhs)))
            (chi-expr expr r mr)))
@@ -3222,6 +3225,7 @@
                (case type
                  ((define)
                   (let-values (((id rhs) (parse-define e)))
+                    (debugf chi-body* "expr=~a src=~a" (stx-expr e) (source-info (stx-expr e)))
                     (when (bound-id-member? id kwd*)
                       (stx-error e "cannot redefine keyword"))
                     (let-values ([(lab lex) (gen-define-label+loc id rib)])
@@ -4177,8 +4181,7 @@
         (lambda ()
           (for-each invoke-library lib*)
           (let ([expanded (expanded->core invoke-code)])
-            (when (symbol-value 'debug-expand)
-              (format #t "psyntax expanded=~a\n" (ungensym-all expanded)))
+            (debugf compile-r6rs-top-level "expanded=~a" (ungensym-all expanded))
             (eval-core expanded))))))
 
   (define pre-compile-r6rs-top-level
