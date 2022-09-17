@@ -5,6 +5,7 @@
         (scheme file) (scheme read) (scheme write)
         (scheme eval) (scheme process-context) (scheme case-lambda)
         (rename (srfi :64) (test-equal test))
+        (only (rnrs r5rs (6)) null-environment)
         )
 
 ;; R7RS test suite.  Covers all procedures and syntax in the small
