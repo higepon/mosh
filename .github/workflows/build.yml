@@ -72,7 +72,7 @@ jobs:
           cd $STABLE_MOSH_PATH &&
           ./configure &&
           make &&
-          make check
+          make test
       - name: Install Stable Mosh
         run: >
           cd $STABLE_MOSH_PATH &&
@@ -88,7 +88,7 @@ jobs:
           ./gen-git-build.sh &&
           ./configure --with-r6rs-doc=../r6rs &&
           make &&
-          make check &&
+          make test &&
           sudo make install &&
           make dist
       - name: Build the generated dist package.
@@ -100,7 +100,7 @@ jobs:
           cd $DIST_DIR &&
           ./configure --prefix=/tmp &&
           make &&
-          make check &&
+          make test &&
           make install
       - name: Run clang-tidy and treat warnings as error using bear 2.x.
         if: matrix.os == 'ubuntu-latest'
@@ -212,7 +212,7 @@ jobs:
           cd $STABLE_MOSH_PATH &&
           ./configure &&
           make &&
-          make check
+          make test
       - name: Install Stable Mosh
         run: >
           cd $STABLE_MOSH_PATH &&
@@ -226,7 +226,7 @@ jobs:
           ./gen-git-build.sh &&
           ./configure --with-r6rs-doc=../r6rs &&
           make &&
-          make check &&
+          make test &&
           sudo make install &&
           make dist
       - name: Build the generated dist package.
@@ -238,7 +238,7 @@ jobs:
           cd $DIST_DIR &&
           ./configure --prefix=/tmp &&
           make &&
-          make check &&
+          make test &&
           make install
       - uses: actions/upload-artifact@v2
         with:
@@ -267,7 +267,7 @@ jobs:
       - name: "Build & Test"
         working-directory: build/${{ env.mosh_latest }}
         run: |
-          ./configure --disable-profiler && make -j4 && make check && make install
+          ./configure --disable-profiler && make -j4 && make test && make install
         shell: C:\cygwin\bin\bash.exe --noprofile --norc -o igncr -eo pipefail '{0}'
 
 
@@ -293,7 +293,7 @@ jobs:
           cd /${{ env.mosh_latest}} &&
           ./configure &&
           make -j4 &&
-          make check &&
+          make test &&
           make install
         shell: alpine.sh --root {0}
 
@@ -322,7 +322,7 @@ jobs:
             cd ${{ env.mosh_latest }}
             ./configure
             gmake -j4
-            gmake check
+            gmake test
 
   build-dist-nbsd:
     name: "NetBSD VM"
@@ -349,7 +349,7 @@ jobs:
             cd ${{ env.mosh_latest }}
             ./configure
             gmake -j4
-            gmake check
+            gmake test
 
   build-dist-obsd:
     name: "OpenBSD VM (Build only)"
