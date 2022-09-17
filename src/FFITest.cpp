@@ -112,7 +112,7 @@ TEST_F(FFITest, loadAndlookup) {
 TEST_F(VMErrorPortTest, loadAndlookupScheme) {
 
     // open
-    const Object name = "./lib/libffitest.so.1.0";
+    const Object name("./lib/libffitest.so.1.0");
     const Object handle = internalFfiOpenEx(theVM_, 1, &name);
     ASSERT_TRUE(handle.isPointer());
 
@@ -219,7 +219,7 @@ TEST_F(FFITest, CStackWithFixnum) {
 TEST_F(FFITest, CStackWithString) {
     CStack cstack;
     cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT);
-    cstack.push("hige", CStack::SIGNATURE_POINTER);
+    cstack.push(Object("hige"), CStack::SIGNATURE_POINTER);
     intptr_t* p = cstack.reg();
     EXPECT_EQ(2, cstack.regCount());
     EXPECT_EQ(3, p[0]);
@@ -233,7 +233,7 @@ TEST_F(FFITest, CStackWithByteVector) {
     bv->u8Set(0, 1);
     bv->u8Set(1, 2);
     cstack.push(b, CStack::SIGNATURE_POINTER);
-    cstack.push("hige", CStack::SIGNATURE_POINTER);
+    cstack.push(Object("hige"), CStack::SIGNATURE_POINTER);
     intptr_t* p = cstack.reg();
     EXPECT_EQ(2, cstack.regCount());
     EXPECT_EQ(1, ((uint8_t*)(p[0]))[0]);
@@ -251,7 +251,7 @@ TEST_F(FFITest, CStackTooManyArgument) {
     }
     const bool result = cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT);
     EXPECT_FALSE(result);
-    ucs4string err = cstack.getLastError();
+    ucs4string err(cstack.getLastError());
     EXPECT_STREQ("too many ffi arguments", err.ascii_c_str());
 }
 
@@ -285,7 +285,7 @@ TEST_F(FFITest, CStackUnsupportedArgument) {
     CStack cstack;
     const bool result = cstack.push(Object::makeEqHashTable(), CStack::SIGNATURE_INT);
     EXPECT_FALSE(result);
-    ucs4string err = cstack.getLastError();
+    ucs4string err(cstack.getLastError());
     EXPECT_STREQ("unsupported ffi argument", err.ascii_c_str());
 }
 
