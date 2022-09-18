@@ -248,7 +248,7 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             continue;
        }
-       "#"[tT] DELMITER {
+       ("#"[tT] | "#true") DELMITER {
             yylval->boolValue = true;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
@@ -266,7 +266,7 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             return DEFINED_SHARED;
         }
-        "#"[fF] DELMITER {
+        ("#"[fF] | "#false") DELMITER {
             yylval->boolValue = false;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
