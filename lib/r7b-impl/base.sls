@@ -216,8 +216,6 @@ write-u8 zero?
 
 (define (exact-integer? i) (and (integer? i) (exact? i)))
 
-(define (list-copy l) (map (lambda (e) e) l))
-
 (define (list-set! l k obj) 
   (define (itr cur count)
     (if (= count k) 
@@ -361,6 +359,23 @@ write-u8 zero?
         (itr (+ cur 1))))
     (itr 0)
     ret))
+
+;; list-copy from https://github.com/okuoku/yuni/.
+(define (list-copy/itr! cur lis)
+  (cond
+    ((pair? lis)
+     (let ((c (cons (car lis) '())))
+      (set-cdr! cur c)
+      (list-copy/itr! c (cdr lis))))
+    (else
+      (set-cdr! cur lis))))
+
+(define (list-copy obj)
+  (if (pair? obj)
+    (let ((c (cons (car obj) '())))
+     (list-copy/itr! c (cdr obj))
+     c)
+    obj))
 
 (define (string-map proc . strs)
   (list->string (apply map proc (map string->list strs))))
