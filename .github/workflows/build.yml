@@ -88,7 +88,7 @@ jobs:
           ./gen-git-build.sh &&
           ./configure --with-r6rs-doc=../r6rs &&
           make &&
-          make test &&
+          make check &&
           sudo make install &&
           make dist
       - name: Build the generated dist package.
@@ -100,7 +100,7 @@ jobs:
           cd $DIST_DIR &&
           ./configure --prefix=/tmp &&
           make &&
-          make test &&
+          make check &&
           make install
       - name: Run clang-tidy and treat warnings as error using bear 2.x.
         if: matrix.os == 'ubuntu-latest'
@@ -226,7 +226,7 @@ jobs:
           ./gen-git-build.sh &&
           ./configure --with-r6rs-doc=../r6rs &&
           make &&
-          make test &&
+          make check &&
           sudo make install &&
           make dist
       - name: Build the generated dist package.
@@ -238,7 +238,7 @@ jobs:
           cd $DIST_DIR &&
           ./configure --prefix=/tmp &&
           make &&
-          make test &&
+          make check &&
           make install
       - uses: actions/upload-artifact@v2
         with:
@@ -265,6 +265,7 @@ jobs:
         #run: cmake -E tar zxvf ${{ env.mosh_latest }}.tar.gz
         working-directory: build
       - name: "Build & Test"
+        # FIXME: We need to fix `test_vm` to enable check
         working-directory: build/${{ env.mosh_latest }}
         run: |
           ./configure --disable-profiler && make -j4 && make test && make install
@@ -293,7 +294,7 @@ jobs:
           cd /${{ env.mosh_latest}} &&
           ./configure &&
           make -j4 &&
-          make test &&
+          make check &&
           make install
         shell: alpine.sh --root {0}
 
@@ -322,7 +323,7 @@ jobs:
             cd ${{ env.mosh_latest }}
             ./configure
             gmake -j4
-            gmake test
+            gmake check
 
   build-dist-nbsd:
     name: "NetBSD VM"
@@ -339,6 +340,7 @@ jobs:
           rm ${{ env.mosh_latest }}.tar.gz
       - name: "Build with VM"
         uses: vmactions/netbsd-vm@8f54bcd9711f9b85d41efd8eddcbb74b0d8aeb63
+        # FIXME: We need to fix `test_ffi` to enable check
         with:
           usesh: true
           copyback: false
@@ -349,7 +351,7 @@ jobs:
             cd ${{ env.mosh_latest }}
             ./configure
             gmake -j4
-            gmake test
+            gmake test 
 
   build-dist-obsd:
     name: "OpenBSD VM (Build only)"
