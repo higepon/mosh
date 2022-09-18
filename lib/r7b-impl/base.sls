@@ -328,12 +328,12 @@ write-u8 zero?
 
 (define string->vector
   (case-lambda
-    ((v start end)
-      (string->vector-partial v start end))
-    ((v start)
-      (string->vector-partial v start (string-length v)))
-    ((v)
-      (string->vector-partial v 0 (string-length v)))))
+    ((s start end)
+      (string->vector-partial s start end))
+    ((s start)
+      (string->vector-partial s start (string-length s)))
+    ((s)
+      (string->vector-partial s 0 (string-length s)))))
 
 (define (string->vector-partial s start end)
   (let ((ret (make-vector (- end start))))
@@ -344,7 +344,23 @@ write-u8 zero?
     (itr 0)
     ret))
 
-(define (vector->string vec) (list->string (vector->list vec)))
+(define vector->string
+  (case-lambda
+    ((v start end)
+      (vector->string-partial v start end))
+    ((v start)
+      (vector->string-partial v start (vector-length v)))
+    ((v)
+      (vector->string-partial v 0 (vector-length v)))))
+
+(define (vector->string-partial v start end)
+  (let ((ret (make-string (- end start))))
+    (define (itr cur)
+      (unless (= (+ start cur) end)
+        (string-set! ret cur (vector-ref v (+ start cur)))
+        (itr (+ cur 1))))
+    (itr 0)
+    ret))
 
 (define (string-map proc . strs)
   (list->string (apply map proc (map string->list strs))))
