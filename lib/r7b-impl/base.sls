@@ -291,7 +291,7 @@ write-u8 zero?
     (itr 0)
     ret))
 
-;; vector-copy! bytevector-copy! from　https://github.com/okuoku/yuni.
+;; vector-copy! bytevector-copy! bytevector-append from　https://github.com/okuoku/yuni.
 (define (vector-copy!/itr+ to at from start end)
   (unless (= start end)
     (vector-set! to at (vector-ref from start))
@@ -320,8 +320,8 @@ write-u8 zero?
          (else
            (vector-copy!/itr+ to at from start end)))))))
 
-(define (bytevector-append . args)
-  (raise "bytevector-append not supported"))
+(define (bytevector-append . bvs)
+  (u8-list->bytevector (apply append (map bytevector->u8-list bvs))))
 
 (define (bytevector . elm*)
   (u8-list->bytevector elm*))
