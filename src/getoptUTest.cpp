@@ -40,6 +40,10 @@
 #include "getoptU.h"
 #include "VM.h"
 
+#ifdef __CYGWIN__
+#define FIXME_EMULATED_UCS4CHAR 1 // FIXME: These tests are not compatible with sizeof(wchar_t) == 2 platforms.
+#endif
+
 using namespace scheme;
 
 #ifdef WITH_NMOSH_DEFAULTS
@@ -93,6 +97,7 @@ TEST_F(MoshTest, getopt_longU_2) {
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
 }
 
+#ifndef FIXME_EMULATED_UCS4CHAR
 TEST_F(MoshTest, getopt_longU_3) {
     struct optionU long_options[] = {
        {UC("help"), 0, 0, 'h'},
@@ -124,6 +129,7 @@ TEST_F(MoshTest, getopt_longU_4) {
     EXPECT_TRUE(path == UC("my-library"));
     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
 }
+#endif
 
 TEST_F(MoshTest, getopt_longU_5) {
     struct optionU long_options[] = {
@@ -203,6 +209,7 @@ TEST_F(MoshTest, getopt_longU_8) {
     EXPECT_TRUE(script == argv3);
 }
 
+#ifndef FIXME_EMULATED_UCS4CHAR
 TEST_F(MoshTest, getopt_longU_9) {
     struct optionU long_options[] = {
         {UC("loadpath"), optional_argument, 0, 'L'},
@@ -244,3 +251,4 @@ TEST_F(MoshTest, getopt_longU_10) {
     ucs4string script(argv[optindU]);
     EXPECT_TRUE(script == argv3);
 }
+#endif
