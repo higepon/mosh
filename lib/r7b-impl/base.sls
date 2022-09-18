@@ -323,8 +323,8 @@ write-u8 zero?
 (define (bytevector-append . args)
   (raise "bytevector-append not supported"))
 
-(define (bytevector . args)
-  (raise "bytevector not supported"))
+(define (bytevector . elm*)
+  (u8-list->bytevector elm*))
 
 (define (read-string . args)
   (raise "read-string not supported"))
