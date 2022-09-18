@@ -301,7 +301,7 @@ TEST_F(FFITest, refUint64_t) {
     EXPECT_EQ(0xffffffffeeeeeeeeLL, p.ref<uint64_t>(0));
 }
 
-#if defined(ARCH_IA32) || defined(ARCH_X86_64)
+#if (defined(ARCH_IA32) || defined(ARCH_X86_64)) && !(defined(__CYGWIN__) || defined(_WIN32))
 TEST_F(FFITest, ExecutableMemory) {
     ExecutableMemory mem(32);
     ASSERT_TRUE(mem.allocate());
