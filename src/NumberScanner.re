@@ -135,8 +135,9 @@ int NumberScanner::scan(YYSTYPE* yylval)
     DIGIT_8         = [0-7];
     DIGIT_16_1      = [A-F];
     DIGIT_16_2      = [a-f];
-    MY_NAN          = "nan.0";
-    MY_INF          = "inf.0";
+    /* Note: Using single quote here. This means case-insensitive */
+    MY_NAN          = 'nan.0';
+    MY_INF          = 'inf.0';
 */
 
     for(;;)
