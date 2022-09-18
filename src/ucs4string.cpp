@@ -32,7 +32,7 @@
 #include "scheme.h"
 #include "ucs4string.h"
 
-#if defined(_MSC_VER) || defined(__CYGWIN__) || defined(MONA)
+#if defined(MONA)
 #include <map>
 #include <list>
 #include <vector>

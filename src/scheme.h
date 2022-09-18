@@ -145,11 +145,11 @@ enum {
 typedef int32_t ucs4char; // use -1 for EOF
 typedef int fixedint;
 
-#if defined(_MSC_VER) || defined(__CYGWIN__) || defined(MONA)
+#if defined(MONA)
 const ucs4char* UC(const char *str);
-#elif defined (_WIN32)
-#define UC_(x) L ## x
-#define UC(x) reinterpret_cast<const ucs4char*>(UC_(x)L"\0")
+#elif defined(__CYGWIN__) || defined(_WIN32)
+#define UC_(x) U ## x
+#define UC(x) reinterpret_cast<const ucs4char*>(UC_(x))
 #else
 #define UC_(x) L ## x
 #define UC(x) reinterpret_cast<const ucs4char*>(UC_(x))
