@@ -123,7 +123,7 @@ write-char write-string
 write-u8 zero?
    )
          (import (rename (except (rnrs) vector-copy vector-fill! case syntax-rules error string->list define-record-type)
-                   (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (bytevector-copy r6rs:bytevector-copy))
+                   (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (string->utf8 r6rs:string->utf8) (bytevector-copy r6rs:bytevector-copy))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
                  (rnrs r5rs)
@@ -358,6 +358,16 @@ write-u8 zero?
       (r6rs:utf8->string (bytevector-copy bv start (bytevector-length bv))))
     ((bv)
       (r6rs:utf8->string bv))))
+
+; TODO(higepon): Using string-copy is not very efficient.
+(define string->utf8
+  (case-lambda
+    ((s start end)
+      (r6rs:string->utf8 (string-copy s start end)))
+    ((s start)
+      (r6rs:string->utf8 (string-copy s start (string-length s))))
+    ((s)
+      (r6rs:string->utf8 s))))
 
 (define (read-string . args)
   (raise "read-string not supported"))
