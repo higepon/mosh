@@ -122,12 +122,12 @@ with-exception-handler write-bytevector
 write-char write-string
 write-u8 zero?
    )
-         (import (except (rnrs)
-                         vector-copy
-                         case
-                         syntax-rules
-                         error
-                         define-record-type)
+         (import (rename (except (rnrs)
+                          vector-copy
+                          case
+                          syntax-rules
+                          error
+                          define-record-type) (vector->list r6rs:vector->list))
                  (rnrs mutable-pairs)
                  (rnrs mutable-strings)
                  (rnrs r5rs)
@@ -359,6 +359,24 @@ write-u8 zero?
         (itr (+ cur 1))))
     (itr 0)
     ret))
+
+(define vector->list
+  (case-lambda
+    ((v start end)
+      (vector->list-partial v start end))
+    ((v start)
+      (vector->list-partial v start (vector-length v)))
+    ((v)
+      (vector->list-partial v 0 (vector-length v)))))
+
+(define (vector->list-partial v start end)
+  (let ((ret (make-vector (- end start))))
+    (define (itr cur)
+      (unless (= (+ start cur) end)
+        (vector-set! ret cur (vector-ref v (+ start cur)))
+        (itr (+ cur 1))))
+    (itr 0)
+    (r6rs:vector->list ret)))
 
 ;; list-copy from https://github.com/okuoku/yuni/.
 (define (list-copy/itr! cur lis)
