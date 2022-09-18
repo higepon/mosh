@@ -124,6 +124,7 @@ write-u8 zero?
    )
          (import (rename (except (rnrs)
                           vector-copy
+                          vector-fill!
                           case
                           syntax-rules
                           error
@@ -137,7 +138,7 @@ write-u8 zero?
                  (srfi i9)
                  (srfi i39)
                  (only (srfi :13) string-copy! string-fill!)
-                 (only (srfi :43) vector-append)
+                 (only (srfi :43) vector-append vector-fill!)
                  (only (r7b-impl division) floor/ floor-quotient floor-remainder truncate/ truncate-remainder truncate-quotient)
                  (r7b-util bytevector-buffer)
                  (r7b-util char-ready)
