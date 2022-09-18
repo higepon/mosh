@@ -554,6 +554,14 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
     END_TRY
 }
 
+Object scheme::portOpenPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("port-open?");
+    checkArgumentLength(1);
+    argumentAsPort(0, port);
+    return Object::makeBool(!port->isClosed());
+}
+
 Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("put-bytevector");
