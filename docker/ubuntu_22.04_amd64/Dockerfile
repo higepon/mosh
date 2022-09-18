@@ -5,12 +5,8 @@ ENV LD_LIBRARY_PATH="/usr/local/lib"
 WORKDIR /root
 
 RUN apt update # && apt -y upgrade
-RUN apt install -y gauche wget make libgmp-dev gcc g++ autoconf automake make
+RUN apt install -y gauche wget make libgmp-dev gcc g++ autoconf automake make libonig-dev
 RUN apt install -y re2c bison subversion autoconf automake git gdb g++ bear clang-tidy pkg-config
-
-# Oniguruma
-RUN wget https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz
-RUN tar zvxf onig-5.9.6.tar.gz && cd onig-5.9.6 && rm config.sub && rm config.guess && wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess && wget http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub && ./configure && make && make install
 
 # Mosh 0.2.8 RC4
 RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc4/mosh-0.2.8-rc4.tar.gz
@@ -23,5 +19,13 @@ RUN git clone https://github.com/higepon/mosh.git mosh.git
 
 # Try to build mosh.git using mosh binary built above. If this fails, please comment out this line and debug in the container.
 RUN cd mosh.git && ./gen-git-build.sh && ./configure && make && make test
+
+# Show git branch name.
+RUN touch /root/.bashrc
+RUN echo \
+"parse_git_branch() {\n\
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\\\\1)/'\n\
+}\n\
+export PS1='\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ '\n" >> /root/.bashrc
 
 CMD ["bash"]
