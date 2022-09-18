@@ -536,9 +536,9 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC(")"));
     } else if (o.isSymbol()) {
         Symbol* symbol = o.toSymbol();
-//        Object s = symbol->toString();
         const ucs4string& content = ucs4string(symbol->c_str());
         const ucs4char start = content[0];
+        const bool isBarSymbol = (start ==  '|') && (content[content.length() - 1] == '|');
         if ((start >= '0' && start <= '9') || (start == ' ')) {
             char buf[16];
             snprintf(buf, 16, "\\x%x;", start);
@@ -550,7 +550,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         for (uintptr_t i = 1; i < content.size(); i++) {
             const ucs4char ch = content[i];
             // not enough
-            if (ch == ' ') {
+            if (!isBarSymbol && ch == ' ') {
                 char buf[16];
                 snprintf(buf, 16, "\\x%x;", ch);
                 putString(buf);
