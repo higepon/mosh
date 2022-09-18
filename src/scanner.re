@@ -284,7 +284,7 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\nul" DELMITER {
+        ("#\\nul" | "#\\null") DELMITER {
             yylval->charValue = 0x00;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
