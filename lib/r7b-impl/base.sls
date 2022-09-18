@@ -123,7 +123,7 @@ write-char write-string
 write-u8 zero?
    )
          (import (rename (except (rnrs) vector-copy vector-fill! case syntax-rules error string->list define-record-type)
-                   (vector->list r6rs:vector->list))
+                   (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
                  (rnrs r5rs)
@@ -160,7 +160,7 @@ write-u8 zero?
 ;; R7RS error object will be mapped to R6RS condition object
 (define error-object? condition?)
 
-(define (error-object-irritants obj) 
+(define (error-object-irritants obj)
   (and (irritants-condition? obj)
        (condition-irritants obj)))
 
@@ -212,9 +212,9 @@ write-u8 zero?
 
 (define (exact-integer? i) (and (integer? i) (exact? i)))
 
-(define (list-set! l k obj) 
+(define (list-set! l k obj)
   (define (itr cur count)
-    (if (= count k) 
+    (if (= count k)
       (set-car! cur obj)
       (itr (cdr cur) (+ count 1))))
   (itr l 0))
@@ -224,13 +224,13 @@ write-u8 zero?
     ((k fil) (vector->list (make-vector k fil)))
     ((k) (make-list k 'unspecified))))
 
-(define peek-u8 
+(define peek-u8
   (case-lambda
     (() (peek-u8 (current-input-port)))
     ((port)
      (lookahead-u8 port))))
 
-(define read-bytevector 
+(define read-bytevector
   (case-lambda
     ((len) (read-bytevector len (current-input-port)))
     ((len port) (get-bytevector-n port len))))
@@ -243,7 +243,7 @@ write-u8 zero?
      (get-bytevector-n! port bv start (- end start)))))
 
 (define read-line
-  (case-lambda 
+  (case-lambda
     (() (read-line (current-input-port)))
     ((port) (get-line port))))
 
@@ -261,11 +261,11 @@ write-u8 zero?
   (case-lambda
     ((bv port)
      (put-bytevector port bv))
-    ((bv) (write-bytevector bv (current-output-port))))) 
+    ((bv) (write-bytevector bv (current-output-port)))))
 
 (define write-partial-bytevector
   (case-lambda
-    ((bv start end) (write-partial-bytevector bv start end 
+    ((bv start end) (write-partial-bytevector bv start end
                                               (current-output-port)))
     ((bv start end port)
      (put-bytevector port bv start (- end start)))))
@@ -291,7 +291,7 @@ write-u8 zero?
     (itr 0)
     ret))
 
-;; vector-copy! from　https://github.com/okuoku/yuni.
+;; vector-copy! bytevector-copy! from　https://github.com/okuoku/yuni.
 (define (vector-copy!/itr+ to at from start end)
   (unless (= start end)
     (vector-set! to at (vector-ref from start))
@@ -325,6 +325,20 @@ write-u8 zero?
 
 (define (bytevector . elm*)
   (u8-list->bytevector elm*))
+
+(define bytevector-copy!
+  (case-lambda
+    ((to at from) (bytevector-copy! to at from 0))
+    ((to at from start)
+     (let ((flen (bytevector-length from))
+           (tlen (bytevector-length to)))
+       (let ((fmaxcopysize (- flen start))
+             (tmaxcopysize (- tlen at)))
+         (bytevector-copy! to at from start (+ start
+                                               (min fmaxcopysize
+                                                    tmaxcopysize))))))
+    ((to at from start end)
+     (r6rs:bytevector-copy! from start to at (- end start)))))
 
 (define (read-string . args)
   (raise "read-string not supported"))
