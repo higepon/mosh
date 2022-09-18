@@ -192,14 +192,25 @@ src/OSCompatThread.h src/OSCompatThread.cpp \
 src/VMFactory.cpp src/VMFactory.h \
 src/SimpleStruct.h \
 src/OSCompat.h src/OSCompat.cpp \
-src/stubs.cpp src/posix/terminal/terminal.c src/generic/boehmgc-stubs.c \
+src/oniguruma_compat.h \
+src/stubs.cpp \
+src/generic/boehmgc-stubs.c src/generic/boehmgc-stubs.h \
+src/posix/terminal/terminal.c \
 src/posix/spawn/posixspawn.c src/posix/environ/mosh-environ.c \
 src/posix/fd/posix_fd.c src/posix/poll/posix_poll.c \
 src/posix/socket/posix_socket.c src/posix/sigchld_handler/sigchld_handler.c \
 src/posix/debugee/posix_debugee.c \
 src/bsd/kqueue/kqueue_stubs.c \
 src/posix/wait3/wait3.c \
-src/posix/pthread/mosh_pthread.c
+src/posix/pthread/mosh_pthread.c \
+src/posix/debugee/posix_debugee.h src/posix/environ/mosh-environ.h \
+src/posix/fd/posix_fd.h src/posix/poll/posix_poll.h \
+src/posix/pthread/mosh_pthread.h src/posix/ptrace/ptrace_common.h \
+src/posix/sigchld_handler/sigchld_handler.h src/posix/socket/posix_socket.h \
+src/posix/spawn/posixspawn.h src/posix/terminal/mosh_terminal.h \
+src/posix/wait3/wait3.h \
+src/win/include/getopt.h src/win/include/gettimeofday.h src/win32/aio_win32.h \
+src/bsd/kqueue/kqueue_stubs.h 
 
 if FFI_I386
 MOSH_CORE_SRCS += src/ffi_stub_i386.S
@@ -342,8 +353,10 @@ boot/runtimes/psyntax-mosh/psyntax \
 boot/runtimes/psyntax-mosh/Makefile \
 boot/runtimes/psyntax-mosh/print-prefix.ss \
 doc/mosh.1 doc/mosh_config.1 \
-doc/RELNOTE lib src \
-tests src/call.inc.cpp ${GTEST_DIR} \
+doc/RELNOTE lib \
+tests src/call.inc.cpp \
+src/instruction.scm src/test-data.scm src/accessors.scm src/os-constants.scm \
+src/Reader.y src/NumberReader.y src/scanner.re src/NumberScanner.re \
 doc README.md misc/ \
 boot/runtimes/srfi-mosh/Makefile \
 boot/runtimes/srfi-mosh/README \
@@ -362,16 +375,40 @@ boot/runtimes/srfi-mosh/mosh-exceptions.scm \
 boot/runtimes/srfi-mosh/mosh-utils5.scm \
 boot/runtimes/srfi-mosh/runtime.scm \
 gen-git-build.sh \
-CMakeLists.txt cmake extlibs
+CMakeLists.txt cmake \
+extlibs/gc-cvs/include \
+src/ffitest.c \
+gtest/LICENSE gtest/README \
+gtest/gtest/gtest.h gtest/gtest/gtest-all.cc gtest/gtest/gtest_main.cc \
+src/config_mona.h \
+src/ext/cairo/Library.scm src/ext/cairo/moshcairo.c src/ext/cairo/moshcairo.h \
+src/ext/curses/Library.scm src/ext/curses/mosh_curses.c \
+src/ext/gobject/Library.scm src/ext/gobject/mgobj.c \
+src/ext/khronos/OpenCL/Library.scm src/ext/khronos/OpenCL/mosh_opencl.c \
+src/ext/sqlite3/Library.scm \
+src/posix/debugee/Library.scm src/posix/environ/Library.scm \
+src/posix/fd/Library.scm src/posix/poll/Library.scm \
+src/posix/pthread/Library.scm src/posix/ptrace/Library.scm \
+src/posix/sigchld_handler/Library.scm src/posix/socket/Library.scm \
+src/posix/spawn/Library.scm src/posix/terminal/Library.scm \
+src/posix/wait3/Library.scm \
+src/bsd/kqueue/Library.scm src/generic/Library.scm \
+src/win32/aio/Library.scm src/win32/gui/Library.scm src/win32/misc/Library.scm \
+src/win32/plugins/mm/Library.scm src/win32/plugins/mm/moshmm.c \
+src/win32/winmain.cpp \
+src/private/config.h
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \
-src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accessors.h \
+src/cprocedures.cpp src/OSConstants.h src/Object-accessors.h \
 src/labels.cpp  src/Instruction.h \
 src/match.h \
 src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
+
+# To prevent re-generate on distributed tarballs
+EXTRA_DIST += $(GENERATED)
 
 CLEANFILES = gtest.a gtest_main.a lib/libffitest.so.1.0 src/ffitest.o
 MAINTAINERCLEANFILES = $(GENERATED)
@@ -537,10 +574,6 @@ test_thread_LDADD = $(TEST_LDADD_)
 
 dist-hook:
 	-rm -f $(top_distdir)/doc/text/Download.txt
-	-rm -f $(top_distdir)/src/ffitest.o
-	-rm -f $(top_distdir)/src/mosh_config
-	-rm -f $(top_distdir)/src/stamp-h1
-	-rm -f $(top_distdir)/src/config.h.in~
 	-rm -f $(top_distdir)/lib/mosh/config.ss
 	-rm -f $(top_distdir)/lib/mosh/mysql.ss
 	-rm -f $(top_distdir)/lib/libffitest.so.1.0
