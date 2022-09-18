@@ -318,10 +318,17 @@
 #define GTEST_OS_SOLARIS 1
 #elif defined(_AIX)
 #define GTEST_OS_AIX 1
+#elif defined(__NetBSD__)
+#define GTEST_OS_NETBSD 1
+#elif defined(__FreeBSD__)
+#define GTEST_OS_FREEBSD 1
+#elif defined(__OpenBSD__)
+#define GTEST_OS_OPENBSD 1
 #endif  // __CYGWIN__
 
 #if GTEST_OS_CYGWIN || GTEST_OS_LINUX || GTEST_OS_MAC || GTEST_OS_SYMBIAN || \
-    GTEST_OS_SOLARIS || GTEST_OS_AIX
+    GTEST_OS_SOLARIS || GTEST_OS_AIX || GTEST_OS_NETBSD || \
+    GTEST_OS_FREEBSD || GTEST_OS_OPENBSD
 
 // On some platforms, <regex.h> needs someone to define size_t, and
 // won't compile otherwise.  We can #include it here as we already
