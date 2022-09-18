@@ -123,7 +123,7 @@ write-char write-string
 write-u8 zero?
    )
          (import (rename (except (rnrs) vector-copy vector-fill! case syntax-rules error string->list define-record-type)
-                   (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!))
+                   (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (bytevector-copy r6rs:bytevector-copy))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
                  (rnrs r5rs)
@@ -169,6 +169,15 @@ write-u8 zero?
        (condition-message obj)))
 
 (define (open-input-bytevector bv) (open-bytevector-input-port bv))
+
+(define bytevector-copy
+  (case-lambda
+    ((bv start end)
+      (bytevector-copy-partial bv start end))
+    ((bv start)
+      (bytevector-copy-partial bv start (bytevector-length bv)))
+    ((bv)
+      (r6rs:bytevector-copy bv))))
 
 (define (bytevector-copy-partial bv start end)
   (let ((ret (make-bytevector (- end start))))
@@ -339,6 +348,16 @@ write-u8 zero?
                                                     tmaxcopysize))))))
     ((to at from start end)
      (r6rs:bytevector-copy! from start to at (- end start)))))
+
+; TODO(higepon): Using bytevector-copy is not very efficient.
+(define utf8->string
+  (case-lambda
+    ((bv start end)
+      (r6rs:utf8->string (bytevector-copy bv start end)))
+    ((bv start)
+      (r6rs:utf8->string (bytevector-copy bv start (bytevector-length bv))))
+    ((bv)
+      (r6rs:utf8->string bv))))
 
 (define (read-string . args)
   (raise "read-string not supported"))
