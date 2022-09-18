@@ -122,13 +122,8 @@ with-exception-handler write-bytevector
 write-char write-string
 write-u8 zero?
    )
-         (import (rename (except (rnrs)
-                          vector-copy
-                          vector-fill!
-                          case
-                          syntax-rules
-                          error
-                          define-record-type) (vector->list r6rs:vector->list))
+         (import (rename (except (rnrs) vector-copy vector-fill! case syntax-rules error string->list define-record-type)
+                   (vector->list r6rs:vector->list))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
                  (rnrs r5rs)
@@ -137,7 +132,7 @@ write-u8 zero?
                  (srfi i23)
                  (srfi i9)
                  (srfi i39)
-                 (only (srfi :13) string-copy! string-fill!)
+                 (only (srfi :13) string-copy! string-fill! string->list)
                  (only (srfi :43) vector-append vector-fill!)
                  (only (r7b-impl division) floor/ floor-quotient floor-remainder truncate/ truncate-remainder truncate-quotient)
                  (r7b-util bytevector-buffer)

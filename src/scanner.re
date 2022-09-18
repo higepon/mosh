@@ -181,7 +181,8 @@ int Scanner::scan(YYSTYPE* yylval)
   UINTEGER_8             = DIGIT_8 +;
   UINTEGER_10            = DIGIT_10 +;
   UINTEGER_16            = DIGIT_16 +;
-  NAN_INF                = "nan.0" | "inf.0" | "INF.0" | "NAN.0";
+  /* Note: Using single quote here. This means case-insensitive */
+  NAN_INF                = 'nan.0' | 'inf.0';
   SIGN                   = [\+\-]?;
   EXPONENT_MARKER        = [eEsSfFdDlL];
   MANTISSA_WIDTH         = ("|" (DIGIT_10)+)?;
@@ -195,10 +196,11 @@ int Scanner::scan(YYSTYPE* yylval)
   REAL_16                = (SIGN UREAL_16) | ([\+\-] NAN_INF);
   REAL_2                 = (SIGN UREAL_2) | ([\+\-] NAN_INF);
   REAL_8                 = (SIGN UREAL_8) | ([\+\-] NAN_INF);
-  COMPLEX_2             = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 "i") | (REAL_2 [\+\-] NAN_INF "i") | (REAL_2 [\+\-] "i") | ([\+\-] UREAL_2 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
-  COMPLEX_8             = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 "i") | (REAL_8 [\+\-] NAN_INF "i") | (REAL_8 [\+\-] "i") | ([\+\-] UREAL_8 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
-  COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 "i") | (REAL_10 [\+\-] NAN_INF "i") | (REAL_10 [\+\-] "i") | ([\+\-] UREAL_10 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
-  COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 "i") | (REAL_16 [\+\-] NAN_INF "i") | (REAL_16 [\+\-] "i") | ([\+\-] UREAL_16 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
+  /* Note: Using single quote 'i' here. This means case-insensitive */
+  COMPLEX_2              = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 'i') | (REAL_2 [\+\-] NAN_INF 'i') | (REAL_2 [\+\-] 'i') | ([\+\-] UREAL_2 'i') | ([\+\-] NAN_INF 'i') | ([\+\-] 'i');
+  COMPLEX_8              = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 'i') | (REAL_8 [\+\-] NAN_INF 'i') | (REAL_8 [\+\-] 'i') | ([\+\-] UREAL_8 'i') | ([\+\-] NAN_INF 'i') | ([\+\-] 'i');
+  COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] NAN_INF 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] NAN_INF 'i') | ([\+\-] 'i');
+  COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 'i') | (REAL_16 [\+\-] NAN_INF 'i') | (REAL_16 [\+\-] 'i') | ([\+\-] UREAL_16 'i') | ([\+\-] NAN_INF 'i') | ([\+\-] 'i');
   RADIX_2                = ("#"[bB]);
   RADIX_8                = "#"[oO];
   RADIX_10               = ("#"[dD])?;

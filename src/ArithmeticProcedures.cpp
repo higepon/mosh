@@ -417,9 +417,8 @@ Object scheme::infinitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("infinite?");
     checkArgumentLength(1);
-    argumentCheckReal(0, real);
-    if (real.isFlonum()) {
-        return Object::makeBool(real.toFlonum()->isInfinite());
+    if (argv[0].isFlonum()) {
+        return Object::makeBool(argv[0].toFlonum()->isInfinite());
     } else {
         return Object::False;
     }
@@ -429,9 +428,8 @@ Object scheme::finitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("finite?");
     checkArgumentLength(1);
-    argumentCheckReal(0, real);
-    if (real.isFlonum()) {
-        return Object::makeBool(real.toFlonum()->isFinite());
+    if (argv[0].isFlonum()) {
+        return Object::makeBool(argv[0].toFlonum()->isFinite());
     } else {
         return Object::True;
     }
@@ -441,9 +439,8 @@ Object scheme::nanPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("nan?");
     checkArgumentLength(1);
-    argumentCheckReal(0, real);
-    if (real.isFlonum()) {
-        return Object::makeBool(real.toFlonum()->isNan());
+    if (argv[0].isFlonum()) {
+        return Object::makeBool(argv[0].toFlonum()->isNan());
     } else {
         return Object::False;
     }
