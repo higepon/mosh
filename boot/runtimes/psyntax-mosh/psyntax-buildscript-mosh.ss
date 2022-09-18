@@ -1119,6 +1119,7 @@
     (%call-process interaction sys)
     (%start-process interaction sys)
     (mosh-cache-dir sys)
+    (port-open? sys)
     (hashtable-for-each mosh)
     (hashtable-fold-left mosh)
     (regexp-replace-all mosh)

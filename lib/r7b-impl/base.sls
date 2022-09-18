@@ -138,10 +138,10 @@ write-u8 zero?
                  (r7b-util bytevector-buffer)
                  (r7b-util char-ready)
                  (r7b-util u8-ready)
-                 (r7b-util port-open)
                  (for (r7b-util syntax-rules) run expand)
                  (for (r7b-util case) run expand)
                  (only (mosh) include)
+                 (only (system) port-open?)
                  )
 
 ;; R7RS-bridge format doesn't allow (begin (import ...) ...)
@@ -374,11 +374,11 @@ write-u8 zero?
     ((len) (read-string len (current-input-port)))
     ((len port) (get-string-n port len))))
 
-(define (output-port-open? . args)
-  (raise "output-port-open? not supported"))
+(define (output-port-open? port)
+  (port-open? port))
 
-(define (input-port-open? . args)
-  (raise "inpput-port-open? not supported"))
+(define (input-port-open? port)
+  (port-open? port))
 
 (define read-error?  i/o-read-error?)
 

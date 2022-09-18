@@ -723,4 +723,5 @@
 
   ;; for 0.2.8
   (set-current-error-port! current-error-port)
+  port-open?
   )
