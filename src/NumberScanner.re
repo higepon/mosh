@@ -176,7 +176,7 @@ int NumberScanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             return SLASH;
         }
-        <INITIAL,IN_HEX>"i" {
+        <INITIAL,IN_HEX>'i' {
             YYTOKEN = YYCURSOR;
             return IMAG;
         }
