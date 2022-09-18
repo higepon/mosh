@@ -369,8 +369,10 @@ write-u8 zero?
     ((s)
       (r6rs:string->utf8 s))))
 
-(define (read-string . args)
-  (raise "read-string not supported"))
+(define read-string
+  (case-lambda
+    ((len) (read-string len (current-input-port)))
+    ((len port) (get-string-n port len))))
 
 (define (output-port-open? . args)
   (raise "output-port-open? not supported"))
