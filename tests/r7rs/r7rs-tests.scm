@@ -41,7 +41,11 @@
 (define-syntax test
   (syntax-rules ()
     ((_ expected expr)
-      (test-equal (expr expected) #t (test-equal? expected expr)))
+    ; TODO(higepon): Remove this once this tests are stablized.
+    (begin
+      (write 'expr)
+      (newline)
+      (test-equal (expr expected) #t (test-equal? expected expr))))
     ((_ name expected expr)
       (test-equal name #t (test-equal? expected expr)))))
 
