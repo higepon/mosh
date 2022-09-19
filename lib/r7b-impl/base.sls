@@ -247,11 +247,11 @@ write-u8 zero?
 (define read-bytevector!
   (case-lambda
     ((bv)
-      (read-bytevector! bv 0 (bytevector-length bv) (current-input-port)))
+      (read-bytevector! bv (current-input-port) 0 (bytevector-length bv)))
     ((bv port)
-      (read-bytevector! bv 0 (bytevector-length bv) port))
+      (read-bytevector! bv port 0 (bytevector-length bv)))
     ((bv port start)
-     (read-bytevector! bv start (bytevector-length bv) port))
+     (read-bytevector! bv port start (bytevector-length bv)))
     ((bv port start end)
      (get-bytevector-n! port bv start (- end start)))))
 
