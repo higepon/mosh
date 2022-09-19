@@ -122,7 +122,7 @@ with-exception-handler write-bytevector
 write-char write-string
 write-u8 zero?
    )
-         (import (rename (except (rnrs) member vector-copy map for-each vector-fill! vector-map case syntax-rules error string->list define-record-type)
+         (import (rename (except (rnrs) assoc member vector-copy map for-each vector-fill! vector-map case syntax-rules error string->list define-record-type)
                    (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (string->utf8 r6rs:string->utf8) (bytevector-copy r6rs:bytevector-copy))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
@@ -132,7 +132,7 @@ write-u8 zero?
                  (srfi i23)
                  (srfi i9)
                  (srfi i39)
-                 (only (srfi :1) member)
+                 (only (srfi :1) member assoc)
                  (only (srfi :13) string-copy! string-fill! string->list)
                  (only (srfi :43) vector-append vector-fill!)
                  (only (r7b-impl division) floor/ floor-quotient floor-remainder truncate/ truncate-remainder truncate-quotient)
