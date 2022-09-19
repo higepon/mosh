@@ -50,7 +50,7 @@ if(MOSH_PORTABLE)
         message(STATUS "Prefix-less mode was silently enabled.")
         add_definitions(-DWITH_NMOSH_PREFIXLESS)
     endif()
-endif(MOSH_PORTABLE)
+endif()
 
 if(MOSH_GC_PARALLEL_MARK)
     add_definitions(-DPARALLEL_MARK)
@@ -63,9 +63,6 @@ endif()
 if(MOSH_PREFIXLESS)
     add_definitions(-DWITH_NMOSH_PREFIXLESS)
 endif()
-
-# external libraries
-# MOSH_GMP_DIR is MSVC only
 
 # sanity check
 
@@ -91,6 +88,13 @@ endif()
 mark_as_advanced(MOSH_WITH_NMOSH 
     MOSH_VERSION MOSH_BUGREPORT MOSH_NAME MOSH_LIB_PATH MOSH_DEBUG_VERSION)
 
+if(MSVC)
+    set(builtin_atomic)
+    # FIXME: Find atomic-ops here
+else()
+    set(builtin_atomic -DGC_BUILTIN_ATOMIC=1)
+endif()
+
 add_definitions(-DHAVE_CONFIG_H
     -DMOSH_LIB_PATH=\"${MOSH_LIB_PATH}\"
     -DPACKAGE=\"${MOSH_NAME}\"
@@ -105,7 +109,7 @@ add_definitions(-DHAVE_CONFIG_H
     -DATOMIC_UNCOLLECTABLE=1
     -DNO_EXECUTE_PERMISSION=1
     -DALL_INTERIOR_POINTERS=1
-    #-DGC_BUILTIN_ATOMIC=1 # is for GCC
+    ${builtin_atomic}
     -DGC_GCJ_SUPPORT=1
     -DJAVA_FINALIZATION=1
     -DUSE_I686_PREFETCH
@@ -144,12 +148,12 @@ if(CMAKE_HOST_WIN32)
         #add_definitions(-fwide-exec-charset=ucs-4le)
         add_definitions(-DMOSH_MINGW32)
         add_definitions(-DHAVE_EXT_HASHES=1)
-    endif(MSVC)
+    endif()
 elseif(APPLE)
     if(XCODE_VERSION)
         add_definitions(-DHAVE_EXT_HASHES=1)
         add_definitions(-DUSE_XCODE) # to disable direct-threaded code in XCode 3.x
-    endif(XCODE_VERSION)
+    endif()
 
     add_definitions(-DMOSH_HOST_OS=\"darwin\")
     add_definitions(-DLINE_FEED_CODE_LF=1)
@@ -171,13 +175,12 @@ else() # so it is UNIX
 endif()
 
 if(CMAKE_HOST_WIN32)
-add_definitions(
-    -DWINVER=0x501
-    -DGC_NOT_DLL
-    -DONIG_EXTERN=extern
-    )
-set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/src/win/include"
-    "${PROJECT_SOURCE_DIR}/src/win32")
+    add_definitions(
+        -DWINVER=0x501
+        -DGC_NOT_DLL
+        )
+    set(ARCH_INCLUDE "${PROJECT_SOURCE_DIR}/src/win/include"
+        "${PROJECT_SOURCE_DIR}/src/win32")
 endif()
 
 # includes
@@ -222,15 +225,8 @@ endif()
 
 # GMP things
 # => GMP_INCLUDE_DIR, GMP_LIBRARY
-
-set(GMP_SEARCH true)
-if(MSVC)
-    # expect vcpkg installed GMP
-    find_path(GMP_INCLUDE_DIR gmp.h)
-    find_library(GMP_LIBRARY NAMES gmp)
-else()
-
-endif()
+find_path(GMP_INCLUDE_DIR gmp.h)
+find_library(GMP_LIBRARY NAMES gmp)
 
 if(GMP_INCLUDE_DIR AND GMP_LIBRARY)
     set(GMP_FOUND TRUE)
@@ -242,6 +238,9 @@ else()
     message(SEND_ERROR "GMP not found..")
 endif()
 
+# Oniguruma
+find_path(ONIG_INCLUDE_DIR oniguruma.h)
+find_library(ONIG_LIBRARY NAMES onig)
 
 # GC things
 # => gc_srcs
@@ -305,62 +304,18 @@ else()
         )
 endif()
 
-# Onigruma things
-
-set(MOSH_ONIG_DIR extlibs/onig-5.9.2)
-set(onig_srcs
-    ${MOSH_ONIG_DIR}/regint.h
-    ${MOSH_ONIG_DIR}/regparse.h
-    ${MOSH_ONIG_DIR}/regenc.h
-    ${MOSH_ONIG_DIR}/st.h
-    ${MOSH_ONIG_DIR}/regerror.c
-    ${MOSH_ONIG_DIR}/regparse.c
-    ${MOSH_ONIG_DIR}/regext.c
-    ${MOSH_ONIG_DIR}/regcomp.c
-    ${MOSH_ONIG_DIR}/regexec.c
-    ${MOSH_ONIG_DIR}/reggnu.c
-    ${MOSH_ONIG_DIR}/regenc.c
-    ${MOSH_ONIG_DIR}/regsyntax.c
-    ${MOSH_ONIG_DIR}/regtrav.c
-    ${MOSH_ONIG_DIR}/regversion.c
-    ${MOSH_ONIG_DIR}/st.c
-    ${MOSH_ONIG_DIR}/regposix.c
-    ${MOSH_ONIG_DIR}/regposerr.c
-    ${MOSH_ONIG_DIR}/enc/unicode.c
-    ${MOSH_ONIG_DIR}/enc/ascii.c
-    ${MOSH_ONIG_DIR}/enc/utf8.c
-    ${MOSH_ONIG_DIR}/enc/utf16_be.c
-    ${MOSH_ONIG_DIR}/enc/utf16_le.c
-    ${MOSH_ONIG_DIR}/enc/utf32_be.c
-    ${MOSH_ONIG_DIR}/enc/utf32_le.c
-    ${MOSH_ONIG_DIR}/enc/euc_jp.c
-    ${MOSH_ONIG_DIR}/enc/sjis.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_1.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_2.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_3.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_4.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_5.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_6.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_7.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_8.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_9.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_10.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_11.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_13.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_14.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_15.c
-    ${MOSH_ONIG_DIR}/enc/iso8859_16.c
-    ${MOSH_ONIG_DIR}/enc/euc_tw.c
-    ${MOSH_ONIG_DIR}/enc/euc_kr.c
-    ${MOSH_ONIG_DIR}/enc/big5.c
-    ${MOSH_ONIG_DIR}/enc/gb18030.c
-    ${MOSH_ONIG_DIR}/enc/koi8_r.c
-    ${MOSH_ONIG_DIR}/enc/cp1251.c
-    )
-
 # mosh
 
-include_directories(${PROJECT_BINARY_DIR}/cmake extlibs/gc-cvs/include extlibs/gc-cvs/include/gc extlibs/gc-cvs/libatomic_ops/src src ${GMP_INCLUDE_DIR} ${MOSH_ONIG_DIR} ${ARCH_INCLUDE} gtest src/posix/terminal src/generic)
+include_directories(${PROJECT_BINARY_DIR}/cmake 
+    extlibs/gc-cvs/include 
+    extlibs/gc-cvs/include/gc 
+    src 
+    ${GMP_INCLUDE_DIR} 
+    ${ONIG_INCLUDE_DIR} 
+    ${ARCH_INCLUDE} 
+    gtest 
+    src/posix/terminal 
+    src/generic)
 
 if(CMAKE_COMPILER_IS_GNUCC)
     if(XCODE)
@@ -614,15 +569,13 @@ if(WIN32)
         PROPERTIES COMPILE_FLAGS "-D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
 endif()
 source_group(gc FILES ${gc_srcs})
-source_group(oniguruma FILES ${onig_srcs})
 add_executable(${MOSH_EXECUTABLE_NAME}
-    ${onig_srcs} 
     ${gc_srcs} 
     ${mosh_core_srcs} 
     ${mosh_core_hdrs}
     ${mosh_runtime_src}
     src/main.cpp)
-target_link_libraries(${MOSH_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
+target_link_libraries(${MOSH_EXECUTABLE_NAME} ${GMP_LIBRARY} ${ONIG_LIBRARY} ${arch_libs})
 
 if(MOSH_PORTABLE)
     install(TARGETS ${MOSH_EXECUTABLE_NAME} DESTINATION .)
@@ -632,13 +585,12 @@ endif()
 
 if(MOSH_WITH_NMOSH_GUI)
     add_executable(${MOSH_GUI_EXECUTABLE_NAME} WIN32
-        ${onig_srcs} 
         ${gc_srcs} 
         ${mosh_core_srcs} 
         ${mosh_core_hdrs}
         ${mosh_runtime_src}
         src/win32/winmain.cpp)
-    target_link_libraries(${MOSH_GUI_EXECUTABLE_NAME} ${GMP_LIBRARY} ${arch_libs})
+    target_link_libraries(${MOSH_GUI_EXECUTABLE_NAME} ${GMP_LIBRARY} ${ONIG_LIBRARY} ${arch_libs})
 
     if(MOSH_PORTABLE)
         install(TARGETS ${MOSH_GUI_EXECUTABLE_NAME} DESTINATION .)
@@ -782,7 +734,7 @@ add_library(testinggc EXCLUDE_FROM_ALL
 add_library(testingmosh EXCLUDE_FROM_ALL
     ${mosh_core_srcs}
     ${PROJECT_SOURCE_DIR}/gtest/gtest/gtest-all.cc
-    ${mosh_runtime_src} ${onig_srcs} 
+    ${mosh_runtime_src}
     src/TestingSignalHandler.cpp
     src/TestingVM.cpp)
 
@@ -830,7 +782,7 @@ macro(add_moshcoretest testname)
             PROPERTIES COMPILE_FLAGS "${source_is_utf8} -D_UNICODE -DUNICODE -DWIN32_LEAN_AND_MEAN")
     endif()
     add_executable(moshtest${testname} ${gtest_srcs} src/${testname}.cpp)
-    target_link_libraries(moshtest${testname} testingmosh testinggc ${GMP_LIBRARY} ${arch_libs})
+    target_link_libraries(moshtest${testname} testingmosh testinggc ${GMP_LIBRARY} ${ONIG_LIBRARY} ${arch_libs})
     set_target_properties(moshtest${testname} PROPERTIES FOLDER Test)
     add_test(mosh-${testname} moshtest${testname})
 endmacro(add_moshcoretest)
