@@ -272,9 +272,14 @@ write-u8 zero?
 
 (define write-bytevector
   (case-lambda
+    ((bv port start end)
+      (put-bytevector port bv start (- end start)))
+    ((bv port start)
+      (write-bytevector bv port start (bytevector-length bv)))
     ((bv port)
-     (put-bytevector port bv))
-    ((bv) (write-bytevector bv (current-output-port)))))
+      (write-bytevector bv port 0 (bytevector-length bv)))
+    ((bv)
+      (write-bytevector bv (current-output-port) 0 (bytevector-length bv)))))
 
 (define write-partial-bytevector
   (case-lambda
