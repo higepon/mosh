@@ -295,8 +295,13 @@ write-u8 zero?
     ((bv start end port)
      (put-bytevector port bv start (- end start)))))
 
-(define (write-string . args)
-  (raise "write-string not supported"))
+(define write-string
+  (case-lambda
+    ((str) (write-string str (current-output-port)))
+    ((str port) (put-string port str))
+    ((str port start) (write-string str port start (string-length str)))
+    ((str port start end)
+     (write-string (substring str start end) port))))
 
 (define vector-copy
   (case-lambda
@@ -316,7 +321,7 @@ write-u8 zero?
     (itr 0)
     ret))
 
-;; vector-copy! bytevector-copy! bytevector-append from　https://github.com/okuoku/yuni.
+;; vector-copy! bytevector-copy! bytevector-append write-string from https://github.com/okuoku/yuni.
 (define (vector-copy!/itr+ to at from start end)
   (unless (= start end)
     (vector-set! to at (vector-ref from start))
