@@ -122,7 +122,7 @@ with-exception-handler write-bytevector
 write-char write-string
 write-u8 zero?
    )
-         (import (rename (except (rnrs) member vector-copy vector-fill! case syntax-rules error string->list define-record-type)
+         (import (rename (except (rnrs) member vector-copy vector-fill! vector-map case syntax-rules error string->list define-record-type)
                    (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (string->utf8 r6rs:string->utf8) (bytevector-copy r6rs:bytevector-copy))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
@@ -322,7 +322,8 @@ write-u8 zero?
     (itr 0)
     ret))
 
-;; vector-copy! bytevector-copy! bytevector-append write-string from https://github.com/okuoku/yuni.
+;; vector-copy! bytevector-copy! bytevector-append write-string string-map vector-map
+;; from https://github.com/okuoku/yuni.
 (define (vector-copy!/itr+ to at from start end)
   (unless (= start end)
     (vector-set! to at (vector-ref from start))
@@ -484,10 +485,150 @@ write-u8 zero?
      c)
     obj))
 
-(define (string-map proc . strs)
-  (list->string (apply map proc (map string->list strs))))
-
 (define (square z)
   (* z z))
 
+(define (string-map4/itr! v pos len proc a b c d)
+  (unless (= pos len)
+    (string-set! v pos
+                 (proc (string-ref a pos)
+                       (string-ref b pos)
+                       (string-ref c pos)
+                       (string-ref d pos)))
+    (string-map4/itr! v (+ pos 1) len proc a b c d)))
+
+(define (string-map4 proc a b c d)
+  (let* ((len (min (string-length a) (string-length b)
+                   (string-length c) (string-length d)))
+         (v (make-string len)))
+    (string-map4/itr! v 0 len proc a b c d)
+    v))
+
+(define (string-map3/itr! v pos len proc a b c)
+  (unless (= pos len)
+    (string-set! v pos
+                 (proc (string-ref a pos)
+                       (string-ref b pos)
+                       (string-ref c pos)))
+    (string-map3/itr! v (+ pos 1) len proc a b c)))
+
+(define (string-map3 proc a b c)
+  (let* ((len (min (string-length a) (string-length b) (string-length c)))
+         (v (make-string len)))
+    (string-map3/itr! v 0 len proc a b c)
+    v))
+
+(define (string-map2/itr! v pos len proc a b)
+  (unless (= pos len)
+    (string-set! v pos
+                 (proc (string-ref a pos)
+                       (string-ref b pos)))
+    (string-map2/itr! v (+ pos 1) len proc a b)))
+
+(define (string-map2 proc a b)
+  (let* ((len (min (string-length a) (string-length b)))
+         (v (make-string len)))
+    (string-map2/itr! v 0 len proc a b)
+    v))
+
+(define (string-map1/itr! v pos len proc a)
+  (unless (= pos len)
+    (string-set! v pos
+                 (proc (string-ref a pos)))
+    (string-map1/itr! v (+ pos 1) len proc a)))
+
+(define (string-map1 proc a)
+  (let* ((len (string-length a))
+         (v (make-string len)))
+    (string-map1/itr! v 0 len proc a)
+    v))
+
+(define (string-map proc a . args)
+  (if (null? args)
+    (string-map1 proc a)
+    (let ((b (car args))
+          (bb (cdr args)))
+      (if (null? bb)
+        (string-map2 proc a b)
+        (let ((c (car bb))
+              (cc (cdr bb)))
+          (if (null? cc)
+            (string-map3 proc a b c)
+            (let ((d (car cc))
+                  (dd (cdr cc)))
+              (if (null? dd)
+                (string-map4 proc a b c d)
+                (error "Too many...")))))))))  
+
+(define (vector-map4/itr! v pos len proc a b c d)
+  (unless (= pos len)
+    (vector-set! v pos
+                 (proc (vector-ref a pos)
+                       (vector-ref b pos)
+                       (vector-ref c pos)
+                       (vector-ref d pos)))
+    (vector-map4/itr! v (+ pos 1) len proc a b c d)))
+
+(define (vector-map4 proc a b c d)
+  (let* ((len (min (vector-length a) (vector-length b)
+                   (vector-length c) (vector-length d)))
+         (v (make-vector len)))
+    (vector-map4/itr! v 0 len proc a b c d)
+    v))
+
+(define (vector-map3/itr! v pos len proc a b c)
+  (unless (= pos len)
+    (vector-set! v pos
+                 (proc (vector-ref a pos)
+                       (vector-ref b pos)
+                       (vector-ref c pos)))
+    (vector-map3/itr! v (+ pos 1) len proc a b c)))
+
+(define (vector-map3 proc a b c)
+  (let* ((len (min (vector-length a) (vector-length b) (vector-length c)))
+         (v (make-vector len)))
+    (vector-map3/itr! v 0 len proc a b c)
+    v))
+
+(define (vector-map2/itr! v pos len proc a b)
+  (unless (= pos len)
+    (vector-set! v pos
+                 (proc (vector-ref a pos)
+                       (vector-ref b pos)))
+    (vector-map2/itr! v (+ pos 1) len proc a b)))
+
+(define (vector-map2 proc a b)
+  (let* ((len (min (vector-length a) (vector-length b)))
+         (v (make-vector len)))
+    (vector-map2/itr! v 0 len proc a b)
+    v))
+
+(define (vector-map1/itr! v pos len proc a)
+  (unless (= pos len)
+    (vector-set! v pos
+                 (proc (vector-ref a pos)))
+    (vector-map1/itr! v (+ pos 1) len proc a)))
+
+(define (vector-map1 proc a)
+  (let* ((len (vector-length a))
+         (v (make-vector len)))
+    (vector-map1/itr! v 0 len proc a)
+    v))
+
+(define (vector-map proc a . args)
+  (if (null? args)
+    (vector-map1 proc a)
+    (let ((b (car args))
+          (bb (cdr args)))
+      (if (null? bb)
+        (vector-map2 proc a b)
+        (let ((c (car bb))
+              (cc (cdr bb)))
+          (if (null? cc)
+            (vector-map3 proc a b c)
+            (let ((d (car cc))
+                  (dd (cdr cc)))
+              (if (null? dd)
+                (vector-map4 proc a b c d)
+                (error "Too many...")))))))))
 )
