@@ -2,6 +2,7 @@ name: Build
 env:
   mosh_stable: mosh-0.2.8-rc4 # Stable tagname
   mosh_latest: mosh-0.2.8-rc4 # Built package name
+  nmosh_prereq_ver: v0.1.1 # Prebuilt libraries for NMosh package
 
 on:
   push:
@@ -377,3 +378,45 @@ jobs:
             cd ${{ env.mosh_latest }}
             ./configure
             gmake -j4
+
+  build-dist-win64:
+    name: "Win64 AMD64 (NMosh, Build only)"
+    needs: build-linux
+    runs-on: windows-2022
+    steps:
+      - name: "Prepare working directories"
+        run: |
+          mkdir prereq
+          mkdir src
+          mkdir build
+      - name: "Download prerequisites"
+        working-directory: prereq
+        run: |
+          C:\msys64\usr\bin\wget.exe https://github.com/okuoku/nmosh-build-prerequisites/releases/download/${{ env.nmosh_prereq_ver }}/nmosh-build-prerequisites-winnative.zip
+      - name: "Install prerequisites"
+        working-directory: prereq
+        run: |
+          cmake -E tar xv nmosh-build-prerequisites-winnative.zip
+      - name: "Download artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: source-ubuntu-latest
+          path: src
+      - name: "Extract artifact"
+        working-directory: src
+        run: |
+          cmake -E tar xzv ${{ env.mosh_latest }}.tar.gz
+      - name: "Import VS2022"
+        uses: ilammy/msvc-dev-cmd@v1.11.0
+        with:
+          vsversion: "2022"
+      - name: "Configure"
+        working-directory: build
+        run: |
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/prereq/nmosh-build-prerequisites-winnative/scripts/buildsystems/vcpkg.cmake ${{ github.workspace }}/src/${{ env.mosh_latest }}
+      - name: "Build"
+        working-directory: build
+        run: |
+          ninja
+
+
