@@ -122,7 +122,7 @@ with-exception-handler write-bytevector
 write-char write-string
 write-u8 zero?
    )
-         (import (rename (except (rnrs) member vector-copy map vector-fill! vector-map case syntax-rules error string->list define-record-type)
+         (import (rename (except (rnrs) member vector-copy map for-each vector-fill! vector-map case syntax-rules error string->list define-record-type)
                    (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (string->utf8 r6rs:string->utf8) (bytevector-copy r6rs:bytevector-copy))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
@@ -559,7 +559,7 @@ write-u8 zero?
                   (dd (cdr cc)))
               (if (null? dd)
                 (string-map4 proc a b c d)
-                (error "Too many...")))))))))  
+                (error "Too many...")))))))))
 
 (define (vector-map4/itr! v pos len proc a b c d)
   (unless (= pos len)
@@ -651,7 +651,7 @@ write-u8 zero?
     (let ((p (cons (proc (car a) (car b) (car c)) '())))
      (set-cdr! cur p)
      (map3/itr! p proc (cdr a) (cdr b) (cdr c)))))
-         
+
 (define (map3 proc a b c)
   (if (or (null? a) (null? b) (null? c))
     '()
@@ -682,7 +682,7 @@ write-u8 zero?
   (if (null? a)
     '()
     (let ((c (cons (proc (car a)) '())))
-     (map1/itr! c proc (cdr a)) 
+     (map1/itr! c proc (cdr a))
      c)))
 
 (define (map proc a . args)
@@ -700,5 +700,42 @@ write-u8 zero?
                   (dd (cdr cc)))
               (if (null? dd)
                 (map4 proc a b c d)
-                (error "Too many...")))))))))                   
+                (error "Too many...")))))))))
+
+(define (for-each4 proc a b c d)
+  (unless (or (null? a) (null? b) (null? c) (null? d))
+    (proc (car a) (car b) (car c) (car d))
+    (for-each4 proc (cdr a) (cdr b) (cdr c) (cdr d))))
+
+(define (for-each3 proc a b c)
+  (unless (or (null? a) (null? b) (null? c))
+    (proc (car a) (car b) (car c))
+    (for-each3 proc (cdr a) (cdr b) (cdr c))))
+
+(define (for-each2 proc a b)
+  (unless (or (null? a) (null? b))
+    (proc (car a) (car b))
+    (for-each2 proc (cdr a) (cdr b))))
+
+(define (for-each1 proc a)
+  (unless (null? a)
+    (proc (car a))
+    (for-each1 proc (cdr a))))
+
+(define (for-each proc a . args)
+  (if (null? args)
+    (for-each1 proc a)
+    (let ((b (car args))
+          (bb (cdr args)))
+      (if (null? bb)
+        (for-each2 proc a b)
+        (let ((c (car bb))
+              (cc (cdr bb)))
+          (if (null? cc)
+            (for-each3 proc a b c)
+            (let ((d (car cc))
+                  (dd (cdr cc)))
+              (if (null? dd)
+                (for-each4 proc a b c d)
+                (error "Too many...")))))))))
 )
