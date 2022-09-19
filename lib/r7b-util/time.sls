@@ -4,7 +4,7 @@
          (import (rnrs)
                  (srfi i19))
 
-(define scale 1000000000.0)
+(define scale 1000000000)
 
 (define (jiffies-per-second) scale)
 (define (current-jiffy) (return-sec time-monotonic))
