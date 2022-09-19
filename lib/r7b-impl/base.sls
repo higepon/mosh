@@ -137,8 +137,7 @@ write-u8 zero?
                  (only (r7b-impl division) floor/ floor-quotient floor-remainder truncate/ truncate-remainder truncate-quotient)
                  (r7b-util bytevector-buffer)
                  (r7b-util char-ready)
-                 (r7b-util u8-ready)
-                 (for (r7b-util syntax-rules) run expand)
+                  (for (r7b-util syntax-rules) run expand)
                  (for (r7b-util case) run expand)
                  (only (mosh) include)
                  (only (system) port-open?)
@@ -169,6 +168,14 @@ write-u8 zero?
        (condition-message obj)))
 
 (define (open-input-bytevector bv) (open-bytevector-input-port bv))
+
+;; N.B. This is fragile.
+(define byte-array-input-port? port)
+   (and (input-port? port)
+        (string=? "<byte-array-input-port>" (let ([p (open-output-string)]) (write port p) (get-output-string p)))))
+
+(define (u8-ready? port)
+  (byte-array-input-port? port))
 
 (define bytevector-copy
   (case-lambda
