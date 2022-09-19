@@ -122,7 +122,7 @@ with-exception-handler write-bytevector
 write-char write-string
 write-u8 zero?
    )
-         (import (rename (except (rnrs) member vector-copy vector-fill! vector-map case syntax-rules error string->list define-record-type)
+         (import (rename (except (rnrs) member vector-copy map vector-fill! vector-map case syntax-rules error string->list define-record-type)
                    (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (string->utf8 r6rs:string->utf8) (bytevector-copy r6rs:bytevector-copy))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
@@ -322,7 +322,8 @@ write-u8 zero?
     (itr 0)
     ret))
 
-;; vector-copy! bytevector-copy! bytevector-append write-string string-map vector-map
+;; vector-copy! bytevector-copy! bytevector-append write-string
+;; string-map vector-map map
 ;; from https://github.com/okuoku/yuni.
 (define (vector-copy!/itr+ to at from start end)
   (unless (= start end)
@@ -631,4 +632,73 @@ write-u8 zero?
               (if (null? dd)
                 (vector-map4 proc a b c d)
                 (error "Too many...")))))))))
+
+(define (map4/itr! cur proc a b c d)
+  (unless (or (null? a) (null? b) (null? c) (null? d))
+    (let ((p (cons (proc (car a) (car b) (car c) (car d)) '())))
+     (set-cdr! cur p)
+     (map4/itr! p proc (cdr a) (cdr b) (cdr c) (cdr d)))))
+
+(define (map4 proc a b c d)
+  (if (or (null? a) (null? b) (null? c) (null? d))
+    '()
+    (let ((p (cons (proc (car a) (car b) (car c) (car d)) '())))
+     (map4/itr! p proc (cdr a) (cdr b) (cdr c) (cdr d))
+     p)))
+
+(define (map3/itr! cur proc a b c)
+  (unless (or (null? a) (null? b) (null? c))
+    (let ((p (cons (proc (car a) (car b) (car c)) '())))
+     (set-cdr! cur p)
+     (map3/itr! p proc (cdr a) (cdr b) (cdr c)))))
+         
+(define (map3 proc a b c)
+  (if (or (null? a) (null? b) (null? c))
+    '()
+    (let ((p (cons (proc (car a) (car b) (car c)) '())))
+     (map3/itr! p proc (cdr a) (cdr b) (cdr c))
+     p)))
+
+(define (map2/itr! cur proc a b)
+  (unless (or (null? a) (null? b))
+    (let ((c (cons (proc (car a) (car b)) '())))
+     (set-cdr! cur c)
+     (map2/itr! c proc (cdr a) (cdr b)))))
+
+(define (map2 proc a b)
+  (if (or (null? a) (null? b))
+    '()
+    (let ((c (cons (proc (car a) (car b)) '())))
+     (map2/itr! c proc (cdr a) (cdr b))
+     c)))
+
+(define (map1/itr! cur proc a)
+  (unless (null? a)
+    (let ((c (cons (proc (car a)) '())))
+     (set-cdr! cur c)
+     (map1/itr! c proc (cdr a)))))
+
+(define (map1 proc a)
+  (if (null? a)
+    '()
+    (let ((c (cons (proc (car a)) '())))
+     (map1/itr! c proc (cdr a)) 
+     c)))
+
+(define (map proc a . args)
+  (if (null? args)
+    (map1 proc a)
+    (let ((b (car args))
+          (bb (cdr args)))
+      (if (null? bb)
+        (map2 proc a b)
+        (let ((c (car bb))
+              (cc (cdr bb)))
+          (if (null? cc)
+            (map3 proc a b c)
+            (let ((d (car cc))
+                  (dd (cdr cc)))
+              (if (null? dd)
+                (map4 proc a b c d)
+                (error "Too many...")))))))))                   
 )
