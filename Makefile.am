@@ -346,7 +346,7 @@ nobase_data_DATA = ${mosh_core_libraries} ${MOSH_PLUGINS} #${mosh_core_fasl_libr
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(BOEHM_GC_DIR)/include/gc -I $(top_srcdir)/$(BOEHM_GC_DIR)/libatomic_ops/src -I$(top_srcdir)/src
 EXTRA_DIST     = \
 boot/vm.scm boot/baselib boot/compiler.scm \
-boot/free-vars.scm misc/scripts boot/baselib/match.scm doc \
+boot/free-vars.scm misc/scripts misc/logo boot/baselib/match.scm doc \
 boot/free-vars-decl.scm \
 boot/runtimes/psyntax-mosh/psyntax.scm \
 boot/runtimes/psyntax-mosh/psyntax \
@@ -396,7 +396,7 @@ src/bsd/kqueue/Library.scm src/generic/Library.scm \
 src/win32/aio/Library.scm src/win32/gui/Library.scm src/win32/misc/Library.scm \
 src/win32/plugins/mm/Library.scm src/win32/plugins/mm/moshmm.c \
 src/win32/winmain.cpp \
-src/private/config.h
+src/private/config.h src/win 
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \
