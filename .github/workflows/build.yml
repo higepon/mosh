@@ -418,5 +418,8 @@ jobs:
         working-directory: build
         run: |
           ninja
-
+      - name: "Test"
+        working-directory: build
+        run: |
+          ctest --verbose .
 
