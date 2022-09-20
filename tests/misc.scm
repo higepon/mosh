@@ -163,5 +163,43 @@
     (test-equal #vu8(5 6) ans1)
     ))
 
+;; https://github.com/higepon/mosh/issues/111 Bignum on LLP64
+
+(let ((n 1000000000000)
+      (bv #f))
+  (set! bv (make-bytevector 8 95))
+  (bytevector-u64-set! bv 0 n (endianness little))
+  (test-equal n (bytevector-u64-ref bv 0 (endianness little)))
+  (set! bv (make-bytevector 8 96))
+  (bytevector-u64-set! bv 0 n (endianness big))
+  (test-equal n (bytevector-u64-ref bv 0 (endianness big)))
+  (set! bv (make-bytevector 8 97))
+  (bytevector-u64-native-set! bv 0 n)
+  (test-equal n (bytevector-u64-native-ref bv 0)))
+
+(let ((n 1000000000000)
+      (bv #f))
+  (set! bv (make-bytevector 8 95))
+  (bytevector-s64-set! bv 0 n (endianness little))
+  (test-equal n (bytevector-s64-ref bv 0 (endianness little)))
+  (set! bv (make-bytevector 8 96))
+  (bytevector-s64-set! bv 0 n (endianness big))
+  (test-equal n (bytevector-s64-ref bv 0 (endianness big)))
+  (set! bv (make-bytevector 8 97))
+  (bytevector-s64-native-set! bv 0 n)
+  (test-equal n (bytevector-s64-native-ref bv 0)))
+
+(let ((n -1000000000000)
+      (bv #f))
+  (set! bv (make-bytevector 8 95))
+  (bytevector-s64-set! bv 0 n (endianness little))
+  (test-equal n (bytevector-s64-ref bv 0 (endianness little)))
+  (set! bv (make-bytevector 8 96))
+  (bytevector-s64-set! bv 0 n (endianness big))
+  (test-equal n (bytevector-s64-ref bv 0 (endianness big)))
+  (set! bv (make-bytevector 8 97))
+  (bytevector-s64-native-set! bv 0 n)
+  (test-equal n (bytevector-s64-native-ref bv 0)))
+
 (test-results)
 
