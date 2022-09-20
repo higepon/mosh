@@ -58,7 +58,8 @@ Scanner::Scanner() : eofP_(false),
                      token_(buffer_),
                      limit_(buffer_),
                      marker_(buffer_),
-                     bufferSize_(32)
+                     bufferSize_(32),
+                     isFoldcaseMode_(false)
 {
 }
 
@@ -238,14 +239,36 @@ int Scanner::scan(YYSTYPE* yylval)
     {
 /*!re2c
        SHEBANG DELMITER {
+            /* Back to the end of SHEBANG. */
             YYCURSOR--;
-            ucs4string shebang(YYTOKEN, YYCURSOR - YYTOKEN - 1);
-            if (shebang == ucs4string(UC("#!r6rs"))) {
+
+            /* This can be a whole line. */
+            ucs4string matched(YYTOKEN, YYCURSOR - YYTOKEN - 1);
+
+            /* Note #!fold-case and #!no-fold-case can be found in the same line. */
+            auto pos = matched.find(UC("#!r6rs"));
+            if (pos != ucs4string::npos) {
                 currentVM()->readerContext()->port()->setStrictR6RsReaderMode();
+                YYTOKEN = YYTOKEN + 6 /* length of "#!r6rs" */;
+                YYCURSOR = YYTOKEN;
             } else {
-                 // just ignore the shebang.
+                auto foldCasePos = matched.find(UC("#!fold-case"));
+                if (foldCasePos != ucs4string::npos) {
+                    isFoldcaseMode_ = true;
+                    YYTOKEN = YYTOKEN + 11 /* length of "#!fold-case" */;
+                    YYCURSOR = YYTOKEN;
+                } else {
+                    auto noFoldCasePos = matched.find(UC("#!no-fold-case"));
+                    if (noFoldCasePos != ucs4string::npos) {
+                        isFoldcaseMode_ = false;
+                        YYTOKEN = YYTOKEN + 14 /* length of "#!no-fold-case" */;
+                        YYCURSOR = YYTOKEN;
+                    } else {
+                        /* We just ignore unknown shebang here. */
+                        YYTOKEN = YYCURSOR;
+                    }
+                }
             }
-            YYTOKEN = YYCURSOR;
             continue;
        }
        ("#"[tT] | "#true") DELMITER {
@@ -390,7 +413,13 @@ int Scanner::scan(YYSTYPE* yylval)
        }
        IDENTIFIER DELMITER {
             YYCURSOR--;
-            yylval->stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+            if (isFoldcaseMode_) {
+                ucs4string identfier(YYTOKEN, (YYCURSOR - YYTOKEN));
+                foldCase(identfier);
+                yylval->stringValue = identfier;
+            } else {
+                yylval->stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+            }
             YYTOKEN = YYCURSOR;
             return IDENTIFIER;
             }
@@ -401,7 +430,13 @@ int Scanner::scan(YYSTYPE* yylval)
             return REGEXP;
         }
         "\"" STRING_ELEMENT* "\"" {
-            yylval->stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
+            if (isFoldcaseMode_) {
+                ucs4string s(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
+                foldCase(s);
+                yylval->stringValue = s;
+            } else {
+                yylval->stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
+            }
             YYTOKEN = YYCURSOR;
             return STRING;
         }
