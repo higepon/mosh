@@ -66,7 +66,7 @@ extern int yyerror(const char *);
 %token <intValue> DEFINED_SHARED
 %token <stringValue> REGEXP
 %token <stringValue> NUMBER NUMBER2 NUMBER8 NUMBER10 NUMBER16
-%token <charValue> LEFT_PAREN RIGHT_PAREN 
+%token <charValue> LEFT_PAREN RIGHT_PAREN
 %token END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT DATUM_COMMENT
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
 %token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
@@ -163,9 +163,34 @@ list           : LEFT_PAREN datum_list RIGHT_PAREN {
                    }
                    $$ = $2;
                }
+               | LEFT_PAREN datum_list DATUM_COMMENT datum RIGHT_PAREN {
+                   if (!(($1 == '(' && $5 == ')') ||
+                         ($1 == '[' && $5 == ']'))) {
+                       yyerror("mismatched parentheses");
+                       YYERROR;
+                   }
+                   // TODO: not to use reverse.
+                   $2 = Pair::reverse($2);
+                   if ($2.isPair()) {
+                       $2 = Object::makeAnnoatedPair($2.car(),
+                                                     $2.cdr(),
+                                                     Pair::list2(Object::makeString(currentVM()->readerContext()->port()->toString()),
+                                                                 Object::makeFixnum(currentVM()->readerContext()->port()->getLineNo())));
+                   }
+                   $$ = $2;
+               }
                | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN {
                    if (!(($1 == '(' && $6 == ')') ||
                          ($1 == '[' && $6 == ']'))) {
+                       yyerror("mismatched parentheses");
+                       YYERROR;
+                   }
+                   $2 = Pair::reverse($2);
+                   $$ = Pair::appendD2($2, Object::cons($3, $5));
+               }
+               | LEFT_PAREN datum_list datum DOT datum DATUM_COMMENT datum RIGHT_PAREN {
+                   if (!(($1 == '(' && $8 == ')') ||
+                         ($1 == '[' && $8 == ']'))) {
                        yyerror("mismatched parentheses");
                        YYERROR;
                    }
