@@ -30,6 +30,7 @@
  */
 
 #include <ctype.h>
+#include <algorithm>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
