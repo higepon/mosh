@@ -1,5 +1,5 @@
 /*
- * Scanner.h - 
+ * Scanner.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -35,6 +35,7 @@
 #include "scheme.h"
 #include "Reader.h"
 #include "Reader.tab.hpp"
+#include <algorithm>
 
 namespace scheme {
 
@@ -47,6 +48,10 @@ public:
     void emptyBuffer();
     int scan(YYSTYPE* yylval);
     ucs4string currentToken() const;
+    // TODO(higepon): Implement proper foldCase in C++ world.
+    inline void foldCase(ucs4string& s) {
+        std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+    }
 
 private:
 
@@ -58,6 +63,7 @@ private:
     ucs4char* limit_;
     ucs4char* marker_;
     int bufferSize_{32};
+    bool isFoldcaseMode_;
 };
 
 } // namespace scheme
