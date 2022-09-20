@@ -185,6 +185,10 @@ list           : LEFT_PAREN datum_list RIGHT_PAREN {
                        yyerror("mismatched parentheses");
                        YYERROR;
                    }
+                   if ($3 == Object::Ignore) {
+                        yyerror("malformed cons");
+                        YYERROR;
+                   }
                    $2 = Pair::reverse($2);
                    $$ = Pair::appendD2($2, Object::cons($3, $5));
                }
@@ -228,7 +232,7 @@ bytevector     : BYTE_VECTOR_START datum_list RIGHT_PAREN {
 datum_list     : datum_list datum {
                     if ($2 == Object::Ignore) {
                         $$ = $1;
-                    } else {
+                     } else {
                         $$ = Object::cons($2, $1);
                     }
                }
