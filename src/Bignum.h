@@ -38,18 +38,25 @@
 #ifdef _WIN32
     #ifdef _WIN64
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 8
+        #define MOSH_BIGNUM_SIZEOF_LONG 4
     #else
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
+        #define MOSH_BIGNUM_SIZEOF_LONG 4
     #endif
 #elif defined(__GNUC__)
     #if defined(__WORDSIZE) && (__WORDSIZE == 64) // Some FreeBSD have no __WORDSIZE.
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 8
+        #define MOSH_BIGNUM_SIZEOF_LONG 8
     #else
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
+        #define MOSH_BIGNUM_SIZEOF_LONG 4
     #endif
 #else
     #error "define MOSH_BIGNUM_SIZEOF_INTPTR_T"
 #endif
+
+static_assert(MOSH_BIGNUM_SIZEOF_INTPTR_T == sizeof(intptr_t), "Unmatched intptr_t size");
+static_assert(MOSH_BIGNUM_SIZEOF_LONG == sizeof(long), "Unmatched long size");
 
 namespace scheme {
 
@@ -191,7 +198,7 @@ public:
     uint64_t toU64() const
     {
         MOSH_ASSERT(fitsU64());
-#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+#if (MOSH_BIGNUM_SIZEOF_LONG == 4)
         uint64_t ret = 0;
         mpz_t temp;
         mpz_init(temp);
@@ -211,7 +218,7 @@ public:
     int64_t toS64() const
     {
         MOSH_ASSERT(fitsS64());
-#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+#if (MOSH_BIGNUM_SIZEOF_LONG == 4)
         uint64_t ret = 0;
         mpz_t temp;
         mpz_init(temp);
