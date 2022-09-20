@@ -302,7 +302,22 @@ public:
     MAKE_RATIONAL_COMPARE_FUNC(ge, >=)
     MAKE_RATIONAL_COMPARE_FUNC(lt, <)
     MAKE_RATIONAL_COMPARE_FUNC(le, <=)
-    MAKE_RATIONAL_COMPARE_FUNC(eq, ==)
+    // We don't use == here.
+    // As noted in 6.2.6. Numerical operations in R7RS small.
+    // We should compare Bignum vs Flonum by converting Flonum to Bignum.
+    //MAKE_RATIONAL_COMPARE_FUNC(eq, ==)
+
+#define MAKE_RATIONAL_EQ_FUNC() \
+    static bool eq(Flonum* n1, Ratnum* n2)\
+    {\
+        return n1->value() == n2->toDouble();\
+    }\
+    static bool eq(Ratnum* n1, Flonum* n2)\
+    {\
+        return n1->toDouble() == n2->value();\
+    }
+
+    MAKE_RATIONAL_EQ_FUNC()
 
 #define MAKE_FIXNUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(Flonum* n1, int n2)\
@@ -368,15 +383,6 @@ MAKE_LOCAL_OP_F(mul, *)
     static Object NEGATIVE_INF;
     static Object POSITIVE_INF;
     static Object NOT_A_NUMBER;
-
-//     static Object add(Bignum* n1, Flonum* n2);
-//     static Object add(Flonum* n1, Bignum* n2);
-//     static Object sub(Bignum* n1, Flonum* n2);
-//     static Object sub(Flonum* n1, Bignum* n2);
-//     static Object mul(Bignum* n1, Flonum* n2);
-//     static Object mul(Flonum* n1, Bignum* n2);
-//     static Object div(Bignum* n1, Flonum* n2);
-//     static Object div(Flonum* n1, Bignum* n2);
 
     Object sqrt() const
     {
