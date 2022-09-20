@@ -98,6 +98,11 @@ public:
         mpz_set_si(value_, value);
     }
 
+    explicit Bignum(double value)
+    {
+        mpz_init_set_d(value_, value);
+    }
+
     char* toString(int radix = 10) const
     {
         return mpz_get_str(nullptr, radix, value_);
@@ -533,7 +538,7 @@ public:
 
         /* Overflow check from Gauche */
         if ((n2 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
-            return Bignum::mul(new Bignum(n1), n2);
+            return Bignum::mul(new Bignum(static_cast<long>(n1)), n2);
         } else {
             return Object::makeFixnum(ret);
         }

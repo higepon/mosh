@@ -72,7 +72,7 @@ Object Arithmetic::numberToString(Object n, int radix)
             break;
         case 2:
         {
-            Bignum* const b = new Bignum(ufn);
+            Bignum* const b = new Bignum(static_cast<long>(ufn));
             snprintf(start, 64, "%s", b->toString(2));
             break;
         }
@@ -1114,7 +1114,8 @@ bool Arithmetic::eq(Object n1, Object n2)
         } else if (n2.isRatnum()) {
             return Flonum::eq(n1.toFlonum(), n2.toRatnum());
         } else if (n2.isBignum()) {
-            return Flonum::eq(n1.toFlonum(), n2.toBignum());
+            Bignum* b1 = new Bignum(n1.toFlonum()->value());
+            return Bignum::eq(b1, n2.toBignum());
         } else if (n2.isCompnum()) {
             return Compnum::eq(n1, n2.toCompnum());
         }
@@ -1122,7 +1123,8 @@ bool Arithmetic::eq(Object n1, Object n2)
         if (n2.isFixnum()) {
             return Bignum::eq(n1.toBignum(), n2.toFixnum());
         } else if (n2.isFlonum()) {
-            return Flonum::eq(n1.toBignum(), n2.toFlonum());
+            Bignum *b2 = new Bignum(n2.toFlonum()->value());
+            return Bignum::eq(n1.toBignum(), b2);
         } else if (n2.isRatnum()) {
             return Ratnum::eq(n1.toBignum(), n2.toRatnum());
         } else if (n2.isBignum()) {
