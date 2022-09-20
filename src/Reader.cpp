@@ -154,6 +154,17 @@ ucs4string ReaderHelper::readSymbol(const ucs4string& s)
             ret += ch;
         }
     }
+
+    /* TODO(higepon): Better way to handle |Hello| case. */
+    const bool isBarSymbol = (ret[0] ==  '|') && (ret[ret.length() - 1] == '|') && ret.length() >=3;
+    if (isBarSymbol) {
+        const ucs4string rawSymbol = ret.substr(1, ret.length() - 2);
+        const bool contains_non_alpha = std::find_if(rawSymbol.begin(), rawSymbol.end(),
+                   [](ucs4char c) { return !std::isalpha(c); }) != rawSymbol.end();
+        if (!contains_non_alpha) {
+            return rawSymbol;
+        }
+    }
     return ret;
 }
 
