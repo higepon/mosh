@@ -37,6 +37,10 @@
                 if (ac_.toCProcedure()->proc == applyEx) {
                     int argc = operand.toFixnum();
                     Object* argv = sp_ - argc;
+                    if (argc == 1) {
+                        callWrongNumberOfArgumentsAtLeastViolationAfter(this, UC("apply"), 2, argc, L1(argv[0]));
+                        NEXT;
+                    }
                     sp_ = sp_ - argc;
                     ac_ = argv[0];
                     // (apply proc arg1 arg2 ... argsAsList)
