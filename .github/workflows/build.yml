@@ -250,6 +250,7 @@ jobs:
     name: "Cygwin"
     needs: build-linux
     runs-on: windows-latest
+    timeout-minutes: 40
     steps:
       - name: "Setup Cygwin"
         uses: cygwin/cygwin-install-action@49f298a7ebb00d4b3ddf58000c3e78eff5fbd6b9
@@ -277,6 +278,7 @@ jobs:
     name: "Alpine chroot"
     needs: build-linux
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - name: "Setup Alpine chroot"
         uses: jirutka/setup-alpine@v1
@@ -303,6 +305,7 @@ jobs:
     name: "FreeBSD VM"
     needs: build-linux
     runs-on: macos-12
+    timeout-minutes: 40
     steps:
       - name: "Download artifact"
         uses: actions/download-artifact@v3
@@ -330,6 +333,7 @@ jobs:
     name: "NetBSD VM"
     needs: build-linux
     runs-on: macos-12
+    timeout-minutes: 40
     steps:
       - name: "Download artifact"
         uses: actions/download-artifact@v3
@@ -358,6 +362,7 @@ jobs:
     name: "OpenBSD VM (Build only)"
     needs: build-linux
     runs-on: macos-12
+    timeout-minutes: 40
     steps:
       - name: "Download artifact"
         uses: actions/download-artifact@v3
@@ -383,6 +388,7 @@ jobs:
     name: "Win64 AMD64 (NMosh)"
     needs: build-linux
     runs-on: windows-2022
+    timeout-minutes: 40
     steps:
       - name: "Prepare working directories"
         run: |
