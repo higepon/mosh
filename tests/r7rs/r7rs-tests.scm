@@ -1622,8 +1622,8 @@
     (let ((vec (vector 1 2 3 4 5))) (vector-copy! vec 2 #(a b c d e) 2 3) vec))
 
 ;; same source and dest
-(test-skip (test #(1 1 2 4 5)
-    (let ((vec (vector 1 2 3 4 5))) (vector-copy! vec 1 vec 0 2) vec)))
+(test #(1 1 2 4 5)
+    (let ((vec (vector 1 2 3 4 5))) (vector-copy! vec 1 vec 0 2) vec))
 (test #(1 2 3 1 2)
     (let ((vec (vector 1 2 3 4 5))) (vector-copy! vec 3 vec 0 2) vec))
 

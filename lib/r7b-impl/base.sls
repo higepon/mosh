@@ -134,7 +134,7 @@ write-u8 zero?
                  (srfi i39)
                  (only (srfi :1) member assoc)
                  (only (srfi :13) string-copy! string-fill! string->list)
-                 (only (srfi :43) vector-append vector-fill!)
+                 (only (srfi :43) vector-append vector-fill! vector-copy!)
                  (only (r7b-impl division) floor/ floor-quotient floor-remainder truncate/ truncate-remainder truncate-quotient)
                  (r7b-util bytevector-buffer)
                  (r7b-util char-ready)
@@ -299,43 +299,15 @@ write-u8 zero?
     (itr 0)
     ret))
 
-;; vector-copy! bytevector-copy! bytevector-append write-string
-;; string-map vector-map map
-;; from https://github.com/okuoku/yuni.
-(define (vector-copy!/itr+ to at from start end)
-  (unless (= start end)
-    (vector-set! to at (vector-ref from start))
-    (vector-copy!/itr+ to (+ 1 at) from (+ 1 start) end)))
-
-(define (vector-copy!/itr- to at from start end)
-  (vector-set! to at (vector-ref from end))
-  (unless (= start end)
-    (vector-copy!/itr- to (- at 1) from start (- end 1))))
-
-(define vector-copy!
-  (case-lambda
-    ((to at from)
-     (vector-copy! to at from 0
-                   (min (- (vector-length to) at) (vector-length from))))
-    ((to at from start)
-     (vector-copy! to at from start
-                   (min (+ start (- (vector-length to) at))
-                        (vector-length from))))
-    ((to at from start end)
-     (unless (= start end)
-       (cond
-         ((and (eq? from to)
-               (< start at end))
-          (vector-copy!/itr- to (+ (- end start) at) from start (- end 1)))
-         (else
-           (vector-copy!/itr+ to at from start end)))))))
-
 (define (bytevector-append . bvs)
   (u8-list->bytevector (apply append (map bytevector->u8-list bvs))))
 
 (define (bytevector . elm*)
   (u8-list->bytevector elm*))
 
+;; bytevector-copy! bytevector-append write-string
+;; string-map vector-map map
+;; from https://github.com/okuoku/yuni.
 (define bytevector-copy!
   (case-lambda
     ((to at from) (bytevector-copy! to at from 0))
