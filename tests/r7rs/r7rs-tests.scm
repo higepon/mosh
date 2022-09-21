@@ -388,18 +388,18 @@
   (test 6 (force p))
   (test 6 (begin (set! x 10) (force p))))
 
-(test-skip (test #t (promise? (delay (+ 2 2)))))
-(test-skip (test #t (promise? (make-promise (+ 2 2)))))
-(test-skip (test #t
+(test #t (promise? (delay (+ 2 2))))
+(test #t (promise? (make-promise (+ 2 2))))
+(test #t
     (let ((x (delay (+ 2 2))))
       (force x)
-      (promise? x))))
-(test-skip (test #t
+      (promise? x)))
+(test #t
     (let ((x (make-promise (+ 2 2))))
       (force x)
-      (promise? x))))
-(test-skip (test 4 (force (make-promise (+ 2 2)))))
-(test-skip (test 4 (force (make-promise (make-promise (+ 2 2))))))
+      (promise? x)))
+(test 4 (force (make-promise (+ 2 2))))
+(test 4 (force (make-promise (make-promise (+ 2 2)))))
 
 (define radix
   (make-parameter
