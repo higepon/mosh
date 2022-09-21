@@ -2267,8 +2267,8 @@
 (test 'ABC (read (open-input-string "ABC")))
 (test 'Hello (read (open-input-string "|H\\x65;llo|")))
 
-(test-skip (test 'abc (read (open-input-string "#!fold-case ABC"))))
-(test-skip (test 'ABC (read (open-input-string "#!fold-case #!no-fold-case ABC"))))
+(test 'abc (read (open-input-string "#!fold-case ABC")))
+(test 'ABC (read (open-input-string "#!fold-case #!no-fold-case ABC")))
 
 (test 'def (read (open-input-string "#; abc def")))
 (test 'def (read (open-input-string "; abc \ndef")))
