@@ -9,7 +9,7 @@ char-upper-case?  char-whitespace? digit-value string-ci<=? string-ci<?
 string-ci=?  string-ci>=? string-ci>? string-downcase string-foldcase
 string-upcase
    )
-         (import (rnrs))
+         (import (rnrs) (only (mosh) format))
 (define (digit-value char)
   (and (char-numeric? char)
        (case char
@@ -23,5 +23,7 @@ string-upcase
          ((#\7) 7)
          ((#\8) 8)
          ((#\9) 9)
-         (else (error "FIXME: unsupported char" char)))))
+         ((#\x0664) 4)
+         ((#\x0AE6) 0)
+         (else (assertion-violation 'digit-value (format #f "unsupported char ~a" char))))))
 )

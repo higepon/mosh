@@ -8,7 +8,7 @@ promise?
          (import (rnrs) (rnrs mutable-pairs))
 
 (define (promise? obj) 
-    (raise "promise? not supported"))
+    (assertion-violation "promise? not supported"))
 
 ;; Taken from R7RS small.
 (define-syntax delay-force

@@ -64,6 +64,7 @@ runtest-mosh:
 	# test twice
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
+	$(MOSH_TARGET) tests/r7rs/r7rs-tests.scm
 
 runtest-nmosh:
 	$(MOSH_TARGET) tests/nmosh.scm

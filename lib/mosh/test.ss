@@ -54,13 +54,14 @@
                  test-summary-string ; exported for tests of xunit
                  good-enough?
                  define-test test*
+                 test-skip
                  )
          (import (only (rnrs) define apply max map lambda string-length symbol->string record-type-name record-rtd simple-conditions
                        display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else number?
                        unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor or real? and
                        reverse <= string-append do let-values open-string-output-port set! quasiquote call/cc with-exception-handler
                        for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote real-part imag-part infinite? magnitude =
-                       * nan? < / make-eq-hashtable hashtable-set!)
+                       * nan? < / make-eq-hashtable hashtable-set! syntax-rules)
                  (only (mosh) host-os format ungensym hashtable-for-each)
                  (only (mosh control) let1)
                  (only (match) match))
@@ -159,16 +160,24 @@
 
 (define run-count 0)
 (define failed-count 0)
+(define skip-count 0)
 (define error* '())
+(define skipped* '())
 
 (define (run-count++)
   (set! run-count (+ run-count 1)))
 
 (define (failed-count++)
   (set! failed-count (+ failed-count 1)))
+  
+(define (skip-count++)
+  (set! skip-count (+ skip-count 1)))
 
 (define (add-error! expr)
   (set! error* (cons expr error*)))
+
+(define (add-skipped! expr)
+  (set! skipped* (cons expr skipped*)))
 
 #|
       Function: fail
@@ -435,6 +444,13 @@
       [(_ expr)
        #'(test-cmp 'expr eq? (lambda () expr) '())])))
 
+(define-syntax test-skip 
+  (syntax-rules ()
+    [(_ expr ...)
+      (begin
+        (skip-count++)
+        (add-skipped! '(SKIPPED expr ...)))]))
+
 (define-syntax with-color
   (lambda (x)
     (syntax-case x ()
@@ -462,7 +478,6 @@
   (let-values (([out get-string] (open-string-output-port)))
     (for-each
      (lambda (error)
-       (display "============================================================" out)
        (newline out)
        (match error
         [('unexpected expr exception)
@@ -481,10 +496,18 @@
      (reverse error*))
     (get-string)))
 
+(define (test-skipped-string)
+  (let-values (([out get-string] (open-string-output-port)))
+    (for-each
+     (lambda (skipped)
+       (format out "  ~s\n" skipped))
+     (reverse skipped*))
+    (get-string)))
+
 (define (test-summary-string)
-  (if (zero? failed-count)
-      (format "[  PASSED  ] ~d tests." run-count failed-count)
-      (format "[  FAILED  ] ~d passed, ~d failed." (- run-count failed-count) failed-count)))
+  (if (zero? failed-count) 
+      (format "[  PASSED  ] ~d passed, ~d skipped. " run-count skip-count)
+      (format "[  FAILED  ] ~d passed, ~d failed, ~d skipped." (- run-count failed-count) failed-count skip-count)))
 
 #|
       Function: test-results
@@ -503,9 +526,13 @@
    (lambda (key proc)
      (proc))
    test*)
-  (let1 has-error? (> failed-count 0)
+  (let ([has-error? (> failed-count 0)]
+        [has-skipped? (> skip-count 0)])
     (display (test-error-string))
     (when has-error?
+      (newline))
+    (display (test-skipped-string))
+    (when has-skipped?
       (newline))
     (cond
      [(> failed-count 0)
