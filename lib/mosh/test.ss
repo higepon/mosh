@@ -169,7 +169,7 @@
 
 (define (failed-count++)
   (set! failed-count (+ failed-count 1)))
-  
+
 (define (skip-count++)
   (set! skip-count (+ skip-count 1)))
 
@@ -444,7 +444,7 @@
       [(_ expr)
        #'(test-cmp 'expr eq? (lambda () expr) '())])))
 
-(define-syntax test-skip 
+(define-syntax test-skip
   (syntax-rules ()
     [(_ expr ...)
       (begin
@@ -505,7 +505,7 @@
     (get-string)))
 
 (define (test-summary-string)
-  (if (zero? failed-count) 
+  (if (zero? failed-count)
       (format "[  PASSED  ] ~d passed, ~d skipped. " run-count skip-count)
       (format "[  FAILED  ] ~d passed, ~d failed, ~d skipped." (- run-count failed-count) failed-count skip-count)))
 
@@ -528,11 +528,11 @@
    test*)
   (let ([has-error? (> failed-count 0)]
         [has-skipped? (> skip-count 0)])
-    (display (test-error-string))
-    (when has-error?
-      (newline))
     (display (test-skipped-string))
     (when has-skipped?
+      (newline))
+    (display (test-error-string))
+    (when has-error?
       (newline))
     (cond
      [(> failed-count 0)
