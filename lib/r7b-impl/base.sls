@@ -204,29 +204,6 @@ write-u8 zero?
         (itr (+ cur 1)))))
   (itr 0))
 
-
-(define-syntax define-values
-  (lambda (x)
-    (syntax-case x ()
-      ((_ (val ...) body)
-       (with-syntax (((name ...)
-                      (generate-temporaries #'(val ...)))
-                     ((tmp ...)
-                      (generate-temporaries #'(val ...))))
-         #'(begin
-             (define name #f)
-             ...
-             (define bogus
-               (begin
-                 (call-with-values (lambda () body)
-                                   (lambda (tmp ...)
-                                     (set! name tmp)
-                                     ...
-                                     ))))
-             (define val name)
-             ...
-             ))))))
-
 (define (exact-integer? i) (and (integer? i) (exact? i)))
 
 (define (list-set! l k obj)
@@ -738,4 +715,32 @@ write-u8 zero?
               (if (null? dd)
                 (for-each4 proc a b c d)
                 (error "Too many...")))))))))
+
+;; Take from R7RS small
+(define-syntax define-values
+  (syntax-rules ()
+    ((define-values () expr)
+      (define dummy
+        (call-with-values (lambda () expr)                
+        (lambda args #f))))
+    ((define-values (var) expr)
+      (define var expr))
+    ((define-values (var0 var1 ... varn) expr)
+      (begin
+        (define var0
+          (call-with-values (lambda () expr) list))
+        (define var1
+          (let ((v (cadr var0)))
+            (set-cdr! var0 (cddr var0))
+          v)) ...
+        (define varn
+          (let ((v (cadr var0)))
+            (set! var0 (car var0)) v))))
+    ((define-values (var0 var1 ... . varn) expr)
+     (begin
+       (define var0 (call-with-values (lambda () expr) list))
+       (define var1 (let ((v (cadr var0))) (set-cdr! var0 (cddr var0)) v)) ...
+       (define varn (let ((v (cdr var0))) (set! var0 (car var0)) v))))
+    ((define-values var expr)
+      (define var (call-with-values (lambda () expr) list)))))
 )
