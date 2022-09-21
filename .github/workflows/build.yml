@@ -380,7 +380,7 @@ jobs:
             gmake -j4
 
   build-dist-win64:
-    name: "Win64 AMD64 (NMosh, Build only)"
+    name: "Win64 AMD64 (NMosh)"
     needs: build-linux
     runs-on: windows-2022
     steps:
