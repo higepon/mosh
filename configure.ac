@@ -237,17 +237,20 @@ MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-point
 has_gc_pthread=false
 has_gc_darwin=false
 has_gc_win32=false
+run_concurrent_tests=false
 AC_MSG_CHECKING([check threads])
 case "$target_os" in
 *darwin*)
   AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
   has_gc_pthread=true
   has_gc_darwin=true
+  run_concurrent_tests=true
   ;;
 *linux*)
   AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
   AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
   has_gc_pthread=true
+  run_concurrent_tests=true
   ;;
 freebsd*)
   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
@@ -281,6 +284,7 @@ esac
 AM_CONDITIONAL(GC_PTHREAD, $has_gc_pthread)
 AM_CONDITIONAL(GC_DARWIN, $has_gc_darwin)
 AM_CONDITIONAL(GC_WIN32, $has_gc_win32)
+AM_CONDITIONAL(RUN_CONCURRENT_TESTS, $run_concurrent_tests)
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
 MOSH_LDADD_ARCH="-ldl -lpthread"

@@ -449,11 +449,18 @@ check: test
 MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTARGS)"
 NMOSHBIN ="NMOSH_CACHEDIR=$(abs_builddir)/nmosh-cache MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
 
+run_concurrent_tests=
+run_concurrent_ntests=
+if RUN_CONCURRENT_TESTS
+run_concurrent_tests+=testT
+run_concurrent_ntests+=ntestT
+endif
+
 
 test: ptest ntest
 Xtest: ptest ntest testD ntestD
-ptest: testB testR testL
-ntest: ntestB ntestR ntestL
+ptest: testB testR testL $(run_concurrent_tests)
+ntest: ntestB ntestR ntestL $(run_concurrent_tests)
 
 testB: ./mosh src/all-tests.scm # lib/libffitest.so.1.0 
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest)
@@ -467,6 +474,9 @@ testL:
 
 testR:
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/tests/r6rs-test-suite)
+
+testT:
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-concurrent)
 
 #check-am is Automake's internal target..
 #testU: check-am
@@ -483,6 +493,9 @@ ntestL:
 
 ntestR:
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/tests/r6rs-test-suite)
+
+ntestT:
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-concurrent)
 
 testD:
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f tests/Makefile runtest-for-developer)
