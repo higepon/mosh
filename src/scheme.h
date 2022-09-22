@@ -236,4 +236,6 @@ inline uint8_t* allocatePointerFreeU8Array(int64_t size)
 #endif
 }
 
+extern "C" int yydebug;
+
 #endif // SCHEME_SCHEME_H_

@@ -57,6 +57,17 @@ using namespace scheme;
 extern int yylex(YYSTYPE *lvalp);
 extern int yyerror(const char *);
 %}
+
+// Note for debugging.
+//   Set yydebug = 1 in main.cpp that show the trace.
+//   Use -Wcounterexamples option for bison that shows conflicting examples.
+//   See https://github.com/higepon/mosh/wiki/Support-datum_coment for details.
+
+// Generate the parser description file.
+%verbose
+// Enable run-time traces (yydebug).
+%define parse.trace
+
 %define api.pure
 %token <stringValue> IDENTIFIER
 %token <boolValue> SCHEME_BOOLEAN
