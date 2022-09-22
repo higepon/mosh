@@ -183,6 +183,9 @@ int main(int argc, char *argv[])
     // call this before any allocation.
     mosh_init();
 
+    // Enable this for parser debugging.
+    // yydebug = 1;
+
     ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;
