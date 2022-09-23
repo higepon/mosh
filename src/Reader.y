@@ -181,6 +181,16 @@ list           : LEFT_PAREN datum_list RIGHT_PAREN {
                        yyerror("mismatched parentheses");
                        YYERROR;
                    }
+                   // (#; a . b) case.
+                   if ($3 == Object::Ignore) {
+                       yyerror("malformed list");
+                       YYERROR;
+                   }
+                   // (a . #;b) case.
+                   if ($5 == Object::Ignore) {
+                       yyerror("malformed list");
+                       YYERROR;
+                   }
                    $2 = Pair::reverse($2);
                    $$ = Pair::appendD2($2, Object::cons($3, $5));
                }
