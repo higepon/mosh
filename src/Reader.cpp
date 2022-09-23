@@ -146,6 +146,9 @@ ucs4string ReaderHelper::readSymbol(const ucs4string& s)
                 }
                 break;
             }
+            case '"':
+                ret += '"';
+                break;
             default:
                 ret += ch;
                 ret += ch2;
