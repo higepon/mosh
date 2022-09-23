@@ -340,7 +340,7 @@ endif
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
 scmlibdir = ${datadir}/$(INSTALLNAME)-$(PACKAGE_VERSION)
 scmlib_DATA = src/all-tests.scm
-nobase_scmlib_DATA = ${mosh_core_libraries} ${MOSH_PLUGINS} #${mosh_core_fasl_libraries}
+nobase_scmlib_DATA = ${mosh_core_libraries} lib/mosh/config.ss ${MOSH_PLUGINS} #${mosh_core_fasl_libraries}
 
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(BOEHM_GC_DIR)/include/gc -I $(top_srcdir)/$(BOEHM_GC_DIR)/libatomic_ops/src -I$(top_srcdir)/src
 EXTRA_DIST     = \
