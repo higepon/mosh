@@ -100,8 +100,6 @@ datum          : lexme_datum
                | defined_datum
                | DATUM_COMMENT datum datum { $$ = $3; }
                | DATUM_COMMENT datum END_OF_FILE { currentVM()->readerContext()->setParsed(Object::Eof); YYACCEPT; }
-               | DATUM_COMMENT lexme_datum { $$ = Object::Ignore; }
-               | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;
 
 defined_datum : DEFINED_SHARED {
@@ -212,13 +210,7 @@ bytevector     : BYTE_VECTOR_START datum_list RIGHT_PAREN {
                }
                ;
 
-datum_list     : datum_list datum {
-                    if ($2 == Object::Ignore) {
-                        $$ = $1;
-                    } else {
-                        $$ = Object::cons($2, $1);
-                    }
-               }
+datum_list     : datum_list datum { $$ = Object::cons($2, $1); }
                | {$$ = Object::Nil; }
                ;
 
