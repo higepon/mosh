@@ -100,6 +100,8 @@ datum          : lexme_datum
                | defined_datum
                | DATUM_COMMENT datum datum { $$ = $3; }
                | DATUM_COMMENT datum END_OF_FILE { currentVM()->readerContext()->setParsed(Object::Eof); YYACCEPT; }
+               | DATUM_COMMENT lexme_datum { $$ = Object::Ignore; }
+               | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;
 
 defined_datum : DEFINED_SHARED {
@@ -182,6 +184,15 @@ list           : LEFT_PAREN datum_list RIGHT_PAREN {
                    $2 = Pair::reverse($2);
                    $$ = Pair::appendD2($2, Object::cons($3, $5));
                }
+               | LEFT_PAREN datum_list datum DOT datum DATUM_COMMENT datum RIGHT_PAREN {
+                   if (!(($1 == '(' && $8 == ')') ||
+                         ($1 == '[' && $8 == ']'))) {
+                       yyerror("mismatched parentheses");
+                       YYERROR;
+                   }
+                   $2 = Pair::reverse($2);
+                   $$ = Pair::appendD2($2, Object::cons($3, $5));
+               }
                | abbreviation datum { $$ = Object::cons($1, Object::cons($2, Object::Nil)); }
                ;
 
@@ -210,7 +221,13 @@ bytevector     : BYTE_VECTOR_START datum_list RIGHT_PAREN {
                }
                ;
 
-datum_list     : datum_list datum { $$ = Object::cons($2, $1); }
+datum_list     : datum_list datum {
+                    if ($2 == Object::Ignore) {
+                        $$ = $1;
+                    } else {
+                        $$ = Object::cons($2, $1);
+                    }
+               }
                | {$$ = Object::Nil; }
                ;
 
