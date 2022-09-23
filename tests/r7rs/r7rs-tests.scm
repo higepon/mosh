@@ -2337,7 +2337,7 @@
 (test-write-syntax "|.|" '|.|)
 (test-write-syntax "|a b|" '|a b|)
 (test-write-syntax "|,a|" '|,a|)
-(test-skip (test-write-syntax "|\"|" '|\"|))
+(test-write-syntax "|\"|" '|\"|)
 (test-write-syntax "|\\||" '|\||)
 (test-write-syntax "||" '||)
 (test-write-syntax "|\\\\123|" '|\\123|)
