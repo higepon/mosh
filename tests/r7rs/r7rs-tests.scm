@@ -2288,10 +2288,10 @@
         (display str)
         #f)))
 
-(test-skip (test-read-error "(#;a . b)"))
-(test-skip (test-read-error "(a . #;b)"))
+(test-read-error "(#;a . b)")
+(test-read-error "(a . #;b)")
 (test-read-error "(a #;. b)")
-(test-skip (test-read-error "(#;x #;y . z)"))
+(test-read-error "(#;x #;y . z)")
 (test-read-error "(#; #;x #;y . z)")
 (test-read-error "(#; #;x . z)")
 

@@ -34,8 +34,8 @@ src/OSConstants.h: src/os-constants.scm
 # READER 
 
 src/Reader.tab.cpp src/Reader.tab.hpp: src/Reader.y
-#	bison -d $< -o src/Reader.tab.cpp
-	bison  -Wcounterexamples -d $< -o src/Reader.tab.cpp	
+	bison -d $< -o src/Reader.tab.cpp
+#	bison  -Wcounterexamples -d $< -o src/Reader.tab.cpp	
 
 src/NumberReader.tab.cpp src/NumberReader.tab.hpp: src/NumberReader.y
 	bison -p "number_yy" -d $< -o src/NumberReader.tab.cpp
