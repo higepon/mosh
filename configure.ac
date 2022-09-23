@@ -34,7 +34,6 @@ else
     rm -f $sedscript0 $sedscript1
 fi
 AC_SUBST(INSTALLNAME)
-AC_SUBST(MOSH_LIB_PATH, "${datadir}/$INSTALLNAME-$PACKAGE_VERSION")
 
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES

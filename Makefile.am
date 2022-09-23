@@ -22,7 +22,7 @@ GLOBAL_CFLAGS =  $(ONIG_CFLAGS) $(GMP_CFLAGS) \
 		 -Wall \
 		 -I src -I $(includedir) \
 		 -D MONA_SCHEME -D USE_BOEHM_GC \
-		 -D MOSH_LIB_PATH="\"$(MOSH_LIB_PATH)\"" \
+		 -D MOSH_LIB_PATH="\"${datadir}/$(INSTALLNAME)-$(PACKAGE_VERSION)\"" \
 		 -D_FILE_OFFSET_BITS=64 -Wall -pipe $(DEBUG_FLAGS) \
 		 $(GC_CFLAGS) \
 		 $(MOSH_OPTS) # temp -Wno-deprecated
@@ -338,10 +338,9 @@ $(top_builddir)/plugins/mosh_curses.mplg: $(top_srcdir)/src/ext/curses/mosh_curs
 endif
 
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
-
-datadir = $(MOSH_LIB_PATH)
-data_DATA = src/all-tests.scm
-nobase_data_DATA = ${mosh_core_libraries} ${MOSH_PLUGINS} #${mosh_core_fasl_libraries}
+scmlibdir = ${datadir}/$(INSTALLNAME)-$(PACKAGE_VERSION)
+scmlib_DATA = src/all-tests.scm
+nobase_scmlib_DATA = ${mosh_core_libraries} ${MOSH_PLUGINS} #${mosh_core_fasl_libraries}
 
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(BOEHM_GC_DIR)/include/gc -I $(top_srcdir)/$(BOEHM_GC_DIR)/libatomic_ops/src -I$(top_srcdir)/src
 EXTRA_DIST     = \
@@ -591,10 +590,6 @@ dist-hook:
 	-rm -f $(top_distdir)/lib/mosh/mysql.ss
 	-rm -f $(top_distdir)/lib/libffitest.so.1.0
 	-rm -f $(top_distdir)/src/config.h
-
-install-data-hook:
-	@echo Setting up plugins permission bit..
-	-@chmod +x $(DESTDIR)$(MOSH_LIB_PATH)/plugins/*
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
