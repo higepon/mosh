@@ -25,5 +25,10 @@
         (display "\n\n" p))))
 
 (output (filter (^e (let ((p (path-extension e)))
-                      (and p (library? p)))) (listup "lib")))
+                      (and p (library? p)
+                           ;; Exclude lib/mosh/config.ss because it is 
+                           ;; generated on configuration time and it is 
+                           ;; explicitly listed in Makefile.am
+                           (not (string=? e "lib/mosh/config.ss"))))) 
+                (listup "lib")))
 
