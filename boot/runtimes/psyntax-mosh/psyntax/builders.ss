@@ -84,7 +84,7 @@
     (syntax-rules ()   
       ((_ ae var exp) 
         (begin
-          (debugf build-global-assignment "var=~s exp=~s ae=~s\n" var exp (if ae (ae) ae))
+          ;(debugf build-global-assignment "var=~s exp=~s ae=~s\n" var exp (if ae (ae) ae))
           `(set! ,var ,exp)))))
   (define-syntax build-global-definition
     (syntax-rules ()
@@ -98,7 +98,7 @@
       (if-wants-case-lambda
           `(case-lambda (,vars ,exp))
           (begin
-            (debugf build-lambda "vars=~a exp=~a ae=~a" vars (and (pair? exp) (car exp)) (if ae (ae) ae))
+            ;(debugf build-lambda "vars=~a exp=~a ae=~a" vars (and (pair? exp) (car exp)) (if ae (ae) ae))
             (let ([lmbd `(lambda ,vars ,exp)])
               (annotated-cons (car lmbd) (cdr lmbd) (if ae (ae) #f)))))))
   (define build-case-lambda

@@ -570,7 +570,7 @@
 (define-syntax underscore
   (syntax-rules ()
     ((foo _) '_)))
-(test-skip (test '_ (underscore foo)))
+(test '_ (underscore foo))
 
 (let ()
   (define-syntax underscore2

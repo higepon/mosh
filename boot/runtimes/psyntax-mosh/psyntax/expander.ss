@@ -1759,6 +1759,12 @@
           ((_ id filename)
            (do-include e id filename))))))
 
+  ; Help debug output.
+  (define (simplify obj)
+    (cond
+      [(stx? obj)
+        (stx-expr obj)]
+      [else obj]))
 
   (define syntax-rules-macro
     (lambda (e)
@@ -1766,17 +1772,19 @@
         ((_ (lits ...)
             (pat* tmp*) ...)
          (begin
+           (debugf syntax-rules-macro "tmp*=~a pat*=~a lits=~a" (map simplify tmp*) (map simplify pat*) lits)
            (verify-literals lits e)
            (bless `(lambda (x)
                      (syntax-case x ,lits
                        ,@(map (lambda (pat tmp)
+                                (let ([underscore-in-pattern? #t])
                                 (syntax-match pat ()
                                   [(_ . rest)
-                                   `((g . ,rest) (syntax ,tmp))]
+                                   `((g . ,rest) (syntax ,tmp ,underscore-in-pattern?))]
                                   [_
                                    (syntax-violation #f
                                       "invalid syntax-rules pattern"
-                                      e pat)]))
+                                      e pat)])))
                               pat* tmp*)))))))))
 
   (define quasiquote-macro
@@ -2490,7 +2498,8 @@
   (define (verify-literals lits expr)
     (for-each
       (lambda (x)
-        (when (or (not (id? x)) (ellipsis? x) (underscore? x))
+        ;; Allowed underscore for R7RS.
+        (when (or (not (id? x)) (ellipsis? x) #;(underscore? x))
           (syntax-violation #f "invalid literal" expr x)))
       lits))
 
@@ -2498,6 +2507,7 @@
     (let ()
       (define build-dispatch-call
         (lambda (pvars expr y r mr)
+;          (write (map (lambda (pvar) (and (stx? pvar) (stx-expr pvar))) pvars))
           (let ((ids (map car pvars))
                 (levels (map cdr pvars)))
             (let ((labels (map gen-label ids))
@@ -2615,19 +2625,24 @@
   (define syntax-transformer
     (let ()
       (define gen-syntax
-        (lambda (src e r maps ellipsis? vec?)
+        (lambda (src e r maps ellipsis? vec? . extra-args)
+
+          (let ([underscore-in-pattern? (and (pair? extra-args) (car extra-args))])
           (syntax-match e ()
             (dots (ellipsis? dots)
              (stx-error src "misplaced ellipsis in syntax form"))
             (id (id? id)
+              (begin
+             
              (let* ((label (id->label e))
                     (b (label->binding label r)))
-                 (if (eq? (binding-type b) 'syntax)
+                  (debugf gen-syntax "id=~a label=~a ref?=~a" (simplify id) label (and (eq? (binding-type b) 'syntax) (not (eq? (stx-expr id) '_))))
+                 (if (and (eq? (binding-type b) 'syntax) #t) ;(not (and (eq? (stx-expr id) '_) (not underscore-in-pattern?))));(not (eq? (stx-expr id) '_)))
                      (let-values (((var maps)
                                    (let ((var.lev (binding-value b)))
                                      (gen-ref src (car var.lev) (cdr var.lev) maps))))
                        (values (list 'ref var) maps))
-                     (values (list 'quote e) maps))))
+                     (values (list 'quote e) maps)))))
             ((dots e) (ellipsis? dots)
              (if vec?
                  (stx-error src "misplaced ellipsis in syntax form")
@@ -2665,8 +2680,9 @@
             (#(ls ...)
              (let-values (((lsnew maps)
                            (gen-syntax src ls r maps ellipsis? #t)))
-               (values (gen-vector e ls lsnew) maps)))
-            (_ (values `(quote ,e) maps)))))
+               (values (gen-vector e ls lsnew) maps)))    
+                      
+            (_ (values `(quote ,e) maps))))))
       (define gen-ref
         (lambda (src var level maps)
           (if (= level 0)
@@ -2754,6 +2770,9 @@
         (syntax-match e ()
           ((_ x)
            (let-values (((e maps) (gen-syntax e x r '() ellipsis? #f)))
+             (regen e)))
+          ((_ x underscore-in-pattern?)
+           (let-values (((e maps) (gen-syntax e x r '() ellipsis? #f underscore-in-pattern?)))
              (regen e)))))))
 
   (define core-macro-transformer
