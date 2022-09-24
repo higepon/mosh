@@ -123,7 +123,8 @@ write-char write-string
 write-u8 zero?
    )
          (import (rename (except (rnrs) assoc member vector-copy map for-each vector-fill! vector-map case syntax-rules error string->list define-record-type)
-                   (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string) (string->utf8 r6rs:string->utf8) (bytevector-copy r6rs:bytevector-copy))
+                   (vector->list r6rs:vector->list) (bytevector-copy! r6rs:bytevector-copy!) (utf8->string r6rs:utf8->string)
+                   (string->utf8 r6rs:string->utf8) (bytevector-copy r6rs:bytevector-copy) (let-syntax r6rs:let-syntax))
                  (rnrs mutable-pairs)
                  (except (rnrs mutable-strings) string-fill!)
                  (rnrs r5rs)
@@ -143,6 +144,12 @@ write-u8 zero?
                  (only (mosh) include)
                  (only (system) port-open?)
                  )
+
+;; R7RS small. Allow define in (let-syntax ...).
+(define-syntax let-syntax
+   (syntax-rules ()
+     ((_ ((olhs* orhs*) ...) b b* ...)
+      (let () (r6rs:let-syntax ((olhs* orhs*) ...) b b* ...)))))
 
 ;; R7RS-bridge format doesn't allow (begin (import ...) ...)
 (define-syntax import
