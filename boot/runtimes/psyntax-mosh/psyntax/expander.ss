@@ -2625,7 +2625,18 @@
             (id (id? id)
              (let* ((label (id->label e))
                     (b (label->binding label r)))
-                 (if (eq? (binding-type b) 'syntax)
+                 ;; In R7RS small underscore(s) matche arbitrary input elements.
+                 ;; *but* are not pattern variables and so cannot be used to refer to those elements.
+                 ;; Here we check if id is underscore. If yes make them quote instead of ref.
+                 ;; To be strict we should probably check if _ appears in <pattern>.
+                 ;; For example in the following case we should not touch '_.
+                 ;; But We'd keep this simple until we see a problem.
+                 ;;   (syntax-rules ()
+                 ;;      [(foot bar) '_])
+                 ;; We spent a lot of time on this.
+                 ;; See https://github.com/higepon/mosh/wiki/R7RS-underscore-in-syntax-rules.
+                 (if (and (eq? (binding-type b) 'syntax) (not (eq? (stx-expr id) '_)))
+                 ;(if (eq? (binding-type b) 'syntax)
                      (let-values (((var maps)
                                    (let ((var.lev (binding-value b)))
                                      (gen-ref src (car var.lev) (cdr var.lev) maps))))
