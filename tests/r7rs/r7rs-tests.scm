@@ -570,7 +570,7 @@
 (define-syntax underscore
   (syntax-rules ()
     ((foo _) '_)))
-(test-skip (test '_ (underscore foo)))
+(test '_ (underscore foo))
 
 (let ()
   (define-syntax underscore2
@@ -2582,6 +2582,36 @@
 (test #t (file-error?
           (guard (exn (else exn))
             (delete-file " no such file "))))
+
+(test-end)
+
+(test-begin "Tests for Mosh")
+
+;; Underscore matches foo but it doesn't work as variable.
+(define-syntax underscore1
+  (syntax-rules ()
+    ((_ _) '_)))
+(test '_ (underscore1 foo))
+
+;; Underscore in <pattern literal>, it matches only _ (literal).
+(define-syntax underscore2
+  (syntax-rules (_)
+    ((_ _) "ok")))
+(test "ok" (underscore2 _))
+;;(underscore2 1) should be invalid syntax error.
+
+;; x just works as pattern variable.
+(define-syntax underscore3
+  (syntax-rules ()
+    ((_ x) x)))
+(test 1 (underscore3 1))
+
+;; _ stays as _ literal.
+(define-syntax underscore4
+  (syntax-rules ()
+    ((_ x) '_)))
+(test '_ (underscore4 1))
+
 
 (test-end)
 
