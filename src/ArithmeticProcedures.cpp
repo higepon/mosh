@@ -103,7 +103,7 @@ Object scheme::atanEx(VM* theVM, int argc, const Object* argv)
         }
     } else {
         argumentCheckReal(0, n1);
-        argumentCheckReal(0, n2);
+        argumentCheckReal(1, n2);
         return Arithmetic::atan2(n1, n2);
     }
 }
