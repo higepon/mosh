@@ -617,7 +617,9 @@
   (define distinct-bound-ids?
     (lambda (id*)
       (or (null? id*)
-          (and (not (bound-id-member? (car id*) (cdr id*)))
+          ;; In R7RS small we allow multple _ in <pattern>.q
+          (and (or (eq? (stx-expr (car id*)) '_) (not (bound-id-member? (car id*) (cdr id*))))
+          ;  (and (not (bound-id-member? (car id*) (cdr id*)))
                (distinct-bound-ids? (cdr id*))))))
 
   (define bound-id-member?
