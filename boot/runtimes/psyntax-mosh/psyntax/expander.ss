@@ -2490,7 +2490,10 @@
   (define (verify-literals lits expr)
     (for-each
       (lambda (x)
-        (when (or (not (id? x)) (ellipsis? x) (underscore? x))
+        ;; In R7RS small.
+        ;; _ is valid literal in <pattern literal>.
+        (when (or (not (id? x)) (ellipsis? x))
+        ;(when (or (not (id? x)) (ellipsis? x) (underscore? x))
           (syntax-violation #f "invalid literal" expr x)))
       lits))
 
