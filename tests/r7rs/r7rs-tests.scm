@@ -578,8 +578,7 @@
       ((underscore2 (a _) ...) 42)))
   (test 42 (underscore2 (1 2))))
 
-; TODO(higepon): duplicate pattern variable.
-#;(define-syntax count-to-2
+(define-syntax count-to-2
   (syntax-rules ()
     ((_) 0)
     ((_ _) 1)
@@ -588,8 +587,7 @@
 (test-skip (test '(2 0 many)
     (list (count-to-2 a b) (count-to-2) (count-to-2 a b c d))))
 
-; TODO(higepon): duplicate pattern variable.
-#;(define-syntax count-to-2_
+(define-syntax count-to-2_
   (syntax-rules (_)
     ((_) 0)
     ((_ _) 1)
