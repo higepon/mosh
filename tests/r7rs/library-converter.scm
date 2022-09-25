@@ -27,23 +27,25 @@
 (define parse-library-body
   (case-lambda
    [(body*)
-    (parse-library-body body* '() '())]
-   [(body* include* begin*)
+    (parse-library-body body* '() '() '())]
+   [(body* include* begin* cond-expand*)
      (match body*
        [(('include file) other* ...)
-          (parse-library-body other* (cons file include*) begin*)]
+          (parse-library-body other* (cons file include*) begin* cond-expand*)]
        [(('begin bbody* ...) other* ...)
-          (parse-library-body other* include* (cons bbody* begin*))]
-       [() (values (reverse include*) (reverse begin*))])]
-       [else (syntax-violation 'parse-library-body "hoge")]))
+          (parse-library-body other* include* (cons bbody* begin*) cond-expand*)]
+       [(('cond-expand clause* ...) other* ...)
+          (parse-library-body other* include* begin* (cons clause* cond-expand*))]
+       [() (values (reverse include*) (reverse begin*) (reverse cond-expand*))]
+       [else (syntax-violation 'parse-library-body "hoge")])]))
 
-(test-values (values '("my_lib.scm") '())
+(test-values (values '("my_lib.scm") '() '())
   (parse-library-body '((include "my_lib.scm"))))
 
-(test-values (values '("my_lib1.scm" "my_lib2.scm") '())
+(test-values (values '("my_lib1.scm" "my_lib2.scm") '() '())
   (parse-library-body '((include "my_lib1.scm") (include "my_lib2.scm"))))
 
-(test-values (values '("my_lib1.scm" "my_lib2.scm") '(((a) 1 2)))
+(test-values (values '("my_lib1.scm" "my_lib2.scm") '(((a) 1 2)) '())
   (parse-library-body '((include "my_lib1.scm") (include "my_lib2.scm") (begin (a) 1 2))))
 
 ;; Combining parse-define-library and parse-library-body.
@@ -57,7 +59,7 @@
     (test-equal '(make rows (rename put! set!)) export*)
     (test-equal '((scheme base)) import*)
     (test-equal '((include "my_lib1.scm") (begin 3)) body*)
-    (let-values (((include* begin*) (parse-library-body body*)))
+    (let-values (((include* begin* cond-expand*) (parse-library-body body*)))
       (test-equal '("my_lib1.scm") include*)
       (test-equal '((3)) begin*)
 ))
