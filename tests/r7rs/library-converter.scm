@@ -51,6 +51,7 @@
                                             '(define-library (my lib)
                                                (export make rows (rename put! set!))
                                                (import (scheme base))
+                                               (include "my_lib1.scm")
                                                (begin 3)))))
     (test-equal '(my lib) name)
     (test-equal '(make rows (rename put! set!)) export*)
