@@ -56,9 +56,9 @@
     (test-equal '(my lib) name)
     (test-equal '(make rows (rename put! set!)) export*)
     (test-equal '((scheme base)) import*)
-    (test-equal '((begin 3)) body*)
+    (test-equal '((include "my_lib1.scm") (begin 3)) body*)
     (let-values (((include* begin*) (parse-library-body body*)))
-      (test-equal '() include*)
+      (test-equal '("my_lib1.scm") include*)
       (test-equal '((3)) begin*)
 ))
 
