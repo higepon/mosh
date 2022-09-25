@@ -985,11 +985,11 @@
 (test-values (values -3 1) (floor/ -5 2))
 (test-values (values -3 -1) (floor/ 5 -2))
 (test-values (values 2 -1) (floor/ -5 -2))
-(test-skip (test-values (values 2 1) (truncate/ 5 2)))
+(test-values (values 2 1) (truncate/ 5 2))
 (test-values (values -2 -1) (truncate/ -5 2))
 (test-values (values -2 1) (truncate/ 5 -2))
 (test-values (values 2 -1) (truncate/ -5 -2))
-(test-skip (test-values (values 2.0 -1.0) (truncate/ -5.0 -2)))
+(test-values (values 2.0 -1.0) (truncate/ -5.0 -2))
 
 (test 1 (modulo 13 4))
 (test 1 (remainder 13 4))
