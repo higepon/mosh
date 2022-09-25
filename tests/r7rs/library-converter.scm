@@ -34,7 +34,8 @@
           (parse-library-body other* (cons file include*) begin*)]
        [(('begin bbody* ...) other* ...)
           (parse-library-body other* include* (cons bbody* begin*))]
-       [x (values (reverse include*) (reverse begin*))])]))
+       [() (values (reverse include*) (reverse begin*))])]
+       [else (syntax-violation 'parse-library-body "hoge")]))
 
 (test-values (values '("my_lib.scm") '())
   (parse-library-body '((include "my_lib.scm"))))
