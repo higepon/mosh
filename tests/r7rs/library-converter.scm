@@ -56,8 +56,10 @@
     (test-equal '(make rows (rename put! set!)) export*)
     (test-equal '((scheme base)) import*)
     (test-equal '((begin 3)) body*)
-
-)
+    (let-values (((include* begin*) (parse-library-body body*)))
+      (test-equal '() include*)
+      (test-equal '((3)) begin*)
+))
 
 ;; todo multiple import/export
 (test-results)
