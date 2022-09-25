@@ -5,11 +5,11 @@
 
 (define (parse-define-library exp)
   (match exp
-    [('define-library (name))
+    [('define-library (name ...))
         (values #t name)]
     [else (values #f #f)]))
 
-(test-values (values #t 'test) (parse-define-library '(define-library (test))))
+(test-values (values #t '(my lib)) (parse-define-library '(define-library (my lib))))
 
 (test-results)
 
