@@ -46,7 +46,7 @@
 (test-values (values '("my_lib1.scm" "my_lib2.scm") '(((a) 1 2)))
   (parse-library-body '((include "my_lib1.scm") (include "my_lib2.scm") (begin (a) 1 2))))
 
-;; Combining
+;; Combining parse-define-library and parse-library-body.
 (let-values (((name export* import* body*) (parse-define-library
                                             '(define-library (my lib)
                                                (export make rows (rename put! set!))
