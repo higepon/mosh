@@ -201,6 +201,15 @@ public:
     {
         const double re = Arithmetic::realToDouble(real());
         const double im = Arithmetic::realToDouble(imag());
+        if (im == 0.0) {
+            if (re >= 0.0) {
+                return Object::makeFlonum(::sqrt(re));
+            } else {
+                return Object::makeCompnum(Object::makeFlonum(0.0),
+                                           Object::makeFlonum(::sqrt(::abs(re))));
+
+            }
+        }
         const double r = ::sqrt(re * re + im * im);
         const double theta = ::atan2(im, re);
         return Arithmetic::mul(Object::makeFlonum(::sqrt(r)),
