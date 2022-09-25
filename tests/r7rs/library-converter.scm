@@ -8,10 +8,10 @@
     [('define-library (name* ...)
                       ('export export* ...)
                       ('import import* ...))
-        (values #t name* export* import*)]
+        (values name* export* import*)]
     [else (values #f #f)]))
 
-(test-values (values #t '(my lib)  '(make rows (rename put! set!)) '((scheme base)))
+(test-values (values '(my lib)  '(make rows (rename put! set!)) '((scheme base)))
   (parse-define-library '(define-library (my lib) (export make rows (rename put! set!)) (import (scheme base)))))
 
 (test-results)
