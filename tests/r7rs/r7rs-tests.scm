@@ -584,8 +584,8 @@
     ((_ _) 1)
     ((_ _ _) 2)
     ((_ . _) 'many)))
-(test-skip (test '(2 0 many)
-    (list (count-to-2 a b) (count-to-2) (count-to-2 a b c d))))
+(test '(2 0 many)
+    (list (count-to-2 a b) (count-to-2) (count-to-2 a b c d)))
 
 (define-syntax count-to-2_
   (syntax-rules (_)
@@ -593,9 +593,9 @@
     ((_ _) 1)
     ((_ _ _) 2)
     ((x . y) 'fail)))
-(test-skip (test '(2 0 fail fail)
+(test '(2 0 fail fail)
     (list (count-to-2_ _ _) (count-to-2_)
-          (count-to-2_ a b) (count-to-2_ a b c d))))
+          (count-to-2_ a b) (count-to-2_ a b c d)))
 
 (define-syntax jabberwocky
   (syntax-rules ()
