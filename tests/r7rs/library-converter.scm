@@ -18,6 +18,12 @@
                                          (import (scheme base))
                            (begin 3))))
 
+(test-values (values '(my lib) '(make rows (rename put! set!)) '((scheme base)) '((begin 3)))
+  (parse-define-library '(define-library (my lib)
+                                         (export make rows (rename put! set!))
+                                         (import (scheme base))
+                            (begin 3))))              
+
 ;; empty body case.
 (test-values (values '(my lib) '(make rows (rename put! set!)) '((scheme base)) '())
   (parse-define-library '(define-library (my lib)
@@ -41,6 +47,15 @@
 
 (test-values (values '("my_lib.scm") '() '())
   (parse-library-body '((include "my_lib.scm"))))
+
+(test-values (values '("my_lib.scm") '() '(((mosh (define name 'mosh))
+                                            (else (define name 'other)))))
+  (parse-library-body '((include "my_lib.scm")
+                        (cond-expand
+                          (mosh
+                            (define name 'mosh))
+                          (else
+                            (define name 'other))))))
 
 (test-values (values '("my_lib1.scm" "my_lib2.scm") '() '())
   (parse-library-body '((include "my_lib1.scm") (include "my_lib2.scm"))))
