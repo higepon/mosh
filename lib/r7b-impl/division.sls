@@ -14,8 +14,11 @@ truncate-remainder truncate/
 (define truncate-quotient quotient)
 (define truncate-remainder remainder)
 (define (truncate/ x y) 
-  (values (truncate-quotient x y)
-          (truncate-remainder x y)))
+  (if (or (inexact? x) (inexact? y))
+    (values (inexact (truncate-quotient x y))
+            (inexact (truncate-remainder x y)))
+    (values (truncate-quotient x y)
+            (truncate-remainder x y))))
 
 ;; FIXME: accepts inexacts
 (define euclidean-quotient div)
