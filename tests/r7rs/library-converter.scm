@@ -5,11 +5,14 @@
 
 (define (parse-define-library exp)
   (match exp
-    [('define-library (name ...))
-        (values #t name)]
+    [('define-library (name* ...)
+                      ('export export* ...)
+    )
+        (values #t name* export*)]
     [else (values #f #f)]))
 
-(test-values (values #t '(my lib)) (parse-define-library '(define-library (my lib))))
+(test-values (values #t '(my lib)  '(make rows (rename put! set!)))
+  (parse-define-library '(define-library (my lib) (export make rows (rename put! set!)))))
 
 (test-results)
 
