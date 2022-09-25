@@ -18,6 +18,7 @@
                                          (import (scheme base))
                            (begin 3))))
 
+;; empty body case.
 (test-values (values '(my lib) '(make rows (rename put! set!)) '((scheme base)) '())
   (parse-define-library '(define-library (my lib)
                                          (export make rows (rename put! set!))
