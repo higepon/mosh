@@ -32,12 +32,12 @@
      (match body*
        [(('include file) other* ...)
           (parse-library-body other* (cons file include*))]
-       [else (values include*)])]))
+       [else (values (reverse include*))])]))
 
 (test-values (values '("my_lib.scm"))
   (parse-library-body '((include "my_lib.scm"))))
 
-(test-values (values '("my_lib1.scm"))
+(test-values (values '("my_lib1.scm" "my_lib2.scm"))
   (parse-library-body '((include "my_lib1.scm") (include "my_lib2.scm"))))
 
 
