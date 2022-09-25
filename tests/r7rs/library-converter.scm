@@ -12,8 +12,8 @@
         (values #t name* export* import*)]
     [else (values #f #f)]))
 
-(test-values (values #t '(my lib)  '(make rows (rename put! set!)))
-  (parse-define-library '(define-library (my lib) (export make rows (rename put! set!) (import (scheme base))))))
+(test-values (values #t '(my lib)  '(make rows (rename put! set!)) '((scheme base)))
+  (parse-define-library '(define-library (my lib) (export make rows (rename put! set!)) (import (scheme base)))))
 
 (test-results)
 
