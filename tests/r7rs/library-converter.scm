@@ -37,6 +37,9 @@
 (test-values (values '("my_lib.scm"))
   (parse-library-body '((include "my_lib.scm"))))
 
+(test-values (values '("my_lib1.scm"))
+  (parse-library-body '((include "my_lib1.scm") (include "my_lib2.scm"))))
+
 
 (test-results)
 
