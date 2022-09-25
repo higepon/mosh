@@ -24,7 +24,19 @@
                                          (export make rows (rename put! set!))
                                          (import (scheme base)))))
 
-  ;; empty body
+(define parse-library-body
+  (case-lambda
+   [(body*)
+    (parse-library-body body* '())]
+   [(body* include*)
+     (match body*
+       [(('include file) other* ...)
+          (parse-library-body other* (cons file include*))]
+       [else (values include*)])]))
+
+(test-values (values '("my_lib.scm"))
+  (parse-library-body '((include "my_lib.scm"))))
+
 
 (test-results)
 
