@@ -67,6 +67,7 @@ runtest-mosh:
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
 	$(MOSH_TARGET) tests/r7rs/r7rs-tests.scm
+	$(MAKE) -C tests/r7rs/library-converter
 
 runtest-nmosh:
 	$(MOSH_TARGET) tests/nmosh.scm
