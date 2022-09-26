@@ -55,13 +55,14 @@
                  good-enough?
                  define-test test*
                  test-skip
+                 test-values
                  )
          (import (only (rnrs) define apply max map lambda string-length symbol->string record-type-name record-rtd simple-conditions
                        display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else number?
                        unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor or real? and
                        reverse <= string-append do let-values open-string-output-port set! quasiquote call/cc with-exception-handler
                        for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote real-part imag-part infinite? magnitude =
-                       * nan? < / make-eq-hashtable hashtable-set! syntax-rules)
+                       * nan? < / make-eq-hashtable hashtable-set! syntax-rules call-with-values)
                  (only (mosh) host-os format ungensym hashtable-for-each)
                  (only (mosh control) let1)
                  (only (match) match))
@@ -503,6 +504,12 @@
        (format out "  ~s\n" skipped))
      (reverse skipped*))
     (get-string)))
+
+(define-syntax test-values
+  (syntax-rules ()
+    ((_ expect expr)
+     (test-equal (call-with-values (lambda () expect) (lambda results results))
+       (call-with-values (lambda () expr) (lambda results results))))))
 
 (define (test-summary-string)
   (if (zero? failed-count)

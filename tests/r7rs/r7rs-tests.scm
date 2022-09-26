@@ -73,14 +73,6 @@
                (test-equal? (real-part expect) (real-part res))
                (test-equal? (imag-part expect) (imag-part res))))))
 
-(define-syntax test-values
-  (syntax-rules ()
-    ((_ expect expr)
-     (test-values #f expect expr))
-    ((_ name expect expr)
-     (test name (call-with-values (lambda () expect) (lambda results results))
-       (call-with-values (lambda () expr) (lambda results results))))))
-
 ;; R7RS test suite.  Covers all procedures and syntax in the small
 ;; language except `delete-file'.  Currently assumes full-unicode
 ;; support, the full numeric tower and all standard libraries
