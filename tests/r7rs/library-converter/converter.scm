@@ -1,6 +1,6 @@
 (import (rnrs)
         (match)
-        (mosh internal library-converter)
+        (psyntax r7rs-library-converter)
         (mosh file)
         (only (mosh pp) pp)
         (only (srfi :1) first second)
