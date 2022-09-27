@@ -1,15 +1,36 @@
-;; R7RS small 5.6.2. Library example.
-(import (scheme base)
-        (only (example life) life)
-        (rename (prefix (example grid) grid-) (grid-make make-grid)))
+(import (rnrs)
+        (mosh test)
+        (mosh internal library-converter))
 
-;; Initialize a grid with a glider.
-(define grid (make-grid 24 24))
-(grid-set! grid 1 1 #true)
-(grid-set! grid 2 2 #true)
-(grid-set! grid 3 0 #true)
-(grid-set! grid 3 1 #true)
-(grid-set! grid 3 2 #true)
+;; export
+(test-equal '(make rows (rename (put! set!))) (rewrite-export '(make rows (rename put! set!))))
 
-;; Run for 80 iterations.
-(life grid 80)
+;; body with include.
+(test-equal '((include "/foo/bar.scm")) (rewrite-body "/foo" '((include "bar.scm"))))
+
+;; body with two include.
+(test-equal '((include "/foo/bar.scm") (include "/foo/baz.scm")) (rewrite-body "/foo" '((include "bar.scm") (include "baz.scm"))))
+
+(test-equal '((include "/foo/bar.scm") (include "/foo/baz.scm")) (rewrite-body "/foo" '((include "bar.scm" "baz.scm"))))
+
+;; define-library
+(test-values (values '(my lib) '(make rows (rename put! set!)) '((scheme base)) '((begin 3)))
+    (parse-define-library '(define-library (my lib)
+                                           (export make rows (rename put! set!))
+                                           (import (scheme base))
+                             (begin 3))))
+
+;; define-library
+(test-values (values '(my lib) '(make rows (rename put! set!)) '((scheme base)) '((begin 3)))
+(parse-define-library '(define-library (my lib)
+                                       (export make rows (rename put! set!))
+                                       (import (scheme base))
+                            (begin 3))))              
+
+;; empty body case.
+(test-values (values '(my lib) '(make rows (rename put! set!)) '((scheme base)) '())
+    (parse-define-library '(define-library (my lib)
+                                           (export make rows (rename put! set!))
+                                           (import (scheme base)))))
+
+(test-results)
