@@ -1,6 +1,6 @@
 ; Converter from R7RS library to R6RS library.
 ;
-;   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+;   Copyright (c) 2022 Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 ;
 ;   Redistribution and use in source and binary forms, with or without
 ;   modification, are permitted provided that the following conditions
@@ -28,8 +28,9 @@
 ; N.B. For testablity. This library should not depend on other psyntax files.
 (library (psyntax r7rs-library-converter)
          (export rewrite-define-library
-                 rewrite-export rewrite-body parse-define-library)
+                 rewrite-export rewrite-body parse-define-library path-dirname)
          (import (rnrs)
+                 (mosh)
                  (match))
 
 ;; The main API.
@@ -46,7 +47,7 @@
                       ('import import* ...)
        body* ...)
         (values name* export* import* body*)]
-    [else (values #f #f)]))
+    [else (assertion-violation 'parse-define-library "malformed library" `(,exp))]))
 
 (define (rewrite-export exp)
    (match exp
@@ -57,24 +58,49 @@
      [() '()]))
 
 (define (rewrite-body dirname exp)
-    (flatten
-        (map 
-            (lambda (e)
-            (match e
-                [('include path* ...)
-                (map (lambda (path) `(include ,(string-append dirname "/" path))) path*)]
-                [else `(,e)])) exp)))
-
+  (flatten
+     (map
+       (lambda (e)
+         (match e
+           [('include path* ...)
+             (map (lambda (path) `(include ,(string-append dirname path))) path*)]
+           [else `(,e)])) exp)))
 
 ;; Utilities.
 (define (fold1 kons knil lst)
     (if (null? lst)
         knil
        (fold1 kons (kons (car lst) knil) (cdr lst))))
-  
-  
-  (define (flatten lists)
-      (fold1 (lambda (right left)
-                      (append left right))
-                  '() lists))        
+
+
+(define (flatten lists)
+    (fold1 (lambda (right left)
+                    (append left right))
+                '() lists))
+
+;; from pathutils-nmosh.ss
+(define (path-dirname pth)
+  (car (split-dir+base pth)))
+
+(define (split-dir+base pth)
+  (define (itr cur rest)
+    (if (pair? rest)
+      (if (char=? (car rest) #\/)
+        (cons
+          (list->string (reverse rest))
+          (list->string cur)) ;basename
+        (itr (cons (car rest) cur) (cdr rest)))
+      (cons "" pth)))
+  (let ((p (pathfilter pth)))
+    (itr '() (reverse  (string->list p)))))
+
+(define (run-win32-np?) (string=? "win32" (host-os)))
+
+(define pathfilter
+  (if (run-win32-np?)
+    (lambda (str)
+      (and (string? str)
+	   (list->string (map (lambda (e) (if (char=? e #\\) #\/ e)) (string->list str)))))
+    (lambda (str) str)))
+
 )
