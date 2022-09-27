@@ -2,7 +2,8 @@ GENERATED_DIR=r6rs-generated/example
 SOURCE_DIR=r7rs/example/
 
 test: $(GENERATED_DIR)/grid.sls $(GENERATED_DIR)/life.sls
-	$(MOSH_TARGET) --loadpath=r6rs-generated test.scm
+	$(MOSH_TARGET) --loadpath=r6rs-generated run-life.scm
+	$(MOSH_TARGET) test.scm
 
 $(GENERATED_DIR)/grid.sls: $(SOURCE_DIR)/grid.sls
 	mkdir -p $(GENERATED_DIR)
