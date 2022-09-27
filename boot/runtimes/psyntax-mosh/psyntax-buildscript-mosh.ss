@@ -41,7 +41,8 @@
 
 ;; here we put libraries used in psyntax.
 (define scheme-library-files
-  `("psyntax/compat.ss"
+  `("psyntax/r7rs-library-converter.ss"
+    "psyntax/compat.ss"
     "psyntax/internal.ss"
     "psyntax/config.ss"
     "psyntax/library-manager.ss"
@@ -1510,7 +1511,7 @@
     syntax-dispatch apply cons append map list syntax-error
     generate-temporaries = + datum->syntax string->symbol
     string-append symbol->string syntax->datum gensym length
-    open-string-output-port identifier? free-identifier=? exists
+    open-string-output-port identifier? free-identifier=? exists list->vector
     values call-with-values for-all null? cdr car pair? vector eq? bound-identifier=? reverse ellipsis-map assertion-violation))
 
 (let-values (((core* locs)

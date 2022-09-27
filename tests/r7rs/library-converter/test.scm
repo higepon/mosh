@@ -1,6 +1,6 @@
 (import (rnrs)
         (mosh test)
-        (mosh internal library-converter))
+        (psyntax r7rs-library-converter))
 
 ;; export
 (test-equal '(make rows (rename (put! set!))) (rewrite-export '(make rows (rename put! set!))))

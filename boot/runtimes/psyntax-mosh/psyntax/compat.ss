@@ -31,6 +31,7 @@
     (rnrs r5rs)
     (except (mosh) make-parameter parameterize mosh-cache-dir)
     (only (system) get-environment-variable make-simple-struct simple-struct-set! simple-struct-ref simple-struct-name simple-struct?)
+    (psyntax r7rs-library-converter)
     (only (psyntax system $bootstrap)
           void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
 
@@ -99,7 +100,7 @@
   ;; defined for mosh
   ;;; - source is a pair of file-name x char-position
   ;;; - stripped is an s-expression with no annotations
-  ;;; - expression is a list/vector/id/whathaveyou that 
+  ;;; - expression is a list/vector/id/whathaveyou that
   ;;;   may contain further annotations.
   (define read-annotated read)
 
@@ -233,8 +234,14 @@
   (define (compile-core . x)
     (apply error 'comile-core "not implementated" x))
 
+  (define r7rs-enabled? #t)
+
   (define (read-library-source-file file-name)
-        (with-input-from-file file-name read-annotated))
+    (let ([sexp (with-input-from-file file-name read-annotated)])
+      ;; We rewrite R7RS library to R6RS library here.
+      (if (and r7rs-enabled? (pair? sexp) (eq? (car sexp) 'define-library))
+          (rewrite-define-library "" sexp)
+          sexp)))
 
   (define make-parameter
     (case-lambda
@@ -404,8 +411,8 @@
             (string-append "set-" (syn->str id) "-" (syn->str fld) "!")))))
     (syntax-case x ()
       [(_ name (field* ...) printer)
-       #`(begin 
-           (define-record name (field* ...)) 
+       #`(begin
+           (define-record name (field* ...))
            (define rp (make-record-printer 'name printer)))]
       [(_ name (field* ...))
        (with-syntax ([(getter* ...)

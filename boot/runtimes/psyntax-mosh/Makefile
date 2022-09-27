@@ -5,6 +5,7 @@ psyntax/config.ss \
 psyntax/expander.ss \
 psyntax/internal.ss \
 psyntax/library-manager.ss \
+psyntax/r7rs-library-converter.ss \
 psyntax/main.ss
 
 ROOT_DIR= ../../..
