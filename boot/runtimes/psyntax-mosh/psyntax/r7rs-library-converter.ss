@@ -28,7 +28,7 @@
 ; N.B. For testablity. This library should not depend on other psyntax files.
 (library (psyntax r7rs-library-converter)
          (export rewrite-define-library rewrite-lib-decl*
-                 rewrite-export rewrite-body parse-define-library path-dirname);; todo clean this up!
+                 rewrite-export path-dirname);; todo clean this up!
          (import (rnrs)
                  (mosh)
                  (match))
@@ -81,17 +81,6 @@
               (loop (append ret `(,any))
                     (cdr decl*))]))))
 
-            
-
-(define (parse-define-library exp)
-  (match exp
-    [('define-library (name* ...)
-                      ('export export* ...)
-                      ('import import* ...)
-       body* ...)
-        (values name* export* import* body*)]
-    [else (assertion-violation 'parse-define-library "malformed library" `(,exp))]))
-
 (define (rewrite-export exp)
    (match exp
      [(('rename from to) other ...)
@@ -99,20 +88,6 @@
      [(one other ...)
         `(,one ,@(rewrite-export other))]
      [() '()]))
-
-(define (rewrite-include-lds dirname path)
-    (file->sexp-list (string-append dirname path)))
-
-(define (rewrite-body dirname exp)
-  (flatten
-     (map
-       (lambda (e)
-         (match e
-           [('include path* ...)
-             (map (lambda (path) `(include ,(string-append dirname path))) path*)]
-           [('include-library-declarations path* ...) 
-            (flatten (map (lambda (path) (rewrite-include-lds dirname path)) path*))]
-           [else `(,e)])) exp)))
 
 ;; Utilities.
 (define (file->sexp-list file)
