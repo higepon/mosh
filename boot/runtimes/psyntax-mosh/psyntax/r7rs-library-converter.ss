@@ -35,10 +35,11 @@
 
 ;; The main API.
 (define (rewrite-define-library dirname exp)
-    (let-values (((name export* import* body*) (parse-define-library exp)))
-        `(library ,name (export ,@(rewrite-export export*))
-                        (import ,@import*)
-            ,@(rewrite-body dirname body*))))
+  (match exp
+    [('define-library (name* ...) lib-decl*)
+      `(library ,name* ,(rewrite-lib-decl* dirname lib-decl*))]
+    [else
+      (assertion-violation 'rewrite-define-library "malformed library" `(,exp))]))
 
 ;; Rewrite list of 〈library declaration〉and return list of 〈library declaration〉.
 ;;  〈library declaration〉 is any of:
