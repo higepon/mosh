@@ -39,5 +39,20 @@
 (test-equal "/foo/bar/baz/" (path-dirname "/foo/bar/baz/hige.scm"))
 (test-equal "" (path-dirname "hige.scm"))
 
+;; new tests here
+
+(test-equal '((export make (rename (put! set!))) (export get set!))
+            (rewrite-lib-decl* "r7rs/" '((export make (rename put! set!))
+                                         (include-library-declarations "default-declarations.scm"))))
+(test-equal '((export make (rename (put! set!)))
+              (include "r7rs/foo.scm")
+              (include "r7rs/bar.scm")
+              (export get set!)
+              (export life))
+            (rewrite-lib-decl* "r7rs/" '((export make (rename put! set!))
+                                         (include "foo.scm" "bar.scm")
+                                         (include-library-declarations "default-declarations.scm")
+                                         (include-library-declarations "other-declarations.scm"))))
+
 
 (test-results)
