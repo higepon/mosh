@@ -57,6 +57,9 @@
         `(,one ,@(rewrite-export other))]
      [() '()]))
 
+(define (rewrite-include-lds dirname path)
+    (file->sexp-list (string-append dirname path)))
+
 (define (rewrite-body dirname exp)
   (flatten
      (map
@@ -64,9 +67,21 @@
          (match e
            [('include path* ...)
              (map (lambda (path) `(include ,(string-append dirname path))) path*)]
+           [('include-library-declarations path* ...) 
+            (flatten (map (lambda (path) (rewrite-include-lds dirname path)) path*))]
            [else `(,e)])) exp)))
 
 ;; Utilities.
+(define (file->sexp-list file)
+  (with-input-from-file file
+    (lambda ()
+      (let loop ([line (read)]
+                 [ret '()])
+        (cond
+         [(eof-object? line) (reverse ret)]
+         [else
+          (loop (read) (cons line ret))])))))
+
 (define (fold1 kons knil lst)
     (if (null? lst)
         knil

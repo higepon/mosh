@@ -13,6 +13,9 @@
 
 (test-equal '((include "/foo/bar.scm") (include "/foo/baz.scm")) (rewrite-body "/foo/" '((include "bar.scm" "baz.scm"))))
 
+;; body with include-library-declarations.
+(test-equal '((export get set!)) (rewrite-body "r7rs/" '((include-library-declarations "default-declarations.scm"))))
+
 ;; define-library
 (test-values (values '(my lib) '(make rows (rename put! set!)) '((scheme base)) '((begin 3)))
     (parse-define-library '(define-library (my lib)
