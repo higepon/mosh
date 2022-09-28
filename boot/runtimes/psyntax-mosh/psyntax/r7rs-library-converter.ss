@@ -36,8 +36,8 @@
 ;; The main API.
 (define (rewrite-define-library dirname exp)
   (match exp
-    [('define-library (name* ...) lib-decl*)
-      `(library ,name* ,(rewrite-lib-decl* dirname lib-decl*))]
+    [('define-library (name* ...) lib-decl* ...)
+      `(library ,name* ,@(rewrite-lib-decl* dirname lib-decl*))]
     [else
       (assertion-violation 'rewrite-define-library "malformed library" `(,exp))]))
 
@@ -78,7 +78,7 @@
                 (loop (append ret (rewrite-lib-decl* dirname new-decl*))
                 (cdr decl*)))]
             [any
-              (loop (append ret `(any))
+              (loop (append ret `(,any))
                     (cdr decl*))]))))
 
             
