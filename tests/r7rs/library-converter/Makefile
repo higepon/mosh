@@ -7,6 +7,8 @@ test: $(GENERATED_DIR)/grid.sls $(GENERATED_DIR)/life.sls
 	$(MOSH_TARGET) --loadpath=r6rs-generated run-life.scm
 	# Use R7RS library.
 	$(MOSH_TARGET) --loadpath=r7rs run-life.scm	
+	$(MOSH_TARGET) --loadpath=r7rs run-include-test.scm
+	$(MOSH_TARGET) --loadpath=r7rs run-include-ld-test.scm			
 	$(MOSH_TARGET) --loadpath=$(PSYNTAX_LIB_PATH) test.scm
 
 
