@@ -76,8 +76,9 @@
               (let ([new-decl* (map (lambda (path) `(include-library-declarations ,path)) path*)])
                 (loop (append ret (rewrite-lib-decl* dirname new-decl*))
                 (cdr decl*)))]
-            [else (assertion-violation 'rewrite-lib-decl* "unknown library declarration" (car decl*))]
-            ))))
+            [any
+              (loop (append ret `(any))
+                    (cdr decl*))]))))
 
             
 
