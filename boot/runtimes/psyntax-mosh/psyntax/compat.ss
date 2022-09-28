@@ -240,7 +240,7 @@
     (let ([sexp (with-input-from-file file-name read-annotated)])
       ;; We rewrite R7RS library to R6RS library here.
       (if (and r7rs-enabled? (pair? sexp) (eq? (car sexp) 'define-library))
-          (rewrite-define-library "" sexp)
+          (rewrite-define-library (path-dirname file-name) sexp)
           sexp)))
 
   (define make-parameter
