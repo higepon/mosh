@@ -35,7 +35,7 @@
 
 ;; Available features. This is used by cond-expand.
 ;; To do replace this with (featurs).
-(define mosh-features '(r7rs))
+(define mosh-features '(r6rs r7rs))
 
 ;; The main API.
 (define (rewrite-define-library dirname exp)
@@ -89,13 +89,22 @@
               (loop (append ret `(,any))
                     (cdr decl*))]))))
 
-;; Returns 〈library declaration〉
+;; Returns list of〈library declaration〉.
 (define (rewrite-cond-expand expr)
+   (format #t "expr=~a\n" expr)
    (match expr
      [(_)
        (assertion-violation 'cond-expand "Unfulfilled cond-expand" expr)]
      [(_ ('else lib-decl* ...))
        lib-decl*]
+     [(_ (('and) lib-decl* ...) more-clause* ...)
+       lib-decl*]
+     [(_ (('and (? symbol? feature1) (? symbol? feature2) ...) lib-decl* ...) more-clause* ...)
+       `((cond-expand
+           (,feature1
+             (cond-expand
+               ((and ,@feature2) ,@lib-decl*) ,@more-clause*))
+            ,@more-clause*))]
      [(_ (('not (? symbol? feature)) lib-decl* ...) more-clause* ...)
        `((cond-expand (,feature 
                        (cond-expand ,@more-clause*))
