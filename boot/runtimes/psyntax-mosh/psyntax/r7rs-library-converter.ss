@@ -35,7 +35,7 @@
 
 ;; Available features. This is used by cond-expand.
 ;; To do replace this with (featurs).
-(define mosh-features '(r6rs r7rs))
+(define mosh-features '(r6rs r7rs mosh mosh-0.2.8))
 
 ;; The main API.
 (define (rewrite-define-library dirname exp)
@@ -53,7 +53,7 @@
 ;;     (include 〈filename1〉 〈filename2〉 . . . )
 ;;     (include-ci 〈filename1〉 〈filename2〉 . . . )
 ;;     (include-library-declarations 〈filename1〉〈filename2〉 . . . )
-;;     (cond-expand 〈ce-clause1〉 〈ce-clause2〉 . . . )    
+;;     (cond-expand 〈ce-clause1〉 〈ce-clause2〉 . . . )
 (define (rewrite-lib-decl* dirname lib-decl*)
   (let loop ([ret '()]
              [decl* lib-decl*])
@@ -63,20 +63,20 @@
             ;; (export 〈export spec〉 . . . )
             [('export spec* ...)
               (loop (append ret `((export ,@(rewrite-export spec*)))) (cdr decl*))]
-            ;; (include 〈filename1〉〈filename2〉 . . . )                    
+            ;; (include 〈filename1〉〈filename2〉 . . . )
             [('include path* ...)
               ;; Expand it to multiple include and pass it to psyntax later.
               ;; Note we append dirname to path so that (include "foo.scm") works.
               (let ([new-decl* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
                 (loop (append ret new-decl*)
-                      (cdr decl*)))]            
+                      (cdr decl*)))]
             ;; (include-library-declarations 〈filename〉)
             [('include-library-declarations path)
               (let ([new-decl* (file->sexp-list (string-append dirname path))])
                 ;; We call rewrite-lib-decl* because expanded include may have something we care about.
                 (loop (append ret (rewrite-lib-decl* dirname new-decl*))
                       (cdr decl*)))]
-            ;; (include-library-declarations 〈filename1〉〈filename2〉 . . . )                    
+            ;; (include-library-declarations 〈filename1〉〈filename2〉 . . . )
             [('include-library-declarations path* ...)
               (let ([new-decl* (map (lambda (path) `(include-library-declarations ,path)) path*)])
                 (loop (append ret (rewrite-lib-decl* dirname new-decl*))
@@ -91,7 +91,7 @@
 
 ;; Returns list of〈library declaration〉.
 (define (rewrite-cond-expand expr)
-   (format #t "expr=~a\n" expr)
+   ;;(format #t "expr=~a\n" expr)
    (match expr
      [(_)
        (assertion-violation 'cond-expand "Unfulfilled cond-expand" expr)]
@@ -105,8 +105,16 @@
              (cond-expand
                ((and ,@feature2) ,@lib-decl*) ,@more-clause*))
             ,@more-clause*))]
+     [(_ (('or) lib-decl* ...) more-clause* ...)
+       `((cond-expand ,@more-clause*))]
+     [(_ (('or (? symbol? feature1) (? symbol? feature2) ...) lib-decl* ...) more-clause* ...)
+       `((cond-expand
+           (,feature1 ,@lib-decl*)
+           (else
+             (cond-expand
+               ((or ,@feature2) ,@lib-decl*) ,@more-clause*))))]
      [(_ (('not (? symbol? feature)) lib-decl* ...) more-clause* ...)
-       `((cond-expand (,feature 
+       `((cond-expand (,feature
                        (cond-expand ,@more-clause*))
                      (else ,@lib-decl*)))]
      [(_ ((? symbol? feature) lib-decl* ...) more-clause* ...)

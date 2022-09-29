@@ -17,7 +17,7 @@
               (include "r7rs/foo.scm")
               (include "r7rs/bar.scm")
               (export get set!)
-              (export life))
+              (export life name))
             (rewrite-lib-decl* "r7rs/" '((export make (rename put! set!))
                                          (include "foo.scm" "bar.scm")
                                          (include-library-declarations "default-declarations.scm")
@@ -40,11 +40,19 @@
             (rewrite-lib-decl* "r7rs/" '((cond-expand ((not r8rs) #t) (r7rs (define foo #t) (define bar #f))))))
 
 (test-equal '("else")
-            (rewrite-lib-decl* "r7rs/" '((cond-expand ((and r8rs r7rs) #t) (else "else"))))) 
+            (rewrite-lib-decl* "r7rs/" '((cond-expand ((and r8rs r7rs) #t) (else "else")))))
 
 (test-equal '("yay")
-            (rewrite-lib-decl* "r7rs/" '((cond-expand ((and r6rs r7rs) "yay") (else "else"))))) 
+            (rewrite-lib-decl* "r7rs/" '((cond-expand ((and r6rs r7rs) "yay") (else "else")))))
 
+(test-equal '("yay")
+        (rewrite-lib-decl* "r7rs/" '((cond-expand ((or r8rs r7rs) "yay") (else "else")))))
+
+(test-equal '("yay")
+    (rewrite-lib-decl* "r7rs/" '((cond-expand ((or r9rs r8rs r7rs) "yay") (else "else")))))
+
+(test-equal '("else")
+    (rewrite-lib-decl* "r7rs/" '((cond-expand ((or r9rs r8rs r5rs) "yay") (else "else")))))
 (test-results)
 
 
