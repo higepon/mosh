@@ -145,7 +145,7 @@ TEST_F(VMTest, StackTrace2) {
                  "\n"
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
-                 "    2. (raise c):  baselib.scm:945\n"
+                 "    2. (raise c):  baselib.scm:948\n"
                  "    3. sys-display: <subr>\n"
                  "    4. (a):  <transcoded-textual-input-port <binary-input-port ././tests/stack-trace2.scm>>:14\n"
                  "    5. (b):  <transcoded-textual-input-port <binary-input-port ././tests/stack-trace2.scm>>:14\n"

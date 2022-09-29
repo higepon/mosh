@@ -42,6 +42,9 @@
 (define (available-features)
   '(r6rs r7rs mosh))
 
+(define (available-libraries)
+  `((srfi-0) (srfi-1) (mosh)))
+
 (define (not x) (if x #f #t))
 (define (caaaaar p) (car (car (car (car (car p))))))
 (define (cdaaaar p) (cdr (car (car (car (car p))))))

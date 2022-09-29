@@ -30,13 +30,16 @@
          (export rewrite-define-library rewrite-lib-decl*
                  rewrite-export path-dirname);; todo clean this up!
          (import (rnrs)
-                 (mosh)
+                 (except (mosh) available-features available-libraries)
                  (match))
 
-;; R7RS features.
-;; TODO(higepon): Use (mosh available-features) once 0.2.8rc5 is out.
-(define (mosh-features)
+;; R7RS Available features and libraries.
+;; TODO(higepon): Use available-features in (mosh) library once 0.2.8rc5 is out.
+(define (available-features)
   '(r6rs r7rs mosh))
+
+(define (available-libraries)
+    `((srfi-0) (srfi-1) (mosh)))
 
 ;; The main API.
 (define (rewrite-define-library dirname exp)
@@ -100,7 +103,7 @@
        lib-decl*]
      [(_ (('and) lib-decl* ...) more-clause* ...)
        lib-decl*]
-     [(_ (('and (? symbol? feature1) (? symbol? feature2) ...) lib-decl* ...) more-clause* ...)
+     [(_ (('and feature1 feature2 ...) lib-decl* ...) more-clause* ...)
        `((cond-expand
            (,feature1
              (cond-expand
@@ -108,22 +111,27 @@
             ,@more-clause*))]
      [(_ (('or) lib-decl* ...) more-clause* ...)
        `((cond-expand ,@more-clause*))]
-     [(_ (('or (? symbol? feature1) (? symbol? feature2) ...) lib-decl* ...) more-clause* ...)
+     [(_ (('or feature1 feature2 ...) lib-decl* ...) more-clause* ...)
        `((cond-expand
            (,feature1 ,@lib-decl*)
            (else
              (cond-expand
                ((or ,@feature2) ,@lib-decl*) ,@more-clause*))))]
-     [(_ (('not (? symbol? feature)) lib-decl* ...) more-clause* ...)
+     [(_ (('not feature) lib-decl* ...) more-clause* ...)
        `((cond-expand (,feature
                        (cond-expand ,@more-clause*))
                      (else ,@lib-decl*)))]
      [(_ ((? symbol? feature) lib-decl* ...) more-clause* ...)
-        ;; This feature is available!
-        (if (member feature (mosh-features))
+        ;; This feature is available.
+        (if (member feature (available-features))
             lib-decl*
-            `((cond-expand ,@more-clause*)))]))
-
+            `((cond-expand ,@more-clause*)))]
+     [(_ (('library name* ...) lib-decl* ...) more-clause* ...)
+        ;; This library is available.
+        (if (member name* (available-libraries))
+            lib-decl*
+            `((cond-expand ,@more-clause*)))]
+        ))
 
 (define (rewrite-export exp)
    (match exp
