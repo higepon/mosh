@@ -1,9 +1,0 @@
-mosh on MinGW
-=============
-
-NOTE
-----
-
-"./configure" build was deprecated in 0.2.7 release.
-Please try CMake build(see also README.CMake).
-

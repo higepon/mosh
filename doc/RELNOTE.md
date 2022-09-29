@@ -14,9 +14,14 @@ Known issues
 Changes
 -------
 
+- Platform:
+  - macOS:
+    - Added native support for M1 Mac (except FFI)
+
 - Build system:
   - Now `configure` script relies `pkg-config` to detect and link against
     system libraries
+  - CMake build now require CMake 3.0 or later
 
 - Command line:
   - Added SRFI 176 support. Huge thanks to Lassi Kortela.
