@@ -352,7 +352,7 @@ boot/runtimes/psyntax-mosh/psyntax \
 boot/runtimes/psyntax-mosh/Makefile \
 boot/runtimes/psyntax-mosh/print-prefix.ss \
 doc/mosh.1 doc/mosh_config.1 \
-doc/RELNOTE lib \
+doc/RELNOTE.md lib \
 tests src/call.inc.cpp \
 src/instruction.scm src/test-data.scm src/accessors.scm src/os-constants.scm \
 src/Reader.y src/NumberReader.y src/scanner.re src/NumberScanner.re \

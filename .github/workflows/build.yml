@@ -146,7 +146,7 @@ jobs:
         if: |
           startsWith(github.ref, 'refs/tags/')
         with:
-          body_path: mosh-latest/doc/RELNOTE.2022
+          body_path: mosh-latest/doc/RELNOTE.md
           files: |
             mosh-latest/mosh-*.tar.gz
 
