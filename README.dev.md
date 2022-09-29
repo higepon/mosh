@@ -10,7 +10,7 @@ In [mosh/build.yml at release_ci · higepon/mosh](https://github.com/higepon/mos
 ## How to release tar.gz
 - Make sure you're on mater branch.
 - Make sure [Actions](https://github.com/higepon/mosh/actions) are green.
-- Update RELNOTE.202X.
+- Update RELNOTE.md
 - Create a tag, push it. It will trigger GitHub Action to create release
 
 ```
