@@ -53,6 +53,9 @@
 
 (test-equal '("else")
     (rewrite-lib-decl* "r7rs/" '((cond-expand ((or r9rs r8rs r5rs) "yay") (else "else")))))
+
+(test-equal '("yay")
+(rewrite-lib-decl* "r7rs/" '((cond-expand ((or r9rs (library mosh) r5rs) "yay") (else "else")))))
 (test-results)
 
 
