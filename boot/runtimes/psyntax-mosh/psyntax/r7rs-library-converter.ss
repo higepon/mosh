@@ -36,7 +36,7 @@
 ;; R7RS features.
 ;; TODO(higepon): Use (mosh available-features) once 0.2.8rc5 is out.
 (define (mosh-features)
-  '(r6rs r7rs mosh mosh-0.2.8))
+  '(r6rs r7rs mosh))
 
 ;; The main API.
 (define (rewrite-define-library dirname exp)
