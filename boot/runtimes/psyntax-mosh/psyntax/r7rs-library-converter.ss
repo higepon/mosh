@@ -33,10 +33,6 @@
                  (mosh)
                  (match))
 
-;; Available features. This is used by cond-expand.
-;; To do replace this with (featurs).
-(define mosh-features '(r6rs r7rs mosh mosh-0.2.8))
-
 ;; The main API.
 (define (rewrite-define-library dirname exp)
   (match exp
@@ -119,7 +115,7 @@
                      (else ,@lib-decl*)))]
      [(_ ((? symbol? feature) lib-decl* ...) more-clause* ...)
         ;; This feature is available!
-        (if (member feature mosh-features)
+        (if (member feature (available-features))
             lib-decl*
             `((cond-expand ,@more-clause*)))]))
 
