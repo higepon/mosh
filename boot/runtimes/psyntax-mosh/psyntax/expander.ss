@@ -2822,6 +2822,7 @@
            ((define-record-type)    define-record-type-macro)
            ((define-struct)         define-struct-macro)
            ((include)               include-macro)
+           ((include-ci)            include-macro)
            ((cond)                  cond-macro)
            ((let)                   let-macro)
            ((do)                    do-macro)

@@ -74,6 +74,13 @@
               (let ([new-decl* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
                 (loop (append ret new-decl*)
                       (cdr decl*)))]
+            ;; (include 〈filename1〉〈filename2〉 . . . )
+            [('include-ci path* ...)
+              ;; Expand it to multiple include-ci and pass it to psyntax later.
+              ;; Note we append dirname to path so that (include-ci "foo.scm") works.
+              (let ([new-decl* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
+                (loop (append ret new-decl*)
+                      (cdr decl*)))]
             ;; (include-library-declarations 〈filename〉)
             [('include-library-declarations path)
               (let ([new-decl* (file->sexp-list (string-append dirname path))])
