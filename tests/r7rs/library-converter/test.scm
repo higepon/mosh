@@ -26,5 +26,7 @@
 (test-equal '((define foo #t) (define bar #f))
             (rewrite-lib-decl* "r7rs/" '((cond-expand (r7rs (define foo #t) (define bar #f))))))
 
+(test-equal '((define foo #t) (define bar #f))
+            (rewrite-lib-decl* "r7rs/" '((cond-expand (r8rs #t) (r7rs (define foo #t) (define bar #f))))))
 
 (test-results)
