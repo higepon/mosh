@@ -33,6 +33,11 @@
                  (mosh)
                  (match))
 
+;; R7RS features.
+;; TODO(higepon): Use (mosh available-features) once 0.2.8rc5 is out.
+(define (mosh-features)
+  '(r6rs r7rs mosh mosh-0.2.8))
+
 ;; The main API.
 (define (rewrite-define-library dirname exp)
   (match exp
@@ -115,7 +120,7 @@
                      (else ,@lib-decl*)))]
      [(_ ((? symbol? feature) lib-decl* ...) more-clause* ...)
         ;; This feature is available!
-        (if (member feature (available-features))
+        (if (member feature (mosh-features))
             lib-decl*
             `((cond-expand ,@more-clause*)))]))
 
