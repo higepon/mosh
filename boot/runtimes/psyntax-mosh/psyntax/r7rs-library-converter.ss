@@ -33,6 +33,10 @@
                  (mosh)
                  (match))
 
+;; Available features. This is used by cond-expand.
+;; To do replace this with (featurs).
+(define mosh-features '(r7rs))
+
 ;; The main API.
 (define (rewrite-define-library dirname exp)
   (match exp
@@ -77,9 +81,25 @@
               (let ([new-decl* (map (lambda (path) `(include-library-declarations ,path)) path*)])
                 (loop (append ret (rewrite-lib-decl* dirname new-decl*))
                 (cdr decl*)))]
+            [('cond-expand clause* ...)
+              (let ([new-decl* (rewrite-cond-expand clause*)])
+                (loop (append ret (rewrite-lib-decl* dirname new-decl*))
+                (cdr decl*)))]
             [any
               (loop (append ret `(,any))
                     (cdr decl*))]))))
+
+;; Returns 〈library declaration〉
+(define (rewrite-cond-expand clause*)
+    (let loop ([clause* clause*])
+      (if (null? clause*)
+          '()
+          (match (car clause*)
+            [((? symbol? feature) lib-decl* ...)
+              ;; This feature is available!
+              (if (member feature mosh-features)
+                  lib-decl*
+                  (loop (cdr clause*)))]))))
 
 (define (rewrite-export exp)
    (match exp
