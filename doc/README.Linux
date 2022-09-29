@@ -6,9 +6,8 @@ mosh on Linux
 
 - Install following packages using apt-get:
   g++   (or your preferred compiler)
-  libgmp3-dev
+  libgmp-dev
   libonig-dev or libonig2-dev
-  libncursesw5-dev
 
 - ./configure 
 - make
@@ -29,7 +28,7 @@ FFI(Foreign Function Interface).
 
 - Install following libraries:
   GMP or MPIR with GMP compatibility (see http://gmplib.org)
-  Oniguruma 5.7 or later (see http://www.geocities.jp/kosako3/oniguruma/)
+  Oniguruma 5.7 or later (see https://github.com/kkos/oniguruma)
 - ./configure && make
   When configure script couldn't find GMP libraries, you should specify CFLAGS
   and CXXFLAGS. 
@@ -39,6 +38,6 @@ FFI(Foreign Function Interface).
 2. Limitations
 --------------
 
-- mosh is currently only tested at i386, x86_64 and PowerPC architecture.
+- mosh is currently only tested at x86_64 architecture.
 - FFI features are only available at i386 or x86_64 architecture.
 

@@ -5,17 +5,13 @@ mosh on FreeBSD
 ----------
 
 - Install following ports:
-  devel/gmake
-  devel/oniguruma5
-  math/gmp
-- ./configure CFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib
+  gmake oniguruma pkgconf gmp
+- ./configure
 - gmake
 - sudo gmake install
-
-mosh cannot build using BSD "make".
 
 2. Limitations
 --------------
 
-- mosh is currently only tested at i386 and amd64 architecture.
+- mosh is currently only tested at amd64 architecture.
 
