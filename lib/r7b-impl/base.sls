@@ -141,7 +141,7 @@ write-u8 zero?
                  (r7b-util char-ready)
                   (for (r7b-util syntax-rules) run expand)
                  (for (r7b-util case) run expand)
-                 (rename (only (mosh) include available-features) (available-features features))
+                 (rename (only (mosh) include include-ci available-features) (available-features features))
                  (only (system) port-open?)
                  )
 
@@ -363,10 +363,6 @@ write-u8 zero?
 (define read-error?  i/o-read-error?)
 
 (define file-error?  i/o-read-error?)
-
-;; TODO(higepon): Include is macro.
-(define (include-ci . args)
-  (raise "include-ci not supported"))
 
 (define string->vector
   (case-lambda
