@@ -82,7 +82,7 @@
                 (loop (append ret (rewrite-lib-decl* dirname new-decl*))
                 (cdr decl*)))]
             [('cond-expand clause* ...)
-              (let ([new-decl* (rewrite-cond-expand clause*)])
+              (let ([new-decl* (rewrite-cond-expand (car decl*))])
                 (loop (append ret (rewrite-lib-decl* dirname new-decl*))
                 (cdr decl*)))]
             [any
@@ -90,16 +90,22 @@
                     (cdr decl*))]))))
 
 ;; Returns 〈library declaration〉
-(define (rewrite-cond-expand clause*)
-    (let loop ([clause* clause*])
-      (if (null? clause*)
-          '()
-          (match (car clause*)
-            [((? symbol? feature) lib-decl* ...)
-              ;; This feature is available!
-              (if (member feature mosh-features)
-                  lib-decl*
-                  (loop (cdr clause*)))]))))
+(define (rewrite-cond-expand expr)
+   (match expr
+     [(_)
+       (assertion-violation 'cond-expand "Unfulfilled cond-expand" expr)]
+     [(_ ('else lib-decl* ...))
+       lib-decl*]
+     [(_ (('not (? symbol? feature)) lib-decl* ...) more-clause* ...)
+       `((cond-expand (,feature 
+                       (cond-expand ,@more-clause*))
+                     (else ,@lib-decl*)))]
+     [(_ ((? symbol? feature) lib-decl* ...) more-clause* ...)
+        ;; This feature is available!
+        (if (member feature mosh-features)
+            lib-decl*
+            `((cond-expand ,@more-clause*)))]))
+
 
 (define (rewrite-export exp)
    (match exp

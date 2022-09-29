@@ -33,4 +33,14 @@
 (test-equal '()
             (rewrite-lib-decl* "r7rs/" '((cond-expand (r8rs #t) (r7rs)))))
 
+(test-equal '("else")
+            (rewrite-lib-decl* "r7rs/" '((cond-expand (r9rs 9) (r8rs) (else "else")))))
+
+
+(test-equal '(#t)
+            (rewrite-lib-decl* "r7rs/" '((cond-expand ((not r8rs) #t) (r7rs (define foo #t) (define bar #f))))))
+
+
 (test-results)
+
+
