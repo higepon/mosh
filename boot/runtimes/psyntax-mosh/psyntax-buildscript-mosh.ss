@@ -978,6 +978,7 @@
     (make-parameter                           sys)
     (parameterize                            sys)
     (disasm                                  sys)
+    (available-features                      mosh)
     (condition-printer                       mosh)
     (os-constant                             mosh)
     (time-usage                              mosh)

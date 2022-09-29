@@ -1,1 +1,1 @@
-(export life)
+(export life name)

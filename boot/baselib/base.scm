@@ -37,6 +37,11 @@
                (let ((it ,sym)) ,@(cdr cl1))
                (acond ,@(cdr clauses)))))))
 
+;; R7RS features.
+;; TODO(higepon): Add more.
+(define (available-features)
+  '(r6rs r7rs mosh))
+
 (define (not x) (if x #f #t))
 (define (caaaaar p) (car (car (car (car (car p))))))
 (define (cdaaaar p) (cdr (car (car (car (car p))))))
