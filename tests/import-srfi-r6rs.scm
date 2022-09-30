@@ -1,1 +1,2 @@
-(import (srfi :1))
+(import (srfi :1)
+        (srfi 151)
