@@ -165,7 +165,10 @@
                    (display-hex (quotient n 16))
                    (display-hex (remainder n 16))))))
             (string->list
-              (symbol->string (car ls))))
+              (cond
+                [(symbol? (car ls)) (symbol->string (car ls))]
+                [(number? (car ls)) (number->string (car ls))]
+                [else (assertion-violation 'library-name->file-name "unknown name" (car ls))])))
           (f (cdr ls))))
       (extract)))
 

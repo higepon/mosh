@@ -3411,7 +3411,7 @@
                (and (integer? x) (exact? x))))
            v*)
          (values '() (map syntax->datum v*))]
-        [(x . rest) (symbol? (syntax->datum x))
+        [(x . rest) (or (symbol? (syntax->datum x)) (number? (syntax->datum x)))
          (let-values ([(x* v*) (parse rest)])
            (values (cons (syntax->datum x) x*) v*))]
         [() (values '() '())]
@@ -3552,7 +3552,7 @@
         (syntax-match x ()
           [((version-spec* ...))
            (values '() (version-pred version-spec*))]
-          [(x . x*) (idsyn? x)
+          [(x . x*) (or (idsyn? x) (number? x))
            (let-values ([(name pred) (f x*)])
              (values (cons (syntax->datum x) name) pred))]
           [() (values '() (lambda (x) #t))]
