@@ -8,6 +8,7 @@ mosh --loadpath=lib misc/scripts/gen-alias-libs.sps && \
 mosh --loadpath=lib misc/scripts/gen-nmosh-stubs.sps && \
 mosh --loadpath=lib misc/scripts/gen-nmosh-bootstrap.sps && \
 mosh --loadpath=lib misc/scripts/gen-corelibmk.sps && \
+(for f in `ls lib/srfi/%3a*.sls`; do mosh misc/scripts/gen-srfi-for-r7rs.scm $f; done) && \
 MYMAKE=`which gmake 2>/dev/null 1>/dev/null && echo gmake || echo make` && \
 autoreconf -ifv && \
 $MYMAKE -C boot/runtimes/psyntax-mosh && \
