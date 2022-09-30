@@ -39,7 +39,7 @@
   '(r6rs r7rs mosh))
 
 (define (available-libraries)
-    `((srfi-0) (srfi-1) (mosh)))
+    `((srfi-0) (srfi-1) (mosh) (rnrs arithmetic bitwise)))
 
 ;; The main API.
 (define (rewrite-define-library dirname exp)
