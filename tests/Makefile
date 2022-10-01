@@ -67,8 +67,7 @@ runtest-mosh:
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
 	$(MOSH_TARGET) tests/r7rs/r7rs-tests.scm
-	$(MOSH_TARGET) tests/import-srfi-r6rs.scm
-	$(MOSH_TARGET) tests/import-srfi-r7rs.scm
+	$(MOSH_TARGET) tests/import-srfi.scm
 	$(MOSH_TARGET) tests/srfi/srfi-151.scm
 	$(MAKE) -C tests/r7rs/library-converter
 
