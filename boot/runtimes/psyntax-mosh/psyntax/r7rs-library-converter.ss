@@ -36,10 +36,12 @@
 ;; R7RS Available features and libraries.
 ;; TODO(higepon): Use available-features in (mosh) library once 0.2.8rc5 is out.
 (define (available-features)
-  '(r6rs r7rs mosh))
+  '(r6rs r7rs exact-closed exact-complex ieee-float full-unicode ratios
+    mosh))
 
 (define (available-libraries)
-    `((srfi-0) (srfi-1) (mosh) (rnrs arithmetic bitwise)))
+    `((srfi 0) (srfi 1) (srfi 11) (srfi 13) (srfi 14) (srfi 16) (srfi 176) (srfi 19) (srfi 2) (srfi 23) (srfi 26) (srfi 27) (srfi 31) (srfi 37) (srfi 38) (srfi 39) (srfi 41) (srfi 42) (srfi 43) (srfi 48) (srfi 6) (srfi 61) (srfi 64) (srfi 67) (srfi 78) (srfi 8) (srfi 9) (srfi 98) (srfi 99) (srfi 151)
+      (mosh)))
 
 ;; The main API.
 (define (rewrite-define-library dirname exp)
