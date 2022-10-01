@@ -188,6 +188,8 @@
   (when verbose?
     (format (current-error-port) "serialize-lib-included-file* ~a\n..." filename))
   (let ([fasl-file (included-file*->fasl filename)])
+    (when (file-exists? fasl-file)
+      (delete-file fasl-file))
     (guard [c (#t (when verbose?
                     (format (current-error-port) "Warning:serialize-lib-included-file failed ~a\n" filename))
                   (when (file-exists? fasl-file)
@@ -218,8 +220,24 @@
            (fasl-save fasl-file obj)
            )))
 
+;; For R7RS libraries we maintain included files.
+;; We check if they are older than the library itself.
+(define (included-file*-not-updated? filename)
+  (let ([deps-file (included-file*->fasl filename)])
+    (cond
+      [(file-exists? deps-file)
+        (let ([fasl-file (scm->fasl filename)])
+          (let loop ([included-file* (fasl-load deps-file)])
+            (if (null? included-file*)
+                #t
+                (if ((symbol-value 'file-newer?) (car included-file*) fasl-file)
+                    #f
+                    (loop (cdr included-file*))))))]
+      [else #t])))
+
 (define (load-serialized-library filename obj)
   (and (mosh-cache-dir)
+       (included-file*-not-updated? filename)
        (let ([fasl-file (scm->fasl filename)])
          ;; todo we may use file-newer? directory.
          (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename))
