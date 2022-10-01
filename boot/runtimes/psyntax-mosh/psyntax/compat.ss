@@ -22,7 +22,7 @@
   (export make-parameter parameterize define-record compile-core
           gensym void eval-core symbol-value set-symbol-value! file-options-spec
           read-annotated annotation? annotation-expression annotation-source
-          load-serialized-library serialize-library
+          load-serialized-library serialize-library serialize-lib-included-file*
           annotation-stripped make-record-printer read-library-source-file scm->fasl verbose?
           mosh-cache-dir)
   (import
@@ -136,6 +136,8 @@
 ;   (format #t "(mosh-cache-dir)=~a, ~a\n" (mosh-cache-dir) (library-file-path->cache-path filename))
   (string-append (mosh-cache-dir) "/" (library-file-path->cache-path filename) ".mosh-fasl"))
 
+(define (included-file*->fasl filename)
+  (string-append (scm->fasl filename) ".deps"))
 
 (define (fasl-save filename obj)
   (call-with-port (open-file-output-port filename) (lambda (port) ((symbol-value 'fasl-write!) obj port))))
@@ -180,6 +182,18 @@
 ;;             (apply obj code))
 ;;           #t)
 ;;         #f)))
+
+
+(define (serialize-lib-included-file* filename included-file*)
+  (when verbose?
+    (format (current-error-port) "serialize-lib-included-file* ~a\n..." filename))
+  (let ([fasl-file (included-file*->fasl filename)])
+    (guard [c (#t (when verbose?
+                    (format (current-error-port) "Warning:serialize-lib-included-file failed ~a\n" filename))
+                  (when (file-exists? fasl-file)
+                    (delete-file fasl-file))
+                  #f)]
+           (fasl-save fasl-file included-file*))))
 
 (define (serialize-library filename obj)
   (when verbose?

@@ -207,7 +207,7 @@
             f
             (assertion-violation 'file-locator "not a procedure" f)))))
 
-  (define (serialize-all serialize compile)
+  (define (serialize-all serialize serialize-lib-included-file* compile)
     (define (library-desc x)
       (list (library-id x) (library-name x)))
     (for-each
@@ -225,7 +225,12 @@
                   (library-env x)
                   (compile (library-visit-code x))
                   (compile (library-invoke-code x))
-                  (library-visible? x)))))
+                  (library-visible? x))))
+        ;; If the library is R7RS and has include file dependencies,
+        ;; We save their file names using file-name as a key.
+        (when (and (library-source-file-name x)
+                   (pair? (library-included-file* x)))
+          (serialize-lib-included-file* (library-source-file-name x) (library-included-file* x))))
       ((current-library-collection))))
 
   (define current-precompiled-library-loader

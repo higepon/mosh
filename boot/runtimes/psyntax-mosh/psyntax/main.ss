@@ -305,7 +305,7 @@
           ((compile)
            (begin
              (compile-r6rs-top-level x*) ; i assume this is needed
-             (serialize-all serialize-library compile-core-expr))))))
+             (serialize-all serialize-library serialize-lib-included-file* compile-core-expr))))))
 
    ;; mosh-only
   (define (load-r6rs-top-level-sexp import-spec thunk)
@@ -480,7 +480,7 @@
      (directory-list (mosh-cache-dir))))
   (let ([compiled (compile-r6rs-top-level x*)])
     (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
-      (serialize-all serialize-library compile-core-expr))
+      (serialize-all serialize-library serialize-lib-included-file* compile-core-expr))
     (compiled))])
 
   )
