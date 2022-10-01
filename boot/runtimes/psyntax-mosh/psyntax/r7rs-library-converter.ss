@@ -45,7 +45,7 @@
 (define (rewrite-define-library dirname exp)
   (match exp
     [('define-library (name* ...) lib-decl* ...)
-      (let-values (((lib-decl* export* import*) (rewrite-lib-decl* dirname lib-decl*)))
+      (let-values (((lib-decl* export* import* included-file*) (rewrite-lib-decl* dirname lib-decl*)))
         `(library ,name* (export ,@export*) (import ,@import*) ,@lib-decl*))]
     [else
       (assertion-violation 'rewrite-define-library "malformed library" `(,exp))]))
@@ -62,55 +62,59 @@
 (define rewrite-lib-decl*
   (case-lambda
     [(dirname lib-decl*)
-      (rewrite-lib-decl* dirname lib-decl* '() '())]
-    [(dirname lib-decl* export* import*)
+      (rewrite-lib-decl* dirname lib-decl* '() '() '())]
+    [(dirname lib-decl* export* import* included-file*)
         (let loop ([ret '()]
                    [decl* lib-decl*]
                    [export* export*]
-                   [import* import*])
+                   [import* import*]
+                   [included-file* included-file*])
             ;(format #t "decl=~a export=~a import=~a ret=~a\n" decl* export* import* ret)
             (if (null? decl*)
-                (values ret (map rewrite-export export*)  import*)
+                (values ret (map rewrite-export export*) import* included-file*)
                 (match (car decl*)
                     ;; (import 〈import spec〉 . . . )
                     ;; In R7RS import can appears multiple times but not in R6RS. We have to merge them into one.
                     [('import spec* ...)
-                      (loop ret (cdr decl*) export* (append import* spec*))]
+                      (loop ret (cdr decl*) export* (append import* spec*) included-file*)]
                     ;; (export 〈export spec〉 . . . )
                     [('export spec* ...)
-                      (loop ret (cdr decl*) (append export* spec*) import*)]
+                      (loop ret (cdr decl*) (append export* spec*) import* included-file*)]
                     ;; (include 〈filename1〉〈filename2〉 . . . )
                     [('include path* ...)
                       ;; Expand it to multiple include and pass it to psyntax later.
                       ;; Note we append dirname to path so that (include "foo.scm") works.
-                      (let ([new-decl* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
-                        (loop (append ret new-decl*) (cdr decl*) export* import*))]
+                      (let ([include-path* (map (lambda (path) (string-append dirname path)) path*)]
+                            [new-decl* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
+                        (loop (append ret new-decl*) (cdr decl*) export* import* (append included-file* include-path*)))]
                     ;; (include 〈filename1〉〈filename2〉 . . . )
                     [('include-ci path* ...)
                     ;; Expand it to multiple include-ci and pass it to psyntax later.
                     ;; Note we append dirname to path so that (include-ci "foo.scm") works.
-                    (let ([new-decl* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
-                        (loop (append ret new-decl*) (cdr decl*) export* import*))]
+                    (let* ([include-path* (map (lambda (path) (string-append dirname path)) path*)]
+                           [new-decl* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
+                        (loop (append ret new-decl*) (cdr decl*) export* import* (append included-file* include-path*)))]
                     ;; (include-library-declarations 〈filename〉)
                     [('include-library-declarations path)
-                      (let ([new-decl* (file->sexp-list (string-append dirname path))])
-                        (let-values (((new-decl2* new-export* new-import*) (rewrite-lib-decl* dirname new-decl* export* import*)))
+                      (let* ([include-path (string-append dirname path)]
+                             [new-decl* (file->sexp-list include-path)])
+                        (let-values (((new-decl2* new-export* new-import* new-included*) (rewrite-lib-decl* dirname new-decl* export* import* (append included-file* (list include-path )))))
                           ;; We call rewrite-lib-decl* because expanded include may have something we care about.
                           (loop (append ret new-decl2*)
-                                (cdr decl*) new-export* new-import*)))]
+                                (cdr decl*) new-export* new-import* new-included*)))]
                     ;; (include-library-declarations 〈filename1〉〈filename2〉 . . . )
                     [('include-library-declarations path* ...)
                       (let ([new-decl* (map (lambda (path) `(include-library-declarations ,path)) path*)])
-                        (let-values (((new-decl2* new-export* new-import*) (rewrite-lib-decl* dirname new-decl* export* import*)))
+                        (let-values (((new-decl2* new-export* new-import* new-included*) (rewrite-lib-decl* dirname new-decl* export* import* included-file*)))
                           (loop (append ret new-decl2*)
-                                (cdr decl*) new-export* new-import*)))]
+                                (cdr decl*) new-export* new-import* new-included*)))]
                     [('cond-expand clause* ...)
                       (let ([new-decl* (rewrite-cond-expand (car decl*))])
-                        (let-values (((new-decl2* new-export* new-import*) (rewrite-lib-decl* dirname new-decl* export* import*)))
+                        (let-values (((new-decl2* new-export* new-import* new-included*) (rewrite-lib-decl* dirname new-decl* export* import* included-file*)))
                           (loop (append ret new-decl2*)
-                                (cdr decl*) new-export* new-import*)))]
+                                (cdr decl*) new-export* new-import* new-included*)))]
                     [any
-                      (loop (append ret `(,any)) (cdr decl*) export* import*)])))]))
+                      (loop (append ret `(,any)) (cdr decl*) export* import* included-file*)])))]))
 
 ;; Returns list of〈library declaration〉.
 (define (rewrite-cond-expand expr)
