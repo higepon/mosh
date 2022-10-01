@@ -274,8 +274,10 @@
              (assertion-violation #f "cannot file library" x)]
             [(try-load-from-file file-name)]
             [else
+             (let-values (([lib-sexp included-file*] (read-library-source-file file-name)))
              ((current-library-expander)
-              (read-library-source-file file-name)
+              lib-sexp
+              included-file*
               file-name
               (lambda (name)
                 (unless (equal? name x)
@@ -288,7 +290,7 @@
                       (display ", found " p)
                       (write name p)
                       (display " instead" p)
-                      (e))))))])))
+                      (e)))))))])))
       (lambda (f)
         (if (procedure? f)
             f
