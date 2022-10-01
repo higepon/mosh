@@ -3959,7 +3959,7 @@
               imp* vis* inv* export-subst export-env
               visit-proc invoke-proc
               visit-code invoke-code
-              #t filename)
+              #t filename included-file*)
            (values id name ver imp* vis* inv*
                    invoke-code visit-code
                    export-subst export-env)))]

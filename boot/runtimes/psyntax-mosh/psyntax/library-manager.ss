@@ -55,7 +55,7 @@
   (define-record library
     (id name version imp* vis* inv* subst env visit-state
         invoke-state visit-code invoke-code visible?
-        source-file-name)
+        source-file-name included-file*)
     (lambda (x p wr)
       (unless (library? x)
         (assertion-violation 'record-type-printer "not a library"))
@@ -246,7 +246,7 @@
              [(null? deps)
               (install-library id name ver imp* vis* inv*
                 exp-subst exp-env visit-proc invoke-proc
-                #f #f visible? #f)
+                #f #f visible? #f '())
               #t]
              [else
               (let ([d (car deps)])
@@ -275,22 +275,22 @@
             [(try-load-from-file file-name)]
             [else
              (let-values (([lib-sexp included-file*] (read-library-source-file file-name)))
-             ((current-library-expander)
-              lib-sexp
-              included-file*
-              file-name
-              (lambda (name)
-                (unless (equal? name x)
-                  (assertion-violation 'import
-                    (let-values ([(p e) (open-string-output-port)])
-                      (display "expected to find library " p)
-                      (write x p)
-                      (display " in file " p)
-                      (display file-name p)
-                      (display ", found " p)
-                      (write name p)
-                      (display " instead" p)
-                      (e)))))))])))
+              ((current-library-expander)
+                lib-sexp
+                included-file*
+                file-name
+                (lambda (name)
+                  (unless (equal? name x)
+                    (assertion-violation 'import
+                      (let-values ([(p e) (open-string-output-port)])
+                        (display "expected to find library " p)
+                        (write x p)
+                        (display " in file " p)
+                        (display file-name p)
+                        (display ", found " p)
+                        (write name p)
+                        (display " instead" p)
+                        (e)))))))])))
       (lambda (f)
         (if (procedure? f)
             f
@@ -372,7 +372,7 @@
     (case-lambda
       [(id name ver imp* vis* inv* exp-subst exp-env
         visit-proc invoke-proc visit-code invoke-code
-        visible? source-file-name)
+        visible? source-file-name included-file*)
        (let ((imp-lib* (map find-library-by-spec/die imp*))
              (vis-lib* (map find-library-by-spec/die vis*))
              (inv-lib* (map find-library-by-spec/die inv*)))
@@ -384,7 +384,7 @@
              "library is already installed" name))
          (let ((lib (make-library id name ver imp-lib* vis-lib* inv-lib*
                        exp-subst exp-env visit-proc invoke-proc
-                       visit-code invoke-code visible? source-file-name)))
+                       visit-code invoke-code visible? source-file-name included-file*)))
            (install-library-record lib)))]))
 
   (define (imported-label->binding lab)
