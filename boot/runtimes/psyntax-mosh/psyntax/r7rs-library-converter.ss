@@ -44,11 +44,14 @@
       (mosh)))
 
 ;; The main API.
+;; Returns (expanded-library-form and included-file).
+;; We track included-file for library cache.
 (define (rewrite-define-library dirname exp)
   (match exp
     [('define-library (name* ...) lib-decl* ...)
       (let-values (((lib-decl* export* import* included-file*) (rewrite-lib-decl* dirname lib-decl*)))
-        `(library ,name* (export ,@export*) (import ,@import*) ,@lib-decl*))]
+        (values `(library ,name* (export ,@export*) (import ,@import*) ,@lib-decl*)
+                included-file*))]
     [else
       (assertion-violation 'rewrite-define-library "malformed library" `(,exp))]))
 

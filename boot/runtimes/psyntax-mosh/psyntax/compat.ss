@@ -236,12 +236,16 @@
 
   (define r7rs-enabled? #t)
 
+  ;; Returns (values lib-sexp included-file*).
   (define (read-library-source-file file-name)
-    (let ([sexp (with-input-from-file file-name read-annotated)])
-      ;; We rewrite R7RS library to R6RS library here.
-      (if (and r7rs-enabled? (pair? sexp) (eq? (car sexp) 'define-library))
-          (rewrite-define-library (path-dirname file-name) sexp)
-          sexp)))
+    (let* ([sexp (with-input-from-file file-name read-annotated)]
+           [r7rs? (and r7rs-enabled? (pair? sexp) (eq? (car sexp) 'define-library))])
+      (cond
+        ;; We rewrite R7RS library to R6RS library here.
+        [r7rs?
+          (rewrite-define-library (path-dirname file-name) sexp)]
+        [else
+          (values sexp '())])))
 
   (define make-parameter
     (case-lambda

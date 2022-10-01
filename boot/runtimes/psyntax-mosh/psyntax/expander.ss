@@ -3927,7 +3927,7 @@
   ;;; returns its invoke-code, visit-code, subst and env.
   (define library-expander
     (case-lambda
-      [(x filename verify-name)
+      [(x included-file* filename verify-name)
        (define (build-visit-code macro*)
          (if (null? macro*)
              (build-void)
@@ -3964,9 +3964,9 @@
                    invoke-code visit-code
                    export-subst export-env)))]
       [(x filename)
-       (library-expander x filename (lambda (x) (values)))]
+       (library-expander x '() filename (lambda (x) (values)))]
       [(x)
-       (library-expander x #f (lambda (x) (values)))]))
+       (library-expander x '() #f (lambda (x) (values)))]))
 
   ;;; when bootstrapping the system, visit-code is not (and cannot
   ;;; be) be used in the "next" system.  So, we drop it.
