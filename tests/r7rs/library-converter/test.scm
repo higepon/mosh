@@ -11,21 +11,25 @@
 ;; new tests here
 
 ;(test-equal '((export make (rename (put! set!))) (export get set!))
-(let-values (((lib-decl* export* import*)
+(let-values (((lib-decl* export* import* included-file*)
     (rewrite-lib-decl* "r7rs/" '((export make (rename put! set!))
                                 (include-library-declarations "default-declarations.scm")))))
               (test-equal '() lib-decl*)
               (test-equal '() import*)
-              (test-equal '(make (rename (put! set!)) get set!) export*))
+              (test-equal '(make (rename (put! set!)) get set!) export*)
+              (test-equal '("r7rs/default-declarations.scm") included-file*)
+)
 
-(let-values (((lib-decl* export* import*)            
+(let-values (((lib-decl* export* import* included-file*)
   (rewrite-lib-decl* "r7rs/" '((export make (rename put! set!))
                                (include "foo.scm" "bar.scm")
                                (include-library-declarations "default-declarations.scm")
                                (include-library-declarations "other-declarations.scm")))))
     (test-equal '((include "r7rs/foo.scm") (include "r7rs/bar.scm")) lib-decl*)
     (test-equal '() import*)
-    (test-equal `(make (rename (put! set!)) get set! life name) export*))
+    (test-equal '(make (rename (put! set!)) get set! life name) export*)
+    (test-equal '("r7rs/foo.scm" "r7rs/bar.scm" "r7rs/default-declarations.scm" "r7rs/other-declarations.scm") included-file*)
+)
 
 
 (test-equal '((define foo #t) (define bar #f))
