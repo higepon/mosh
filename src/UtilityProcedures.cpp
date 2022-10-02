@@ -480,16 +480,16 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
 
     if (0 == argc) {
         sprintf(ubuf, "%s%x", gensymPrefix, next++);
-        const int len = strlen(ubuf) + 1;
-        for (int i = 0; i < len; i++) {
+        const size_t len = strlen(ubuf) + 1;
+        for (size_t i = 0; i < len; i++) {
             ibuf[i] = ubuf[i];
         }
 
         return Symbol::intern(ibuf);
     } else {
         sprintf(ubuf, "%s%x@", gensymPrefix, next++);
-        const int len = strlen(ubuf) + 1;
-        for (int i = 0; i < len; i++) {
+        const size_t len = strlen(ubuf) + 1;
+        for (size_t i = 0; i < len; i++) {
             ibuf[i] = ubuf[i];
         }
         ucs4string val(ibuf);
@@ -499,8 +499,8 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
             return Symbol::intern(val.strdup());
         } else {
             sprintf(ubuf, "%s%x", gensymPrefix, next++);
-            const int len = strlen(ubuf) + 1;
-            for (int i = 0; i < len; i++) {
+            const size_t len = strlen(ubuf) + 1;
+            for (size_t i = 0; i < len; i++) {
                 ibuf[i] = ubuf[i];
             }
 
@@ -915,7 +915,7 @@ Object scheme::internalCallProcessEx(VM* theVM, int argc, const Object* argv)
     memset(buffer, '\0', BUFFER_SIZE);
 
     ucs4string ret;
-    int size;
+    size_t size;
     while ((size = fread(buffer, sizeof(char), BUFFER_SIZE, in)) > 0) {
         ret += ucs4string::from_c_str(buffer, size);
     }
@@ -1045,9 +1045,9 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
     gettimeofday(&tv, nullptr);
     getrusage(RUSAGE_SELF, &ru);
 
-    return Pair::list3(Object::makeFlonum((double)tv.tv_sec + tv.tv_usec / 1000000.0),
-                       Object::makeFlonum((double)ru.ru_utime.tv_sec + ru.ru_utime.tv_usec / 1000000.0),
-                       Object::makeFlonum((double)ru.ru_stime.tv_sec + ru.ru_stime.tv_usec / 1000000.0));
+    return Pair::list3(Object::makeFlonum(static_cast<double>(tv.tv_sec) + static_cast<double>(tv.tv_usec) / 1000000.0),
+                       Object::makeFlonum(static_cast<double>(ru.ru_utime.tv_sec) + static_cast<double>(ru.ru_utime.tv_usec) / 1000000.0),
+                       Object::makeFlonum(static_cast<double>(ru.ru_stime.tv_sec) + static_cast<double>(ru.ru_stime.tv_usec) / 1000000.0));
 #endif
 }
 
