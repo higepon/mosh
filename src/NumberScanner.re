@@ -72,8 +72,8 @@ NumberScanner::~NumberScanner() = default;
 void NumberScanner::fill(int n)
 {
     TextualInputPort* const inputPort = currentVM()->numberReaderContext()->port();
-    const int restCharCount = limit_ - token_;
-    const int tokenOffset = token_ - buffer_;
+    const long restCharCount = limit_ - token_;
+    const long tokenOffset = token_ - buffer_;
     if (buffer_ == nullptr) {
         buffer_ = new(GC) ucs4char[bufferSize_];
         cursor_ = buffer_;

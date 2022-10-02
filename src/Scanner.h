@@ -62,7 +62,7 @@ private:
     ucs4char* token_;
     ucs4char* limit_;
     ucs4char* marker_;
-    int bufferSize_{32};
+    size_t bufferSize_{32};
     bool isFoldcaseMode_;
 };
 

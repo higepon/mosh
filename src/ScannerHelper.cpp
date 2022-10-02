@@ -71,7 +71,7 @@ int ScannerHelper::num16StringToInt(ucs4char* start, ucs4char* end)
     ucs4char* p = start + 2; // skip "#x" prefix
     char* buf = new(GC) char[end - p];
     for (int i = 0; i < end - p; i++) {
-        buf[i] = p[i];
+        buf[i] = static_cast<char>(p[i]);
     }
     errno = 0;
     int64_t ret = strtoll(buf, nullptr, 16);
@@ -89,7 +89,7 @@ int ScannerHelper::num10StringToInt(ucs4char* start, ucs4char* end)
 {
     char* buf = new(GC) char[end - start];
     for (int i = 0; i < end - start; i++) {
-        buf[i] = start[i];
+        buf[i] = static_cast<char>(start[i]);
     }
     errno = 0;
     int64_t ret = strtoll(buf, nullptr, 10);

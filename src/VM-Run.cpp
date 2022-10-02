@@ -453,7 +453,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         {
             const Object n = fetchOperand();
             VM_ASSERT(sp_ >= stack_);
-            ac_ = Object::makeContinuation(Object::makeStack(stack_, sp_ - stack_),
+            ac_ = Object::makeContinuation(Object::makeStack(stack_, static_cast<int>(sp_ - stack_)),
                                            n,
                                            dynamicWinders());
             NEXT1;
