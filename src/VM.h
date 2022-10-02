@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include "Instruction.h"
 #include "EqHashTable.h"
+#include "Bignum.h"
 #ifdef _MSC_VER
 #define snprintf _snprintf
 #endif
@@ -200,20 +201,20 @@ public:
     uintptr_t registerCallBackTrampoline(Object closure)
     {
         uintptr_t uid = callBackTrampolinesUid_++;
-        callBackTrampolines_->set(Object::makeFixnum(uid),
+        callBackTrampolines_->set(Bignum::makeIntegerFromU64(uid),
                                   closure);
         return uid;
     }
 
     void unregisterCallBackTrampoline(uintptr_t uid)
     {
-        callBackTrampolines_->deleteD(Object::makeFixnum(uid));
+        callBackTrampolines_->deleteD(Bignum::makeIntegerFromU64(uid));
     }
 
 
     Object getCallBackTrampoline(uintptr_t uid)
     {
-        return callBackTrampolines_->ref(Object::makeFixnum(uid), Object::False);
+        return callBackTrampolines_->ref(Bignum::makeIntegerFromU64(uid), Object::False);
     }
 
 protected:
@@ -247,8 +248,8 @@ private:
         Object dc;
         Object cl;
         Object* pc;
-        int spOffset;
-        int fpOffset;
+        long int spOffset;
+        long int fpOffset;
     } Registers;
 
     void saveRegisters(Registers* r)
