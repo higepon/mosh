@@ -147,7 +147,7 @@ int64_t CustomBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bo
         if (EOF == v) {
             break;
         }
-        buf[readSize] = v;
+        buf[readSize] = static_cast<uint8_t>(v);
     }
     return readSize;
 }
@@ -159,7 +159,7 @@ int64_t CustomBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccure
         return 0;
     } else {
         uint8_t* dest = allocatePointerFreeU8Array(1);
-        dest[0] = v;
+        dest[0] = static_cast<uint8_t>(v);
         *buf = dest;
         return 1;
     }
@@ -173,7 +173,7 @@ int64_t CustomBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured
         if (EOF == v) {
             break;
         }
-        accum.push_back(v);
+        accum.push_back(static_cast<uint8_t>(v));
     }
     uint8_t* dest = allocatePointerFreeU8Array(accum.size());
     for (size_t i = 0; i < accum.size(); i++) {
@@ -237,7 +237,7 @@ int64_t CustomBinaryInputOutputPort::putU8(uint8_t* v, int64_t _size)
     const Object bv = Object::makeByteVector(new ByteVector(size, v));
     const Object start = Object::makeFixnum(0);
     if (Fixnum::canFit(size)) {
-        const Object count = Object::makeFixnum(size);
+        const Object count = Object::makeFixnum(static_cast<int>(size));
         const Object result = theVM_->callClosure3(writeProc_, bv, start, count);
         MOSH_ASSERT(result.isFixnum());
         return result.toFixnum();
