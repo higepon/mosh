@@ -95,7 +95,7 @@ void Scanner::fill(int n)
 {
     if (eofP_) return;
     TextualInputPort* const inputPort = currentVM()->readerContext()->port();
-    const long restCharCount = limit_ - token_;
+    const size_t restCharCount = limit_ - token_;
     const long tokenOffset = token_ - buffer_;
 
     if (buffer_ == nullptr) {
