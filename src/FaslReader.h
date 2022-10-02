@@ -51,18 +51,19 @@ private:
     // profiler tells that this should be inlined
     uint32_t fetchU32()
     {
-        const uint8_t a = inputPort_->getU8();
-        const uint8_t b = inputPort_->getU8();
-        const uint8_t c = inputPort_->getU8();
-        const uint8_t d = inputPort_->getU8();
+        // TODO: We should check if getU8 returns EOF.
+        const uint8_t a = static_cast<uint8_t>(inputPort_->getU8());
+        const uint8_t b = static_cast<uint8_t>(inputPort_->getU8());
+        const uint8_t c = static_cast<uint8_t>(inputPort_->getU8());
+        const uint8_t d = static_cast<uint8_t>(inputPort_->getU8());
         return a | (b << 8) | (c << 16) | (d << 24);
     }
 
     // profiler tells that this should be inlined
     uint16_t fetchU16()
     {
-        const uint8_t a = inputPort_->getU8();
-        const uint8_t b = inputPort_->getU8();
+        const uint8_t a = static_cast<uint8_t>(inputPort_->getU8());
+        const uint8_t b = static_cast<uint8_t>(inputPort_->getU8());
         return a | (b << 8);
     }
 
@@ -125,7 +126,7 @@ private:
         }
         case Fasl::TAG_SHORT_ASCII_SYMBOL:
         {
-            uint8_t len = fetchU8();
+            uint8_t len = static_cast<uint8_t>(fetchU8());
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
@@ -145,7 +146,7 @@ private:
         }
         case Fasl::TAG_SHORT_ASCII_UNINTERNED_SYMBOL:
         {
-            uint8_t len = fetchU8();
+            uint8_t len = static_cast<uint8_t>(fetchU8());
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
@@ -185,7 +186,7 @@ private:
         }
         case Fasl::TAG_SHORT_ASCII_STRING:
         {
-            uint8_t len = fetchU8();
+            uint8_t len = static_cast<uint8_t>(fetchU8());
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
@@ -250,7 +251,7 @@ private:
             uint16_t size = fetchU16();
             uint8_t* data = allocatePointerFreeU8Array(size);
             for (uint16_t i = 0; i < size; i++) {
-                data[i] = fetchU8();
+                data[i] = static_cast<uint8_t>(fetchU8());
             }
             return Bignum::deserialize(data, size);
         }
@@ -304,7 +305,7 @@ private:
             const int count = fetchU32();
             Object bv = Object::makeByteVector(count);
             for (int i = 0; i < count; i++) {
-                bv.toByteVector()->u8Set(i, fetchU8());
+                bv.toByteVector()->u8Set(i, static_cast<uint8_t>(fetchU8()));
             }
             return bv;
         }
