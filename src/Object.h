@@ -118,7 +118,7 @@ class Object
 public:
     Object() = default;
     explicit Object(const ucs4char* str);
-    Object(const ucs4char* str, size_t length);
+    Object(const ucs4char* str, int length);
     explicit Object(const ucs4string& str);
     explicit Object(const char* str);
 
