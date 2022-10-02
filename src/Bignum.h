@@ -90,7 +90,7 @@ private:
             if (val >= Fixnum::MIN &&
                 val <= Fixnum::MAX) {
                 mpz_clear(v);
-                return Object::makeFixnum(val);
+                return Object::makeFixnum(static_cast<int>(val));
             }
         }
         return Object::makeBignum(new Bignum(v));
@@ -550,7 +550,7 @@ public:
         if ((n2 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
             return Bignum::mul(new Bignum(static_cast<long>(n1)), n2);
         } else {
-            return Object::makeFixnum(ret);
+            return Object::makeFixnum(static_cast<int>(ret));
         }
     }
 
@@ -579,7 +579,7 @@ public:
         mpz_t ret;
         mpz_init_set_si(ret, n >> 32);
         mpz_mul_2exp(ret, ret, 32);
-        const unsigned int val = n & 0xffffffff;
+        const unsigned int val = static_cast<int32_t>(n & 0xffffffff);
         mpz_add_ui(ret, ret, val);
         return makeInteger(ret);
     }
@@ -639,7 +639,7 @@ public:
         const size_t nails = 0;
         const size_t size = 1;
         const int numb = 8 * size - nails;
-        const int count = (mpz_sizeinbase (value_, 2) + numb - 1) / numb;
+        const size_t count = (mpz_sizeinbase (value_, 2) + numb - 1) / numb;
         uint8_t* rop = allocatePointerFreeU8Array(count * size + 1); // 1 for sign
         uint8_t* ret = (uint8_t*)mpz_export(rop, countp, order, size, endian, nails, value_);
         if (mpz_sgn(value_) < 0) {
@@ -696,7 +696,7 @@ public:
     static Object makeInteger(long n)
     {
         if (Fixnum::canFit(n)) {
-            return Object::makeFixnum(n);
+            return Object::makeFixnum(static_cast<int>(n));
         } else {
             return Object::makeBignum(n);
         }
