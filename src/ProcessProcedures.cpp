@@ -121,7 +121,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
     MOSH_ASSERT(pid.isBignum() || pid.isFixnum());
     pid_t target;
     if (pid.isBignum()) {
-        target = pid.toBignum()->toU64();
+        target = static_cast<pid_t>(pid.toBignum()->toU64());
     } else {
         target = pid.toFixnum();
     }
