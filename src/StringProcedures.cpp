@@ -78,7 +78,7 @@ Object scheme::stringCopyEx(VM* theVM, int argc, const Object* argv)
         return Object::makeString(text->data());
     }
     argumentAsFixnum(1, start);
-    if (start < 0 || start > text->length()) {
+    if (start < 0 || start > static_cast<int>(text->length())) {
         callAssertionViolationAfter(theVM,
                                     procedureName,
                                     UC("start out of range"),

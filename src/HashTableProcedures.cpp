@@ -58,8 +58,8 @@ int scheme::equalHash(Object obj)
     } else if (obj.isVector()) {
         int hash = 1;
         const Vector* const vec = obj.toVector();
-        const int length = vec->length();
-        for (int i = 0; i < length; i++) {
+        const size_t length = vec->length();
+        for (size_t i = 0; i < length; i++) {
             hash = hash * 32 - hash + equalHash(vec->ref(i));
         }
         return hash;

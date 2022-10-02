@@ -1168,7 +1168,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(VECTOR_LENGTH)
         {
-            ac_ = Object::makeFixnum(ac_.toVector()->length());
+            ac_ = Object::makeFixnum(static_cast<int>(ac_.toVector()->length()));
             NEXT1;
         }
         CASE(VECTOR_P)
