@@ -111,14 +111,14 @@ char* ucs4string::ascii_c_str() const
     return ret;
 }
 
-ucs4string ucs4string::from_c_str(const char* s, int size)
+ucs4string ucs4string::from_c_str(const char* s, size_t size)
 {
 #ifdef USE_BOEHM_GC
     ucs4char* ret = new(PointerFreeGC) ucs4char[size + 1];
 #else
     ucs4char* ret = new ucs4char[sz];
 #endif
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         ret[i] = s[i];
     }
     ret[size] = '\0';
