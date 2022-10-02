@@ -118,7 +118,7 @@ retry:
         return first;
         // UTF8-2 = %xC2-DF UTF8-tail
     } else if (0xc2 <= first && first <= 0xdf) {
-        uint8_t second = port->getU8();
+        uint8_t second = static_cast<uint8_t>(port->getU8());
         if (isUtf8Tail(second)) {
             return ((first & 0x1f) << 6) | (second & 0x3f);
         } else {
@@ -127,8 +127,8 @@ retry:
         // UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
         //          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
     } else if (0xe0 <= first && first <= 0xef) {
-        uint8_t second = port->getU8();
-        uint8_t third =  port->getU8();
+        uint8_t second = static_cast<uint8_t>(port->getU8());
+        uint8_t third =  static_cast<uint8_t>(port->getU8());
         if (!isUtf8Tail(third)) {
             decodeError();
         } else if ((0xe0 == first && 0xa0 <= second && second <= 0xbf)    ||
@@ -142,9 +142,9 @@ retry:
         // UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
         //          %xF4 %x80-8F 2( UTF8-tail )
     } else if (0xf0 <= first && first <= 0xf4) {
-        uint8_t second =  port->getU8();
-        uint8_t third =  port->getU8();
-        uint8_t fourth = port->getU8();
+        uint8_t second = static_cast<uint8_t>(port->getU8());
+        uint8_t third =  static_cast<uint8_t>(port->getU8());
+        uint8_t fourth = static_cast<uint8_t>(port->getU8());
         if (!isUtf8Tail(third) || !isUtf8Tail(fourth)) {
             decodeError();
         } else if ((0xf0 == first && 0x90 <= second && second <= 0xbf)     ||

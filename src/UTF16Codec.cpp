@@ -86,7 +86,7 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         }
     }
     if (ch < 0x10000) {
-        put2byte(buf, ch, isLittleEndian_);
+        put2byte(buf, static_cast<uint16_t>(ch), isLittleEndian_);
         return 2;
     } else {
         // http://unicode.org/faq/utf_bom.html#utf16-3
@@ -141,7 +141,7 @@ retry:
         }
     }
 
-    const uint16_t val1 = isLittleEndian_ ? ((b << 8) | a) : ((a << 8) | b);
+    const uint16_t val1 = static_cast<uint16_t>(isLittleEndian_ ? ((b << 8) | a) : ((a << 8) | b));
     if (val1 < 0xD800 || val1 > 0xDFFF) {
         return val1;
     }
@@ -154,7 +154,7 @@ retry:
     if (EOF == d) {
         decodeError();
     }
-    const uint16_t val2 = isLittleEndian_ ? ((d << 8) | c) : ((c << 8) | d);
+    const uint16_t val2 = static_cast<uint16_t>(isLittleEndian_ ? ((d << 8) | c) : ((c << 8) | d));
     // http://unicode.org/faq/utf_bom.html#utf16-3
     uint16_t hi = val1;
     uint16_t lo = val2;

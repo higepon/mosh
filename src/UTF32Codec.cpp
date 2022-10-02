@@ -75,15 +75,15 @@ UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 int UTF32Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     if (isLittleEndian_) {
-        buf[0] = u;
-        buf[1] = u >> 8;
-        buf[2] = u >> 16;
-        buf[3] = u >> 24;
+        buf[0] = static_cast<uint8_t>(u);
+        buf[1] = static_cast<uint8_t>(u >> 8);
+        buf[2] = static_cast<uint8_t>(u >> 16);
+        buf[3] = static_cast<uint8_t>(u >> 24);
     } else {
-        buf[0] = u >> 24;
-        buf[1] = u >> 16;
-        buf[2] = u >> 8;
-        buf[3] = u;
+        buf[0] = static_cast<uint8_t>(u >> 24);
+        buf[1] = static_cast<uint8_t>(u >> 16);
+        buf[2] = static_cast<uint8_t>(u >> 8);
+        buf[3] = static_cast<uint8_t>(u);
     }
     return 4;
 }
