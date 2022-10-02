@@ -427,11 +427,6 @@
                                 (begin
                                   (val1)
                                 (VM codes (skip 0) (proc (index stack sp 0) aac) fp c stack (- sp 1)))))]
-       [apply-native-2arg-push (syntax-rules ()
-                                 ((_ proc)
-                                  (begin
-                                    (val1)
-                                  (VM codes (skip 0) (proc (index stack sp 0) a) fp c stack (push stack (- sp 1) (proc (index stack sp 0) a))))))]
        [apply-native-2arg-push(syntax-rules ()
                                  ((_ proc ac)
                                   (begin
