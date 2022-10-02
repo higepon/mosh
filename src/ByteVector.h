@@ -100,7 +100,7 @@ public:
         for (Object p = pair; !p.isNil(); p = p.cdr()) {
             MOSH_ASSERT(p.car().isFixnum());
             MOSH_ASSERT(p.car().toFixnum() >= -128 && p.car().toFixnum() <= 255);
-            data_[i] = p.car().toFixnum();
+            data_[i] = static_cast<uint8_t>(p.car().toFixnum());
             i++;
         }
 
@@ -164,50 +164,50 @@ public:
 
     void u64SetLittle(size_t index, uint64_t value)
     {
-        data_[index + 7] = value >> 56;
-        data_[index + 6] = value >> 48;
-        data_[index + 5] = value >> 40;
-        data_[index + 4] = value >> 32;
-        data_[index + 3] = value >> 24;
-        data_[index + 2] = value >> 16;
-        data_[index + 1] = value >> 8;
-        data_[index + 0] = value & 0xff;
+        data_[index + 7] = static_cast<uint8_t>(value >> 56);
+        data_[index + 6] = static_cast<uint8_t>(value >> 48);
+        data_[index + 5] = static_cast<uint8_t>(value >> 40);
+        data_[index + 4] = static_cast<uint8_t>(value >> 32);
+        data_[index + 3] = static_cast<uint8_t>(value >> 24);
+        data_[index + 2] = static_cast<uint8_t>(value >> 16);
+        data_[index + 1] = static_cast<uint8_t>(value >> 8);
+        data_[index + 0] = static_cast<uint8_t>(value & 0xff);
     }
 
     void s64SetLittle(size_t index, int64_t value)
     {
-        data_[index + 7] = value >> 56;
-        data_[index + 6] = value >> 48;
-        data_[index + 5] = value >> 40;
-        data_[index + 4] = value >> 32;
-        data_[index + 3] = value >> 24;
-        data_[index + 2] = value >> 16;
-        data_[index + 1] = value >> 8;
-        data_[index + 0] = value & 0xff;
+        data_[index + 7] = static_cast<uint8_t>(value >> 56);
+        data_[index + 6] = static_cast<uint8_t>(value >> 48);
+        data_[index + 5] = static_cast<uint8_t>(value >> 40);
+        data_[index + 4] = static_cast<uint8_t>(value >> 32);
+        data_[index + 3] = static_cast<uint8_t>(value >> 24);
+        data_[index + 2] = static_cast<uint8_t>(value >> 16);
+        data_[index + 1] = static_cast<uint8_t>(value >> 8);
+        data_[index + 0] = static_cast<uint8_t>(value & 0xff);
     }
 
     void u64SetBig(size_t index, uint64_t value)
     {
-        data_[index + 0] = value >> 56;
-        data_[index + 1] = value >> 48;
-        data_[index + 2] = value >> 40;
-        data_[index + 3] = value >> 32;
-        data_[index + 4] = value >> 24;
-        data_[index + 5] = value >> 16;
-        data_[index + 6] = value >> 8;
-        data_[index + 7] = value & 0xff;
+        data_[index + 0] = static_cast<uint8_t>(value >> 56);
+        data_[index + 1] = static_cast<uint8_t>(value >> 48);
+        data_[index + 2] = static_cast<uint8_t>(value >> 40);
+        data_[index + 3] = static_cast<uint8_t>(value >> 32);
+        data_[index + 4] = static_cast<uint8_t>(value >> 24);
+        data_[index + 5] = static_cast<uint8_t>(value >> 16);
+        data_[index + 6] = static_cast<uint8_t>(value >> 8);
+        data_[index + 7] = static_cast<uint8_t>(value & 0xff);
     }
 
     void s64SetBig(size_t index, int64_t value)
     {
-        data_[index + 0] = value >> 56;
-        data_[index + 1] = value >> 48;
-        data_[index + 2] = value >> 40;
-        data_[index + 3] = value >> 32;
-        data_[index + 4] = value >> 24;
-        data_[index + 5] = value >> 16;
-        data_[index + 6] = value >> 8;
-        data_[index + 7] = value & 0xff;
+        data_[index + 0] = static_cast<uint8_t>(value >> 56);
+        data_[index + 1] = static_cast<uint8_t>(value >> 48);
+        data_[index + 2] = static_cast<uint8_t>(value >> 40);
+        data_[index + 3] = static_cast<uint8_t>(value >> 32);
+        data_[index + 4] = static_cast<uint8_t>(value >> 24);
+        data_[index + 5] = static_cast<uint8_t>(value >> 16);
+        data_[index + 6] = static_cast<uint8_t>(value >> 8);
+        data_[index + 7] = static_cast<uint8_t>(value & 0xff);
     }
 
     uint64_t u64RefLittle(size_t index) const
@@ -302,46 +302,46 @@ public:
 
     void u16SetLittle(size_t index, uint16_t value)
     {
-        data_[index] = value & 0xff;
-        data_[index + 1] = value >> 8;
+        data_[index] = static_cast<uint8_t>(value & 0xff);
+        data_[index + 1] = static_cast<uint8_t>(value >> 8);
     }
 
     void u16SetBig(size_t index, uint16_t value)
-    {
-        data_[index] = value >> 8;
-        data_[index + 1] = value & 0xff;
+    { 
+        data_[index] = static_cast<uint8_t>(value >> 8);
+        data_[index + 1] = static_cast<uint8_t>(value & 0xff);
     }
 
     void u32SetLittle(size_t index, uint32_t value)
     {
-        data_[index + 3] = value >> 24;
-        data_[index + 2] = value >> 16;
-        data_[index + 1] = value >> 8;
-        data_[index + 0] = value;
+        data_[index + 3] = static_cast<uint8_t>(value >> 24);
+        data_[index + 2] = static_cast<uint8_t>(value >> 16);
+        data_[index + 1] = static_cast<uint8_t>(value >> 8);
+        data_[index + 0] = static_cast<uint8_t>(value);
     }
 
     void u32SetBig(size_t index, uint32_t value)
     {
-        data_[index + 0] = value >> 24;
-        data_[index + 1] = value >> 16;
-        data_[index + 2] = value >> 8;
-        data_[index + 3] = value;
+        data_[index + 0] = static_cast<uint8_t>(value >> 24);
+        data_[index + 1] = static_cast<uint8_t>(value >> 16);
+        data_[index + 2] = static_cast<uint8_t>(value >> 8);
+        data_[index + 3] = static_cast<uint8_t>(value);
     }
 
     void s32SetLittle(size_t index, int32_t value)
     {
-        data_[index + 3] = value >> 24;
-        data_[index + 2] = value >> 16;
-        data_[index + 1] = value >> 8;
-        data_[index + 0] = value & 0xff;
+        data_[index + 3] = static_cast<uint8_t>(value >> 24);
+        data_[index + 2] = static_cast<uint8_t>(value >> 16);
+        data_[index + 1] = static_cast<uint8_t>(value >> 8);
+        data_[index + 0] = static_cast<uint8_t>(value & 0xff);
     }
 
     void s32SetBig(size_t index, int32_t value)
     {
-        data_[index + 0] = value >> 24;
-        data_[index + 1] = value >> 16;
-        data_[index + 2] = value >> 8;
-        data_[index + 3] = value & 0xff;
+        data_[index + 0] = static_cast<uint8_t>(value >> 24);
+        data_[index + 1] = static_cast<uint8_t>(value >> 16);
+        data_[index + 2] = static_cast<uint8_t>(value >> 8);
+        data_[index + 3] = static_cast<uint8_t>(value & 0xff);
     }
 
 
@@ -362,14 +362,14 @@ public:
 
     void s16SetLittle(size_t index, int16_t value)
     {
-        data_[index] = value & 0xff;
-        data_[index + 1] = value >> 8;
+        data_[index] = static_cast<uint8_t>(value & 0xff);
+        data_[index + 1] = static_cast<uint8_t>(value >> 8);
     }
 
     void s16SetBig(size_t index, int16_t value)
     {
-        data_[index] = value >> 8;
-        data_[index + 1] = value & 0xff;
+        data_[index] = static_cast<uint8_t>(value >> 8);
+        data_[index + 1] = static_cast<uint8_t>(value & 0xff);
     }
 
     int16_t s16RefNative(size_t index)
