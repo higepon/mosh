@@ -92,8 +92,8 @@ entry:
             Vector* const vector1 = object1.toVector();
             Vector* const vector2 = object2.toVector();
             if (vector1->length() == vector2->length()) {
-                const int length = vector1->length();
-                for (int i = 0; i < length; i++) {
+                const size_t length = vector1->length();
+                for (size_t i = 0; i < length; i++) {
                     if (!fastEqual(vector1->ref(i), vector2->ref(i))) {
                         return false;
                     }
@@ -313,7 +313,7 @@ Object Equal::preP(Object x, Object y, Object k)
         if (!y.isVector()) {
             return Object::False;
         }
-        int n = x.toVector()->length();
+        size_t n = x.toVector()->length();
         if (y.toVector()->length() != n) {
             return Object::False;
         }
@@ -421,7 +421,7 @@ Object Equal::eP(EqHashTable** pht, Object x, Object y, Object k)
     MOSH_ASSERT(k.isFixnum());
     if (k.toFixnum() <= 0) {
         if (k == kb_) {
-            return fastP(pht, x, y, Object::makeFixnum(random() % (2 * k0_.toFixnum())));
+            return fastP(pht, x, y, Object::makeFixnum(static_cast<int>(random()) % (2 * k0_.toFixnum())));
         } else {
             return slowP(pht, x, y, k);
         }
@@ -491,7 +491,7 @@ Object Equal::slowP(EqHashTable** pht, Object x, Object y, Object k)
         if (!y.isVector()) {
             return Object::False;
         }
-        int n = x.toVector()->length();
+        size_t n = x.toVector()->length();
         if (y.toVector()->length() != n) {
             return Object::False;
         }
@@ -616,7 +616,7 @@ Object Equal::fastP(EqHashTable** pht, Object x, Object y, Object k)
             return Object::False;
         }
 
-        int n = x.toVector()->length();
+        size_t n = x.toVector()->length();
         if (y.toVector()->length() != n) {
             return Object::False;
         }

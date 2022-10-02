@@ -64,14 +64,14 @@ using namespace scheme;
 
 ucs4char* ucs4string::strdup()
 {
-    const int length = size();
+    const size_t length = size();
 #ifdef USE_BOEHM_GC
     ucs4char* ret = new (PointerFreeGC) ucs4char[length + 1];
 #else
     ucs4char* ret = new ucs4char[length + 1];
 #endif
 
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         ret[i] = (*this)[i];
     }
     ret[length] = '\0';
@@ -97,14 +97,14 @@ ucs4string ucs4string::substr(int x, size_t size) const
 
 char* ucs4string::ascii_c_str() const
 {
-    const int sz = size();
+    const size_t sz = size();
 #ifdef USE_BOEHM_GC
     char* ret = new(PointerFreeGC) char[sz + 1];
 #else
     char* ret = new char[sz];
 #endif
 
-    for (int i = 0; i < sz; i++) {
+    for (size_t i = 0; i < sz; i++) {
         ret[i] = (*this)[i] & 0xff;
     }
     ret[sz] = '\0';
@@ -132,8 +132,8 @@ ucs4string ucs4string::from_c_str(const char* s)
 
 bool ucs4string::is_ascii() const
 {
-    const int length = size();
-    for (int i = 0; i < length; i++) {
+    const size_t length = size();
+    for (size_t i = 0; i < length; i++) {
         const ucs4char ch = (*this)[i];
         if (ch > 255) {
             return false;

@@ -231,7 +231,7 @@ int Socket::receive(uint8_t* data, int size, int flags)
    @retval >=0 written size
    @retval -1 error
 */
-int Socket::send(uint8_t* data, int size, int flags)
+int Socket::send(uint8_t* data, size_t size, int flags)
 {
     MOSH_ASSERT(isOpen());
     if (isSSL()) {
