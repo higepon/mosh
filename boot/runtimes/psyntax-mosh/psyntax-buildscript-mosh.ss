@@ -981,6 +981,7 @@
     (parameterize                            sys)
     (disasm                                  sys)
     (available-features                      mosh)
+    (available-libraries                     mosh)
     (condition-printer                       mosh)
     (os-constant                             mosh)
     (time-usage                              mosh)
