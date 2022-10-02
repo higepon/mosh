@@ -645,7 +645,7 @@ Object scheme::bytevectorS16NativeSetDEx(VM* theVM, int argc, const Object* argv
         return Object::Undef;
     }
 
-    bytevector->s16SetNative(index, value);
+    bytevector->s16SetNative(index, static_cast<int16_t>(value));
     return Object::Undef;
 }
 
@@ -666,7 +666,7 @@ Object scheme::bytevectorU16NativeSetDEx(VM* theVM, int argc, const Object* argv
         return Object::Undef;
     }
 
-    bytevector->u16SetNative(index, value);
+    bytevector->u16SetNative(index, static_cast<uint16_t>(value));
     return Object::Undef;
 }
 
@@ -689,9 +689,9 @@ Object scheme::bytevectorS16SetDEx(VM* theVM, int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        bytevector->s16SetLittle(index, value);
+        bytevector->s16SetLittle(index, static_cast<int16_t>(value));
     } else if (endianness == Symbol::BIG) {
-        bytevector->s16SetBig(index, value);
+        bytevector->s16SetBig(index, static_cast<int16_t>(value));
     } else {
         callAssertionViolationAfter(theVM, procedureName, UC("unsupporeted endianness"), L1(endianness));
     }
@@ -716,9 +716,9 @@ Object scheme::bytevectorU16SetDEx(VM* theVM, int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        bytevector->u16SetLittle(index, value);
+        bytevector->u16SetLittle(index, static_cast<uint16_t>(value));
     } else if (endianness == Symbol::BIG) {
-        bytevector->u16SetBig(index, value);
+        bytevector->u16SetBig(index, static_cast<uint16_t>(value));
     } else {
         callAssertionViolationAfter(theVM, procedureName, UC("unsupporeted endianness"), L1(endianness));
     }
@@ -820,8 +820,8 @@ Object scheme::bytevectorTou8ListEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("bytevector->u8-list");
     argumentAsByteVector(0, bytevector);
     Object ret = Object::Nil;
-    for (int i = bytevector->length() - 1; i >= 0; i--) {
-        ret = Object::cons(Object::makeFixnum(bytevector->u8Ref(i)), ret);
+    for (size_t i = 0; i <  bytevector->length(); i++) {
+        ret = Object::cons(Object::makeFixnum(bytevector->u8Ref(bytevector->length() - i - 1)), ret);
     }
     return ret;
 }
@@ -844,14 +844,14 @@ Object scheme::bytevectorCopyDEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(3, targetStart);
     argumentAsFixnum(4, k);
 
-    const int sourceLength = source->length();
-    const int targetLength = target->length();
+    const size_t sourceLength = source->length();
+    const size_t targetLength = target->length();
 
     if ((sourceStart <= sourceStart + k)  &&
-        (sourceStart + k <= sourceLength) &&
+        (sourceStart + k <= static_cast<fixedint>(sourceLength)) &&
         (0 <= targetStart)                &&
         (targetStart <= targetStart + k)  &&
-        (targetStart + k <= targetLength)) {
+        (targetStart + k <= static_cast<fixedint>(targetLength))) {
         memmove(target->data() + targetStart, source->data() + sourceStart, k);
     } else {
         callAssertionViolationAfter(theVM, procedureName, UC("invalid range"));
@@ -1001,7 +1001,7 @@ Object scheme::bytevectorLengthEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsByteVector(0, bytevector);
-    return Object::makeFixnum(bytevector->length());
+    return Object::makeFixnum(static_cast<fixedint>(bytevector->length()));
 }
 
 Object scheme::bytevectorIeeeSingleRefEx(VM* theVM, int argc, const Object* argv)

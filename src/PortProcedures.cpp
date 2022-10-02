@@ -1436,9 +1436,9 @@ Object scheme::nullTerminatedBytevectorTostringEx(VM* theVM, int argc, const Obj
     argumentAsByteVector(0, bytevector);
     argumentAsTranscoder(1, transcoder);
 
-    int realLength = bytevector->length();
+    size_t realLength = bytevector->length();
     int nullTerminatedLength = 0;
-    for (int i = 0; i < realLength; i++, nullTerminatedLength++) {
+    for (size_t i = 0; i < realLength; i++, nullTerminatedLength++) {
         if (bytevector->u8Ref(i) == 0) {
             break;
         }

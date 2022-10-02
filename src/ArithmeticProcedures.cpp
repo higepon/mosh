@@ -808,7 +808,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
             if ((y.toFixnum() > 0) + (r > 0) == 1) {
                 r = r + y.toFixnum();
             }
-            return Object::makeFixnum(r);
+            return Object::makeFixnum(static_cast<fixedint>(r));
         } else if (y.isFlonum()) { // fixnum, flonum
             const double value = y.toFlonum()->value();
             if (0.0 == value) {
