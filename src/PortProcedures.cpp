@@ -89,7 +89,7 @@
 
 using namespace scheme;
 
-ucs4string scheme::utf8ToUtf32(const char* s, int len)
+ucs4string scheme::utf8ToUtf32(const char* s, size_t len)
 {
     ByteArrayBinaryInputPort in((uint8_t*)s, len);
     UTF8Codec codec;
@@ -97,7 +97,7 @@ ucs4string scheme::utf8ToUtf32(const char* s, int len)
     return transcoderr.getString(&in);
 }
 
-ucs4string scheme::utf16ToUtf32(const char* s, int len)
+ucs4string scheme::utf16ToUtf32(const char* s, size_t len)
 {
     ByteArrayBinaryInputPort in((uint8_t*)s, len);
     UTF16Codec codec;
