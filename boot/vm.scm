@@ -3,12 +3,14 @@
   (rename (rnrs) (command-line mosh:command-line) (fold-left fold) (do mosh:do))
   (rename (psyntax scheme-report-environment-5) (scheme-report-environment interaction-environment) (do pdo))
   (only (psyntax system $bootstrap) gensym)
-  (only (srfi :1) take drop append! split-at)
+  (only (srfi :1) take drop append! split-at append-map)
   (srfi :8)
   (rnrs mutable-pairs)
   (only (rnrs) letrec-syntax)
   (only (mosh file) file->sexp-list)
+  (rnrs eval (6))
   (mosh))
+  
 
  (define-syntax define-macro
      (lambda (x)
@@ -77,10 +79,13 @@
         (make-vector 1000)
         0)))
 
+(define (debug-source-info a) #f)
 
 (define (init-library-table)
   (set! vm-instances (make-eq-hashtable))
   (set! vm-name-space (make-eq-hashtable)))
+
+
 
 (include "./free-vars-decl.scm")
 
@@ -94,7 +99,7 @@
             (lambda (variable)
               (match variable
                 [(proc proc-body)
-                 `(,proc ,(eval proc-body (interaction-environment)))]
+                 `(,proc ,(eval proc-body (interaction-environment 5)))]
                 [else
                  (list variable
                        (eval `(lambda e (error (quote ,variable) "not implemented"))
@@ -106,7 +111,7 @@
 
 (load-free-vars)
 
-(define-syntax eqt
+#;(define-syntax eqt
   (syntax-rules ()
     ((_ a b)
      (test* (quote b) a b))))
@@ -374,7 +379,7 @@
 
 (define undef (if #f #f))
 
-(define-macro (debug-case val . clauses)
+#;(define-macro (debug-case val . clauses)
   `(case ,val
      ,@(map (lambda (x) `(,(car x)
                          (let1 debug-clause (quote ,(car x))
@@ -382,8 +387,9 @@
             clauses)))
 
 (define-macro (check-vm-paranoia pred)
-  `(unless ,pred
-     (errorf "** vm check paranoia ~a on ~a : ~a" (quote ,pred) debug-clause c)))
+  ''())
+;  `(unless ,pred
+;     (errorf "** vm check paranoia ~a on ~a : ~a" (quote ,pred) debug-clause c)))
 
 ;; (debug-case val
 ;;   ((a)
@@ -427,7 +433,12 @@
                                 (begin
                                   (val1)
                                 (VM codes (skip 0) (proc (index stack sp 0) aac) fp c stack (- sp 1)))))]
-       [apply-native-2arg-push(syntax-rules ()
+       [apply-native-2arg-push (syntax-rules ()
+                                 ((_ proc)
+                                  (begin
+                                    (val1)
+                                  (VM codes (skip 0) (proc (index stack sp 0) a) fp c stack (push stack (- sp 1) (proc (index stack sp 0) a))))))]
+       [apply-native-2arg-push2 (syntax-rules ()
                                  ((_ proc ac)
                                   (begin
                                     (val1)
@@ -552,9 +563,9 @@
                    [else
                     '()])
 ;             (format (current-error-port) "~a\n" code)
-             (debug-case code
+             (case code
                ;;---------------------------- HALT -------------------------------
-               [(HALT) a]
+               [('HALT) a]
                [(VALUES)
                 ;; values stack layout
                 ;;   (value 'a 'b 'c 'd)
@@ -882,7 +893,8 @@
                            [new-sp (shift-args-to-top stack sp 0 shift-len)])
                       (if (and (not (procedurep a))
                                (not (regexp? a))
-                               (not (regmatch? a))
+                               ; comment for mosh
+                               ;(not (regmatch? a))
                                (not (closure-optional-arg? a))
                                (not (= len (closure-arg-length a))))
                           (errorf "Values received ~a values than expected" (if (> len (closure-arg-length a)) "more" "fewer")))
@@ -1168,7 +1180,10 @@
                [else
                 (error "unknown instruction on vm:" code)]))])))
 
-
+(define-syntax hash-table-get
+  (syntax-rules ()
+    [(_ tb key default)
+      `(hashtable-ref tb key default)]))
 
 (define (define-global lib-id val)
   (if (hash-table-get vm-name-space lib-id #f)
@@ -1190,18 +1205,18 @@
 (define (vm-import lib)
   (if (fetch-instance lib)
       '() ; already imported
-      (hashtable-set! vm-instances lib (make-hash-table 'eq?))))
+      (hashtable-set! vm-instances lib (make-eq-hashtable))))
 
 ;; Store bound variables as (libname . (name . val)).
 ;; Not depend on compiler.
-(define vm-instances (make-hash-table 'eq?))
+(define vm-instances (make-eq-hashtable))
 
 ;; Store (libname . $library).
 ;; Not depend on compiler.
-(define vm-libraries (make-hash-table 'eq?))
+(define vm-libraries (make-eq-hashtable))
 
 ;; Not depend on compiler.
-(define vm-name-space (make-hash-table 'eq?))
+(define vm-name-space (make-eq-hashtable))
 
 (define (vm-lookup sym)
   (hash-table-get vm-name-space sym #f))
@@ -1242,9 +1257,9 @@
                (loop (read))])))))
 
 (define (compile-string s)
-  (with-input-from-string s
+  (let1 p (open-string-input-port s)
     (lambda ()
-      (compile (read)))))
+      (compile (read p)))))
 
 ;; return compiled code as list. label is not fixed up yet.
 ;; (define (compile-partial sexp . lib)
@@ -1335,142 +1350,57 @@
 (define *free-lvars* ($map1 (lambda (p) ($lvar p '() 0 0)) ($map1 car *free-vars*)))
 
 
-(if debug-mode
-    (define (evaluate code)
-      (receive (t1 tm1) (sys-gettimeofday)
-        (let1 code-c ((if optimize? compile compile-no-optimize) code)
-          (receive (t2 tm2) (sys-gettimeofday)
-            (set-closure-body-code! vm-outer-closure code-c)
-            (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0)
-            (receive (t3 tm3) (sys-gettimeofday)
-              (set! debug-compile-time (+ debug-compile-time (time-diff t1 tm1 t2 tm2)))
-              (set! debug-vm-run-time  (+ debug-vm-run-time  (time-diff t2 tm2 t3 tm3))))))))
+;(if debug-mode
+    ;(define (evaluate code)
+      ;(receive (t1 tm1) (sys-gettimeofday)
+        ;(let1 code-c ((if optimize? compile compile-no-optimize) code)
+         ; (receive (t2 tm2) (sys-gettimeofday)
+          ;  (set-closure-body-code! vm-outer-closure code-c)
+           ; (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0)
+            ;(receive (t3 tm3) (sys-gettimeofday)
+             ; (set! debug-compile-time (+ debug-compile-time (time-diff t1 tm1 t2 tm2)))
+              ;(set! debug-vm-run-time  (+ debug-vm-run-time  (time-diff t2 tm2 t3 tm3))))))))
     (define (evaluate code)
       (let1 code-c ((if optimize? compile compile-no-optimize) code)
 ;      (let1 code-c ((if optimize? compile compile-no-optimize) code)
 ;        (print "====> code-c=>" code-c)
         (set-closure-body-code! vm-outer-closure code-c)
-        (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0))))
-
-(cond [#f
-;; tail call 1
-(compile-no-optimize '((lambda () ((lambda () 3)))))
-(eqt #(FRAME 24 CLOSURE 20 0 #f 0 CLOSURE 8 0 #f 0 CONSTANT 3 RETURN 0 SHIFT 0 0 CALL 0 RETURN 0 CALL 0) (compile-no-optimize '((lambda () ((lambda () 3))))))
-
-(compile '((lambda () ((lambda () 3)))))
-(eqt #(CONSTANT 3) (compile '((lambda () ((lambda () 3))))))
+        (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0)))
+        ;)
 
 
-;; tail call 2
-(compile-no-optimize '((lambda () ((lambda (x) x) 3))))
-(eqt #(FRAME 27 CLOSURE 23 0 #f 0 CONSTANT 3 PUSH CLOSURE 8 1 #f 0 REFER_LOCAL 0 RETURN 1 SHIFT 1 0 CALL 1 RETURN 0 CALL 0) (compile-no-optimize '((lambda () ((lambda (x) x) 3)))))
-
-(compile '((lambda () ((lambda (x) x) 3))))
-(eqt #(CONSTANT 3) (compile '((lambda () ((lambda (x) x) 3)))))
-
-
-;; tail call 3
-(compile-no-optimize '((lambda (y) ((lambda (x) x) 3)) 4))
-(eqt #(FRAME 30 CONSTANT 4 PUSH CLOSURE 23 1 #f 0 CONSTANT 3 PUSH CLOSURE 8 1 #f 0 REFER_LOCAL 0 RETURN 1 SHIFT 1 1 CALL 1 RETURN 1 CALL 1) (compile-no-optimize '((lambda (y) ((lambda (x) x) 3)) 4)))
-
-(compile '((lambda (y) ((lambda (x) x) 3)) 4))
-(eqt #(CONSTANT 3) (compile '((lambda (y) ((lambda (x) x) 3)) 4)))
-
-
-;; tail call 4
-(compile-no-optimize '((lambda () (let1 a 1 ((lambda () 3))))))
-(eqt #(FRAME 31 CLOSURE 27 0 #f 0 LET_FRAME CONSTANT 1 PUSH ENTER CLOSURE 8 0 #f 0 CONSTANT 3 RETURN 0 SHIFT 0 3 CALL 0 LEAVE 1 RETURN 0 CALL 0) (compile-no-optimize '((lambda () (let1 a 1 ((lambda () 3)))))))
-
-(compile '((lambda () (let1 a 1 ((lambda () 3))))))
-(eqt #(CONSTANT 3) (compile '((lambda () (let1 a 1 ((lambda () 3)))))))
-
-
-;; tail call5
-(compile '((lambda () (let1 b 2 (let1 a 1 ((lambda () 3)))))))
-(eqt #(CONSTANT 3) (compile '((lambda () (let1 b 2 (let1 a 1 ((lambda () 3))))))))
-
-
-(compile-no-optimize '((lambda () (let1 b 2 (let1 a 1 ((lambda () 3)))))))
-(eqt #(FRAME 38 CLOSURE 34 0 #f 0 LET_FRAME CONSTANT 2 PUSH ENTER LET_FRAME CONSTANT 1 PUSH ENTER CLOSURE 8 0 #f 0 CONSTANT 3 RETURN 0 SHIFT 0 6 CALL 0 LEAVE 1 LEAVE 1 RETURN 0 CALL 0) (compile-no-optimize '((lambda () (let1 b 2 (let1 a 1 ((lambda () 3))))))))
-
-
-;; tail call6
-(compile '((lambda () (if 3 ((lambda () 3))))))
-(eqt #(CONSTANT 3 TEST 4 CONSTANT 3 LOCAL_JMP 3 UNDEF) (compile '((lambda () (if 3 ((lambda () 3)))))))
-
-
-(compile-no-optimize '((lambda () (if 3 ((lambda () 3))))))
-(eqt #(FRAME 31 CLOSURE 27 0 #f 0 CONSTANT 3 TEST 16 CLOSURE 8 0 #f 0 CONSTANT 3 RETURN 0 SHIFT 0 0 CALL 0 LOCAL_JMP 3 UNDEF RETURN 0 CALL 0) (compile-no-optimize '((lambda () (if 3 ((lambda () 3)))))))
-
-
-;; tail call7 ** not tail call ***
-(compile '((lambda () (if ((lambda () 3)) 4 5))))
-(eqt #(CONSTANT 3 TEST 4 CONSTANT 4 LOCAL_JMP 4 CONSTANT 5) (compile '((lambda () (if ((lambda () 3)) 4 5)))))
-
-(compile-no-optimize '((lambda () (if ((lambda () 3)) 4 5))))
-(eqt #(FRAME 31 CLOSURE 27 0 #f 0 FRAME 12 CLOSURE 8 0 #f 0 CONSTANT 3 RETURN 0 CALL 0 TEST 4 CONSTANT 4 LOCAL_JMP 4 CONSTANT 5 RETURN 0 CALL 0) (compile-no-optimize '((lambda () (if ((lambda () 3)) 4 5)))))
-
-
-(compile-no-optimize '((lambda (a) a) 101))
-(eqt #(FRAME 15 CONSTANT 101 PUSH CLOSURE 8 1 #f 0 REFER_LOCAL 0 RETURN 1 CALL 1) (compile-no-optimize '((lambda (a) a) 101)))
-
-(compile '((lambda (a) a) 101))
-(eqt #(CONSTANT 101) (compile '((lambda (a) a) 101)))
-
-
-(compile '((lambda (a) (lambda () a)) 10))
-(eqt #(CLOSURE 8 0 #f 0 CONSTANT 10 RETURN 0) (compile '((lambda (a) (lambda () a)) 10)))
-
-(compile-no-optimize '((lambda (a) (lambda () a)) 10))
-(eqt #(FRAME 25 CONSTANT 10 PUSH CLOSURE 18 1 #f 0 REFER_LOCAL 0 PUSH CLOSURE 8 0 #f 1 REFER_FREE 0 RETURN 0 RETURN 1 CALL 1) (compile-no-optimize '((lambda (a) (lambda () a)) 10)))
-
-
-(compile '((lambda (a) ((lambda () (set! a 101)))) '()))
-(eqt #(LET_FRAME CONSTANT () PUSH BOX 0 ENTER CONSTANT 101 ASSIGN_LOCAL 0 LEAVE 1) (compile '((lambda (a) ((lambda () (set! a 101)))) '())))
-
-(compile-no-optimize '((lambda (a) ((lambda () (set! a 101)))) '()))
-(eqt #(FRAME 34 CONSTANT () PUSH CLOSURE 27 1 #f 0 BOX 0 REFER_LOCAL 0 PUSH CLOSURE 10 0 #f 1 CONSTANT 101 ASSIGN_FREE 0 RETURN 0 SHIFT 0 1 CALL 0 RETURN 1 CALL 1) (compile-no-optimize '((lambda (a) ((lambda () (set! a 101)))) '())))
-
-
-(compile '((lambda (a) (set! a 12) a) 2))
-(eqt #(LET_FRAME CONSTANT 2 PUSH BOX 0 ENTER CONSTANT 12 ASSIGN_LOCAL 0 REFER_LOCAL 0 INDIRECT LEAVE 1) (compile '((lambda (a) (set! a 12) a) 2)))
-
-(compile-no-optimize '((lambda (a) (set! a 12) a) 2))
-(eqt #(FRAME 22 CONSTANT 2 PUSH CLOSURE 15 1 #f 0 BOX 0 CONSTANT 12 ASSIGN_LOCAL 0 REFER_LOCAL 0 INDIRECT RETURN 1 CALL 1) (compile-no-optimize '((lambda (a) (set! a 12) a) 2)))
-
-])
-(define (vm-test)
-  (with-input-from-file "./src/test-data.scm"
-    (lambda ()
-      (let loop1 ([obj (read)])
-        (cond
-         [(eof-object? obj) '()]
-         [(and (pair? obj) (>= (length obj) 2))
-          (cond [(eq? 'lib (first obj))
-                 (init-library-table) ;; found 'lib prefix, then init library table.
-                 (let loop2 ([lst (cddr obj)])
-                   (cond
-                    [(null? (cdr lst))
-                     (test* (cdr obj) (if (eq? (second obj) 'error) *test-error* (second obj)) (evaluate (car lst)))
-                     (loop1 (read))]
-                    [else
-                     (guard (e
-                             (#t (test* (car lst) (if (eq? (second obj) 'error) *test-error* '()) (raise e))))
-                            (evaluate (car lst)))
-                     (loop2 (cdr lst))]))]
-                [(eq? 'mosh-only(first obj))
-                     (loop1 (read))]
-                [else
-                 (let loop2 ([lst (cdr obj)])
-                   (cond
-                    [(null? (cdr lst))
-                     (test* (cdr obj) (if (eq? (first obj) 'error) *test-error* (first obj)) (evaluate (car lst)))
-                     (loop1 (read))]
-                    [else
-                     (evaluate (car lst))
-                     (loop2 (cdr lst))]))])]
-         [else
-          (error "invalid test form")])))))
+;(define (vm-test)
+ ; (with-input-from-file "./src/test-data.scm"
+  ;  (lambda ()
+   ;   (let loop1 ([obj (read)])
+    ;    (cond
+     ;    [(eof-object? obj) '()]
+      ;   [(and (pair? obj) (>= (length obj) 2))
+       ;   (cond [(eq? 'lib (first obj))
+        ;         (init-library-table) ;; found 'lib prefix, then init library table.
+         ;        (let loop2 ([lst (cddr obj)])
+          ;         (cond
+           ;         [(null? (cdr lst))
+            ;         (test* (cdr obj) (if (eq? (second obj) 'error) *test-error* (second obj)) (evaluate (car lst)))
+             ;        (loop1 (read))]
+              ;      [else
+               ;      (guard (e
+                ;             (#t (test* (car lst) (if (eq? (second obj) 'error) *test-error* '()) (raise e))))
+                 ;           (evaluate (car lst)))
+                  ;   (loop2 (cdr lst))]))]
+;                [(eq? 'mosh-only(first obj))
+ ;                    (loop1 (read))]
+  ;              [else
+   ;              (let loop2 ([lst (cdr obj)])
+    ;               (cond
+     ;               [(null? (cdr lst))
+      ;               (test* (cdr obj) (if (eq? (first obj) 'error) *test-error* (first obj)) (evaluate (car lst)))
+       ;              (loop1 (read))]
+        ;            [else
+         ;            (evaluate (car lst))
+          ;           (loop2 (cdr lst))]))])]
+;         [else
+ ;         (error "invalid test form")])))))
 
 (define (dump-vm-debug-info)
   (define (dump key value)
@@ -1531,6 +1461,17 @@
           (match obj
             [('define-insn name n)
              (cons (cons name n) (loop (read)))])])))))
+
+(define (find-with-index pred seq)
+    (let loop ((i 0)
+               (seq seq))
+      (if (null? seq)
+        (values #f #f)
+        (let1 elt (car seq)
+          (if (pred elt)
+            (values i elt)
+            (loop (+ i 1) (cdr seq)))))))
+
 
 (define (insn-sym->insn-num insn-table syms)
   ;; For (PUSH 3) in #(CONSTANT (PUSH 3) ...).
@@ -1647,14 +1588,14 @@
 
 ;    (load-file "./hage.scm")
     (load-file match-library)
-    (vm-test)
+    ;(vm-test)
     (set! optimize? (not optimize?))
     (vm-init '())
     (load-file base-library)
     (load-file match-library)
 
-    (vm-test)
-    (test-end)
+    ;(vm-test)
+    ;(test-end)
 
     ]
    ;; compile string
