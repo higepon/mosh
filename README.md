@@ -42,6 +42,9 @@ Please see [doc](https://github.com/higepon/mosh/tree/master/doc) and [INSTALL](
 ### Building mosh.git
 To build mosh.git you need to have release version mosh and some other tools installed. Please use and see [docker/dev](https://github.com/higepon/mosh/tree/master/docker/) to build.
 
+### CI
+[![Build](https://github.com/higepon/mosh/actions/workflows/build.yml/badge.svg)](https://github.com/higepon/mosh/actions/workflows/build.yml)
+
 ### Make a release.
 1. Update verions in configur.ac.
 1. Make sure GitHub Actions are all green.
