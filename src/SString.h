@@ -42,7 +42,7 @@ public:
     explicit String(int n, ucs4char c = ' ') : data_(ucs4string(n, c)) {}
     explicit String(const char* s)
     {
-        const int len = strlen(s);
+        const size_t len = strlen(s);
 #ifdef USE_BOEHM_GC
         ucs4char* p = new(PointerFreeGC) ucs4char[len + 1];
 #else
@@ -56,7 +56,7 @@ public:
     ucs4char charAt(int n);
     ucs4string& data() { return data_; }
 
-    int length() const { return data_.length(); }
+    size_t length() const { return data_.length(); }
 
     bool operator==(String& s)
     {
@@ -71,7 +71,7 @@ inline Object::Object(const ucs4char* str) : val(reinterpret_cast<intptr_t>(new 
 {
 }
 
-inline Object::Object(const ucs4char* str, int length) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str, length)))))
+inline Object::Object(const ucs4char* str, size_t length) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str, length)))))
 {
 }
 
