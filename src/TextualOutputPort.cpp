@@ -530,7 +530,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
     } else if (o.isVector()) {
         Vector* v = o.toVector();
         putString(UC("#("));
-        for (int i = 0; i < v->length(); i++) {
+        for (size_t i = 0; i < v->length(); i++) {
             print<isHumanReadable>(theVM, v->ref(i), seen);
             if (i != v->length() - 1) putChar(' ');
         }
@@ -712,14 +712,14 @@ loop:
             goto loop;
         } else if (obj.isVector()) {
             Vector* const v = obj.toVector();
-            for (int i = 0; i < v->length(); i++) {
+            for (size_t i = 0; i < v->length(); i++) {
                 scan(v->ref(i), seen);
             }
         } else if (obj.isEqHashTable()) {
             EqHashTable* const ht = obj.toEqHashTable();
             Vector* const keys = ht->keys().toVector();
-            const int length = keys->length();
-            for (int i = 0; i < length; i++) {
+            const size_t length = keys->length();
+            for (size_t i = 0; i < length; i++) {
                 const Object key = keys->ref(i);
                 scan(key, seen);
                 scan(ht->ref(key, Object::False), seen);

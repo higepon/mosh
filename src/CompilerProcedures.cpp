@@ -662,12 +662,12 @@ Object pass4FixupLabelCollect(Object vec)
         Object::makeRaw(Instruction::REFER_LOCAL_BRANCH_NOT_LT);
 
     const Vector* const v = vec.toVector();
-    const int length = v->length();
+    const size_t length = v->length();
     const Object ret = Object::makeVector(length, NOP);
     Vector* const rv= ret.toVector();
     Object labels = Object::makeEqHashTable();
     EqHashTable* const table = labels.toEqHashTable();
-    for (int i = 0, j = 0; i < length;) {
+    for (size_t i = 0, j = 0; i < length;) {
         const Object insn = v->ref(i);
         if (insn == UNFIXED_JUMP              ||
             insn == TEST                      ||
@@ -751,9 +751,9 @@ Object pass4FixupLabel(Object vec)
     Vector* const code = collected.car().toVector();
     const Object labels = collected.cdr();
     EqHashTable* const table = labels.toEqHashTable();
-    const int length = code->length();
+    const size_t length = code->length();
 
-    for (int i = 0; i < length;) {
+    for (size_t i = 0; i < length;) {
         const Object insn = code->ref(i);
         if (insn == UNFIXED_JUMP) {
             const Object label = table->ref(code->ref(i + 1), Object::False);

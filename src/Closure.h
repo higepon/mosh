@@ -41,7 +41,7 @@ public:
         HEADER_SIZE = 9,
     };
 
-    Closure(Object* pc, int size, int argLength, bool isOptionalArg, const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
+    Closure(Object* pc, size_t size, int argLength, bool isOptionalArg, const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
         : pc(pc)
         ,size(size)
         ,argLength(argLength)
@@ -77,7 +77,7 @@ public:
 
 public:
     Object* pc;
-    const int size;
+    const size_t size;
     const int argLength;
     bool isOptionalArg;
     Object*  freeVariables;
