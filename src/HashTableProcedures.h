@@ -61,8 +61,8 @@ namespace scheme {
 
     int stringHash(const ucs4string& str);
     int stringCiHash(const ucs4string& str);
-    int symbolHash(Symbol* symbol);
-    int equalHash(Object o);
+    intptr_t symbolHash(Symbol* symbol);
+    intptr_t equalHash(Object o);
 } // namespace scheme
 
 #endif // SCHEME_HASH_TABLE_PROCEDURES_

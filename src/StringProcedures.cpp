@@ -82,7 +82,7 @@ Object scheme::stringCopyEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM,
                                     procedureName,
                                     UC("start out of range"),
-                                    L2(Object::makeFixnum(text->length()),
+                                    L2(Object::makeFixnum(static_cast<fixedint>(text->length())),
                                        argv[1]
                                         ));
         return Object::Undef;
@@ -91,11 +91,11 @@ Object scheme::stringCopyEx(VM* theVM, int argc, const Object* argv)
         return Object::makeString(text->data().substr(start, text->length() - start));
     }
     argumentAsFixnum(2, end);
-    if (end < 0 || start > end || end > text->length()) {
+    if (end < 0 || start > end || end > static_cast<int>(text->length())) {
         callAssertionViolationAfter(theVM,
                                     procedureName,
                                     UC("end out of range"),
-                                    L2(Object::makeFixnum(text->length()),
+                                    L2(Object::makeFixnum(static_cast<fixedint>(text->length())),
                                        argv[2]
                                         ));
         return Object::Undef;
@@ -112,13 +112,13 @@ Object scheme::stringRefEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, text);
     argumentAsFixnum(1, index);
 
-    if (index < text->length()) {
+    if (index < static_cast<fixedint>(text->length())) {
         return Object::makeChar(text->charAt(index));
     } else {
         callAssertionViolationAfter(theVM,
                                     procedureName,
                                     UC("index out of range"),
-                                    L2(Object::makeFixnum(text->length()),
+                                    L2(Object::makeFixnum(static_cast<fixedint>(text->length())),
                                        argv[1]
                                         ));
         return Object::Undef;
@@ -200,7 +200,7 @@ Object scheme::stringLengthEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("string-length");
     checkArgumentLength(1);
     argumentAsString(0, text);
-    return Object::makeFixnum(text->data().length());
+    return Object::makeFixnum(static_cast<fixedint>(text->data().length()));
 }
 
 Object scheme::stringTosymbol(Object str)

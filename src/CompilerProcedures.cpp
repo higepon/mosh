@@ -707,7 +707,7 @@ Object pass4FixupLabelCollect(Object vec)
         } else if (insn.isVector() && insn.toVector()->length() > 0 && insn.toVector()->ref(0).isFixnum() &&
                    insn.toVector()->ref(0).toFixnum() == TAG_LABEL) {
             i++;
-            table->set(insn, Object::makeFixnum(j));
+            table->set(insn, Object::makeFixnum(static_cast<int>(j)));
         } else {
             rv->set(j, insn);
             i++;
@@ -759,7 +759,7 @@ Object pass4FixupLabel(Object vec)
             const Object label = table->ref(code->ref(i + 1), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, LOCAL_JMP);
-                code->set(i + 1, Object::makeFixnum(label.toFixnum() - i - 1));
+                code->set(i + 1, Object::makeFixnum(label.toFixnum() - static_cast<int>(i) - 1));
                 i += 2;
             } else {
                 i++;
@@ -781,7 +781,7 @@ Object pass4FixupLabel(Object vec)
             const Object label = table->ref(code->ref(i + 1), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, insn);
-                code->set(i + 1, Object::makeFixnum(label.toFixnum() - i - 1));
+                code->set(i + 1, Object::makeFixnum(label.toFixnum() - static_cast<int>(i) - 1));
                 i += 2;
             } else {
                 i++;
@@ -792,7 +792,7 @@ Object pass4FixupLabel(Object vec)
             const Object label = table->ref(code->ref(i + 3), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, insn);
-                code->set(i + 3, Object::makeFixnum(label.toFixnum() - i - 3));
+                code->set(i + 3, Object::makeFixnum(label.toFixnum() - static_cast<int>(i) - 3));
                 i += 4;
             } else {
                 i++;
@@ -802,7 +802,7 @@ Object pass4FixupLabel(Object vec)
             const Object label = table->ref(code->ref(i + 2), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, insn);
-                code->set(i + 2, Object::makeFixnum(label.toFixnum() - i - 2));
+                code->set(i + 2, Object::makeFixnum(label.toFixnum() - static_cast<int>(i) - 2));
                 i += 3;
             } else {
                 i++;
@@ -812,7 +812,7 @@ Object pass4FixupLabel(Object vec)
         }
     }
     // Peephole optimization
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         const Object insn = code->ref(i);
 
         // when jump destination is jump.
@@ -820,7 +820,7 @@ Object pass4FixupLabel(Object vec)
             MOSH_ASSERT(i + 1 < length);
             MOSH_ASSERT(code->ref(i + 1).isFixnum());
             const int offset = code->ref(i + 1).toFixnum() + 1;
-            const int destinationIndex = i + offset;
+            const size_t destinationIndex = i + offset;
             MOSH_ASSERT(i + offset < length);
             const Object dest = code->ref(destinationIndex);
             if (dest == LOCAL_JMP) {
@@ -855,7 +855,7 @@ Object pass4FixupLabel(Object vec)
             MOSH_ASSERT(i + 1 < length);
             MOSH_ASSERT(code->ref(i + 1).isFixnum());
             const int offset = code->ref(i + 1).toFixnum() + 1;
-            const int destinationIndex = i + offset;
+            const size_t destinationIndex = i + offset;
             MOSH_ASSERT(i + offset < length);
             if (code->ref(destinationIndex) == TEST ||
                 code->ref(destinationIndex) == LOCAL_JMP) {
@@ -872,7 +872,7 @@ Object scheme::disasmEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsClosure(0, closure);
     Object* code = theVM->disasm(closure);
-    for (int i = 0; i < closure->size + Closure::HEADER_SIZE; i++) {
+    for (size_t i = 0; i < closure->size + Closure::HEADER_SIZE; i++) {
         const Object c = code[i];
         if (c.isInstruction()) {
             LOG1("\n~a ", Object(Instruction::toString(c.val)));

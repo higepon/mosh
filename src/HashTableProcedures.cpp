@@ -48,15 +48,15 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
-int scheme::equalHash(Object obj)
+intptr_t scheme::equalHash(Object obj)
 {
     // borrowed from ypsilon scheme by Yoshikatsu Fujita
     if (obj.isPair()) {
-        int hash1 = equalHash(obj.car());
-        int hash2 = equalHash(obj.cdr());
+        intptr_t hash1 = equalHash(obj.car());
+        intptr_t hash2 = equalHash(obj.cdr());
         return (hash1 + hash2 * 64 - hash2);
     } else if (obj.isVector()) {
-        int hash = 1;
+        intptr_t hash = 1;
         const Vector* const vec = obj.toVector();
         const size_t length = vec->length();
         for (size_t i = 0; i < length; i++) {
@@ -90,7 +90,7 @@ int scheme::stringCiHash(const ucs4string& str)
     return hashValue;
 }
 
-int scheme::symbolHash(Symbol* symbol)
+intptr_t scheme::symbolHash(Symbol* symbol)
 {
     // we can use pointer as hash, because symbol is interned.
     return reinterpret_cast<intptr_t>(symbol);
@@ -132,7 +132,7 @@ Object scheme::hashtableSizeEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsHashTable(0, hashtable);
-    return Object::makeFixnum(hashtable->size());
+    return Object::makeFixnum(static_cast<int>(hashtable->size()));
 }
 
 Object scheme::hashtablePEx(VM* theVM, int argc, const Object* argv)
@@ -148,9 +148,9 @@ Object scheme::eqvHashEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     const Object obj = argv[0];
     if (obj.isNumber()) {
-        return Object::makeFixnum(stringTosymbol(Arithmetic::numberToString(obj, 10)).val);
+        return Object::makeFixnum(static_cast<int>(stringTosymbol(Arithmetic::numberToString(obj, 10)).val));
     } else {
-        return Object::makeFixnum(obj.val);
+        return Object::makeFixnum(static_cast<int>(obj.val));
     }
 }
 
@@ -171,7 +171,7 @@ Object scheme::symbolHashEx(VM* theVM, int argc, const Object* argv)
     argumentAsSymbol(0, symbol);
 
     // we can use pointer as hash, because symbol is interned.
-    return Object::makeFixnum(symbolHash(symbol));
+    return Object::makeFixnum(static_cast<fixedint>(symbolHash(symbol)));
 }
 
 Object scheme::stringCiHashEx(VM* theVM, int argc, const Object* argv)

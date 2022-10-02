@@ -150,12 +150,12 @@ inline Object* VM::disasm(Closure* closure)
     return disasm(closure->pc - Closure::HEADER_SIZE, closure->size + Closure::HEADER_SIZE);
 }
 
-inline Object* VM::disasm(Object* code, int length)
+inline Object* VM::disasm(Object* code, size_t length)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* ret = Object::makeObjectArray(length);
     void** table = (void**)runLoop(NULL, NULL, true).val;
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         const Object c = code[i];
         bool isInsn = false;
         for (int j = 0; j < Instruction::INSTRUCTION_COUNT; j++) {

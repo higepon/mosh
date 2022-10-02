@@ -164,7 +164,7 @@ public:
     Object getGlobalValueOrFalse(const ucs4char* id);
     bool isR6RSMode() const;
     Object activateR6RSMode(const uint8_t* image, unsigned int image_size, bool isDebugExpand);
-    Object* disasm(Object* code, int length);
+    Object* disasm(Object* code, size_t length);
     Object* disasm(Closure* closure);
 #ifdef ENABLE_PROFILER
     // Profiler
