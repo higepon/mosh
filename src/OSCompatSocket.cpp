@@ -213,12 +213,12 @@ int Socket::receive(uint8_t* data, int size, int flags)
         MOSH_ASSERT(isOpen());
 
         for (;;) {
-            const ssize_t ret = recv(socket_, (char*)data, size, flags);
+            const int ret = recv(socket_, (char*)data, size, flags);
             if (ret == -1 && errno == EINTR) {
                 continue;
             }
             setLastError();
-            return static_cast<int>(ret);
+            return ret;
         }
     }
 }
@@ -245,16 +245,16 @@ int Socket::send(uint8_t* data, size_t size, int flags)
         size_t rest = size;
         int sizeSent = 0;
         while (rest > 0) {
-            const ssize_t ret = ::send(socket_, (char*)data, size, flags);
+            const int ret = ::send(socket_, (char*)data, size, flags);
             if (ret == -1) {
                 if (errno == EINTR) {
                     continue;
                 } else {
                     setLastError();
-                    return static_cast<int>(ret);
+                    return ret;
                 }
             }
-            sizeSent += static_cast<int>(ret);
+            sizeSent += ret;
             rest -= ret;
             data += ret;
             size -= ret;
