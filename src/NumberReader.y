@@ -420,7 +420,7 @@ decimal10 : uinteger10String suffix {
                 if (!f.isFixnum()) {
                   yyerror("invalid flonum expression: too large significand");
                 }
-                const size_t digit = $3.size();
+                const int digit = static_cast<int>($3.size());
                 $$ = Object::makeFlonum(FlonumUtil::algorithmR(f, e.toFixnum() - digit, z0));
               } else {
                 ucs4string ret = $1;

@@ -151,7 +151,7 @@ int64_t CustomBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
         return 0;
     } else {
         uint8_t* dest = allocatePointerFreeU8Array(1);
-        dest[0] = tatic_cast<uint8_t>(v);
+        dest[0] = static_cast<uint8_t>(v);
         *buf = dest;
         return 1;
     }

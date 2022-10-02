@@ -117,7 +117,7 @@ Object CustomTextualInputPort::position() const
     MOSH_ASSERT(hasPosition());
     const Object position = theVM_->callClosure0(getPositionProc_);
     if (position.isFixnum() && !buffer_.empty()) {
-        return Object::makeFixnum(position.toFixnum() - buffer_.size());
+        return Object::makeFixnum(position.toFixnum() - static_cast<int>(buffer_.size()));
     } else {
         return position;
     }
