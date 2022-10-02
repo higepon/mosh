@@ -53,7 +53,7 @@ class ucs4string : public ucs4string_base
 {
 public:
     ucs4string() = default;
-    explicit ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
+    explicit ucs4string(size_t n, ucs4char c = ' ') : ucs4string_base(n, c) {}
     explicit ucs4string(const ucs4char* s) : ucs4string_base(s) {}
     ucs4string(const ucs4char* s, size_t n) : ucs4string_base(s, n) {}
     ucs4string(ucs4string::const_iterator a, ucs4string::const_iterator b) : ucs4string_base(a, b) {}
@@ -62,7 +62,7 @@ public:
     void split(ucs4char ch, gc_vector<ucs4string>& v) const;
     ucs4char* strdup();
     bool is_ascii() const;
-    static ucs4string from_c_str(const char* s, int size);
+    static ucs4string from_c_str(const char* s, size_t size);
     static ucs4string from_c_str(const char* s);
     // see R6RS 11.11 Characters
     static bool isValidScalar(int ch)
