@@ -958,10 +958,10 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     return ucs4string(UC(""));
 #elif defined(__linux__) || defined(__CYGWIN__) || defined(__NetBSD__)
     char path[4096];
-    int ret = readlink("/proc/self/exe", path, sizeof(path));
+    ssize_t ret = readlink("/proc/self/exe", path, sizeof(path));
     if (ret != -1) {
         std::string chop(path, ret);
-        int pos = chop.find_last_of('/');
+        size_t pos = chop.find_last_of('/');
         if (pos > 0) {
             return ucs4string::from_c_str(chop.substr(0, pos).c_str());
         }

@@ -317,7 +317,7 @@ Object Equal::preP(Object x, Object y, Object k)
         if (y.toVector()->length() != n) {
             return Object::False;
         }
-        int i = 0;
+        size_t i = 0;
         MOSH_ASSERT(k.isFixnum());
         for (;;) {
             if (i == n || k.toFixnum() <= 0) {
@@ -498,7 +498,7 @@ Object Equal::slowP(EqHashTable** pht, Object x, Object y, Object k)
         if (!callUnionFind(pht, x, y).isFalse()) {
             return Object::makeFixnum(0);
         }
-        int i = 0;
+        size_t i = 0;
         MOSH_ASSERT(k.isFixnum());
         k = Object::makeFixnum(k.toFixnum() - 1);
         for (;;) {
@@ -620,7 +620,7 @@ Object Equal::fastP(EqHashTable** pht, Object x, Object y, Object k)
         if (y.toVector()->length() != n) {
             return Object::False;
         }
-        int i = 0;
+        size_t i = 0;
         for (;;) {
             if (i == n) {
                 return k;

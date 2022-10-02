@@ -1876,7 +1876,7 @@ Object scheme::putU8Ex(VM* theVM, int argc, const Object* argv)
     argumentAsBinaryOutputPort(0, binaryOutputPort);
     argumentAsOctet(1, octet);
 
-    binaryOutputPort->putU8(octet);
+    binaryOutputPort->putU8(static_cast<uint8_t>(octet));
 
     return Object::Undef;
 }

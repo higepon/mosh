@@ -61,7 +61,7 @@ int Latin1Codec::putChar(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingM
 int Latin1Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     if (u <= 0xff) {
-        buf[0] = u;
+        buf[0] = static_cast<uint8_t>(u);
         return 1;
     } else {
         if (mode == ErrorHandlingMode(RAISE_ERROR)) {

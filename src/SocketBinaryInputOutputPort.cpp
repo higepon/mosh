@@ -145,7 +145,7 @@ int SocketBinaryInputOutputPort::getU8()
 
 int SocketBinaryInputOutputPort::lookaheadU8()
 {
-    const uint8_t ret = getU8();
+    const uint8_t ret = static_cast<uint8_t>(getU8());
     setLastU8(ret);
     return ret;
 }
@@ -157,7 +157,7 @@ int64_t SocketBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bo
         buf++;
         reqSize--;
     }
-    const int readSize = socket_->receive(buf, reqSize, 0);
+    const int readSize = socket_->receive(buf, static_cast<int>(reqSize), 0);
     if (-1 == readSize) {
         throwIOError2(IOError::READ, socket_->getLastErrorMessage());
         return -1;
