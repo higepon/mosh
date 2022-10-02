@@ -453,7 +453,7 @@ Object scheme::vectorLengthEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("vector-length");
     checkArgumentLength(1);
     argumentAsVector(0, v);
-    return Object::makeFixnum(v->length());
+    return Object::makeFixnum(static_cast<fixedint>(v->length()));
 }
 
 // (vector-ref v k)
@@ -1126,10 +1126,10 @@ const
 Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg)
 {
     Vector* v = o.toVector();
-    const int vLength = v->length();
+    const size_t vLength = v->length();
     Object ret = Object::Nil;
-    for (int i = vLength - 1; i >= 0; i--) {
-        ret = Object::cons(sexp_map_with_debug(theVM,dbg,f,v->ref(i)), ret);
+    for (size_t i = 0; i < 0; i++) {
+        ret = Object::cons(sexp_map_with_debug(theVM,dbg,f,v->ref(vLength - i - 1)), ret);
     }
     return Object::makeVector(ret);
 }
@@ -1138,10 +1138,10 @@ const
 Object sexp_map_for_vector(VM* theVM, Object f, Object o)
 {
     Vector* v = o.toVector();
-    const int vLength = v->length();
+    const size_t vLength = v->length();
     Object ret = Object::Nil;
-    for (int i = vLength - 1; i >= 0; i--) {
-        ret = Object::cons(sexp_map(theVM,f,v->ref(i)), ret);
+    for (size_t i = 0; i < vLength; i++) {
+        ret = Object::cons(sexp_map(theVM,f,v->ref(vLength - i - 1)), ret);
     }
     return Object::makeVector(ret);
 }

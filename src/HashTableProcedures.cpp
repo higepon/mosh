@@ -188,7 +188,7 @@ Object scheme::equalHashEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("equal-hash");
     checkArgumentLength(1);
-    return Object::makeFixnum(equalHash(argv[0]));
+    return Object::makeFixnum(static_cast<fixedint>(equalHash(argv[0])));
 }
 
 
