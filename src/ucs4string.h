@@ -55,7 +55,7 @@ public:
     ucs4string() = default;
     explicit ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
     explicit ucs4string(const ucs4char* s) : ucs4string_base(s) {}
-    ucs4string(const ucs4char* s, int n) : ucs4string_base(s, n) {}
+    ucs4string(const ucs4char* s, size_t n) : ucs4string_base(s, n) {}
     ucs4string(ucs4string::const_iterator a, ucs4string::const_iterator b) : ucs4string_base(a, b) {}
     char* ascii_c_str() const;
     ucs4string substr(int x, int size) const;

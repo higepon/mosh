@@ -38,7 +38,7 @@ class String EXTEND_GC
 {
 public:
     explicit String(const ucs4char* s) : data_(s) {}
-    explicit String(const ucs4char* s, int length) : data_(ucs4string(s, length)) {}
+    explicit String(const ucs4char* s, size_t length) : data_(ucs4string(s, length)) {}
     explicit String(int n, ucs4char c = ' ') : data_(ucs4string(n, c)) {}
     explicit String(const char* s)
     {
@@ -48,7 +48,7 @@ public:
 #else
         ucs4char* p = new ucs4char[len + 1];
 #endif
-        for (int i = 0; i < len + 1; i++) {
+        for (size_t i = 0; i < len + 1; i++) {
             p[i] = s[i];
         }
         data_ = ucs4string(p);
