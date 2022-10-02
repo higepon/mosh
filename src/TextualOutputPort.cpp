@@ -147,8 +147,8 @@ void TextualOutputPort::putString(const ucs4string& s)
 
 void TextualOutputPort::putString(const char* s)
 {
-    const int len = strlen(s);
-    for (int i = 0; i < len; i++) {
+    const size_t len = strlen(s);
+    for (size_t i = 0; i < len; i++) {
         putCharHandleSpecial(s[i], true);
     }
 }
@@ -576,7 +576,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC("#<hashtable>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
-        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen);
+        print<isHumanReadable>(theVM, Object::makeFixnum(static_cast<int>(o.val)), seen);
         putString(UC(">"));
     } else if (o.isCProcedure()) {
 
@@ -590,9 +590,9 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         }
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
-        const int length = byteVector->length();
+        const size_t length = byteVector->length();
         putString(UC("#vu8("));
-        for (int i = 0; i < length; i++) {
+        for (size_t i = 0; i < length; i++) {
             if (i != 0) {
                 putString(" ");
             }
@@ -659,7 +659,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC("i"));
     } else if (o.isCodeBuilder()) {
         putString(UC("<code-builder "));
-        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen);
+        print<isHumanReadable>(theVM, Object::makeFixnum(static_cast<int>(o.val)), seen);
         putString(UC(">"));
     } else if (o.isTranscoder()) {
         Transcoder* transcoder = o.toTranscoder();
