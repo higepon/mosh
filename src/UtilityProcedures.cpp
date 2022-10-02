@@ -832,10 +832,10 @@ Object scheme::vectorTolistEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsVector(0, v);
 
-    const int vLength = v->length();
+    const size_t vLength = v->length();
     Object ret = Object::Nil;
-    for (int i = vLength - 1; i >= 0; i--) {
-        ret = Object::cons(v->ref(i), ret);
+    for (size_t i = 0; i < vLength; i++) {        
+        ret = Object::cons(v->ref(vLength - i - 1), ret);
     }
     return ret;
 }

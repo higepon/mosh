@@ -182,8 +182,8 @@ public:
     static Object makePointer(void* pointer);
     static Object makeGloc(Object value);
     static Object makeSocket(const Socket* socket);
-    static Object* makeObjectArray(int size);
-    static Object* makeObjectArrayLocal(int size);
+    static Object* makeObjectArray(size_t size);
+    static Object* makeObjectArrayLocal(size_t size);
     static Object makeFixnum(fixedint n);
     static Object makeBignum(signed long int n);
     static Object makeBignum(Bignum* b);
@@ -196,8 +196,8 @@ public:
     static Object makeConst(int n);
     static Object cons(Object car, Object cdr);
     static Object makeAnnoatedPair(Object car, Object cdr, Object annotation);
-    static Object makeVector(int n, Object o = Object::Undef);
-    static Object makeVector(int n, Object* objects);
+    static Object makeVector(size_t n, Object o = Object::Undef);
+    static Object makeVector(size_t n, Object* objects);
     static Object makeVector(Object pair);
     static Object makeString(const ucs4char* str);
     static Object makeString(const ucs4string& str);
@@ -291,7 +291,7 @@ public:
 
 private:
     explicit Object(intptr_t n) : val(n) {}
-    Object(int n, Object o); // for vector
+    Object(size_t n, Object o); // for vector
     uint8_t tag() const;
 
 public:

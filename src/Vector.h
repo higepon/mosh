@@ -37,33 +37,33 @@ namespace scheme {
 class Vector EXTEND_GC
 {
 public:
-    explicit Vector(int num);
-    Vector(int num, Object obj);
-    Vector(int num, Object* objects);
+    explicit Vector(size_t num);
+    Vector(size_t num, Object obj);
+    Vector(size_t num, Object* objects);
     explicit Vector(Object pair);
     ~Vector();
     void fill(Object obj);
-    Object ref(int index) const;
-    void set(int index, Object obj);
-    int length() const;
-    bool isValidIndex(int index) const;
+    Object ref(size_t index) const;
+    void set(size_t index, Object obj);
+    size_t length() const;
+    bool isValidIndex(size_t index) const;
     Object* data();
 
 private:
-    int num_;
+    size_t num_;
     Object* objects_;
 };
 
-inline Vector::Vector(int num, Object obj) : num_(num)
+inline Vector::Vector(size_t num, Object obj) : num_(num)
 {
     MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
     objects_ = Object::makeObjectArrayLocal(num);
-    for (int i = 0; i < num; i++) {
+    for (size_t i = 0; i < num; i++) {
         objects_[i] = obj;
     }
 }
 
-inline Vector::Vector(int num) : num_(num)
+inline Vector::Vector(size_t num) : num_(num)
 {
     MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
     objects_ = Object::makeObjectArrayLocal(num);
@@ -71,46 +71,46 @@ inline Vector::Vector(int num) : num_(num)
 
 
 
-inline Vector::Vector(int num, Object* objects) : num_(num), objects_(objects)
+inline Vector::Vector(size_t num, Object* objects) : num_(num), objects_(objects)
 {
 }
 
 inline void Vector::fill(Object obj)
 {
     {
-        for (int i = 0; i < num_; i++) {
+        for (size_t i = 0; i < num_; i++) {
             objects_[i] = obj;
         }
     }
 }
 
-inline Object Vector::ref(int index) const
+inline Object Vector::ref(size_t index) const
 {
     return objects_[index];
 }
 
-inline void Vector::set(int index, Object obj)
+inline void Vector::set(size_t index, Object obj)
 {
     objects_[index] = obj;
 }
 
-inline int Vector::length() const
+inline size_t Vector::length() const
 {
     return num_;
 }
 
-inline bool Vector::isValidIndex(int index) const
+inline bool Vector::isValidIndex(size_t index) const
 {
-    return index >= 0 && index < num_;
+    return index < num_;
 }
 
-inline Object::Object(int n, Object o)
+inline Object::Object(size_t n, Object o)
   : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Vector, reinterpret_cast<intptr_t>(new Vector(n, o)))))
 {
 }
 
 
-inline Object Object::makeVector(int n, Object* objects)
+inline Object Object::makeVector(size_t n, Object* objects)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Vector, reinterpret_cast<intptr_t>
                                                         (new Vector(n, objects)))));

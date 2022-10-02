@@ -174,12 +174,12 @@ inline Object* VM::disasm(Object* code, int length)
 #endif
 }
 
-    inline Object* VM::getDirectThreadedCode(/*const*/ Object* code, int length, bool isCompiler /* = false */)
+    inline Object* VM::getDirectThreadedCode(/*const*/ Object* code, size_t length, bool isCompiler /* = false */)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* direct = Object::makeObjectArray(length);
     void** table = (void**)runLoop(NULL, NULL, true).val;
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         // Direct threaded code
         // Be careful on using direct threaded code for following case.
         //   1. pre-compiled compiler has two types of instructions.
