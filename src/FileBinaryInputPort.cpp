@@ -96,7 +96,7 @@ ucs4string FileBinaryInputPort::toString()
 int FileBinaryInputPort::getU8()
 {
     if (hasAheadU8()) {
-        const uint8_t c = aheadU8_;
+        const uint8_t c = static_cast<uint8_t>(aheadU8_);
         aheadU8_ = EOF;
         position_++;
         return c;
@@ -135,7 +135,7 @@ int64_t FileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isEr
 {
     int64_t ret;
     if (hasAheadU8()) {
-        buf[0] = aheadU8_;
+        buf[0] = static_cast<uint8_t>(aheadU8_);
         aheadU8_ = EOF;
         ret = file_->read(buf + 1, reqSize - 1);
     } else {
@@ -156,7 +156,7 @@ int64_t FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 
     uint8_t* dest = allocatePointerFreeU8Array(restSize);
     if (hasAheadU8()) {
-        dest[0] = aheadU8_;
+        dest[0] = static_cast<uint8_t>(aheadU8_);
         aheadU8_ = EOF;
         *buf = dest;
         position_++;
@@ -176,7 +176,7 @@ int64_t FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     uint8_t* dest = allocatePointerFreeU8Array(1);
     if (hasAheadU8()) {
-        dest[0] = aheadU8_;
+        dest[0] = static_cast<uint8_t>(aheadU8_);
         aheadU8_ = EOF;
         *buf = dest;
         position_++;
