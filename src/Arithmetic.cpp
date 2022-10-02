@@ -1526,8 +1526,8 @@ int64_t FlonumUtil::decode_double(double n, int* exp, int* sign)
     datum.f64 = n;
     uint64_t bits = datum.u64;
     uint64_t mant_bits = bits & (iexpt_2n52 - 1);
-    uint32_t sign_bits = bits >> 63;
-    uint32_t exp_bits = (bits >> 52) & 0x7ff;
+    uint32_t sign_bits = static_cast<uint32_t>(bits >> 63);
+    uint32_t exp_bits = static_cast<uint32_t>((bits >> 52) & 0x7ff);
     if (n == 0.0) {
         *exp = 0;
         *sign = sign_bits ? -1 : 1;
@@ -1669,22 +1669,22 @@ loop:
     bool tc2 = ((Arithmetic::gt(Arithmetic::add(r, mp), s)) || (meven && Arithmetic::eq(Arithmetic::add(r, mp), s)));
     if (!tc1) {
         if (!tc2) {
-            digits[digit_count++] = dig;
+            digits[digit_count++] = static_cast<char>(dig);
             if (digit_count >= array_sizeof(digits)) {
                 MOSH_FATAL("something wrong");
             }
             goto loop;
         } else {
-            digits[digit_count++] = dig + 1;
+            digits[digit_count++] = static_cast<char>(dig + 1);
         }
     } else {
         if (!tc2) {
-            digits[digit_count++] = dig;
+            digits[digit_count++] = static_cast<char>(dig);
         } else {
             if (Arithmetic::lt(Arithmetic::add(r, r), s)) {
-                digits[digit_count++] = dig;
+                digits[digit_count++] = static_cast<char>(dig);
             } else {
-                digits[digit_count++] = dig + 1;
+                digits[digit_count++] = static_cast<char>(dig + 1);
             }
         }
     }

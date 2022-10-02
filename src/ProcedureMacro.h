@@ -210,7 +210,7 @@ inline const char* nth(int index) {
     }
 
 
-#define argumentAsOctet(index, variableName) castArgument(index, variableName, isOctet, octet, uint8_t, toFixnum)
+#define argumentAsOctet(index, variableName) castArgument(index, variableName, isOctet, octet, fixedint, toFixnum)
 #define argumentAsCompnum(index, variableName) castArgument(index, variableName, isCompnum, Complex number, Compnum*, toCompnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
 #define argumentCheckChar(index, variableName) checkType(index, variableName, isChar, char)

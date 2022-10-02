@@ -209,7 +209,7 @@ void FaslWriter::putDatum(Object obj)
         EqHashTable* const ht = obj.toEqHashTable();
         Vector* const keys = ht->keys().toVector();
         const size_t length = keys->length();
-        putDatum(Object::makeFixnum(length));
+        putDatum(Object::makeFixnum(static_cast<fixedint>(length)));
         for (size_t i = 0; i < length; i++) {
             putDatum(keys->ref(i));
             putDatum(ht->ref(keys->ref(i), Object::False));

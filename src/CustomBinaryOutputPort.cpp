@@ -84,7 +84,7 @@ int64_t CustomBinaryOutputPort::putU8(uint8_t* v, int64_t _size)
     const Object bv = Object::makeByteVector(new ByteVector(size, v));
     const Object start = Object::makeFixnum(0);
     if (Fixnum::canFit(size)) {
-        const Object count = Object::makeFixnum(size);
+        const Object count = Object::makeFixnum(static_cast<fixedint>(size));
         const Object result = theVM_->callClosure3(writeDProc_, bv, start, count);
         MOSH_ASSERT(result.isFixnum());
         return result.toFixnum();

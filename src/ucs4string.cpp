@@ -105,7 +105,7 @@ char* ucs4string::ascii_c_str() const
 #endif
 
     for (size_t i = 0; i < sz; i++) {
-        ret[i] = (*this)[i] & 0xff;
+        ret[i] = static_cast<char>((*this)[i] & 0xff);
     }
     ret[sz] = '\0';
     return ret;
