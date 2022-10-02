@@ -92,14 +92,14 @@ loop:
             goto loop;
         } else if (obj.isVector()) {
             Vector* const v = obj.toVector();
-            for (int i = 0; i < v->length(); i++) {
+            for (size_t i = 0; i < v->length(); i++) {
                 scanSharedObjects(v->ref(i));
             }
         } else if (obj.isEqHashTable()) {
             EqHashTable* const ht = obj.toEqHashTable();
             Vector* const keys = ht->keys().toVector();
-            const int length = keys->length();
-            for (int i = 0; i < length; i++) {
+            const size_t length = keys->length();
+            for (size_t i = 0; i < length; i++) {
                 const Object key = keys->ref(i);
                 MOSH_ASSERT(key.isSymbol());
                 scanSharedObjects(key);
@@ -118,7 +118,7 @@ loop:
 
 void FaslWriter::emitString(const ucs4string& string)
 {
-    emitU32(string.size());
+    emitU32(static_cast<uint32_t>(string.size()));
     for (uint32_t i = 0; i < string.size(); i++) {
         emitU32(string[i]);
     }
@@ -126,9 +126,9 @@ void FaslWriter::emitString(const ucs4string& string)
 
 void FaslWriter::emitShortAsciiString(const ucs4string& string)
 {
-    emitU8(string.size());
+    emitU8(static_cast<uint8_t>(string.size()));
     for (uint32_t i = 0; i < string.size(); i++) {
-        emitU8(string[i]);
+        emitU8(static_cast<uint8_t>(string[i]));
     }
 }
 
@@ -151,13 +151,13 @@ void FaslWriter::putList(Object obj)
     }
     if (obj.isNil()) {
         emitU8(Fasl::TAG_PLIST);
-        emitU32(v.size());
+        emitU32(static_cast<uint32_t>(v.size()));
         for (ObjectVector::reverse_iterator it = v.rbegin(); it != v.rend(); ++it) {
             putDatum(*it);
         }
     } else {
         emitU8(Fasl::TAG_DLIST);
-        emitU32(v.size());
+        emitU32(static_cast<uint32_t>(v.size()));
         if (sharedObjects_->ref(obj, Object::False).isPair()) {
             Object p = sharedObjects_->ref(obj, Object::False);
             emitU8(Fasl::TAG_DEFINING_SHARED);
@@ -208,9 +208,9 @@ void FaslWriter::putDatum(Object obj)
         emitU8(Fasl::TAG_EQ_HASH_TABLE);
         EqHashTable* const ht = obj.toEqHashTable();
         Vector* const keys = ht->keys().toVector();
-        const int length = keys->length();
+        const size_t length = keys->length();
         putDatum(Object::makeFixnum(length));
-        for (int i = 0; i < length; i++) {
+        for (size_t i = 0; i < length; i++) {
             putDatum(keys->ref(i));
             putDatum(ht->ref(keys->ref(i), Object::False));
         }
@@ -251,7 +251,7 @@ void FaslWriter::putDatum(Object obj)
         size_t size = 0;
         uint8_t* data = b->serialize(&size);
         MOSH_ASSERT(size < 65535);
-        emitU16(size);
+        emitU16(static_cast<uint16_t>(size));
         for (size_t i = 0; i < size; i++) {
             emitU8(data[i]);
         }
@@ -265,10 +265,10 @@ void FaslWriter::putDatum(Object obj)
             emitU8(Fasl::TAG_FIXNUM_1);
         } else if (n >= 2 && n <= 255) {
             emitU8(Fasl::TAG_SMALL_FIXNUM);
-            emitU8(n);
+            emitU8(static_cast<uint8_t>(n));
         } else if (n >= 256 && n <= 65535) {
             emitU8(Fasl::TAG_MEDIUM_FIXNUM);
-            emitU16(n);
+            emitU16(static_cast<uint16_t>(n));
         } else {
             emitU8(Fasl::TAG_FIXNUM);
             emitU32(obj.toFixnum());
@@ -297,20 +297,20 @@ void FaslWriter::putDatum(Object obj)
     }
     if (obj.isVector()) {
         Vector* const vector = obj.toVector();
-        const int length = vector->length();
+        const size_t length = vector->length();
         emitU8(Fasl::TAG_VECTOR);
-        emitU32(length);
-        for (int i = 0; i < length; i++) {
+        emitU32(static_cast<uint32_t>(length));
+        for (size_t i = 0; i < length; i++) {
             putDatum(vector->ref(i));
         }
         return;
     }
     if (obj.isByteVector()) {
         ByteVector* const bv = obj.toByteVector();
-        const int length = bv->length();
+        const size_t length = bv->length();
         emitU8(Fasl::TAG_BVECTOR);
-        emitU32(length);
-        for (int i = 0; i < length; i++) {
+        emitU32(static_cast<uint32_t>(length));
+        for (size_t i = 0; i < length; i++) {
             emitU8(bv->u8Ref(i));
         }
         return;
@@ -379,22 +379,22 @@ void FaslWriter::emitU8(uint8_t value)
 
 void FaslWriter::emitU16(uint16_t value)
 {
-    outputPort_->putU8(value);
-    outputPort_->putU8(value >> 8);
+    outputPort_->putU8(static_cast<uint8_t>(value));
+    outputPort_->putU8(static_cast<uint8_t>(value >> 8));
 }
 
 void FaslWriter::emitU32(uint32_t value)
 {
-    outputPort_->putU8(value);
-    outputPort_->putU8(value >> 8);
-    outputPort_->putU8(value >> 16);
-    outputPort_->putU8(value >> 24);
+    outputPort_->putU8(static_cast<uint8_t>(value));
+    outputPort_->putU8(static_cast<uint8_t>(value >> 8));
+    outputPort_->putU8(static_cast<uint8_t>(value >> 16));
+    outputPort_->putU8(static_cast<uint8_t>(value >> 24));
 }
 
 void FaslWriter::emitU64(uint64_t value)
 {
-    emitU32(value);
-    emitU32(value >> 32);
+    emitU32(static_cast<uint32_t>(value));
+    emitU32(static_cast<uint32_t>(value >> 32));
 }
 
 void FaslWriter::put(Object obj)

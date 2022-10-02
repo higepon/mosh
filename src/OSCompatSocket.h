@@ -67,7 +67,7 @@ namespace scheme {
         Socket(int fd, enum Type type, const ucs4string& address);
 
         int receive(uint8_t* data, int size, int flags);
-        int send(uint8_t* data, int size, int flags);
+        int send(uint8_t* data, size_t size, int flags);
         Socket* accept();
         void shutdown(int how);
         void close();
