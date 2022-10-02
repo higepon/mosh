@@ -174,7 +174,7 @@ inline Object Object::makeFixnum(fixedint n)
     return Object((n << 2) + 1);
 }
 
-inline Object Object::makeRaw(int n)
+inline Object Object::makeRaw(intptr_t n)
 {
     return Object(n);
 }

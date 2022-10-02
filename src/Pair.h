@@ -174,8 +174,8 @@ struct Pair
     static Object objectVectorToList(const ObjectVector& objectVector)
     {
         Object ret = Object::Nil;
-        for (int i = objectVector.size() - 1; i >= 0; i--) {
-            ret = Object::cons(objectVector[i], ret);
+        for (size_t i = 0; i < objectVector.size(); i++) {
+            ret = Object::cons(objectVector[objectVector.size() - 1 - i], ret);
         }
         return ret;
     }
