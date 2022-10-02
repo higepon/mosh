@@ -338,7 +338,7 @@ void VM::dumpCompiledCode(Object code) const
 {
     MOSH_ASSERT(code.isVector());
     Vector* const v = code.toVector();
-    for (int i = 0; i < v->length(); i++) {
+    for (size_t i = 0; i < v->length(); i++) {
         const Object c = v->ref(i);
         if (c.isInstruction()) {
             VM_LOG1("\n~a ", Object(Instruction::toString(static_cast<int>(c.val))));
@@ -389,7 +389,7 @@ void VM::loadFileWithGuard(const ucs4string& file)
 }
 
 // Faster than evaluateUnsafe, used to load compiler, which won't raise error.
-Object VM::evaluateUnsafe(Object* code, int codeSize, bool isCompiler /* = false */)
+Object VM::evaluateUnsafe(Object* code, size_t codeSize, bool isCompiler /* = false */)
 {
     closureForEvaluate_.toClosure()->pc = code;
     ac_ = closureForEvaluate_;
@@ -405,7 +405,7 @@ Object VM::evaluateUnsafe(Vector* code, bool isCompiler /* = false */)
     return evaluateUnsafe(code->data(), code->length(), isCompiler);
 }
 
-Object VM::evaluateSafe(Object* code, int codeSize, bool isCompiler /* = false */)
+Object VM::evaluateSafe(Object* code, size_t codeSize, bool isCompiler /* = false */)
 {
     Registers r;
     saveRegisters(&r);
@@ -472,10 +472,10 @@ Object VM::evalCompiledAfter(Object code)
     Vector* const vcode = code.toVector();
 
     // We need to append "RETURN 0" to the code.
-    const int codeSize = vcode->length();
-    const int bodySize = codeSize + 2;
+    const size_t codeSize = vcode->length();
+    const size_t bodySize = codeSize + 2;
     Object* body = Object::makeObjectArray(bodySize);
-    for (int i = 0; i < codeSize; i++) {
+    for (size_t i = 0; i < codeSize; i++) {
         body[i] = (vcode->data())[i];
     }
     body[codeSize]   = Object::makeRaw(Instruction::RETURN);
@@ -500,10 +500,10 @@ Object VM::evalAfter(Object sexp)
     Vector* const vcode = code.toVector();
 
     // We need to append "RETURN 0" to the code.
-    const int codeSize = vcode->length();
-    const int bodySize = codeSize + 2;
+    const size_t codeSize = vcode->length();
+    const size_t bodySize = codeSize + 2;
     Object* body = Object::makeObjectArray(bodySize);
-    for (int i = 0; i < codeSize; i++) {
+    for (size_t i = 0; i < codeSize; i++) {
         body[i] = (vcode->data())[i];
     }
     body[codeSize]   = Object::makeRaw(Instruction::RETURN);

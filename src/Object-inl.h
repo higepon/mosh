@@ -208,7 +208,7 @@ inline Object Object::makeConst(int n)
     return Object(MAKE_CONST(n));
 }
 
-inline Object Object::makeVector(int n, Object o)
+inline Object Object::makeVector(size_t n, Object o)
 {
     return Object(n, o);
 }
@@ -283,7 +283,7 @@ inline bool Object::isPort() const
     return isInputPort() || isOutputPort();
 }
 
-inline Object* Object::makeObjectArray(int size)
+inline Object* Object::makeObjectArray(size_t size)
 {
 #ifdef USE_BOEHM_GC
     return new(GC) Object[size];
@@ -292,7 +292,7 @@ inline Object* Object::makeObjectArray(int size)
 #endif
 }
 
-inline Object* Object::makeObjectArrayLocal(int size)
+inline Object* Object::makeObjectArrayLocal(size_t size)
 {
 #ifdef USE_BOEHM_GC
     return static_cast<Object *>

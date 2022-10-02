@@ -100,8 +100,8 @@ void ReaderContext::LinkShared(Object obj)
     }
     if (obj.isVector()) {
         Vector* v = obj.toVector();
-        int n = v->length();
-        for (int i = 0; i < n; i++) {
+        size_t n = v->length();
+        for (size_t i = 0; i < n; i++) {
             if (v->ref(i).isSharedReference()) {
                 v->set(i, getShared(v->ref(i).toSharedReference()->index()));
             } else {
