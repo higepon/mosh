@@ -341,7 +341,7 @@ void VM::dumpCompiledCode(Object code) const
     for (int i = 0; i < v->length(); i++) {
         const Object c = v->ref(i);
         if (c.isInstruction()) {
-            VM_LOG1("\n~a ", Object(Instruction::toString(c.val)));
+            VM_LOG1("\n~a ", Object(Instruction::toString(static_cast<int>(c.val))));
         } else {
             VM_LOG1("~a ", c);
         }
@@ -911,7 +911,7 @@ void VM::expandStack(int plusSize)
     if (nullptr == nextStack) {
         // todo
         // handle stack overflow with guard
-        callAssertionViolationImmidiaImmediately(this, UC("#<closure>"), UC("stack overflow"), L1(Object::makeFixnum(sp_ - stack_)));
+        callAssertionViolationImmidiaImmediately(this, UC("#<closure>"), UC("stack overflow"), L1(Object::makeFixnum(static_cast<int>(sp_ - stack_))));
     }
     memcpy(nextStack, stack_, sizeof(Object) * stackSize_);
     fp_ = nextStack + (fp_ - stack_);
