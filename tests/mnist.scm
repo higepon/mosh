@@ -50,6 +50,18 @@
       [(_ m i j value)
         (vec-at (vec-at m i) j value)]))
 
+;; The matrix-map procedure applies proc element-wise to the elements of the matrix
+;; and returns a result matrix of the result.
+(define (matrix-map proc a)
+    (let ([mat (matrix-zeros-like a)]
+          [nrows (vec-at (matrix-shape a) 0)]
+          [ncols (vec-at (matrix-shape a) 1)])
+      (do ((i 0 (+ i 1)))
+          ((= i nrows) mat)
+          (do ((j 0 (+ j 1)))
+              ((= j ncols))
+              (mat-at mat i j (proc (mat-at a i j)))))))
+
 ;; Matrix shape.
 ;; N.B For now we only support 2D matrix.
 (define (matrix-shape x)
@@ -127,5 +139,8 @@
       [b (matrix ((5 6) (7 8)))])
    (test-equal (matrix ((6 8) (10 12)))
                (matrix-add a b)))
+
+;; matrix-map
+(test-equal (matrix ((2 4) (6 8))) (matrix-map (lambda (e) (* e 2)) (matrix ((1 2) (3 4)))))
 
 (test-results)
