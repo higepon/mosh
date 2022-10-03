@@ -1,4 +1,5 @@
 (import (scheme base)
+        (scheme inexact)
         (scheme write)
         (scheme case-lambda)
         (only (mosh) format)
@@ -105,6 +106,14 @@
               ((= j ncols))
               (mat-at mat i j (+ (mat-at a i j) (mat-at b i j)))))))
 
+;; Other neural network components.
+(define (sigmoid1 x)
+    (/ 1 (+ 1 (exp (* -1 x)))))
+
+;; Apply sigmoid to matrix
+(define (sigmoid a)
+    (matrix-map sigmoid1 a))
+
 ;; Matrix shape.
 (test-equal '#(1 2) (matrix-shape (matrix ((1 2)))))
 (test-equal '#(2 2) (matrix-shape (matrix ((1 2) (3 4)))))
@@ -142,5 +151,11 @@
 
 ;; matrix-map
 (test-equal (matrix ((2 4) (6 8))) (matrix-map (lambda (e) (* e 2)) (matrix ((1 2) (3 4)))))
+
+;; Other neural network components
+(test-true (good-enough? 0.57444252 (sigmoid1 0.3)))
+(test-true (let ([mat (sigmoid (matrix ((1 2))))])
+             (good-enough? 0.7310585 (mat-at mat 0 0))
+             (good-enough? 0.8807970 (mat-at mat 0 1))             ))
 
 (test-results)
