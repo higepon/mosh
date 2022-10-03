@@ -62,7 +62,7 @@
                    [ret 0])
           (if (= k m)
               ret
-              (begin (format #t "~a ~a\n" (mat-at x row k) (mat-at x row k)) (loop (+ k 1) (+ ret (* (mat-at x row k) (mat-at y k col))))))))
+              (loop (+ k 1) (+ ret (* (mat-at x row k) (mat-at y k col)))))))
       (do ((i 0 (+ i 1)))
           ((= i nrows) mat)
             (do ((j 0 (+ j 1)))
@@ -91,6 +91,7 @@
       [b (matrix ((5 6) (7 8)))])
    (test-equal (matrix ((19 22) (43 50) (67 78)))
                (matrix-mul a b)))
+
 
 (let ([a (matrix ((1 2 3) (4 5 6)))]
       [b (matrix ((1) (2) (3)))])
