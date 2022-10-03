@@ -50,24 +50,26 @@
     `#(,(vec-len x) ,(vec-len (vec-at x 0))))
 
 ;; Matrix multiplication.
-(define (matrix-mul x y)
-    (unless (= (vec-at (matrix-shape x) 1) (vec-at (matrix-shape y) 0))
-        (error "matrix-mul shapes don't match" (matrix-shape x) (matrix-shape y)))
-    (let* ([nrows (vec-at (matrix-shape x) 0)]
-           [ncols (vec-at (matrix-shape y) 1)]
-           [m     (vec-at (matrix-shape x) 1)]
+(define (matrix-mul a b)
+    (unless (= (vec-at (matrix-shape a) 1) (vec-at (matrix-shape b) 0))
+        (error "matrix-mul shapes don't match" (matrix-shape a) (matrix-shape b)))
+    (let* ([nrows (vec-at (matrix-shape a) 0)]
+           [ncols (vec-at (matrix-shape b) 1)]
+           [m     (vec-at (matrix-shape a) 1)]
            [mat (matrix nrows ncols)])
       (define (mul row col)
         (let loop ([k 0]
                    [ret 0])
           (if (= k m)
               ret
-              (loop (+ k 1) (+ ret (* (mat-at x row k) (mat-at y k col)))))))
+              (loop (+ k 1) (+ ret (* (mat-at a row k) (mat-at b k col)))))))
       (do ((i 0 (+ i 1)))
           ((= i nrows) mat)
             (do ((j 0 (+ j 1)))
               ((= j ncols))
               (mat-at mat i j (mul i j))))))
+
+
 
 ;; Matrix shape.
 (test-equal '#(1 2) (matrix-shape (matrix ((1 2)))))
