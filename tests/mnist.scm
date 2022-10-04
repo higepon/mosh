@@ -1,4 +1,5 @@
 (import (scheme base)
+        (scheme file)
         (scheme inexact)
         (scheme write)
         (scheme case-lambda)
@@ -85,6 +86,16 @@
            [ncols (vec-at (matrix-shape a) 1)])
         (matrix nrows ncols 0)))
 
+;; Create a matrix from bytevector.
+(define (bytevector->matrix bv nrows)
+    (let* ([ncols (/ (bytevector-length bv) nrows)]
+           [mat (matrix nrows ncols)])
+      (do ((i 0 (+ i 1)))
+          ((= i nrows) mat)
+            (do ((j 0 (+ j 1)))
+              ((= j ncols))
+              (mat-at mat i j (bytevector-u8-ref bv (+ j (* ncols i))))))))
+
 ;; Matrix multiplication.
 (define (matrix-mul a b)
     (unless (= (vec-at (matrix-shape a) 1) (vec-at (matrix-shape b) 0))
@@ -149,6 +160,11 @@
 (test-equal '#(1 2) (matrix-shape (matrix ((1 2)))))
 (test-equal '#(2 2) (matrix-shape (matrix ((1 2) (3 4)))))
 
+;; Create matrix.
+(test-equal (matrix ((1 2 3) (4 5 6)))   (bytevector->matrix #u8(1 2 3 4 5 6) 2))
+(test-equal (matrix ((1 2) (3 4) (5 6))) (bytevector->matrix #u8(1 2 3 4 5 6) 3))
+(test-equal (matrix ((1 2 3 4 5 6)))     (bytevector->matrix #u8(1 2 3 4 5 6) 1))
+
 ;; Matrix accessor get.
 (test-equal 2 (mat-at (matrix ((1 2) (3 4))) 0 1))
 
@@ -196,5 +212,19 @@
              (and (good-enough? 0.01821127 (mat-at mat 0 0))
                   (good-enough? 0.24519181 (mat-at mat 0 1))
                   (good-enough? 0.73659691 (mat-at mat 0 2)))))
+
+;; Read training images
+(define (load-train)
+  (call-with-port (open-binary-input-file "/workspace/train-images-idx3-ubyte")
+    (lambda (port)
+      (let ([num-images 60000]
+            [image-width 28]
+            [image-height 28])
+        ;; Skip the header
+        (read-bytevector 16 port)
+        ;; Read images as bytevector
+        (bytevector->matrix (read-bytevector (* num-images image-width image-height) port) num-images)))))
+
+(test-equal #(60000 784) (matrix-shape (load-train)))
 
 (test-results)
