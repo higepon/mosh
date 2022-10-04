@@ -2,8 +2,15 @@
         (scheme inexact)
         (scheme write)
         (scheme case-lambda)
+        (only (srfi 1) concatenate)
         (only (mosh) format)
         (mosh test))
+
+;; Utilities.
+(define (sum lst)
+  (if (null? lst)
+      0
+      (+ (car lst) (sum (cdr lst)))))
 
 ;; List of list to vector of vector.
 (define (list*->vector* l*)
@@ -63,6 +70,10 @@
               ((= j ncols))
               (mat-at mat i j (proc (mat-at a i j)))))))
 
+;; Convert matrix to nested list.
+(define (matrix->list* a)
+    (map vector->list (vector->list a)))
+
 ;; Matrix shape.
 ;; N.B For now we only support 2D matrix.
 (define (matrix-shape x)
@@ -106,6 +117,16 @@
               ((= j ncols))
               (mat-at mat i j (+ (mat-at a i j) (mat-at b i j)))))))
 
+(define (matrix-sum a)
+    (let* ([lst (matrix->list* a)]
+           [lst (concatenate lst)])
+      (sum lst)))
+
+(define (matrix-max a)
+    (let* ([lst (matrix->list* a)]
+           [lst (concatenate lst)])
+      (apply max lst)))
+
 ;; Other neural network components.
 (define (sigmoid1 x)
     (/ 1 (+ 1 (exp (* -1 x)))))
@@ -113,6 +134,16 @@
 ;; Apply sigmoid to matrix
 (define (sigmoid a)
     (matrix-map sigmoid1 a))
+
+;; softmax.
+(define (softmax a)
+    (unless (= 1 (vec-at (matrix-shape a) 0))
+        (error "softmax requires shape of (1 N)" (matrix-shape a)))
+    (let* ([c (matrix-max a)]
+           [a (matrix-map (lambda (e) (- e c)) a)]
+           [mat-exp (matrix-map (lambda (e) (exp e)) a)]
+           [sum-exp (matrix-sum  mat-exp)])
+      (matrix-map (lambda (e) (/ e sum-exp)) mat-exp)))
 
 ;; Matrix shape.
 (test-equal '#(1 2) (matrix-shape (matrix ((1 2)))))
@@ -126,6 +157,8 @@
     (mat-at m 1 0 5)
     (test-equal #(#(1 2) #(5 4)) m))
 
+(test-equal '((1 2) (3 4)) (matrix->list* (matrix ((1 2) (3 4)))))
+
 ;; Matrix multiplication.
 (let ([a (matrix ((1 2) (3 4)))]
       [b (matrix ((5 6) (7 8)))])
@@ -136,7 +169,6 @@
       [b (matrix ((5 6) (7 8)))])
    (test-equal (matrix ((19 22) (43 50) (67 78)))
                (matrix-mul a b)))
-
 
 (let ([a (matrix ((1 2 3) (4 5 6)))]
       [b (matrix ((1) (2) (3)))])
@@ -153,9 +185,16 @@
 (test-equal (matrix ((2 4) (6 8))) (matrix-map (lambda (e) (* e 2)) (matrix ((1 2) (3 4)))))
 
 ;; Other neural network components
+;;   sigmoid
 (test-true (good-enough? 0.57444252 (sigmoid1 0.3)))
 (test-true (let ([mat (sigmoid (matrix ((1 2))))])
-             (good-enough? 0.7310585 (mat-at mat 0 0))
-             (good-enough? 0.8807970 (mat-at mat 0 1))             ))
+             (and (good-enough? 0.7310585 (mat-at mat 0 0))
+                  (good-enough? 0.8807970 (mat-at mat 0 1)))))
+
+;;   softmax
+(test-true (let ([mat (softmax (matrix ((0.3 2.9 4.0))))])
+             (and (good-enough? 0.01821127 (mat-at mat 0 0))
+                  (good-enough? 0.24519181 (mat-at mat 0 1))
+                  (good-enough? 0.73659691 (mat-at mat 0 2)))))
 
 (test-results)
