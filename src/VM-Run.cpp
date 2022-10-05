@@ -1168,7 +1168,14 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(VECTOR_LENGTH)
         {
-            ac_ = Object::makeFixnum(static_cast<int>(ac_.toVector()->length()));
+            if (ac_.isVector()) {
+                ac_ = Object::makeFixnum(static_cast<int>(ac_.toVector()->length()));
+            } else {
+                callAssertionViolationAfter(this,
+                                            UC("vector-length"),
+                                            UC("vector required"),
+                                            L1(ac_));
+            }
             NEXT1;
         }
         CASE(VECTOR_P)
