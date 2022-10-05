@@ -82,9 +82,13 @@
 
 ;; Create a matrix of zeros with the same shape as a given matrix.
 (define (matrix-zeros-like a)
+   (matrix-full-like a 0))
+
+;; Create a full array with the same shape as a given matrxi.
+(define (matrix-full-like a value)
     (let* ([nrows (vec-at (matrix-shape a) 0)]
            [ncols (vec-at (matrix-shape a) 1)])
-        (matrix nrows ncols 0)))
+        (matrix nrows ncols value)))
 
 ;; Create a matrix from bytevector.
 (define (bytevector->matrix bv nrows)
@@ -118,6 +122,12 @@
 
 (define (matrix-add a b)
   (cond
+     ;; broadcast case.
+     [(number? a)
+       (matrix-add (matrix-full-like b a) b)]
+     ;; broadcast case.
+     [(number? b)
+       (matrix-add a (matrix-full-like a b))]
     [(equal? (matrix-shape a) (matrix-shape b))
         (let ([mat (matrix-zeros-like a)]
             [nrows (vec-at (matrix-shape a) 0)]
@@ -129,7 +139,7 @@
                 (mat-at mat i j (+ (mat-at a i j) (mat-at b i j))))))]
      ;; broadcast case.
      [(= (vec-at (matrix-shape a) 0) 1)
-       (error "not implemented yet :)")]
+       (matrix-add b a)]
      ;; broadcast case.
      [(= (vec-at (matrix-shape b) 0) 1)
         (let ([mat (matrix-zeros-like a)]
@@ -219,6 +229,24 @@
    (test-equal (matrix ((6 8) (8 10)))
                (matrix-add a b)))
 
+;; Matrix addition broadcast.
+(let ([a (matrix ((1 2) (3 4)))]
+      [b (matrix ((5 6)))])
+   (test-equal (matrix ((6 8) (8 10)))
+               (matrix-add b a)))
+
+;; Matrix addition broadcast.
+(let ([a (matrix ((1 2) (3 4)))]
+      [b 2])
+   (test-equal (matrix ((3 4) (5 6)))
+               (matrix-add a b)))
+
+;; Matrix addition broadcast.
+(let ([a (matrix ((1 2) (3 4)))]
+      [b 2])
+   (test-equal (matrix ((3 4) (5 6)))
+               (matrix-add b a)))
+
 ;; matrix-map
 (test-equal (matrix ((2 4) (6 8))) (matrix-map (lambda (e) (* e 2)) (matrix ((1 2) (3 4)))))
 
@@ -247,7 +275,7 @@
 (define (load-train)
   (call-with-port (open-binary-input-file "/workspace/train-images-idx3-ubyte")
     (lambda (port)
-      (let ([num-images 60] ;; TODO 60000
+      (let ([num-images 6] ;; TODO 60000
             [image-width 28]
             [image-height 28])
         ;; Skip the header
