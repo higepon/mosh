@@ -120,6 +120,23 @@
               ((= j ncols))
               (mat-at mat i j (mul i j))))))
 
+;; Multiply arguments element-wise.
+(define (matrix-multiply a b)
+    (unless (equal? (matrix-shape a) (matrix-shape b))
+        (error "matrix-multiply shapes don't match" (matrix-shape a) (matrix-shape b)))
+    (matrix-element-wise * a b))
+
+;; Helper for element-wise operations.
+(define (matrix-element-wise op a b)
+    (let ([mat (matrix-zeros-like a)]
+        [nrows (vec-at (matrix-shape a) 0)]
+        [ncols (vec-at (matrix-shape a) 1)])
+        (do ((i 0 (+ i 1)))
+            ((= i nrows) mat)
+            (do ((j 0 (+ j 1)))
+                ((= j ncols))
+                (mat-at mat i j (op (mat-at a i j) (mat-at b i j)))))))
+
 (define (matrix-add a b)
   (cond
      ;; broadcast case.
@@ -128,15 +145,8 @@
      ;; broadcast case.
      [(number? b)
        (matrix-add a (matrix-full-like a b))]
-    [(equal? (matrix-shape a) (matrix-shape b))
-        (let ([mat (matrix-zeros-like a)]
-            [nrows (vec-at (matrix-shape a) 0)]
-            [ncols (vec-at (matrix-shape a) 1)])
-        (do ((i 0 (+ i 1)))
-            ((= i nrows) mat)
-                (do ((j 0 (+ j 1)))
-                ((= j ncols))
-                (mat-at mat i j (+ (mat-at a i j) (mat-at b i j))))))]
+     [(equal? (matrix-shape a) (matrix-shape b))
+        (matrix-element-wise + a b)]
      ;; broadcast case.
      [(= (vec-at (matrix-shape a) 0) 1)
        (matrix-add b a)]
@@ -170,6 +180,11 @@
 ;; Apply sigmoid to matrix
 (define (sigmoid a)
     (matrix-map sigmoid1 a))
+
+;; Cross entropy error.
+(define (cross-entropy-error y t)
+  (let ([delta 1e-7])
+    (* -1 (matrix-sum (matrix-multiply t (matrix-map log (matrix-add y delta)))))))
 
 ;; softmax.
 (define (softmax a)
@@ -247,6 +262,11 @@
    (test-equal (matrix ((3 4) (5 6)))
                (matrix-add b a)))
 
+;; Matrix multiply arguments element-wise.
+(let ([a (matrix ((1 2) (3 4)))]
+      [b (matrix ((0 2) (3 1)))])
+   (test-equal (matrix ((0 4) (9 4)))
+               (matrix-multiply a b)))
 ;; matrix-map
 (test-equal (matrix ((2 4) (6 8))) (matrix-map (lambda (e) (* e 2)) (matrix ((1 2) (3 4)))))
 
@@ -270,6 +290,11 @@
                   (good-enough? 0.01821127 (mat-at mat 1 0))
                   (good-enough? 0.24519181 (mat-at mat 1 1))
                   (good-enough? 0.73659691 (mat-at mat 1 2)))))
+
+(test-true (let ([t (matrix ((0) (0) (1) (0) (0) (0) (0) (0) (0) (0)))]
+                 [y (matrix ((0.1) (0.05) (0.6) (0.0) (0.05) (0.1) (0.0) (0.1) (0.0) (0.0)))])
+                  (good-enough? 0.510825457099338 (cross-entropy-error y t))))
+
 
 ;; Read training images
 (define (load-train)
