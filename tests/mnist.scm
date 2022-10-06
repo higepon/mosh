@@ -125,12 +125,6 @@
               ((= j ncols))
               (mat-at mat i j (mul i j))))))
 
-;; Multiply arguments element-wise.
-(define (matrix-multiply a b)
-    (unless (equal? (matrix-shape a) (matrix-shape b))
-        (error "matrix-multiply shapes don't match" (matrix-shape a) (matrix-shape b)))
-    (matrix-element-wise * a b))
-
 ;; Helper for element-wise operations.
 (define (matrix-element-wise op a b)
     (let ([mat (matrix-zeros-like a)]
@@ -169,11 +163,24 @@
           ((= i n) mat)
           (vec-at mat i (vector-copy (vec-at row 0))))))
 
+;; Multiply arguments element-wise.
+(define (matrix-multiply a b)
+  (let-values ([(a b) (matrix-stretch a b)])
+    (unless (equal? (matrix-shape a) (matrix-shape b))
+      (error "matrix-add shapes don't match" (matrix-shape a) (matrix-shape b)))
+    (matrix-element-wise * a b)))
+
 (define (matrix-add a b)
   (let-values ([(a b) (matrix-stretch a b)])
     (unless (equal? (matrix-shape a) (matrix-shape b))
       (error "matrix-add shapes don't match" (matrix-shape a) (matrix-shape b)))
     (matrix-element-wise + a b)))
+
+(define (matrix-sub a b)
+  (let-values ([(a b) (matrix-stretch a b)])
+    (unless (equal? (matrix-shape a) (matrix-shape b))
+      (error "matrix-sub shapes don't match" (matrix-shape a) (matrix-shape b)))
+    (matrix-element-wise - a b)))
 
 (define (matrix-sum a)
     (let* ([lst (matrix->list* a)]
@@ -210,6 +217,17 @@
              [fxh2 (func (mat-at x 0 i (- tmp h)))])
         (mat-at grad 0 i (/ (- fxh1 fxh2) (* 2 h)))
         (mat-at x 0 i tmp)))))
+
+(define gradient-descent
+  (case-lambda
+    [(func x lr steps)
+      (let loop ([i 0] [x x])
+        (if (= i steps)
+            x
+            (let ([grad (numerical-gradient func x)])
+            (loop (+ i 1) (matrix-sub x (matrix-multiply lr grad))))))]
+    [(func x)
+      (gradient-descent func x 0.01 100)]))
 
 ;; softmax.
 (define (softmax a)
@@ -343,7 +361,15 @@
     (test-true (good-enough?  6.0 (mat-at mat 0 0)))
     (test-true (good-enough?  8.0 (mat-at mat 0 1))))
 
-
+;;  gradient-descent
+(let ([mat (gradient-descent
+             (lambda (x)
+               (let ([x0 (mat-at x 0 0)]
+                     [x1 (mat-at x 0 1)])
+                 (+ (* x0 x0) (* x1 x1))))
+             (matrix ((-3.0 4.0))) 1e-10 100)])
+    (test-true (good-enough? -2.999 (mat-at mat 0 0)))
+    (test-true (good-enough? 3.999 (mat-at mat 0 1))))
 
 ;; Read training images
 (define (load-train)
