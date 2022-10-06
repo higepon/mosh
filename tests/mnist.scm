@@ -152,9 +152,6 @@
     ;; b's shape is (1 ncols-b). We can stretch to (nrows-a ncols-b)
     [(= (vec-at (matrix-shape b) 0) 1)
       (values a (matrix-vstack-row b (vec-at (matrix-shape a) 0)))]
-    ;; Same shape.
-    [(equal? (matrix-shape a) (matrix-shape b))
-      (values a b)]
     [else
       (values a b)]))
 
