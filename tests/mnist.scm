@@ -57,7 +57,7 @@
       [(_ m i j)
         (vec-at (vec-at m i) j)]
       [(_ m i j value)
-        (vec-at (vec-at m i) j value)]))
+        (begin (vec-at (vec-at m i) j value) m)]))
 
 ;; The matrix-map procedure applies proc element-wise to the elements of the matrix
 ;; and returns a result matrix of the result.
@@ -199,6 +199,18 @@
         [delta 1e-7])
     (/ (* -1 (matrix-sum (matrix-multiply t (matrix-map log (matrix-add y delta))))) batch-size)))
 
+;; Gradient
+(define (numerical-gradient func x)
+  (let ([h 1e-4]
+        [grad (matrix-zeros-like x)])
+    (do ((i 0 (+ i 1)))
+        ((= i (matrix-shape x 1)) grad)
+      (let* ([tmp (mat-at x 0 i)]
+             [fxh1 (func (mat-at x 0 i (+ tmp h)))]
+             [fxh2 (func (mat-at x 0 i (- tmp h)))])
+        (mat-at grad 0 i (/ (- fxh1 fxh2) (* 2 h)))
+        (mat-at x 0 i tmp)))))
+
 ;; softmax.
 (define (softmax a)
     (let* ([c (matrix-max a)]
@@ -308,6 +320,7 @@
                   (good-enough? 0.24519181 (mat-at mat 1 1))
                   (good-enough? 0.73659691 (mat-at mat 1 2)))))
 
+;;   cross-entropy-error
 (test-true (let ([t (matrix ((0 0 1 0 0 0 0 0 0 0)))]
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
                   (good-enough? 0.510825457099338 (cross-entropy-error y t))))
@@ -320,7 +333,15 @@
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0) (0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
                   (good-enough? 1.7532778653276644 (cross-entropy-error y t))))
 
-
+;;   numerical-gradient
+(let ([mat (numerical-gradient
+           (lambda (x)
+             (let ([x0 (mat-at x 0 0)]
+                   [x1 (mat-at x 0 1)])
+               (+ (* x0 x0) (* x1 x1))))
+           (matrix ((3.0 4.0))))])
+    (test-true (good-enough?  6.0 (mat-at mat 0 0)))
+    (test-true (good-enough?  8.0 (mat-at mat 0 1))))
 
 
 
