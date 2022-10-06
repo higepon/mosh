@@ -63,8 +63,8 @@
 ;; and returns a result matrix of the result.
 (define (matrix-map proc a)
     (let ([mat (matrix-zeros-like a)]
-          [nrows (vec-at (matrix-shape a) 0)]
-          [ncols (vec-at (matrix-shape a) 1)])
+          [nrows (matrix-shape a 0)]
+          [ncols (matrix-shape a 1)])
       (do ((i 0 (+ i 1)))
           ((= i nrows) mat)
           (do ((j 0 (+ j 1)))
@@ -77,8 +77,13 @@
 
 ;; Matrix shape.
 ;; N.B For now we only support 2D matrix.
-(define (matrix-shape x)
-    `#(,(vec-len x) ,(vec-len (vec-at x 0))))
+(define matrix-shape
+  (case-lambda
+    [(a) `#(,(vec-len a) ,(vec-len (vec-at a 0)))]
+    [(a n)
+      (if (= n 0)
+          (vec-len a)
+          (vec-len (vec-at a 0)))]))
 
 ;; Create a matrix of zeros with the same shape as a given matrix.
 (define (matrix-zeros-like a)
@@ -86,8 +91,8 @@
 
 ;; Create a full array with the same shape as a given matrxi.
 (define (matrix-full-like a value)
-    (let* ([nrows (vec-at (matrix-shape a) 0)]
-           [ncols (vec-at (matrix-shape a) 1)])
+    (let* ([nrows (matrix-shape a 0)]
+           [ncols (matrix-shape a 1)])
         (matrix nrows ncols value)))
 
 ;; Create a matrix from bytevector.
@@ -102,11 +107,11 @@
 
 ;; Matrix multiplication.
 (define (matrix-mul a b)
-    (unless (= (vec-at (matrix-shape a) 1) (vec-at (matrix-shape b) 0))
+    (unless (= (matrix-shape a 1) (matrix-shape b 0))
         (error "matrix-mul shapes don't match" (matrix-shape a) (matrix-shape b)))
-    (let* ([nrows (vec-at (matrix-shape a) 0)]
-           [ncols (vec-at (matrix-shape b) 1)]
-           [m     (vec-at (matrix-shape a) 1)]
+    (let* ([nrows (matrix-shape a 0)]
+           [ncols (matrix-shape b 1)]
+           [m     (matrix-shape a 1)]
            [mat (matrix nrows ncols)])
       (define (mul row col)
         (let loop ([k 0]
@@ -129,8 +134,8 @@
 ;; Helper for element-wise operations.
 (define (matrix-element-wise op a b)
     (let ([mat (matrix-zeros-like a)]
-        [nrows (vec-at (matrix-shape a) 0)]
-        [ncols (vec-at (matrix-shape a) 1)])
+        [nrows (matrix-shape a 0)]
+        [ncols (matrix-shape a 1)])
         (do ((i 0 (+ i 1)))
             ((= i nrows) mat)
             (do ((j 0 (+ j 1)))
@@ -147,19 +152,19 @@
     [(number? b)
       (values a (matrix-full-like a b))]
     ;; a's shape is (1 ncols-a). We can stretch to (nrows-b ncols-a)
-    [(= (vec-at (matrix-shape a) 0) 1)
-      (values (matrix-vstack-row a (vec-at (matrix-shape b) 0)) b)]
+    [(= (matrix-shape a 0) 1)
+      (values (matrix-vstack-row a (matrix-shape b 0)) b)]
     ;; b's shape is (1 ncols-b). We can stretch to (nrows-a ncols-b)
-    [(= (vec-at (matrix-shape b) 0) 1)
-      (values a (matrix-vstack-row b (vec-at (matrix-shape a) 0)))]
+    [(= (matrix-shape b 0) 1)
+      (values a (matrix-vstack-row b (matrix-shape a 0)))]
     [else
       (values a b)]))
 
 ;; Create a matrix by vertically stacking row n-times.
 (define (matrix-vstack-row row n)
-    (unless (= (vec-at (matrix-shape row) 0) 1)
+    (unless (= (matrix-shape row 0) 1)
         (error "matrix-vstac-row only supports (1 N) shape" row n))
-    (let ([mat (matrix n (vec-at (matrix-shape row) 1))])
+    (let ([mat (matrix n (matrix-shape row 1))])
       (do ((i 0 (+ i 1)))
           ((= i n) mat)
           (vec-at mat i (vector-copy (vec-at row 0))))))
@@ -306,7 +311,6 @@
                  [y (matrix ((0.1) (0.05) (0.6) (0.0) (0.05) (0.1) (0.0) (0.1) (0.0) (0.0)))])
                   (good-enough? 0.510825457099338 (cross-entropy-error y t))))
 
-
 ;; Read training images
 (define (load-train)
   (call-with-port (open-binary-input-file "/workspace/train-images-idx3-ubyte")
@@ -338,5 +342,3 @@
   (display y))
 
 (test-results)
-
-;; todo matrix-nrows matrix-ncols
