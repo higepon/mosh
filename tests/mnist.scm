@@ -318,7 +318,6 @@
 
  (test-true (let ([t (matrix ((0 0 1 0 0 0 0 0 0 0) (0 1 0 0 0 0 0 0 0 0)))]
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0) (0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
-                 (display (cross-entropy-error-n y t))
                   (good-enough? 1.7532778653276644 (cross-entropy-error y t))))
 
 
