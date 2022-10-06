@@ -195,8 +195,9 @@
 
 ;; Cross entropy error.
 (define (cross-entropy-error y t)
-  (let ([delta 1e-7])
-    (* -1 (matrix-sum (matrix-multiply t (matrix-map log (matrix-add y delta)))))))
+  (let ([batch-size (matrix-shape y 0)]
+        [delta 1e-7])
+    (/ (* -1 (matrix-sum (matrix-multiply t (matrix-map log (matrix-add y delta))))) batch-size)))
 
 ;; softmax.
 (define (softmax a)
@@ -307,9 +308,22 @@
                   (good-enough? 0.24519181 (mat-at mat 1 1))
                   (good-enough? 0.73659691 (mat-at mat 1 2)))))
 
-(test-true (let ([t (matrix ((0) (0) (1) (0) (0) (0) (0) (0) (0) (0)))]
-                 [y (matrix ((0.1) (0.05) (0.6) (0.0) (0.05) (0.1) (0.0) (0.1) (0.0) (0.0)))])
+(test-true (let ([t (matrix ((0 0 1 0 0 0 0 0 0 0)))]
+                 [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
                   (good-enough? 0.510825457099338 (cross-entropy-error y t))))
+
+(test-true (let ([t (matrix ((0 1 0 0 0 0 0 0 0 0)))]
+                 [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
+                  (good-enough? 2.9957302735559908 (cross-entropy-error y t))))
+
+ (test-true (let ([t (matrix ((0 0 1 0 0 0 0 0 0 0) (0 1 0 0 0 0 0 0 0 0)))]
+                 [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0) (0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
+                 (display (cross-entropy-error-n y t))
+                  (good-enough? 1.7532778653276644 (cross-entropy-error y t))))
+
+
+
+
 
 ;; Read training images
 (define (load-train)
