@@ -137,31 +137,41 @@
                 ((= j ncols))
                 (mat-at mat i j (op (mat-at a i j) (mat-at b i j)))))))
 
-(define (matrix-add a b)
+;; Stretch matrix if necessary.
+;; This is used for broadcasting.
+(define (matrix-stretch a b)
   (cond
-     ;; broadcast case.
-     [(number? a)
-       (matrix-add (matrix-full-like b a) b)]
-     ;; broadcast case.
-     [(number? b)
-       (matrix-add a (matrix-full-like a b))]
-     [(equal? (matrix-shape a) (matrix-shape b))
-        (matrix-element-wise + a b)]
-     ;; broadcast case.
-     [(= (vec-at (matrix-shape a) 0) 1)
-       (matrix-add b a)]
-     ;; broadcast case.
-     [(= (vec-at (matrix-shape b) 0) 1)
-        (let ([mat (matrix-zeros-like a)]
-            [nrows (vec-at (matrix-shape a) 0)]
-            [ncols (vec-at (matrix-shape a) 1)])
-        (do ((i 0 (+ i 1)))
-            ((= i nrows) mat)
-                (do ((j 0 (+ j 1)))
-                ((= j ncols))
-                (mat-at mat i j (+ (mat-at a i j) (mat-at b 0 j))))))]
-     [else
-        (error "matrix-add shapes don't match" (matrix-shape a) (matrix-shape b))]))
+    ;; scalar to matrix
+    [(number? a)
+      (values (matrix-full-like b a) b)]
+    [(number? b)
+      (values a (matrix-full-like a b))]
+    ;; a's shape is (1 ncols-a). We can stretch to (nrows-b ncols-a)
+    [(= (vec-at (matrix-shape a) 0) 1)
+      (values (matrix-vstack-row a (vec-at (matrix-shape b) 0)) b)]
+    ;; b's shape is (1 ncols-b). We can stretch to (nrows-a ncols-b)
+    [(= (vec-at (matrix-shape b) 0) 1)
+      (values a (matrix-vstack-row b (vec-at (matrix-shape a) 0)))]
+    ;; Same shape.
+    [(equal? (matrix-shape a) (matrix-shape b))
+      (values a b)]
+    [else
+      (values a b)]))
+
+;; Create a matrix by vertically stacking row n-times.
+(define (matrix-vstack-row row n)
+    (unless (= (vec-at (matrix-shape row) 0) 1)
+        (error "matrix-vstac-row only supports (1 N) shape" row n))
+    (let ([mat (matrix n (vec-at (matrix-shape row) 1))])
+      (do ((i 0 (+ i 1)))
+          ((= i n) mat)
+          (vec-at mat i (vector-copy (vec-at row 0))))))
+
+(define (matrix-add a b)
+  (let-values ([(a b) (matrix-stretch a b)])
+    (unless (equal? (matrix-shape a) (matrix-shape b))
+      (error "matrix-add shapes don't match" (matrix-shape a) (matrix-shape b)))
+    (matrix-element-wise + a b)))
 
 (define (matrix-sum a)
     (let* ([lst (matrix->list* a)]
@@ -267,6 +277,10 @@
       [b (matrix ((0 2) (3 1)))])
    (test-equal (matrix ((0 4) (9 4)))
                (matrix-multiply a b)))
+
+;; Matrix vstack
+(test-equal (matrix ((1 2) (1 2) (1 2))) (matrix-vstack-row (matrix ((1 2))) 3))
+
 ;; matrix-map
 (test-equal (matrix ((2 4) (6 8))) (matrix-map (lambda (e) (* e 2)) (matrix ((1 2) (3 4)))))
 
@@ -327,3 +341,5 @@
   (display y))
 
 (test-results)
+
+;; todo matrix-nrows matrix-ncols
