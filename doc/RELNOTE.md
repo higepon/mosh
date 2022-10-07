@@ -25,6 +25,7 @@ Changes
 
 - Command line:
   - Added SRFI 133 support.
+  - Added SRFI 158 support.
   - Added SRFI 176 support. Huge thanks to Lassi Kortela.
 
 - Heap:
