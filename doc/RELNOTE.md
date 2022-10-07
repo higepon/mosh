@@ -24,8 +24,7 @@ Changes
   - CMake build now require CMake 3.0 or later
 
 - Command line:
-  - Added SRFI 133 support.
-  - Added SRFI 158 support.
+  - Added SRFI 133, 158 and 194 support.
   - Added SRFI 176 support. Huge thanks to Lassi Kortela.
 
 - Heap:
