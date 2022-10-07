@@ -5,6 +5,7 @@
         (scheme case-lambda)
         (only (srfi 1) concatenate)
         (only (srfi 27) random-real)
+        (only (srfi 194) make-normal-generator)
         (only (mosh) format)
         (mosh test))
 
@@ -423,9 +424,15 @@
                 (set! state (* f x1))
                 (* x2 f))])))]))))
 
-(let ([gauss (gauss-generator)])
+#;(let ([gauss (gauss-generator)])
      (do ((i 0 (+ i 1)))
               ((= i 10))
+            (display (gauss))(newline)))
+
+
+(let ([gauss (make-normal-generator)])
+     (do ((i 0 (+ i 1)))
+              ((= i 1000))
             (display (gauss))(newline)))
 
 (test-results)
