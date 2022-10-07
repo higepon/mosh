@@ -193,6 +193,10 @@
            [lst (concatenate lst)])
       (apply max lst)))
 
+(define (matrix-randn nrows ncols)
+  (let ([gen (make-normal-generator)])
+    (matrix-map (lambda (x) (gen)) (matrix nrows ncols))))
+
 ;; Other neural network components.
 (define (sigmoid1 x)
     (/ 1 (+ 1 (exp (* -1 x)))))
@@ -249,6 +253,8 @@
 (test-equal (matrix ((1 2 3) (4 5 6)))   (bytevector->matrix #u8(1 2 3 4 5 6) 2))
 (test-equal (matrix ((1 2) (3 4) (5 6))) (bytevector->matrix #u8(1 2 3 4 5 6) 3))
 (test-equal (matrix ((1 2 3 4 5 6)))     (bytevector->matrix #u8(1 2 3 4 5 6) 1))
+
+(test-equal #(3 2) (matrix-shape (matrix-randn 3 2)))
 
 ;; Matrix accessor get.
 (test-equal 2 (mat-at (matrix ((1 2) (3 4))) 0 1))
@@ -404,7 +410,9 @@
 
 (let ([gauss (make-normal-generator)])
      (do ((i 0 (+ i 1)))
-              ((= i 1000))
+              ((= i 10))
             (display (gauss))(newline)))
+
+(display (matrix-randn 3 2))
 
 (test-results)
