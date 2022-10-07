@@ -70,6 +70,7 @@ runtest-mosh:
 	$(MOSH_TARGET) tests/r7rs/vector.scm
 	$(MOSH_TARGET) tests/import-srfi.scm
 	$(MOSH_TARGET) tests/srfi/srfi-151.scm
+	$(MOSH_TARGET) tests/srfi/srfi-194.scm	
 	$(MAKE) -C tests/r7rs/library-converter
 
 runtest-nmosh:
