@@ -1,9 +1,9 @@
 ;; Some tests need (chibi test). This library aim to be able to replace it with (mosh chibi test).
 (define-library (mosh chibi test)
   (export test-begin test-end test test-assert
-          current-test-epsilon approx-equal? test-equal?
+          current-test-epsilon approx-equal? test-equal? test-group
           test-true test-false test-eq test-eqv test-equal test-null
-          test-write-equal
+          test-write-equal test-exit
           test-error test-results fail
           test-error-string   ; exported for tests of xunit
           test-summary-string ; exported for tests of xunit
@@ -16,6 +16,8 @@
   (define (test-begin . args) #f)
 
   (define (test-end . args) #f)
+
+  (define (test-exit) (test-results))
 
   (define-syntax test
     (syntax-rules ()
@@ -32,8 +34,16 @@
        (test-true (guard (e (else #t))
                          (begin expr #f))))))
 
+  (define-syntax test-group
+    (syntax-rules ()
+      [(_ name expr ...)
+        (let ()
+          expr ...)]))
+
   (define-syntax test-assert
     (syntax-rules ()
+      ((_ expr)
+       (test-true expr))
       ((_ str expr)
        (test-true expr))))
 
