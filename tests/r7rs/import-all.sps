@@ -16,6 +16,8 @@
         (scheme process-context)
         (scheme write)
         (scheme char)
-        (scheme char normalization))
+        (scheme char normalization)
+        ;; large
+        (scheme vector))
 
 'ok
