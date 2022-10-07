@@ -151,7 +151,7 @@
             `((cond-expand ,@more-clause*)))]
      [(_ (('library name* ...) lib-decl* ...) more-clause* ...)
         ;; This library is available.
-        (if (member name* (available-libraries))
+        (if (member (car name*) (available-libraries))
             lib-decl*
             `((cond-expand ,@more-clause*)))]
         ))
