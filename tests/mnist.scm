@@ -4,6 +4,7 @@
         (scheme write)
         (scheme case-lambda)
         (only (srfi 1) concatenate)
+        (only (srfi 27) random-real)
         (only (mosh) format)
         (mosh test))
 
@@ -400,5 +401,31 @@
        [a3 (matrix-add (matrix-mul z2 w3) b3)]
        [y (softmax a3)])
   (display y))
+
+(define (gauss-generator)
+  (let ([state #f])
+    (lambda ()
+      (cond
+       [state
+         (let ([ret state])
+           (set! state #f)
+            ret)]
+      [else
+      (let loop ([x1 2]
+                 [x2 2])
+        (let ([r2 (+ (* x1 x1) (* x2 x2))])
+          (cond
+           [(or (>= r2 1.0) (= r2 0.0))
+            (loop (- (* 2.0 (random-real)) 1.0)
+                  (- (* 2.0 (random-real)) 1.0))]
+           [else
+            (let ([f (sqrt (* -2.0 (/ (log r2) r2)))])
+                (set! state (* f x1))
+                (* x2 f))])))]))))
+
+(let ([gauss (gauss-generator)])
+     (do ((i 0 (+ i 1)))
+              ((= i 10))
+            (display (gauss))(newline)))
 
 (test-results)
