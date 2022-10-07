@@ -10,6 +10,7 @@
         (scheme load)
         (scheme time)
         (scheme char)
+        (scheme cxr)
         (scheme file)
         (scheme file)
         (scheme process-context)
