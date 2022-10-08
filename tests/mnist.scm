@@ -5,6 +5,7 @@
         (scheme case-lambda)
         (only (scheme vector) vector-count)
         (only (srfi 1) concatenate)
+        (only (srfi 27) random-integer)
         (only (srfi 194) make-normal-generator)
         (only (mosh) format)
         (mosh test))
@@ -14,6 +15,12 @@
   (if (null? lst)
       0
       (+ (car lst) (sum (cdr lst)))))
+
+(define (for-each-with-index proc lst)
+  (do ((i 0 (+ i 1))
+       (lst lst (cdr lst)))
+      ((null? lst))
+    (proc i (car lst))))
 
 ;; List of list to vector of vector.
 (define (list*->vector* l*)
@@ -93,6 +100,16 @@
 ;; argmax
 (define (matrix-argmax a)
   (vector-map vector-argmax a))
+
+;; Slice
+;; TODO: Should this return copy?
+(define (matrix-slice a row-index*)
+  (let ([mat (matrix (length row-index*) (matrix-shape a 1))])
+    (for-each-with-index
+      (lambda (i row-index)
+        (vec-at mat i (vec-at a row-index)))
+      row-index*)
+    mat))
 
 ;; Matrix shape.
 ;; N.B For now we only support 2D matrix.
@@ -296,6 +313,10 @@
 (test-equal 3 (vector-argmax #(1 2 5 8 4)))
 (test-equal #(1 0 2) (matrix-argmax (matrix ((3 4 0) (9 -1 8.8) (0 2 5)))))
 
+;; slice
+(test-equal (matrix ((9 -1 3) (0 2 5)))
+            (matrix-slice (matrix ((3 4 0) (9 -1 3) (0 2 5))) '(1 2)))
+
 ;; Matrix multiplication.
 (let ([a (matrix ((1 2) (3 4)))]
       [b (matrix ((5 6) (7 8)))])
@@ -456,15 +477,20 @@
            (mat-at mat i (mat-at a 0 i) 1.0)
            (loop (+ i 1))]))))
 
+(define (random-choice num-data batch-size)
+  (map (lambda (_) (random-integer num-data)) (make-list batch-size)))
+
 
 (let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60 8)))
   (test-equal #(60 784) (matrix-shape x-train))
   (test-equal #(60 10) (matrix-shape t-train))
   (test-equal #(8 784) (matrix-shape x-test))
   (test-equal #(8 10) (matrix-shape t-test))
-
-    (display t-test)
+  (let* ([batch-idx* (random-choice 60 4)]
+         [batch (matrix-slice x-train batch-idx*)])
+    (test-equal #(4 784) (matrix-shape batch)))
 )
+
 
 
 
@@ -536,16 +562,21 @@
              [y (matrix-argmax y)]
              [t (matrix-argmax t)])
         (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
+    (define (update-params x t lr)
+        (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient x t)])
+          (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
+          (set! b1 (matrix-sub b1 (matrix-multiply grad-b1 lr)))
+          (set! w2 (matrix-sub w2 (matrix-multiply grad-w2 lr)))
+          (set! b2 (matrix-sub b2 (matrix-multiply grad-b2 lr)))))
     (define (gradient x t)
       (let ([loss-w (lambda (w) (loss x t))])
       (values (numerical-gradient loss-w w1)
               (numerical-gradient loss-w b1)
               (numerical-gradient loss-w w2)
-              (numerical-gradient loss-w b2)))
-    )
-    (values predict loss accuracy gradient)))
+              (numerical-gradient loss-w b2))))
+    (values predict loss accuracy gradient update-params)))
 
-(let-values (([predict loss accuracy gradient] (two-layer-net 3 10 3)))
+(let-values (([predict loss accuracy gradient update-params] (two-layer-net 3 10 3)))
   (display (predict (matrix-randn 2 3)))
   (display (loss (matrix-randn 2 3) (matrix ((0 0 1) (0 1 0)))))
   (newline)
@@ -553,5 +584,24 @@
   (newline)
   (display (gradient (matrix-randn 2 3)  (matrix ((0 0 1) (0 1 0)))))
 )
+
+(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60 10)))
+  (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 3 10)))
+    (let ([num-train (matrix-shape x-train 0)]
+          [batch-size 3]
+          [lr 0.01])
+      (do ((i 0 (+ i 1)))
+          ((= i 1))
+          (display i)
+          (newline)
+          (let* ([batch-idx* (random-choice num-train batch-size)]
+                 [x-batch (matrix-slice x-train batch-idx*)]
+                 [t-batch (matrix-slice t-train batch-idx*)]
+                 [undef           (display i)]
+                 [grad (gradient x-batch t-batch)])
+                 (update-params x-batch t-batch lr)
+                 (display "loss= ")
+                 (display (loss x-batch t-batch))
+                 #f)))))
 
 (test-results)
