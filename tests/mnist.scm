@@ -414,19 +414,64 @@
   (test-true (good-enough? -2.999 (mat-at mat 0 0)))
   (test-true (good-enough? 3.999 (mat-at mat 0 1))))
 
-;; Read training images
-(define (load-train)
-  (call-with-port (open-binary-input-file "/workspace/train-images-idx3-ubyte")
-                  (lambda (port)
-                    (let ([num-images 6] ;; TODO 60000
-                          [image-width 28]
-                          [image-height 28])
-                      ;; Skip the header
-                      (read-bytevector 16 port)
-                      ;; Read images as bytevector
-                      (bytevector->matrix (read-bytevector (* num-images image-width image-height) port) num-images)))))
+;; Read train/test images
+(define (load-images path num-images)
+  (call-with-port
+    (open-binary-input-file path)
+    (lambda (port)
+      (let ([image-width 28]
+            [image-height 28])
+        ;; Skip the header
+        (read-bytevector 16 port)
+        ;; Read images as bytevector
+        (bytevector->matrix (read-bytevector (* num-images image-width image-height) port) num-images)))))
 
-(test-equal #(6 784) (matrix-shape (load-train)))
+;; Read train/test labels
+(define (load-labels path num-labels)
+  (call-with-port
+    (open-binary-input-file path)
+    (lambda (port)
+      (read-bytevector 8 port)
+       ;; Read labels as bytevector
+     (bytevector->matrix (read-bytevector num-labels port) 1))))
+
+(define load-mnist
+  (case-lambda
+    [(data-dir num-train num-test)
+        (values
+          (matrix-devide (load-images (string-append data-dir "train-images-idx3-ubyte") num-train) 255.0)
+          (one-hot (load-labels (string-append data-dir "train-labels-idx1-ubyte") num-train) 10)
+          (matrix-devide (load-images (string-append data-dir "t10k-images-idx3-ubyte") num-test) 255.0)
+          (one-hot (load-labels (string-append data-dir "t10k-labels-idx1-ubyte") num-test) 10))]
+    [(data-dir)
+      (load-mnist data-dir 60000 10000)]))
+
+(define (one-hot a num-class)
+   (let ([mat (matrix (matrix-shape a 1) num-class 0.0)])
+     (let loop ([i 0])
+       (cond
+         [(= i (matrix-shape a 1))
+           mat]
+         [else
+           (mat-at mat i (mat-at a 0 i) 1.0)
+           (loop (+ i 1))]))))
+
+
+(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60 8)))
+  (test-equal #(60 784) (matrix-shape x-train))
+  (test-equal #(60 10) (matrix-shape t-train))
+  (test-equal #(8 784) (matrix-shape x-test))
+  (test-equal #(8 10) (matrix-shape t-test))
+
+    (display t-test)
+)
+
+
+
+;(test-equal #(6 784) (matrix-shape (load-train-images 6)))
+;(test-equal #(1 6) (matrix-shape (load-train-labels 6)))
+;(load-test-labels 10000)
+;(test-equal #(1 10000) (matrix-shape (load-test-labels 10000)))
 
 (define w1 (matrix 784 50))
 (define b1 (matrix 1 50))
@@ -435,14 +480,15 @@
 (define w3 (matrix 100 10))
 (define b3 (matrix 1 10))
 
-(let* ([x (load-train)]
-       [a1 (matrix-add (matrix-mul x w1) b1)]
-       [z1 (sigmoid a1)]
-       [a2 (matrix-add (matrix-mul z1 w2) b2)]
-       [z2 (sigmoid a2)]
-       [a3 (matrix-add (matrix-mul z2 w3) b3)]
-       [y (softmax a3)])
-  (display y))
+(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60 10)))
+    (let* (
+        [a1 (matrix-add (matrix-mul x-train w1) b1)]
+        [z1 (sigmoid a1)]
+        [a2 (matrix-add (matrix-mul z1 w2) b2)]
+        [z2 (sigmoid a2)]
+        [a3 (matrix-add (matrix-mul z2 w3) b3)]
+        [y (softmax a3)])
+    (display y)))
 
 (define (simple-net)
   (let ([w (matrix-randn 2 3)])
