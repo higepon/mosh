@@ -3,6 +3,7 @@
         (scheme inexact)
         (scheme write)
         (scheme case-lambda)
+        (only (scheme vector) vector-count)
         (only (srfi 1) concatenate)
         (only (srfi 194) make-normal-generator)
         (only (mosh) format)
@@ -443,8 +444,6 @@
         (cross-entropy-error y t)))
     (values predict loss get-w set-w!)))
 
-
-
 (let-values (([predict loss get-w set-w!] (simple-net)))
   (set-w! (matrix ((0.47355232 0.9977393 0.84668094)
                    (0.85557411 0.03563661 0.69422093))))
@@ -458,5 +457,43 @@
     (test-true (good-enough? 0.9280682857864075 (loss x t)))
     (test-equal #(2 3) (matrix-shape (numerical-gradient (lambda (w) (loss x t)) (get-w))))
     ))
+
+(define (two-layer-net input-size hidden-size output-size)
+  (let* ([weight-init-std 0.01]
+         [w1 (matrix-multiply weight-init-std (matrix-randn input-size hidden-size))]
+         [b1 (matrix 1 hidden-size 0)]
+         [w2 (matrix-multiply weight-init-std (matrix-randn hidden-size output-size))]
+         [b2 (matrix 1 output-size 0)])
+    (define (predict x)
+      (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
+             [z1 (sigmoid a1)]
+             [a2 (matrix-add (matrix-mul z1 w2) b2)]
+             [y (softmax a2)])
+        y))
+    (define (loss x t)
+      (let ([y (predict x)])
+        (cross-entropy-error y t)))
+    (define (accuracy x t)
+      (let* ([y (predict x)]
+             [y (matrix-argmax y)]
+             [t (matrix-argmax t)])
+        (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
+    (define (gradient x t)
+      (let ([loss-w (lambda (w) (loss x t))])
+      (values (numerical-gradient loss-w w1)
+              (numerical-gradient loss-w b1)
+              (numerical-gradient loss-w w2)
+              (numerical-gradient loss-w b2)))
+    )
+    (values predict loss accuracy gradient)))
+
+(let-values (([predict loss accuracy gradient] (two-layer-net 3 10 3)))
+  (display (predict (matrix-randn 2 3)))
+  (display (loss (matrix-randn 2 3) (matrix ((0 0 1) (0 1 0)))))
+  (newline)
+  (display (accuracy (matrix-randn 2 3)  (matrix ((0 0 1) (0 1 0)))))
+  (newline)
+  (display (gradient (matrix-randn 2 3)  (matrix ((0 0 1) (0 1 0)))))
+)
 
 (test-results)
