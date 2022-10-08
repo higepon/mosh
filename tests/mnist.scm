@@ -201,6 +201,12 @@
       (error "matrix-sub shapes don't match" (matrix-shape a) (matrix-shape b)))
     (matrix-element-wise - a b)))
 
+(define (matrix-devide a b)
+  (let-values ([(a b) (matrix-stretch a b)])
+    (unless (equal? (matrix-shape a) (matrix-shape b))
+      (error "matrix-devide shapes don't match" (matrix-shape a) (matrix-shape b)))
+    (matrix-element-wise / a b)))
+
 (define (matrix-sum a)
   (let* ([lst (matrix->list* a)]
          [lst (concatenate lst)])
@@ -341,6 +347,12 @@
       [b (matrix ((0 2) (3 1)))])
   (test-equal (matrix ((0 4) (9 4)))
               (matrix-multiply a b)))
+
+;; Matrix devide arguments element-wise.
+(let ([a (matrix ((1 2) (4 4)))]
+      [b (matrix ((1 2) (2 1)))])
+  (test-equal (matrix ((1 1) (2 4)))
+              (matrix-devide a b)))
 
 ;; Matrix vstack
 (test-equal (matrix ((1 2) (1 2) (1 2))) (matrix-vstack-row (matrix ((1 2))) 3))
