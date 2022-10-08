@@ -18,6 +18,19 @@
 (define (list*->vector* l*)
     (list->vector (map (lambda (l) (list->vector l)) l*)))
 
+;; Get argmax of vector.
+(define (vector-argmax v)
+  (let loop ([i 0]
+             [max -inf.0]
+             [max-idx 0])
+    (cond
+      [(= i (vector-length v))
+        max-idx]
+      [else
+        (if (> (vector-ref v i) max)
+            (loop (+ i 1) (vector-ref v i) i)
+            (loop (+ i 1) max max-idx))])))
+
 ;; Create a nested vector.
 (define make-vector*
     (case-lambda
@@ -75,6 +88,10 @@
 ;; Convert matrix to nested list.
 (define (matrix->list* a)
     (map vector->list (vector->list a)))
+
+;; argmax
+(define (matrix-argmax a)
+  (vector-map vector-argmax a))
 
 ;; Matrix shape.
 ;; N.B For now we only support 2D matrix.
@@ -265,6 +282,10 @@
     (test-equal #(#(1 2) #(5 4)) m))
 
 (test-equal '((1 2) (3 4)) (matrix->list* (matrix ((1 2) (3 4)))))
+
+;; argmax
+(test-equal 3 (vector-argmax #(1 2 5 8 4)))
+(test-equal #(1 0 2) (matrix-argmax (matrix ((3 4 0) (9 -1 8.8) (0 2 5)))))
 
 ;; Matrix multiplication.
 (let ([a (matrix ((1 2) (3 4)))]
