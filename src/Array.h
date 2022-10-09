@@ -44,39 +44,44 @@ typedef std::pair<size_t, size_t> ArrayShape;
  *  We currently only support 2D array of f64 type but we may support more.
  *  See https://github.com/higepon/mosh/issues/168.
  */
+template <typename T>
 class Array EXTEND_GC
 {
 public:
-    Array(size_t nrows, size_t ncols, double value);
+    Array(size_t nrows, size_t ncols, T value);
     ~Array();
-    double ref(size_t row, size_t col) const;
-    void set(size_t row, size_t col, double value);
+    T ref(size_t row, size_t col) const;
+    void set(size_t row, size_t col, T value);
     ArrayShape shape() const;
 
 private:
     size_t nrows_;
     size_t ncols_;
-    double* data_;
+    T* data_;
 };
 
-inline Array::Array(size_t nrows, size_t ncols, double value) : nrows_(nrows), ncols_(ncols)
+template <typename T>
+inline Array<T>::Array(size_t nrows, size_t ncols, T value) : nrows_(nrows), ncols_(ncols)
 {
     const size_t n = nrows * ncols;
-    data_ =  new(PointerFreeGC) double[n];
+    data_ =  new(PointerFreeGC) T[n];
     std::fill_n(data_, n, value);
 }
 
-inline double Array::ref(size_t row, size_t col) const
+template <typename T>
+inline T Array<T>::ref(size_t row, size_t col) const
 {
     return data_[row * ncols_ + col];
 }
 
-inline void Array::set(size_t row, size_t col, double value)
+template <typename T>
+inline void Array<T>::set(size_t row, size_t col, T value)
 {
     data_[row * ncols_ + col] = value;
 }
 
-inline ArrayShape Array::shape() const
+template <typename T>
+inline ArrayShape Array<T>::shape() const
 {
     return ArrayShape(nrows_, ncols_);
 }
