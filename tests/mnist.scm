@@ -7,7 +7,7 @@
         (only (srfi 1) concatenate)
         (only (srfi 27) random-integer)
         (only (srfi 194) make-normal-generator)
-        (only (mosh) format)
+        (only (mosh) format) ; matrix-mul)
         (mosh test))
 
 ;; Utilities.
@@ -48,7 +48,7 @@
           ((= i m) v)
         (vec-at v i (make-vector n value))))]
    [(m n)
-    (make-vector* m n 0)]))
+    (make-vector* m n 0.0)]))
 
 ;; Short version of vector-set!, vector-ref and vector-lengt.
 (define-syntax vec-at
@@ -97,6 +97,17 @@
 (define (matrix->list* a)
   (map vector->list (vector->list a)))
 
+;; Matrix transpose
+(define (matrix-transpose a)
+  (let* ([nrows (matrix-shape a 0)]
+         [ncols (matrix-shape a 1)]
+         [mat (matrix ncols nrows)])
+    (do ((i 0 (+ i 1)))
+        ((= i nrows) mat)
+      (do ((j 0 (+ j 1)))
+          ((= j ncols))
+        (mat-at mat j i (mat-at a i j))))))
+
 ;; argmax
 (define (matrix-argmax a)
   (vector-map vector-argmax a))
@@ -123,7 +134,7 @@
 
 ;; Create a matrix of zeros with the same shape as a given matrix.
 (define (matrix-zeros-like a)
-  (matrix-full-like a 0))
+  (matrix-full-like a 0.0))
 
 ;; Create a full array with the same shape as a given matrxi.
 (define (matrix-full-like a value)
@@ -218,16 +229,29 @@
       (error "matrix-sub shapes don't match" (matrix-shape a) (matrix-shape b)))
     (matrix-element-wise - a b)))
 
-(define (matrix-devide a b)
+(define (matrix-divide a b)
   (let-values ([(a b) (matrix-stretch a b)])
     (unless (equal? (matrix-shape a) (matrix-shape b))
-      (error "matrix-devide shapes don't match" (matrix-shape a) (matrix-shape b)))
+      (error "matrix-divide shapes don't match" (matrix-shape a) (matrix-shape b)))
     (matrix-element-wise / a b)))
 
-(define (matrix-sum a)
-  (let* ([lst (matrix->list* a)]
-         [lst (concatenate lst)])
-    (sum lst)))
+(define matrix-sum
+  (case-lambda
+    [(a)
+      (let* ([lst (matrix->list* a)]
+             [lst (concatenate lst)])
+        (sum lst))]
+    [(a axis)
+      (unless (= axis 0)
+         (error "matrix-sum only axis=0 supported" a axis))
+      (let ([mat (matrix 1 (matrix-shape a 1))]
+            [nrows (matrix-shape a 0)]
+            [ncols (matrix-shape a 1)])
+        (do ((i 0 (+ i 1)))
+            ((= i nrows) mat)
+          (do ((j 0 (+ j 1)))
+              ((= j ncols))
+            (mat-at mat 0 j (+ (mat-at mat 0 j) (mat-at a i j))))))]))
 
 (define (matrix-max a)
   (let* ([lst (matrix->list* a)]
@@ -240,17 +264,22 @@
 
 ;; Other neural network components.
 (define (sigmoid1 x)
-  (/ 1 (+ 1 (exp (* -1 x)))))
+  (/ 1.0 (+ 1.0 (exp (* -1.0 x)))))
 
 ;; Apply sigmoid to matrix
 (define (sigmoid a)
   (matrix-map sigmoid1 a))
 
+;; Gradient of sigmoid.
+(define (sigmoid-grad a)
+  (let ([s (sigmoid a)])
+    (matrix-multiply (matrix-sub 1.0 s) s)))
+
 ;; Cross entropy error.
 (define (cross-entropy-error y t)
   (let ([batch-size (matrix-shape y 0)]
         [delta 1e-7])
-    (/ (* -1 (matrix-sum (matrix-multiply t (matrix-map log (matrix-add y delta))))) batch-size)))
+    (/ (* -1.0 (matrix-sum (matrix-multiply t (matrix-map log (matrix-add y delta))))) batch-size)))
 
 ;; Gradient
 (define (numerical-gradient func x)
@@ -289,8 +318,12 @@
      mat-exp)))
 
 ;; Matrix shape.
-(test-equal '#(1 2) (matrix-shape (matrix ((1 2)))))
-(test-equal '#(2 2) (matrix-shape (matrix ((1 2) (3 4)))))
+(test-equal '#(1 2) (matrix-shape (matrix ((1.0 2.0)))))
+(test-equal '#(2 2) (matrix-shape (matrix ((1.0 2.0) (3.0 4.0)))))
+
+;; Matrix sum.
+(test-equal 10.0 (matrix-sum (matrix ((1.0 2.0) (3.0 4.0)))))
+(test-equal #(#(4.0 6.0)) (matrix-sum (matrix ((1.0 2.0) (3.0 4.0))) 0))
 
 ;; Create matrix.
 (test-equal (matrix ((1 2 3) (4 5 6)))   (bytevector->matrix #u8(1 2 3 4 5 6) 2))
@@ -320,17 +353,17 @@
 ;; Matrix multiplication.
 (let ([a (matrix ((1 2) (3 4)))]
       [b (matrix ((5 6) (7 8)))])
-  (test-equal (matrix ((19 22) (43 50)))
+  (test-equal (matrix ((19.0 22.0) (43.0 50.0)))
               (matrix-mul a b)))
 
-(let ([a (matrix ((1 2) (3 4) (5 6)))]
-      [b (matrix ((5 6) (7 8)))])
-  (test-equal (matrix ((19 22) (43 50) (67 78)))
+(let ([a (matrix ((1.0 2.0) (3.0 4.0) (5.0 6.0)))]
+      [b (matrix ((5.0 6.0) (7.0 8.0)))])
+  (test-equal (matrix ((19.0 22.0) (43.0 50.0) (67.0 78.0)))
               (matrix-mul a b)))
 
-(let ([a (matrix ((1 2 3) (4 5 6)))]
-      [b (matrix ((1) (2) (3)))])
-  (test-equal (matrix ((14) (32)))
+(let ([a (matrix ((1.0 2.0 3.0) (4.0 5.0 6.0)))]
+      [b (matrix ((1.0) (2.0) (3.0)))])
+  (test-equal (matrix ((14.0) (32.0)))
               (matrix-mul a b)))
 
 ;; Matrix addition.
@@ -369,11 +402,15 @@
   (test-equal (matrix ((0 4) (9 4)))
               (matrix-multiply a b)))
 
-;; Matrix devide arguments element-wise.
+;; Matrix divide arguments element-wise.
 (let ([a (matrix ((1 2) (4 4)))]
       [b (matrix ((1 2) (2 1)))])
   (test-equal (matrix ((1 1) (2 4)))
-              (matrix-devide a b)))
+              (matrix-divide a b)))
+
+;; Matrix transpose.
+(test-equal (matrix ((1 2 3) (4 5 6)))
+            (matrix-transpose (matrix ((1 4) (2 5) (3 6)))))
 
 ;; Matrix vstack
 (test-equal (matrix ((1 2) (1 2) (1 2))) (matrix-vstack-row (matrix ((1 2))) 3))
@@ -384,7 +421,7 @@
 ;; Other neural network components
 ;;   sigmoid
 (test-true (good-enough? 0.57444252 (sigmoid1 0.3)))
-(test-true (let ([mat (sigmoid (matrix ((1 2))))])
+(test-true (let ([mat (sigmoid (matrix ((1.0 2.0))))])
              (and (good-enough? 0.7310585 (mat-at mat 0 0))
                   (good-enough? 0.8807970 (mat-at mat 0 1)))))
 
@@ -403,15 +440,15 @@
                   (good-enough? 0.73659691 (mat-at mat 1 2)))))
 
 ;;   cross-entropy-error
-(test-true (let ([t (matrix ((0 0 1 0 0 0 0 0 0 0)))]
+(test-true (let ([t (matrix ((0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)))]
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
              (good-enough? 0.510825457099338 (cross-entropy-error y t))))
 
-(test-true (let ([t (matrix ((0 1 0 0 0 0 0 0 0 0)))]
+(test-true (let ([t (matrix ((0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)))]
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
              (good-enough? 2.9957302735559908 (cross-entropy-error y t))))
 
-(test-true (let ([t (matrix ((0 0 1 0 0 0 0 0 0 0) (0 1 0 0 0 0 0 0 0 0)))]
+(test-true (let ([t (matrix ((0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) (0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)))]
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0) (0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
              (good-enough? 1.7532778653276644 (cross-entropy-error y t))))
 
@@ -460,9 +497,9 @@
   (case-lambda
     [(data-dir num-train num-test)
         (values
-          (matrix-devide (load-images (string-append data-dir "train-images-idx3-ubyte") num-train) 255.0)
+          (matrix-divide (load-images (string-append data-dir "train-images-idx3-ubyte") num-train) 255.0)
           (one-hot (load-labels (string-append data-dir "train-labels-idx1-ubyte") num-train) 10)
-          (matrix-devide (load-images (string-append data-dir "t10k-images-idx3-ubyte") num-test) 255.0)
+          (matrix-divide (load-images (string-append data-dir "t10k-images-idx3-ubyte") num-test) 255.0)
           (one-hot (load-labels (string-append data-dir "t10k-labels-idx1-ubyte") num-test) 10))]
     [(data-dir)
       (load-mnist data-dir 60000 10000)]))
@@ -563,11 +600,41 @@
              [t (matrix-argmax t)])
         (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
     (define (update-params x t lr)
-        (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient x t)])
+        (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient2 x t)])
+          (format #t "w1=~a b1=~a\n" (matrix-shape grad-w1) grad-b1)
+          (format #t "b1=~a\n" (matrix-shape grad-b1))
+          (format #t "w2=~a\n" (matrix-shape grad-w2))
+          (format #t "b2=~a\n" (matrix-shape grad-b2))                              
           (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
           (set! b1 (matrix-sub b1 (matrix-multiply grad-b1 lr)))
           (set! w2 (matrix-sub w2 (matrix-multiply grad-w2 lr)))
           (set! b2 (matrix-sub b2 (matrix-multiply grad-b2 lr)))))
+    (define (gradient2 x t)
+      (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
+             [undef (display 1)]
+             [z1 (sigmoid a1)]
+             [undef (display 2)]             
+             [a2 (matrix-add (matrix-mul z1 w2) b2)]
+             [undef (display 3)]             
+             [y (softmax a2)]
+             [undef (display (matrix-shape y))]             
+             [batch-size (matrix-shape x 0)]
+             [undef (display 5)]             
+             [dy (matrix-divide (matrix-sub y t) batch-size)]
+             [undef (display (matrix-shape dy))]             
+             [grad-w2 (matrix-mul (matrix-transpose z1) dy)]
+             [undef (display 7)]             
+             [grad-b2 (matrix-sum dy 0)]
+             [undef (display (matrix-shape grad-b2))]             
+             [dz1 (matrix-mul dy (matrix-transpose w2))]
+                          [undef (display 9)]
+             [da1 (matrix-multiply (sigmoid-grad a1) dz1)]
+                          [undef (display 10)]
+             [grad-w1 (matrix-mul (matrix-transpose x) da1)]
+                          [undef (display 11)]
+             [grad-b1 (matrix-sum da1 0)])
+        (display "12")             
+        (values grad-w1 grad-b1 grad-w2 grad-b2)))
     (define (gradient x t)
       (let ([loss-w (lambda (w) (loss x t))])
       (values (numerical-gradient loss-w w1)
@@ -585,13 +652,13 @@
   (display (gradient (matrix-randn 2 3)  (matrix ((0 0 1) (0 1 0)))))
 )
 
-(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60 10)))
-  (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 3 10)))
+(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60000 10)))
+  (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 2 10)))
     (let ([num-train (matrix-shape x-train 0)]
-          [batch-size 3]
+          [batch-size 100]
           [lr 0.01])
       (do ((i 0 (+ i 1)))
-          ((= i 1))
+          ((= i 2))
           (display i)
           (newline)
           (let* ([batch-idx* (random-choice num-train batch-size)]
