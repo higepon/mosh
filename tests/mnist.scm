@@ -229,6 +229,7 @@
       (error "matrix-sub shapes don't match" (matrix-shape a) (matrix-shape b)))
     (matrix-element-wise - a b)))
 
+<<<<<<< HEAD
 (define (matrix-divide a b)
   (let-values ([(a b) (matrix-stretch a b)])
     (unless (equal? (matrix-shape a) (matrix-shape b))
@@ -252,6 +253,18 @@
           (do ((j 0 (+ j 1)))
               ((= j ncols))
             (mat-at mat 0 j (+ (mat-at mat 0 j) (mat-at a i j))))))]))
+=======
+(define (matrix-devide a b)
+  (let-values ([(a b) (matrix-stretch a b)])
+    (unless (equal? (matrix-shape a) (matrix-shape b))
+      (error "matrix-devide shapes don't match" (matrix-shape a) (matrix-shape b)))
+    (matrix-element-wise / a b)))
+
+(define (matrix-sum a)
+  (let* ([lst (matrix->list* a)]
+         [lst (concatenate lst)])
+    (sum lst)))
+>>>>>>> origin/master
 
 (define (matrix-max a)
   (let* ([lst (matrix->list* a)]
@@ -402,6 +415,7 @@
   (test-equal (matrix ((0 4) (9 4)))
               (matrix-multiply a b)))
 
+<<<<<<< HEAD
 ;; Matrix divide arguments element-wise.
 (let ([a (matrix ((1 2) (4 4)))]
       [b (matrix ((1 2) (2 1)))])
@@ -411,6 +425,13 @@
 ;; Matrix transpose.
 (test-equal (matrix ((1 2 3) (4 5 6)))
             (matrix-transpose (matrix ((1 4) (2 5) (3 6)))))
+=======
+;; Matrix devide arguments element-wise.
+(let ([a (matrix ((1 2) (4 4)))]
+      [b (matrix ((1 2) (2 1)))])
+  (test-equal (matrix ((1 1) (2 4)))
+              (matrix-devide a b)))
+>>>>>>> origin/master
 
 ;; Matrix vstack
 (test-equal (matrix ((1 2) (1 2) (1 2))) (matrix-vstack-row (matrix ((1 2))) 3))
@@ -497,9 +518,15 @@
   (case-lambda
     [(data-dir num-train num-test)
         (values
+<<<<<<< HEAD
           (matrix-divide (load-images (string-append data-dir "train-images-idx3-ubyte") num-train) 255.0)
           (one-hot (load-labels (string-append data-dir "train-labels-idx1-ubyte") num-train) 10)
           (matrix-divide (load-images (string-append data-dir "t10k-images-idx3-ubyte") num-test) 255.0)
+=======
+          (matrix-devide (load-images (string-append data-dir "train-images-idx3-ubyte") num-train) 255.0)
+          (one-hot (load-labels (string-append data-dir "train-labels-idx1-ubyte") num-train) 10)
+          (matrix-devide (load-images (string-append data-dir "t10k-images-idx3-ubyte") num-test) 255.0)
+>>>>>>> origin/master
           (one-hot (load-labels (string-append data-dir "t10k-labels-idx1-ubyte") num-test) 10))]
     [(data-dir)
       (load-mnist data-dir 60000 10000)]))
@@ -600,11 +627,15 @@
              [t (matrix-argmax t)])
         (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
     (define (update-params x t lr)
+<<<<<<< HEAD
         (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient2 x t)])
           (format #t "w1=~a b1=~a\n" (matrix-shape grad-w1) grad-b1)
           (format #t "b1=~a\n" (matrix-shape grad-b1))
           (format #t "w2=~a\n" (matrix-shape grad-w2))
           (format #t "b2=~a\n" (matrix-shape grad-b2))                              
+=======
+        (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient x t)])
+>>>>>>> origin/master
           (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
           (set! b1 (matrix-sub b1 (matrix-multiply grad-b1 lr)))
           (set! w2 (matrix-sub w2 (matrix-multiply grad-w2 lr)))
