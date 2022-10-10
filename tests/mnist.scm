@@ -401,7 +401,7 @@
 ;; Matrix accessor set.
 (let ([m (matrix ((1.0 2.0) (3.0 4.0)))])
   (mat-at m 1 0 5)
-  (test-equal #(#(1 2) #(5 4)) m))
+  (test-equal (matrix ((1.0 2.0) (5.0 4.0))) m))
 
 (test-equal '((1.0 2.0) (3.0 4.0)) (matrix->list* (matrix ((1 2) (3 4)))))
 
