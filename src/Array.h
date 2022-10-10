@@ -45,7 +45,7 @@ typedef Array<double> F64Array;
  *  This is introduced to make the MNIST Neural Network demo run fater.
  *  We currently only support 2D array of f64 type but we may support more.
  *  See https://github.com/higepon/mosh/issues/168.
- * 
+ *
  */
 template <typename T>
 class Array EXTEND_GC
