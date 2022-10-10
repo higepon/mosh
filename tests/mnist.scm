@@ -396,14 +396,14 @@
 (test-equal #(3 2) (matrix-shape (matrix-randn 3 2)))
 
 ;; Matrix accessor get.
-(test-equal 2 (mat-at (matrix ((1 2) (3 4))) 0 1))
+(test-equal 2.0 (mat-at (matrix ((1 2) (3 4))) 0 1))
 
 ;; Matrix accessor set.
 (let ([m (matrix ((1.0 2.0) (3.0 4.0)))])
   (mat-at m 1 0 5)
   (test-equal #(#(1 2) #(5 4)) m))
 
-(test-equal '((1 2) (3 4)) (matrix->list* (matrix ((1 2) (3 4)))))
+(test-equal '((1.0 2.0) (3.0 4.0)) (matrix->list* (matrix ((1 2) (3 4)))))
 
 ;; argmax
 (test-equal 3 (vector-argmax #(1 2 5 8 4)))
