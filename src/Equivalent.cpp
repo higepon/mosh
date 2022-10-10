@@ -156,7 +156,7 @@ entry:
         } else {
             return false;
         }
-    }    
+    }
 
     if (object1.isPointer()) {
         if (object2.isPointer()) {
@@ -374,7 +374,7 @@ Object Equal::preP(Object x, Object y, Object k)
         } else {
             return Object::False;
         }
-    }    
+    }
     if (x.isRegexp()) {
         if (y.isRegexp()) {
             Regexp* const regexp1 = x.toRegexp();
