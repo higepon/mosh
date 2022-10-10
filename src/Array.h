@@ -66,9 +66,27 @@ public:
     }
     ucs4string toString() const
     {
-        ucs4string ret(UC("#<f64array "));
+        const size_t maxRows = 10;
+        const size_t maxCols = 5;
+        ucs4string ret(UC("#<f64array [\n"));
+        for (size_t i = 0; i < std::min(maxRows, nrows_); i++) {
+            ret += ucs4string::from_c_str("[");
+            for (size_t j = 0; j < std::min(maxCols, ncols_); j++) {
+                char buf[32];
+                snprintf(buf, sizeof(buf), "% 1.5lf ", ref(i, j));
+                ret += ucs4string::from_c_str(buf);
+            }
+            if (ncols_ >= maxCols) {
+                ret += ucs4string::from_c_str("...]\n");
+            } else {
+                ret += ucs4string::from_c_str("]\n");
+            }
+        }
+        if (nrows_ >= maxRows) {
+            ret += ucs4string::from_c_str("...\n");
+        }
         char buf[32];
-        snprintf(buf, sizeof(buf), "shape=(%zu %zu)", nrows_, ncols_);
+        snprintf(buf, sizeof(buf), "] shape=(%zu %zu)", nrows_, ncols_);
         ret += ucs4string::from_c_str(buf);
         ret += UC(">");
         return ret;
