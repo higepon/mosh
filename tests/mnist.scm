@@ -32,7 +32,7 @@
     [(_ m n)
      (make-f64array m n)]
     [(_ m n value)
-     (make-f64array value m n)]))
+     (make-f64array m n value)]))
 
 ;; Get or set (i, j) element of matrix.
 (define-syntax mat-at
@@ -386,7 +386,7 @@
 
 ;; Matrix sum.
 (test-equal 10.0 (matrix-sum (matrix ((1.0 2.0) (3.0 4.0)))))
-(test-equal #(#(4.0 6.0)) (matrix-sum (matrix ((1.0 2.0) (3.0 4.0))) 0))
+(test-equal (matrix ((4.0 6.0))) (matrix-sum (matrix ((1.0 2.0) (3.0 4.0))) 0))
 
 ;; Create matrix.
 (test-equal (matrix ((1 2 3) (4 5 6)))   (bytevector->matrix #u8(1 2 3 4 5 6) 2))
