@@ -35,6 +35,7 @@
 
 namespace scheme {
     Object makeF64arrayEx(VM* theVM, int argc, const Object* argv);
+    Object f64arrayPEx(VM* theVM, int argc, const Object* argv);    
 } // namespace scheme
 
 #endif // SCHEME_ARRAY_PROCEDURES_

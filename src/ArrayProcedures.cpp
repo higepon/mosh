@@ -58,3 +58,11 @@ Object scheme::makeF64arrayEx(VM* theVM, int argc, const Object* argv)
     }
     return Object::makeF64Array(nrows, ncols, fillValue);
 }
+
+// (f64array? obj)
+Object scheme::f64arrayPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("f64array?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isF64Array());    
+}
