@@ -37,12 +37,15 @@ namespace scheme {
 // Support reshape!!! is easy
 
 typedef std::pair<size_t, size_t> ArrayShape;
+typedef Array<double> F64Array;
 
 /*
+ *
  *  An experimental implementation of uniform f64 array.
  *  This is introduced to make the MNIST Neural Network demo run fater.
  *  We currently only support 2D array of f64 type but we may support more.
  *  See https://github.com/higepon/mosh/issues/168.
+ * 
  */
 template <typename T>
 class Array EXTEND_GC
@@ -53,6 +56,15 @@ public:
     T ref(size_t row, size_t col) const;
     void set(size_t row, size_t col, T value);
     ArrayShape shape() const;
+    ucs4string toString() const
+    {
+        ucs4string ret(UC("#<f64array "));
+        char buf[32];
+        snprintf(buf, sizeof(buf), "shape=(%zu %zu)", nrows_, ncols_);
+        ret += ucs4string::from_c_str(buf);
+        ret += UC(">");
+        return ret;        
+    }
 
 private:
     size_t nrows_;

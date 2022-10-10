@@ -44,6 +44,7 @@
 #include "Arithmetic.h"
 #include "Closure.h"
 #include "Callable.h"
+#include "ArrayProcedures.h"
 #include "RegexpProcedures.h"
 #include "Bignum.h"
 #include "Box.h"

@@ -724,4 +724,7 @@
   ;; for 0.2.8
   (set-current-error-port! current-error-port)
   port-open?
+
+  ;; Experimental array.
+  make-f64array
   )
