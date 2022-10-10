@@ -246,7 +246,7 @@ inline const char* nth(int index) {
 #define argumentAsRegexp(index, variableName) castArgument(index, variableName, isRegexp, regexp, Regexp*, toRegexp)
 #define argumentAsRegMatch(index, variableName) castArgument(index, variableName, isRegMatch, regexp, RegMatch*, toRegMatch)
 #define argumentAsString(index, variableName) castArgument(index, variableName, isString, string, String*, toString)
-
+#define argumentAsF64Array(index, variableName) castArgument(index, variableName, isF64Array, f64array, F64Array*, toF64Array)
 
 #define argumentAsChar(index, variableName) castArgument(index, variableName, isChar, character, ucs4char, toChar)
 
