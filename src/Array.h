@@ -56,6 +56,14 @@ public:
     T ref(size_t row, size_t col) const;
     void set(size_t row, size_t col, T value);
     ArrayShape shape() const;
+    bool equal(const Array* array) const
+    {
+        if (array->ncols_ == ncols_ && array->nrows_ == nrows_) {
+            return memcmp(array->data_, data_, ncols_ * nrows_ * sizeof(T)) == 0;
+        } else {
+            return false;
+        }
+    }
     ucs4string toString() const
     {
         ucs4string ret(UC("#<f64array "));
@@ -63,7 +71,7 @@ public:
         snprintf(buf, sizeof(buf), "shape=(%zu %zu)", nrows_, ncols_);
         ret += ucs4string::from_c_str(buf);
         ret += UC(">");
-        return ret;        
+        return ret;
     }
 
 private:

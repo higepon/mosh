@@ -95,7 +95,6 @@ Object scheme::f64arraySetDEx(VM* theVM, int argc, const Object* argv)
     argumentAsF64Array(0, array);
     argumentAsFixnum(2, row);
     argumentAsFixnum(3, col);
-    double value = 0.0;
     if (argv[1].isFlonum()) {
         array->set(row, col, argv[1].toFlonum()->value());
     } else if (argv[1].isFixnum()) {
