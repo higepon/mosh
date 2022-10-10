@@ -130,7 +130,6 @@ public:
     bool isBinaryPort() const;
     bool isTextualPort() const;
     bool isPort() const;
-    bool isF64Array();
     bool isComplex() const;
     bool isReal() const;
     bool isRational() const;
