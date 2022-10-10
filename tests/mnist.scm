@@ -73,7 +73,12 @@
         ((= i n) mat)
       (do ((j 0 (+ j 1)))
           ((= j (matrix-shape row 1))
-          (mat-at mat i j (mat-at row 0 j)))))))        
+          (mat-at mat i j (mat-at row 0 j)))))))    
+
+;; argmax
+(define (matrix-argmax a)
+  (vector-map vector-argmax (list*->vector* (matrix->list* a))))
+
 
   ]
   [else
@@ -119,6 +124,11 @@
     (do ((i 0 (+ i 1)))
         ((= i n) mat)
       (vec-at mat i (vector-copy (vec-at row 0))))))
+
+;; argmax
+(define (matrix-argmax a)
+  (vector-map vector-argmax a))
+
 
   ])
 
@@ -198,10 +208,6 @@
       (do ((j 0 (+ j 1)))
           ((= j ncols))
         (mat-at mat j i (mat-at a i j))))))
-
-;; argmax
-(define (matrix-argmax a)
-  (vector-map vector-argmax a))
 
 ;; Slice
 ;; TODO: Should this return copy?
