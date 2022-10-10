@@ -41,6 +41,14 @@
      (f64array-ref m i j)]
     [(_ m i j value)
      (begin (f64array-set! m value i j) m)]))
+
+;; Matrix shape.
+;; N.B For now we only support 2D matrix.
+(define matrix-shape
+  (case-lambda
+   [(a) (f64array-shape a)]
+   [(a n)
+    (vec-at (matrix-shape a) n)]))
   ]
   [else
 
@@ -62,6 +70,16 @@
      (vec-at (vec-at m i) j)]
     [(_ m i j value)
      (begin (vec-at (vec-at m i) j value) m)]))
+
+;; Matrix shape.
+;; N.B For now we only support 2D matrix.
+(define matrix-shape
+  (case-lambda
+   [(a) `#(,(vec-len a) ,(vec-len (vec-at a 0)))]
+   [(a n)
+    (if (= n 0)
+        (vec-len a)
+        (vec-len (vec-at a 0)))]))
 
   ])
 
@@ -160,15 +178,6 @@
       row-index*)
     mat))
 
-;; Matrix shape.
-;; N.B For now we only support 2D matrix.
-(define matrix-shape
-  (case-lambda
-   [(a) `#(,(vec-len a) ,(vec-len (vec-at a 0)))]
-   [(a n)
-    (if (= n 0)
-        (vec-len a)
-        (vec-len (vec-at a 0)))]))
 
 ;; Create a matrix of zeros with the same shape as a given matrix.
 (define (matrix-zeros-like a)
