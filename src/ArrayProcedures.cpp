@@ -32,6 +32,7 @@
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
+#include "Vector.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "SString.h"
@@ -53,7 +54,7 @@ Object scheme::makeF64arrayEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, ncols);
     double fillValue = 0.0;
     if (argc == 3) {
-        argumentAsFlonum(2, value);        
+        argumentAsFlonum(2, value);
         fillValue = value->value();
     }
     return Object::makeF64Array(nrows, ncols, fillValue);
@@ -64,5 +65,42 @@ Object scheme::f64arrayPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("f64array?");
     checkArgumentLength(1);
-    return Object::makeBool(argv[0].isF64Array());    
+    return Object::makeBool(argv[0].isF64Array());
+}
+
+// (f64array-shape array)
+Object scheme::f64arrayShapeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("f64array-shape");
+    checkArgumentLength(1);
+    argumentAsF64Array(0, array);
+    ArrayShape shape = array->shape();
+    Object v = Object::makeVector(2);
+    v.toVector()->set(0, Object::makeFixnum(shape.first));
+    v.toVector()->set(1, Object::makeFixnum(shape.second));
+    return v;
+}
+
+// (f64array-set! array value row col)
+Object scheme::f64arraySetDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("f64array-set!");
+    checkArgumentLength(4);
+    argumentAsF64Array(0, array);
+    argumentAsFlonum(1, value);
+    argumentAsFixnum(2, row);
+    argumentAsFixnum(3, col);
+    array->set(row, col, value->value());
+    return Object::Undef;
+}
+
+// (f64array-ref array row col)
+Object scheme::f64arrayRefEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("f64array-ref");
+    checkArgumentLength(3);
+    argumentAsF64Array(0, array);
+    argumentAsFixnum(1, row);
+    argumentAsFixnum(2, col);
+    return Object::makeFlonum(array->ref(row, col));
 }

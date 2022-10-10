@@ -728,4 +728,7 @@
   ;; Experimental array.
   make-f64array
   f64array?
+  f64array-ref
+  f64array-set!
+  f64array-shape
   )
