@@ -34,3 +34,4 @@
 (define-accessor SimpleStruct)
 (define-accessor Continuation)
 (define-accessor SharedReference)
+(define-accessor F64Array)
