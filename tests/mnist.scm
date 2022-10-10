@@ -8,7 +8,62 @@
         (only (srfi 27) random-integer)
         (only (srfi 194) make-normal-generator)
         (only (mosh) format) ; matrix-mul)
+        (only (system) make-f64array f64array-ref f64array-set! f64array-shape)
         (mosh test))
+
+(cond-expand
+  [mosh
+
+(define (vector*->matrix v)
+  (let* ([nrows (vec-len v)]
+         [ncols (vec-len (vec-at v 0))]
+         [mat (matrix nrows ncols)])
+    (do ((i 0 (+ i 1)))
+        ((= i nrows) mat)
+      (do ((j 0 (+ j 1)))
+          ((= j ncols))
+          (mat-at mat i j (vec-at (vec-at v i) j))))))
+
+;; Create matrix.
+(define-syntax matrix
+  (syntax-rules ()
+    [(_ array)
+      (vector*->matrix (list*->vector* 'array))]
+    [(_ m n)
+     (make-f64array m n)]
+    [(_ m n value)
+     (make-f64array value m n)]))
+
+;; Get or set (i, j) element of matrix.
+(define-syntax mat-at
+  (syntax-rules ()
+    [(_ m i j)
+     (f64array-ref m i j)]
+    [(_ m i j value)
+     (begin (f64array-set! m value i j) m)]))
+  ]
+  [else
+
+;; Create matrix.
+;; We use nested list as intenal representation.
+(define-syntax matrix
+  (syntax-rules ()
+    [(_ array)
+     (list*->vector* 'array)]
+    [(_ m n)
+     (make-vector* m n)]
+    [(_ m n value)
+     (make-vector* m n value)]))
+
+;; Get or set (i, j) element of matrix.
+(define-syntax mat-at
+  (syntax-rules ()
+    [(_ m i j)
+     (vec-at (vec-at m i) j)]
+    [(_ m i j value)
+     (begin (vec-at (vec-at m i) j value) m)]))
+
+  ])
 
 ;; Utilities.
 (define (sum lst)
@@ -62,24 +117,7 @@
   (syntax-rules ()
     [(_ v) (vector-length v)]))
 
-;; Create matrix.
-;; We use nested list as intenal representation.
-(define-syntax matrix
-  (syntax-rules ()
-    [(_ array)
-     (list*->vector* 'array)]
-    [(_ m n)
-     (make-vector* m n)]
-    [(_ m n value)
-     (make-vector* m n value)]))
 
-;; Get or set (i, j) element of matrix.
-(define-syntax mat-at
-  (syntax-rules ()
-    [(_ m i j)
-     (vec-at (vec-at m i) j)]
-    [(_ m i j value)
-     (begin (vec-at (vec-at m i) j value) m)]))
 
 ;; The matrix-map procedure applies proc element-wise to the elements of the matrix
 ;; and returns a result matrix of the result.
@@ -336,7 +374,7 @@
 (test-equal 2 (mat-at (matrix ((1 2) (3 4))) 0 1))
 
 ;; Matrix accessor set.
-(let ([m (matrix ((1 2) (3 4)))])
+(let ([m (matrix ((1.0 2.0) (3.0 4.0)))])
   (mat-at m 1 0 5)
   (test-equal #(#(1 2) #(5 4)) m))
 
@@ -367,19 +405,19 @@
               (matrix-mul a b)))
 
 ;; Matrix addition.
-(let ([a (matrix ((1 2) (3 4)))]
-      [b (matrix ((5 6) (7 8)))])
+(let ([a (matrix ((1.0 2.0) (3.0 4.0)))]
+      [b (matrix ((5.0 6.0) (7.0 8.0)))])
   (test-equal (matrix ((6 8) (10 12)))
               (matrix-add a b)))
 
 ;; Matrix addition broadcast.
-(let ([a (matrix ((1 2) (3 4)))]
-      [b (matrix ((5 6)))])
+(let ([a (matrix ((1.0 2.0) (3.0 4.0)))]
+      [b (matrix ((5.0 6.0)))])
   (test-equal (matrix ((6 8) (8 10)))
               (matrix-add a b)))
 
 ;; Matrix addition broadcast.
-(let ([a (matrix ((1 2) (3 4)))]
+(let ([a (matrix ((1.0 2.0) (3 4)))]
       [b (matrix ((5 6)))])
   (test-equal (matrix ((6 8) (8 10)))
               (matrix-add b a)))
@@ -451,6 +489,9 @@
 (test-true (let ([t (matrix ((0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) (0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)))]
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0) (0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
              (good-enough? 1.7532778653276644 (cross-entropy-error y t))))
+
+
+(test-results)
 
 ;;   numerical-gradient
 (let ([mat (numerical-gradient
@@ -529,9 +570,6 @@
 )
 
 
-(test-results)
-
-
 
 ;(test-equal #(6 784) (matrix-shape (load-train-images 6)))
 ;(test-equal #(1 6) (matrix-shape (load-train-labels 6)))
@@ -606,7 +644,7 @@
           (format #t "w1=~a b1=~a\n" (matrix-shape grad-w1) grad-b1)
           (format #t "b1=~a\n" (matrix-shape grad-b1))
           (format #t "w2=~a\n" (matrix-shape grad-w2))
-          (format #t "b2=~a\n" (matrix-shape grad-b2))                              
+          (format #t "b2=~a\n" (matrix-shape grad-b2))
           (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
           (set! b1 (matrix-sub b1 (matrix-multiply grad-b1 lr)))
           (set! w2 (matrix-sub w2 (matrix-multiply grad-w2 lr)))
@@ -615,19 +653,19 @@
       (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
              [undef (display 1)]
              [z1 (sigmoid a1)]
-             [undef (display 2)]             
+             [undef (display 2)]
              [a2 (matrix-add (matrix-mul z1 w2) b2)]
-             [undef (display 3)]             
+             [undef (display 3)]
              [y (softmax a2)]
-             [undef (display (matrix-shape y))]             
+             [undef (display (matrix-shape y))]
              [batch-size (matrix-shape x 0)]
-             [undef (display 5)]             
+             [undef (display 5)]
              [dy (matrix-divide (matrix-sub y t) batch-size)]
-             [undef (display (matrix-shape dy))]             
+             [undef (display (matrix-shape dy))]
              [grad-w2 (matrix-mul (matrix-transpose z1) dy)]
-             [undef (display 7)]             
+             [undef (display 7)]
              [grad-b2 (matrix-sum dy 0)]
-             [undef (display (matrix-shape grad-b2))]             
+             [undef (display (matrix-shape grad-b2))]
              [dz1 (matrix-mul dy (matrix-transpose w2))]
                           [undef (display 9)]
              [da1 (matrix-multiply (sigmoid-grad a1) dz1)]
@@ -635,7 +673,7 @@
              [grad-w1 (matrix-mul (matrix-transpose x) da1)]
                           [undef (display 11)]
              [grad-b1 (matrix-sum da1 0)])
-        (display "12")             
+        (display "12")
         (values grad-w1 grad-b1 grad-w2 grad-b2)))
     (define (gradient x t)
       (let ([loss-w (lambda (w) (loss x t))])

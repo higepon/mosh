@@ -87,10 +87,17 @@ Object scheme::f64arraySetDEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("f64array-set!");
     checkArgumentLength(4);
     argumentAsF64Array(0, array);
-    argumentAsFlonum(1, value);
     argumentAsFixnum(2, row);
     argumentAsFixnum(3, col);
-    array->set(row, col, value->value());
+    double value = 0.0;
+    if (argv[1].isFlonum()) {
+        array->set(row, col, argv[1].toFlonum()->value());
+    } else if (argv[1].isFixnum()) {
+        array->set(row, col, argv[1].toFixnum());
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, UC("flonum or fixnum required"), Pair::list1(argv[0]));
+        return Object::Undef;
+    }
     return Object::Undef;
 }
 
