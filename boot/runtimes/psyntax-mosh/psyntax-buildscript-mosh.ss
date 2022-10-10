@@ -1156,6 +1156,7 @@
     (ssl-socket? sys)
     (ssl-supported? sys)
     (make-f64array sys)
+    (f64array? sys)
     (standard-library-path mosh)
     (library-path mosh) ; for srfi system
     (host-os mosh) ; for srfi-system

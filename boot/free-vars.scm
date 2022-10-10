@@ -727,4 +727,5 @@
 
   ;; Experimental array.
   make-f64array
+  f64array?
   )
