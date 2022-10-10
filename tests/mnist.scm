@@ -49,6 +49,21 @@
    [(a) (f64array-shape a)]
    [(a n)
     (vec-at (matrix-shape a) n)]))
+
+;; Convert matrix to nested list.
+(define (matrix->list* a)
+  (define (row->list row)
+    (let loop ([ret '()]
+               [i 0])
+       (if (= i (matrix-shape a 1))
+           (reverse ret)
+           (loop (cons (mat-at a row i) ret) (+ i 1)))))
+  (let loop ([ret '()]
+             [row 0])
+    (if (= row (matrix-shape a 0))
+        (reverse ret)
+        (loop (cons (row->list row) ret) (+ row 1)))))
+
   ]
   [else
 
@@ -80,6 +95,11 @@
     (if (= n 0)
         (vec-len a)
         (vec-len (vec-at a 0)))]))
+
+;; Convert matrix to nested list.
+(define (matrix->list* a)
+  (map vector->list (vector->list a)))
+
 
   ])
 
@@ -148,10 +168,6 @@
       (do ((j 0 (+ j 1)))
           ((= j ncols))
         (mat-at mat i j (proc (mat-at a i j)))))))
-
-;; Convert matrix to nested list.
-(define (matrix->list* a)
-  (map vector->list (vector->list a)))
 
 ;; Matrix transpose
 (define (matrix-transpose a)
