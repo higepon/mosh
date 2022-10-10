@@ -41,6 +41,7 @@
 #include "Pair-inl.h"
 #include "Vector.h"
 #include "SString.h"
+#include "Array.h"
 #include "Regexp.h"
 #include "CProcedure.h"
 #include "EqHashTable.h"
@@ -146,6 +147,16 @@ entry:
             return false;
         }
     }
+    if (object1.isF64Array()) {
+        if (!object2.isF64Array()) {
+            return false;
+        }
+        if (object1.toF64Array()->equal(object2.toF64Array())) {
+            return true;
+        } else {
+            return false;
+        }
+    }    
 
     if (object1.isPointer()) {
         if (object2.isPointer()) {
@@ -354,6 +365,16 @@ Object Equal::preP(Object x, Object y, Object k)
             return Object::False;
         }
     }
+    if (x.isF64Array()) {
+        if (!y.isF64Array()) {
+            return Object::False;
+        }
+        if (x.toF64Array()->equal(y.toF64Array())) {
+            return k;
+        } else {
+            return Object::False;
+        }
+    }    
     if (x.isRegexp()) {
         if (y.isRegexp()) {
             Regexp* const regexp1 = x.toRegexp();
@@ -535,6 +556,16 @@ Object Equal::slowP(EqHashTable** pht, Object x, Object y, Object k)
             return Object::False;
         }
     }
+    if (x.isF64Array()) {
+        if (!y.isF64Array()) {
+            return Object::False;
+        }
+        if (x.toF64Array()->equal(y.toF64Array())) {
+            return k;
+        } else {
+            return Object::False;
+        }
+    }
     if (x.isRegexp()) {
         if (y.isRegexp()) {
             Regexp* const regexp1 = x.toRegexp();
@@ -650,6 +681,16 @@ Object Equal::fastP(EqHashTable** pht, Object x, Object y, Object k)
             return Object::False;
         }
         if (x.toByteVector()->equal(y.toByteVector())) {
+            return k;
+        } else {
+            return Object::False;
+        }
+    }
+    if (x.isF64Array()) {
+        if (!y.isF64Array()) {
+            return Object::False;
+        }
+        if (x.toF64Array()->equal(y.toF64Array())) {
             return k;
         } else {
             return Object::False;
