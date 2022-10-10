@@ -81,6 +81,9 @@ class Pointer;
 class SimpleStruct;
 class Continuation;
 class SharedReference;
+template <typename T>
+class Array;
+typedef Array<double> F64Array;
 enum {
     CONST_NIL     = 0,
     CONST_EOF     = 1,
@@ -127,6 +130,7 @@ public:
     bool isBinaryPort() const;
     bool isTextualPort() const;
     bool isPort() const;
+    bool isArray();
     bool isComplex() const;
     bool isReal() const;
     bool isRational() const;
@@ -267,6 +271,7 @@ public:
     static Object makeByteVector(const char* src, size_t length);
     static Object makeByteVector(const gc_vector<uint8_t>& v);
     static Object makeBool(bool a);
+    static Object makeF64Array(size_t nrows, size_t ncols, double value);
     static Object makeRegexp(const ucs4string& pattern, bool caseFold, bool isSingleLine);
     static Object makeRegMatch(OnigRegion* region, const ucs4string& text);
     static Object makeCodec(Codec* codec);

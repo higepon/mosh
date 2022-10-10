@@ -95,6 +95,7 @@ src/Pair.h                                                             \
 src/ExecutableMemory.h                                                 \
 src/LineBufferedFileBinaryOutputPort.h                                 \
 src/Stack.h                                                            \
+src/Array.h                                                            \
 src/Gloc.h                         src/BinaryInputOutputPort.h         \
 src/Box.h                          src/Port.h                          \
 src/BinaryPort.h                   src/OutputPort.h                    \
@@ -148,6 +149,7 @@ src/Object.h                       src/Object.cpp                      \
 src/CompilerProcedures.cpp         src/CompilerProcedures.h            \
 src/HashTableProcedures.cpp        src/HashTableProcedures.h           \
 src/RegexpProcedures.cpp           src/RegexpProcedures.h              \
+src/ArrayProcedures.cpp            src/ArrayProcedures.h               \
 src/StringProcedures.cpp           src/StringProcedures.h              \
 src/PortProcedures.cpp             src/PortProcedures.h                \
 src/ListProcedures.cpp             src/ListProcedures.h                \

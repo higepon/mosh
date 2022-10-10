@@ -92,6 +92,7 @@ public:
         SimpleStruct                = Type<41>::VALUE,
         Continuation                = Type<42>::VALUE,
         SharedReference             = Type<43>::VALUE,
+        F64Array                    = Type<44>::VALUE,
         forbidden_comma
     };
 };

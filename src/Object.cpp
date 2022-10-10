@@ -46,6 +46,7 @@
 #include "GenericHashTable.h"
 #include "EqvHashTable.h"
 #include "CProcedure.h"
+#include "Array.h"
 #include "Box.h"
 #include "Regexp.h"
 #include "UtilityProcedures.h"
@@ -299,6 +300,12 @@ Object Object::makeTextualInputPort(TextualInputPort* port)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
                                                         reinterpret_cast<intptr_t>(port))));
+}
+
+Object Object::makeF64Array(size_t nrows, size_t ncols, double value)
+{
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::F64Array,
+                                                            reinterpret_cast<intptr_t>(new F64Array(nrows, ncols, value)))));
 }
 
 Object Object::makeRegexp(const ucs4string& pattern, bool caseFold, bool isSingleLine)

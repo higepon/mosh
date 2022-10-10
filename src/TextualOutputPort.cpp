@@ -37,6 +37,7 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "Vector.h"
+#include "Array.h"
 #include "Symbol.h"
 #include "Regexp.h"
 #include "ByteVector.h"
@@ -637,6 +638,8 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(o.toBignum()->toString());
     } else if (o.isVM()) {
         putString(o.toVM()->toString());
+    } else if (o.isF64Array()) {
+        putString(o.toF64Array()->toString());        
 #ifndef MONA
     } else if (o.isConditionVariable()) {
         putString(o.toConditionVariable()->toString());

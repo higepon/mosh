@@ -64,6 +64,7 @@
 #include "Box.h"
 #include "UtilityProcedures.h"
 #include "RegexpProcedures.h"
+#include "ArrayProcedures.h"
 #include "FixnumProcedures.h"
 #include "SocketProcedures.h"
 #include "MultiVMProcedures.h"
