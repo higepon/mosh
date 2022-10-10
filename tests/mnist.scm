@@ -351,8 +351,8 @@
             (matrix-slice (matrix ((3 4 0) (9 -1 3) (0 2 5))) '(1 2)))
 
 ;; Matrix multiplication.
-(let ([a (matrix ((1 2) (3 4)))]
-      [b (matrix ((5 6) (7 8)))])
+(let ([a (matrix ((1.0 2.0) (3.0 4.0)))]
+      [b (matrix ((5.0 6.0) (7.0 8.0)))])
   (test-equal (matrix ((19.0 22.0) (43.0 50.0)))
               (matrix-mul a b)))
 
@@ -529,6 +529,8 @@
 )
 
 
+(test-results)
+
 
 
 ;(test-equal #(6 784) (matrix-shape (load-train-images 6)))
@@ -670,5 +672,3 @@
                  (display "loss= ")
                  (display (loss x-batch t-batch))
                  #f)))))
-
-(test-results)
