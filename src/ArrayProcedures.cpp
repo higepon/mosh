@@ -54,8 +54,14 @@ Object scheme::makeF64arrayEx(VM* theVM, int argc, const Object* argv)
     argumentAsFixnum(1, ncols);
     double fillValue = 0.0;
     if (argc == 3) {
-        argumentAsFlonum(2, value);
-        fillValue = value->value();
+        if (argv[2].isFlonum()) {
+            fillValue = argv[2].toFlonum()->value();
+        } else if (argv[2].isFixnum()) {
+            fillValue = argv[2].toFixnum();
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, UC("flonum or fixnum required"), Pair::list1(argv[2]));
+            return Object::Undef;
+        }
     }
     return Object::makeF64Array(nrows, ncols, fillValue);
 }
