@@ -64,6 +64,17 @@
         (reverse ret)
         (loop (cons (row->list row) ret) (+ row 1)))))
 
+;; Create a matrix by vertically stacking row n-times.
+(define (matrix-vstack-row row n)
+  (unless (= (matrix-shape row 0) 1)
+    (error "matrix-vstac-row only supports (1 N) shape" row n))
+  (let ([mat (matrix n (matrix-shape row 1))])
+    (do ((i 0 (+ i 1)))
+        ((= i n) mat)
+      (do ((j 0 (+ j 1)))
+          ((= j (matrix-shape row 1))
+          (mat-at mat i j (mat-at row 0 j)))))))        
+
   ]
   [else
 
@@ -100,6 +111,14 @@
 (define (matrix->list* a)
   (map vector->list (vector->list a)))
 
+;; Create a matrix by vertically stacking row n-times.
+(define (matrix-vstack-row row n)
+  (unless (= (matrix-shape row 0) 1)
+    (error "matrix-vstac-row only supports (1 N) shape" row n))
+  (let ([mat (matrix n (matrix-shape row 1))])
+    (do ((i 0 (+ i 1)))
+        ((= i n) mat)
+      (vec-at mat i (vector-copy (vec-at row 0))))))
 
   ])
 
@@ -199,7 +218,7 @@
 (define (matrix-zeros-like a)
   (matrix-full-like a 0.0))
 
-;; Create a full array with the same shape as a given matrxi.
+;; Create a full array with the same shape as a given matrix.
 (define (matrix-full-like a value)
   (let* ([nrows (matrix-shape a 0)]
          [ncols (matrix-shape a 1)])
@@ -263,15 +282,6 @@
     (values a (matrix-vstack-row b (matrix-shape a 0)))]
    [else
     (values a b)]))
-
-;; Create a matrix by vertically stacking row n-times.
-(define (matrix-vstack-row row n)
-  (unless (= (matrix-shape row 0) 1)
-    (error "matrix-vstac-row only supports (1 N) shape" row n))
-  (let ([mat (matrix n (matrix-shape row 1))])
-    (do ((i 0 (+ i 1)))
-        ((= i n) mat)
-      (vec-at mat i (vector-copy (vec-at row 0))))))
 
 ;; Multiply arguments element-wise.
 (define (matrix-multiply a b)
@@ -516,7 +526,9 @@
              (good-enough? 1.7532778653276644 (cross-entropy-error y t))))
 
 
-(test-results)
+(display (matrix-randn 40 30))
+
+(test-results) 
 
 ;;   numerical-gradient
 (let ([mat (numerical-gradient
