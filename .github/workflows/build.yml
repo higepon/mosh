@@ -384,6 +384,34 @@ jobs:
             ./configure
             gmake -j4
 
+  build-dist-dfly:
+    name: "DragonFly VM"
+    needs: build-linux
+    runs-on: macos-12
+    timeout-minutes: 40
+    steps:
+      - name: "Download artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: source-ubuntu-latest
+      - name: "Extract artifact"
+        run: |
+          tar xzv -f ${{ env.mosh_latest }}.tar.gz
+          rm ${{ env.mosh_latest }}.tar.gz
+      - name: "Build with VM"
+        uses: vmactions/dragonflybsd-vm@v0.0.5
+        with:
+          usesh: true
+          copyback: false
+          mem: 2048
+          prepare: |
+            pkg install -y gmake oniguruma pkgconf gmp
+          run: |
+            cd ${{ env.mosh_latest }}
+            ./configure
+            gmake -j4
+            gmake check
+
   build-dist-win64:
     name: "Win64 AMD64 (NMosh)"
     needs: build-linux
