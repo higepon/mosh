@@ -67,13 +67,24 @@
 ;; Create a matrix by vertically stacking row n-times.
 (define (matrix-vstack-row row n)
   (unless (= (matrix-shape row 0) 1)
-    (error "matrix-vstac-row only supports (1 N) shape" row n))
+    (error "matrix-vstack-row only supports (1 N) shape" row n))
   (let ([mat (matrix n (matrix-shape row 1))])
     (do ((i 0 (+ i 1)))
         ((= i n) mat)
       (do ((j 0 (+ j 1)))
           ((= j (matrix-shape row 1)))
           (mat-at mat i j (mat-at row 0 j))))))
+
+;; Create a matrix by horizontally stacking column n-times.
+(define (matrix-hstack-col col n)
+  (unless (= (matrix-shape col 1) 1)
+    (error "matrix-hstack-row only supports (N 1) shape" col n))
+  (let ([mat (matrix (matrix-shape col 0) n)])
+    (do ((i 0 (+ i 1)))
+        ((= i (matrix-shape col 0)) mat)
+      (do ((j 0 (+ j 1)))
+          ((= j n))
+          (mat-at mat i j (mat-at col i 0))))))          
 
 ;; argmax
 (define (matrix-argmax a)
@@ -89,6 +100,16 @@
           (mat-at mat i j (mat-at a row-index j))))
       row-index*)
     mat))
+
+;; softmax.
+(define (softmax a)
+  (let* ([c (matrix-max a)]
+         [a (matrix-map (lambda (e) (- e c)) a)]
+         [mat-exp (matrix-map (lambda (e) (exp e)) a)]
+         [row-sum (matrix-sum mat-exp 1)])
+    (format #t "mat-exp=~a row-sum=~a" mat-exp row-sum)
+   (matrix-divide mat-exp row-sum)))
+
   ]
   [else
 
@@ -147,6 +168,17 @@
         (vec-at mat i (vec-at a row-index)))
       row-index*)
     mat))
+
+;; softmax.
+(define (softmax a)
+  (let* ([c (matrix-max a)]
+         [a (matrix-map (lambda (e) (- e c)) a)]
+         [mat-exp (matrix-map (lambda (e) (exp e)) a)])
+    (vector-map
+     (lambda (row)
+       (let ([row-sum (sum (vector->list row))])
+         (vector-map (lambda (e) (/ e row-sum)) row)))
+     mat-exp)))    
 
   ])
 
@@ -287,12 +319,26 @@
     (values (matrix-full-like b a) b)]
    [(number? b)
     (values a (matrix-full-like a b))]
-   ;; a's shape is (1 ncols-a). We can stretch to (nrows-b ncols-a)
-   [(= (matrix-shape a 0) 1)
+   ;; a=#(1 3) b=#(2 3)
+   ;;   =>
+   ;; a=#(2 3) b=#(2 3)
+   [(and (= (matrix-shape a 0) 1) (not (= (matrix-shape b 0) 1)))
     (values (matrix-vstack-row a (matrix-shape b 0)) b)]
-   ;; b's shape is (1 ncols-b). We can stretch to (nrows-a ncols-b)
-   [(= (matrix-shape b 0) 1)
+   ;; a=#(2 3) b=#(1 3)
+   ;;   =>
+   ;; a=#(2 3) b=#(2 3)
+   [(and (= (matrix-shape b 0) 1) (not (= (matrix-shape a 0) 1)))
     (values a (matrix-vstack-row b (matrix-shape a 0)))]
+   ;; a=#(3 1) b=#(3 2)
+   ;;   =>
+   ;; a=#(3 2) b=#(3 2)
+   [(and (= (matrix-shape a 1) 1) (not (= (matrix-shape b 1) 1)))
+    (values (matrix-hstack-col a (matrix-shape b 1)) b)] 
+   ;; a=#(3 2) b=#(3 1)
+   ;;   =>
+   ;; a=#(3 2) b=#(3 2)
+   [(and (= (matrix-shape b 1) 1) (not (= (matrix-shape a 1) 1)))
+    (values a (matrix-hstack-col b (matrix-shape a 1)))]    
    [else
     (values a b)]))
 
@@ -321,23 +367,35 @@
       (error "matrix-divide shapes don't match" (matrix-shape a) (matrix-shape b)))
     (matrix-element-wise / a b)))
 
+
 (define matrix-sum
   (case-lambda
-    [(a)
-      (let* ([lst (matrix->list* a)]
-             [lst (concatenate lst)])
-        (sum lst))]
-    [(a axis)
-      (unless (= axis 0)
-         (error "matrix-sum only axis=0 supported" a axis))
+   [(a)
+    (let* ([lst (matrix->list* a)]
+           [lst (concatenate lst)])
+      (sum lst))]
+   [(a axis)
+    (cond
+     ((= axis 0)
       (let ([mat (matrix 1 (matrix-shape a 1))]
+            [nrows (matrix-shape a 0)]
+            [ncols (matrix-shape a 1)])
+        (do ((i 0 (+ i 1)))
+            ((= i nrows) mat)
+        (do ((j 0 (+ j 1)))
+            ((= j ncols))
+          (mat-at mat 0 j (+ (mat-at mat 0 j) (mat-at a i j)))))))
+     ((= axis 1)
+      (let ([mat (matrix (matrix-shape a 0) 1)]
             [nrows (matrix-shape a 0)]
             [ncols (matrix-shape a 1)])
         (do ((i 0 (+ i 1)))
             ((= i nrows) mat)
           (do ((j 0 (+ j 1)))
               ((= j ncols))
-            (mat-at mat 0 j (+ (mat-at mat 0 j) (mat-at a i j))))))]))
+            (mat-at mat i 0 (+ (mat-at mat i 0) (mat-at a i j)))))))
+     (else
+      (error "matrix-sum only axis=0 or 1 supported" a axis)))]))
 
 (define (matrix-max a)
   (let* ([lst (matrix->list* a)]
@@ -392,17 +450,6 @@
    [(func x)
     (gradient-descent func x 0.01 100)]))
 
-;; softmax.
-(define (softmax a)
-  (let* ([c (matrix-max a)]
-         [a (matrix-map (lambda (e) (- e c)) a)]
-         [mat-exp (matrix-map (lambda (e) (exp e)) a)])
-    (vector-map
-     (lambda (row)
-       (let ([row-sum (sum (vector->list row))])
-         (vector-map (lambda (e) (/ e row-sum)) row)))
-     mat-exp)))
-
 ;; Matrix shape.
 (test-equal '#(1 2) (matrix-shape (matrix ((1.0 2.0)))))
 (test-equal '#(2 2) (matrix-shape (matrix ((1.0 2.0) (3.0 4.0)))))
@@ -410,6 +457,7 @@
 ;; Matrix sum.
 (test-equal 10.0 (matrix-sum (matrix ((1.0 2.0) (3.0 4.0)))))
 (test-equal (matrix ((4.0 6.0))) (matrix-sum (matrix ((1.0 2.0) (3.0 4.0))) 0))
+(test-equal (matrix ((3.0) (7.0))) (matrix-sum (matrix ((1.0 2.0) (3.0 4.0))) 1))
 
 ;; Create matrix.
 (test-equal (matrix ((1 2 3) (4 5 6)))   (bytevector->matrix #u8(1 2 3 4 5 6) 2))
@@ -494,12 +542,29 @@
   (test-equal (matrix ((1 1) (2 4)))
               (matrix-divide a b)))
 
+;; Matrix stretch.
+(test-values (values (matrix ((1 1) (1 1))) (matrix ((1 2) (3 4))))
+             (matrix-stretch 1 (matrix ((1 2) (3 4)))))
+(test-values (values (matrix ((1 2) (3 4))) (matrix ((1 1) (1 1))))
+             (matrix-stretch (matrix ((1 2) (3 4))) 1))
+
+(test-values (values (matrix ((5 6) (5 6))) (matrix ((1 2) (3 4))))
+             (matrix-stretch (matrix ((5 6))) (matrix ((1 2) (3 4)))))
+(test-values (values  (matrix ((1 2) (3 4))) (matrix ((5 6) (5 6))))
+             (matrix-stretch (matrix ((1 2) (3 4))) (matrix ((5 6)))))
+
+(test-values (values (matrix ((1 2 3))) (matrix ((1 1 1))))
+             (matrix-stretch (matrix ((1 2 3))) (matrix ((1)))))
+(test-values (values (matrix ((1 1 1))) (matrix ((1 2 3))))
+             (matrix-stretch (matrix ((1))) (matrix ((1 2 3)))))
+
 ;; Matrix transpose.
 (test-equal (matrix ((1 2 3) (4 5 6)))
             (matrix-transpose (matrix ((1 4) (2 5) (3 6)))))
 
-;; Matrix vstack
+;; Matrix stack
 (test-equal (matrix ((1 2) (1 2) (1 2))) (matrix-vstack-row (matrix ((1 2))) 3))
+(test-equal (matrix ((1 1 1) (2 2 2) (3 3 3))) (matrix-hstack-col (matrix ((1) (2) (3))) 3))
 
 ;; matrix-map
 (test-equal (matrix ((2 4) (6 8))) (matrix-map (lambda (e) (* e 2)) (matrix ((1 2) (3 4)))))
