@@ -107,7 +107,6 @@
          [a (matrix-map (lambda (e) (- e c)) a)]
          [mat-exp (matrix-map (lambda (e) (exp e)) a)]
          [row-sum (matrix-sum mat-exp 1)])
-    (format #t "mat-exp=~a row-sum=~a" mat-exp row-sum)
    (matrix-divide mat-exp row-sum)))
 
   ]
@@ -603,11 +602,6 @@
                  [y (matrix ((0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0) (0.1 0.05 0.6 0.0 0.05 0.1 0.0 0.1 0.0 0.0)))])
              (good-enough? 1.7532778653276644 (cross-entropy-error y t))))
 
-
-(display (matrix-randn 40 30))
-
-(test-results)
-
 ;;   numerical-gradient
 (let ([mat (numerical-gradient
             (lambda (x)
@@ -627,6 +621,8 @@
             (matrix ((-3.0 4.0))) 1e-10 100)])
   (test-true (good-enough? -2.999 (mat-at mat 0 0)))
   (test-true (good-enough? 3.999 (mat-at mat 0 1))))
+
+(test-results)
 
 ;; Read train/test images
 (define (load-images path num-images)
@@ -667,7 +663,7 @@
          [(= i (matrix-shape a 1))
            mat]
          [else
-           (mat-at mat i (mat-at a 0 i) 1.0)
+           (mat-at mat i (exact (mat-at a 0 i)) 1.0)
            (loop (+ i 1))]))))
 
 (define (random-choice num-data batch-size)
