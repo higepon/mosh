@@ -75,17 +75,6 @@
           ((= j (matrix-shape row 1)))
           (mat-at mat i j (mat-at row 0 j))))))
 
-;; Create a matrix by horizontally stacking column n-times.
-(define (matrix-hstack-col col n)
-  (unless (= (matrix-shape col 1) 1)
-    (error "matrix-hstack-row only supports (N 1) shape" col n))
-  (let ([mat (matrix (matrix-shape col 0) n)])
-    (do ((i 0 (+ i 1)))
-        ((= i (matrix-shape col 0)) mat)
-      (do ((j 0 (+ j 1)))
-          ((= j n))
-          (mat-at mat i j (mat-at col i 0))))))
-
 ;; argmax
 (define (matrix-argmax a)
   (vector-map vector-argmax (list*->vector* (matrix->list* a))))
@@ -180,6 +169,18 @@
      mat-exp)))
 
   ])
+
+;; Create a matrix by horizontally stacking column n-times.
+(define (matrix-hstack-col col n)
+  (unless (= (matrix-shape col 1) 1)
+    (error "matrix-hstack-row only supports (N 1) shape" col n))
+  (let ([mat (matrix (matrix-shape col 0) n)])
+    (do ((i 0 (+ i 1)))
+        ((= i (matrix-shape col 0)) mat)
+      (do ((j 0 (+ j 1)))
+          ((= j n))
+          (mat-at mat i j (mat-at col i 0))))))
+
 
 ;; Utilities.
 (define (sum lst)
@@ -587,14 +588,14 @@
 (test-equal #(3 2) (matrix-shape (matrix-randn 3 2)))
 
 ;; Matrix accessor get.
-(test-equal 2.0 (mat-at (matrix ((1 2) (3 4))) 0 1))
+(test-equal 2.0 (mat-at (matrix ((1.0 2.0) (3.0 4.0))) 0 1))
 
 ;; Matrix accessor set.
 (let ([m (matrix ((1.0 2.0) (3.0 4.0)))])
-  (mat-at m 1 0 5)
+  (mat-at m 1 0 5.0)
   (test-equal (matrix ((1.0 2.0) (5.0 4.0))) m))
 
-(test-equal '((1.0 2.0) (3.0 4.0)) (matrix->list* (matrix ((1 2) (3 4)))))
+(test-equal '((1.0 2.0) (3.0 4.0)) (matrix->list* (matrix ((1.0 2.0) (3.0 4.0)))))
 
 ;; argmax
 (test-equal 3 (vector-argmax #(1 2 5 8 4)))
@@ -623,25 +624,25 @@
 ;; Matrix addition.
 (let ([a (matrix ((1.0 2.0) (3.0 4.0)))]
       [b (matrix ((5.0 6.0) (7.0 8.0)))])
-  (test-equal (matrix ((6 8) (10 12)))
+  (test-equal (matrix ((6.0 8.0) (10.0 12.0)))
               (matrix-add a b)))
 
 ;; Matrix addition broadcast.
 (let ([a (matrix ((1.0 2.0) (3.0 4.0)))]
       [b (matrix ((5.0 6.0)))])
-  (test-equal (matrix ((6 8) (8 10)))
+  (test-equal (matrix ((6.0 8.0) (8.0 10.0)))
               (matrix-add a b)))
 
 ;; Matrix addition broadcast.
-(let ([a (matrix ((1.0 2.0) (3 4)))]
-      [b (matrix ((5 6)))])
-  (test-equal (matrix ((6 8) (8 10)))
+(let ([a (matrix ((1.0 2.0) (3.0 4.0)))]
+      [b (matrix ((5.0 6.0)))])
+  (test-equal (matrix ((6.0 8.0) (8.0 10.0)))
               (matrix-add b a)))
 
 ;; Matrix addition broadcast.
-(let ([a (matrix ((1 2) (3 4)))]
+(let ([a (matrix ((1.0 2.0) (3.0 4.0)))]
       [b 2])
-  (test-equal (matrix ((3 4) (5 6)))
+  (test-equal (matrix ((3.0 4.0) (5.0 6.0)))
               (matrix-add a b)))
 
 ;; Matrix addition broadcast.
@@ -778,7 +779,7 @@
 (let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60000 10)))
   (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 2 10)))
     (let ([num-train (matrix-shape x-train 0)]
-          [batch-size 100]
+          [batch-size 4]
           [lr 0.01])
       (do ((i 0 (+ i 1)))
           ((= i 2))
