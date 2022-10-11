@@ -72,8 +72,8 @@
     (do ((i 0 (+ i 1)))
         ((= i n) mat)
       (do ((j 0 (+ j 1)))
-          ((= j (matrix-shape row 1))
-          (mat-at mat i j (mat-at row 0 j)))))))    
+          ((= j (matrix-shape row 1)))
+          (mat-at mat i j (mat-at row 0 j))))))
 
 ;; argmax
 (define (matrix-argmax a)
@@ -534,7 +534,7 @@
 
 (display (matrix-randn 40 30))
 
-(test-results) 
+(test-results)
 
 ;;   numerical-gradient
 (let ([mat (numerical-gradient

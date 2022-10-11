@@ -92,6 +92,16 @@ public:
         return ret;
     }
 
+    size_t nrows() const
+    {
+        return nrows_;
+    }
+
+    size_t ncols() const
+    {
+        return ncols_;
+    }
+
 private:
     size_t nrows_;
     size_t ncols_;
@@ -109,12 +119,14 @@ inline Array<T>::Array(size_t nrows, size_t ncols, T value) : nrows_(nrows), nco
 template <typename T>
 inline T Array<T>::ref(size_t row, size_t col) const
 {
+    MOSH_ASSERT((row < nrows) && (col < ncols));
     return data_[row * ncols_ + col];
 }
 
 template <typename T>
 inline void Array<T>::set(size_t row, size_t col, T value)
 {
+    MOSH_ASSERT((row < nrows) && (col < ncols));
     data_[row * ncols_ + col] = value;
 }
 
