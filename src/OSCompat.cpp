@@ -33,7 +33,7 @@
 #ifndef MONA
 #ifdef __APPLE__
 #define _DARWIN_C_SOURCE 1
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
 /* default visibility for sysctl */
 #elif defined(__NetBSD__)
 #define _NETBSD_SOURCE 1
@@ -61,10 +61,10 @@
 #ifdef MONA
 #include <monapi.h>
 #endif
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 #include <dlfcn.h>
 #include <sys/sysctl.h>
-#endif /* __FreeBSD__ */
+#endif /* __FreeBSD__ || __DragonFly__ */
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
@@ -968,7 +968,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     }
     isErrorOccured = true;
     return ucs4string(UC(""));
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
     char path[PATH_MAX];
     size_t len = PATH_MAX;
     // read kern.proc.pathname.-1

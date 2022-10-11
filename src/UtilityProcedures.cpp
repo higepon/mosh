@@ -33,7 +33,7 @@
 #include <monapi.h>
 #elif defined(__APPLE__)
 #define _DARWIN_C_SOURCE 1 // for struct timezone
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__DragonFly__)
 #define _XOPEN_SOURCE 700 // for gettimeofday
 #elif defined(__NetBSD__)
 #define _NETBSD_SOURCE 1 // for C++ headers work
