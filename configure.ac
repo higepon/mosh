@@ -255,6 +255,10 @@ freebsd*)
   AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
   has_gc_pthread=true
   ;;
+dragonfly*)
+  AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
+  has_gc_pthread=true
+  ;;
 netbsd*)
   AC_DEFINE(GC_NETBSD_THREADS,1,[Define to use NetBSD threads])
   has_gc_pthread=true
@@ -370,6 +374,11 @@ i[[3456]]86|pentium)
                 ;;
                 *openbsd*)
                 AC_MSG_RESULT([x86_64(OpenBSD amd64)])
+                MOSH_OPTS="$MOSH_INTEL_OPTS"
+                MOSH_LDADD_ARCH="-lpthread"
+                ;;
+                *dragonfly*)
+                AC_MSG_RESULT([x86_64(DragonflyBSD amd64)])
                 MOSH_OPTS="$MOSH_INTEL_OPTS"
                 MOSH_LDADD_ARCH="-lpthread"
                 ;;
