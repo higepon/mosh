@@ -84,7 +84,7 @@
         ((= i (matrix-shape col 0)) mat)
       (do ((j 0 (+ j 1)))
           ((= j n))
-          (mat-at mat i j (mat-at col i 0))))))          
+          (mat-at mat i j (mat-at col i 0))))))
 
 ;; argmax
 (define (matrix-argmax a)
@@ -177,7 +177,7 @@
      (lambda (row)
        (let ([row-sum (sum (vector->list row))])
          (vector-map (lambda (e) (/ e row-sum)) row)))
-     mat-exp)))    
+     mat-exp)))
 
   ])
 
@@ -332,12 +332,12 @@
    ;;   =>
    ;; a=#(3 2) b=#(3 2)
    [(and (= (matrix-shape a 1) 1) (not (= (matrix-shape b 1) 1)))
-    (values (matrix-hstack-col a (matrix-shape b 1)) b)] 
+    (values (matrix-hstack-col a (matrix-shape b 1)) b)]
    ;; a=#(3 2) b=#(3 1)
    ;;   =>
    ;; a=#(3 2) b=#(3 2)
    [(and (= (matrix-shape b 1) 1) (not (= (matrix-shape a 1) 1)))
-    (values a (matrix-hstack-col b (matrix-shape a 1)))]    
+    (values a (matrix-hstack-col b (matrix-shape a 1)))]
    [else
     (values a b)]))
 
@@ -448,6 +448,127 @@
             (loop (+ i 1) (matrix-sub x (matrix-multiply lr grad))))))]
    [(func x)
     (gradient-descent func x 0.01 100)]))
+
+;; Read train/test images
+(define (load-images path num-images)
+  (call-with-port
+    (open-binary-input-file path)
+    (lambda (port)
+      (let ([image-width 28]
+            [image-height 28])
+        ;; Skip the header
+        (read-bytevector 16 port)
+        ;; Read images as bytevector
+        (bytevector->matrix (read-bytevector (* num-images image-width image-height) port) num-images)))))
+
+;; Read train/test labels
+(define (load-labels path num-labels)
+  (call-with-port
+    (open-binary-input-file path)
+    (lambda (port)
+      (read-bytevector 8 port)
+       ;; Read labels as bytevector
+     (bytevector->matrix (read-bytevector num-labels port) 1))))
+
+(define load-mnist
+  (case-lambda
+    [(data-dir num-train num-test)
+        (values
+          (matrix-divide (load-images (string-append data-dir "train-images-idx3-ubyte") num-train) 255.0)
+          (one-hot (load-labels (string-append data-dir "train-labels-idx1-ubyte") num-train) 10)
+          (matrix-divide (load-images (string-append data-dir "t10k-images-idx3-ubyte") num-test) 255.0)
+          (one-hot (load-labels (string-append data-dir "t10k-labels-idx1-ubyte") num-test) 10))]
+    [(data-dir)
+      (load-mnist data-dir 60000 10000)]))
+
+(define (one-hot a num-class)
+   (let ([mat (matrix (matrix-shape a 1) num-class 0.0)])
+     (let loop ([i 0])
+       (cond
+         [(= i (matrix-shape a 1))
+           mat]
+         [else
+           (mat-at mat i (exact (mat-at a 0 i)) 1.0)
+           (loop (+ i 1))]))))
+
+(define (random-choice num-data batch-size)
+  (map (lambda (_) (random-integer num-data)) (make-list batch-size)))
+
+(define (simple-net)
+  (let ([w (matrix-randn 2 3)])
+    (define (set-w! new-w) (set! w new-w))
+    (define (get-w) w)
+    (define (predict x)
+      (matrix-mul x w))
+    (define (loss x t)
+      (let* ([z (predict x)]
+             [y (softmax z)])
+        (cross-entropy-error y t)))
+    (values predict loss get-w set-w!)))
+
+(define (two-layer-net input-size hidden-size output-size)
+  (let* ([weight-init-std 0.01]
+         [w1 (matrix-multiply weight-init-std (matrix-randn input-size hidden-size))]
+         [b1 (matrix 1 hidden-size 0)]
+         [w2 (matrix-multiply weight-init-std (matrix-randn hidden-size output-size))]
+         [b2 (matrix 1 output-size 0)])
+    (define (predict x)
+      (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
+             [z1 (sigmoid a1)]
+             [a2 (matrix-add (matrix-mul z1 w2) b2)]
+             [y (softmax a2)])
+        y))
+    (define (loss x t)
+      (let ([y (predict x)])
+        (cross-entropy-error y t)))
+    (define (accuracy x t)
+      (let* ([y (predict x)]
+             [y (matrix-argmax y)]
+             [t (matrix-argmax t)])
+        (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
+    (define (update-params x t lr)
+        (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient2 x t)])
+          (format #t "w1=~a b1=~a\n" (matrix-shape grad-w1) grad-b1)
+          (format #t "b1=~a\n" (matrix-shape grad-b1))
+          (format #t "w2=~a\n" (matrix-shape grad-w2))
+          (format #t "b2=~a\n" (matrix-shape grad-b2))
+          (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
+          (set! b1 (matrix-sub b1 (matrix-multiply grad-b1 lr)))
+          (set! w2 (matrix-sub w2 (matrix-multiply grad-w2 lr)))
+          (set! b2 (matrix-sub b2 (matrix-multiply grad-b2 lr)))))
+    (define (gradient2 x t)
+      (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
+             [undef (display 1)]
+             [z1 (sigmoid a1)]
+             [undef (display 2)]
+             [a2 (matrix-add (matrix-mul z1 w2) b2)]
+             [undef (display 3)]
+             [y (softmax a2)]
+             [undef (display (matrix-shape y))]
+             [batch-size (matrix-shape x 0)]
+             [undef (display 5)]
+             [dy (matrix-divide (matrix-sub y t) batch-size)]
+             [undef (display (matrix-shape dy))]
+             [grad-w2 (matrix-mul (matrix-transpose z1) dy)]
+             [undef (display 7)]
+             [grad-b2 (matrix-sum dy 0)]
+             [undef (display (matrix-shape grad-b2))]
+             [dz1 (matrix-mul dy (matrix-transpose w2))]
+                          [undef (display 9)]
+             [da1 (matrix-multiply (sigmoid-grad a1) dz1)]
+                          [undef (display 10)]
+             [grad-w1 (matrix-mul (matrix-transpose x) da1)]
+                          [undef (display 11)]
+             [grad-b1 (matrix-sum da1 0)])
+        (display "12")
+        (values grad-w1 grad-b1 grad-w2 grad-b2)))
+    (define (gradient x t)
+      (let ([loss-w (lambda (w) (loss x t))])
+      (values (numerical-gradient loss-w w1)
+              (numerical-gradient loss-w b1)
+              (numerical-gradient loss-w w2)
+              (numerical-gradient loss-w b2))))
+    (values predict loss accuracy gradient update-params)))
 
 ;; Matrix shape.
 (test-equal '#(1 2) (matrix-shape (matrix ((1.0 2.0)))))
@@ -622,54 +743,6 @@
   (test-true (good-enough? -2.999 (mat-at mat 0 0)))
   (test-true (good-enough? 3.999 (mat-at mat 0 1))))
 
-(test-results)
-
-;; Read train/test images
-(define (load-images path num-images)
-  (call-with-port
-    (open-binary-input-file path)
-    (lambda (port)
-      (let ([image-width 28]
-            [image-height 28])
-        ;; Skip the header
-        (read-bytevector 16 port)
-        ;; Read images as bytevector
-        (bytevector->matrix (read-bytevector (* num-images image-width image-height) port) num-images)))))
-
-;; Read train/test labels
-(define (load-labels path num-labels)
-  (call-with-port
-    (open-binary-input-file path)
-    (lambda (port)
-      (read-bytevector 8 port)
-       ;; Read labels as bytevector
-     (bytevector->matrix (read-bytevector num-labels port) 1))))
-
-(define load-mnist
-  (case-lambda
-    [(data-dir num-train num-test)
-        (values
-          (matrix-divide (load-images (string-append data-dir "train-images-idx3-ubyte") num-train) 255.0)
-          (one-hot (load-labels (string-append data-dir "train-labels-idx1-ubyte") num-train) 10)
-          (matrix-divide (load-images (string-append data-dir "t10k-images-idx3-ubyte") num-test) 255.0)
-          (one-hot (load-labels (string-append data-dir "t10k-labels-idx1-ubyte") num-test) 10))]
-    [(data-dir)
-      (load-mnist data-dir 60000 10000)]))
-
-(define (one-hot a num-class)
-   (let ([mat (matrix (matrix-shape a 1) num-class 0.0)])
-     (let loop ([i 0])
-       (cond
-         [(= i (matrix-shape a 1))
-           mat]
-         [else
-           (mat-at mat i (exact (mat-at a 0 i)) 1.0)
-           (loop (+ i 1))]))))
-
-(define (random-choice num-data batch-size)
-  (map (lambda (_) (random-integer num-data)) (make-list batch-size)))
-
-
 (let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60 8)))
   (test-equal #(60 784) (matrix-shape x-train))
   (test-equal #(60 10) (matrix-shape t-train))
@@ -679,42 +752,6 @@
          [batch (matrix-slice x-train batch-idx*)])
     (test-equal #(4 784) (matrix-shape batch)))
 )
-
-
-
-;(test-equal #(6 784) (matrix-shape (load-train-images 6)))
-;(test-equal #(1 6) (matrix-shape (load-train-labels 6)))
-;(load-test-labels 10000)
-;(test-equal #(1 10000) (matrix-shape (load-test-labels 10000)))
-
-(define w1 (matrix 784 50))
-(define b1 (matrix 1 50))
-(define w2 (matrix 50 100))
-(define b2 (matrix 1 100))
-(define w3 (matrix 100 10))
-(define b3 (matrix 1 10))
-
-(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60 10)))
-    (let* (
-        [a1 (matrix-add (matrix-mul x-train w1) b1)]
-        [z1 (sigmoid a1)]
-        [a2 (matrix-add (matrix-mul z1 w2) b2)]
-        [z2 (sigmoid a2)]
-        [a3 (matrix-add (matrix-mul z2 w3) b3)]
-        [y (softmax a3)])
-    (display y)))
-
-(define (simple-net)
-  (let ([w (matrix-randn 2 3)])
-    (define (set-w! new-w) (set! w new-w))
-    (define (get-w) w)
-    (define (predict x)
-      (matrix-mul x w))
-    (define (loss x t)
-      (let* ([z (predict x)]
-             [y (softmax z)])
-        (cross-entropy-error y t)))
-    (values predict loss get-w set-w!)))
 
 (let-values (([predict loss get-w set-w!] (simple-net)))
   (set-w! (matrix ((0.47355232 0.9977393 0.84668094)
@@ -727,81 +764,16 @@
     (test-true (good-enough? 1.1328074 (mat-at pred 0 2)))
     (test-equal #(2) (matrix-argmax pred))
     (test-true (good-enough? 0.9280682857864075 (loss x t)))
-    (test-equal #(2 3) (matrix-shape (numerical-gradient (lambda (w) (loss x t)) (get-w))))
-    ))
+    (test-equal #(2 3) (matrix-shape (numerical-gradient (lambda (w) (loss x t)) (get-w))))))
 
-(define (two-layer-net input-size hidden-size output-size)
-  (let* ([weight-init-std 0.01]
-         [w1 (matrix-multiply weight-init-std (matrix-randn input-size hidden-size))]
-         [b1 (matrix 1 hidden-size 0)]
-         [w2 (matrix-multiply weight-init-std (matrix-randn hidden-size output-size))]
-         [b2 (matrix 1 output-size 0)])
-    (define (predict x)
-      (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
-             [z1 (sigmoid a1)]
-             [a2 (matrix-add (matrix-mul z1 w2) b2)]
-             [y (softmax a2)])
-        y))
-    (define (loss x t)
-      (let ([y (predict x)])
-        (cross-entropy-error y t)))
-    (define (accuracy x t)
-      (let* ([y (predict x)]
-             [y (matrix-argmax y)]
-             [t (matrix-argmax t)])
-        (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
-    (define (update-params x t lr)
-        (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient2 x t)])
-          (format #t "w1=~a b1=~a\n" (matrix-shape grad-w1) grad-b1)
-          (format #t "b1=~a\n" (matrix-shape grad-b1))
-          (format #t "w2=~a\n" (matrix-shape grad-w2))
-          (format #t "b2=~a\n" (matrix-shape grad-b2))
-          (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
-          (set! b1 (matrix-sub b1 (matrix-multiply grad-b1 lr)))
-          (set! w2 (matrix-sub w2 (matrix-multiply grad-w2 lr)))
-          (set! b2 (matrix-sub b2 (matrix-multiply grad-b2 lr)))))
-    (define (gradient2 x t)
-      (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
-             [undef (display 1)]
-             [z1 (sigmoid a1)]
-             [undef (display 2)]
-             [a2 (matrix-add (matrix-mul z1 w2) b2)]
-             [undef (display 3)]
-             [y (softmax a2)]
-             [undef (display (matrix-shape y))]
-             [batch-size (matrix-shape x 0)]
-             [undef (display 5)]
-             [dy (matrix-divide (matrix-sub y t) batch-size)]
-             [undef (display (matrix-shape dy))]
-             [grad-w2 (matrix-mul (matrix-transpose z1) dy)]
-             [undef (display 7)]
-             [grad-b2 (matrix-sum dy 0)]
-             [undef (display (matrix-shape grad-b2))]
-             [dz1 (matrix-mul dy (matrix-transpose w2))]
-                          [undef (display 9)]
-             [da1 (matrix-multiply (sigmoid-grad a1) dz1)]
-                          [undef (display 10)]
-             [grad-w1 (matrix-mul (matrix-transpose x) da1)]
-                          [undef (display 11)]
-             [grad-b1 (matrix-sum da1 0)])
-        (display "12")
-        (values grad-w1 grad-b1 grad-w2 grad-b2)))
-    (define (gradient x t)
-      (let ([loss-w (lambda (w) (loss x t))])
-      (values (numerical-gradient loss-w w1)
-              (numerical-gradient loss-w b1)
-              (numerical-gradient loss-w w2)
-              (numerical-gradient loss-w b2))))
-    (values predict loss accuracy gradient update-params)))
 
 (let-values (([predict loss accuracy gradient update-params] (two-layer-net 3 10 3)))
-  (display (predict (matrix-randn 2 3)))
-  (display (loss (matrix-randn 2 3) (matrix ((0 0 1) (0 1 0)))))
-  (newline)
-  (display (accuracy (matrix-randn 2 3)  (matrix ((0 0 1) (0 1 0)))))
-  (newline)
-  (display (gradient (matrix-randn 2 3)  (matrix ((0 0 1) (0 1 0)))))
-)
+  (test-equal #(2 3) (matrix-shape (predict (matrix-randn 2 3))))
+  (loss (matrix-randn 2 3) (matrix ((0 0 1) (0 1 0))))
+  (accuracy (matrix-randn 2 3) (matrix ((0 0 1) (0 1 0))))
+  (gradient (matrix-randn 2 3)  (matrix ((0 0 1) (0 1 0)))))
+
+(test-results)
 
 (let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60000 10)))
   (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 2 10)))
