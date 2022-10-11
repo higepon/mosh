@@ -114,5 +114,10 @@ Object scheme::f64arrayRefEx(VM* theVM, int argc, const Object* argv)
     argumentAsF64Array(0, array);
     argumentAsFixnum(1, row);
     argumentAsFixnum(2, col);
-    return Object::makeFlonum(array->ref(row, col));
+    if ((size_t)row < array->nrows() && (size_t)col < array->ncols()) {
+        return Object::makeFlonum(array->ref(row, col));
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, UC("row or column index out of range"), Pair::list3(argv[0], argv[1], argv[2]));
+        return Object::Undef;
+    }
 }
