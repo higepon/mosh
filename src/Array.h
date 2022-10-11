@@ -69,9 +69,9 @@ public:
         const size_t maxRows = 10;
         const size_t maxCols = 5;
         ucs4string ret(UC("#<f64array [\n"));
-        for (size_t i = 0; i < std::min(maxRows, nrows_); i++) {
+        for (size_t i = 0; i < (std::min)(maxRows, nrows_); i++) {
             ret += ucs4string::from_c_str("[");
-            for (size_t j = 0; j < std::min(maxCols, ncols_); j++) {
+            for (size_t j = 0; j < (std::min)(maxCols, ncols_); j++) {
                 char buf[32];
                 snprintf(buf, sizeof(buf), "% 1.5lf ", ref(i, j));
                 ret += ucs4string::from_c_str(buf);
