@@ -175,6 +175,8 @@
 #define argumentAsSimpleStruct(index, variableName) castArgument(index, variableName, isSimpleStruct, simple-struct, SimpleStruct*, toSimpleStruct)
 #define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
+#define argumentAsSizeT(index, variableName) castArgument(index, variableName, isFixnum, fixnum, size_t, toFixnum)
+
 
 inline const char* nth(int index) {
     switch(index) {

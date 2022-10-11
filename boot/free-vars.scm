@@ -731,4 +731,5 @@
   f64array-ref
   f64array-set!
   f64array-shape
+  f64array-dot-product
   )

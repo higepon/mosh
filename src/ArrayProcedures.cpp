@@ -75,16 +75,28 @@ Object scheme::f64arrayPEx(VM* theVM, int argc, const Object* argv)
 }
 
 // (f64array-shape array)
+// (f64array-shape array i)
 Object scheme::f64arrayShapeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("f64array-shape");
-    checkArgumentLength(1);
+    checkArgumentLengthBetween(1, 2);
     argumentAsF64Array(0, array);
-    ArrayShape shape = array->shape();
-    Object v = Object::makeVector(2);
-    v.toVector()->set(0, Object::makeFixnum(shape.first));
-    v.toVector()->set(1, Object::makeFixnum(shape.second));
-    return v;
+    if (argc == 1) {
+        Object v = Object::makeVector(2);
+        v.toVector()->set(0, Object::makeFixnum(array->nrows()));
+        v.toVector()->set(1, Object::makeFixnum(array->ncols()));
+        return v;
+    } else {
+        argumentAsSizeT(1, i);
+        if (i == 0) {
+            return Object::makeFixnum(array->nrows());
+        } else if (i == 1) {
+            return Object::makeFixnum(array->ncols());
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, UC("index out of range"), Pair::list1(argv[1]));
+            return Object::Undef;
+        }
+    }
 }
 
 // (f64array-set! array value row col)
@@ -120,4 +132,31 @@ Object scheme::f64arrayRefEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, UC("row or column index out of range"), Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
+}
+
+// (f64array-dot-product a b)
+Object scheme::f64arrayDotProductEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("f64array-ref");
+    checkArgumentLength(2);
+    argumentAsF64Array(0, a);
+    argumentAsF64Array(1, b);
+    if (a->ncols() != b->nrows()) {
+        callAssertionViolationAfter(theVM, procedureName, UC("shapes don't much"), Pair::list2(argv[0], argv[1]));
+        return Object::Undef;
+    }
+    Object ret = Object::makeF64Array(a->nrows(), b->ncols(), 0.0);
+    F64Array* retArray = ret.toF64Array();
+    for (size_t i = 0; i < a->nrows(); i++) {
+        for (size_t j = 0; j < b->ncols(); j++) {
+            double value = 0.0;
+            for (size_t k = 0; k < a->ncols(); k++) {
+                const double aik = a->ref(i, k);
+                const double bkj = b->ref(k, j);
+                value += aik * bkj;
+            }
+            retArray->set(i, j, value);
+        }
+    }
+    return ret;
 }

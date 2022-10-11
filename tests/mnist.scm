@@ -8,7 +8,8 @@
         (only (srfi 27) random-integer)
         (only (srfi 194) make-normal-generator)
         (only (mosh) format) ; matrix-mul)
-        (only (system) make-f64array f64array-ref f64array-set! f64array-shape)
+        (rename (only (system) make-f64array f64array-ref f64array-set! f64array-shape f64array-dot-product)
+                (f64array-dot-product matrix-mul) (f64array-shape matrix-shape))
         (mosh test))
 
 (cond-expand
@@ -41,14 +42,6 @@
      (f64array-ref m i j)]
     [(_ m i j value)
      (begin (f64array-set! m value i j) m)]))
-
-;; Matrix shape.
-;; N.B For now we only support 2D matrix.
-(define matrix-shape
-  (case-lambda
-   [(a) (f64array-shape a)]
-   [(a n)
-    (vec-at (matrix-shape a) n)]))
 
 ;; Convert matrix to nested list.
 (define (matrix->list* a)
@@ -280,7 +273,7 @@
         (mat-at mat i j (bytevector-u8-ref bv (+ j (* ncols i))))))))
 
 ;; Matrix multiplication.
-(define (matrix-mul a b)
+#;(define (matrix-mul a b)
   (unless (= (matrix-shape a 1) (matrix-shape b 0))
     (error "matrix-mul shapes don't match" (matrix-shape a) (matrix-shape b)))
   (let* ([nrows (matrix-shape a 0)]
@@ -298,6 +291,14 @@
       (do ((j 0 (+ j 1)))
           ((= j ncols))
         (mat-at mat i j (mul i j))))))
+
+;; Matrix shape.
+;; N.B For now we only support 2D matrix.
+#;(define matrix-shape
+  (case-lambda
+   [(a) (f64array-shape a)]
+   [(a n)
+    (vec-at (matrix-shape a) n)]))        
 
 ;; Helper for element-wise operations.
 (define (matrix-element-wise op a b)
@@ -777,9 +778,9 @@
 (test-results)
 
 (let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60000 10)))
-  (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 2 10)))
+  (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 50 10)))
     (let ([num-train (matrix-shape x-train 0)]
-          [batch-size 4]
+          [batch-size 8]
           [lr 0.01])
       (do ((i 0 (+ i 1)))
           ((= i 2))

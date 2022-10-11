@@ -1160,6 +1160,7 @@
     (f64array-ref sys)
     (f64array-set! sys)
     (f64array-shape sys)
+    (f64array-dot-product sys)
     (standard-library-path mosh)
     (library-path mosh) ; for srfi system
     (host-os mosh) ; for srfi-system
