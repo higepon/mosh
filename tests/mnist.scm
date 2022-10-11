@@ -79,7 +79,16 @@
 (define (matrix-argmax a)
   (vector-map vector-argmax (list*->vector* (matrix->list* a))))
 
-
+;; Slice
+(define (matrix-slice a row-index*)
+  (let ([mat (matrix (length row-index*) (matrix-shape a 1))])
+    (for-each-with-index
+      (lambda (i row-index)
+        (do ((j 0 (+ j 1)))
+            ((= j (matrix-shape a 1)))
+          (mat-at mat i j (mat-at a row-index j))))
+      row-index*)
+    mat))
   ]
   [else
 
@@ -129,6 +138,15 @@
 (define (matrix-argmax a)
   (vector-map vector-argmax a))
 
+;; Slice
+;; TODO: Should this return copy?
+(define (matrix-slice a row-index*)
+  (let ([mat (matrix (length row-index*) (matrix-shape a 1))])
+    (for-each-with-index
+      (lambda (i row-index)
+        (vec-at mat i (vec-at a row-index)))
+      row-index*)
+    mat))
 
   ])
 
@@ -208,17 +226,6 @@
       (do ((j 0 (+ j 1)))
           ((= j ncols))
         (mat-at mat j i (mat-at a i j))))))
-
-;; Slice
-;; TODO: Should this return copy?
-(define (matrix-slice a row-index*)
-  (let ([mat (matrix (length row-index*) (matrix-shape a 1))])
-    (for-each-with-index
-      (lambda (i row-index)
-        (vec-at mat i (vec-at a row-index)))
-      row-index*)
-    mat))
-
 
 ;; Create a matrix of zeros with the same shape as a given matrix.
 (define (matrix-zeros-like a)
