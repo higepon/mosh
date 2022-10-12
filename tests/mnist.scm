@@ -115,7 +115,7 @@
 
 ;; Matrix shape.
 ;; N.B For now we only support 2D matrix.
-(define matrix-shape
+#;(define matrix-shape
   (case-lambda
    [(a) `#(,(vec-len a) ,(vec-len (vec-at a 0)))]
    [(a n)
@@ -291,14 +291,6 @@
       (do ((j 0 (+ j 1)))
           ((= j ncols))
         (mat-at mat i j (mul i j))))))
-
-;; Matrix shape.
-;; N.B For now we only support 2D matrix.
-#;(define matrix-shape
-  (case-lambda
-   [(a) (f64array-shape a)]
-   [(a n)
-    (vec-at (matrix-shape a) n)]))        
 
 ;; Helper for element-wise operations.
 (define (matrix-element-wise op a b)
@@ -530,39 +522,23 @@
         (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
     (define (update-params x t lr)
         (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient2 x t)])
-          (format #t "w1=~a b1=~a\n" (matrix-shape grad-w1) grad-b1)
-          (format #t "b1=~a\n" (matrix-shape grad-b1))
-          (format #t "w2=~a\n" (matrix-shape grad-w2))
-          (format #t "b2=~a\n" (matrix-shape grad-b2))
           (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
           (set! b1 (matrix-sub b1 (matrix-multiply grad-b1 lr)))
           (set! w2 (matrix-sub w2 (matrix-multiply grad-w2 lr)))
           (set! b2 (matrix-sub b2 (matrix-multiply grad-b2 lr)))))
     (define (gradient2 x t)
       (let* ([a1 (matrix-add (matrix-mul x w1) b1)]
-             [undef (display 1)]
              [z1 (sigmoid a1)]
-             [undef (display 2)]
              [a2 (matrix-add (matrix-mul z1 w2) b2)]
-             [undef (display 3)]
              [y (softmax a2)]
-             [undef (display (matrix-shape y))]
              [batch-size (matrix-shape x 0)]
-             [undef (display 5)]
              [dy (matrix-divide (matrix-sub y t) batch-size)]
-             [undef (display (matrix-shape dy))]
              [grad-w2 (matrix-mul (matrix-transpose z1) dy)]
-             [undef (display 7)]
              [grad-b2 (matrix-sum dy 0)]
-             [undef (display (matrix-shape grad-b2))]
              [dz1 (matrix-mul dy (matrix-transpose w2))]
-                          [undef (display 9)]
              [da1 (matrix-multiply (sigmoid-grad a1) dz1)]
-                          [undef (display 10)]
              [grad-w1 (matrix-mul (matrix-transpose x) da1)]
-                          [undef (display 11)]
              [grad-b1 (matrix-sum da1 0)])
-        (display "12")
         (values grad-w1 grad-b1 grad-w2 grad-b2)))
     (define (gradient x t)
       (let ([loss-w (lambda (w) (loss x t))])
@@ -780,18 +756,16 @@
 (let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60000 10)))
   (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 50 10)))
     (let ([num-train (matrix-shape x-train 0)]
-          [batch-size 8]
-          [lr 0.01])
+          [batch-size 100]
+          [lr 0.1])
       (do ((i 0 (+ i 1)))
-          ((= i 2))
-          (display i)
-          (newline)
+          ((= i 1200))
           (let* ([batch-idx* (random-choice num-train batch-size)]
                  [x-batch (matrix-slice x-train batch-idx*)]
-                 [t-batch (matrix-slice t-train batch-idx*)]
-                 [undef           (display i)]
-                 [grad (gradient x-batch t-batch)])
+                 [t-batch (matrix-slice t-train batch-idx*)])
                  (update-params x-batch t-batch lr)
-                 (display "loss= ")
-                 (display (loss x-batch t-batch))
+                 (when (= (modulo i 600) 0)
+                    (display "loss= ")
+                    (display (loss x-batch t-batch))
+                    (newline))
                  #f)))))
