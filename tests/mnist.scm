@@ -7,7 +7,7 @@
         (only (srfi 1) concatenate)
         (only (srfi 27) random-integer)
         (only (srfi 194) make-normal-generator)
-        (only (mosh) format) ; matrix-mul)
+        (only (mosh) format)
         (rename (only (system) make-f64array f64array-ref f64array-set! f64array-shape f64array-dot-product)
                 (f64array-dot-product matrix-mul) (f64array-shape matrix-shape))
         (mosh test))
@@ -69,7 +69,23 @@
           (mat-at mat i j (mat-at row 0 j))))))
 
 ;; argmax
-(define (matrix-argmax a)
+#;(define (matrix-argmax a)
+  (let* ([nrows (matrix-shape a 0)]
+         [ncols (matrix-shape a 1)]
+         [ret (make-vector nrows)])
+    (define (row-argmax row)
+      (let loop ([col 0]
+                 [max-val -inf.0]
+                 [max-idx -1])
+        (if (= col ncols)
+            max-idx
+            (if (> (mat-at a row col) max-val)
+                (loop (+ col 1) (mat-at a row col) col)
+                (loop (+ col 1) max-val max-idx)))))
+   (do ([i 0 (+ i 1)])
+       [(= i nrows) ret]
+      (vec-at ret i (row-argmax i)))))
+(define (matrix-argmax a)      
   (vector-map vector-argmax (list*->vector* (matrix->list* a))))
 
 ;; Slice
@@ -753,19 +769,33 @@
 
 (test-results)
 
-(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" 60000 10)))
-  (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 50 10)))
-    (let ([num-train (matrix-shape x-train 0)]
-          [batch-size 100]
-          [lr 0.1])
+;; Hyper parameters.
+(define train-size 60000)
+(define batch-size 100)
+(define num-classes 10)
+(define hidden-size 50)
+(define lr 0.1)
+(define epochs 8)
+(define iteration-per-epoch (/ train-size batch-size))
+
+(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" train-size num-classes)))
+  (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 hidden-size num-classes)))
+    (do ((epoch 0 (+ epoch 1)))
+        ((= epoch epochs))
+      (display "train accuracy=")
+      (display (accuracy x-train t-train))      
+      (newline)        
+      (display "test accuracy=")
+      (display (accuracy x-test t-test))
+      (newline)
+
       (do ((i 0 (+ i 1)))
-          ((= i 1200))
-          (let* ([batch-idx* (random-choice num-train batch-size)]
-                 [x-batch (matrix-slice x-train batch-idx*)]
-                 [t-batch (matrix-slice t-train batch-idx*)])
-                 (update-params x-batch t-batch lr)
-                 (when (= (modulo i 600) 0)
-                    (display "loss= ")
-                    (display (loss x-batch t-batch))
-                    (newline))
-                 #f)))))
+          ((= i iteration-per-epoch))
+        (let* ([batch-idx* (random-choice train-size batch-size)]
+               [x-batch (matrix-slice x-train batch-idx*)]
+               [t-batch (matrix-slice t-train batch-idx*)])
+          (update-params x-batch t-batch lr)
+          (when (= 0 (remainder i 100))
+            (display "loss= ")
+            (display (loss x-batch t-batch))
+            (newline)))))))
