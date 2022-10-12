@@ -359,6 +359,7 @@ set(mosh_core_hdrs
     src/LineBufferedFileBinaryOutputPort.h
     src/Stack.h
     src/Gloc.h
+    src/Array.h
     src/BinaryInputOutputPort.h
     src/Box.h
     src/Port.h
@@ -434,6 +435,7 @@ set(mosh_core_hdrs
     src/CodeBuilder.h
     src/FixnumProcedures.h
     src/Latin1Codec.h
+    src/ArrayProcedures.h
     src/FFI.h
     src/FFIProcedures.h
     src/CustomBinaryOutputPort.h
@@ -529,6 +531,7 @@ set(mosh_core_cxxsrcs
     src/CodeBuilder.cpp
     src/FixnumProcedures.cpp
     src/Latin1Codec.cpp
+    src/ArrayProcedures.cpp
     src/FFI.cpp
     src/FFIProcedures.cpp
     src/CustomBinaryOutputPort.cpp
