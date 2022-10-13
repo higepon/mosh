@@ -137,12 +137,11 @@ write-u8 zero?
                  (only (srfi :13) string-copy! string-fill! string->list)
                  (only (srfi :43) vector-append vector-fill! vector-copy!)
                  (only (r7b-impl division) floor/ floor-quotient floor-remainder truncate/ truncate-remainder truncate-quotient)
-                 (r7b-util bytevector-buffer)
                  (r7b-util char-ready)
                   (for (r7b-util syntax-rules) run expand)
                  (for (r7b-util case) run expand)
                  (rename (only (mosh) include include-ci available-features) (available-features features))
-                 (only (system) port-open?)
+                 (only (system) port-open? sys-get-bytevector sys-open-bytevector-output-port)
                  )
 
 ;; R7RS small. Allow define in (let-syntax ...).
@@ -693,7 +692,7 @@ write-u8 zero?
   (syntax-rules ()
     ((define-values () expr)
       (define dummy
-        (call-with-values (lambda () expr)                
+        (call-with-values (lambda () expr)
         (lambda args #f))))
     ((define-values (var) expr)
       (define var expr))
@@ -715,4 +714,10 @@ write-u8 zero?
        (define varn (let ((v (cdr var0))) (set! var0 (car var0)) v))))
     ((define-values var expr)
       (define var (call-with-values (lambda () expr) list)))))
+
+(define (open-output-bytevector)
+  (sys-open-bytevector-output-port))
+
+(define (get-output-bytevector port)
+  (sys-get-bytevector port))
 )

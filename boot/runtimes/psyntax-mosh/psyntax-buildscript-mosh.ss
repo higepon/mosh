@@ -1161,6 +1161,8 @@
     (f64array-set! sys)
     (f64array-shape sys)
     (f64array-dot-product sys)
+    (sys-open-bytevector-output-port sys)
+    (sys-get-bytevector sys)
     (standard-library-path mosh)
     (library-path mosh) ; for srfi system
     (host-os mosh) ; for srfi-system
