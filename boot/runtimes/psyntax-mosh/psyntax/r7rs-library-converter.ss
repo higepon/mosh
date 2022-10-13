@@ -27,7 +27,7 @@
 
 ; N.B. For testablity. This library should not depend on other psyntax files.
 (library (psyntax r7rs-library-converter)
-         (export rewrite-define-library rewrite-lib-decl*
+         (export rewrite-define-library rewrite-lib-decl* rewrite-program
                  rewrite-export path-dirname);; todo clean this up!
          (import (rnrs)
                  (except (mosh) available-libraries)
@@ -38,7 +38,8 @@
     `((srfi 0) (srfi 1) (srfi 11) (srfi 13) (srfi 133) (srfi 14) (srfi 158) (srfi 16) (srfi 176) (srfi 19) (srfi 194) (srfi 2) (srfi 23) (srfi 26) (srfi 27) (srfi 31) (srfi 37) (srfi 38) (srfi 39) (srfi 41) (srfi 42) (srfi 43) (srfi 48) (srfi 6) (srfi 61) (srfi 64) (srfi 67) (srfi 78) (srfi 8) (srfi 9) (srfi 98) (srfi 99) (srfi 151)
       (mosh)))
 
-;; The main API.
+;; Convert R7RS define-library to R6RS library.
+;;
 ;; Returns (expanded-library-form and included-file).
 ;; We track included-file for library cache.
 (define (rewrite-define-library dirname exp)
@@ -49,6 +50,36 @@
                 included-file*))]
     [else
       (assertion-violation 'rewrite-define-library "malformed library" `(,exp))]))
+
+;; Convert R7RS Scheme program to R6RS Scheme program.
+;;   R7RS small 5.1 Programs.
+;;   A Scheme program consists of one or more import declarations followed by a sequence of expressions and definitions.
+;;   We expand cond-expand, include and include-ci in a Scheme program and pass expaneded code to psyntax.
+;;
+;; Returns a list of (import ...) + expressions and definitions.
+(define (rewrite-program dirname exp*)
+  (let-values (([import* expanded-exp*] (rewrite-program-exp* dirname exp*)))
+    `[(import ,@import*) ,@expanded-exp*]))
+
+
+(define rewrite-program-exp*
+  (case-lambda
+    [(dirname exp*)
+      (rewrite-program-exp* dirname exp* '())]
+    [(dirname exp* import*)
+        (let loop ([ret '()]
+                   [exp* exp*]
+                   [import* import*])
+            ;(format #t "decl=~a export=~a import=~a ret=~a\n" decl* export* import* ret)
+            (if (null? exp*)
+                (values import* ret)
+                (match (car exp*)
+                    ;; (import 〈import spec〉 . . . )
+                    ;; In R7RS import can appears multiple times but not in R6RS. We have to merge them into one.
+                    [('import spec* ...)
+                      (loop ret (cdr exp*) (append import* spec*))]
+                    [any
+                      (loop (append ret `(,any)) (cdr exp*) import*)])))]))
 
 ;; Rewrite list of 〈library declaration〉and return list of 〈library declaration〉.
 ;;  〈library declaration〉 is any of:
