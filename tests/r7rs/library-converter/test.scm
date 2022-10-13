@@ -66,9 +66,17 @@
 (rewrite-lib-decl* "r7rs/" '((cond-expand ((or r9rs (library (mosh)) r5rs) "yay") (else "else")))))
 
 ;; A Scheme program converter
-(test-equal '[(import (scheme base)) 3] (rewrite-program "./src" '[(import (scheme base)) 3]))
+(test-equal '[(import (scheme base)) 3]
+  (rewrite-program "./src" '[(import (scheme base)) 3]))
 
-(test-equal '[(import (scheme base) (mosh)) 3] (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 3]))
+(test-equal '[(import (scheme base) (mosh)) 3]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 3]))
+
+;; cond-expand in top level.
+(test-equal '[(import (scheme base) (mosh)) 3]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond-expand (mosh 3) (else 4))]))
+
+
 
 
 

@@ -58,7 +58,7 @@
 ;;
 ;; Returns a list of (import ...) + expressions and definitions.
 (define (rewrite-program dirname exp*)
-  (let-values (([import* expanded-exp*] (rewrite-program-exp* dirname exp*)))
+  (let-values (([expanded-exp* import*] (rewrite-program-exp* dirname exp*)))
     `[(import ,@import*) ,@expanded-exp*]))
 
 
@@ -70,14 +70,19 @@
         (let loop ([ret '()]
                    [exp* exp*]
                    [import* import*])
-            ;(format #t "decl=~a export=~a import=~a ret=~a\n" decl* export* import* ret)
+            (format #t "exp*=~a import=~a ret=~a\n" exp* import* ret)
             (if (null? exp*)
-                (values import* ret)
+                (values ret import*)
                 (match (car exp*)
                     ;; (import 〈import spec〉 . . . )
                     ;; In R7RS import can appears multiple times but not in R6RS. We have to merge them into one.
                     [('import spec* ...)
                       (loop ret (cdr exp*) (append import* spec*))]
+                    [('cond-expand clause* ...)
+                      (let ([new-exp* (rewrite-cond-expand (car exp*))])
+                        (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname new-exp* import*)))
+                          (loop (append ret new-exp*)
+                                (cdr exp*) new-import*)))]
                     [any
                       (loop (append ret `(,any)) (cdr exp*) import*)])))]))
 
@@ -149,7 +154,7 @@
 
 ;; Returns list of〈library declaration〉.
 (define (rewrite-cond-expand expr)
-   ;;(format #t "expr=~a\n" expr)
+   (format #t "expr=~a\n" expr)
    (match expr
      [(_)
        (assertion-violation 'cond-expand "Unfulfilled cond-expand" expr)]
@@ -185,7 +190,8 @@
         (if (member (car name*) (available-libraries))
             lib-decl*
             `((cond-expand ,@more-clause*)))]
-        ))
+     [else
+       (assertion-violation 'cond-expand "malformed cond-expand" expr)]))
 
 (define (rewrite-export exp)
    (match exp
