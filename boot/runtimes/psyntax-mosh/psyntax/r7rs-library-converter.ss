@@ -157,6 +157,10 @@
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname when-exp* import*)))
                         (loop (append ret `((when ,@new-exp*)))
                               (cdr exp*) new-import*))]
+                    [('unless unless-exp* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname unless-exp* import*)))
+                        (loop (append ret `((unless ,@new-exp*)))
+                              (cdr exp*) new-import*))]                              
                     ;; (quote 〈datum〉)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
