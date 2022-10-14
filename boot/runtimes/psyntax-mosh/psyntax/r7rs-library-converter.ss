@@ -98,6 +98,10 @@
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((define (,name ,@remainder*) ,@new-exp*)))
                               (cdr exp*) new-import*))]
+                    ;; (quote 〈datum〉) 
+                    [('quote datum)
+                      (loop (append ret (list (car exp*)))
+                            (cdr exp*) import*)]
                     [any
                       (loop (append ret `(,any)) (cdr exp*) import*)])))]))
 

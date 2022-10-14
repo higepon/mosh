@@ -86,7 +86,9 @@
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (define (a . x) (cond-expand (mosh 3) (else 4)) 5)]))
 
-
+;; cond-expand in quote.
+(test-equal '[(import (scheme base) (mosh))  (define a (quote (cond-expand (mosh 3) (else 4))))]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (define a (quote (cond-expand (mosh 3) (else 4))))]))
 
 
 
