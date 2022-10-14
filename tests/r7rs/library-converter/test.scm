@@ -82,6 +82,9 @@
 (test-equal '[(import (scheme base) (mosh)) (define (a x) 3 5)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (define (a x) (cond-expand (mosh 3) (else 4)) 5)]))
+(test-equal '[(import (scheme base) (mosh)) (define (a . x) 3 5)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (define (a . x) (cond-expand (mosh 3) (else 4)) 5)]))
 
 
 

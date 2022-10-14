@@ -89,14 +89,14 @@
                       (let ([new-exp* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
                         (loop (append ret new-exp*) (cdr exp*) import*))]
                     ;; (define 〈variable〉 〈expression〉)
-                    ;; (define (〈variable〉 〈formals〉) 〈body〉
                     [('define var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((define ,var ,@new-exp*)))
                               (cdr exp*) new-import*))]
-                    [('define (var* ...) body* ...)
+                    ;; (define (〈variable〉 〈formals〉) 〈body〉
+                    [('define (name . remainder*) body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
-                        (loop (append ret `((define (,@var*) ,@new-exp*)))
+                        (loop (append ret `((define (,name ,@remainder*) ,@new-exp*)))
                               (cdr exp*) new-import*))]
                     [any
                       (loop (append ret `(,any)) (cdr exp*) import*)])))]))
