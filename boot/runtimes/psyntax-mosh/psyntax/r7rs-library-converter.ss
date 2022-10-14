@@ -145,6 +145,10 @@
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((set! ,var ,@new-exp*)))
                               (cdr exp*) new-import*))]
+                    [('and and-exp* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname and-exp* import*)))
+                        (loop (append ret `((and ,@new-exp*)))
+                              (cdr exp*) new-import*))]                              
                     ;; (quote 〈datum〉)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))

@@ -127,6 +127,12 @@
 ;; cond-expand in case
 (test-equal '[(import (scheme base) (mosh)) (case 3 ((4) #t))]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case (cond-expand (mosh 3) (else 4)) ((4) #t))]))
+(test-equal '[(import (scheme base) (mosh)) (case a ((4) 3 #t))]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case a ((4)  (cond-expand (mosh 3) (else 4)) #t))])) 
+
+;; cond-expand in and
+(test-equal '[(import (scheme base) (mosh)) (and 4 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (and 4 (cond-expand (mosh 3) (else 4)))]))
 
 (test-results)
 
