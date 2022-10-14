@@ -123,6 +123,11 @@
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [1 2 3] [else (cond-expand (mosh 3) (else 4))])]))
 (test-equal '[(import (scheme base) (mosh)) (cond [1 2] [else 3 5])]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [1 2] [else (cond-expand (mosh 3) (else 4)) 5])]))
+
+;; cond-expand in case
+(test-equal '[(import (scheme base) (mosh)) (case 3 ((4) #t))]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case (cond-expand (mosh 3) (else 4)) ((4) #t))]))
+
 (test-results)
 
 

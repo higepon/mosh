@@ -129,12 +129,22 @@
                                     (cdr exp*) new-import*)
                               (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import*)))
                                 (loop2 (cdr exp**) (append new-exp** (list new-exp*)) new-import*)))))]
+                    ;; (case 〈key〉 〈clause1〉 〈clause2〉 . . . )
+                    [('case key (datum* exp** ...) ...)
+                      (let-values (((key-exp* new-import*) (rewrite-program-exp* dirname (list key) import*)))
+                        (let loop2 ([exp** exp**]
+                                    [new-exp** '()]
+                                    [new-import* new-import*])
+                          (if (null? exp**)
+                              (loop (append ret `((case ,@key-exp* ,@(map (lambda (datum new-exp*) `(,datum ,@new-exp*)) datum* new-exp**))))
+                                    (cdr exp*) new-import*)
+                              (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import*)))
+                                (loop2 (cdr exp**) (append new-exp** (list new-exp*)) new-import*)))))]
                     ;; (set! 〈variable〉 〈expression〉)
                     [('set! var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((set! ,var ,@new-exp*)))
                               (cdr exp*) new-import*))]
-
                     ;; (quote 〈datum〉)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
