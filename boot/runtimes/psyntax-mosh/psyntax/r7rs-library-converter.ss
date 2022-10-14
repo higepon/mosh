@@ -98,10 +98,21 @@
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((define (,name ,@remainder*) ,@new-exp*)))
                               (cdr exp*) new-import*))]
+                    ;; (lambda 〈formals〉 〈body〉) 
+                    [('lambda (name . remainder*) body* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
+                        (loop (append ret `((lambda (,name ,@remainder*) ,@new-exp*)))
+                              (cdr exp*) new-import*))]     
+                    [('lambda arg body* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
+                        (loop (append ret `((lambda ,arg ,@new-exp*)))
+                              (cdr exp*) new-import*))]                                                          
                     ;; (quote 〈datum〉) 
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
                             (cdr exp*) import*)]
+
+                    ;; todo procedure call
                     [any
                       (loop (append ret `(,any)) (cdr exp*) import*)])))]))
 

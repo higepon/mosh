@@ -90,6 +90,18 @@
 (test-equal '[(import (scheme base) (mosh))  (define a (quote (cond-expand (mosh 3) (else 4))))]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (define a (quote (cond-expand (mosh 3) (else 4))))]))
 
+;; cond-expand in lambda.
+(test-equal '[(import (scheme base) (mosh)) (lambda (a) 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (lambda (a) (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (lambda (a b) 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (lambda (a b) (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (lambda (a . b) 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (lambda (a . b) (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (lambda a 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (lambda a (cond-expand (mosh 3) (else 4)))]))
+
+
+
 
 
 (test-results)
