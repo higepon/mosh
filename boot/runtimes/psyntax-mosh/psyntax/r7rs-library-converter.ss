@@ -88,6 +88,11 @@
                       ;; Note we append dirname to path so that (include "foo.scm") works.
                       (let ([new-exp* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
                         (loop (append ret new-exp*) (cdr exp*) import*))]
+                    [('include-ci path* ...)
+                      ;; Expand it to multiple include and pass it to psyntax later.
+                      ;; Note we append dirname to path so that (include "foo.scm") works.
+                      (let ([new-exp* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
+                        (loop (append ret new-exp*) (cdr exp*) import*))]
                     ;; (define 〈variable〉 〈expression〉)
                     [('define var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
@@ -98,27 +103,27 @@
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((define (,name ,@remainder*) ,@new-exp*)))
                               (cdr exp*) new-import*))]
-                    ;; (lambda 〈formals〉 〈body〉) 
+                    ;; (lambda 〈formals〉 〈body〉)
                     [('lambda (name . remainder*) body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((lambda (,name ,@remainder*) ,@new-exp*)))
-                              (cdr exp*) new-import*))]     
+                              (cdr exp*) new-import*))]
                     [('lambda arg body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((lambda ,arg ,@new-exp*)))
-                              (cdr exp*) new-import*))]         
+                              (cdr exp*) new-import*))]
                     ;; (if 〈test〉 〈consequent〉 〈alternate〉) syntax
-                    ;; (if 〈test〉 〈consequent〉) syntax                              
+                    ;; (if 〈test〉 〈consequent〉) syntax
                     [('if if-exp* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import*)))
                         (loop (append ret `((if ,@new-exp*)))
-                              (cdr exp*) new-import*))]    
+                              (cdr exp*) new-import*))]
                     ;; (set! 〈variable〉 〈expression〉)
                     [('set! var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((set! ,var ,@new-exp*)))
-                              (cdr exp*) new-import*))]                                                                                                             
-                    ;; (quote 〈datum〉) 
+                              (cdr exp*) new-import*))]
+                    ;; (quote 〈datum〉)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
                             (cdr exp*) import*)]
