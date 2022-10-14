@@ -130,12 +130,13 @@
 (test-equal '[(import (scheme base) (mosh)) (case a ((4) 3 #t))]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case a ((4)  (cond-expand (mosh 3) (else 4)) #t))])) 
 
-;; cond-expand in and or
+;; cond-expand in and or when
 (test-equal '[(import (scheme base) (mosh)) (and 4 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (and 4 (cond-expand (mosh 3) (else 4)))]))
 (test-equal '[(import (scheme base) (mosh)) (or 4 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (or 4 (cond-expand (mosh 3) (else 4)))]))
-
+(test-equal '[(import (scheme base) (mosh)) (when 4 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (when 4 (cond-expand (mosh 3) (else 4)))]))
 (test-results)
 
 
