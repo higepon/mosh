@@ -118,11 +118,23 @@
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import*)))
                         (loop (append ret `((if ,@new-exp*)))
                               (cdr exp*) new-import*))]
+                    ;; (cond 〈clause1〉 〈clause2〉 . . . )
+                    [('cond (test* exp** ...) ...)
+                      (let-values (((test-exp* new-import*) (rewrite-program-exp* dirname test* import*)))
+                        (let loop2 ([exp** exp**]
+                                    [new-exp** '()]
+                                    [new-import* new-import*])
+                          (if (null? exp**)
+                              (loop (append ret `((cond ,@(map (lambda (test-exp new-exp*) `(,test-exp ,@new-exp*)) test-exp* new-exp**))))
+                                    (cdr exp*) new-import*)
+                              (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import*)))
+                                (loop2 (cdr exp**) (append new-exp** (list new-exp*)) new-import*)))))]
                     ;; (set! 〈variable〉 〈expression〉)
                     [('set! var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((set! ,var ,@new-exp*)))
                               (cdr exp*) new-import*))]
+
                     ;; (quote 〈datum〉)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))

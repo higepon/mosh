@@ -112,9 +112,17 @@
 (test-equal '[(import (scheme base) (mosh)) (set! a 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (set! a (cond-expand (mosh 3) (else 4)))]))
 
-
-
-
+;; cond-expand in cond
+(test-equal '[(import (scheme base) (mosh)) (cond [3 5])]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [(cond-expand (mosh 3) (else 4)) 5])]))
+(test-equal '[(import (scheme base) (mosh)) (cond [5 3])]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [5 (cond-expand (mosh 3) (else 4))])]))
+(test-equal '[(import (scheme base) (mosh)) (cond [1 2] [3 5])]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [1 2] [(cond-expand (mosh 3) (else 4)) 5])]))
+(test-equal '[(import (scheme base) (mosh)) (cond [1 2 3] [else 3])]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [1 2 3] [else (cond-expand (mosh 3) (else 4))])]))
+(test-equal '[(import (scheme base) (mosh)) (cond [1 2] [else 3 5])]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [1 2] [else (cond-expand (mosh 3) (else 4)) 5])]))
 (test-results)
 
 
