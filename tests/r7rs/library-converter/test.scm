@@ -76,9 +76,12 @@
 (test-equal '[(import (scheme base) (mosh)) 3]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond-expand (mosh 3) (else 4))]))
 
-;; cond-expand in top level.
+;; cond-expand in define.
 (test-equal '[(import (scheme base) (mosh)) (define a 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (define a (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (define (a x) 3 5)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (define (a x) (cond-expand (mosh 3) (else 4)) 5)]))
 
 
 

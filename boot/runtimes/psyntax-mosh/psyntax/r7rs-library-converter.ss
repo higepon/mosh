@@ -87,10 +87,16 @@
                       ;; Expand it to multiple include and pass it to psyntax later.
                       ;; Note we append dirname to path so that (include "foo.scm") works.
                       (let ([new-exp* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
-                        (loop (append ret new-exp*) (cdr exp*) import*))]                                
+                        (loop (append ret new-exp*) (cdr exp*) import*))]
+                    ;; (define 〈variable〉 〈expression〉)
+                    ;; (define (〈variable〉 〈formals〉) 〈body〉
                     [('define var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((define ,var ,@new-exp*)))
+                              (cdr exp*) new-import*))]
+                    [('define (var* ...) body* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
+                        (loop (append ret `((define (,@var*) ,@new-exp*)))
                               (cdr exp*) new-import*))]
                     [any
                       (loop (append ret `(,any)) (cdr exp*) import*)])))]))
