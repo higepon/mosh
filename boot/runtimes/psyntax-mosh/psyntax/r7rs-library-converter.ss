@@ -112,7 +112,12 @@
                     [('if if-exp* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import*)))
                         (loop (append ret `((if ,@new-exp*)))
-                              (cdr exp*) new-import*))]                                                                                   
+                              (cdr exp*) new-import*))]    
+                    ;; (set! 〈variable〉 〈expression〉)
+                    [('set! var exp)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
+                        (loop (append ret `((set! ,var ,@new-exp*)))
+                              (cdr exp*) new-import*))]                                                                                                             
                     ;; (quote 〈datum〉) 
                     [('quote datum)
                       (loop (append ret (list (car exp*)))

@@ -108,7 +108,9 @@
 (test-equal '[(import (scheme base) (mosh)) (if 6 5 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (if 6 5 (cond-expand (mosh 3) (else 4)))]))
 
-
+;; cond-expand in set!
+(test-equal '[(import (scheme base) (mosh)) (set! a 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (set! a (cond-expand (mosh 3) (else 4)))]))
 
 
 
