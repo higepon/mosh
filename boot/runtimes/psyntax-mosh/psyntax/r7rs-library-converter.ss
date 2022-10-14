@@ -148,7 +148,11 @@
                     [('and and-exp* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname and-exp* import*)))
                         (loop (append ret `((and ,@new-exp*)))
-                              (cdr exp*) new-import*))]                              
+                              (cdr exp*) new-import*))]
+                    [('or or-exp* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname or-exp* import*)))
+                        (loop (append ret `((or ,@new-exp*)))
+                              (cdr exp*) new-import*))]                                                            
                     ;; (quote 〈datum〉)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
