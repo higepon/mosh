@@ -106,7 +106,13 @@
                     [('lambda arg body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((lambda ,arg ,@new-exp*)))
-                              (cdr exp*) new-import*))]                                                          
+                              (cdr exp*) new-import*))]         
+                    ;; (if 〈test〉 〈consequent〉 〈alternate〉) syntax
+                    ;; (if 〈test〉 〈consequent〉) syntax                              
+                    [('if if-exp* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import*)))
+                        (loop (append ret `((if ,@new-exp*)))
+                              (cdr exp*) new-import*))]                                                                                   
                     ;; (quote 〈datum〉) 
                     [('quote datum)
                       (loop (append ret (list (car exp*)))

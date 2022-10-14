@@ -100,6 +100,15 @@
 (test-equal '[(import (scheme base) (mosh)) (lambda a 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (lambda a (cond-expand (mosh 3) (else 4)))]))
 
+;; cond-expand in if
+(test-equal '[(import (scheme base) (mosh)) (if 3 5 6)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (if (cond-expand (mosh 3) (else 4)) 5 6)]))
+(test-equal '[(import (scheme base) (mosh)) (if 5 3 6)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (if 5 (cond-expand (mosh 3) (else 4)) 6)]))
+(test-equal '[(import (scheme base) (mosh)) (if 6 5 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (if 6 5 (cond-expand (mosh 3) (else 4)))]))
+
+
 
 
 
