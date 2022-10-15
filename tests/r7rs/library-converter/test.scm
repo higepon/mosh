@@ -8,17 +8,13 @@
 (test-equal "/foo/bar/baz/" (path-dirname "/foo/bar/baz/hige.scm"))
 (test-equal "" (path-dirname "hige.scm"))
 
-;; new tests here
-
-;(test-equal '((export make (rename (put! set!))) (export get set!))
 (let-values (((lib-decl* export* import* included-file*)
     (rewrite-lib-decl* "r7rs/" '((export make (rename put! set!))
                                 (include-library-declarations "default-declarations.scm")))))
               (test-equal '() lib-decl*)
               (test-equal '() import*)
               (test-equal '(make (rename (put! set!)) get set!) export*)
-              (test-equal '("r7rs/default-declarations.scm") included-file*)
-)
+              (test-equal '("r7rs/default-declarations.scm") included-file*))
 
 (let-values (((lib-decl* export* import* included-file*)
   (rewrite-lib-decl* "r7rs/" '((export make (rename put! set!))
@@ -28,9 +24,7 @@
     (test-equal '((include "r7rs/foo.scm") (include "r7rs/bar.scm")) lib-decl*)
     (test-equal '() import*)
     (test-equal '(make (rename (put! set!)) get set! life name) export*)
-    (test-equal '("r7rs/foo.scm" "r7rs/bar.scm" "r7rs/default-declarations.scm" "r7rs/other-declarations.scm") included-file*)
-)
-
+    (test-equal '("r7rs/foo.scm" "r7rs/bar.scm" "r7rs/default-declarations.scm" "r7rs/other-declarations.scm") included-file*))
 
 (test-equal '((define foo #t) (define bar #f))
             (rewrite-lib-decl* "r7rs/" '((cond-expand (r7rs (define foo #t) (define bar #f))))))
@@ -68,7 +62,6 @@
 ;; A Scheme program converter
 (test-equal '[(import (scheme base)) 3]
   (rewrite-program "./src" '[(import (scheme base)) 3]))
-
 (test-equal '[(import (scheme base) (mosh)) 3]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 3]))
 
@@ -100,7 +93,7 @@
 (test-equal '[(import (scheme base) (mosh)) (lambda a 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (lambda a (cond-expand (mosh 3) (else 4)))]))
 
-;; cond-expand in if
+;; cond-expand in if.
 (test-equal '[(import (scheme base) (mosh)) (if 3 5 6)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (if (cond-expand (mosh 3) (else 4)) 5 6)]))
 (test-equal '[(import (scheme base) (mosh)) (if 5 3 6)]
@@ -108,11 +101,11 @@
 (test-equal '[(import (scheme base) (mosh)) (if 6 5 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (if 6 5 (cond-expand (mosh 3) (else 4)))]))
 
-;; cond-expand in set!
+;; cond-expand in set!.
 (test-equal '[(import (scheme base) (mosh)) (set! a 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (set! a (cond-expand (mosh 3) (else 4)))]))
 
-;; cond-expand in cond
+;; cond-expand in cond.
 (test-equal '[(import (scheme base) (mosh)) (cond [3 5])]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [(cond-expand (mosh 3) (else 4)) 5])]))
 (test-equal '[(import (scheme base) (mosh)) (cond [5 3])]
@@ -124,13 +117,13 @@
 (test-equal '[(import (scheme base) (mosh)) (cond [1 2] [else 3 5])]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (cond [1 2] [else (cond-expand (mosh 3) (else 4)) 5])]))
 
-;; cond-expand in case
+;; cond-expand in case.
 (test-equal '[(import (scheme base) (mosh)) (case 3 ((4) #t))]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case (cond-expand (mosh 3) (else 4)) ((4) #t))]))
 (test-equal '[(import (scheme base) (mosh)) (case a ((4) 3 #t))]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case a ((4)  (cond-expand (mosh 3) (else 4)) #t))]))
 
-;; cond-expand in and or when unless
+;; cond-expand in and or when unless.
 (test-equal '[(import (scheme base) (mosh)) (and 4 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (and 4 (cond-expand (mosh 3) (else 4)))]))
 (test-equal '[(import (scheme base) (mosh)) (or 4 3)]
@@ -140,7 +133,7 @@
 (test-equal '[(import (scheme base) (mosh)) (unless 4 3)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (unless 4 (cond-expand (mosh 3) (else 4)))]))
 
-;; cond-expand in let
+;; cond-expand in let.
 (test-equal '[(import (scheme base) (mosh)) (let ([a 1] [b 3]) 4)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let ([a 1] [b (cond-expand (mosh 3) (else 4))])
@@ -225,7 +218,7 @@
                              (letrec* ([a 1] [b 2])
                                (cond-expand (mosh 3) (else 4)) 5)]))
 
-;; let-values
+;; cond-expand in let-values.
 (test-equal '[(import (scheme base) (mosh)) (let-values ([(a b c) (values 1 2 3)]) 4)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let-values ([(a b c) (cond-expand (mosh (values 1 2 3)) (else 4))])
@@ -245,7 +238,7 @@
                                (cond-expand (mosh 3) (else 4))
                                2)]))
 
-;; let*-values
+;; cond-expand in let*-values.
 (test-equal '[(import (scheme base) (mosh)) (let*-values ([(a b c) (values 1 2 3)]) 4)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let*-values ([(a b c) (cond-expand (mosh (values 1 2 3)) (else 4))])
@@ -265,7 +258,7 @@
                                (cond-expand (mosh 3) (else 4))
                                2)]))
 
-;; cond-expand in begin
+;; cond-expand in begin.
 (test-equal '[(import (scheme base) (mosh)) (begin 3 5)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (begin (cond-expand (mosh 3) (else 4)) 5)]))
@@ -279,7 +272,7 @@
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (begin (define a (cond-expand (mosh 3) (else 4))) (cond-expand (mosh 9) (else 4)) (cond-expand (mosh 27) (else 4)))]))
 
-;; cond-expand in do
+;; cond-expand in do.
 (test-equal
   '[(import (scheme base))
     (do ([i 0 (+ i 1)]
