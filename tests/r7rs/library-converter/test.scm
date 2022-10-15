@@ -225,6 +225,45 @@
                              (letrec* ([a 1] [b 2])
                                (cond-expand (mosh 3) (else 4)) 5)]))
 
+;; let-values
+(test-equal '[(import (scheme base) (mosh)) (let-values ([(a b c) (values 1 2 3)]) 4)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let-values ([(a b c) (cond-expand (mosh (values 1 2 3)) (else 4))])
+                               4)]))
+(test-equal '[(import (scheme base) (mosh)) (let-values ([(a b c) (values 1 2 3)]) 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let-values ([(a b c) (values 1 2 3)])
+                               (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (let-values ([(a b c) (values 1 2 3)]) 2 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let-values ([(a b c) (values 1 2 3)])
+                               2
+                               (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (let-values ([(a b c) (values 1 2 3)]) 3 2)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let-values ([(a b c) (values 1 2 3)])
+                               (cond-expand (mosh 3) (else 4))
+                               2)]))
+
+;; let*-values
+(test-equal '[(import (scheme base) (mosh)) (let*-values ([(a b c) (values 1 2 3)]) 4)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let*-values ([(a b c) (cond-expand (mosh (values 1 2 3)) (else 4))])
+                               4)]))
+(test-equal '[(import (scheme base) (mosh)) (let*-values ([(a b c) (values 1 2 3)]) 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let*-values ([(a b c) (values 1 2 3)])
+                               (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (let*-values ([(a b c) (values 1 2 3)]) 2 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let*-values ([(a b c) (values 1 2 3)])
+                               2
+                               (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (let*-values ([(a b c) (values 1 2 3)]) 3 2)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (let*-values ([(a b c) (values 1 2 3)])
+                               (cond-expand (mosh 3) (else 4))
+                               2)]))
 
 (test-results)
 
