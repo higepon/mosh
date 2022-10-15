@@ -265,6 +265,19 @@
                                (cond-expand (mosh 3) (else 4))
                                2)]))
 
+;; cond-expand in begin
+(test-equal '[(import (scheme base) (mosh)) (begin 3 5)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (begin (cond-expand (mosh 3) (else 4)) 5)]))
+(test-equal '[(import (scheme base) (mosh)) (begin 5 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (begin 5 (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (begin (define a 3) 5)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (begin (define a (cond-expand (mosh 3) (else 4))) 5)]))
+(test-equal '[(import (scheme base) (mosh)) (begin (define a 3) 9 27)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (begin (define a (cond-expand (mosh 3) (else 4))) (cond-expand (mosh 9) (else 4)) (cond-expand (mosh 27) (else 4)))]))
 (test-results)
 
 

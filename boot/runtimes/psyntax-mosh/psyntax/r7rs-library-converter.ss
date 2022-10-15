@@ -136,7 +136,7 @@
                               (cdr exp*) new-import*))]
                     ;; (if <test> <consequent> <alternate>) syntax
                     ;; (if <test> <consequent>) syntax
-                    [((and (or 'if 'and 'or 'when 'unless) if-variant) if-exp* ...)
+                    [((and (or 'if 'and 'or 'when 'unless 'begin) if-variant) if-exp* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import*)))
                         (loop (append ret `((,if-variant ,@new-exp*)))
                               (cdr exp*) new-import*))]
