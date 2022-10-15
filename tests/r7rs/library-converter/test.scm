@@ -500,6 +500,18 @@
         [(a) 1 2]
         [(a b) 3 (cond-expand (mosh 2) (else 4))])]))
 
+
+;; Shared
+(test-equal '[(import (scheme base))
+              (let ([x '#1=(a . #1#)])
+                (test-eq 'a (car x))
+                (test-eq x (cdr x)))]
+  (rewrite-program "./src"
+    '[(import (scheme base))      
+      (let ([x '#1=(a . #1#)])
+        (test-eq 'a (car x))
+        (test-eq x (cdr x)))]))
+
 (test-results)
 
 
