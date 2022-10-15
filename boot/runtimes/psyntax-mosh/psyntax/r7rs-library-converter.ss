@@ -128,6 +128,12 @@
                                     [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
                         (loop (append ret `((,let-variant ,(map (lambda (var init) `(,var ,init)) var* init-exp*) ,@body-exp*)))
                               (cdr exp*) new-import*))]
+                    ;; (let <variable> <bindings> <body>)
+                    [((and (or 'let 'let* 'letrec 'letrec*) let-variant) name ([var* init*] ...) body* ...)
+                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import*)]
+                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
+                        (loop (append ret `((,let-variant ,name ,(map (lambda (var init) `(,var ,init)) var* init-exp*) ,@body-exp*)))
+                              (cdr exp*) new-import*))]
                     ;; (let-values <mv binding spec> <body>)
                     ;;   <mv binding spec>: ((<formals> <init>) ...)
                     [((and (or 'let-values 'let*-values) let-values-variant) ([(var** ...) init*] ...) body* ...)

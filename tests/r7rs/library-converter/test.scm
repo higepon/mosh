@@ -377,6 +377,52 @@
          ((= i 5) i)
          1 (cond-expand (mosh 3) (else 4)))]))
 
+;; cond-expand in named let.
+(test-equal
+  '[(import (scheme base))
+    (let loop ([i 0] [j 0])
+      3 5)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (let loop ([i 0] [j 0])
+        3 5)]))
+
+(test-equal
+  '[(import (scheme base))
+    (let loop ([i 3] [j 0])
+      3 5)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (let loop ([i (cond-expand (mosh 3) (else 4))] [j 0])
+        3 5)]))
+
+(test-equal
+  '[(import (scheme base))
+    (let loop ([i 0] [j 3])
+      3 5)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (let loop ([i 0] [j 3])
+        3 5)]))
+
+(test-equal
+  '[(import (scheme base))
+    (let loop ([i 0] [j 0])
+      3 3)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (let loop ([i 0] [j 0])
+        3 (cond-expand (mosh 3) (else 4)))]))
+
+(test-equal
+  '[(import (scheme base))
+    (let loop ([i 0] [j 0])
+      2 5)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (let loop ([i 0] [j 0])
+        (cond-expand (mosh 2) (else 4)) 5)]))
+
 (test-results)
 
 
