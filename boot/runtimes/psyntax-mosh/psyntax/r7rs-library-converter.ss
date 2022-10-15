@@ -83,15 +83,10 @@
                         (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname new-exp* import*)))
                           (loop (append ret new-exp*)
                                 (cdr exp*) new-import*)))]
-                    [('include path* ...)
+                    [((and (or 'include 'include-ci) include-variant) path* ...)
                       ;; Expand it to multiple include and pass it to psyntax later.
                       ;; Note we append dirname to path so that (include "foo.scm") works.
-                      (let ([new-exp* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
-                        (loop (append ret new-exp*) (cdr exp*) import*))]
-                    [('include-ci path* ...)
-                      ;; Expand it to multiple include and pass it to psyntax later.
-                      ;; Note we append dirname to path so that (include "foo.scm") works.
-                      (let ([new-exp* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
+                      (let ([new-exp* (map (lambda (path) `(,include-variant ,(string-append dirname path))) path*)])
                         (loop (append ret new-exp*) (cdr exp*) import*))]
                     ;; (define <variable> <expression>)
                     [('define var exp)
