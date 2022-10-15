@@ -186,18 +186,11 @@
                     [('export spec* ...)
                       (loop ret (cdr decl*) (append export* spec*) import* included-file*)]
                     ;; (include <filename1><filename2> . . . )
-                    [('include path* ...)
+                    [((and (or 'include 'include-ci) include-variant) path* ...)
                       ;; Expand it to multiple include and pass it to psyntax later.
                       ;; Note we append dirname to path so that (include "foo.scm") works.
                       (let ([include-path* (map (lambda (path) (string-append dirname path)) path*)]
-                            [new-decl* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
-                        (loop (append ret new-decl*) (cdr decl*) export* import* (append included-file* include-path*)))]
-                    ;; (include <filename1><filename2> . . . )
-                    [('include-ci path* ...)
-                    ;; Expand it to multiple include-ci and pass it to psyntax later.
-                    ;; Note we append dirname to path so that (include-ci "foo.scm") works.
-                    (let* ([include-path* (map (lambda (path) (string-append dirname path)) path*)]
-                           [new-decl* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
+                            [new-decl* (map (lambda (path) `(,include-variant ,(string-append dirname path))) path*)])
                         (loop (append ret new-decl*) (cdr decl*) export* import* (append included-file* include-path*)))]
                     ;; (include-library-declarations <filename>)
                     [('include-library-declarations path)
