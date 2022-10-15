@@ -162,11 +162,11 @@
                         (loop (append ret `((unless ,@new-exp*)))
                               (cdr exp*) new-import*))]
                     ;; (let <bindings> <body>)
-                    [('let ([var* init*] ...) body* ...)
+                    [((and (or 'let 'let* 'letrec 'letrec&) let-variant) ([var* init*] ...) body* ...)
                       (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import*)]
                                     [(body-exp* new-import*) (rewrite-program-exp* dirname body* import*)])
-                        (loop (append ret `((let ,(map (lambda (var init) `(,var ,init)) var* init-exp*) ,@body-exp*)))
-                              (cdr exp*) new-import*))]
+                        (loop (append ret `((,let-variant ,(map (lambda (var init) `(,var ,init)) var* init-exp*) ,@body-exp*)))
+                              (cdr exp*) new-import*))]                              
                     ;; (quote <datum>)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
