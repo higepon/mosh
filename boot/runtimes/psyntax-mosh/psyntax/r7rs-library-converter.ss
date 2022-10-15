@@ -74,7 +74,7 @@
             (if (null? exp*)
                 (values ret import*)
                 (match (car exp*)
-                    ;; (import 〈import spec〉 . . . )
+                    ;; (import <import spec> . . . )
                     ;; In R7RS import can appears multiple times but not in R6RS. We have to merge them into one.
                     [('import spec* ...)
                       (loop ret (cdr exp*) (append import* spec*))]
@@ -93,17 +93,17 @@
                       ;; Note we append dirname to path so that (include "foo.scm") works.
                       (let ([new-exp* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
                         (loop (append ret new-exp*) (cdr exp*) import*))]
-                    ;; (define 〈variable〉 〈expression〉)
+                    ;; (define <variable> <expression>)
                     [('define var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((define ,var ,@new-exp*)))
                               (cdr exp*) new-import*))]
-                    ;; (define (〈variable〉 〈formals〉) 〈body〉
+                    ;; (define (<variable> <formals>) <body>
                     [('define (name . remainder*) body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((define (,name ,@remainder*) ,@new-exp*)))
                               (cdr exp*) new-import*))]
-                    ;; (lambda 〈formals〉 〈body〉)
+                    ;; (lambda <formals> <body>)
                     [('lambda (name . remainder*) body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((lambda (,name ,@remainder*) ,@new-exp*)))
@@ -112,13 +112,13 @@
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
                         (loop (append ret `((lambda ,arg ,@new-exp*)))
                               (cdr exp*) new-import*))]
-                    ;; (if 〈test〉 〈consequent〉 〈alternate〉) syntax
-                    ;; (if 〈test〉 〈consequent〉) syntax
+                    ;; (if <test> <consequent> <alternate>) syntax
+                    ;; (if <test> <consequent>) syntax
                     [('if if-exp* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import*)))
                         (loop (append ret `((if ,@new-exp*)))
                               (cdr exp*) new-import*))]
-                    ;; (cond 〈clause1〉 〈clause2〉 . . . )
+                    ;; (cond <clause1> <clause2> . . . )
                     [('cond (test* exp** ...) ...)
                       (let-values (((test-exp* new-import*) (rewrite-program-exp* dirname test* import*)))
                         (let loop2 ([exp** exp**]
@@ -129,7 +129,7 @@
                                     (cdr exp*) new-import*)
                               (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import*)))
                                 (loop2 (cdr exp**) (append new-exp** (list new-exp*)) new-import*)))))]
-                    ;; (case 〈key〉 〈clause1〉 〈clause2〉 . . . )
+                    ;; (case <key> <clause1> <clause2> . . . )
                     [('case key (datum* exp** ...) ...)
                       (let-values (((key-exp* new-import*) (rewrite-program-exp* dirname (list key) import*)))
                         (let loop2 ([exp** exp**]
@@ -140,7 +140,7 @@
                                     (cdr exp*) new-import*)
                               (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import*)))
                                 (loop2 (cdr exp**) (append new-exp** (list new-exp*)) new-import*)))))]
-                    ;; (set! 〈variable〉 〈expression〉)
+                    ;; (set! <variable> <expression>)
                     [('set! var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
                         (loop (append ret `((set! ,var ,@new-exp*)))
@@ -160,8 +160,14 @@
                     [('unless unless-exp* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname unless-exp* import*)))
                         (loop (append ret `((unless ,@new-exp*)))
-                              (cdr exp*) new-import*))]                              
-                    ;; (quote 〈datum〉)
+                              (cdr exp*) new-import*))]
+                    ;; (let <bindings> <body>)
+                    [('let ([var* init*] ...) body* ...)
+                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import*)]
+                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* import*)])
+                        (loop (append ret `((let ,(map (lambda (var init) `(,var ,init)) var* init-exp*) ,@body-exp*)))
+                              (cdr exp*) new-import*))]
+                    ;; (quote <datum>)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
                             (cdr exp*) import*)]
@@ -170,15 +176,15 @@
                     [any
                       (loop (append ret `(,any)) (cdr exp*) import*)])))]))
 
-;; Rewrite list of 〈library declaration〉and return list of 〈library declaration〉.
-;;  〈library declaration〉 is any of:
-;;     (export 〈export spec〉 . . . )
-;;     (import 〈import set〉 . . . )
-;;     (begin 〈command or definition〉 . . . )
-;;     (include 〈filename1〉 〈filename2〉 . . . )
-;;     (include-ci 〈filename1〉 〈filename2〉 . . . )
-;;     (include-library-declarations 〈filename1〉〈filename2〉 . . . )
-;;     (cond-expand 〈ce-clause1〉 〈ce-clause2〉 . . . )
+;; Rewrite list of <library declaration>and return list of <library declaration>.
+;;  <library declaration> is any of:
+;;     (export <export spec> . . . )
+;;     (import <import set> . . . )
+;;     (begin <command or definition> . . . )
+;;     (include <filename1> <filename2> . . . )
+;;     (include-ci <filename1> <filename2> . . . )
+;;     (include-library-declarations <filename1><filename2> . . . )
+;;     (cond-expand <ce-clause1> <ce-clause2> . . . )
 (define rewrite-lib-decl*
   (case-lambda
     [(dirname lib-decl*)
@@ -193,28 +199,28 @@
             (if (null? decl*)
                 (values ret (map rewrite-export export*) import* included-file*)
                 (match (car decl*)
-                    ;; (import 〈import spec〉 . . . )
+                    ;; (import <import spec> . . . )
                     ;; In R7RS import can appears multiple times but not in R6RS. We have to merge them into one.
                     [('import spec* ...)
                       (loop ret (cdr decl*) export* (append import* spec*) included-file*)]
-                    ;; (export 〈export spec〉 . . . )
+                    ;; (export <export spec> . . . )
                     [('export spec* ...)
                       (loop ret (cdr decl*) (append export* spec*) import* included-file*)]
-                    ;; (include 〈filename1〉〈filename2〉 . . . )
+                    ;; (include <filename1><filename2> . . . )
                     [('include path* ...)
                       ;; Expand it to multiple include and pass it to psyntax later.
                       ;; Note we append dirname to path so that (include "foo.scm") works.
                       (let ([include-path* (map (lambda (path) (string-append dirname path)) path*)]
                             [new-decl* (map (lambda (path) `(include ,(string-append dirname path))) path*)])
                         (loop (append ret new-decl*) (cdr decl*) export* import* (append included-file* include-path*)))]
-                    ;; (include 〈filename1〉〈filename2〉 . . . )
+                    ;; (include <filename1><filename2> . . . )
                     [('include-ci path* ...)
                     ;; Expand it to multiple include-ci and pass it to psyntax later.
                     ;; Note we append dirname to path so that (include-ci "foo.scm") works.
                     (let* ([include-path* (map (lambda (path) (string-append dirname path)) path*)]
                            [new-decl* (map (lambda (path) `(include-ci ,(string-append dirname path))) path*)])
                         (loop (append ret new-decl*) (cdr decl*) export* import* (append included-file* include-path*)))]
-                    ;; (include-library-declarations 〈filename〉)
+                    ;; (include-library-declarations <filename>)
                     [('include-library-declarations path)
                       (let* ([include-path (string-append dirname path)]
                              [new-decl* (file->sexp-list include-path)])
@@ -222,7 +228,7 @@
                           ;; We call rewrite-lib-decl* because expanded include may have something we care about.
                           (loop (append ret new-decl2*)
                                 (cdr decl*) new-export* new-import* new-included*)))]
-                    ;; (include-library-declarations 〈filename1〉〈filename2〉 . . . )
+                    ;; (include-library-declarations <filename1><filename2> . . . )
                     [('include-library-declarations path* ...)
                       (let ([new-decl* (map (lambda (path) `(include-library-declarations ,path)) path*)])
                         (let-values (((new-decl2* new-export* new-import* new-included*) (rewrite-lib-decl* dirname new-decl* export* import* included-file*)))
@@ -236,7 +242,7 @@
                     [any
                       (loop (append ret `(,any)) (cdr decl*) export* import* included-file*)])))]))
 
-;; Returns list of〈library declaration〉.
+;; Returns list of<library declaration>.
 (define (rewrite-cond-expand expr)
    (format #t "expr=~a\n" expr)
    (match expr
