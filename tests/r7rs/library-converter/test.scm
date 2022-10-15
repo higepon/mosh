@@ -444,6 +444,62 @@
       (let loop ([i 0] [j 0])
         (cond-expand (mosh 2) (else 4)) 5)]))
 
+;; cond-expand in case-lambda.
+(test-equal
+  '[(import (scheme base))
+    (case-lambda
+      [(a) 1 2]
+      [(a b) 3 4])]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (case-lambda
+        [(a) 1 2]
+        [(a b) 3 4])]))
+
+(test-equal
+  '[(import (scheme base))
+    (case-lambda
+      [(a) 2 2]
+      [(a b) 3 4])]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (case-lambda
+        [(a) (cond-expand (mosh 2) (else 4)) 2]
+        [(a b) 3 4])]))
+
+(test-equal
+  '[(import (scheme base))
+    (case-lambda
+      [(a) 1 3]
+      [(a b) 3 4])]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (case-lambda
+        [(a) 1 (cond-expand (mosh 3) (else 4))]
+        [(a b) 3 4])]))
+
+(test-equal
+  '[(import (scheme base))
+    (case-lambda
+      [(a) 1 2]
+      [(a b) 2 4])]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (case-lambda
+        [(a) 1 2]
+        [(a b) (cond-expand (mosh 2) (else 4)) 4])]))
+
+(test-equal
+  '[(import (scheme base))
+    (case-lambda
+      [(a) 1 2]
+      [(a b) 3 2])]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (case-lambda
+        [(a) 1 2]
+        [(a b) 3 (cond-expand (mosh 2) (else 4))])]))
+
 (test-results)
 
 

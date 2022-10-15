@@ -152,14 +152,21 @@
                                               (,@test-exp*)
                                               ,@body-exp*)))
                               (cdr exp*) new-import*))]
+                    [('case-lambda ((var** ...) body** ...) ...)
+                      (let*-values ([(var-exp** new-import*) (rewrite-program-exp** dirname var** import*)]
+                                    [(body-exp** new-import*) (rewrite-program-exp** dirname body** import*)])
+                        (loop (append ret `((case-lambda ,@(map (lambda (var-exp* body-exp*) `(,var-exp* ,@body-exp*)) var-exp** body-exp**))))
+                              (cdr exp*) new-import*))]
                     ;; (quote <datum>)
-                    [('quote datum)
+                    [((or 'quote 'quasiquote) datum)
                       (loop (append ret (list (car exp*)))
                             (cdr exp*) import*)]
-
-                    ;; todo procedure call
-                    [any
-                      (loop (append ret `(,any)) (cdr exp*) import*)])))]))
+                    ;; Procedure call.
+                    [(proc arg* ...)
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (cons proc arg*) import*)))
+                        (loop (append ret `((,@new-exp*)))
+                              (cdr exp*) new-import*))]
+                    [any (loop (append ret `(,any)) (cdr exp*) import*)])))]))
 
 (define (rewrite-program-exp** dirname exp** import*)
   (let loop ([exp** exp**]
