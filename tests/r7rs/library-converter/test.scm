@@ -128,7 +128,7 @@
 (test-equal '[(import (scheme base) (mosh)) (case 3 ((4) #t))]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case (cond-expand (mosh 3) (else 4)) ((4) #t))]))
 (test-equal '[(import (scheme base) (mosh)) (case a ((4) 3 #t))]
-  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case a ((4)  (cond-expand (mosh 3) (else 4)) #t))])) 
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) (case a ((4)  (cond-expand (mosh 3) (else 4)) #t))]))
 
 ;; cond-expand in and or when unless
 (test-equal '[(import (scheme base) (mosh)) (and 4 3)]
@@ -150,17 +150,17 @@
                              (let ([a (cond-expand (mosh 3) (else 4))] [b 2])
                                4)]))
 (test-equal '[(import (scheme base) (mosh)) (let ([a 1] [b 2]) 3)]
-  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let ([a 1] [b 2])
                                (cond-expand (mosh 3) (else 4)))]))
 (test-equal '[(import (scheme base) (mosh)) (let ([a 1] [b 2]) 5 3)]
-  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let ([a 1] [b 2])
                                5 (cond-expand (mosh 3) (else 4)))]))
 (test-equal '[(import (scheme base) (mosh)) (let ([a 1] [b 2]) 3 5)]
-  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let ([a 1] [b 2])
-                               (cond-expand (mosh 3) (else 4)) 5)]))    
+                               (cond-expand (mosh 3) (else 4)) 5)]))
 
 (test-equal '[(import (scheme base) (mosh)) (let* ([a 1] [b 3]) 4)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
@@ -171,17 +171,59 @@
                              (let* ([a (cond-expand (mosh 3) (else 4))] [b 2])
                                4)]))
 (test-equal '[(import (scheme base) (mosh)) (let* ([a 1] [b 2]) 3)]
-  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let* ([a 1] [b 2])
                                (cond-expand (mosh 3) (else 4)))]))
 (test-equal '[(import (scheme base) (mosh)) (let* ([a 1] [b 2]) 5 3)]
-  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let* ([a 1] [b 2])
                                5 (cond-expand (mosh 3) (else 4)))]))
 (test-equal '[(import (scheme base) (mosh)) (let* ([a 1] [b 2]) 3 5)]
-  (rewrite-program "./src" '[(import (scheme base)) (import (mosh)) 
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (let* ([a 1] [b 2])
-                               (cond-expand (mosh 3) (else 4)) 5)]))                                                               
+                               (cond-expand (mosh 3) (else 4)) 5)]))
+
+(test-equal '[(import (scheme base) (mosh)) (letrec ([a 1] [b 3]) 4)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec ([a 1] [b (cond-expand (mosh 3) (else 4))])
+                               4)]))
+(test-equal '[(import (scheme base) (mosh)) (letrec ([a 3] [b 2]) 4)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec ([a (cond-expand (mosh 3) (else 4))] [b 2])
+                               4)]))
+(test-equal '[(import (scheme base) (mosh)) (letrec ([a 1] [b 2]) 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec ([a 1] [b 2])
+                               (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (letrec ([a 1] [b 2]) 5 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec ([a 1] [b 2])
+                               5 (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (letrec ([a 1] [b 2]) 3 5)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec ([a 1] [b 2])
+                               (cond-expand (mosh 3) (else 4)) 5)]))
+
+(test-equal '[(import (scheme base) (mosh)) (letrec* ([a 1] [b 3]) 4)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec* ([a 1] [b (cond-expand (mosh 3) (else 4))])
+                               4)]))
+(test-equal '[(import (scheme base) (mosh)) (letrec* ([a 3] [b 2]) 4)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec* ([a (cond-expand (mosh 3) (else 4))] [b 2])
+                               4)]))
+(test-equal '[(import (scheme base) (mosh)) (letrec* ([a 1] [b 2]) 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec* ([a 1] [b 2])
+                               (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (letrec* ([a 1] [b 2]) 5 3)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec* ([a 1] [b 2])
+                               5 (cond-expand (mosh 3) (else 4)))]))
+(test-equal '[(import (scheme base) (mosh)) (letrec* ([a 1] [b 2]) 3 5)]
+  (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
+                             (letrec* ([a 1] [b 2])
+                               (cond-expand (mosh 3) (else 4)) 5)]))
 
 
 (test-results)
