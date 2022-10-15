@@ -89,9 +89,10 @@
                       (let ([new-exp* (map (lambda (path) `(,include-variant ,(string-append dirname path))) path*)])
                         (loop (append ret new-exp*) (cdr exp*) import*))]
                     ;; (define <variable> <expression>)
-                    [('define var exp)
+                    ;; (set! <variable> <expression>)
+                    [((and (or 'define 'set!) op) var exp)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
-                        (loop (append ret `((define ,var ,@new-exp*)))
+                        (loop (append ret `((,op ,var ,@new-exp*)))
                               (cdr exp*) new-import*))]
                     ;; (define (<variable> <formals>) <body>
                     [('define (name . remainder*) body* ...)
@@ -129,11 +130,6 @@
                                     (cdr exp*) new-import*)
                               (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import*)))
                                 (loop2 (cdr exp**) (append new-exp** (list new-exp*)) new-import*)))))]
-                    ;; (set! <variable> <expression>)
-                    [('set! var exp)
-                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
-                        (loop (append ret `((set! ,var ,@new-exp*)))
-                              (cdr exp*) new-import*))]
                     ;; (if <test> <consequent> <alternate>) syntax
                     ;; (if <test> <consequent>) syntax
                     [((and (or 'if 'and 'or 'when 'unless 'begin) if-variant) if-exp* ...)
