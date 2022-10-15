@@ -95,14 +95,10 @@
                         (loop (append ret `((,op ,var ,@new-exp*)))
                               (cdr exp*) new-import*))]
                     ;; (define (<variable> <formals>) <body>
-                    [('define (name . remainder*) body* ...)
-                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
-                        (loop (append ret `((define (,name ,@remainder*) ,@new-exp*)))
-                              (cdr exp*) new-import*))]
                     ;; (lambda <formals> <body>)
-                    [('lambda (name . remainder*) body* ...)
+                    [((and (or 'define 'lambda) op) (name . remainder*) body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
-                        (loop (append ret `((lambda (,name ,@remainder*) ,@new-exp*)))
+                        (loop (append ret `((,op (,name ,@remainder*) ,@new-exp*)))
                               (cdr exp*) new-import*))]
                     [('lambda arg body* ...)
                       (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
