@@ -45,7 +45,7 @@
     (psyntax compat)
     (psyntax internal)
     (psyntax library-manager)
-    (only (psyntax r7rs-library-converter) rewrite-program)
+    (only (psyntax r7rs-library-converter) rewrite-program path-dirname)
     (psyntax expander)
     (psyntax config)
     (only (system) current-exception-handler create-mosh-cache-dir get-environment-variable gensym-prefix-set! directory-list)
@@ -471,7 +471,7 @@
                           '()
                           (cons x (f))))))))
   ;; Rewrite R6RS top level probram to R7RS.
-  (set! x* (rewrite-program "" x*))
+  (set! x* (rewrite-program (path-dirname (car (command-line))) x*))
   (command-line (cons (car (command-line)) (cdr (command-line))))
   (mosh-cache-dir (create-mosh-cache-dir))
   (when (mosh-cache-dir)
