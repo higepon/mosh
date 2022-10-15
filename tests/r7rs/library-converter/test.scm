@@ -278,6 +278,112 @@
 (test-equal '[(import (scheme base) (mosh)) (begin (define a 3) 9 27)]
   (rewrite-program "./src" '[(import (scheme base)) (import (mosh))
                              (begin (define a (cond-expand (mosh 3) (else 4))) (cond-expand (mosh 9) (else 4)) (cond-expand (mosh 27) (else 4)))]))
+
+;; cond-expand in do
+(test-equal
+  '[(import (scheme base))
+    (do ([i 0 (+ i 1)]
+         [j 0])
+      ((= i 5) i)
+      1 2)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i 0 (+ i 1)]
+           [j 0])
+         ((= i 5) i)
+         1 2)]))
+
+(test-equal
+  '[(import (scheme base))
+    (do ([i 3 (+ i 1)]
+         [j 0])
+      ((= i 5) i)
+      1 2)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i (cond-expand (mosh 3) (else 4)) (+ i 1)]
+           [j 0])
+         ((= i 5) i)
+         1 2)]))
+
+(test-equal
+  '[(import (scheme base))
+    (do ([i 0 3]
+         [j 0])
+      ((= i 5) i)
+      1 2)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i 0 3]
+           [j 0])
+         ((= i 5) i)
+         1 2)]))
+
+(test-equal
+  '[(import (scheme base))
+    (do ([i 0 (+ i 1)]
+         [j 3])
+      ((= i 5) i)
+      1 2)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i 0 (+ i 1)]
+           [j (cond-expand (mosh 3) (else 4))])
+         ((= i 5) i)
+         1 2)]))
+
+(test-equal
+  '[(import (scheme base))
+    (do ([i 0 (+ i 1)]
+         [j 0])
+      (3 i)
+      1 2)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i 0 (+ i 1)]
+           [j 0])
+         ((cond-expand (mosh 3) (else 4)) i)
+         1 2)]))
+
+(test-equal
+  '[(import (scheme base))
+    (do ([i 0 (+ i 1)]
+         [j 0])
+      ((= i 5) 3)
+      1 2)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i 0 (+ i 1)]
+           [j 0])
+         ((= i 5) (cond-expand (mosh 3) (else 4)))
+         1 2)]))
+
+(test-equal
+  '[(import (scheme base))
+    (do ([i 0 (+ i 1)]
+         [j 0])
+      ((= i 5) i)
+      3 2)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i 0 (+ i 1)]
+           [j 0])
+         ((= i 5) i)
+         (cond-expand (mosh 3) (else 4)) 2)]))
+
+(test-equal
+  '[(import (scheme base))
+    (do ([i 0 (+ i 1)]
+         [j 0])
+      ((= i 5) i)
+      1 3)]
+  (rewrite-program "./src"
+    '[(import (scheme base))
+      (do ([i 0 (+ i 1)]
+           [j 0])
+         ((= i 5) i)
+         1 (cond-expand (mosh 3) (else 4)))]))
+
 (test-results)
 
 

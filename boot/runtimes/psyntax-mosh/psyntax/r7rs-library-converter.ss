@@ -135,6 +135,17 @@
                                     [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
                         (loop (append ret `((,let-values-variant (,@(map (lambda (var* init) `(,var* ,init)) var** init-exp*)) ,@body-exp*)))
                               (cdr exp*) new-import*))]
+                    ;; (do ((<variable1> <init1> <step1>) ...)
+                    ;;   (<test> <expression> ...)
+                    ;;   <command> ...)
+                    [('do ((var* init** ...) ...) (test* ...) body* ...)
+                      (let*-values ([(init-exp** new-import*) (rewrite-program-exp** dirname init** import*)]
+                                    [(test-exp* new-import*) (rewrite-program-exp* dirname test* new-import*)]
+                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
+                        (loop (append ret `((do (,@(map (lambda (var init*) `(,var ,@init*)) var* init-exp**))
+                                              (,@test-exp*)
+                                              ,@body-exp*)))
+                              (cdr exp*) new-import*))]
                     ;; (quote <datum>)
                     [('quote datum)
                       (loop (append ret (list (car exp*)))
