@@ -60,11 +60,10 @@
                                     push(lastPair.car());
                                     lastPair = lastPair.cdr();
                                 }
-                                // Check if we need to expan stack.
+                                // Check if we need to expand stack.
                                 if (stackEnd_ < sp_ + 64) {
                                     int argLength = Pair::length(lastPair);
                                     if (argLength != -1) {
-                                        printf("\nExpanding %d\n", argLength);fflush(stdout);
                                         expandStack(argLength + 10000);
                                     }
                                 }
