@@ -5,7 +5,7 @@
         (srfi :26)
         (srfi :98))
 
-(include "./misc/scripts/r6rs-symbols.dat")
+(include "r6rs-symbols.dat")
 
 (define r6rs-dir
   (let ((args (cdr (command-line))))
