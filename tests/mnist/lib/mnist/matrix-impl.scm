@@ -1,14 +1,3 @@
-;; Create a matrix by horizontally stacking column n-times.
-(define (matrix-hstack-col col n)
-  (unless (= (matrix-shape col 1) 1)
-    (error "matrix-hstack-row only supports (N 1) shape" col n))
-  (let ([mat (matrix (matrix-shape col 0) n)])
-    (do ((i 0 (+ i 1)))
-        ((= i (matrix-shape col 0)) mat)
-      (do ((j 0 (+ j 1)))
-          ((= j n))
-          (mat-at mat i j (mat-at col i 0))))))
-
 ;; Utilities.
 (define (sum lst)
   (if (null? lst)
@@ -45,7 +34,7 @@
     (let ([v (make-vector m)])
       (do ((i 0 (+ i 1)))
           ((= i m) v)
-        (vec-at v i (make-vector n value))))]
+        (vector-set! v i (make-vector n value))))]
    [(m n)
     (make-vector* m n 0.0)]))
 
@@ -60,8 +49,6 @@
 (define-syntax vec-len
   (syntax-rules ()
     [(_ v) (vector-length v)]))
-
-
 
 ;; The matrix-map procedure applies proc element-wise to the elements of the matrix
 ;; and returns a result matrix of the result.
@@ -86,6 +73,17 @@
           ((= j ncols))
         (mat-at mat j i (mat-at a i j))))))
 
+;; Create a matrix by horizontally stacking column n-times.
+(define (matrix-hstack-col col n)
+  (unless (= (matrix-shape col 1) 1)
+    (error "matrix-hstack-row only supports (N 1) shape" col n))
+  (let ([mat (matrix (matrix-shape col 0) n)])
+    (do ((i 0 (+ i 1)))
+        ((= i (matrix-shape col 0)) mat)
+      (do ((j 0 (+ j 1)))
+          ((= j n))
+          (mat-at mat i j (mat-at col i 0))))))        
+
 ;; Create a matrix of zeros with the same shape as a given matrix.
 (define (matrix-zeros-like a)
   (matrix-full-like a 0.0))
@@ -105,26 +103,6 @@
       (do ((j 0 (+ j 1)))
           ((= j ncols))
         (mat-at mat i j (bytevector-u8-ref bv (+ j (* ncols i))))))))
-
-;; Matrix multiplication.
-#;(define (matrix-mul a b)
-  (unless (= (matrix-shape a 1) (matrix-shape b 0))
-    (error "matrix-mul shapes don't match" (matrix-shape a) (matrix-shape b)))
-  (let* ([nrows (matrix-shape a 0)]
-         [ncols (matrix-shape b 1)]
-         [m     (matrix-shape a 1)]
-         [mat (matrix nrows ncols)])
-    (define (mul row col)
-      (let loop ([k 0]
-                 [ret 0])
-        (if (= k m)
-            ret
-            (loop (+ k 1) (+ ret (* (mat-at a row k) (mat-at b k col)))))))
-    (do ((i 0 (+ i 1)))
-        ((= i nrows) mat)
-      (do ((j 0 (+ j 1)))
-          ((= j ncols))
-        (mat-at mat i j (mul i j))))))
 
 ;; Helper for element-wise operations.
 (define (matrix-element-wise op a b)
