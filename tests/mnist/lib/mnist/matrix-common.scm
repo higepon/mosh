@@ -109,7 +109,7 @@
         ((= i (matrix-shape col 0)) mat)
       (do ((j 0 (+ j 1)))
           ((= j n))
-          (mat-at mat i j (mat-at col i 0))))))        
+          (mat-at mat i j (mat-at col i 0))))))
 
 ;; Create a matrix of zeros with the same shape as a given matrix.
 (define (matrix-zeros-like a)
@@ -198,7 +198,6 @@
     (unless (equal? (matrix-shape a) (matrix-shape b))
       (error "matrix-divide shapes don't match" (matrix-shape a) (matrix-shape b)))
     (matrix-element-wise / a b)))
-
 
 (define matrix-sum
   (case-lambda

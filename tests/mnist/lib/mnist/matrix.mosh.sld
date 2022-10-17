@@ -85,7 +85,7 @@
         (mat-at mat i j (mat-at row 0 j))))))
 
 ;; argmax
-(define (matrix-argmax a)      
+(define (matrix-argmax a)
   (vector-map vector-argmax (list*->vector* (matrix->list* a))))
 
 ;; Slice

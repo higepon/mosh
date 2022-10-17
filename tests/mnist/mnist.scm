@@ -32,7 +32,7 @@
                  (magnitude y))
               1e-3))
           (else
-           (< (magnitude (- x y)) 1e-6))))        
+           (< (magnitude (- x y)) 1e-6))))
 
 (test-begin "MNIST")
 
@@ -229,8 +229,8 @@
     (do ((epoch 0 (+ epoch 1)))
         ((= epoch epochs))
       (display "train accuracy=")
-      (display (accuracy x-train t-train))      
-      (newline)        
+      (display (accuracy x-train t-train))
+      (newline)
       (display "test accuracy=")
       (display (accuracy x-test t-test))
       (newline)

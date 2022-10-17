@@ -83,7 +83,7 @@
           ((= i nrows) mat)
         (do ((j 0 (+ j 1)))
             ((= j ncols))
-          (mat-at mat i j (mul i j))))))     
+          (mat-at mat i j (mul i j))))))
 
   ;; Matrix shape.
   ;; N.B For now we only support 2D matrix.
