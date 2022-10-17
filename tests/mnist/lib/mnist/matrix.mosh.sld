@@ -110,6 +110,4 @@
           ((= j ncols))
         (mat-at mat i j (vec-at (vec-at v i) j))))))
 
-(include "matrix-impl.scm")
-
-)
+(include "matrix-common.scm"))

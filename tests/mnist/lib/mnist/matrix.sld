@@ -121,9 +121,6 @@
          (vector-set! mat i (vector-ref a row-index)))
        row-index*)
       mat))
-
-
-  )
-
-(include "matrix-impl.scm")
 )
+
+(include "matrix-common.scm"))
