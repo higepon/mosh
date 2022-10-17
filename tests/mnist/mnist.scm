@@ -49,7 +49,7 @@
     (values predict loss accuracy gradient update-params)))
 
 (define (random-choice num-data batch-size)
-  (map (lambda (_) (random-integer num-data)) (make-list batch-size)))    
+  (map (lambda (_) (random-integer num-data)) (make-list batch-size)))
 
 ;; Hyper parameters.
 (define sanity-check? #t)
