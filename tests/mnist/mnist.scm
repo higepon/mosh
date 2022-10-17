@@ -1,7 +1,7 @@
 (import (scheme base)
         (scheme write)
-        (only (scheme vector) vector-count)
         (only (srfi 27) random-integer)
+        (only (srfi 1) count)
         (mnist loader)
         (mnist matrix)
         (mnist nn))
@@ -25,7 +25,7 @@
       (let* ([y (predict x)]
              [y (matrix-argmax y)]
              [t (matrix-argmax t)])
-        (/ (inexact (vector-count = y t)) (matrix-shape x 0))))
+        (/ (inexact (count = (vector->list y) (vector->list t))) (matrix-shape x 0))))
     (define (update-params x t lr)
         (let-values ([[grad-w1 grad-b1 grad-w2 grad-b2] (gradient x t)])
           (set! w1 (matrix-sub w1 (matrix-multiply grad-w1 lr)))
