@@ -1,7 +1,8 @@
 (import (scheme base)
+        (scheme process-context)
         (scheme write)
         (only (srfi 27) random-integer)
-        (only (srfi 1) count)
+        (only (srfi 1) count second)
         (mnist loader)
         (mnist matrix)
         (mnist nn))
@@ -61,7 +62,7 @@
 (define lr 0.1)
 (define iteration-per-epoch (/ train-size batch-size))
 
-(let-values (([x-train t-train x-test t-test] (load-mnist "/workspace/" train-size num-classes)))
+(let-values (([x-train t-train x-test t-test] (load-mnist (second (command-line)) train-size num-classes)))
   (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 hidden-size num-classes)))
     (do ((epoch 0 (+ epoch 1)))
         ((= epoch epochs))
