@@ -1,4 +1,5 @@
 (import (scheme base))
+(import (scheme case-lambda))
 (import (mnist matrix) (mnist nn))
 (import (mosh test))
 
@@ -154,5 +155,75 @@
                   (good-enough? 0.01821127 (mat-at mat 1 0))
                   (good-enough? 0.24519181 (mat-at mat 1 1))
                   (good-enough? 0.73659691 (mat-at mat 1 2)))))
+
+;; Simple Net
+(define (simple-net)
+  (let ([w (matrix-randn 2 3)])
+    (define (set-w! new-w) (set! w new-w))
+    (define (get-w) w)
+    (define (predict x)
+      (matrix-mul x w))
+    (define (loss x t)
+      (let* ([z (predict x)]
+             [y (softmax z)])
+        (cross-entropy-error y t)))
+    (values predict loss get-w set-w!)))
+
+(define (numerical-gradient func x)
+  (let ([h 1e-4]
+        [grad (matrix-zeros-like x)])
+    (do ((i 0 (+ i 1)))
+        ((= i (matrix-shape x 1)) grad)
+      (do ((j 0 (+ j 1)))
+          ((= j (matrix-shape x 0)))
+        (let* ([tmp (mat-at x j i)]
+               [fxh1 (func (mat-at x j i (+ tmp h)))]
+               [fxh2 (func (mat-at x j i (- tmp h)))])
+          (mat-at grad j i (/ (- fxh1 fxh2) (* 2 h)))
+          (mat-at x j i tmp))))))    
+
+;; numerical-gradient
+(let ([mat (numerical-gradient
+            (lambda (x)
+              (let ([x0 (mat-at x 0 0)]
+                    [x1 (mat-at x 0 1)])
+                (+ (* x0 x0) (* x1 x1))))
+            (matrix ((3.0 4.0))))])
+  (test-true (good-enough?  6.0 (mat-at mat 0 0)))
+  (test-true (good-enough?  8.0 (mat-at mat 0 1))))
+
+(let-values (([predict loss get-w set-w!] (simple-net)))
+  (set-w! (matrix ((0.47355232 0.9977393 0.84668094)
+                   (0.85557411 0.03563661 0.69422093))))
+  (let* ([x (matrix ((0.6 0.9)))]
+         [t (matrix ((0 0 1)))]
+         [pred (predict x)])
+    (test-true (good-enough? 1.054148091 (mat-at pred 0 0)))
+    (test-true (good-enough? 0.63071653 (mat-at pred 0 1)))
+    (test-true (good-enough? 1.1328074 (mat-at pred 0 2)))
+    (test-equal #(2) (matrix-argmax pred))
+    (test-true (good-enough? 0.9280682857864075 (loss x t)))
+    (test-equal #(2 3) (matrix-shape (numerical-gradient (lambda (w) (loss x t)) (get-w))))))    
+
+(define gradient-descent
+  (case-lambda
+   [(func x lr steps)
+    (let loop ([i 0] [x x])
+      (if (= i steps)
+          x
+          (let ([grad (numerical-gradient func x)])
+            (loop (+ i 1) (matrix-sub x (matrix-multiply lr grad))))))]
+   [(func x)
+    (gradient-descent func x 0.01 100)]))    
+
+;;  gradient-descent
+(let ([mat (gradient-descent
+            (lambda (x)
+              (let ([x0 (mat-at x 0 0)]
+                    [x1 (mat-at x 0 1)])
+                (+ (* x0 x0) (* x1 x1))))
+            (matrix ((-3.0 4.0))) 1e-10 100)])
+  (test-true (good-enough? -2.999 (mat-at mat 0 0)))
+  (test-true (good-enough? 3.999 (mat-at mat 0 1))))
 
 (test-results)
