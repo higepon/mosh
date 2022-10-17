@@ -1,7 +1,6 @@
 ;; Header here.
 (define-library (mnist matrix)
-  (export bytevector->matrix matrix matrix-shape matrix-mul matrix-hstack-col matrix-add matrix-argmax mat-at matrix-divide matrix-map matrix-multiply matrix-randn matrix-slice matrix-stretch matrix-sub matrix-sum matrix-transpose matrix-vstack-row matrix-zeros-like matrix->list* vector-argmax one-hot)
-  (export softmax) ;; TODO move to nn
+  (export bytevector->matrix matrix-max matrix matrix-shape matrix-mul matrix-hstack-col matrix-add matrix-argmax mat-at matrix-divide matrix-map matrix-multiply matrix-randn matrix-slice matrix-stretch matrix-sub matrix-sum matrix-transpose matrix-vstack-row matrix-zeros-like matrix->list* vector-argmax one-hot)
   (import (scheme base))
   (import (scheme case-lambda))
   (import (scheme inexact))
@@ -99,13 +98,7 @@
       row-index*)
     mat))
 
-;; softmax.
-(define (softmax a)
-  (let* ([c (matrix-max a)]
-         [a (matrix-map (lambda (e) (- e c)) a)]
-         [mat-exp (matrix-map (lambda (e) (exp e)) a)]
-         [row-sum (matrix-sum mat-exp 1)])
-   (matrix-divide mat-exp row-sum)))
+
 
   ]
   [else
@@ -166,16 +159,7 @@
       row-index*)
     mat))
 
-;; softmax.
-(define (softmax a)
-  (let* ([c (matrix-max a)]
-         [a (matrix-map (lambda (e) (- e c)) a)]
-         [mat-exp (matrix-map (lambda (e) (exp e)) a)])
-    (vector-map
-     (lambda (row)
-       (let ([row-sum (sum (vector->list row))])
-         (vector-map (lambda (e) (/ e row-sum)) row)))
-     mat-exp)))
+
 
   ])
 

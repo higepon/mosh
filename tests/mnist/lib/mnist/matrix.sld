@@ -32,9 +32,9 @@
 (define-library (mnist matrix)
   (export matrix matrix-shape mat-at matrix-randn matrix-zeros-like)
   (export matrix-add matrix-mul matrix-divide matrix-sub matrix-sum matrix-multiply)
-  (export matrix-hstack-col matrix-argmax matrix-slice matrix-stretch matrix-transpose matrix-vstack-row vector-argmax matrix-map)
+  (export matrix-hstack-col matrix-max matrix-argmax matrix-slice matrix-stretch matrix-transpose matrix-vstack-row vector-argmax matrix-map)
   (export bytevector->matrix matrix->list*)
-  (export softmax one-hot)
+  (export one-hot)
   (import (scheme base))
   (import (scheme case-lambda))
   (import (scheme inexact))
@@ -122,16 +122,7 @@
        row-index*)
       mat))
 
-  ;; softmax.
-  (define (softmax a)
-    (let* ([c (matrix-max a)]
-           [a (matrix-map (lambda (e) (- e c)) a)]
-           [mat-exp (matrix-map (lambda (e) (exp e)) a)])
-      (vector-map
-       (lambda (row)
-         (let ([row-sum (sum (vector->list row))])
-           (vector-map (lambda (e) (/ e row-sum)) row)))
-       mat-exp)))
+
   )
 
 (include "matrix-impl.scm")
