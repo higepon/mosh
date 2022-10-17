@@ -53,8 +53,9 @@
   (map (lambda (_) (random-integer num-data)) (make-list batch-size)))
 
 ;; Hyper parameters.
-(define sanity-check? #t)
+(define sanity-check? #f)
 (define train-size (if sanity-check? 64 60000))
+(define test-size (if sanity-check? 8 10000))
 (define batch-size (if sanity-check? 8 100))
 (define epochs (if sanity-check? 2 8))
 (define hidden-size (if sanity-check? 4 50))
@@ -62,7 +63,7 @@
 (define lr 0.1)
 (define iteration-per-epoch (/ train-size batch-size))
 
-(let-values (([x-train t-train x-test t-test] (load-mnist (second (command-line)) train-size num-classes)))
+(let-values (([x-train t-train x-test t-test] (load-mnist (second (command-line)) train-size test-size)))
   (let-values (([predict loss accuracy gradient update-params] (two-layer-net 784 hidden-size num-classes)))
     (do ((epoch 0 (+ epoch 1)))
         ((= epoch epochs))
