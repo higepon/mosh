@@ -81,6 +81,6 @@
                [t-batch (matrix-slice t-train batch-idx*)])
           (update-params x-batch t-batch lr)
           (when (= 0 (remainder i 100))
-            (display "loss= ")
+            (display "loss=")
             (display (loss x-batch t-batch))
             (newline)))))))
