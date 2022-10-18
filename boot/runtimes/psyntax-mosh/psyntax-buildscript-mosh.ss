@@ -209,6 +209,7 @@
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
     (sys         (system)                              #f    #t)  ;; for mosh
+    (repl        (scheme repl)                         #t    #t)
 ;;     (srfi-1     (mosh srfi :1)                              #f    #t)  ;; for mosh
     ))
 
@@ -1212,7 +1213,7 @@
     (regexp? mosh interaction r)
     ;;;
     (char-ready?                                )
-    (interaction-environment                    )
+    (interaction-environment  repl)
     (load                     mosh)
     ;;;
     (void                     $boot)
