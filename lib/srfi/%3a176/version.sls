@@ -9,7 +9,7 @@
       (command ,(mosh-executable-name))
       (scheme.id mosh)
       (install-dir ,(get-config "prefix"))
-      (languages scheme r6rs)
+      (languages scheme r6rs r7rs)
       (encodings utf-8)
       (mosh.cache-dir ,(get-config "mosh-cache-dir"))
       (website "https://mosh.monaos.org/")
