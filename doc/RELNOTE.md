@@ -38,6 +38,14 @@ Changes
   - A bool value next-method? available within method definition. See
     Issue 216 for details.
 
+- R7RS (Experimental)
+  - Support R7RS small + (scheme vector) library.
+  - Mosh passes 1200/1210 tests in r7rs-tests.scm from Chibi Scheme.
+  - To demonstrate R7RS comformance, we write MNIST demo in R7RS. It works both with Gauche and Mosh.
+
+- f64array
+  - To support faster matrix operations. We introduced f64array which is 2D matrix of double.
+
 Bug fixes
 ---------
 
