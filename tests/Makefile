@@ -68,6 +68,7 @@ runtest-mosh:
 	$(MOSH_TARGET) --loadpath=tests/mylib tests/fasl.scm
 	$(MOSH_TARGET) tests/r7rs/r7rs-tests.scm
 	$(MOSH_TARGET) tests/r7rs/top-level.scm	
+	$(MOSH_TARGET) tests/r7rs/import-all.scm
 	$(MOSH_TARGET) tests/r7rs/vector.scm
 	$(MOSH_TARGET) tests/import-srfi.scm
 	$(MOSH_TARGET) tests/srfi/srfi-151.scm

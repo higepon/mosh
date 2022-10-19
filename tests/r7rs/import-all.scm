@@ -9,15 +9,13 @@
         (scheme eval)
         (scheme load)
         (scheme time)
-        (scheme char)
         (scheme cxr)
-        (scheme file)
         (scheme file)
         (scheme process-context)
         (scheme write)
         (scheme char)
         (scheme char normalization)
         ;; large
-        (scheme vector))
+        (only (scheme vector) vector-count))
 
 'ok

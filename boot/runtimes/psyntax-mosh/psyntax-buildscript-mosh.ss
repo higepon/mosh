@@ -209,8 +209,9 @@
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
     (sys         (system)                              #f    #t)  ;; for mosh
-;;     (srfi-1     (mosh srfi :1)                              #f    #t)  ;; for mosh
-    ))
+    (repl        (scheme repl)                         #t    #t)  ;; for mosh
+    (load        (scheme load)                         #t    #t)  ;; for mosh
+))
 
 ;;; required? flag means that said library is required for
 ;;; building the system.  The only non-r6rs required libraries
@@ -1212,8 +1213,8 @@
     (regexp? mosh interaction r)
     ;;;
     (char-ready?                                )
-    (interaction-environment                    )
-    (load                     mosh)
+    (interaction-environment  repl)
+    (load                     mosh load)
     ;;;
     (void                     $boot)
     (gensym                   $boot)
