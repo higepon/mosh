@@ -66,7 +66,6 @@
           (f (cdr ls))))
       (extract)))
 
-
 ;; N.B. We don't use backend's (gensym) for following reasons.
 ;;  (a) When we read serialized libraries, we need all symbols are interned.
 ;;      Because symbols who have same string should be eq?, even when they are loaded from separate files.
@@ -95,7 +94,6 @@
 ;;   (if (null? x)
 ;;       (format "~a~a" gen-sym-prefix (gen-sym-counter))
 ;;       (format "~a~a@~a" gen-sym-prefix (gen-sym-counter) (car x)))))
-
 
   ;; defined for mosh
   ;;; - source is a pair of file-name x char-position
@@ -126,14 +124,7 @@
      [else
       x]))
 
-;; (define (scm->fasl filename)
-;;   (string-append filename ".mosh-fasl"))
-
  (define (scm->fasl filename)
-;  (string-append filename ".mosh-fasl"))
-;  (display (string-append "/Users/taro/.mosh/" (library-name->file-name2 (map string->symbol (string-split filename #\/))) ".mosh-fasl"))
-;  (display (string-append "/home/taro/.mosh/" (library-file-path->cache-path filename) ".mosh-fasl"))
-;   (format #t "(mosh-cache-dir)=~a, ~a\n" (mosh-cache-dir) (library-file-path->cache-path filename))
   (string-append (mosh-cache-dir) "/" (library-file-path->cache-path filename) ".mosh-fasl"))
 
 (define (included-file*->fasl filename)
@@ -146,43 +137,6 @@
   (call-with-port (open-file-input-port filename) (symbol-value 'fasl-read!)))
 
 (define verbose? (symbol-value '%verbose))
-
-;; (define (fasl-save filename obj)
-;;   (call-with-port (open-output-file filename) (lambda (port) (write obj port))))
-
-;; (define (fasl-load filename)
-;;   (call-with-port (open-input-file filename) read))
-
-
-;; (define (serialize-library filename obj)
-;;   (format #t "serialize-library ~a\n..." filename)
-;;   (let ([fasl-file (scm->fasl filename)])
-;;     (when (file-exists? fasl-file)
-;;       (delete-file fasl-file))
-;;     (guard [c (#t (format #t "Warning:serialize-library failed " filename)
-;;                   (when (file-exists? fasl-file)
-;;                     (delete-file fasl-file))
-;;                   #f)]
-;;            (fasl-save fasl-file obj)
-;;            (display "OK\n"))))
-
-;; (define (load-serialized-library filename obj)
-;;   (let ([fasl-file (scm->fasl filename)])
-;;     ;; todo we may use file-newer? directory.
-;;     (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename))
-;;         (let* ([expanded2core (symbol-value 'expanded2core)]
-;;                [code (fasl-load fasl-file)]
-;;                [pivot (cddddr (cddddr code))]
-;;                [visit (expanded2core (car pivot))]
-;;                [visit-proc (lambda () (eval-core visit))])
-;;           (set-car! pivot visit-proc)
-;;           (let* ([pivot (cdr pivot)]
-;;                  [invoke (expanded2core (car pivot))])
-;;             (set-car! pivot (lambda () (eval-core invoke)))
-;;             (apply obj code))
-;;           #t)
-;;         #f)))
-
 
 (define (serialize-lib-included-file* filename included-file*)
   (when verbose?
@@ -255,7 +209,6 @@
                  ;; The return valu of this apply tells whether succeed or not.
                  (apply obj code)))
              #f))))
-
 
   (define (make-record-printer name printer)
     (lambda x
@@ -334,7 +287,6 @@
                         (define (setter-name x val) (vector-set! x index val))
                         (define-record-accessor name next-index field* ...)))])))
 
-
 #;(define-syntax define-record
   (lambda (x)
     (define (syn->str s)
@@ -387,7 +339,6 @@
                         (define (setter-name x val) (simple-struct-set! x index val))
                         (define-record-accessor name next-index field* ...)))])))
 
-
 (define-syntax define-record
   (lambda (x)
     (define (syn->str s)
@@ -406,7 +357,7 @@
                      [pred (str->syn #'name (string-append (syn->str #'name) "?"))]
                      [field-len (+ 1 (length #'(field* ...)))])
                     #`(begin
-;                        (define (record-name . args) (make-simple-struct 'name field-len args))
+                        ;; (define (record-name . args) (make-simple-struct 'name field-len args))
                         (define-syntax record-name
                           (lambda (y)
                           (syntax-case y ()
@@ -427,8 +378,6 @@
                         (define (pred x)
                           (and (simple-struct? x) (eq? (simple-struct-name x) 'name)))
                         (define-record-accessor name 0 field* ...)))])))
-
-
 
 #;(define-syntax define-record
   (lambda (x)
