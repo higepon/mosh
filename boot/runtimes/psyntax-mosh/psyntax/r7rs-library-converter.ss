@@ -87,12 +87,12 @@
   (define rewrite-program-exp*
     (case-lambda
      [(dirname exp*)
-      (rewrite-program-exp* dirname exp* '())]
-     [(dirname sexp* import*)
+      (rewrite-program-exp* dirname exp* '() #t)]
+     [(dirname sexp* import* import-allowed?)
       (let loop ([ret '()]
                  [exp* sexp*]
                  [import* import*])
-                                        ;(format #t "exp*=~a import=~a ret=~a\n" exp* import* ret)
+        ;; (format #t "exp*=~a import=~a ret=~a\n" exp* import* ret)
         (if (null? exp*)
             (values ret import*)
             (let* ([exp (car exp*)]
@@ -101,10 +101,12 @@
                      ;; (import <import spec> ... )
                      ;; In R7RS import can appears multiple times but not in R6RS. We have to merge them into one.
                      [('import spec* ...)
-                      (loop ret (cdr exp*) (append import* (copy-src-info spec* src-info)))]
+                      (if import-allowed?
+                        (loop ret (cdr exp*) (append import* (copy-src-info spec* src-info)))
+                        (loop (append ret `(import ,@spec*)) (cdr exp*) import*))]
                      [('cond-expand clause* ...)
                       (let ([new-exp* (rewrite-cond-expand (car exp*))])
-                        (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname new-exp* import*)))
+                        (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname new-exp* import* import-allowed?)))
                           (loop (append ret (copy-src-info new-exp* src-info))
                                 (cdr exp*) new-import*)))]
                      [((and (or 'include 'include-ci) include-variant) path* ...)
@@ -115,70 +117,70 @@
                      ;; (define <variable> <expression>)
                      ;; (set! <variable> <expression>)
                      [((and (or 'define 'set!) op) var exp)
-                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import*)))
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (list exp) import* #f)))
                         (loop (append ret (copy-src-info `((,op ,var ,@new-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      ;; (define (<variable> <formals>) <body>
                      ;; (lambda <formals> <body>)
                      [((and (or 'define 'lambda) op) (name . remainder*) body* ...)
-                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import* #f)))
                         (loop (append ret (copy-src-info `((,op (,name ,@remainder*) ,@new-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      [('lambda arg body* ...)
-                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import*)))
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname body* import* #f)))
                         (loop (append ret (copy-src-info `((lambda ,arg ,@new-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      ;; (cond <clause1> <clause2> ... )
                      [('cond (test* exp** ...) ...)
-                      (let-values (((test-exp* new-import*) (rewrite-program-exp* dirname test* import*)))
-                        (let-values (((new-exp** new-import*) (rewrite-program-exp** dirname exp** new-import*)))
+                      (let-values (((test-exp* new-import*) (rewrite-program-exp* dirname test* import* #f)))
+                        (let-values (((new-exp** new-import*) (rewrite-program-exp** dirname exp** new-import* #f)))
                           (loop (append ret (copy-src-info `((cond ,@(map (lambda (test-exp new-exp*) `(,test-exp ,@new-exp*)) test-exp* new-exp**))) src-info))
                                 (cdr exp*) new-import*)))]
                      ;; (case <key> <clause1> <clause2> ... )
                      [('case key (datum* exp** ...) ...)
-                      (let-values (((key-exp* new-import*) (rewrite-program-exp* dirname (list key) import*)))
-                        (let-values (((new-exp** new-import*) (rewrite-program-exp** dirname exp** new-import*)))
+                      (let-values (((key-exp* new-import*) (rewrite-program-exp* dirname (list key) import* #F)))
+                        (let-values (((new-exp** new-import*) (rewrite-program-exp** dirname exp** new-import* #f)))
                           (loop (append ret (copy-src-info `((case ,@key-exp* ,@(map (lambda (datum new-exp*) `(,datum ,@new-exp*)) datum* new-exp**))) src-info))
                                 (cdr exp*) new-import*)))]
                      ;; (if <test> <consequent> <alternate>) syntax
                      ;; (if <test> <consequent>) syntax
                      [((and (or 'if 'and 'or 'when 'unless 'begin) if-variant) if-exp* ...)
-                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import*)))
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname if-exp* import* #f)))
                         (loop (append ret (copy-src-info `((,if-variant ,@new-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      ;; (let <bindings> <body>)
                      [((and (or 'let 'let* 'letrec 'letrec* 'parameterize) let-variant) ([var* init*] ...) body* ...)
-                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import*)]
-                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
+                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import* #f)]
+                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import* #f)])
                         (loop (append ret (copy-src-info `((,let-variant ,(map (lambda (var init) `(,var ,init)) var* init-exp*) ,@body-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      ;; (let <variable> <bindings> <body>)
                      [((and (or 'let 'let* 'letrec 'letrec*) let-variant) name ([var* init*] ...) body* ...)
-                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import*)]
-                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
+                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import* #f)]
+                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import* #f)])
                         (loop (append ret (copy-src-info `((,let-variant ,name ,(map (lambda (var init) `(,var ,init)) var* init-exp*) ,@body-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      ;; (let-values <mv binding spec> <body>)
                      ;;   <mv binding spec>: ((<formals> <init>) ...)
                      [((and (or 'let-values 'let*-values) let-values-variant) ([(var** ...) init*] ...) body* ...)
-                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import*)]
-                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
+                      (let*-values ([(init-exp* new-import*) (rewrite-program-exp* dirname init* import* #f)]
+                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import* #f)])
                         (loop (append ret (copy-src-info `((,let-values-variant (,@(map (lambda (var* init) `(,var* ,init)) var** init-exp*)) ,@body-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      ;; (do ((<variable1> <init1> <step1>) ...)
                      ;;   (<test> <expression> ...)
                      ;;   <command> ...)
                      [('do ((var* init** ...) ...) (test* ...) body* ...)
-                      (let*-values ([(init-exp** new-import*) (rewrite-program-exp** dirname init** import*)]
-                                    [(test-exp* new-import*) (rewrite-program-exp* dirname test* new-import*)]
-                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import*)])
+                      (let*-values ([(init-exp** new-import*) (rewrite-program-exp** dirname init** import* #f)]
+                                    [(test-exp* new-import*) (rewrite-program-exp* dirname test* new-import* #f)]
+                                    [(body-exp* new-import*) (rewrite-program-exp* dirname body* new-import* #F)])
                         (loop (append ret (copy-src-info `((do (,@(map (lambda (var init*) `(,var ,@init*)) var* init-exp**))
                                                                (,@test-exp*)
                                                              ,@body-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      [('case-lambda ((var** ...) body** ...) ...)
-                      (let*-values ([(var-exp** new-import*) (rewrite-program-exp** dirname var** import*)]
-                                    [(body-exp** new-import*) (rewrite-program-exp** dirname body** import*)])
+                      (let*-values ([(var-exp** new-import*) (rewrite-program-exp** dirname var** import* #f)]
+                                    [(body-exp** new-import*) (rewrite-program-exp** dirname body** import* #f)])
                         (loop (append ret (copy-src-info `((case-lambda ,@(map (lambda (var-exp* body-exp*) `(,var-exp* ,@body-exp*)) var-exp** body-exp**))) src-info))
                               (cdr exp*) new-import*))]
                      ;; (quote <datum>)
@@ -187,18 +189,18 @@
                             (cdr exp*) import*)]
                      ;; Procedure call.
                      [(proc arg* ...)
-                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (cons proc arg*) import*)))
+                      (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (cons proc arg*) import* #f)))
                         (loop (append ret (copy-src-info `((,@new-exp*)) src-info))
                               (cdr exp*) new-import*))]
                      [any (loop (append ret `(,any)) (cdr exp*) import*)]))))]))
 
-  (define (rewrite-program-exp** dirname exp** import*)
+  (define (rewrite-program-exp** dirname exp** import* import-allowed?)
     (let loop ([exp** exp**]
                [new-exp** '()]
                [new-import* import*])
       (if (null? exp**)
           (values new-exp** new-import*)
-          (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import*)))
+          (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname (car exp**) new-import* import-allowed?)))
             (loop (cdr exp**) (append new-exp** (list new-exp*)) new-import*)))))
 
   ;; Rewrite list of <library declaration>and return list of <library declaration>.
@@ -262,7 +264,7 @@
 
   ;; Returns list of<library declaration>.
   (define (rewrite-cond-expand expr)
-                                        ;(format #t "expr=~a\n" expr)
+    ;;(format #t "expr=~a\n" expr)
     (match expr
            [(_)
             (assertion-violation 'cond-expand "Unfulfilled cond-expand" expr)]

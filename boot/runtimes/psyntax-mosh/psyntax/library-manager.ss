@@ -384,9 +384,10 @@
          (unless (and (symbol? id) (list? name) (list? ver))
            (assertion-violation 'install-library
              "invalid spec with id/name/ver" id name ver))
-         (when (library-exists? name)
-           (assertion-violation 'install-library
-             "library is already installed" name))
+;; We allow re-define library in REPL.
+;;         (when (library-exists? name)
+;;           (assertion-violation 'install-library
+;;            "library is already installed" name))
          (let ((lib (make-library id name ver imp-lib* vis-lib* inv-lib*
                        exp-subst exp-env visit-proc invoke-proc
                        visit-code invoke-code visible? source-file-name included-file*)))

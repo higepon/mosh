@@ -24,7 +24,7 @@
           read-annotated annotation? annotation-expression annotation-source
           load-serialized-library serialize-library serialize-lib-included-file*
           annotation-stripped make-record-printer read-library-source-file scm->fasl verbose?
-          mosh-cache-dir)
+          mosh-cache-dir r7rs-enabled?)
   (import
     (rnrs)
     (rnrs mutable-pairs)

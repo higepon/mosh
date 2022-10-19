@@ -239,7 +239,6 @@
   (define (local-library-path filename)
     (library-path))
 
-
   (define (load/args filename . args)
     (apply load-r6rs-top-level filename 'load args)
     (void))
@@ -452,7 +451,8 @@
                          '()
                          (cons x (f))))))))
     ;; Rewrite R6RS top level probram to R7RS.
-    (set! x* (rewrite-program (path-dirname (car (command-line))) x*))
+    (when r7rs-enabled?
+      (set! x* (rewrite-program (path-dirname (car (command-line))) x*)))
     (command-line (cons (car (command-line)) (cdr (command-line))))
     (mosh-cache-dir (create-mosh-cache-dir))
     (when (mosh-cache-dir)
