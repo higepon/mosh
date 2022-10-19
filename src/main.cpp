@@ -114,7 +114,7 @@ void showVersion()
     printf("\n");
     printf("(version \"" PACKAGE_VERSION "\")\n");
     printf("(scheme.id mosh)\n");
-    printf("(languages scheme r6rs)\n");
+    printf("(languages scheme r6rs r7rs)\n");
     printf("(encodings utf-8)\n");
     printf("(website \"https://mosh.monaos.org/\")\n");
     exit(0);
