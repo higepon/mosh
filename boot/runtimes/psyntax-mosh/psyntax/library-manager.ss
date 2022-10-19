@@ -407,7 +407,6 @@
         (invoke)
         (set-library-invoke-state! lib #t))))
 
-
   (define (visit-library lib)
     (let ((visit (library-visit-state lib)))
       (when (procedure? visit)
@@ -419,7 +418,6 @@
             (assertion-violation 'invoke "first visit did not return" lib)))
         (visit)
         (set-library-visit-state! lib #t))))
-
 
   (define (invoke-library-by-spec spec)
     (invoke-library (find-library-by-spec/die spec)))
