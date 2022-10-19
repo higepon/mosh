@@ -5,6 +5,7 @@
                  (only (mosh) library-path mosh-executable-name))
 
 (define (version-alist)
+  ;; Keep synchronized with showVersion in src/main.cpp.
   `((version ,(get-config "version"))
       (command ,(mosh-executable-name))
       (scheme.id mosh)
