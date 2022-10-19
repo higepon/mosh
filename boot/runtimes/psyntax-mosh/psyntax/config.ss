@@ -62,7 +62,6 @@
   ;;; should be enabled.  Disabling the option expands
   ;;; (letrec* ([lhs* rhs*] ...) body) into
   ;;; (let ([lhs* #f] ...) (set! lhs* rhs*) ... body)
-  
-  
+    
   (define-option if-wants-library-letrec*  #t)
 )

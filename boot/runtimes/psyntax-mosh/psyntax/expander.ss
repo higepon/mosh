@@ -35,8 +35,7 @@
           ellipsis-map assertion-error
           environment environment? environment-symbols
           library-expander ;; To be able to expand (library ...) from in REPL
-          )
-
+  )
   (import
     (except (rnrs)
       environment environment? identifier? equal?
@@ -67,9 +66,6 @@
         ((_ opt* ...)
          (for-all valid-option? opt*)
          (bless `(make-file-options ',opt*))))))
-
-
-
 
   (define (set-cons x ls)
     (cond
@@ -140,7 +136,6 @@
            ;;; create new label for new binding
            (gensym)]))))
 
-
   (define (gen-define-label+loc id rib)
     (cond
       [(top-level-context) =>
@@ -157,13 +152,11 @@
                   loc)]))))]
       [else (values (gensym) (gen-lexical id))]))
 
-
   (define (gen-define-label id rib)
     (cond
       [(top-level-context)
        (gen-top-level-label id rib)]
       [else (gensym)]))
-
 
   ;;; A rib is a record constructed at every lexical contour in the
   ;;; program to hold information about the variables introduced in that
@@ -173,7 +166,6 @@
   ;;; mark**, and consing the label to the rib's labels.
 
   (define-record rib (sym* mark** label* sealed/freq cache))
-
 
   (define make-empty-rib
     (lambda ()
@@ -314,8 +306,6 @@
               (display (car src) p)
               (display "]" p)))))
       (display ">" p)))
-
-
 
   ;;; First, let's look at identifiers, since they're the real
   ;;; reason why syntax objects are here to begin with.

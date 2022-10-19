@@ -49,7 +49,6 @@
           (vector? x)
           (hashtable? x)))
 
-
   (define (rewriter quote-hack?)
     (define (f x)
       (cond
@@ -112,11 +111,10 @@
         (else x)))
     f)
 
-;; comment out for mosh
-;;   #;(define need-quote-hack?
-;;     (let ((x (cons 1 2)))
-;;       (not (eq? (eval-core `',x) (eval-core `',x)))))
-
+  ;; comment out for mosh
+  ;;   #;(define need-quote-hack?
+  ;;     (let ((x (cons 1 2)))
+  ;;       (not (eq? (eval-core `',x) (eval-core `',x)))))
 
   ;; for the load-serialized-library and serialize-library
   ;; we changed need-quote-hack? #t => #f
