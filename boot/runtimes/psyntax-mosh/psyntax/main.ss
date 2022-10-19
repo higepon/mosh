@@ -45,9 +45,10 @@
     (psyntax compat)
     (psyntax internal)
     (psyntax library-manager)
-    (only (psyntax r7rs-library-converter) rewrite-program path-dirname)
+    (only (psyntax r7rs-library-converter) rewrite-program rewrite-define-library path-dirname)
     (psyntax expander)
     (psyntax config)
+    (match)
     (only (system) current-exception-handler create-mosh-cache-dir get-environment-variable gensym-prefix-set! directory-list)
 )
 
@@ -219,7 +220,7 @@
                           (loop (cdr chars) p0 p1)]))))
                (define (eval-string-print text)
                  (unless (or (string=? "\n" text) (= 0 (string-length text)))
-                   (call-with-values (lambda () (eval-top-level (call-with-port (open-string-input-port text) read)))
+                   (call-with-values (lambda () (eval-repl (call-with-port (open-string-input-port text) read)))
                      (lambda out* (for-each (lambda (out) (write/ss out) (newline)) out*)
                      ))))
                (if (eof-object? line)
@@ -254,6 +255,23 @@
 
   (define (ironscheme-build)
     (load "ironscheme-buildscript.ss"))
+
+  ;; To be able to handle (define-library ...) or (library ...), we check the expression here.
+  (define (eval-repl expr)
+    (define (eval-library lib-expr)
+      (call-with-values
+        (lambda () (library-expander lib-expr))
+        ;; Ignore returned values and return undef.
+        (lambda v* (if #f #t))))
+    (match expr
+      [('library body ...)
+        (eval-library expr)]
+      [('define-library body ...)
+        (let-values (([lib-expr _] (rewrite-define-library "./" expr)))
+          (eval-library lib-expr))]
+      ;; Otherwise we assume the expr is top level.
+      [else
+        (eval-top-level expr)]))
 
   (define (eval-top-level x)
     (eval x (interaction-environment)))
