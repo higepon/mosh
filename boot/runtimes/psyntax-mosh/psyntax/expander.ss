@@ -33,7 +33,9 @@
           interaction-environment
           interaction-environment-symbols environment-bindings
           ellipsis-map assertion-error
-          environment environment? environment-symbols)
+          environment environment? environment-symbols
+          library-expander ;; To be able to expand (library ...) from in REPL
+          )
 
   (import
     (except (rnrs)
