@@ -82,3 +82,6 @@ Bug fixes
       multiple times. Now `vector-map` defined as vector variant of R6RS 
       `map`.
 
+- file-executable?
+  - file-executable? now always returns #f in Windows platform.
+    See https://github.com/higepon/mosh/issues/65.
