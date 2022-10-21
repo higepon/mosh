@@ -49,4 +49,4 @@ To build mosh.git you need to have release version mosh and some other tools ins
 1. Update verions in configur.ac.
 1. Make sure GitHub Actions are all green.
 1. ```git tag mosh-0.2.8-rc3 -a -m "mosh-0.2.8-rc3"``` and ```git push origin mosh-0.2.8-rc3``` will trigger the release build.
-
+1. Update ```.github/workflows/build.yml```.
