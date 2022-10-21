@@ -515,8 +515,11 @@
 ;; Rewrite import only when allowed.
 (test-equal
   '((import (rnrs))
-     (define-syntax pick (syntax-rules () ((_ (dummy here)) here)))
-     (pick import '((rnrs2))))
+     (define-syntax pick
+         (syntax-rules ()
+           ((_ (dummy here))
+             here)))
+       (pick (import '((rnrs2)))))
   (rewrite-program
     "/path/to/library"
     '((import (rnrs))
@@ -527,8 +530,10 @@
        (pick (import '((rnrs2)))))))
 
 (test-equal
-  '((import (rnrs) (yuni util library-writer))
-      (make library-spec import '((rnrs))))
+  '((import (rnrs)
+        (yuni util library-writer))
+        (make library-spec
+          (import '((rnrs)))))
   (rewrite-program
     "/path/to/library"
     '((import (rnrs)
