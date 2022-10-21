@@ -12,7 +12,7 @@
 
 (define (return-sec sym scale)
   (let ((t (current-time sym)))
-    (+ (* scale (time-nanosecond t))
+    (+ (/ (time-nanosecond t) scale)
        (time-second t))))
 
 )
