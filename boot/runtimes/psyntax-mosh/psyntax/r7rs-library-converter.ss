@@ -103,7 +103,7 @@
                      [('import spec* ...)
                       (if import-allowed?
                         (loop ret (cdr exp*) (append import* (copy-src-info spec* src-info)))
-                        (loop (append ret `(import ,@spec*)) (cdr exp*) import*))]
+                        (loop (append ret `((import ,@spec*))) (cdr exp*) import*))]
                      [('cond-expand clause* ...)
                       (let ([new-exp* (rewrite-cond-expand (car exp*))])
                         (let-values (((new-exp* new-import*) (rewrite-program-exp* dirname new-exp* import* import-allowed?)))
