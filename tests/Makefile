@@ -74,6 +74,7 @@ runtest-mosh:
 	$(MOSH_TARGET) tests/srfi/srfi-151.scm
 	$(MOSH_TARGET) tests/srfi/srfi-194.scm	
 	$(MAKE) -C tests/r7rs/library-converter
+	$(MAKE) test -C tests/mnist
 
 runtest-nmosh:
 	$(MOSH_TARGET) tests/nmosh.scm
