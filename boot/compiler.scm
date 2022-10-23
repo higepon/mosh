@@ -1433,10 +1433,10 @@
       (rec (+ ind 2) ($if.then iform)) (nl (+ ind 2))
       (rec (+ ind 2) ($if.else iform)) (display ")" (current-error-port))]
      ((tag? iform $RECEIVE)
-      (format #t "($receive ~a" (map lvar->string ($receive.lvars iform)))
+      (format (current-error-port) "($receive ~a" (map lvar->string ($receive.lvars iform)))
       (nl (+ ind 4))
       (rec (+ ind 4) ($receive.vals iform)) (nl (+ ind 2))
-      (rec (+ ind 2) ($receive.body iform)) (display ")"))
+      (rec (+ ind 2) ($receive.body iform)) (display ")" (current-error-port)))
      [(tag? iform $LABEL)
       (cond ((assq iform labels)
              => (lambda (p) (format (current-error-port) "label#~a" (cdr p))))
