@@ -36,10 +36,10 @@ runtimes/srfi-mosh/nmosh_image.cpp: always
 	$(MAKE) -C runtimes/srfi-mosh # Bootstrap using vanilla-mosh and psyntax-mosh
 
 compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
-	mosh -5 $(SCRIPTS_DIR)/gen-compiler.scm $< "mosh" > $@
+	mosh $(SCRIPTS_DIR)/gen-compiler.scm $< "mosh" > $@
 
 compiler-vm.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
-	mosh -5 $(SCRIPTS_DIR)/gen-compiler.scm $< "vm?" > $@
+	mosh $(SCRIPTS_DIR)/gen-compiler.scm $< "vm?" > $@
 
 .SUFFIXES: .scmc .h
 .scmc.h:
