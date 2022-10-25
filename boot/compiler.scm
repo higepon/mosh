@@ -548,6 +548,14 @@
     ($src `(let ,args
              ,letrec-body) sexp)))
 
+(define (expand-letrec* sexp)
+  (match sexp
+    [('letrec* ([var* val*] ...) body* ...)
+      ($src `(letrec* ,(map (lambda (var val) `(,var ,val)) var* (map pass1/expand val*))
+               ,@(map pass1/expand body*)) sexp)]
+    [else
+      (error "malformed letrec*" sexp)]))
+
 ;; don't use internal define, if proc is supposed to be called so many times.
 (define (pass1/expand sexp)
   (cond
@@ -575,6 +583,8 @@
               ($src (expand-let (second sexp) (cddr sexp)) sexp)]))]
       [(let*)
        ($src (pass1/expand (let*->let sexp)) sexp)]
+      [(letrec*)
+       ($src (expand-letrec* sexp) sexp)]
       ;; use receive instead of call-with-values.
       [(call-with-values)
        ($src (pass1/expand ($src `(receive vals (,(second sexp)) (apply ,(third sexp) vals)) sexp)) sexp)]
