@@ -3477,13 +3477,18 @@
     ))]
  [else #t])
 
+(define (optimize?)
+  (symbol-value (string->symbol "%optimize?")))
 
-;; We call this from eval.
+;; R6RS/R7RS mode is using this via eval.
 (define (compile-w/o-halt sexp)
-  (pass4-w/o-halt
-   (merge-insn
-    (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) '() #t) '())))))
-
+  (cond
+    [(optimize?)
+      (pass4-w/o-halt (merge-insn
+        (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) '() #t) '()))))]
+    [else
+      (pass4-w/o-halt
+        (pass3 (pass1/sexp->iform (pass1/expand sexp) '() #t)))]))
 
 (define (compile sexp)
   (pass4 (merge-insn

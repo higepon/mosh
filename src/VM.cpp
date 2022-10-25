@@ -1045,7 +1045,7 @@ void VM::copyOptions(VM* destVM, VM* srcVM)
 {
     const ucs4char* options[] = {
         // mosh options
-        UC("%loadpath"), UC("%verbose"), UC("*command-line-args*"),
+        UC("%loadpath"), UC("%verbose"), UC("*command-line-args*"), UC("%optimize?"),
 
         // nmosh options
         UC("%nmosh-portable-mode"), UC("%nmosh-prefixless-mode")
