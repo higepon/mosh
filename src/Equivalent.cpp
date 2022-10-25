@@ -628,6 +628,7 @@ Object Equal::slowP(EqHashTable** pht, Object x, Object y, Object k)
 //             [else (and (eqv? x y) k)])))
 Object Equal::fastP(EqHashTable** pht, Object x, Object y, Object k)
 {
+    k = Object::makeFixnum(k.toFixnum() - 1);
     if (x == y) {
         return k;
     }
