@@ -544,7 +544,7 @@
          [defines (first ret)]
          [rest (second ret)]
          [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
-                         ,@rest) sexp)])
+                         ,@(map pass1/expand rest)) sexp)])
     ($src `(let ,args
              ,letrec-body) sexp)))
 
@@ -583,6 +583,10 @@
               ($src (expand-let (second sexp) (cddr sexp)) sexp)]))]
       [(let*)
        ($src (pass1/expand (let*->let sexp)) sexp)]
+      [(cond)
+        (match sexp
+          [('cond (test* exp** ...) ...)
+            `(cond ,@(map (lambda (test exp*) `(,(pass1/expand test) ,@(map pass1/expand exp*))) test* exp**))])]
       [(letrec*)
        ($src (expand-letrec* sexp) sexp)]
       ;; use receive instead of call-with-values.
@@ -1549,6 +1553,8 @@
     (let ([lvars ($let.lvars iform)]
           [inits (imap (lambda (init) (pass2/optimize init closures)) ($let.inits iform))]
           [obody (pass2/optimize ($let.body iform) closures)])
+      (when (not (or (null? lvars) (pair? lvars)))
+        (error "BUG: We have named let in pass2. named let should be expanded in pass1" lvars))
       (for-each pass2/optimize-closure lvars inits)
       (receive (new-lvars new-inits removed-inits) (pass2/remove-vars lvars inits)
         (cond
