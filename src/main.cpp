@@ -149,6 +149,7 @@ void showUsage()
             "  --help            Prints this help.\n"
             "  --disable-acc     disables auto-compile-cache.\n"
             "  --clean-acc       cleans auto-compile-cache.\n"
+            "  --optimize-level  Only 0 is supported to disable optimization.\n"
             "  --verbose         Show library serialisation messages.\n"
 #ifdef WITH_NMOSH_DEFAULTS
 //            "  --applet (-T)     Invokes nmosh applet.\n"
@@ -195,6 +196,7 @@ int main(int argc, char *argv[])
     bool verbose = false;
     bool cleanAcc = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
+    bool isOptimizerOn = true;
 #ifdef WITH_NMOSH_DEFAULTS
     bool invokeApplet = false;
     bool isGuruMode = false;
@@ -207,6 +209,7 @@ int main(int argc, char *argv[])
        {UC("disable-acc"), 0, nullptr, 'd'},
        {UC("clean-acc"), 0, nullptr, 'C'},
        {UC("verbose"), 0, nullptr, 'a'},
+       {UC("optimize-level"), required_argument, nullptr, 'O'},
 #ifdef WITH_NMOSH_DEFAULTS
        {UC("applet"), 0, nullptr, 'T'},
        {UC("guru-mode"), 0, nullptr, 'G'},
@@ -221,7 +224,7 @@ int main(int argc, char *argv[])
 #else
 #define NMOSH_APPEND_OPTIONS
 #endif
-   while ((opt = getopt_longU(argc, argvU, UC("htvpVcl:5rze" NMOSH_APPEND_OPTIONS), long_options, &optionIndex)) != -1) {
+   while ((opt = getopt_longU(argc, argvU, UC("htvpOVcl:5rze" NMOSH_APPEND_OPTIONS), long_options, &optionIndex)) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
@@ -260,6 +263,20 @@ int main(int argc, char *argv[])
         case '5':
             isR6RSBatchMode = false;
             break;
+        case 'O':
+        {
+            // Currently only optimize-level=0 is supported
+            // to disable whole compiler optimization.
+            ucs4string optimizerOption(optargU);
+            if (optimizerOption == ucs4string(UC("0"))) {
+                isOptimizerOn = false;
+            } else {
+                fprintf(stderr, "invalid optimize-level option\n");
+                showUsage();
+                exit(EXIT_FAILURE);
+            }
+            break;
+        }
 #ifdef WITH_NMOSH_DEFAULTS
         case 'T':
             invokeApplet = true;
@@ -269,7 +286,7 @@ int main(int argc, char *argv[])
             break;
 #endif
         default:
-            fprintf(stderr, "invalid option %c", opt);
+            fprintf(stderr, "invalid option %c\n", opt);
             showUsage();
             exit(EXIT_FAILURE);
         }
@@ -304,6 +321,7 @@ int main(int argc, char *argv[])
     }
 
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
+    theVM->setValueString(UC("%optimize?"), Object::makeBool(isOptimizerOn));
 #ifdef WITH_NMOSH_DEFAULTS
     theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
     theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
