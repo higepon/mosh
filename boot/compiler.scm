@@ -651,7 +651,7 @@
          [defines (first ret)]
          [rest (second ret)]
          [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
-                         ,@rest) sexp)])
+                         ,@(map pass1/expand rest)) sexp)])
     ($src `(lambda ,args
              ,letrec-body) sexp)))
 
