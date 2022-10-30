@@ -922,7 +922,7 @@
       [(s)
        (pass1/sexp->iform (pass1/expand s) lvars tail?)]
       [(e . more)
-       ($if (pass1/sexp->iform (pass1/expand e) lvars tail?)
+       ($if (pass1/sexp->iform (pass1/expand e) lvars #f)
             (rec more)
             ($it))]
       [else
