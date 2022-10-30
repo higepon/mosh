@@ -8,9 +8,9 @@ RUN apt update # && apt -y upgrade
 RUN apt install -y gauche wget make libgmp-dev gcc g++ autoconf automake make libonig-dev
 RUN apt install -y re2c bison subversion autoconf automake git gdb g++ clang-tidy bear pkg-config rlwrap
 
-# Mosh 0.2.8 RC6
-RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc6/mosh-0.2.8-rc6.tar.gz
-RUN tar zvxf mosh-0.2.8-rc6.tar.gz && cd mosh-0.2.8-rc6 && ./configure && make && make test && make install
+# Mosh 0.2.8 rc7
+RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc7/mosh-0.2.8-rc7.tar.gz
+RUN tar zvxf mosh-0.2.8-rc7.tar.gz && cd mosh-0.2.8-rc7 && ./configure && make && make test && make install
 
 # Checkout Mosh
 RUN git clone https://github.com/higepon/mosh.git mosh.git
