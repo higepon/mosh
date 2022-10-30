@@ -76,6 +76,10 @@ Bug fixes
   - Bytevector buffer port opened by `open-bytevector-output-port` was broken
     when the value outputted multiple times.
 
+  - Fixed some compiler optimization issues.
+
+  - Fixed `equal`.
+
 - R6RS:
   - Fixed `vector-map` problem reported by Eduardo Cavazos:
     - `vector-map` was not handle correctly when given procedure returned 
