@@ -280,12 +280,32 @@
    sp
    #f))
 
-(define (dump-stack stack sp)
+(define (simplify-stack-obj obj)
+  (cond
+    [(pair? obj) (format "(~a)" (car obj))]
+    [(and (vector? obj) (> (vector-length obj) 0))
+      (let1 obj2 (vector-ref obj 0)
+        (cond
+          [(and (vector? obj2) (> (vector-length obj2) 2))
+            (format "#(#(~s ~s ~s...))" (vector-ref obj2 0) (vector-ref obj2 1) (vector-ref obj2 2))]
+          [(> (vector-length obj) 2)
+            (format "#(~s ~s ~s...)" obj2 (vector-ref obj 1) (vector-ref obj 2))]
+          [else
+            (format "#(~s ...)" obj2)]))]
+
+    [else obj]))
+
+(define (dump-stack stack sp fp)
   (let loop ([n 0])
     (if (>= n sp)
         '()
         (begin
-          (print (format "    |~d: ~s" n (vector-ref stack n)))
+          (format (current-error-port) "  ~a|~d: ~s\n"
+            (if (= n fp) "FP" "  ")
+            n
+            (simplify-stack-obj (vector-ref stack n))
+            )
+
           (loop (+ n 1))))))
 
 ;; (define (stack->pair-args stack sp num-args)
@@ -530,15 +550,15 @@
              (if (not (number? sp)) (error "sp error"))
              (if (not (number? pc)) (error "pc error"))
              (if (not (vector? codes)) (error "vector error"))
-             (cond [#f ;; simple dump
-                    ;(dump-stack stack sp)
-                    (print "========================================" code)
-                                        ;                    (format #t "~a(~a) sp=~a fp=~a" code (if (number? (next 1)) (next 1) "-") sp fp)
-                   ; (if (number? a) (print " a=" a) (newline))
-                    ]
-                   [else
-                    '()])
-;             (format (current-error-port) "~a\n" code)
+             (cond
+               [#f
+                 (dump-stack stack sp fp)
+                 (display "========================\n" (current-error-port))
+                 (write code (current-error-port))
+                 (when (memq code '(REFER_FREE LOCAL_JMP LEAVE CONSTANT))
+                   (format (current-error-port) " ~a" (next 1)))
+                 (newline (current-error-port))]
+               [else '()])
              (debug-case code
                ;;---------------------------- HALT -------------------------------
                [(HALT) a]

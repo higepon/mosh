@@ -651,7 +651,7 @@
          [defines (first ret)]
          [rest (second ret)]
          [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
-                         ,@rest) sexp)])
+                         ,@(map pass1/expand rest)) sexp)])
     ($src `(lambda ,args
              ,letrec-body) sexp)))
 
@@ -922,7 +922,7 @@
       [(s)
        (pass1/sexp->iform (pass1/expand s) lvars tail?)]
       [(e . more)
-       ($if (pass1/sexp->iform (pass1/expand e) lvars tail?)
+       ($if (pass1/sexp->iform (pass1/expand e) lvars #f)
             (rec more)
             ($it))]
       [else

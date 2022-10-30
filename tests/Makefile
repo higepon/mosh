@@ -51,6 +51,7 @@ runtest:
 	# This grep pattern should work with both mosh and nmosh.
 	$(MOSH_TARGET) tests/invalid-syntax.scm 2>&1 >/dev/null | grep 'invalid-syntax.scm' -A10 -B10
 	$(MOSH_TARGET) tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
+	$(MOSH_TARGET) -5 tests/internal-define.scm	
 
 runtest-concurrent:
 #	$(MOSH_TARGET) tests/concurrent.scm
