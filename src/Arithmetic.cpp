@@ -138,7 +138,7 @@ Object Arithmetic::expt(Object n1, Object n2)
     MOSH_ASSERT(!n2.isBignum()); // too big.
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {
-            const int fn2 = n2.toFixnum();
+            const fixedint fn2 = n2.toFixnum();
             if (fn2 > 0) {
                 return Bignum::pow(n1.toFixnum(), fn2);
             } else if (fn2 == 0) {

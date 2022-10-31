@@ -419,16 +419,11 @@ public:
         return makeInteger(ret);
     }
 
-    static Object pow(unsigned int n1, unsigned int n2)
+    static Object pow(fixedint n1, fixedint n2)
     {
-        mpz_t ret;
-        mpz_init_set_ui(ret, n1);
-        mpz_pow_ui(ret, ret, n2);
-        return makeInteger(ret);
-    }
-
-    static Object pow(int n1, unsigned int n2)
-    {
+        // Caller should check this condition.
+        // mpz_init_set_si accepts only signed long.
+        MOSH_ASSERT(fixedint > 0);
         mpz_t ret;
         mpz_init_set_si(ret, n1);
         mpz_pow_ui(ret, ret, n2);

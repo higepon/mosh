@@ -42,7 +42,7 @@ class Fixnum EXTEND_GC
 public:
     enum
     {
-        BITS = 30,
+        BITS = sizeof(fixedint) - 2,
         MAX = (1L << (BITS - 1)) - 1,
         MIN = -MAX - 1
     };
