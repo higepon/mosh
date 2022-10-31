@@ -294,7 +294,7 @@ public:
     static const Object Ignore;
 
 private:
-    explicit Object(fixedint n) : val(n) {}
+    explicit Object(intptr_t n) : val(n) {}
     Object(size_t n, Object o); // for vector
     uint8_t tag() const;
 

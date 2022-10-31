@@ -429,7 +429,7 @@ Object scheme::charTointegerEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("char->integer");
     checkArgumentLength(1);
     argumentAsChar(0, ch);
-    return Object::makeFixnum(ch);
+    return Object::makeFixnum(static_cast<fixedint>(ch));
 }
 
 Object scheme::integerTocharEx(VM* theVM, int argc, const Object* argv)

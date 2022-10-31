@@ -213,7 +213,7 @@ private:
             return Object::makeFixnum(value);
         }
         case Fasl::TAG_MEDIUM_FIXNUM: {
-            const fixedint value = fetchU16();
+            const int value = fetchU16();
             return Object::makeFixnum(value);
         }
         case Fasl::TAG_FIXNUM_0: {

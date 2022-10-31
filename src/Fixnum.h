@@ -40,12 +40,12 @@ namespace scheme {
 class Fixnum EXTEND_GC
 {
 public:
-    enum
-    {
-        BITS = sizeof(fixedint) - 2,
-        MAX = (1L << (BITS - 1)) - 1,
-        MIN = -MAX - 1
-    };
+    //enum
+    //{
+        static const fixedint BITS = sizeof(fixedint) * 8 - 2;
+        static const fixedint MAX = (1L << (BITS - 1)) - 1;
+        static const fixedint MIN = -MAX - 1;
+    //};
 
     static bool canFit(fixedint n)
     {
