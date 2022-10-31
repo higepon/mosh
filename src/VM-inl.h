@@ -52,9 +52,9 @@ inline Object VM::fetchOperand()
     return *pc_++;
 }
 
-inline void VM::skip(int n)
+inline void VM::skip(fixedint n)
 {
-    pc_ = pc_ + n ;
+    pc_ = pc_ + n;
 }
 
 inline void VM::push(Object obj)
@@ -129,7 +129,7 @@ inline Object VM::pop()
 {
     return *(--sp_);
 }
-inline Object VM::referLocal(int n) const
+inline Object VM::referLocal(fixedint n) const
 {
     return *(fp_ + n);
 }
@@ -140,7 +140,7 @@ inline Object VM::referFree(Object n)
     return dc_.toClosure()->referFree(n.toFixnum());
 }
 
-inline Object VM::referFree(int n)
+inline Object VM::referFree(fixedint n)
 {
     return dc_.toClosure()->referFree(n);
 }

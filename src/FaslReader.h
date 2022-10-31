@@ -209,11 +209,11 @@ private:
             return rtd;
         }
         case Fasl::TAG_SMALL_FIXNUM: {
-            const int value = fetchU8();
+            const fixedint value = fetchU8();
             return Object::makeFixnum(value);
         }
         case Fasl::TAG_MEDIUM_FIXNUM: {
-            const int value = fetchU16();
+            const fixedint value = fetchU16();
             return Object::makeFixnum(value);
         }
         case Fasl::TAG_FIXNUM_0: {
@@ -223,7 +223,7 @@ private:
             return Object::makeFixnum(1);
         }
         case Fasl::TAG_FIXNUM: {
-            const int value = fetchU32();
+            const fixedint value = fetchU32();
             return Object::makeFixnum(value);
         }
         case Fasl::TAG_FLONUM: {
@@ -324,8 +324,8 @@ private:
 
             Object length = getDatum();
             MOSH_ASSERT(length.isFixnum());
-            const int len = length.toFixnum();
-            Object st = Object::makeSimpleStruct(name, len);
+            const fixedint len = length.toFixnum();
+            Object st = Object::makeSimpleStruct(name, static_cast<int>(len));
             for (int i = 0; i < len; i++) {
                 st.toSimpleStruct()->set(i, getDatum());
             }
@@ -335,7 +335,7 @@ private:
         {
             Object length = getDatum();
             MOSH_ASSERT(length.isFixnum());
-            const int len = length.toFixnum();
+            const fixedint len = length.toFixnum();
             const Object ret = Object::makeEqHashTable();
             EqHashTable* const ht = ret.toEqHashTable();
             for (int i = 0; i < len; i++) {

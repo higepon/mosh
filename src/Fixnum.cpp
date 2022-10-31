@@ -39,22 +39,22 @@
 
 using namespace scheme;
 
-Object Fixnum::atan(int n)
+Object Fixnum::atan(fixedint n)
 {
     return Object::makeFlonum(::atan(static_cast<double>(n)));
 }
 
-Object Fixnum::asin(int n)
+Object Fixnum::asin(fixedint n)
 {
     return Object::makeFlonum(::asin(static_cast<double>(n)));
 }
 
-Object Fixnum::acos(int n)
+Object Fixnum::acos(fixedint n)
 {
     return Object::makeFlonum(::acos(static_cast<double>(n)));
 }
 
-Object Fixnum::tan(int n)
+Object Fixnum::tan(fixedint n)
 {
     if (n == 0) {
         // exact 0
@@ -64,7 +64,7 @@ Object Fixnum::tan(int n)
     }
 }
 
-Object Fixnum::sin(int n)
+Object Fixnum::sin(fixedint n)
 {
     if (n == 0) {
         // exact 0
@@ -74,7 +74,7 @@ Object Fixnum::sin(int n)
     }
 }
 
-Object Fixnum::cos(int n)
+Object Fixnum::cos(fixedint n)
 {
     if (n == 0) {
         // exact 1
@@ -84,7 +84,7 @@ Object Fixnum::cos(int n)
     }
 }
 
-Object Fixnum::exp(int n)
+Object Fixnum::exp(fixedint n)
 {
     if (n == 0) {
         // exact 1
@@ -94,7 +94,7 @@ Object Fixnum::exp(int n)
     }
 }
 
-Object Fixnum::log(int n)
+Object Fixnum::log(fixedint n)
 {
     if (n == 1) {
         // exact 0
@@ -104,7 +104,7 @@ Object Fixnum::log(int n)
     }
 }
 
-Object Fixnum::integerDiv(int x, int y)
+Object Fixnum::integerDiv(fixedint x, fixedint y)
 {
     return Bignum::makeInteger(fxdiv(x, y));
 }
@@ -112,7 +112,7 @@ Object Fixnum::integerDiv(int x, int y)
 Object Fixnum::sqrt(Object n)
 {
     MOSH_ASSERT(n.isFixnum());
-    const int value = n.toFixnum();
+    const fixedint value = n.toFixnum();
     if (value == 0) {
         return n;
     } else if (value > 0) {
@@ -126,7 +126,7 @@ Object Fixnum::sqrt(Object n)
         }
     } else { // negative
         const double root = ::sqrt(static_cast<double>(-value));
-        const int rootAsInt = static_cast<int>(floor(root));
+        const int rootAsInt = static_cast<fixedint>(floor(root));
         // exact
         if (rootAsInt * rootAsInt == -value) {
             return Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(rootAsInt));
@@ -137,7 +137,7 @@ Object Fixnum::sqrt(Object n)
 }
 
 // N.B. the result of abs can be Bignum
-Object Fixnum::abs(int n)
+Object Fixnum::abs(fixedint n)
 {
     return Bignum::makeInteger(::abs(n));
 }

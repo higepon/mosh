@@ -65,7 +65,7 @@ public:
     static ucs4string from_c_str(const char* s, size_t size);
     static ucs4string from_c_str(const char* s);
     // see R6RS 11.11 Characters
-    static bool isValidScalar(int ch)
+    static bool isValidScalar(fixedint ch)
     {
         return (0 <= ch && ch <= 0xD7FF) || (0xE000 <= ch && ch <= 0x10FFFF);
     }

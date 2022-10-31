@@ -343,7 +343,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         {
             const Object n = fetchOperand();
             VM_ASSERT(n.isFixnum());
-            const int freeVariablesNum = n.toFixnum();
+            const fixedint freeVariablesNum = n.toFixnum();
 
             // create display closure
             const Object display = Object::makeClosure(nullptr, 0, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
@@ -516,7 +516,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object n = pop();
             // short cut for Fixnum. Benmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() + ac_.toFixnum();
+                const fixedint val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
                 const Object v = ac_;
@@ -604,7 +604,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object n = pop();
             // short cut for Fixnum. Benmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() - ac_.toFixnum();
+                const fixedint val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
                 ac_ = Arithmetic::sub(n, ac_);
@@ -619,7 +619,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object n = pop();
             // short cut for Fixnum. Benmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() - ac_.toFixnum();
+                const fixedint val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
                 ac_ = Arithmetic::sub(n, ac_);
@@ -635,7 +635,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object n = pop();
             // short cut for Fixnum. Benmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() + ac_.toFixnum();
+                const fixedint val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
                 ac_ = Arithmetic::add(n, ac_);
@@ -1196,7 +1196,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object obj = pop();
             if (obj.isVector()) {
                 if (ac_.isFixnum()) {
-                    const int index = ac_.toFixnum();
+                    const fixedint index = ac_.toFixnum();
                     Vector* const v = obj.toVector();
                     if (v->isValidIndex(index)) {
                         ac_ = v->ref(index);
@@ -1225,7 +1225,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object obj = pop();
             if (obj.isSimpleStruct()) {
                 MOSH_ASSERT(ac_.isFixnum());
-                const int index = ac_.toFixnum();
+                const fixedint index = ac_.toFixnum();
                 SimpleStruct* const s = obj.toSimpleStruct();
                 if (s->isValidIndex(index)) {
                     ac_ = s->ref(index);
@@ -1276,7 +1276,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object obj = pop();
             if (obj.isVector()) {
                 if (n.isFixnum()) {
-                    const int index = n.toFixnum();
+                    const fixedint index = n.toFixnum();
                     Vector* const v = obj.toVector();
                     if (v->isValidIndex(index)) {
                         v->set(index, ac_);
@@ -1347,9 +1347,9 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object reqargsObject = fetchOperand();
             const Object optargObject = fetchOperand();
             MOSH_ASSERT(reqargsObject.isFixnum());
-            const int reqargs = reqargsObject.toFixnum();
+            const fixedint reqargs = reqargsObject.toFixnum();
             MOSH_ASSERT(optargObject.isFixnum());
-            const int optarg  = optargObject.toFixnum();
+            const fixedint optarg = optargObject.toFixnum();
             if (numValues_ < reqargs) {
                 callAssertionViolationAfter(this,
                                             UC("receive"),

@@ -290,7 +290,7 @@ Object scheme::makeCompilerInstructionEx(VM* theVM, int argc, const Object* argv
     DeclareProcedureName("make-compiler-instruction");
     checkArgumentLength(1);
     argumentAsFixnum(0, n);
-    return Object::makeCompilerInstruction(n);
+    return Object::makeCompilerInstruction(static_cast<int>(n));
 }
 
 Object scheme::makeInstructionEx(VM* theVM, int argc, const Object* argv)
@@ -298,7 +298,7 @@ Object scheme::makeInstructionEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("make-instruction");
     checkArgumentLength(1);
     argumentAsFixnum(0, n);
-    return Object::makeInstruction(n);
+    return Object::makeInstruction(static_cast<int>(n));
 }
 
 Object scheme::bytevectorPEx(VM* theVM, int argc, const Object* argv)
@@ -329,7 +329,7 @@ Object scheme::numberTostringEx(VM* theVM, int argc, const Object* argv)
             }
         } else {
             if (radix == 2 || radix == 8 || radix == 10 || radix == 16) {
-                return Arithmetic::numberToString(z, radix);
+                return Arithmetic::numberToString(z, static_cast<int>(radix));
             } else {
                 callAssertionViolationAfter(theVM, procedureName, UC("radix should be 2, 8, 10 ro 16"), L1(argv[1]));
                 return Object::Undef;
@@ -442,7 +442,7 @@ Object scheme::integerTocharEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    return Object::makeChar(integer);
+    return Object::makeChar(static_cast<ucs4char>(integer));
 }
 
 Object scheme::charPEx(VM* theVM, int argc, const Object* argv)
@@ -654,9 +654,9 @@ Object scheme::valuesEx(VM* theVM, int argc, const Object* argv)
     return theVM->values(argc, argv);
 }
 
-int scheme::div(int x, int y)
+fixedint scheme::div(fixedint x, fixedint y)
 {
-    const int sign = x * y > 0 ? 1 : -1;
+    const fixedint sign = x * y > 0 ? 1 : -1;
     if (x < 0) {
         return sign * ((abs(x) + abs(y)) / abs(y));
     } else if (y < 0) {
@@ -666,7 +666,7 @@ int scheme::div(int x, int y)
     }
 }
 
-int scheme::mod(int x, int y)
+fixedint scheme::mod(fixedint x, fixedint y)
 {
     return x - div(x, y) * y;
 }
@@ -714,7 +714,7 @@ Object scheme::exitEx(VM* theVM, int argc, const Object* argv)
         }
         const Object exitValue = argv[0];
         if (exitValue.isFixnum()) {
-            exit(exitValue.toFixnum());
+            exit(static_cast<int>(exitValue.toFixnum()));
         } else if (exitValue.isFalse()) {
             exit(EXIT_FAILURE);
         } else {
@@ -1098,7 +1098,7 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv)
     size_t size = confstr(name, nullptr, 0);
     ucs4string result = ucs4string(size);
     char *buf = result.ascii_c_str();
-    size_t ret = confstr(name, buf, size);
+    size_t ret = confstr(static_cast<int>(name), buf, size);
 
     // Handle two error cases which we need to distinguish thru errno
     if (ret == 0) {

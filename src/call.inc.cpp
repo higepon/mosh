@@ -80,7 +80,7 @@
                     retCode[1] = operand;
 
                     VM_ASSERT(operand.isFixnum());
-                    const int argc = operand.toFixnum();
+                    const fixedint argc = operand.toFixnum();
                     pc_  = retCode;
 
                     ac_.toCProcedure()->call(this, argc, sp_ - argc);

@@ -225,7 +225,7 @@ protected:
         return status;
     }
     Object fetchOperand();
-    void skip(int n);
+    void skip(fixedint n);
     void push(Object obj);
     Object stackToPairArgs(Object* sp, int nArgs);
     void pairArgsToStack(Object* sp, int offset, Object args);
@@ -234,9 +234,9 @@ protected:
     Object* unShiftArgs(Object* sp, int diff);
     Object index(Object* sp, int n) const;
     Object pop();
-    Object referLocal(int n) const;
+    Object referLocal(fixedint n) const;
     Object referFree(Object n);
-    Object referFree(int n);
+    Object referFree(fixedint n);
     void expandStack(int plusSize);
     Object compileWithoutHalt(Object sexp);
     bool mayBeStackPointer(Object* obj) const;

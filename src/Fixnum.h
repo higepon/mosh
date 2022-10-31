@@ -52,6 +52,7 @@ public:
         return Fixnum::MIN <= n && n <= Fixnum::MAX;
     }
 
+// todo
     static bool canFitU(uint64_t n)
     {
         return n <= Fixnum::MAX;
@@ -70,20 +71,20 @@ public:
         return !isEven(n);
     }
 
-    static Object exp(int n);
-    static Object log(int n);
-    static Object sin(int n);
-    static Object cos(int n);
-    static Object tan(int n);
-    static Object asin(int n);
-    static Object acos(int n);
-    static Object atan(int n);
+    static Object exp(fixedint n);
+    static Object log(fixedint n);
+    static Object sin(fixedint n);
+    static Object cos(fixedint n);
+    static Object tan(fixedint n);
+    static Object asin(fixedint n);
+    static Object acos(fixedint n);
+    static Object atan(fixedint n);
 
-    static Object abs(int n);
+    static Object abs(fixedint n);
 
-    static int fxdiv(int x, int y)
+    static fixedint fxdiv(fixedint x, fixedint y)
     {
-        int div;
+        fixedint div;
         if (x == 0) {
             div = 0;
         } else if (x > 0) {
@@ -96,15 +97,15 @@ public:
         return div;
     }
 
-    static int fxmod(int x, int y)
+    static fixedint fxmod(fixedint x, fixedint y)
     {
         return x - fxdiv(x, y) * y;
     }
 
-    static int fxdiv0(int x, int y)
+    static fixedint fxdiv0(fixedint x, fixedint y)
     {
-        const int d = fxdiv(x, y);
-        const int m = fxmod(x, y);
+        const fixedint d = fxdiv(x, y);
+        const fixedint m = fxmod(x, y);
         if (m <= (::abs(y) / 2)) {
             return d;
         } else if (y > 0) {
@@ -114,37 +115,37 @@ public:
         }
     }
 
-    static int fxmod0(int x, int y)
+    static fixedint fxmod0(fixedint x, fixedint y)
     {
         return x - y * fxdiv0(x, y);
     }
 
-    static int fxnot(int fx)
+    static fixedint fxnot(fixedint fx)
     {
         return ~fx;
     }
 
-    static int fxand(int fx1, int fx2)
+    static fixedint fxand(fixedint fx1, fixedint fx2)
     {
         return fx1 & fx2;
     }
 
-    static int fxior(int fx1, int fx2)
+    static fixedint fxior(fixedint fx1, fixedint fx2)
     {
         return fx1 | fx2;
     }
 
-    static int fxxor(int fx1, int fx2)
+    static fixedint fxxor(fixedint fx1, fixedint fx2)
     {
         return fx1 ^ fx2;
     }
 
-    static int fxif(int fx1, int fx2, int fx3)
+    static fixedint fxif(fixedint fx1, fixedint fx2, fixedint fx3)
     {
         return fxior(fxand(fx1, fx2), fxand(fxnot(fx1), fx3));
     }
 
-    static int fxbitCount(int fx)
+    static fixedint fxbitCount(fixedint fx)
     {
         if (fx > 0) {
             return Arithmetic::nbits(fx);
@@ -153,7 +154,7 @@ public:
         }
     }
 
-    static int fxlength(int fx)
+    static fixedint fxlength(fixedint fx)
     {
         if (fx == 0) {
             return 0;
@@ -162,7 +163,7 @@ public:
         return 32 - Arithmetic::nlz(ufx);
     }
 
-    static int fxfirstBitSet(int fx)
+    static fixedint fxfirstBitSet(fixedint fx)
     {
         if (fx == 0) {
             return -1;
@@ -243,10 +244,10 @@ public:
         return bits;
     }
 
-    static Object integerDiv(int x, int y);
+    static Object integerDiv(fixedint x, fixedint y);
 
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \
-    static bool compare(int n1, int n2)\
+    static bool compare(fixedint n1, fixedint n2)\
     {\
         return n1 symbol n2;\
     }\
