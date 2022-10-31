@@ -125,6 +125,30 @@ public:
     }
 
     // Originally from Ypsilon Scheme
+    static int nbits(fixedint x) {
+        if (sizeof(intptr_t) == sizeof(uint32_t)) {
+            return nbits((uint32_t)x);
+        } else {
+        return nbits((uint64_t)x);
+        }
+    }
+
+    // Originally from Ypsilon Scheme
+    static int nbits(uint64_t x) {
+        const uint64_t c1 = 0x5555555555555555LL;
+        const uint64_t c2 = 0x3333333333333333LL;
+        const uint64_t c3 = 0x0F0F0F0F0F0F0F0FLL;
+        const uint64_t c4 = 0x0101010101010101LL;
+        uint64_t t;
+        x = x - ((x >> 1) & c1);
+        t = ((x >> 2) & c2);
+        x = (x & c2) + t;
+        x = (x + (x >> 4)) & c3;
+        x = x * c4;
+        return x >> 56;
+    }
+
+    // Originally from Ypsilon Scheme
     static uint32_t nlz(uint32_t x)
     {
         uint32_t t;

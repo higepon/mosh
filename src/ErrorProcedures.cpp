@@ -238,7 +238,7 @@ void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, const uc
     callWrongNumberOfArgumentsBetweenViolationAfter(theVM, Object(who), startCounts, endCounts, gotCounts, irritants);
 }
 
-void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, fixedint requiredCounts, fixedint gotCounts, Object irritants /* Object::Nil */ )
 {
     const Object message = format(theVM, UC("wrong number of arguments (required ~d, got ~d)"),
                                   Pair::list2(Object::makeFixnum(requiredCounts),

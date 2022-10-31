@@ -223,8 +223,9 @@ private:
             return Object::makeFixnum(1);
         }
         case Fasl::TAG_FIXNUM: {
-            const fixedint value = fetchU32();
-            return Object::makeFixnum(value);
+            // todo
+            const int value = fetchU32();
+            return Object::makeFixnum(static_cast<fixedint>(value));
         }
         case Fasl::TAG_FLONUM: {
             union {
