@@ -47,7 +47,7 @@ public:
         MIN = -MAX - 1
     };
 
-    static bool canFit(int64_t n)
+    static bool canFit(fixedint n)
     {
         return Fixnum::MIN <= n && n <= Fixnum::MAX;
     }
