@@ -86,11 +86,11 @@ private:
     static Object makeInteger(mpz_t v)
     {
         if (mpz_fits_slong_p(v) != 0) {
-            const intptr_t val = mpz_get_si(v);
+            const fixedint val = mpz_get_si(v);
             if (val >= Fixnum::MIN &&
                 val <= Fixnum::MAX) {
                 mpz_clear(v);
-                return Object::makeFixnum(static_cast<int>(val));
+                return Object::makeFixnum(val);
             }
         }
         return Object::makeBignum(new Bignum(v));
@@ -423,7 +423,7 @@ public:
     {
         // Caller should check this condition.
         // mpz_init_set_si accepts only signed long.
-        MOSH_ASSERT(fixedint > 0);
+        MOSH_ASSERT(n2 > 0);
         mpz_t ret;
         mpz_init_set_si(ret, n1);
         mpz_pow_ui(ret, ret, n2);
@@ -516,18 +516,18 @@ public:
     MAKE_BIGNUM_COMPARE(le, <=0)
     MAKE_BIGNUM_COMPARE(eq, ==0)
 
-    static Object add(int n1, int n2)
+    static Object add(fixedint n1, fixedint n2)
     {
-        const fixedint ret = (fixedint)n1 + n2;
+        const fixedint ret = n1 + n2;
         if (Fixnum::canFit(ret)) {
             return Object::makeFixnum(ret);
         } else {
             return Object::makeBignum(ret);
         }
     }
-    static Object sub(int n1, int n2)
+    static Object sub(fixedint n1, fixedint n2)
     {
-        const fixedint ret = (fixedint)n1 - n2;
+        const fixedint ret = n1 - n2;
         if (Fixnum::canFit(ret)) {
             return Object::makeFixnum(ret);
         } else {
@@ -535,17 +535,17 @@ public:
         }
     }
 
-    static Object mul(int n1, int n2)
+    static Object mul(fixedint n1, fixedint n2)
     {
         // On Apple Silicon the behaviour of multiplication overflow is undefined.
         // We need to handle the overflow with the bigger type long.
-        const long ret = (fixedint)n1 * n2;
+        const long long ret = n1 * n2;
 
         /* Overflow check from Gauche */
         if ((n2 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
-            return Bignum::mul(new Bignum(static_cast<long>(n1)), n2);
+            return Bignum::mul(new Bignum(n1), n2);
         } else {
-            return Object::makeFixnum(static_cast<int>(ret));
+            return Object::makeFixnum(ret);
         }
     }
 
@@ -691,7 +691,7 @@ public:
     static Object makeInteger(long n)
     {
         if (Fixnum::canFit(n)) {
-            return Object::makeFixnum(static_cast<int>(n));
+            return Object::makeFixnum(n);
         } else {
             return Object::makeBignum(n);
         }

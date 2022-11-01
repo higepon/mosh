@@ -144,7 +144,7 @@ Object Arithmetic::expt(Object n1, Object n2)
             } else if (fn2 == 0) {
                 return Object::makeFixnum(1);
             } else {
-                const int fn1 = n1.toFixnum();
+                const fixedint fn1 = n1.toFixnum();
                 if (0 == fn1) {
                     return Object::Undef;
                 }

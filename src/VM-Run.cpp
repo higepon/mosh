@@ -633,7 +633,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         CASE(NUMBER_ADD_PUSH)
         {
             const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
+            // short cut for Fixnum. Benchmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
                 const fixedint val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
