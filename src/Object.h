@@ -281,7 +281,7 @@ public:
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
-    static Object makeRatnum(int numerator, int denominator);
+    static Object makeRatnum(fixedint numerator, fixedint denominator);
     static Object makeRatnum(Ratnum* r);
     static Object makeCompnum(Object real, Object imag);
 #include "Object-accessors.h"

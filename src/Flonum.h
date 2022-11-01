@@ -320,11 +320,11 @@ public:
     MAKE_RATIONAL_EQ_FUNC()
 
 #define MAKE_FIXNUM_COMPARE_FUNC(compare, symbol) \
-    static bool compare(Flonum* n1, int n2)\
+    static bool compare(Flonum* n1, fixedint n2)\
     {\
         return n1->value() symbol static_cast<double>(n2);\
     }\
-    static bool compare(int n1, Flonum* n2)\
+    static bool compare(fixedint n1, Flonum* n2)\
     {\
         return static_cast<double>(n1) symbol n2->value();\
     }
@@ -336,11 +336,11 @@ public:
     MAKE_FIXNUM_COMPARE_FUNC(eq, ==)
 
 #define MAKE_FLONUM_OP_FUNC(op, symbol) \
-    static Object op(Flonum* n1, int n2)\
+    static Object op(Flonum* n1, fixedint n2)\
     {\
         return Object::makeFlonum(n1->value() symbol static_cast<double>(n2));\
     }\
-    static Object op(int n1, Flonum* n2)\
+    static Object op(fixedint n1, Flonum* n2)\
     {\
         return Object::makeFlonum(static_cast<double>(n1) symbol n2->value());\
     }\

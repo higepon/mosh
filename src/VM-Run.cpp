@@ -514,11 +514,12 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         CASE(NUMBER_ADD)
         {
             const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
+            // short cut for Fixnum. Benchmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
                 const fixedint val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
+
                 const Object v = ac_;
                 ac_ = Arithmetic::add(n, v);
                 if (ac_.isFalse()) {

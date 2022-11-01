@@ -384,7 +384,7 @@ Object Object::makeCallable(Callable* callable)
                                                         reinterpret_cast<intptr_t>(callable))));
 }
 
-Object Object::makeRatnum(int numerator, int denominator)
+Object Object::makeRatnum(fixedint numerator, fixedint denominator)
 {
     return Object::makeRatnum(new Ratnum(numerator, denominator));
 }

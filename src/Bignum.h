@@ -430,7 +430,7 @@ public:
         return makeInteger(ret);
     }
 
-    static Object mul(int n1, Bignum* n2)
+    static Object mul(fixedint n1, Bignum* n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n1);
@@ -452,7 +452,7 @@ public:
         return makeInteger(ret);
     }
 
-    static Object add(int n1, Bignum* n2)
+    static Object add(fixedint n1, Bignum* n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n1);
@@ -474,14 +474,14 @@ public:
         return makeInteger(ret);
     }
 
-    static Object sub(int n1, Bignum* n2)
+    static Object sub(fixedint n1, Bignum* n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n1);
         mpz_sub(ret, ret, n2->value_);
         return makeInteger(ret);
     }
-    static Object sub(Bignum* n1, int n2)
+    static Object sub(Bignum* n1, fixedint n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n2);

@@ -414,7 +414,7 @@ Object scheme::flnegativePEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("flpositive?");
     checkArgumentLength(1);
     argumentAsFlonum(0, flonum);
-    return Object::makeBool(Flonum::lt(flonum, 0));
+    return Object::makeBool(Flonum::lt(flonum, 0L));
 }
 
 Object scheme::flpositivePEx(VM* theVM, int argc, const Object* argv)
@@ -422,7 +422,7 @@ Object scheme::flpositivePEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("flpositive?");
     checkArgumentLength(1);
     argumentAsFlonum(0, flonum);
-    return Object::makeBool(Flonum::gt(flonum, 0));
+    return Object::makeBool(Flonum::gt(flonum, 0L));
 }
 
 Object scheme::flzeroPEx(VM* theVM, int argc, const Object* argv)
@@ -430,7 +430,7 @@ Object scheme::flzeroPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("flzero?");
     checkArgumentLength(1);
     argumentAsFlonum(0, flonum);
-    return Object::makeBool(Flonum::eq(flonum, 0));
+    return Object::makeBool(Flonum::eq(flonum, 0L));
 }
 
 Object scheme::flintegerPEx(VM* theVM, int argc, const Object* argv)

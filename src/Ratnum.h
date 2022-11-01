@@ -55,7 +55,7 @@ public:
         mpq_init(value);
     }
 
-    Ratnum(int numerator, int denominator)
+    Ratnum(fixedint numerator, fixedint denominator)
     {
         mpq_init(value);
         if (numerator >= 0 && denominator < 0) {
