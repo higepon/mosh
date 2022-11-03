@@ -1095,7 +1095,7 @@ Object scheme::internalConfstrEx(VM* theVM, int argc, const Object* argv)
     Object val;    // return value of this procedure
     int save_errno  = errno;
 
-    size_t size = confstr(name, nullptr, 0);
+    size_t size = confstr(static_cast<int>(name), nullptr, 0);
     ucs4string result = ucs4string(size);
     char *buf = result.ascii_c_str();
     size_t ret = confstr(static_cast<int>(name), buf, size);

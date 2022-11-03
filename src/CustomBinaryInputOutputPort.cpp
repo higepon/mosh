@@ -227,7 +227,7 @@ int CustomBinaryInputOutputPort::putU8(uint8_t v)
     const Object count = Object::makeFixnum(1);
     const Object result = theVM_->callClosure3(writeProc_, bv, start, count);
     MOSH_ASSERT(result.isFixnum());
-    return result.toFixnum();
+    return static_cast<int>(result.toFixnum());
 }
 
 int64_t CustomBinaryInputOutputPort::putU8(uint8_t* v, int64_t _size)

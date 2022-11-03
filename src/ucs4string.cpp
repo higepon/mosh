@@ -90,7 +90,7 @@ void ucs4string::split(ucs4char ch, gc_vector<ucs4string>& v) const
     v.push_back(ucs4string(begin() + next, end()));
 }
 
-ucs4string ucs4string::substr(int x, size_t size) const
+ucs4string ucs4string::substr(size_t x, size_t size) const
 {
     return ucs4string(ucs4string_base::substr(x, size).c_str());
 }

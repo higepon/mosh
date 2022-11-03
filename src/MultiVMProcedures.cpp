@@ -210,7 +210,7 @@ Object scheme::conditionVariableWaitDEx(VM* theVM, int argc, const Object* argv)
     if (2 == argc) {
         return Object::makeBool(c->wait(mutex));
     } else {
-        argumentAsFixnum(2, timeout);
+        argumentAsFixnumToInt(2, timeout);
         return Object::makeBool(c->waitWithTimeout(mutex, timeout));
     }
 }

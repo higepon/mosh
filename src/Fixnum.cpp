@@ -126,7 +126,7 @@ Object Fixnum::sqrt(Object n)
         }
     } else { // negative
         const double root = ::sqrt(static_cast<double>(-value));
-        const int rootAsInt = static_cast<fixedint>(floor(root));
+        const fixedint rootAsInt = static_cast<fixedint>(floor(root));
         // exact
         if (rootAsInt * rootAsInt == -value) {
             return Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(rootAsInt));

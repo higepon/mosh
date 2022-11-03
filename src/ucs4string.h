@@ -58,7 +58,7 @@ public:
     ucs4string(const ucs4char* s, size_t n) : ucs4string_base(s, n) {}
     ucs4string(ucs4string::const_iterator a, ucs4string::const_iterator b) : ucs4string_base(a, b) {}
     char* ascii_c_str() const;
-    ucs4string substr(int x, size_t size) const;
+    ucs4string substr(size_t x, size_t size) const;
     void split(ucs4char ch, gc_vector<ucs4string>& v) const;
     ucs4char* strdup();
     bool is_ascii() const;

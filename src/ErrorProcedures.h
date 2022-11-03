@@ -142,8 +142,8 @@ extern bool isErrorBufInitialized;
     void callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, fixedint requiredCounts, fixedint gotCounts, Object irritants = Object::Nil);
     void callWrongNumberOfArgumentsViolationAfter(VM* theVM, const ucs4char* who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);    
 
-    void callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
-    void callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, const ucs4char* who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, fixedint requiredCounts, fixedint gotCounts, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, const ucs4char* who, fixedint requiredCounts, fixedint gotCounts, Object irritants = Object::Nil);
 
     void callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);
     void callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, const ucs4char* who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);

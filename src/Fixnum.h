@@ -47,7 +47,7 @@ public:
         static const fixedint MIN = -MAX - 1;
     //};
 
-    static bool canFit(fixedint n)
+    static bool canFit(long long n)
     {
         return Fixnum::MIN <= n && n <= Fixnum::MAX;
     }
@@ -61,12 +61,12 @@ public:
 
     static Object sqrt(Object n);
 
-    static bool isEven(int n)
+    static bool isEven(fixedint n)
     {
         return (n & 1) == 0;
     }
 
-    static bool isOdd(int n)
+    static bool isOdd(fixedint n)
     {
         return !isEven(n);
     }
@@ -159,7 +159,7 @@ public:
         if (fx == 0) {
             return 0;
         }
-        const uint32_t ufx = (fx < 0) ? ~fx : fx;
+        const unsigned long ufx = (fx < 0) ? ~fx : fx;
         return 32 - Arithmetic::nlz(ufx);
     }
 
@@ -171,50 +171,50 @@ public:
         return Arithmetic::ntz(fx);
     }
 
-    static bool fxbitSetP(int fx1, unsigned int fx2)
+    static bool fxbitSetP(fixedint fx1, unsigned long fx2)
     {
-        return ((unsigned int)fx1 >> fx2) & 1;
+        return ((unsigned long)fx1 >> fx2) & 1;
     }
 
-    static int fxarithmeticShiftLeft(int fx1, unsigned int fx2)
+    static long long fxarithmeticShiftLeft(fixedint fx1, fixedint fx2)
     {
-        return fx1 << fx2;
+        return static_cast<long long>(fx1) << fx2;
     }
 
-    static int fxarithmeticShiftRight(int fx1, unsigned int fx2)
+    static long long fxarithmeticShiftRight(fixedint fx1, fixedint fx2)
     {
         return fx1 >> fx2;
     }
 
-    static int fxcopyBit(int fx1, unsigned int fx2, int fx3)
+    static fixedint fxcopyBit(fixedint fx1, fixedint fx2, fixedint fx3)
     {
-        const int mask = fxarithmeticShiftLeft(1, fx2);
+        const long long mask = fxarithmeticShiftLeft(1, fx2);
         return fxif(mask, fxarithmeticShiftLeft(fx3, fx2), fx1);
     }
 
-    static int fxbitField(int fx1, unsigned int fx2, unsigned int fx3)
+    static long long fxbitField(fixedint fx1, fixedint fx2, fixedint fx3)
     {
-        const int mask = fxnot(fxarithmeticShiftLeft(-1, fx3));
+        const fixedint mask = fxnot(fxarithmeticShiftLeft(-1, fx3));
         return fxarithmeticShiftRight(fxand(fx1, mask), fx2);
     }
 
-    static int fxcopyBitField(int fx1, unsigned int fx2, unsigned int fx3, int fx4)
+    static fixedint fxcopyBitField(fixedint fx1, fixedint fx2, fixedint fx3, fixedint fx4)
     {
-        const int mask1 = fxarithmeticShiftLeft(-1, fx2);
-        const int mask2 = fxnot(fxarithmeticShiftLeft(-1, fx3));
-        const int mask  = fxand(mask1, mask2);
+        const fixedint mask1 = fxarithmeticShiftLeft(-1, fx2);
+        const fixedint mask2 = fxnot(fxarithmeticShiftLeft(-1, fx3));
+        const fixedint mask  = fxand(mask1, mask2);
         return fxif(mask, fxarithmeticShiftLeft(fx4, fx2), fx1);
     }
 
-    static int fxrotateBitField(int fx1, unsigned int fx2, unsigned int fx3, unsigned int fx4)
+    static fixedint fxrotateBitField(fixedint fx1, unsigned int fx2, unsigned int fx3, unsigned int fx4)
     {
-        const int width = fx3 - fx2;
+        const fixedint width = fx3 - fx2;
         if (width > 0) {
-            const int count  = fxmod(fx4, width);
-            const int field0 = fxbitField(fx1, fx2, fx3);
-            const int field1 = fxarithmeticShiftLeft(field0, fx4);
-            const int field2 = fxarithmeticShiftRight(field0, width - count);
-            const int field  = fxior(field1, field2);
+            const fixedint count  = fxmod(fx4, width);
+            const long long field0 = fxbitField(fx1, fx2, fx3);
+            const long long field1 = fxarithmeticShiftLeft(field0, fx4);
+            const long long field2 = fxarithmeticShiftRight(field0, width - count);
+            const fixedint field  = fxior(field1, field2);
 
             return fxcopyBitField(fx1, fx2, fx3, field);
         } else {
@@ -222,7 +222,7 @@ public:
         }
     }
 
-    static int fxreverseBitField(int fx1, unsigned fx2, unsigned fx3)
+    static int fxreverseBitField(fixedint fx1, unsigned fx2, unsigned fx3)
     {
         uint32_t bits  = (unsigned int)fx1;
         int      start = fx2;

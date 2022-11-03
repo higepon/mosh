@@ -110,7 +110,7 @@ Object scheme::rxmatchStartEx(VM* theVM, int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsFixnum(1, index);
+        argumentAsFixnumToInt(1, index);
         returnValue = Object::makeFixnum(regMatch->matchStart(index));
     } else {
         returnValue = Object::makeFixnum(regMatch->matchStart(0));
@@ -137,7 +137,7 @@ Object scheme::rxmatchEndEx(VM* theVM, int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsFixnum(1, index);
+        argumentAsFixnumToInt(1, index);
         returnValue = Object::makeFixnum(regMatch->matchEnd(index));
     } else {
         returnValue = Object::makeFixnum(regMatch->matchEnd(0));
@@ -165,7 +165,7 @@ Object scheme::rxmatchAfterEx(VM* theVM, int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsFixnum(1, index);
+        argumentAsFixnumToInt(1, index);
         returnValue = regMatch->matchAfter(index);
     } else {
         returnValue = regMatch->matchAfter(0);
@@ -193,7 +193,7 @@ Object scheme::rxmatchBeforeEx(VM* theVM, int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsFixnum(1, index);
+        argumentAsFixnumToInt(1, index);
         returnValue = regMatch->matchBefore(index);
     } else {
         returnValue = regMatch->matchBefore(0);
@@ -221,7 +221,7 @@ Object scheme::rxmatchSubstringEx(VM* theVM, int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsFixnum(1, index);
+        argumentAsFixnumToInt(1, index);
         returnValue = regMatch->matchSubString(index);
     } else {
         returnValue = regMatch->matchSubString(0);

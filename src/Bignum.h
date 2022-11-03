@@ -256,7 +256,7 @@ public:
         return makeInteger(ret);
     }
 
-    Object bitwiseAnd(int n) const
+    Object bitwiseAnd(fixedint n) const
     {
         mpz_t ret;
         mpz_init_set_si(ret, n);
@@ -272,7 +272,7 @@ public:
         return makeInteger(ret);
     }
 
-    Object bitwiseIor(int n) const
+    Object bitwiseIor(fixedint n) const
     {
         mpz_t ret;
         mpz_init_set_si(ret, n);
@@ -288,7 +288,7 @@ public:
         return makeInteger(ret);
     }
 
-    Object bitwiseXor(int n) const
+    Object bitwiseXor(fixedint n) const
     {
         mpz_t ret;
         mpz_init_set_si(ret, n);
@@ -306,7 +306,7 @@ public:
 
     Object bitwiseBitCount() const
     {
-        if (gt(this, 0)) {
+        if (gt(this, 0L)) {
             return makeInteger(mpz_popcount(value_));
         } else {
             mpz_t temp;
@@ -338,7 +338,7 @@ public:
         }
     }
 
-    static Object quotient(int n1, const Bignum* n2)
+    static Object quotient(fixedint n1, const Bignum* n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n1);
@@ -346,7 +346,7 @@ public:
         return makeInteger(ret);
     }
 
-    static Object quotient(const Bignum* n1, int n2)
+    static Object quotient(const Bignum* n1, fixedint n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n2);
@@ -362,7 +362,7 @@ public:
         return makeInteger(ret);
     }
 
-    static Object remainder(int n1, const Bignum* n2)
+    static Object remainder(fixedint n1, const Bignum* n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n1);
@@ -370,7 +370,7 @@ public:
         return makeInteger(ret);
     }
 
-    static Object remainder(const Bignum* n1, int n2)
+    static Object remainder(const Bignum* n1, fixedint n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n2);
@@ -395,7 +395,7 @@ public:
         return makeInteger(ret);
     }
 
-    static Object bitwiseShiftLeft(int n1, unsigned long n2)
+    static Object bitwiseShiftLeft(fixedint n1, unsigned long n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n1);
@@ -411,7 +411,7 @@ public:
         return makeInteger(ret);
     }
 
-    static Object bitwiseShiftRight(int n1, unsigned long n2)
+    static Object bitwiseShiftRight(fixedint n1, unsigned long n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n1);
@@ -437,7 +437,7 @@ public:
         mpz_mul(ret, ret, n2->value_);
         return makeInteger(ret);
     }
-    static Object mul(Bignum* n1, int n2)
+    static Object mul(Bignum* n1, fixedint n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n2);
@@ -459,7 +459,7 @@ public:
         mpz_add(ret, ret, n2->value_);
         return makeInteger(ret);
     }
-    static Object add(Bignum* n1, int n2)
+    static Object add(Bignum* n1, fixedint n2)
     {
         mpz_t ret;
         mpz_init_set_si(ret, n2);
@@ -497,11 +497,11 @@ public:
     }
 
 #define MAKE_BIGNUM_COMPARE(compare, symbol)\
-    static bool compare(const Bignum* n1, int n2)\
+    static bool compare(const Bignum* n1, fixedint n2)\
     {\
         return mpz_cmp_si(n1->value_, n2) symbol;\
     }\
-    static bool compare(int n1, const Bignum* n2)\
+    static bool compare(fixedint n1, const Bignum* n2)\
     {\
         return (- mpz_cmp_si(n2->value_, n1)) symbol;\
     }\

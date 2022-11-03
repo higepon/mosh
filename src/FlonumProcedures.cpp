@@ -51,7 +51,7 @@ Object scheme::fixnumToflonumEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("fixnum->flonum");
     checkArgumentLength(1);
     argumentAsFixnum(0, fixnum);
-    return Object::makeFlonum(fixnum);
+    return Object::makeFlonum(static_cast<double>(fixnum));
 }
 
 Object scheme::flexptEx(VM* theVM, int argc, const Object* argv)

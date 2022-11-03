@@ -45,7 +45,7 @@
 extern scheme::Object genericHashFunction;
 extern scheme::Object genericEquivalenceFunction;
 
-extern int callHashFunction(scheme::Object hashFunction, scheme::Object key);
+extern fixedint callHashFunction(scheme::Object hashFunction, scheme::Object key);
 extern bool callEquivalenceFunction(scheme::Object equivalenceFunction, scheme::Object o1, scheme::Object o2);
 
 struct generic_hash_func

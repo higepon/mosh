@@ -227,12 +227,12 @@ protected:
     Object fetchOperand();
     void skip(fixedint n);
     void push(Object obj);
-    Object stackToPairArgs(Object* sp, int nArgs);
+    Object stackToPairArgs(Object* sp, fixedint nArgs);
     void pairArgsToStack(Object* sp, int offset, Object args);
-    void indexSet(Object* sp, int i, Object v);
-    Object* shiftArgsToBottom(Object* sp, int depth, int diff);
+    void indexSet(Object* sp, fixedint i, Object v);
+    Object* shiftArgsToBottom(Object* sp, fixedint depth, fixedint diff);
     Object* unShiftArgs(Object* sp, int diff);
-    Object index(Object* sp, int n) const;
+    Object index(Object* sp, fixedint n) const;
     Object pop();
     Object referLocal(fixedint n) const;
     Object referFree(Object n);
@@ -320,7 +320,7 @@ protected:
 #endif
     const bool isProfiler_;      // for profiler
     const int maxNumValues_{256};
-    int numValues_{0};
+    fixedint numValues_{0};
     Object* values_;
     jmp_buf returnPoint_;
     bool isR6RSMode_{false};

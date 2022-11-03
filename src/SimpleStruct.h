@@ -42,15 +42,15 @@ namespace scheme {
     {
     private:
         const Object name_;
-        const int fieldCount_;
+        const fixedint fieldCount_;
         Object* fields_;
     public:
-        SimpleStruct(Object name, int fieldCount) : name_(name), fieldCount_(fieldCount)
+        SimpleStruct(Object name, fixedint fieldCount) : name_(name), fieldCount_(fieldCount)
         {
 //            MOSH_ASSERT(name_.isSymbol());
             MOSH_ASSERT(fieldCount_ >= 0);
             fields_ = Object::makeObjectArrayLocal(fieldCount_);
-            for (int i = 0; i< fieldCount; i++) {
+            for (fixedint i = 0; i< fieldCount; i++) {
                 fields_[i] = Object::Undef;
             }
         }
@@ -58,20 +58,20 @@ namespace scheme {
         ~SimpleStruct() = default;
 
         Object name() const { return name_; }
-        int fieldCount() const { return fieldCount_; }
+        fixedint fieldCount() const { return fieldCount_; }
 
-        bool isValidIndex(int index) const
+        bool isValidIndex(fixedint index) const
         {
             return 0 <= index && index < fieldCount_;
         }
 
-        Object ref(int index)
+        Object ref(fixedint index)
         {
             MOSH_ASSERT(isValidIndex(index));
             return fields_[index];
         }
 
-        void set(int index, Object value)
+        void set(fixedint index, Object value)
         {
             MOSH_ASSERT(isValidIndex(index));
             fields_[index] = value;

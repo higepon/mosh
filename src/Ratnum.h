@@ -123,7 +123,7 @@ public:
         return mpq_cmp(value, number->value) == 0;
     }
 
-    static Object div(int n1, Bignum* n2)
+    static Object div(fixedint n1, Bignum* n2)
     {
         mpq_t ret;
         mpq_init(ret);
@@ -137,7 +137,7 @@ public:
         return makeNumber(ret);
     }
 
-    static Object div(Bignum* n1, int n2)
+    static Object div(Bignum* n1, fixedint n2)
     {
         mpq_t ret;
         mpq_init(ret);
@@ -191,7 +191,7 @@ public:
         mpq_##op(ret, ret, number2->value);\
         return makeNumber(ret);\
     }\
-    static Object op(Ratnum* number1, int number2)\
+    static Object op(Ratnum* number1, fixedint number2)\
     {\
         mpq_t ret;\
         mpq_init(ret);\
@@ -200,7 +200,7 @@ public:
         mpq_##op(ret, number1->value, ret);\
         return makeNumber(ret);\
     }\
-    static Object op(int number1, Ratnum* number2)\
+    static Object op(fixedint number1, Ratnum* number2)\
     {\
         mpq_t ret;\
         mpq_init(ret);\
@@ -238,7 +238,7 @@ public:
         mpq_clear(temp);\
         return ret;\
     }\
-    static bool compare(Ratnum* number1, int number2)\
+    static bool compare(Ratnum* number1, fixedint number2)\
     {\
         mpq_t temp;\
         mpq_init(temp);\
@@ -248,7 +248,7 @@ public:
         mpq_clear(temp);\
         return ret;\
     }\
-    static bool compare(int number1, Ratnum* number2)\
+    static bool compare(fixedint number1, Ratnum* number2)\
     {\
         mpq_t temp;\
         mpq_init(temp);\

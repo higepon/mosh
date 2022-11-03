@@ -110,7 +110,7 @@ Object scheme::stringRefEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
 
     argumentAsString(0, text);
-    argumentAsFixnum(1, index);
+    argumentAsFixnumToInt(1, index);
 
     if (index < static_cast<fixedint>(text->length())) {
         return Object::makeChar(text->charAt(index));
@@ -167,7 +167,7 @@ Object scheme::makeStringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-string");
     checkArgumentLengthBetween(1, 2);
-    argumentAsFixnum(0, stringSize);
+    argumentAsFixnumToInt(0, stringSize);
     if (stringSize < 0) {
         return callAssertionViolationAfter(theVM, procedureName, UC("size should be positive"), L1(argv[0]));
     }
