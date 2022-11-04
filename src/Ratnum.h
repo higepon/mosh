@@ -278,7 +278,7 @@ public:
         if (mpz_cmp_si(mpq_denref(r), 1) == 0) {
             if (mpz_cmp_si(mpq_numref(r), Fixnum::MIN) >= 0 &&
                 mpz_cmp_si(mpq_numref(r), Fixnum::MAX) <= 0) {
-                const Object ret = Object::makeFixnum(static_cast<int>(mpz_get_si(mpq_numref(r))));
+                const Object ret = Object::makeFixnum(mpz_get_si(mpq_numref(r)));
                 mpq_clear(r);
                 return ret;
             } else {
