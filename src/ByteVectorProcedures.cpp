@@ -536,7 +536,7 @@ Object scheme::bytevectorU32SetDEx(VM* theVM, int argc, const Object* argv)
     uint32_t value;
     if (v.isFixnum()) {
         fixedint signedValue = v.toFixnum();
-        if (ByteVector::inU32Range(signedValue)) {
+        if (!ByteVector::inU32Range(signedValue)) {
             callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
             return Object::Undef;
         }
