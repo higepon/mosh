@@ -899,7 +899,7 @@
 [mosh-only (1 2) (let1 ht (make-eq-hashtable)
                     (hashtable-set! ht 1 "one")
                     (hashtable-set! ht 2 "two")
-                    (vector->list (hashtable-keys ht)))]
+                    (list-sort < (vector->list (hashtable-keys ht))))]
 [mosh-only #t (let1 ht (make-hashtable string-hash string=?)
                             (hashtable-set! ht "one" 1)
                             (hashtable-set! ht "two" 2)
