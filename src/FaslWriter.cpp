@@ -258,7 +258,7 @@ void FaslWriter::putDatum(Object obj)
         return;
     }
     if (obj.isFixnum()) {
-        const int n = obj.toFixnum();
+        const fixedint n = obj.toFixnum();
         if (n == 0) {
             emitU8(Fasl::TAG_FIXNUM_0);
         } else if (n == 1) {
@@ -270,8 +270,14 @@ void FaslWriter::putDatum(Object obj)
             emitU8(Fasl::TAG_MEDIUM_FIXNUM);
             emitU16(static_cast<uint16_t>(n));
         } else {
-            emitU8(Fasl::TAG_FIXNUM);
-            emitU32(obj.toFixnum());
+            // In order not to break Fasl format in i386 we don't change this logic here.
+            if (sizeof(fixedint) == sizeof(uint32_t)) {
+                emitU8(Fasl::TAG_FIXNUM);
+                emitU32(obj.toFixnum());
+            } else {
+                emitU8(Fasl::TAG_LARGE_FIXNUM);
+                emitU64(obj.toFixnum());
+            }
         }
         return;
     }

@@ -223,9 +223,14 @@ private:
             return Object::makeFixnum(1);
         }
         case Fasl::TAG_FIXNUM: {
-            // todo
+            // We want to have const fixed int value here, but for backward compatiblity we keep this as it.
+            // Compiled psyntax, baselib is written as this format.
             const int value = fetchU32();
             return Object::makeFixnum(static_cast<fixedint>(value));
+        }
+        case Fasl::TAG_LARGE_FIXNUM: {
+            const fixedint value = fetchU64();
+            return Object::makeFixnum(value);
         }
         case Fasl::TAG_FLONUM: {
             union {
