@@ -326,9 +326,10 @@ public:
             return true;
         }
         unsigned int numBits = 0;
-        while (n) {
+        unsigned long un = static_cast<unsigned long>(n);
+        while (un) {
             numBits++;
-            n >>= 1;
+            un >>= 1;
         }
         return std::numeric_limits<double>::digits10 >= numBits;
     }
