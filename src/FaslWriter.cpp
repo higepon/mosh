@@ -108,8 +108,8 @@ loop:
         } else if (obj.isSimpleStruct()) {
             SimpleStruct* const record = obj.toSimpleStruct();
             scanSharedObjects(record->name());
-            const int length = record->fieldCount();
-            for (int i = 0; i < length; i++) {
+            const fixedint length = record->fieldCount();
+            for (fixedint i = 0; i < length; i++) {
                 scanSharedObjects(record->ref(i));
             }
         }
@@ -161,7 +161,8 @@ void FaslWriter::putList(Object obj)
         if (sharedObjects_->ref(obj, Object::False).isPair()) {
             Object p = sharedObjects_->ref(obj, Object::False);
             emitU8(Fasl::TAG_DEFINING_SHARED);
-            emitU32(p.car().toFixnum());
+            // We can safely assume this is within uint32_t.
+            emitU32(static_cast<uint32_t>(p.car().toFixnum()));
         }
         putDatum(obj);
         if (sharedObjects_->ref(obj, Object::False).isPair()) {
@@ -180,12 +181,10 @@ void FaslWriter::putDatum(Object obj)
 {
     const Object sharedState = sharedObjects_->ref(obj, Object::False);
     if (sharedState.isFixnum()) {
-//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         emitU8(Fasl::TAG_LOOKUP);
-        emitU32(sharedState.toFixnum());
+        emitU32(static_cast<uint32_t>(sharedState.toFixnum()));
         return;
     } else if (sharedState.isTrue()) {
-//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         int uid = uid_++;
         emitU8(Fasl::TAG_DEFINING_SHARED);
         emitU32(uid);
@@ -221,9 +220,9 @@ void FaslWriter::putDatum(Object obj)
         emitU8(Fasl::TAG_SIMPLE_STRUCT);
         SimpleStruct* const simpleStruct = obj.toSimpleStruct();
         putDatum(simpleStruct->name());
-        const int length = simpleStruct->fieldCount();
+        const fixedint length = simpleStruct->fieldCount();
         putDatum(Object::makeFixnum(length));
-        for (int i = 0; i < length; i++) {
+        for (fixedint i = 0; i < length; i++) {
             // We don't support this pattern?
             MOSH_ASSERT(!simpleStruct->ref(i).isSimpleStruct());
             putDatum(simpleStruct->ref(i));
@@ -273,7 +272,7 @@ void FaslWriter::putDatum(Object obj)
             // In order not to break Fasl format in i386 we don't change this logic here.
             if (sizeof(fixedint) == sizeof(uint32_t)) {
                 emitU8(Fasl::TAG_FIXNUM);
-                emitU32(obj.toFixnum());
+                emitU32(static_cast<uint32_t>(obj.toFixnum()));
             } else {
                 emitU8(Fasl::TAG_LARGE_FIXNUM);
                 emitU64(obj.toFixnum());
