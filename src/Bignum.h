@@ -36,8 +36,9 @@
 #include "scheme.h"
 #include "Fixnum.h"
 
+#undef max
+
 #ifdef _WIN32
-#define NOMINMAX
 #ifdef _WIN64
 #define MOSH_BIGNUM_SIZEOF_INTPTR_T 8
 #define MOSH_BIGNUM_SIZEOF_LONG 4
