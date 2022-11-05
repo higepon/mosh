@@ -43,6 +43,7 @@
 #else
 #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
 #define MOSH_BIGNUM_SIZEOF_LONG 4
+#define NOMINMAX
 #endif
 #elif defined(__GNUC__)
 #if defined(__WORDSIZE) && (__WORDSIZE == 64)
