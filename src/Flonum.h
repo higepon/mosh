@@ -337,7 +337,7 @@ public:
     static bool compare(Flonum* n1, fixedint n2)\
     {\
         bool r = n1->value() symbol static_cast<double>(n2);\
-        if (n1->isInfinite() || canFitInDouble(n2)) {\
+        if (n1->isInfinite() || n1->isNan() || canFitInDouble(n2)) {\
             return r;\
         }\
         Bignum* b = new Bignum(n1->value());\
@@ -346,7 +346,7 @@ public:
     static bool compare(fixedint n1, Flonum* n2)\
     {\
         bool r = static_cast<double>(n1) symbol n2->value();\
-        if (n2->isInfinite() || canFitInDouble(n1)) {\
+        if (n2->isInfinite()  || n2->isNan() || canFitInDouble(n1)) {\
             return r;\
         }\
         Bignum* b = new Bignum(n2->value());\
