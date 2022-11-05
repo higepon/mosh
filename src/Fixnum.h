@@ -172,7 +172,11 @@ public:
         if (fx == 0) {
             return -1;
         }
-        return Arithmetic::ntz(fx);
+        if (sizeof(fixedint) == sizeof(uint32_t)) {
+            return Arithmetic::ntz((uint32_t)fx);
+        } else {
+            return Arithmetic::ntz((uint32_t)fx);
+        }
     }
 
     static bool fxbitSetP(fixedint fx1, unsigned long fx2)
