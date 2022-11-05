@@ -346,7 +346,7 @@ TEST_F(FaslTest, SimpleStruct4) {
 
 
 TEST_F(FaslTest, SerializeBignum1) {
-    const Object num = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(10));
+    const Object num = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(20));
     ASSERT_TRUE(num.isBignum());
     size_t size = 0;
     uint8_t* data = num.toBignum()->serialize(&size);
@@ -355,7 +355,7 @@ TEST_F(FaslTest, SerializeBignum1) {
 }
 
 TEST_F(FaslTest, SerializeBignum2) {
-    const Object num = Arithmetic::negate(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(32)));
+    const Object num = Arithmetic::negate(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(65)));
     ASSERT_TRUE(num.isBignum());
     size_t size = 0;
     uint8_t* data = num.toBignum()->serialize(&size);
@@ -390,7 +390,7 @@ TEST_F(FaslTest, MultibyteString) {
 }
 
 TEST_F(FaslTest, SerializeBignum3) {
-    const Object num = Bignum::makeInteger(ucs4string(UC("-144115188075855873")));
+    const Object num = Bignum::makeInteger(ucs4string(UC("-14411518807585587300")));
     ASSERT_TRUE(num.isBignum());
     size_t size = 0;
     uint8_t* data = num.toBignum()->serialize(&size);
