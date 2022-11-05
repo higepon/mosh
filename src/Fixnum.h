@@ -160,7 +160,11 @@ public:
             return 0;
         }
         const unsigned long ufx = (fx < 0) ? ~fx : fx;
-        return (sizeof(fixedint) * 8) - Arithmetic::nlz(ufx);
+        if (sizeof(fixedint) == sizeof(uint32_t)) {
+            return (sizeof(fixedint) * 8) - Arithmetic::nlz((uint32_t)ufx);
+        } else {
+            return (sizeof(fixedint) * 8) - Arithmetic::nlz((uint64_t)ufx);
+        }
     }
 
     static fixedint fxfirstBitSet(fixedint fx)
