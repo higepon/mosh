@@ -560,7 +560,7 @@ namespace scheme
 
             // Overflow check.
             // https://stackoverflow.com/questions/3224621/most-efficient-portable-overflow-detection
-            if ((n1 != 0 && (std::numeric_limits<fixedint>::max() / n1) < n2) || !Fixnum::canFit(ret))
+            if ((n1 != 0 && (std::numeric_limits<fixedint>::max() / std::abs(n1)) < std::abs(n2)) || !Fixnum::canFit(ret))
             {
                 return Bignum::mul(new Bignum(n1), n2);
             }

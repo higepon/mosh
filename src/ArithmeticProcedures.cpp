@@ -801,14 +801,14 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, UC("must be non-zero"), L2(x, y));
                 return Object::Undef;
             }
-            intptr_t r = x.toFixnum() % y.toFixnum();
+            fixedint r = x.toFixnum() % y.toFixnum();
             if (0 == r) {
                 return Object::makeFixnum(0);
             }
             if ((y.toFixnum() > 0) + (r > 0) == 1) {
                 r = r + y.toFixnum();
             }
-            return Object::makeFixnum(static_cast<fixedint>(r));
+            return Object::makeFixnum(r);
         } else if (y.isFlonum()) { // fixnum, flonum
             const double value = y.toFlonum()->value();
             if (0.0 == value) {
