@@ -316,7 +316,7 @@ jobs:
           tar xzv -f ${{ env.mosh_latest }}.tar.gz
           rm ${{ env.mosh_latest }}.tar.gz
       - name: "Build with VM"
-        uses: vmactions/freebsd-vm@v0.2.8
+        uses: vmactions/freebsd-vm@v0.3.0
         with:
           usesh: true
           copyback: false
