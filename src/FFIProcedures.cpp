@@ -1161,9 +1161,9 @@ Object scheme::pointerSetCDoubleDEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer-set-c-double!");
     checkArgumentLength(3);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     argumentAsFlonum(2, value);
-    pointer->set<double>(offset, value->value());
+    pointer->set<double>(offset, static_cast<double>(value->value()));
     return Object::Undef;
 }
 
@@ -1172,7 +1172,7 @@ Object scheme::pointerSetCFloatDEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer-set-c-float!");
     checkArgumentLength(3);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     argumentAsFlonum(2, value);
     pointer->set<float>(offset, static_cast<float>(value->value()));
     return Object::Undef;
@@ -1182,7 +1182,7 @@ template <typename T, typename S, bool isSigned> static Object pointerSet(const 
 {
     checkArgumentLength(3);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     argumentCheckExactInteger(2, v);
     if (!isSigned) {
         if (Arithmetic::lt(v, Object::makeFixnum(0))) {
@@ -1270,7 +1270,7 @@ Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer-set-c-int64!");
     checkArgumentLength(3);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     argumentCheckExactInteger(2, v);
     static const Object minVal = Arithmetic::negate(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)));
     static const Object maxVal = Arithmetic::sub(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)),
@@ -1308,7 +1308,7 @@ Object scheme::pointerSetCPointerDEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer-set-c-pointer!");
     checkArgumentLength(3);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     argumentAsPointer(2, p);
     pointer->set<uintptr_t>(offset, p->pointer());
     return Object::Undef;
@@ -1339,7 +1339,7 @@ Object scheme::pointerRefCDoubleEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer-ref-c-double");
     checkArgumentLength(2);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     return Object::makeFlonum(pointer->ref<double>(offset));
 }
 
@@ -1348,7 +1348,7 @@ Object scheme::pointerRefCFloatEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer-ref-c-float");
     checkArgumentLength(2);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     return Object::makeFlonum(pointer->ref<float>(offset));
 }
 
@@ -1356,7 +1356,7 @@ template <typename T> static Object pointerRefU(const ucs4char* procedureName, V
 {
     checkArgumentLength(2);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     return Bignum::makeIntegerFromUnsigned<T>(pointer->ref<T>(offset));
 }
 
@@ -1364,7 +1364,7 @@ template <typename T> static Object pointerRefS(const ucs4char* procedureName, V
 {
     checkArgumentLength(2);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     return Bignum::makeIntegerFromSigned<T>(pointer->ref<T>(offset));
 }
 
@@ -1413,7 +1413,7 @@ Object scheme::pointerRefCPointerEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer-ref-c-pointer");
     checkArgumentLength(2);
     argumentAsPointer(0, pointer);
-    argumentAsFixnum(1, offset);
+    argumentAsFixnumToInt(1, offset);
     return Object::makePointer((void*)pointer->ref<uintptr_t>(offset));
 }
 
@@ -1486,7 +1486,7 @@ Object scheme::sharedErrnoEx(VM* theVM, int argc, const Object* argv)
             theVM->setErrno(val.toBignum()->toS32());
 #endif
         } else {
-            theVM->setErrno(val.toFixnum());
+            theVM->setErrno(static_cast<int>(val.toFixnum()));
         }
         return Object::Undef;
     }

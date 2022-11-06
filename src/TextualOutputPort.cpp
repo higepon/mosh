@@ -730,8 +730,8 @@ loop:
         } else if (obj.isSimpleStruct()) {
             SimpleStruct* const record = obj.toSimpleStruct();
             scan(record->name(), seen);
-            const int length = record->fieldCount();
-            for (int i = 0; i < length; i++) {
+            const fixedint length = record->fieldCount();
+            for (fixedint i = 0; i < length; i++) {
                 scan(record->ref(i), seen);
             }
         }

@@ -35,7 +35,7 @@
                 // applyEx is just used for marking
                 // We convert the apply request to a call request.
                 if (ac_.toCProcedure()->proc == applyEx) {
-                    int argc = operand.toFixnum();
+                    const fixedint argc = operand.toFixnum();
                     Object* argv = sp_ - argc;
                     if (argc == 1) {
                         callWrongNumberOfArgumentsAtLeastViolationAfter(this, UC("apply"), 2, argc, L1(argv[0]));
@@ -80,7 +80,7 @@
                     retCode[1] = operand;
 
                     VM_ASSERT(operand.isFixnum());
-                    const int argc = operand.toFixnum();
+                    const fixedint argc = operand.toFixnum();
                     pc_  = retCode;
 
                     ac_.toCProcedure()->call(this, argc, sp_ - argc);
@@ -91,7 +91,7 @@
                     retCode[1] = operand;
 
                     VM_ASSERT(operand.isFixnum());
-                    const int argc = operand.toFixnum();
+                    const fixedint argc = operand.toFixnum();
                     pc_  = retCode;
                     ac_ = ac_.toCProcedure()->call(this, argc, sp_ - argc);
                 } else {
@@ -102,7 +102,7 @@
                     pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
                     pc_[1] = operand;
                     VM_ASSERT(operand.isFixnum());
-                    const int argc = operand.toFixnum();
+                    const fixedint argc = operand.toFixnum();
                     cl_ = ac_;
                     ac_ = ac_.toCProcedure()->call(this, argc, sp_ - argc);
                 }
@@ -114,13 +114,13 @@
                 }
                 COUNT_CALL(ac_);
                 VM_ASSERT(operand.isFixnum());
-                const int argLength = operand.toFixnum();
+                const fixedint argLength = operand.toFixnum();
                 const int requiredLength = c->argLength;
                 dc_ = ac_;
                 cl_ = ac_;
                 pc_ = c->pc;
                 if (c->isOptionalArg) {
-                    const int extraLength = argLength - requiredLength;
+                    const fixedint extraLength = argLength - requiredLength;
                     if (-1 == extraLength) {
                         Object* const sp = unShiftArgs(sp_, 1);
                         indexSet(sp, 0, Object::Nil);
@@ -155,19 +155,19 @@
                 cl_ = ac_;
                 Callable* const callable = ac_.toCallable();
                 VM_ASSERT(operand.isFixnum());
-                const int argc = operand.toFixnum();
+                const fixedint argc = operand.toFixnum();
                 // set pc_ before call() for pointing where to return.
                 pc_  = callable->returnCode;
                 pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
                 pc_[1] = operand;
-                ac_ = ac_.toCallable()->call(this, argc, sp_ - argc);
+                ac_ = ac_.toCallable()->call(this, static_cast<int>(argc), sp_ - argc);
 //                 returnCode_[1] = operand;
 //                pc_  = returnCode_;
 //                goto return_entry;
             } else if (ac_.isRegexp()) {
 //                extern Object rxmatchEx(Object args);
                 VM_ASSERT(operand.isFixnum());
-                const int argc = operand.toFixnum();
+                const fixedint argc = operand.toFixnum();
                 Object argv[2];
                 argv[0] = ac_;
                 argv[1] = sp_[-argc];
@@ -181,7 +181,7 @@
             } else if (ac_.isRegMatch()) {
 //                extern Object regMatchProxy(Object args);
                 VM_ASSERT(operand.isFixnum());
-                const int argc = operand.toFixnum();
+                const fixedint argc = operand.toFixnum();
                 Object argv[2];
                 argv[0] = ac_;
                 argv[1] = sp_[-argc];

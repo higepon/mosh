@@ -114,8 +114,8 @@ void FaslReader::linkShared(Object obj, EqHashTable* seen)
     }
     if (obj.isSimpleStruct()) {
         SimpleStruct* const record = obj.toSimpleStruct();
-        const int length = record->fieldCount();
-        for (int i = 0; i < length; i++) {
+        const fixedint length = record->fieldCount();
+        for (fixedint i = 0; i < length; i++) {
             Object o = record->ref(i);
             if (o.isSharedReference()) {
                 record->set(i, getShared(o.toSharedReference()->index()));

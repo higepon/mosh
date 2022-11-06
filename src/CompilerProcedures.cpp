@@ -819,7 +819,7 @@ Object pass4FixupLabel(Object vec)
         if (insn == LOCAL_JMP || insn == FRAME) {
             MOSH_ASSERT(i + 1 < length);
             MOSH_ASSERT(code->ref(i + 1).isFixnum());
-            const int offset = code->ref(i + 1).toFixnum() + 1;
+            const fixedint offset = code->ref(i + 1).toFixnum() + 1;
             const size_t destinationIndex = i + offset;
             MOSH_ASSERT(i + offset < length);
             const Object dest = code->ref(destinationIndex);
@@ -854,7 +854,7 @@ Object pass4FixupLabel(Object vec)
             // if ac_ == #f, test in destination is also #f.
             MOSH_ASSERT(i + 1 < length);
             MOSH_ASSERT(code->ref(i + 1).isFixnum());
-            const int offset = code->ref(i + 1).toFixnum() + 1;
+            const fixedint offset = code->ref(i + 1).toFixnum() + 1;
             const size_t destinationIndex = i + offset;
             MOSH_ASSERT(i + offset < length);
             if (code->ref(destinationIndex) == TEST ||

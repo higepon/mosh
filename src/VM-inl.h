@@ -52,9 +52,9 @@ inline Object VM::fetchOperand()
     return *pc_++;
 }
 
-inline void VM::skip(int n)
+inline void VM::skip(fixedint n)
 {
-    pc_ = pc_ + n ;
+    pc_ = pc_ + n;
 }
 
 inline void VM::push(Object obj)
@@ -62,10 +62,10 @@ inline void VM::push(Object obj)
     *sp_++ = obj;
 }
 
-inline Object VM::stackToPairArgs(Object* sp, int nArgs)
+inline Object VM::stackToPairArgs(Object* sp, fixedint nArgs)
 {
     Object args = Object::Nil;
-    for (int i = 0; i < nArgs; i++) {
+    for (fixedint i = 0; i < nArgs; i++) {
         args = Object::cons(index(sp, i), args);
     }
     return args;
@@ -94,14 +94,14 @@ inline void VM::pairArgsToStack(Object* sp, int offset, Object args)
     }
 }
 
-inline void VM::indexSet(Object* sp, int i, Object v)
+inline void VM::indexSet(Object* sp, fixedint i, Object v)
 {
     *(sp - i - 1) = v;
 }
 
-inline Object* VM::shiftArgsToBottom(Object* sp, int depth, int diff)
+inline Object* VM::shiftArgsToBottom(Object* sp, fixedint depth, fixedint diff)
 {
-    for (int i = depth - 1; i >= 0; i--) {
+    for (fixedint i = depth - 1; i >= 0; i--) {
 //          stack_[sp - i - diff - 1] = stack_[sp - i - 1];
         indexSet(sp, i + diff, index(sp, i)); // this is fastest
     }
@@ -120,7 +120,7 @@ inline Object* VM::unShiftArgs(Object* sp, int diff)
 }
 
 
-inline Object VM::index(Object* sp, int n) const
+inline Object VM::index(Object* sp, fixedint n) const
 {
     return *(sp - n - 1);
 }
@@ -129,7 +129,7 @@ inline Object VM::pop()
 {
     return *(--sp_);
 }
-inline Object VM::referLocal(int n) const
+inline Object VM::referLocal(fixedint n) const
 {
     return *(fp_ + n);
 }
@@ -140,7 +140,7 @@ inline Object VM::referFree(Object n)
     return dc_.toClosure()->referFree(n.toFixnum());
 }
 
-inline Object VM::referFree(int n)
+inline Object VM::referFree(fixedint n)
 {
     return dc_.toClosure()->referFree(n);
 }

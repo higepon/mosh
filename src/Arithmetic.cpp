@@ -56,7 +56,7 @@ Object Arithmetic::numberToString(Object n, int radix)
     MOSH_ASSERT(n.isNumber());
     MOSH_ASSERT(radix == 2 || radix == 8 || radix == 10 || radix == 16);
     if (n.isFixnum()) {
-        const int fn = n.toFixnum();
+        const fixedint fn = n.toFixnum();
         char buf[64];
         char* start = buf;
         if (fn < 0) {
@@ -138,13 +138,13 @@ Object Arithmetic::expt(Object n1, Object n2)
     MOSH_ASSERT(!n2.isBignum()); // too big.
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {
-            const int fn2 = n2.toFixnum();
+            const fixedint fn2 = n2.toFixnum();
             if (fn2 > 0) {
                 return Bignum::pow(n1.toFixnum(), fn2);
             } else if (fn2 == 0) {
                 return Object::makeFixnum(1);
             } else {
-                const int fn1 = n1.toFixnum();
+                const fixedint fn1 = n1.toFixnum();
                 if (0 == fn1) {
                     return Object::Undef;
                 }
@@ -170,7 +170,7 @@ Object Arithmetic::expt(Object n1, Object n2)
             const double fn2 = n2.toRatnum()->toDouble();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isCompnum()) {
-            const int fn1 = n1.toFixnum();
+            const fixedint fn1 = n1.toFixnum();
             Compnum* const compnum = n2.toCompnum();
             if (0 == fn1) {
                 if (Arithmetic::isNegative(compnum->real())) {
@@ -218,7 +218,7 @@ Object Arithmetic::expt(Object n1, Object n2)
         }
     } else if (n1.isBignum()) {
         if (n2.isFixnum()) {
-            const int fn2 = n2.toFixnum();
+            const fixedint fn2 = n2.toFixnum();
             if (fn2 > 0) {
                 // can be much faster using gmp
                 Object ret = n1;
@@ -257,7 +257,7 @@ Object Arithmetic::expt(Object n1, Object n2)
         }
     } else if (n1.isRatnum()) {
         if (n2.isFixnum()) {
-            const int fn2 = n2.toFixnum();
+            const fixedint fn2 = n2.toFixnum();
             if (fn2 > 0) {
                 // can be much faster using gmp
                 Object ret = n1;
@@ -597,7 +597,7 @@ uint32_t Arithmetic::toU32(Object n)
 {
     MOSH_ASSERT(fitsU32(n));
     if (n.isFixnum()) {
-        return n.toFixnum();
+        return static_cast<uint32_t>(n.toFixnum());
     } else if (n.isBignum()) {
         return n.toBignum()->toU32();
     } else {
@@ -623,7 +623,7 @@ int32_t Arithmetic::toS32(Object n)
 {
     MOSH_ASSERT(fitsS32(n));
     if (n.isFixnum()) {
-        return n.toFixnum();
+        return static_cast<int32_t>(n.toFixnum());
     } else if (n.isBignum()) {
         return n.toBignum()->toS32();
     } else {
@@ -688,7 +688,7 @@ double Arithmetic::realToDouble(Object n)
 {
     MOSH_ASSERT(isRealValued(n));
     if (n.isFixnum()) {
-        return n.toFixnum();
+        return static_cast<double>(n.toFixnum());
     } else if (n.isBignum()) {
         return n.toBignum()->toDouble();
     } else if (n.isFlonum()) {
@@ -794,7 +794,7 @@ Object Arithmetic::bitwiseBitCount(Object e)
 {
     MOSH_ASSERT(e.isExactInteger());
     if (e.isFixnum()) {
-        const int n = e.toFixnum();
+        const fixedint n = e.toFixnum();
         return Object::makeFixnum(Fixnum::fxbitCount(n));
     } else if (e.isBignum()){
         return e.toBignum()->bitwiseBitCount();
@@ -807,7 +807,7 @@ Object Arithmetic::bitwiseLength(Object e)
 {
     MOSH_ASSERT(e.isExactInteger());
     if (e.isFixnum()) {
-        const int n = e.toFixnum();
+        const fixedint n = e.toFixnum();
         return Object::makeFixnum(Fixnum::fxlength(n));
     } else if (e.isBignum()){
         return e.toBignum()->bitwiseLength();
@@ -820,7 +820,7 @@ Object Arithmetic::bitwiseFirstBitSet(Object e)
 {
     MOSH_ASSERT(e.isExactInteger());
     if (e.isFixnum()) {
-        const int n = e.toFixnum();
+        const fixedint n = e.toFixnum();
         return Object::makeFixnum(Fixnum::fxfirstBitSet(n));
     } else if (e.isBignum()){
         return e.toBignum()->bitwiseFirstBitSet();
@@ -859,7 +859,7 @@ Object Arithmetic::toFlonum(Object real)
     if (real.isFlonum()) {
         return real;
     } else if (real.isFixnum()) {
-        return Object::makeFlonum(real.toFixnum());
+        return Object::makeFlonum(static_cast<double>(real.toFixnum()));
     } else if (real.isBignum()) {
         return Object::makeFlonum(real.toBignum()->toDouble());
     } else if (real.isRatnum()) {
@@ -1005,7 +1005,7 @@ Object Arithmetic::inexact(Object n)
 {
     MOSH_ASSERT(n.isNumber());
     if (n.isFixnum()) {
-        return Object::makeFlonum(n.toFixnum());
+        return Object::makeFlonum(static_cast<double>(n.toFixnum()));
     } else if (n.isBignum()) {
         return Object::makeFlonum(n.toBignum()->toDouble());
     } else if (n.isFlonum()) {

@@ -384,7 +384,7 @@ Object Object::makeCallable(Callable* callable)
                                                         reinterpret_cast<intptr_t>(callable))));
 }
 
-Object Object::makeRatnum(int numerator, int denominator)
+Object Object::makeRatnum(fixedint numerator, fixedint denominator)
 {
     return Object::makeRatnum(new Ratnum(numerator, denominator));
 }
@@ -440,7 +440,7 @@ Object Object::makePointer(void* pointer)
                                                             reinterpret_cast<intptr_t>(new Pointer(pointer)))));
 }
 
-Object Object::makeSimpleStruct(Object name, int fieldCount)
+Object Object::makeSimpleStruct(Object name, fixedint fieldCount)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::SimpleStruct,
                                                             reinterpret_cast<intptr_t>(new SimpleStruct(name, fieldCount)))));

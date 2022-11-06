@@ -239,7 +239,7 @@ Object scheme::integerDivEx(VM* theVM, int argc, const Object* argv)
     }
 
     if (n2.isFixnum()) {
-        const int fn2 = n2.toFixnum();
+        const fixedint fn2 = n2.toFixnum();
         if (0 == fn2) {
             callAssertionViolationAfter(theVM, procedureName, UC("div by 0 is not defined"), Pair::list2(n1, n2));
             return Object::Undef;
@@ -801,14 +801,14 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, UC("must be non-zero"), L2(x, y));
                 return Object::Undef;
             }
-            intptr_t r = x.toFixnum() % y.toFixnum();
+            fixedint r = x.toFixnum() % y.toFixnum();
             if (0 == r) {
                 return Object::makeFixnum(0);
             }
             if ((y.toFixnum() > 0) + (r > 0) == 1) {
                 r = r + y.toFixnum();
             }
-            return Object::makeFixnum(static_cast<fixedint>(r));
+            return Object::makeFixnum(r);
         } else if (y.isFlonum()) { // fixnum, flonum
             const double value = y.toFlonum()->value();
             if (0.0 == value) {
@@ -820,7 +820,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 return Object::makeFlonum(0.0);
             }
             if ((y.toFlonum()->value() > 0.0) + (r > 0.0) == 1) {
-                r = r + y.toFixnum();
+                r = r + static_cast<double>(y.toFixnum());
             }
             Flonum f(r);
             return f.toExact();
@@ -853,9 +853,9 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 return Object::Undef;
             }
 
-            double r = fmod(x.toFlonum()->value(), y.toFixnum());
+            double r = fmod(x.toFlonum()->value(), static_cast<double>(y.toFixnum()));
             if ((y.toFixnum() > 0) + (r > 0.0) == 1) {
-                r = r + y.toFixnum();
+                r = r + static_cast<double>(y.toFixnum());
             }
             if (r == 0) {
                 return Object::makeFixnum(0);
@@ -873,7 +873,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 return Object::makeFlonum(0.0);
             }
             if ((value > 0.0) + (r > 0.0) == 1) {
-                r = r + y.toFixnum();
+                r = r + static_cast<double>(y.toFixnum());
             }
             Flonum f(r);
             return f.toExact();
@@ -888,7 +888,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 return Object::makeFlonum(0.0);
             }
             if ((value > 0.0) + (r > 0.0) == 1) {
-                r = r + y.toFixnum();
+                r = r + static_cast<double>(y.toFixnum());
             }
             Flonum f(r);
             return f.toExact();
@@ -931,7 +931,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 return Object::makeFlonum(0.0);
             }
             if ((value > 0.0) + (r > 0.0) == 1) {
-                r = r + y.toFixnum();
+                r = r + static_cast<double>(y.toFixnum());
             }
             Flonum f(r);
             return f.toExact();
@@ -990,7 +990,7 @@ Object scheme::quotientEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, UC("must be non-zero"), L2(x, y));
                 return Object::Undef;
             }
-            Flonum f(x.toFixnum() / value);
+            Flonum f(static_cast<double>(x.toFixnum()) / value);
             return f.toExact();
         } else if (y.isBignum()) { // fixnum, bignum
             if (Arithmetic::eq(y, Object::makeFixnum(0))) {
@@ -1015,7 +1015,7 @@ Object scheme::quotientEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, UC("must be non-zero"), L2(x, y));
                 return Object::Undef;
             }
-            Flonum f(::trunc(x.toFlonum()->value() / y.toFixnum()));
+            Flonum f(::trunc(x.toFlonum()->value() / static_cast<double>(y.toFixnum())));
             return f.toExact();
         } else if (y.isFlonum()) { // flonum, flonum
             const double value = y.toFlonum()->value();
@@ -1099,7 +1099,7 @@ Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, UC("must be non-zero"), L2(x, y));
                 return Object::Undef;
             }
-            return Object::makeFlonum(fmod(x.toFixnum(), value));
+            return Object::makeFlonum(fmod(static_cast<double>(x.toFixnum()), value));
         } else if (y.isBignum()) { // fixnum, bignum
             if (Arithmetic::eq(y, Object::makeFixnum(0))) {
                 callAssertionViolationAfter(theVM, procedureName, UC("must be non-zero"), L2(x, y));
@@ -1123,7 +1123,7 @@ Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
                 callAssertionViolationAfter(theVM, procedureName, UC("must be non-zero"), L2(x, y));
                 return Object::Undef;
             }
-            return Object::makeFlonum(::fmod(x.toFlonum()->value(),y.toFixnum()));
+            return Object::makeFlonum(::fmod(x.toFlonum()->value(), static_cast<double>(y.toFixnum())));
         } else if (y.isFlonum()) { // flonum, flonum
             const double value = y.toFlonum()->value();
             if (0.0 == value) {

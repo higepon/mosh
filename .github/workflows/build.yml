@@ -316,7 +316,7 @@ jobs:
           tar xzv -f ${{ env.mosh_latest }}.tar.gz
           rm ${{ env.mosh_latest }}.tar.gz
       - name: "Build with VM"
-        uses: vmactions/freebsd-vm@v0.2.8
+        uses: vmactions/freebsd-vm@v0.3.0
         with:
           usesh: true
           copyback: false
@@ -344,7 +344,7 @@ jobs:
           tar xzv -f ${{ env.mosh_latest }}.tar.gz
           rm ${{ env.mosh_latest }}.tar.gz
       - name: "Build with VM"
-        uses: vmactions/netbsd-vm@8f54bcd9711f9b85d41efd8eddcbb74b0d8aeb63
+        uses: vmactions/netbsd-vm@v0.1.0
         # FIXME: We need to fix `test_ffi` to enable check
         with:
           usesh: true
@@ -373,7 +373,7 @@ jobs:
           tar xzv -f ${{ env.mosh_latest }}.tar.gz
           rm ${{ env.mosh_latest }}.tar.gz
       - name: "Build with VM"
-        uses: vmactions/openbsd-vm@847a57cb2a0b10808205a7ca805b914a5daa29c0
+        uses: vmactions/openbsd-vm@v0.1.1
         with:
           usesh: true
           copyback: false
@@ -399,7 +399,7 @@ jobs:
           tar xzv -f ${{ env.mosh_latest }}.tar.gz
           rm ${{ env.mosh_latest }}.tar.gz
       - name: "Build with VM"
-        uses: vmactions/dragonflybsd-vm@v0.0.5
+        uses: vmactions/dragonflybsd-vm@v0.0.6
         with:
           usesh: true
           copyback: false

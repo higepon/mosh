@@ -421,7 +421,7 @@ decimal10 : uinteger10String suffix {
                   yyerror("invalid flonum expression: too large significand");
                 }
                 const int digit = static_cast<int>($3.size());
-                $$ = Object::makeFlonum(FlonumUtil::algorithmR(f, e.toFixnum() - digit, z0));
+                $$ = Object::makeFlonum(FlonumUtil::algorithmR(f, static_cast<int>(e.toFixnum()) - digit, z0));
               } else {
                 ucs4string ret = $1;
                 ret += UC(".") + $3;

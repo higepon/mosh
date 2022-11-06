@@ -42,9 +42,9 @@ public:
     explicit CProcedure(Object (*proc)(VM* theVM, int, const Object*)) : proc(proc) {}
     ~CProcedure() = default;
 
-    Object call(VM* theVM, int argc, const Object* argv)
+    Object call(VM* theVM, fixedint argc, const Object* argv)
     {
-        return (*proc)(theVM, argc, argv);
+        return (*proc)(theVM, static_cast<int>(argc), argv);
     }
 
     Object (*proc)(VM*, int, const Object*);

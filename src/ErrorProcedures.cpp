@@ -238,7 +238,7 @@ void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, const uc
     callWrongNumberOfArgumentsBetweenViolationAfter(theVM, Object(who), startCounts, endCounts, gotCounts, irritants);
 }
 
-void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, fixedint requiredCounts, fixedint gotCounts, Object irritants /* Object::Nil */ )
 {
     const Object message = format(theVM, UC("wrong number of arguments (required ~d, got ~d)"),
                                   Pair::list2(Object::makeFixnum(requiredCounts),
@@ -251,7 +251,7 @@ void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, const ucs4char*
     callWrongNumberOfArgumentsViolationAfter(theVM, Object(who), requiredCounts, gotCounts, irritants);
 }
 
-void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, fixedint requiredCounts, fixedint gotCounts, Object irritants /* Object::Nil */ )
 {
     const Object message = format(theVM, UC("wrong number of arguments (required at least ~d, got ~d)"),
                                   Pair::list2(Object::makeFixnum(requiredCounts),
@@ -259,7 +259,7 @@ void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object w
     callAssertionViolationAfter(theVM, who, message, irritants);
 }
 
-void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, const ucs4char* who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, const ucs4char* who, fixedint requiredCounts, fixedint gotCounts, Object irritants /* Object::Nil */ )
 {
     callWrongNumberOfArgumentsAtLeastViolationAfter(theVM, Object(who), requiredCounts, gotCounts, irritants);
 }

@@ -144,7 +144,7 @@
         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, UC(#required), obj ## variableName); \
         return Object::Undef; \
     } \
-    type variableName = obj ## variableName.castFunction();
+    type variableName = static_cast<type>(obj ## variableName.castFunction());
 
 
 #define checkTypeOrFalse(index, variableName, pred, required) \
@@ -174,7 +174,9 @@
 #define argumentAsSocket(index, variableName) castArgument(index, variableName, isSocket, socket, Socket*, toSocket)
 #define argumentAsSimpleStruct(index, variableName) castArgument(index, variableName, isSimpleStruct, simple-struct, SimpleStruct*, toSimpleStruct)
 #define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
-#define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
+#define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, fixedint, toFixnum)
+// Only use this we're sure that fixnum is in int range.
+#define argumentAsFixnumToInt(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
 #define argumentAsSizeT(index, variableName) castArgument(index, variableName, isFixnum, fixnum, size_t, toFixnum)
 
 

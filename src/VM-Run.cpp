@@ -292,21 +292,21 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         }
         CASE(CLOSURE)
         {
-            const Object skipSizeObject      = fetchOperand();
-            const Object argLengthObject     = fetchOperand();
-            const Object isOptionalArgObjecg   = fetchOperand();
+            const Object skipSizeObject = fetchOperand();
+            const Object argLengthObject  = fetchOperand();
+            const Object isOptionalArgObjecg  = fetchOperand();
             const Object freeVariablesNumObject = fetchOperand();
-            const Object maxStackObject         = fetchOperand();
-            const Object sourceInfo    = fetchOperand();
+            const Object maxStackObject = fetchOperand();
+            const Object sourceInfo  = fetchOperand();
             VM_ASSERT(skipSizeObject.isFixnum());
-            const int skipSize         = skipSizeObject.toFixnum();
+            const int skipSize  = static_cast<int>(skipSizeObject.toFixnum());
             VM_ASSERT(argLengthObject.isFixnum());
-            const int argLength        = argLengthObject.toFixnum();
-            const bool isOptionalArg   = !isOptionalArgObjecg.isFalse();
+            const int argLength = static_cast<int>(argLengthObject.toFixnum());
+            const bool isOptionalArg = !isOptionalArgObjecg.isFalse();
             VM_ASSERT(freeVariablesNumObject.isFixnum());
-            const int freeVariablesNum = freeVariablesNumObject.toFixnum();
+            const int freeVariablesNum = static_cast<int>(freeVariablesNumObject.toFixnum());
             VM_ASSERT(maxStackObject.isFixnum());
-            const int maxStack         =maxStackObject.toFixnum();
+            const int maxStack = static_cast<int>(maxStackObject.toFixnum());
 
 //            LOG1("(CLOSURE) source=~a\n", sourceInfo);
             ac_ = Object::makeClosure(pc_, skipSize, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
@@ -343,7 +343,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         {
             const Object n = fetchOperand();
             VM_ASSERT(n.isFixnum());
-            const int freeVariablesNum = n.toFixnum();
+            const int freeVariablesNum = static_cast<int>(n.toFixnum());
 
             // create display closure
             const Object display = Object::makeClosure(nullptr, 0, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
@@ -393,7 +393,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         frame_entry:
             const Object n = fetchOperand();
             VM_ASSERT(n.isFixnum());
-            const int skipSize = n.toFixnum();
+            const fixedint skipSize = n.toFixnum();
             makeCallFrame(pc_ + skipSize - 1);
             NEXT;
         }
@@ -433,7 +433,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         {
             const Object numObject = fetchOperand();
             VM_ASSERT(numObject.isFixnum());
-            const int num = numObject.toFixnum();
+            const fixedint num = numObject.toFixnum();
             Object list = Object::Nil;
             for (int i = 0; i < num; i++) {
                 list = Object::cons(index(sp_, i), list);
@@ -462,12 +462,12 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         {
             const Object numObject = fetchOperand();
             MOSH_ASSERT(numObject.isFixnum());
-            const int num = numObject.toFixnum();
+            const fixedint num = numObject.toFixnum();
             Object vec = Object::makeVector(num);
             if (num > 0) {
                 Vector* const v = vec.toVector();
                 Object arg = ac_;
-                for (int i = num - 1; i > 0 ; i--) {
+                for (fixedint i = num - 1; i > 0 ; i--) {
                     v->set(i, arg);
                     arg = pop();
                 }
@@ -514,11 +514,12 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         CASE(NUMBER_ADD)
         {
             const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
+            // short cut for Fixnum. Benchmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() + ac_.toFixnum();
+                const fixedint val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
+
                 const Object v = ac_;
                 ac_ = Arithmetic::add(n, v);
                 if (ac_.isFalse()) {
@@ -604,7 +605,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object n = pop();
             // short cut for Fixnum. Benmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() - ac_.toFixnum();
+                const fixedint val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
                 ac_ = Arithmetic::sub(n, ac_);
@@ -619,7 +620,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object n = pop();
             // short cut for Fixnum. Benmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() - ac_.toFixnum();
+                const fixedint val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
                 ac_ = Arithmetic::sub(n, ac_);
@@ -633,9 +634,9 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         CASE(NUMBER_ADD_PUSH)
         {
             const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
+            // short cut for Fixnum. Benchmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
-                const int32_t val = n.toFixnum() + ac_.toFixnum();
+                const fixedint val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
                 ac_ = Arithmetic::add(n, ac_);
@@ -925,13 +926,13 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             // Stores arguments of the continuation to values registers.
             const Object argumentsLength = fetchOperand();
             VM_ASSERT(argumentsLength.isFixnum());
-            const int num = argumentsLength.toFixnum();
+            const fixedint num = argumentsLength.toFixnum();
             if (num > maxNumValues_ + 1) {
                 callAssertionViolationAfter(this, UC("values"), UC("too many values"), Pair::list1(argumentsLength));
             }
             numValues_ = num;
             if (num != 0) {
-                for (int i = 0; i < num - 1; i++) {
+                for (fixedint i = 0; i < num - 1; i++) {
                     values_[i] = index(sp_, num - i - 2);
                 }
                 ac_ = index(sp_, num -  1);
@@ -946,7 +947,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 
             const Object diffObject = fetchOperand();
             VM_ASSERT(diffObject.isFixnum());
-            const int diff  = diffObject.toFixnum();
+            const fixedint diff  = diffObject.toFixnum();
             sp_ = shiftArgsToBottom(sp_, depth, diff);
             operand = Object::makeFixnum(0);
             goto return_entry;
@@ -1029,17 +1030,17 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object depthObject = fetchOperand();
             VM_ASSERT(depthObject.isFixnum());
 
-            const int depth = depthObject.toFixnum();
+            const fixedint depth = depthObject.toFixnum();
 
             const Object diffObject = fetchOperand();
             VM_ASSERT(diffObject.isFixnum());
-            const int diff  = diffObject.toFixnum();
+            const fixedint diff  = diffObject.toFixnum();
             sp_ = shiftArgsToBottom(sp_, depth, diff);
             fp_ = sp_ - depth;
 
             const Object displayCount = fetchOperand();
             VM_ASSERT(displayCount.isFixnum());
-            for (int i = displayCount.toFixnum(); i > 0; i--) {
+            for (fixedint i = displayCount.toFixnum(); i > 0; i--) {
                 dc_ = dc_.toClosure()->prev;
             }
             VM_ASSERT(dc_.isClosure());
@@ -1051,10 +1052,10 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object depthObject = fetchOperand();
             VM_ASSERT(depthObject.isFixnum());
 
-            const int depth = depthObject.toFixnum();
+            const fixedint depth = depthObject.toFixnum();
             const Object diffObject = fetchOperand();
             VM_ASSERT(diffObject.isFixnum());
-            const int diff  = diffObject.toFixnum();
+            const fixedint diff  = diffObject.toFixnum();
             sp_ = shiftArgsToBottom(sp_, depth, diff);
 
             NEXT;
@@ -1067,8 +1068,8 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 
             VM_ASSERT(depthObject.isFixnum());
             MOSH_ASSERT(diffObject.isFixnum());
-            const int depth = depthObject.toFixnum();
-            const int diff  = diffObject.toFixnum();
+            const fixedint depth = depthObject.toFixnum();
+            const fixedint diff  = diffObject.toFixnum();
             sp_ = shiftArgsToBottom(sp_, depth, diff);
             operand = fetchOperand();
             #include "call.inc.cpp"
@@ -1196,7 +1197,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object obj = pop();
             if (obj.isVector()) {
                 if (ac_.isFixnum()) {
-                    const int index = ac_.toFixnum();
+                    const fixedint index = ac_.toFixnum();
                     Vector* const v = obj.toVector();
                     if (v->isValidIndex(index)) {
                         ac_ = v->ref(index);
@@ -1225,7 +1226,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object obj = pop();
             if (obj.isSimpleStruct()) {
                 MOSH_ASSERT(ac_.isFixnum());
-                const int index = ac_.toFixnum();
+                const fixedint index = ac_.toFixnum();
                 SimpleStruct* const s = obj.toSimpleStruct();
                 if (s->isValidIndex(index)) {
                     ac_ = s->ref(index);
@@ -1276,7 +1277,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object obj = pop();
             if (obj.isVector()) {
                 if (n.isFixnum()) {
-                    const int index = n.toFixnum();
+                    const fixedint index = n.toFixnum();
                     Vector* const v = obj.toVector();
                     if (v->isValidIndex(index)) {
                         v->set(index, ac_);
@@ -1319,13 +1320,13 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             //  [ac_] = a
             const Object numObject = fetchOperand();
             MOSH_ASSERT(numObject.isFixnum());
-            const int num = numObject.toFixnum();
+            const fixedint num = numObject.toFixnum();
             if (num > maxNumValues_ + 1) {
                 callAssertionViolationAfter(this, UC("values"), UC("too many values"), Pair::list1(Object::makeFixnum(num)));
             } else {
                 numValues_ = num;
                 if (num >= 0) {
-                    for (int i = num - 1; i > 0; i--) {
+                    for (fixedint i = num - 1; i > 0; i--) {
                         values_[i - 1] = ac_;
                         ac_ = index(sp_, num - i - 1);
                     }
@@ -1347,9 +1348,9 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             const Object reqargsObject = fetchOperand();
             const Object optargObject = fetchOperand();
             MOSH_ASSERT(reqargsObject.isFixnum());
-            const int reqargs = reqargsObject.toFixnum();
+            const fixedint reqargs = reqargsObject.toFixnum();
             MOSH_ASSERT(optargObject.isFixnum());
-            const int optarg  = optargObject.toFixnum();
+            const fixedint optarg = optargObject.toFixnum();
             if (numValues_ < reqargs) {
                 callAssertionViolationAfter(this,
                                             UC("receive"),

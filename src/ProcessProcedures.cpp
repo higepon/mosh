@@ -123,7 +123,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
     if (pid.isBignum()) {
         target = static_cast<pid_t>(pid.toBignum()->toU64());
     } else {
-        target = pid.toFixnum();
+        target = static_cast<pid_t>(pid.toFixnum());
     }
     int status;
     pid_t child = waitpid(target, &status, 0);

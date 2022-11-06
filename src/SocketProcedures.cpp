@@ -325,7 +325,7 @@ Object scheme::socketShutdownEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("socket-shutdown");
     checkArgumentLength(2);
     argumentAsSocket(0, socket);
-    argumentAsFixnum(1, how);
+    argumentAsFixnumToInt(1, how);
     socket->shutdown(how);
     return Object::Undef;
 }
@@ -347,7 +347,7 @@ Object scheme::socketSendEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(3);
     argumentAsSocket(0, socket);
     argumentAsByteVector(1, bv);
-    argumentAsFixnum(2, flags);
+    argumentAsFixnumToInt(2, flags);
     const int result = socket->send(bv->data(), bv->length(), flags);
     if (-1 == result) {
         return callIOErrorAfter(theVM, procedureName, socket->getLastErrorMessage(), L3(argv[0], argv[1], argv[2]));
@@ -364,8 +364,8 @@ Object scheme::socketRecvDEx(VM* theVM, int argc, const Object* argv)
     argumentAsSocket(0, socket);
     argumentAsByteVector(1, bv);
     argumentAsFixnum(2, start);
-    argumentAsFixnum(3, len);
-    argumentAsFixnum(4, flags);
+    argumentAsFixnumToInt(3, len);
+    argumentAsFixnumToInt(4, flags);
     if (bv->length() <= (size_t)start + len) {
         return callAssertionViolationAfter(theVM, procedureName, UC("bytevector size is not enough"), L1(argv[0]));
     }
@@ -383,8 +383,8 @@ Object scheme::socketRecvEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("socket-recv");
     checkArgumentLength(3);
     argumentAsSocket(0, socket);
-    argumentAsFixnum(1, len);
-    argumentAsFixnum(2, flags);
+    argumentAsFixnumToInt(1, len);
+    argumentAsFixnumToInt(2, flags);
     uint8_t* data = allocatePointerFreeU8Array(len);
     MOSH_ASSERT(data != NULL);
     const int result = socket->receive(data, len, flags);
@@ -403,10 +403,10 @@ Object scheme::makeClientSocketEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(6);
     argumentCheckStringOrFalse(0, nodeOrFalse);
     argumentCheckStringOrFalse(1, serviceOrFalse);
-    argumentAsFixnum(2, ai_family);
-    argumentAsFixnum(3, ai_socktype);
-    argumentAsFixnum(4, ai_flags);
-    argumentAsFixnum(5, ai_protocol);
+    argumentAsFixnumToInt(2, ai_family);
+    argumentAsFixnumToInt(3, ai_socktype);
+    argumentAsFixnumToInt(4, ai_flags);
+    argumentAsFixnumToInt(5, ai_protocol);
     const char* node = nullptr;
     const char* service = nullptr;
     if (nodeOrFalse.isString()) {
@@ -442,9 +442,9 @@ Object scheme::makeServerSocketEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("make-server-socket");
     checkArgumentLength(4);
     argumentCheckStringOrFalse(0, serviceOrFalse);
-    argumentAsFixnum(1, ai_family);
-    argumentAsFixnum(2, ai_socktype);
-    argumentAsFixnum(3, ai_protocol);
+    argumentAsFixnumToInt(1, ai_family);
+    argumentAsFixnumToInt(2, ai_socktype);
+    argumentAsFixnumToInt(3, ai_protocol);
     const char* service = nullptr;
     if (serviceOrFalse.isString()) {
         service = serviceOrFalse.toString()->data().ascii_c_str();

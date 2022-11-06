@@ -439,7 +439,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     }
 
     TRY_WITHOUT_DSTR
-        ucs4string text = inputPort->getString(size);
+        ucs4string text = inputPort->getString(static_cast<int>(size));
 
         if (text.empty()) {
             return Object::Eof;
@@ -576,7 +576,7 @@ Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
         }
 
         argumentCheckExactInteger(2, startObj);
-        int start;
+        fixedint start;
         if (startObj.isFixnum()) {
             start = startObj.toFixnum();
         } else { // startObj.isBignum()
@@ -588,7 +588,7 @@ Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
         }
 
         argumentCheckExactInteger(3, countObj);
-        int count;
+        fixedint count;
         if (countObj.isFixnum()) {
             count = countObj.toFixnum();
         } else { // countObj.isBignum()
@@ -1900,7 +1900,7 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     }
 
     argumentCheckExactInteger(2, startObj);
-    int start;
+    fixedint start;
     if (startObj.isFixnum()) {
         start = startObj.toFixnum();
     } else { // startObj.isBignum()
@@ -1918,7 +1918,7 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     }
 
     argumentCheckExactInteger(3, countObj);
-    int count;
+    fixedint count;
     if (countObj.isFixnum()) {
         count = countObj.toFixnum();
     } else { // countObj.isBignum()

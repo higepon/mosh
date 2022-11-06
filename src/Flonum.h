@@ -319,14 +319,39 @@ public:
 
     MAKE_RATIONAL_EQ_FUNC()
 
+    // See if fixedint fits in double.
+    static bool canFitInDouble(fixedint n)
+    {
+        if (sizeof(fixedint) == sizeof(uint32_t)) {
+            return true;
+        }
+        unsigned int numBits = 0;
+        unsigned long un = static_cast<unsigned long>(n);
+        while (un) {
+            numBits++;
+            un >>= 1;
+        }
+        return std::numeric_limits<double>::digits10 >= numBits;
+    }
+
 #define MAKE_FIXNUM_COMPARE_FUNC(compare, symbol) \
-    static bool compare(Flonum* n1, int n2)\
+    static bool compare(Flonum* n1, fixedint n2)\
     {\
-        return n1->value() symbol static_cast<double>(n2);\
+        bool r = n1->value() symbol static_cast<double>(n2);\
+        if (n1->isInfinite() || n1->isNan() || canFitInDouble(n2)) {\
+            return r;\
+        }\
+        Bignum* b = new Bignum(n1->value());\
+        return Bignum::compare(b, n2);\
     }\
-    static bool compare(int n1, Flonum* n2)\
+    static bool compare(fixedint n1, Flonum* n2)\
     {\
-        return static_cast<double>(n1) symbol n2->value();\
+        bool r = static_cast<double>(n1) symbol n2->value();\
+        if (n2->isInfinite()  || n2->isNan() || canFitInDouble(n1)) {\
+            return r;\
+        }\
+        Bignum* b = new Bignum(n2->value());\
+        return Bignum::compare(n1, b);\
     }
 
     MAKE_FIXNUM_COMPARE_FUNC(gt, >)
@@ -336,11 +361,11 @@ public:
     MAKE_FIXNUM_COMPARE_FUNC(eq, ==)
 
 #define MAKE_FLONUM_OP_FUNC(op, symbol) \
-    static Object op(Flonum* n1, int n2)\
+    static Object op(Flonum* n1, fixedint n2)\
     {\
         return Object::makeFlonum(n1->value() symbol static_cast<double>(n2));\
     }\
-    static Object op(int n1, Flonum* n2)\
+    static Object op(fixedint n1, Flonum* n2)\
     {\
         return Object::makeFlonum(static_cast<double>(n1) symbol n2->value());\
     }\

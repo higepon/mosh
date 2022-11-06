@@ -59,7 +59,7 @@ public:
 
     ~Closure() = default; // not virtual
 
-    inline Object referFree(int n)
+    inline Object referFree(fixedint n)
     {
 #ifdef DEBUG
         if (n >= freeVariablesNum)

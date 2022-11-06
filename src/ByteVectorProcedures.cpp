@@ -423,7 +423,12 @@ Object scheme::bytevectorS32NativeSetDEx(VM* theVM, int argc, const Object* argv
 
     int32_t value;
     if (v.isFixnum()) {
-        value = v.toFixnum();
+        fixedint fValue = v.toFixnum();
+        if (!ByteVector::inS32Range(value)) {
+            callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
+            return Object::Undef;            
+        }
+        value = static_cast<int32_t>(fValue);
     } else { // Bignum
         MOSH_ASSERT(v.isBignum());
         Bignum* const b = v.toBignum();
@@ -453,12 +458,12 @@ Object scheme::bytevectorU32NativeSetDEx(VM* theVM, int argc, const Object* argv
 
     uint32_t value;
     if (v.isFixnum()) {
-        int32_t temp = v.toFixnum();
-        if (temp < 0) {
+        fixedint singedValue = v.toFixnum();
+        if (!ByteVector::inU32Range(singedValue)) {
             callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
             return Object::Undef;
         }
-        value = (uint32_t)temp;
+        value = static_cast<uint32_t>(singedValue);
     } else { // Bignum
         MOSH_ASSERT(v.isBignum());
         Bignum* const b = v.toBignum();
@@ -489,7 +494,12 @@ Object scheme::bytevectorS32SetDEx(VM* theVM, int argc, const Object* argv)
 
     int32_t value;
     if (v.isFixnum()) {
-        value = v.toFixnum();
+        fixedint fValue = v.toFixnum();
+        if (!ByteVector::inS32Range(fValue)) {
+            callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
+            return Object::Undef;            
+        }
+        value = static_cast<int32_t>(fValue);
     } else { // Bignum
         MOSH_ASSERT(v.isBignum());
         Bignum* const b = v.toBignum();
@@ -525,12 +535,12 @@ Object scheme::bytevectorU32SetDEx(VM* theVM, int argc, const Object* argv)
 
     uint32_t value;
     if (v.isFixnum()) {
-        int32_t temp = v.toFixnum();
-        if (temp < 0) {
+        fixedint signedValue = v.toFixnum();
+        if (!ByteVector::inU32Range(signedValue)) {
             callAssertionViolationAfter(theVM, procedureName, UC("value out of range"), L1(argv[2]));
             return Object::Undef;
         }
-        value = (uint32_t)temp;
+        value = static_cast<uint32_t>(signedValue);
     } else { // Bignum
         MOSH_ASSERT(v.isBignum());
         Bignum* const b = v.toBignum();
@@ -886,11 +896,11 @@ Object scheme::makeBytevectorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-bytevector");
     checkArgumentLengthBetween(1, 2);
-    argumentAsFixnum(0, length);
+    argumentAsFixnumToInt(0, length);
     if (1 == argc) {
         return Object::makeByteVector(length);
     } else {
-        argumentAsFixnum(1, value);
+        argumentAsFixnumToInt(1, value);
         if (ByteVector::isByte(value) || ByteVector::isOctet(value)) {
             return Object::makeByteVector(length, static_cast<uint8_t>(value));
         } else {

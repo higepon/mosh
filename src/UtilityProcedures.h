@@ -105,12 +105,10 @@ namespace scheme {
     Object nongenerativeRtdSetDEx(VM* theVM, int argc, const Object* argv);
     Object lookupNongenerativeRtdEx(VM* theVM, int argc, const Object* argv);
 
-
-    int mod(int x, int y);
-    int div(int x, int y);
+    fixedint mod(fixedint x, fixedint y);
+    fixedint div(fixedint x, fixedint y);
 
     Object stringTosymbol(Object str);
-
 
     Object pass3CompileReferEx(VM* theVM, int argc, const Object* argv);
 

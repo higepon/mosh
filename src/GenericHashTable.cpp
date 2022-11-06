@@ -46,14 +46,14 @@ Object genericHashFunction;
 Object genericEquivalenceFunction;
 static VM* theVM = nullptr; // todo multi thread
 
-int callHashFunction(Object hashFunction, Object key)
+fixedint callHashFunction(Object hashFunction, Object key)
 {
     const Object hashValue =  theVM->callClosure1(hashFunction, key);
     MOSH_ASSERT(hashValue.isFixnum() || hashValue.isBignum());
     if (hashValue.isFixnum()) {
         return hashValue.toFixnum();
     } else if (hashValue.isBignum()) {
-        return (int)hashValue.toBignum()->toS64();
+        return (fixedint)hashValue.toBignum()->toS64();
     }
     return -1;
 }

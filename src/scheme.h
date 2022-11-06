@@ -143,7 +143,11 @@ enum {
 //#define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
 
 typedef int32_t ucs4char; // use -1 for EOF
-typedef int fixedint;
+
+// For Fixnum.
+// sizeof(fixedint) = 4 for 32 bits.
+// sizeof(fixedint) = 8 for 64 bits.
+typedef signed long fixedint;
 
 #if defined(MONA)
 const ucs4char* UC(const char *str);

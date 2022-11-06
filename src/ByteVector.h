@@ -644,12 +644,12 @@ public:
         return bytevector;
     }
 
-    static bool inU16Range(int value)
+    static bool inU16Range(fixedint value)
     {
         return (0 <= value) && (value <= 65535);
     }
 
-    static bool inS16Range(int value)
+    static bool inS16Range(fixedint value)
     {
         return (-32768 <= value) && (value <= 32767);
     }
@@ -667,12 +667,12 @@ public:
         return (-2147483648LL <= value) && (value <= 2147483647LL);
     }
 
-    static bool isByte(int value)
+    static bool isByte(fixedint value)
     {
         return (-128 <= value && value <= 127);
     }
 
-    static bool isOctet(int value)
+    static bool isOctet(fixedint value)
     {
         return (0 <= value && value <= 255);
     }

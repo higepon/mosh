@@ -57,7 +57,7 @@ Object scheme::makeF64arrayEx(VM* theVM, int argc, const Object* argv)
         if (argv[2].isFlonum()) {
             fillValue = argv[2].toFlonum()->value();
         } else if (argv[2].isFixnum()) {
-            fillValue = argv[2].toFixnum();
+            fillValue = static_cast<double>(argv[2].toFixnum());
         } else {
             callAssertionViolationAfter(theVM, procedureName, UC("flonum or fixnum required"), Pair::list1(argv[2]));
             return Object::Undef;
@@ -110,7 +110,7 @@ Object scheme::f64arraySetDEx(VM* theVM, int argc, const Object* argv)
     if (argv[1].isFlonum()) {
         array->set(row, col, argv[1].toFlonum()->value());
     } else if (argv[1].isFixnum()) {
-        array->set(row, col, argv[1].toFixnum());
+        array->set(row, col, static_cast<double>(argv[1].toFixnum()));
     } else {
         callAssertionViolationAfter(theVM, procedureName, UC("flonum or fixnum required"), Pair::list1(argv[0]));
         return Object::Undef;

@@ -255,7 +255,7 @@ public:
     static Object makeClosure(const Closure* closure);
     static Object makeContinuation(Object stack, Object shiftSize, Object winders);
     static Object makeSharedReference(int index);
-    static Object makeSimpleStruct(Object name, int fieldCount);
+    static Object makeSimpleStruct(Object name, fixedint fieldCount);
     static Object makeSymbol(const ucs4char* str);
     static Object makeInputFilePort(const ucs4char* str);
     static Object makeStack(Object* src, int size);
@@ -281,7 +281,7 @@ public:
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
-    static Object makeRatnum(int numerator, int denominator);
+    static Object makeRatnum(fixedint numerator, fixedint denominator);
     static Object makeRatnum(Ratnum* r);
     static Object makeCompnum(Object real, Object imag);
 #include "Object-accessors.h"
