@@ -399,7 +399,7 @@ jobs:
           tar xzv -f ${{ env.mosh_latest }}.tar.gz
           rm ${{ env.mosh_latest }}.tar.gz
       - name: "Build with VM"
-        uses: vmactions/dragonflybsd-vm@v0.0.5
+        uses: vmactions/dragonflybsd-vm@v0.0.6
         with:
           usesh: true
           copyback: false
