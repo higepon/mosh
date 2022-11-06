@@ -43,6 +43,9 @@ Changes
   - Mosh passes 1200/1210 tests in r7rs-tests.scm from Chibi Scheme.
   - To demonstrate R7RS comformance, we write MNIST demo in R7RS. It works both with Gauche and Mosh.
 
+- Fixnum
+  - Now Mosh has 62bits size Fixnum in 64bits architectures.
+
 - f64array
   - To support faster matrix operations. We introduced f64array which is 2D matrix of double.
 
