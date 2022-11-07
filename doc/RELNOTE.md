@@ -9,7 +9,7 @@ Minor release to support M1 mac.
 Known issues
 ------------
 
-- nmosh do not support R7RS libraries
+- nmosh does not support R7RS libraries
 
 Changes
 -------
@@ -23,7 +23,7 @@ Changes
     system libraries
   - CMake build now require CMake 3.0 or later
 
-- Command line:
+- Libraries:
   - Added SRFI 133, 158 and 194 support.
   - Added SRFI 176 support. Huge thanks to Lassi Kortela.
 
@@ -38,13 +38,17 @@ Changes
   - A bool value next-method? available within method definition. See
     Issue 216 for details.
 
+- Added `--optimize-level` commandline option.
+
 - R7RS (Experimental)
   - Support R7RS small + (scheme vector) library.
   - Mosh passes 1200/1210 tests in r7rs-tests.scm from Chibi Scheme.
   - To demonstrate R7RS comformance, we write MNIST demo in R7RS. It works both with Gauche and Mosh.
+  - Mosh can all [ecraven/r7rs-benchmarks](https://github.com/ecraven/r7rs-benchmarks/pull/64).
+  -
 
 - Fixnum
-  - Now Mosh has 62bits size Fixnum in 64bits architectures.
+  - Now Mosh has 62 bits size Fixnum in 64bits architectures.
 
 - f64array
   - To support faster matrix operations. We introduced f64array which is 2D matrix of double.
@@ -58,9 +62,9 @@ Bug fixes
 - Reader:
   - Fixed Issue 221 reported and patched by David Banks:
     - "."(period) was not treated as a delimiter. For example, "#t.#f"
-      read as #t. 
+      read as #t.
 
--  VM:
+- VM:
   - VM Compiler error "[internal error] iform-count-size-upto: unknown
     iform tag:13" was fixed.
 
@@ -85,8 +89,8 @@ Bug fixes
 
 - R6RS:
   - Fixed `vector-map` problem reported by Eduardo Cavazos:
-    - `vector-map` was not handle correctly when given procedure returned 
-      multiple times. Now `vector-map` defined as vector variant of R6RS 
+    - `vector-map` was not handle correctly when given procedure returned
+      multiple times. Now `vector-map` defined as vector variant of R6RS
       `map`.
 
 - file-executable?
