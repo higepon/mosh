@@ -45,7 +45,6 @@ Changes
   - Mosh passes 1200/1210 tests in r7rs-tests.scm from Chibi Scheme.
   - To demonstrate R7RS comformance, we write MNIST demo in R7RS. It works both with Gauche and Mosh.
   - Mosh can all [ecraven/r7rs-benchmarks](https://github.com/ecraven/r7rs-benchmarks/pull/64).
-  -
 
 - Fixnum
   - Now Mosh has 62 bits size Fixnum in 64bits architectures.
