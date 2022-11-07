@@ -17,7 +17,7 @@ Changes
 - R7RS (Experimental)
   - Support R7RS small + (scheme vector) library.
   - Mosh passes 1200/1210 tests in r7rs-tests.scm from Chibi Scheme.
-  - To demonstrate R7RS comformance, we write [MNIST demo](https://github.com/higepon/mosh/tree/master/tests/mnist) in R7RS. It works both with Gauche and Mosh.
+  - To demonstrate R7RS comformance, we wrote [MNIST demo](https://github.com/higepon/mosh/tree/master/tests/mnist) in R7RS. It works both with Gauche and Mosh.
   - Mosh can run all [ecraven/r7rs-benchmarks](https://github.com/ecraven/r7rs-benchmarks/pull/64).
 
 - Platform:
