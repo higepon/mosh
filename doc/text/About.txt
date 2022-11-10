@@ -1,8 +1,8 @@
 Title: About
 What is Mosh?:
-Mosh is a free and fast interpreter for Scheme as specified in the R6RS. (R6RS is the latest revision of the Scheme standard)
+Mosh is a free and fast interpreter for Scheme as specified in the R7RS & R6RS. (R7RS is the latest revision of the Scheme standard)
 
-The current release of Mosh supports all of the features R6RS.
+The current release of Mosh supports all of the features R7RS small and R6RS.
 
 Features: 
 
@@ -33,9 +33,10 @@ Mosh is distributed by MIT/X License.
 
 It is developed on <http://code.google.com/p/mosh-scheme/> by
 - higepon (higepon@users.sourceforge.jp)
+- .mjt
 - kokosabu 
 - herumi
-- .mjt
+
 
 
 
