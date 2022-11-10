@@ -6,7 +6,7 @@ Title: Mosh
 # You can also add a sub-title to your menu like this:
 # SubTitle: [subtitle]
 
-Footer: Copyright (C) 2008 - 2010 Higepon
+Footer: Copyright (C) 2008 - 2022 Higepon
 Timestamp: Updated month day, year
 #   m     - One or two digit month.  January is "1"
 #   mm    - Always two digit month.  January is "01"
@@ -22,7 +22,7 @@ Timestamp: Updated month day, year
 # These are indexes you deleted, so Natural Docs will not add them again
 # unless you remove them from this line.
 
-Don't Index: Files, Classes
+Don't Index: Classes, Files
 
 
 # --------------------------------------------------------------------------
@@ -70,6 +70,7 @@ Group: Lib  {
    File: Red-Black tree  (lib/rbtree.ss)
    File: Shorten  (lib/shorten.ss)
    File: Regular Expressions  (doc/text/regexp.txt)
+   File: MonAPI  (lib/monapi.ss)
    }  # Group: Lib
 
 Group: R6RS  {
@@ -98,6 +99,8 @@ Group: R6RS  {
    File: syntax-case  (doc/text/syntax-case.tex.txt)
    }  # Group: R6RS
 
+File: Pattern Match  (boot/runtimes/psyntax-mosh/match.ss)
+File: SearchPanel  (docs/javascript/main.js)
 File: SRFIs  (doc/text/srfi.txt)
 
 Group: Index  {
