@@ -70,7 +70,6 @@ Group: Lib  {
    File: Red-Black tree  (lib/rbtree.ss)
    File: Shorten  (lib/shorten.ss)
    File: Regular Expressions  (doc/text/regexp.txt)
-   File: MonAPI  (lib/monapi.ss)
    }  # Group: Lib
 
 Group: R6RS  {
@@ -99,8 +98,6 @@ Group: R6RS  {
    File: syntax-case  (doc/text/syntax-case.tex.txt)
    }  # Group: R6RS
 
-File: Pattern Match  (boot/runtimes/psyntax-mosh/match.ss)
-File: SearchPanel  (docs/javascript/main.js)
 File: SRFIs  (doc/text/srfi.txt)
 
 Group: Index  {
