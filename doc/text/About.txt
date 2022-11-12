@@ -31,7 +31,7 @@ Mosh runs on Linux/Unix, Mac OS X and Windows.
 License:
 Mosh is distributed by MIT/X License.
 
-It is developed on <http://code.google.com/p/mosh-scheme/> by
+It is developed on <https://github.com/higepon/mosh> by
 - higepon (higepon@users.sourceforge.jp)
 - .mjt
 - kokosabu 
