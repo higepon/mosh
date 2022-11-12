@@ -432,7 +432,7 @@ MAINTAINERCLEANFILES = $(GENERATED)
 
 doc:
 	mosh misc/scripts/gen-doc-from-r6rs.scm $(R6RS_DOC_PATH)
-	$(NATURALDOCS) -i . -o HTML doc/html -p doc/config -s pink -xi tools -r
+	$(NATURALDOCS) -i . -o HTML doc/html -p doc/config -s pink -xi tools -xi boot -xi docs -r
 
 .PHONY: doc test 
 .PHONY: ptest ntest testB testR testL ntestB ntestR ntestL install Xtest testD
