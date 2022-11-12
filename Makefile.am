@@ -434,6 +434,11 @@ doc:
 	mosh misc/scripts/gen-doc-from-r6rs.scm $(R6RS_DOC_PATH)
 	$(NATURALDOCS) -i . -o HTML doc/html -p doc/config -s pink -xi tools -xi boot -xi docs -r
 
+# Generate doc and copy to docs/.
+# When this is git push-ed, it will be uploaded mosh.monaos.org.
+update-docs: doc
+	cp -r doc/html/* docs
+
 .PHONY: doc test 
 .PHONY: ptest ntest testB testR testL ntestB ntestR ntestL install Xtest testD
 
