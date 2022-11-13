@@ -1,7 +1,7 @@
 name: Build
 env:
-  mosh_stable: mosh-0.2.8-rc8 # Stable tagname
-  mosh_latest: mosh-0.2.8-rc8 # Built package name
+  mosh_stable: mosh-0.2.8 # Stable tagname
+  mosh_latest: mosh-0.2.8 # Built package name
   nmosh_prereq_ver: v0.1.1 # Prebuilt libraries for NMosh package
 
 on:
