@@ -106,7 +106,7 @@ Object argsToList(int argc, int optind, ucs4char** argvU)
 void showVersion()
 {
 #ifdef GIT_COMMIT_DATE
-    printf("Mosh R6RS scheme interpreter, version %s (%s %s) \n", PACKAGE_VERSION, GIT_COMMIT_REVISION, GIT_COMMIT_DATE);
+    printf("Mosh R7RS and R6RS Scheme interpreter, version %s (%s %s) \n", PACKAGE_VERSION, GIT_COMMIT_REVISION, GIT_COMMIT_DATE);
 #else
     printf("Mosh R6RS scheme interpreter, version %s\n", PACKAGE_VERSION);
 #endif
