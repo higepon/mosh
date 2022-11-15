@@ -16,8 +16,8 @@ RUN pacman -S --noconfirm oniguruma
 RUN pacman -S --noconfirm gauche autoconf automake re2c bison git gdb
 
 # Mosh 0.2.8
-RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc8/mosh-0.2.8-rc8.tar.gz
-RUN tar zvxf mosh-0.2.8-rc8.tar.gz && cd mosh-0.2.8-rc8 && ./configure && make && make test && make install
+RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8/mosh-0.2.8.tar.gz
+RUN tar zvxf mosh-0.2.8.tar.gz && cd mosh-0.2.8 && ./configure && make && make test && make install
 
 # Checkout Mosh
 RUN git clone https://github.com/higepon/mosh.git mosh.git

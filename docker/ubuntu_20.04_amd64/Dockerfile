@@ -14,8 +14,8 @@ RUN apt install -y gauche wget make libgmp-dev gcc g++ autoconf automake make be
 RUN apt install -y re2c bison subversion autoconf automake git gdb g++ clang-tidy pkg-config libonig-dev rlwrap
 
 # Mosh 0.2.8
-RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8-rc8/mosh-0.2.8-rc8.tar.gz
-RUN tar zvxf mosh-0.2.8-rc8.tar.gz && cd mosh-0.2.8-rc8 && ./configure && make && make test && make install
+RUN wget https://github.com/higepon/mosh/releases/download/mosh-0.2.8/mosh-0.2.8.tar.gz
+RUN tar zvxf mosh-0.2.8.tar.gz && cd mosh-0.2.8 && ./configure && make && make test && make install
 
 # Checkout Mosh
 # Using this inorder not to use cache.
