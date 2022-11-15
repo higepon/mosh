@@ -1,6 +1,8 @@
 SUBDIRS = $(shell ls -d */)
 
-build:
-	for dir in $(SUBDIRS) ; do \
-		make -C  $$dir ; \
-	done
+# This setup works well with make -j 8
+all: $(SUBDIRS)
+$(SUBDIRS):
+	$(MAKE) -C $@
+.PHONY: $(SUBDIRS)
+
