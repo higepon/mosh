@@ -87,7 +87,7 @@ int FileBinaryInputPort::open()
 
 ucs4string FileBinaryInputPort::toString()
 {
-    ucs4string ret(UC("<binary-input-port "));
+    ucs4string ret(UC("#<binary-input-port "));
     ret += fileName_;
     ret += UC(">");
     return ret;

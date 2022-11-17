@@ -661,12 +661,12 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         print<isHumanReadable>(theVM, imag, seen);
         putString(UC("i"));
     } else if (o.isCodeBuilder()) {
-        putString(UC("<code-builder "));
+        putString(UC("#<code-builder "));
         print<isHumanReadable>(theVM, Object::makeFixnum(static_cast<int>(o.val)), seen);
         putString(UC(">"));
     } else if (o.isTranscoder()) {
         Transcoder* transcoder = o.toTranscoder();
-        putString(UC("<transcoder codec="));
+        putString(UC("#<transcoder codec="));
         print<isHumanReadable>(theVM, transcoder->codec(), seen);
         putString(UC(", eol-style="));
         print<isHumanReadable>(theVM, transcoder->eolStyleSymbol(), seen);

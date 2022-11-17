@@ -85,7 +85,7 @@ void StringTextualOutputPort::flush()
 
 ucs4string StringTextualOutputPort::toString()
 {
-    return ucs4string(UC("<string-output-port>"));
+    return ucs4string(UC("#<string-output-port>"));
 }
 
 bool StringTextualOutputPort::hasPosition() const
