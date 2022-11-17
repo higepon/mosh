@@ -69,7 +69,7 @@ CustomTextualOutputPort::~CustomTextualOutputPort()
 
 ucs4string CustomTextualOutputPort::toString()
 {
-    ucs4string ret(UC("<custom-textual-output-port "));
+    ucs4string ret(UC("#<custom-textual-output-port "));
     ret += id_;
     ret += UC(">");
     return ret;

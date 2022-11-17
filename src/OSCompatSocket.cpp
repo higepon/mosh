@@ -178,9 +178,9 @@ ucs4string Socket::getLastErrorMessage() const
 ucs4string Socket::toString() const
 {
     if (address_.empty()) {
-        return ucs4string(UC("<socket>"));
+        return ucs4string(UC("#<socket>"));
     } else {
-        ucs4string ret(UC("<socket "));
+        ucs4string ret(UC("#<socket "));
         if (type_ == CLIENT) {
             ret += UC("client ");
         } else {

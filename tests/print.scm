@@ -39,15 +39,15 @@
              [#\a "a" "#\\a"]
              ['#(a b c) "#(a b c)"]
              ["abc" "abc" "\"abc\""]
-             [(open-file-input-port test-file) (format "<binary-input-port ~a>" test-file) (format "<binary-input-port ~a>" test-file) "#[input-port]"]
-             [(open-input-file test-file) (format "<transcoded-textual-input-port <binary-input-port ~a>>" test-file) (format "<transcoded-textual-input-port <binary-input-port ~a>>" test-file) "#[input-port]"]
-             [(open-string-output-port) "<string-output-port>" "<string-output-port>" "#[output-port]"]
+             [(open-file-input-port test-file) (format "#<binary-input-port ~a>" test-file) (format "#<binary-input-port ~a>" test-file) "#[input-port]"]
+             [(open-input-file test-file) (format "#<transcoded-textual-input-port #<binary-input-port ~a>>" test-file) (format "#<transcoded-textual-input-port #<binary-input-port ~a>>" test-file) "#[input-port]"]
+             [(open-string-output-port) "#<string-output-port>" "#<string-output-port>" "#[output-port]"]
              [(make-custom-textual-output-port
                "custom out"
                (lambda (str start count) #f)
                (lambda () #f)
                (lambda (pos) #f)
-               (lambda () 'ok)) "<custom-textual-output-port custom out>" "<custom-textual-output-port custom out>" "#[output-port]"]
+               (lambda () 'ok)) "#<custom-textual-output-port custom out>" "#<custom-textual-output-port custom out>" "#[output-port]"]
              [(lambda (x) #f) #/#<closure \-?\d+>/ #/#<closure \-?\d+>/ "#[procedure]"]
              [car #/<subr car>/ #/<subr car>/ "#[procedure]"]
              ['a "a"]

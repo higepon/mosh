@@ -44,7 +44,7 @@ public:
     ~StandardInputPort() override = default;
     ucs4string toString() override
     {
-        return ucs4string(UC("<standard input port>"));
+        return ucs4string(UC("#<standard input port>"));
     }
     bool hasPosition() const override
     {

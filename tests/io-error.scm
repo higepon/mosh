@@ -364,10 +364,10 @@
   (define p-reader (car p))
   (define p-writer (cdr p))
 
-  (test-write-equal "<transcoded-textual-input-port <binary-input-port <unknown file>>>"
+  (test-write-equal "#<transcoded-textual-input-port #<binary-input-port <unknown file>>>"
                      p-reader)
   (test-true (textual-port? p-reader))
-  (test-write-equal "<transcoded-textual-output-port <binary-output-port <unknown file>>>"
+  (test-write-equal "#<transcoded-textual-output-port #<binary-output-port <unknown file>>>"
                      p-writer)
   (test-true (textual-port? p-writer))
 

@@ -79,7 +79,7 @@ void TranscodedTextualInputPort::unGetChar(ucs4char c)
 
 ucs4string TranscodedTextualInputPort::toString()
 {
-    ucs4string ret(UC("<transcoded-textual-input-port "));
+    ucs4string ret(UC("#<transcoded-textual-input-port "));
     ret += port_->toString();
     ret += UC(">");
     return ret;

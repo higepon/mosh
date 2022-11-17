@@ -89,7 +89,7 @@
   (test-equal (get-bytevector-n p 2) (eof-object))
   (set-port-position! p 2)
   (test-equal (get-bytevector-n p 3) #vu8(3 4 5))
-  (test-equal (format "~a" p) "<custom-input-port xyz>")
+  (test-equal (format "~a" p) "#<custom-input-port xyz>")
   (set-port-position! p 2)
   ;; some
   (let ([bv (get-bytevector-some p)])

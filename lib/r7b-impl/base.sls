@@ -179,7 +179,7 @@ write-u8 zero?
 ;; N.B. This is fragile.
 (define (byte-array-input-port? port)
    (and (input-port? port)
-        (string=? "<byte-array-input-port>" (let ([p (open-output-string)]) (write port p) (get-output-string p)))))
+        (string=? "#<byte-array-input-port>" (let ([p (open-output-string)]) (write port p) (get-output-string p)))))
 
 (define (u8-ready? port)
   (byte-array-input-port? port))

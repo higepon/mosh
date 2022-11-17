@@ -132,7 +132,7 @@ void FileBinaryOutputPort::flush()
 
 ucs4string FileBinaryOutputPort::toString()
 {
-    ucs4string ret(UC("<binary-output-port "));
+    ucs4string ret(UC("#<binary-output-port "));
     ret += fileName_;
     ret += UC(">");
     return ret;
