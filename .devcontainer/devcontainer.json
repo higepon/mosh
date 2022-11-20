@@ -1,6 +1,6 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
-  }
+  },
   "build": { "dockerfile": "docker/ubuntu_22.04_amd64/Dockerfile" }, 
 }
