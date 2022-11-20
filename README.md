@@ -38,8 +38,17 @@ Get a release of Mosh from [Download](https://github.com/higepon/mosh/releases).
 ### Other Platforms
 Please see [doc](https://github.com/higepon/mosh/tree/master/doc) and [INSTALL](https://github.com/higepon/mosh/blob/master/INSTALL).
 
-## For mosh developers
-### Building mosh.git
+## How to build and contribute
+You can start developing Mosh in 1 minute using [GitHub Codespaces](https://docs.github.com/en/codespaces).
+1. Fork this repository.
+1. Create and Open your Codespace by tapping the green "Code" button. It will open VSCode on a browser.
+1. Go to the terminal in VSCode.
+```
+$ ./gen-git-build.sh 
+$ ./configure
+$ make
+```
+### If you don't want to use GitHub Codespaces
 To build mosh.git you need to have release version mosh and some other tools installed. Please use and see [docker/dev](https://github.com/higepon/mosh/tree/master/docker/) to build.
 
 ### CI
