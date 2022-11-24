@@ -1,8 +1,8 @@
 fn main() {
     println!("Hello, world!");
 
-    let num: usize = 5;
-    println!("three={}", num);
+    let num: usize = 7;
+    println!("number={}", num);
 
-    println!("three & 0x3={}", num & 0x3);
+    println!("number & 0x3={}", num & 0x3);
 }
