@@ -1,30 +1,37 @@
+
+type ScmObj = *const i64;
+
+const NUM_TAG_BITS: isize = 3;
+const TAG_FIXNUM: isize = 0x1;
+
+fn create_fixnum(num: isize) -> ScmObj {
+    let obj = num << NUM_TAG_BITS;
+    let obj = obj | TAG_FIXNUM;
+    return obj as ScmObj;
+}
+
+fn fixnum_value(obj: ScmObj) -> isize {
+    return obj as isize >> NUM_TAG_BITS;
+}
+
+fn is_fixnum(obj: ScmObj) -> bool {
+    return ((obj as isize) & TAG_FIXNUM) != 0;
+}
+
 fn main() {
-    println!("Hello, world!");
-
-    let num: usize = 7;
-    println!("number={}", num);
-
-    println!("number & 0x3={}", num & 0x3);
-
     let address = 0xdeadbeefusize;
-    let raw_pointer = address as *const i32;
+    let _raw_pointer = address as *const i32;
+    /*
+     * Of course this causes Segmentation fault.
     unsafe {
-        // This causes Segmentation fault.
-        // println!("pointer={}", *raw_pointer);
+        println!("pointer={}", *_raw_pointer);
     }
+    */
 
-    let num_tag_bits = 3;
-    let fixnum_tag = 0x1;
-    let fixnum: isize = 123456;
-    // Create fixnum.
-    let obj = fixnum << num_tag_bits;
-    let obj = obj | fixnum_tag;
-    let obj = obj as *const i64;
-
-    // print fixnum
-    let num = obj as isize >> num_tag_bits;
-    print!("num={}", num);
-
-
-    // refactor later.
+    let obj = create_fixnum(123456);
+    if is_fixnum(obj) {
+        print!("num={}\n", fixnum_value(obj));
+    } else {
+        
+    }
 }
