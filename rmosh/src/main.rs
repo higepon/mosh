@@ -1,7 +1,13 @@
+#[derive(Debug,PartialEq)]
+enum ScmObjType {
+    Symbol,
+}
+
 // We use least significant bits as object tag.
 #[repr(C, align(8))]
 struct ScmObj {
-    //header: isize
+    obj_type: ScmObjType,
+    pointer: isize,
 }
 
 struct Pair<'a> {
@@ -9,11 +15,24 @@ struct Pair<'a> {
     second: &'a ScmObj,
 }
 
-struct Symbol 
+#[repr(C, align(8))]
+struct Symbol {
+    // Empty for now.
+}
 
 const NUM_TAG_BITS: isize = 3;
 const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
+
+fn create_symbol() -> &'static ScmObj {
+    let symbol = Box::new(Symbol {});
+    let pointer = Box::into_raw(symbol) as isize;
+    let obj = Box::new(ScmObj {obj_type: ScmObjType::Symbol, pointer: pointer});
+    let pointer = Box::into_raw(obj) as *const Symbol;
+    let pointer = pointer as isize;
+    let pointer = pointer as *const ScmObj;
+    unsafe { &*pointer }    
+}
 
 fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
     let obj = Box::new(Pair {
@@ -25,6 +44,14 @@ fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
     let pointer = pointer | TAG_PAIR;
     let pointer = pointer as *const ScmObj;
     unsafe { &*pointer }
+}
+
+fn is_symbol(obj: &ScmObj) -> bool {
+    let pointer = obj as *const ScmObj;
+    if (pointer as isize) & 0x7 != 0 {
+        return false;
+    }
+    obj.obj_type == ScmObjType::Symbol
 }
 
 fn is_pair(obj: &ScmObj) -> bool {
@@ -74,7 +101,7 @@ mod tests {
 
     #[test]
     fn test_not_fixnum() {
-        let obj = ScmObj {};
+        let obj = create_symbol();
         assert!(!is_fixnum(&obj));
     }
 
@@ -90,6 +117,12 @@ mod tests {
         assert_eq!(fixnum_value(pair.first), 1234);
         assert_eq!(fixnum_value(pair.second), 5678);
     }
+
+    #[test]
+    fn test_symbol() {
+        let symbol = create_symbol();
+        assert!(is_symbol(symbol));
+    }    
 }
 
 fn main() {
