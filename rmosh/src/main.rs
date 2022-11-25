@@ -5,26 +5,19 @@ struct ScmObj {
 const NUM_TAG_BITS: isize = 3;
 const TAG_FIXNUM: isize = 0x1;
 
-// Note: ScmObj reference has static lifetime
-// because it lives for the entire lifetime of the running program.
-unsafe fn create_fixnum(num: isize) -> &'static ScmObj {
+fn create_fixnum(num: isize) -> *const ScmObj {
     let obj = num << NUM_TAG_BITS;
     let obj = obj | TAG_FIXNUM;
     // Cast as raw pointer.
-    let pointer = obj as *const ScmObj;
-    // Pointer to reference.
-    &*pointer
+    obj as *const ScmObj
 }
 
-fn fixnum_value(obj: &ScmObj) -> isize {
-    let pointer = obj as *const ScmObj;
-    pointer as isize >> NUM_TAG_BITS
+fn fixnum_value(obj: *const ScmObj) -> isize {
+    obj as isize >> NUM_TAG_BITS
 }
 
-fn is_fixnum(obj: &ScmObj) -> bool {
-    let pointer = obj as *const ScmObj;    
-    print!("pointer={:#x}", (pointer as isize));
-    ((pointer as isize) & TAG_FIXNUM) != 0
+fn is_fixnum(obj: *const ScmObj) -> bool {
+    ((obj as isize) & TAG_FIXNUM) != 0
 }
 
 #[cfg(test)]
@@ -33,11 +26,9 @@ mod tests {
 
     #[test]
     fn test_fixnum() {
-        unsafe {
-            let obj = create_fixnum(123456);        
-            assert!(is_fixnum(obj));
-            assert_eq!(fixnum_value(obj), 123456);
-        }
+        let obj = create_fixnum(123456);        
+        assert!(is_fixnum(obj));
+        assert_eq!(fixnum_value(obj), 123456);
     }
 
     #[test]
