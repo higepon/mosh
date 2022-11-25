@@ -57,24 +57,23 @@ pub fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
         first: first,
         second: second,
     });
-    let pointer = Box::into_raw(obj) as *const Pair;
-    let pointer = pointer as isize;
-    let pointer = pointer | TAG_PAIR;
-    let pointer = pointer as *const ScmObj;
-    unsafe { &*pointer }
+    let ptr = Box::into_raw(obj) as isize;
+    let ptr = ptr | TAG_PAIR;
+    let ptr = ptr as *const ScmObj;
+    unsafe { &*ptr }
 }
 
 pub fn is_pair(obj: &ScmObj) -> bool {
-    let pointer = obj as *const ScmObj;
-    ((pointer as isize) & TAG_PAIR) != 0
+    let ptr = obj as *const ScmObj;
+    ((ptr as isize) & TAG_PAIR) != 0
 }
 
 pub fn to_pair(obj: &ScmObj) -> &Pair {
-    let pointer = obj as *const ScmObj;
-    let pointer = pointer as isize;
-    let pointer = pointer & !3;
-    let pointer = pointer as *const Pair;
-    unsafe { &*pointer }
+    let ptr = obj as *const ScmObj;
+    let ptr = ptr as isize;
+    let ptr = ptr & !3;
+    let ptr = ptr as *const Pair;
+    unsafe { &*ptr }
 }
 
 // Note: ScmObj reference has static lifetime
@@ -83,19 +82,19 @@ pub fn create_fixnum(num: isize) -> &'static ScmObj {
     let obj = num << NUM_TAG_BITS;
     let obj = obj | TAG_FIXNUM;
     // Cast as raw pointer.
-    let pointer = obj as *const ScmObj;
+    let ptr = obj as *const ScmObj;
     // Pointer to reference.
-    unsafe { &*pointer }
+    unsafe { &*ptr }
 }
 
 pub fn fixnum_value(obj: &ScmObj) -> isize {
-    let pointer = obj as *const ScmObj;
-    pointer as isize >> NUM_TAG_BITS
+    let ptr = obj as *const ScmObj;
+    ptr as isize >> NUM_TAG_BITS
 }
 
 pub fn is_fixnum(obj: &ScmObj) -> bool {
-    let pointer = obj as *const ScmObj;
-    ((pointer as isize) & TAG_FIXNUM) != 0
+    let ptr = obj as *const ScmObj;
+    ((ptr as isize) & TAG_FIXNUM) != 0
 }
 
 #[cfg(test)]
