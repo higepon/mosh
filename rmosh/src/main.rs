@@ -21,6 +21,7 @@ pub struct Symbol {
 }
 
 const NUM_TAG_BITS: isize = 3;
+const TAG_MASK: isize = 7;
 const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
 
@@ -33,14 +34,13 @@ pub fn create_symbol(value: &str) -> &'static ScmObj {
         obj_type: ScmObjType::Symbol,
         ptr: ptr
     });
-    let ptr = Box::into_raw(obj);
-    let ptr = ptr as *const ScmObj;
+    let ptr = Box::into_raw(obj) as *const ScmObj;
     unsafe { &*ptr }
 }
 
 pub fn is_symbol(obj: &ScmObj) -> bool {
-    let ptr = obj as *const ScmObj;
-    if (ptr as isize) & 0x7 != 0 {
+    let ptr = obj as *const ScmObj as isize;
+    if ptr & TAG_MASK != 0 {
         return false;
     }
     obj.obj_type == ScmObjType::Symbol
