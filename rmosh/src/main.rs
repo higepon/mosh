@@ -1,4 +1,4 @@
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 enum ScmObjType {
     Symbol,
 }
@@ -25,23 +25,16 @@ const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
 
 fn create_symbol(value: &str) -> &'static ScmObj {
-    let symbol = Box::new(Symbol {value: value.to_string()});
+    let symbol = Box::new(Symbol {
+        value: value.to_string(),
+    });
     let pointer = Box::into_raw(symbol) as isize;
-    let obj = Box::new(ScmObj {obj_type: ScmObjType::Symbol, pointer: pointer});
+    let obj = Box::new(ScmObj {
+        obj_type: ScmObjType::Symbol,
+        pointer: pointer,
+    });
     let pointer = Box::into_raw(obj) as *const Symbol;
     let pointer = pointer as isize;
-    let pointer = pointer as *const ScmObj;
-    unsafe { &*pointer }    
-}
-
-fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
-    let obj = Box::new(Pair {
-        first: first,
-        second: second,
-    });
-    let pointer = Box::into_raw(obj) as *const Pair;
-    let pointer = pointer as isize;
-    let pointer = pointer | TAG_PAIR;
     let pointer = pointer as *const ScmObj;
     unsafe { &*pointer }
 }
@@ -57,6 +50,18 @@ fn is_symbol(obj: &ScmObj) -> bool {
 fn to_symbol(obj: &ScmObj) -> &Symbol {
     let pointer = obj.pointer;
     let pointer = pointer as *const Symbol;
+    unsafe { &*pointer }
+}
+
+fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
+    let obj = Box::new(Pair {
+        first: first,
+        second: second,
+    });
+    let pointer = Box::into_raw(obj) as *const Pair;
+    let pointer = pointer as isize;
+    let pointer = pointer | TAG_PAIR;
+    let pointer = pointer as *const ScmObj;
     unsafe { &*pointer }
 }
 
@@ -129,8 +134,8 @@ mod tests {
         let obj = create_symbol("foo");
         assert!(is_symbol(obj));
         let symbol = to_symbol(obj);
-        assert_eq!(symbol.value, String::from("foo"));        
-    }    
+        assert_eq!(symbol.value, String::from("foo"));
+    }
 }
 
 fn main() {
