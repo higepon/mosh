@@ -272,7 +272,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - name: "Setup Alpine chroot"
-        uses: jirutka/setup-alpine@v1
+        uses: jirutka/setup-alpine@v1.1.1
       - name: "Install prerequisites"
         run: apk add gcc g++ make gmp-dev oniguruma-dev pkgconfig
         shell: alpine.sh --root {0}
