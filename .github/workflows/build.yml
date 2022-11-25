@@ -103,15 +103,6 @@ jobs:
           make &&
           make check &&
           make install
-      - name: Run clang-tidy and treat warnings as error using bear 2.x.
-        if: matrix.os == 'ubuntu-latest'
-        run: >
-          cd ${{ github.workspace }}/mosh-latest &&
-          make clean &&
-          bear --version &&
-          bear --help &&
-          bear --exclude src/ffi_stub_x86_64.S --exclude src/NumberReader.tab.cpp --exclude src/Reader.tab.cpp make &&
-          run-clang-tidy -header-filter=src -quiet
       - name: Install jj so that we can edit compile_commands.json.
         if: matrix.os == 'ubuntu-22.04'
         run: >
@@ -123,7 +114,7 @@ jobs:
       # TODO(higepon): Find better way to exclude some files from clang-tidy.
       # bear version 3 doesn't have exlude option.
       - name: Run clang-tidy and treat warnings as error using bear 3.x.
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-latest'
         run: >
           cd ${{ github.workspace }}/mosh-latest &&
           make clean &&
