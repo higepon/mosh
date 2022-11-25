@@ -1,22 +1,22 @@
 #[derive(Debug, PartialEq)]
-enum ScmObjType {
+pub enum ScmObjType {
     Symbol,
 }
 
 // We use least significant bits as object tag.
 #[repr(C, align(8))]
-struct ScmObj {
+pub struct ScmObj {
     obj_type: ScmObjType,
     ptr: *const u8,
 }
 
-struct Pair<'a> {
+pub struct Pair<'a> {
     first: &'a ScmObj,
     second: &'a ScmObj,
 }
 
 #[repr(C, align(8))]
-struct Symbol {
+pub struct Symbol {
     value: String,
 }
 
@@ -24,7 +24,7 @@ const NUM_TAG_BITS: isize = 3;
 const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
 
-fn create_symbol(value: &str) -> &'static ScmObj {
+pub fn create_symbol(value: &str) -> &'static ScmObj {
     let symbol = Box::new(Symbol {
         value: value.to_string(),
     });
@@ -38,7 +38,7 @@ fn create_symbol(value: &str) -> &'static ScmObj {
     unsafe { &*ptr }
 }
 
-fn is_symbol(obj: &ScmObj) -> bool {
+pub fn is_symbol(obj: &ScmObj) -> bool {
     let ptr = obj as *const ScmObj;
     if (ptr as isize) & 0x7 != 0 {
         return false;
@@ -46,13 +46,13 @@ fn is_symbol(obj: &ScmObj) -> bool {
     obj.obj_type == ScmObjType::Symbol
 }
 
-fn to_symbol(obj: &ScmObj) -> &Symbol {
+pub fn to_symbol(obj: &ScmObj) -> &Symbol {
     let ptr = obj.ptr;
     let ptr = ptr as *const Symbol;
     unsafe { &*ptr }
 }
 
-fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
+pub fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
     let obj = Box::new(Pair {
         first: first,
         second: second,
@@ -64,12 +64,12 @@ fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
     unsafe { &*pointer }
 }
 
-fn is_pair(obj: &ScmObj) -> bool {
+pub fn is_pair(obj: &ScmObj) -> bool {
     let pointer = obj as *const ScmObj;
     ((pointer as isize) & TAG_PAIR) != 0
 }
 
-fn to_pair(obj: &ScmObj) -> &Pair {
+pub fn to_pair(obj: &ScmObj) -> &Pair {
     let pointer = obj as *const ScmObj;
     let pointer = pointer as isize;
     let pointer = pointer & !3;
@@ -79,7 +79,7 @@ fn to_pair(obj: &ScmObj) -> &Pair {
 
 // Note: ScmObj reference has static lifetime
 // because it lives for the entire lifetime of the running program.
-fn create_fixnum(num: isize) -> &'static ScmObj {
+pub fn create_fixnum(num: isize) -> &'static ScmObj {
     let obj = num << NUM_TAG_BITS;
     let obj = obj | TAG_FIXNUM;
     // Cast as raw pointer.
@@ -88,12 +88,12 @@ fn create_fixnum(num: isize) -> &'static ScmObj {
     unsafe { &*pointer }
 }
 
-fn fixnum_value(obj: &ScmObj) -> isize {
+pub fn fixnum_value(obj: &ScmObj) -> isize {
     let pointer = obj as *const ScmObj;
     pointer as isize >> NUM_TAG_BITS
 }
 
-fn is_fixnum(obj: &ScmObj) -> bool {
+pub fn is_fixnum(obj: &ScmObj) -> bool {
     let pointer = obj as *const ScmObj;
     ((pointer as isize) & TAG_FIXNUM) != 0
 }
