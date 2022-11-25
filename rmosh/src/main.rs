@@ -17,15 +17,15 @@ struct Pair<'a> {
 
 #[repr(C, align(8))]
 struct Symbol {
-    // Empty for now.
+    value: String,
 }
 
 const NUM_TAG_BITS: isize = 3;
 const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
 
-fn create_symbol() -> &'static ScmObj {
-    let symbol = Box::new(Symbol {});
+fn create_symbol(value: &str) -> &'static ScmObj {
+    let symbol = Box::new(Symbol {value: value.to_string()});
     let pointer = Box::into_raw(symbol) as isize;
     let obj = Box::new(ScmObj {obj_type: ScmObjType::Symbol, pointer: pointer});
     let pointer = Box::into_raw(obj) as *const Symbol;
@@ -52,6 +52,12 @@ fn is_symbol(obj: &ScmObj) -> bool {
         return false;
     }
     obj.obj_type == ScmObjType::Symbol
+}
+
+fn to_symbol(obj: &ScmObj) -> &Symbol {
+    let pointer = obj.pointer;
+    let pointer = pointer as *const Symbol;
+    unsafe { &*pointer }
 }
 
 fn is_pair(obj: &ScmObj) -> bool {
@@ -101,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_not_fixnum() {
-        let obj = create_symbol();
+        let obj = create_symbol("foo");
         assert!(!is_fixnum(&obj));
     }
 
@@ -120,8 +126,10 @@ mod tests {
 
     #[test]
     fn test_symbol() {
-        let symbol = create_symbol();
-        assert!(is_symbol(symbol));
+        let obj = create_symbol("foo");
+        assert!(is_symbol(obj));
+        let symbol = to_symbol(obj);
+        assert_eq!(symbol.value, String::from("foo"));        
     }    
 }
 
