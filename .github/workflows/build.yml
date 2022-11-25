@@ -104,7 +104,7 @@ jobs:
           make check &&
           make install
       - name: Install jj so that we can edit compile_commands.json.
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-latest'
         run: >
           wget https://github.com/tidwall/jj/archive/refs/tags/v1.9.2.tar.gz &&
           tar zvxf v1.9.2.tar.gz &&
