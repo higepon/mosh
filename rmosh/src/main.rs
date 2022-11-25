@@ -1,3 +1,8 @@
+// TODO
+// - Scm prefix looks weird. Use namespace?
+// - Can we implement tag() as static fun?
+
+
 #[derive(Debug, PartialEq)]
 pub enum ScmObjType {
     Symbol,
@@ -8,6 +13,13 @@ pub enum ScmObjType {
 pub struct ScmObj {
     obj_type: ScmObjType,
     ptr: *const u8,
+}
+
+impl ScmObj {
+    pub fn tag(&self) -> isize {
+        let ptr = self as *const ScmObj as isize;
+        ptr & TAG_MASK
+    }
 }
 
 pub struct Pair<'a> {
@@ -64,8 +76,7 @@ pub fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
 }
 
 pub fn is_pair(obj: &ScmObj) -> bool {
-    let ptr = obj as *const ScmObj;
-    ((ptr as isize) & TAG_PAIR) != 0
+    obj.tag() == TAG_PAIR
 }
 
 pub fn to_pair(obj: &ScmObj) -> &Pair {
@@ -93,8 +104,7 @@ pub fn fixnum_value(obj: &ScmObj) -> isize {
 }
 
 pub fn is_fixnum(obj: &ScmObj) -> bool {
-    let ptr = obj as *const ScmObj;
-    ((ptr as isize) & TAG_FIXNUM) != 0
+    obj.tag() == TAG_FIXNUM
 }
 
 #[cfg(test)]
