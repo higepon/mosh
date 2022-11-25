@@ -7,7 +7,7 @@ enum ScmObjType {
 #[repr(C, align(8))]
 struct ScmObj {
     obj_type: ScmObjType,
-    pointer: isize,
+    ptr: *const u8,
 }
 
 struct Pair<'a> {
@@ -28,29 +28,28 @@ fn create_symbol(value: &str) -> &'static ScmObj {
     let symbol = Box::new(Symbol {
         value: value.to_string(),
     });
-    let pointer = Box::into_raw(symbol) as isize;
+    let ptr = Box::into_raw(symbol) as *const u8;
     let obj = Box::new(ScmObj {
         obj_type: ScmObjType::Symbol,
-        pointer: pointer,
+        ptr: ptr
     });
-    let pointer = Box::into_raw(obj) as *const Symbol;
-    let pointer = pointer as isize;
-    let pointer = pointer as *const ScmObj;
-    unsafe { &*pointer }
+    let ptr = Box::into_raw(obj);
+    let ptr = ptr as *const ScmObj;
+    unsafe { &*ptr }
 }
 
 fn is_symbol(obj: &ScmObj) -> bool {
-    let pointer = obj as *const ScmObj;
-    if (pointer as isize) & 0x7 != 0 {
+    let ptr = obj as *const ScmObj;
+    if (ptr as isize) & 0x7 != 0 {
         return false;
     }
     obj.obj_type == ScmObjType::Symbol
 }
 
 fn to_symbol(obj: &ScmObj) -> &Symbol {
-    let pointer = obj.pointer;
-    let pointer = pointer as *const Symbol;
-    unsafe { &*pointer }
+    let ptr = obj.ptr;
+    let ptr = ptr as *const Symbol;
+    unsafe { &*ptr }
 }
 
 fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
