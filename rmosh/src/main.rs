@@ -9,6 +9,8 @@ struct Pair<'a> {
     second: &'a ScmObj,
 }
 
+struct Symbol 
+
 const NUM_TAG_BITS: isize = 3;
 const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
