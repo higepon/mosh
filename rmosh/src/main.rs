@@ -1,6 +1,5 @@
 // TODO
 // - Scm prefix looks weird. Use namespace?
-// - Can we implement tag() as static fun?
 
 #[derive(Debug, PartialEq)]
 pub enum ScmObjType {
@@ -19,6 +18,22 @@ impl ScmObj {
         let ptr = self as *const ScmObj as isize;
         ptr & TAG_MASK
     }
+
+    pub fn is_pair(&self) -> bool {
+        self.tag() == TAG_PAIR
+    }    
+
+    pub fn is_symbol(&self) -> bool {
+        if self.tag() != TAG_HEAP_OBJ {
+            return false;
+        }
+        self.obj_type == ScmObjType::Symbol
+    }
+    
+    pub fn is_fixnum(&self) -> bool {
+        self.tag() == TAG_FIXNUM
+    }
+    
 }
 
 pub struct Pair<'a> {
@@ -50,13 +65,6 @@ pub fn create_symbol(value: &str) -> &'static ScmObj {
     unsafe { &*ptr }
 }
 
-pub fn is_symbol(obj: &ScmObj) -> bool {
-    if obj.tag() != TAG_HEAP_OBJ {
-        return false;
-    }
-    obj.obj_type == ScmObjType::Symbol
-}
-
 pub fn to_symbol(obj: &ScmObj) -> &Symbol {
     let ptr = obj.ptr;
     let ptr = ptr as *const Symbol;
@@ -74,9 +82,7 @@ pub fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
     unsafe { &*ptr }
 }
 
-pub fn is_pair(obj: &ScmObj) -> bool {
-    obj.tag() == TAG_PAIR
-}
+
 
 pub fn to_pair(obj: &ScmObj) -> &Pair {
     let ptr = obj as *const ScmObj;
@@ -102,9 +108,6 @@ pub fn fixnum_value(obj: &ScmObj) -> isize {
     ptr as isize >> NUM_TAG_BITS
 }
 
-pub fn is_fixnum(obj: &ScmObj) -> bool {
-    obj.tag() == TAG_FIXNUM
-}
 
 #[cfg(test)]
 mod tests {
@@ -113,14 +116,14 @@ mod tests {
     #[test]
     fn test_fixnum() {
         let obj = create_fixnum(123456);
-        assert!(is_fixnum(obj));
+        assert!(obj.is_fixnum());
         assert_eq!(fixnum_value(obj), 123456);
     }
 
     #[test]
     fn test_not_fixnum() {
         let obj = create_symbol("foo");
-        assert!(!is_fixnum(&obj));
+        assert!(!obj.is_fixnum());
     }
 
     #[test]
@@ -128,10 +131,10 @@ mod tests {
         let first = create_fixnum(1234);
         let second = create_fixnum(5678);
         let obj = create_pair(first, second);
-        assert!(is_pair(obj));
+        assert!(obj.is_pair());
         let pair = to_pair(obj);
-        assert!(is_fixnum(pair.first));
-        assert!(is_fixnum(pair.second));
+        assert!(pair.first.is_fixnum());
+        assert!(pair.second.is_fixnum());
         assert_eq!(fixnum_value(pair.first), 1234);
         assert_eq!(fixnum_value(pair.second), 5678);
     }
@@ -139,7 +142,7 @@ mod tests {
     #[test]
     fn test_symbol() {
         let obj = create_symbol("foo");
-        assert!(is_symbol(obj));
+        assert!(obj.is_symbol());
         let symbol = to_symbol(obj);
         assert_eq!(symbol.value, String::from("foo"));
     }
