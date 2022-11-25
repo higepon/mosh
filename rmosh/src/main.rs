@@ -1,6 +1,5 @@
 struct ScmObj {
     header: isize
-    // Empty for now.
 }
 
 const NUM_TAG_BITS: isize = 3;
@@ -14,18 +13,18 @@ unsafe fn create_fixnum(num: isize) -> &'static ScmObj {
     // Cast as raw pointer.
     let pointer = obj as *const ScmObj;
     // Pointer to reference.
-    return &*pointer;
+    &*pointer
 }
 
 fn fixnum_value(obj: &ScmObj) -> isize {
     let pointer = obj as *const ScmObj;
-    return pointer as isize >> NUM_TAG_BITS;
+    pointer as isize >> NUM_TAG_BITS
 }
 
 fn is_fixnum(obj: &ScmObj) -> bool {
     let pointer = obj as *const ScmObj;    
     print!("pointer={:#x}", (pointer as isize));
-    return ((pointer as isize) & TAG_FIXNUM) != 0;
+    ((pointer as isize) & TAG_FIXNUM) != 0
 }
 
 #[cfg(test)]
