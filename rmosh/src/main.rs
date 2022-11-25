@@ -2,7 +2,6 @@
 // - Scm prefix looks weird. Use namespace?
 // - Can we implement tag() as static fun?
 
-
 #[derive(Debug, PartialEq)]
 pub enum ScmObjType {
     Symbol,
@@ -38,7 +37,6 @@ const TAG_HEAP_OBJ: isize = 0;
 const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
 
-
 pub fn create_symbol(value: &str) -> &'static ScmObj {
     let symbol = Box::new(Symbol {
         value: value.to_string(),
@@ -46,7 +44,7 @@ pub fn create_symbol(value: &str) -> &'static ScmObj {
     let ptr = Box::into_raw(symbol) as *const u8;
     let obj = Box::new(ScmObj {
         obj_type: ScmObjType::Symbol,
-        ptr: ptr
+        ptr: ptr,
     });
     let ptr = Box::into_raw(obj) as *const ScmObj;
     unsafe { &*ptr }
