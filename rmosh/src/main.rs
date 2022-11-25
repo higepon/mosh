@@ -34,8 +34,10 @@ pub struct Symbol {
 
 const NUM_TAG_BITS: isize = 3;
 const TAG_MASK: isize = 7;
+const TAG_HEAP_OBJ: isize = 0;
 const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
+
 
 pub fn create_symbol(value: &str) -> &'static ScmObj {
     let symbol = Box::new(Symbol {
@@ -51,8 +53,7 @@ pub fn create_symbol(value: &str) -> &'static ScmObj {
 }
 
 pub fn is_symbol(obj: &ScmObj) -> bool {
-    let ptr = obj as *const ScmObj as isize;
-    if ptr & TAG_MASK != 0 {
+    if obj.tag() != TAG_HEAP_OBJ {
         return false;
     }
     obj.obj_type == ScmObjType::Symbol
