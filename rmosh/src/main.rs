@@ -1,4 +1,3 @@
-
 // We use least significant bits as object tag.
 #[repr(C, align(8))]
 struct ScmObj {
@@ -7,7 +6,7 @@ struct ScmObj {
 
 struct Pair<'a> {
     first: &'a ScmObj,
-    second: &'a ScmObj
+    second: &'a ScmObj,
 }
 
 const NUM_TAG_BITS: isize = 3;
@@ -15,18 +14,19 @@ const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
 
 fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
-    let obj = Pair {first: first, second: second };
+    let obj = Pair {
+        first: first,
+        second: second,
+    };
     let pointer = &obj as *const Pair;
     let pointer = pointer as isize;
     let pointer = pointer | TAG_PAIR;
     let pointer = pointer as *const ScmObj;
-    unsafe {
-        &*pointer
-    }
+    unsafe { &*pointer }
 }
 
 fn is_pair(obj: &ScmObj) -> bool {
-    let pointer = obj as *const ScmObj;    
+    let pointer = obj as *const ScmObj;
     ((pointer as isize) & TAG_PAIR) != 0
 }
 
@@ -34,12 +34,9 @@ fn to_pair(obj: &ScmObj) -> &Pair {
     let pointer = obj as *const ScmObj;
     let pointer = pointer as isize;
     let pointer = pointer & !3;
-    let pointer  = pointer as *const Pair;
-    unsafe {
-        &*pointer
-    }
+    let pointer = pointer as *const Pair;
+    unsafe { &*pointer }
 }
-
 
 // Note: ScmObj reference has static lifetime
 // because it lives for the entire lifetime of the running program.
@@ -49,9 +46,7 @@ fn create_fixnum(num: isize) -> &'static ScmObj {
     // Cast as raw pointer.
     let pointer = obj as *const ScmObj;
     // Pointer to reference.
-    unsafe {
-        &*pointer
-    }
+    unsafe { &*pointer }
 }
 
 fn fixnum_value(obj: &ScmObj) -> isize {
@@ -60,7 +55,7 @@ fn fixnum_value(obj: &ScmObj) -> isize {
 }
 
 fn is_fixnum(obj: &ScmObj) -> bool {
-    let pointer = obj as *const ScmObj;    
+    let pointer = obj as *const ScmObj;
     ((pointer as isize) & TAG_FIXNUM) != 0
 }
 
@@ -70,29 +65,29 @@ mod tests {
 
     #[test]
     fn test_fixnum() {
-            let obj = create_fixnum(123456);        
-            assert!(is_fixnum(obj));
-            assert_eq!(fixnum_value(obj), 123456);
+        let obj = create_fixnum(123456);
+        assert!(is_fixnum(obj));
+        assert_eq!(fixnum_value(obj), 123456);
     }
 
     #[test]
     fn test_not_fixnum() {
         let obj = ScmObj {};
         assert!(!is_fixnum(&obj));
-    }    
+    }
 
     #[test]
     fn test_pair() {
-            let first = create_fixnum(1234);        
-            let second = create_fixnum(5678);                    
-            let obj = create_pair(first, second);
-            assert!(is_pair(obj));
-            let pair = to_pair(obj);
-            assert!(is_fixnum(pair.first));
-            assert!(is_fixnum(pair.second));            
-            assert_eq!(fixnum_value(pair.first), 1234);
-            assert_eq!(fixnum_value(pair.second), 5678);            
-    }    
+        let first = create_fixnum(1234);
+        let second = create_fixnum(5678);
+        let obj = create_pair(first, second);
+        assert!(is_pair(obj));
+        let pair = to_pair(obj);
+        assert!(is_fixnum(pair.first));
+        assert!(is_fixnum(pair.second));
+        assert_eq!(fixnum_value(pair.first), 1234);
+        assert_eq!(fixnum_value(pair.second), 5678);
+    }
 }
 
 fn main() {
