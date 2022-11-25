@@ -14,11 +14,11 @@ const TAG_FIXNUM: isize = 1;
 const TAG_PAIR: isize = 1 << 1;
 
 fn create_pair(first: &ScmObj, second: &ScmObj) -> &'static ScmObj {
-    let obj = Pair {
+    let obj = Box::new(Pair {
         first: first,
         second: second,
-    };
-    let pointer = &obj as *const Pair;
+    });
+    let pointer = Box::into_raw(obj) as *const Pair;
     let pointer = pointer as isize;
     let pointer = pointer | TAG_PAIR;
     let pointer = pointer as *const ScmObj;
