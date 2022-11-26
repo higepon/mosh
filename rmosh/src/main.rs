@@ -1,3 +1,8 @@
+// TODO
+// - Use RawPtr?
+// - Understand Trait better.
+// - http://blog.pnkfx.org/blog/categories/gc/
+
 pub mod scheme {
     #[derive(Debug, PartialEq)]
     pub enum ObjectType {
@@ -41,10 +46,8 @@ pub mod scheme {
             unsafe { &*ptr }
         }
 
-        pub fn new_symbol(value: &str) -> &'static Object {
-            let symbol = Box::new(Symbol {
-                value: value.to_string(),
-            });
+        pub fn new_symbol(name_ptr: *const u8) -> &'static Object {
+            let symbol = Box::new(Symbol {name_ptr: name_ptr});
             let ptr = Box::into_raw(symbol) as *const u8;
             let obj = Box::new(Object {
                 obj_type: ObjectType::Symbol,
@@ -100,7 +103,7 @@ pub mod scheme {
 
     #[repr(C, align(8))]
     pub struct Symbol {
-        pub value: String,
+        pub name_ptr: *const u8,
     }
 }
 
@@ -117,7 +120,9 @@ mod tests {
 
     #[test]
     fn test_not_fixnum() {
-        let obj = scheme::Object::new_symbol("foo");
+        let name = "foo";
+        let name_ptr = name as *const str;
+        let obj = scheme::Object::new_symbol(name_ptr as *const u8);
         assert!(!obj.is_fixnum());
     }
 
@@ -136,10 +141,13 @@ mod tests {
 
     #[test]
     fn test_symbol() {
-        let obj = scheme::Object::new_symbol("foo");
+        let name = "foo";
+        let name_ptr = name as *const str;        
+        let name_ptr = name_ptr as *const u8;
+        let obj = scheme::Object::new_symbol(name_ptr);
         assert!(obj.is_symbol());
         let symbol = obj.to_symbol();
-        assert_eq!(symbol.value, String::from("foo"));
+        assert_eq!(symbol.name_ptr, name_ptr);
     }
 }
 
