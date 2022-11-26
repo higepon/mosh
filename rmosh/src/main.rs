@@ -1,9 +1,12 @@
 // TODO
+// - Swap allocator
 // - Use RawPtr?
 // - Understand Trait better.
 // - http://blog.pnkfx.org/blog/categories/gc/
 
+
 pub mod scheme {
+
     #[derive(Debug, PartialEq)]
     pub enum ObjectType {
         Symbol,
@@ -35,25 +38,25 @@ pub mod scheme {
             unsafe { &*ptr }
         }
 
-        pub fn new_pair(first: &Object, second: &Object) -> &'static Object {
-            let obj = Box::new(Pair {
+        pub fn new_pair(bump: &bumpalo::Bump, first: &Object, second: &Object) -> &'static Object {
+            let obj = bump.alloc(Pair {
                 first: first,
                 second: second,
             });
-            let ptr = Box::into_raw(obj) as isize;
+            let ptr = obj as *const Pair as isize;
             let ptr = ptr | Self::TAG_PAIR;
             let ptr = ptr as *const Object;
             unsafe { &*ptr }
         }
 
-        pub fn new_symbol(name_ptr: *const u8) -> &'static Object {
-            let symbol = Box::new(Symbol {name_ptr: name_ptr});
-            let ptr = Box::into_raw(symbol) as *const u8;
-            let obj = Box::new(Object {
+        pub fn new_symbol(bump: &bumpalo::Bump, name_ptr: *const u8) -> &'static Object {
+            let symbol = bump.alloc(Symbol {name_ptr: name_ptr});
+            let ptr = symbol as *const Symbol as *const u8;
+            let obj = bump.alloc(Object {
                 obj_type: ObjectType::Symbol,
                 ptr: ptr,
             });
-            let ptr = Box::into_raw(obj) as *const Object;
+            let ptr = obj as *const Object;
             unsafe { &*ptr }
         }
 
@@ -122,15 +125,17 @@ mod tests {
     fn test_not_fixnum() {
         let name = "foo";
         let name_ptr = name as *const str;
-        let obj = scheme::Object::new_symbol(name_ptr as *const u8);
+        let bump: bumpalo::Bump = bumpalo::Bump::new() ;                        
+        let obj = scheme::Object::new_symbol(&bump, name_ptr as *const u8);
         assert!(!obj.is_fixnum());
     }
 
     #[test]
     fn test_pair() {
+        let bump: bumpalo::Bump = bumpalo::Bump::new() ;                                
         let first = scheme::Object::new_fixnum(1234);
-        let second = scheme::Object::new_fixnum(5678);
-        let obj = scheme::Object::new_pair(first, second);
+        let second = scheme::Object::new_fixnum(5678);       
+        let obj = scheme::Object::new_pair(&bump, first, second);
         assert!(obj.is_pair());
         let pair = obj.to_pair();
         assert!(pair.first.is_fixnum());
@@ -144,7 +149,8 @@ mod tests {
         let name = "foo";
         let name_ptr = name as *const str;        
         let name_ptr = name_ptr as *const u8;
-        let obj = scheme::Object::new_symbol(name_ptr);
+        let bump: bumpalo::Bump = bumpalo::Bump::new() ;                                
+        let obj = scheme::Object::new_symbol(&bump, name_ptr);
         assert!(obj.is_symbol());
         let symbol = obj.to_symbol();
         assert_eq!(symbol.name_ptr, name_ptr);
