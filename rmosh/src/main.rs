@@ -87,6 +87,7 @@ pub mod scheme {
     #[derive(Debug)]
     pub enum ConvError {
         NotPair,
+        NotSymbol,
     }
 
     impl Object {
@@ -166,6 +167,15 @@ pub mod scheme {
                 Err(ConvError::NotPair)
             }
         }
+
+        pub fn into_symbol(&self) -> Result<&Symbol, ConvError> {
+            if self.is_symbol() {
+                let ptr = self.ptr as *const Symbol;
+                Ok(unsafe { &*ptr })
+            } else {
+                Err(ConvError::NotSymbol)
+            }
+        }        
     }
 
     pub struct Pair<'a> {
