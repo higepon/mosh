@@ -4,19 +4,18 @@
 // - Understand Trait better.
 // - http://blog.pnkfx.org/blog/categories/gc/
 
-
-
-
 pub mod scheme {
 
-    pub struct Vm {}
+    pub struct Vm<'a> {
+        pub ac: &'a Object,
+    }
 
-    impl Vm {
-        pub fn run(&self, ops: &Vec<&Object>) -> &Object {
-            Object::new_fixnum(3)
+    impl<'a> Vm<'a> {
+        pub fn run(&mut self, ops: &Vec<&Object>) -> &Object {
+            self.ac = Object::new_fixnum(3);
+            self.ac
         }
     }
-    
 
     #[derive(Debug, PartialEq)]
     pub enum ObjectType {
@@ -61,7 +60,7 @@ pub mod scheme {
         }
 
         pub fn new_symbol(bump: &bumpalo::Bump, name_ptr: *const u8) -> &'static Object {
-            let symbol = bump.alloc(Symbol {name_ptr: name_ptr});
+            let symbol = bump.alloc(Symbol { name_ptr: name_ptr });
             let ptr = symbol as *const Symbol as *const u8;
             let obj = bump.alloc(Object {
                 obj_type: ObjectType::Symbol,
@@ -136,16 +135,16 @@ mod tests {
     fn test_not_fixnum() {
         let name = "foo";
         let name_ptr = name as *const str;
-        let bump: bumpalo::Bump = bumpalo::Bump::new() ;                        
+        let bump: bumpalo::Bump = bumpalo::Bump::new();
         let obj = scheme::Object::new_symbol(&bump, name_ptr as *const u8);
         assert!(!obj.is_fixnum());
     }
 
     #[test]
     fn test_pair() {
-        let bump: bumpalo::Bump = bumpalo::Bump::new() ;                                
+        let bump: bumpalo::Bump = bumpalo::Bump::new();
         let first = scheme::Object::new_fixnum(1234);
-        let second = scheme::Object::new_fixnum(5678);       
+        let second = scheme::Object::new_fixnum(5678);
         let obj = scheme::Object::new_pair(&bump, first, second);
         assert!(obj.is_pair());
         let pair = obj.to_pair();
@@ -158,9 +157,9 @@ mod tests {
     #[test]
     fn test_symbol() {
         let name = "foo";
-        let name_ptr = name as *const str;        
+        let name_ptr = name as *const str;
         let name_ptr = name_ptr as *const u8;
-        let bump: bumpalo::Bump = bumpalo::Bump::new() ;                                
+        let bump: bumpalo::Bump = bumpalo::Bump::new();
         let obj = scheme::Object::new_symbol(&bump, name_ptr);
         assert!(obj.is_symbol());
         let symbol = obj.to_symbol();
@@ -170,13 +169,11 @@ mod tests {
     #[test]
     fn test_vm_run() {
         let ops = vec![scheme::Object::new_fixnum(3)];
-        let vm = scheme::Vm {};
+        let mut vm = scheme::Vm {
+            ac: scheme::Object::new_fixnum(0),
+        };
         vm.run(&ops);
-    }    
+    }
 }
 
-
-
-fn main() {
-
-}
+fn main() {}
