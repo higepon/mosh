@@ -1,3 +1,14 @@
+/*
+    Requirements for scheme::Object.
+    Object should be able to represent
+    - Fixnum (tag bits object: Immdiate value).
+    - Pair (tag bits object: Heap allocated).
+    - Symbol (Type tag object: Heap allocated)
+
+
+*/
+
+
 pub mod scheme {
 
     #[derive(Copy, Clone, Debug)]    
@@ -52,6 +63,11 @@ pub mod scheme {
         obj_type: ObjectType,
         ptr: *const u8,
     }
+
+    pub trait Obj {
+        fn data(&self) -> *const u8;
+    }
+
 
     impl Object {
         const NUM_TAG_BITS: isize = 3;
@@ -189,6 +205,16 @@ mod tests {
         let symbol = obj.to_symbol();
         assert_eq!(symbol.name_ptr, name_ptr);
     }
+
+    impl scheme::Obj for isize {
+        fn data(&self) -> *const u8 {
+            print!("self={}", self);
+            self as *const dyn scheme::Obj as *const u8
+        }
+    }
+
+    use crate::scheme::Obj;
+
     #[test]
     fn test_vm_run() {
         let ops = vec![
@@ -201,7 +227,7 @@ mod tests {
             ac: scheme::Object::new_fixnum(0),
         };
         let ret = vm.run(&ops);
-
+        100_isize.data();
         assert_eq!(100, ret.to_fixnum());
     }
 }
