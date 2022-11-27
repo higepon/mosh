@@ -6,22 +6,30 @@
 
 pub mod scheme {
 
+    #[repr(isize)]
+    pub enum Op {
+        CONSTANT,
+    }
+
     pub struct Vm<'a> {
         pub ac: &'a Object,
     }
 
     impl<'a> Vm<'a> {
-        pub fn run(&mut self, ops: &Vec<&Object>) -> &Object {
+        pub fn run(&mut self, ops: &Vec<&'a Object>) -> &Object {
             let len = ops.len();
             let mut idx = 0;
             while idx < len {
                 let op = ops[idx];
                 idx += 1;
-                println!("before op={}", Object::new_fixnum(3) as *const Object as isize);                
-                println!("after op={}", op as *const Object as isize);
                 assert!(op.is_fixnum());
-                match op.to_fixnum() {
-                    3 => self.ac = Object::new_fixnum(3),
+                let op: Op = unsafe { ::std::mem::transmute(op.to_fixnum()) };
+                match op {
+                    Op::CONSTANT => {
+                        assert!(idx < len);
+                        self.ac = ops[idx];
+                        idx += 1;
+                    },
                     _ => self.ac = Object::new_fixnum(0),
                 }
             }
@@ -36,7 +44,7 @@ pub mod scheme {
 
     // We use least significant bits as object tag.
     #[repr(C, align(8))]
-    #[derive(Debug)]    
+    #[derive(Debug)]
     pub struct Object {
         obj_type: ObjectType,
         ptr: *const u8,
@@ -178,10 +186,12 @@ mod tests {
         let symbol = obj.to_symbol();
         assert_eq!(symbol.name_ptr, name_ptr);
     }
-
     #[test]
     fn test_vm_run() {
-        let ops = vec![scheme::Object::new_fixnum(3)];
+        let ops = vec![
+            scheme::Object::new_fixnum(scheme::Op::CONSTANT as isize),
+            scheme::Object::new_fixnum(3),
+        ];
         let mut vm = scheme::Vm {
             ac: scheme::Object::new_fixnum(0),
         };
