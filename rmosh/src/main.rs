@@ -1,13 +1,3 @@
-/*
-    Requirements for scheme::Object.
-    Object should be able to represent
-    - Fixnum (tag bits object: Immdiate value).
-    - Pair (tag bits object: Heap allocated).
-    - Symbol (Type tag object: Heap allocated)
-
-
-*/
-
 pub mod scheme {
 
     type Fixnum = isize;
