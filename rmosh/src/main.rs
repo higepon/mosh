@@ -1,14 +1,8 @@
-// TODO
-// - Swap allocator
-// - Use RawPtr?
-// - Understand Trait better.
-// - http://blog.pnkfx.org/blog/categories/gc/
-
 pub mod scheme {
 
-    #[repr(isize)]
-    pub enum Op {
-        CONSTANT,
+    #[derive(Copy, Clone, Debug)]    
+    pub enum Op<'a> {
+        CONSTANT(&'a Object),
         PUSH,
         ADD,
     }
@@ -18,7 +12,7 @@ pub mod scheme {
     }
 
     impl<'a> Vm<'a> {
-        pub fn run(&mut self, ops: &Vec<&'a Object>) -> &Object {
+        pub fn run(&mut self, ops: &Vec<Op<'a>>) -> &Object {
             const STACK_SIZE: usize = 256;
             let mut stack: [&Object; STACK_SIZE] = [Object::new_fixnum(0); STACK_SIZE];
             let mut sp: usize = 0;
@@ -27,14 +21,9 @@ pub mod scheme {
             while idx < len {
                 let op = ops[idx];
                 idx += 1;
-                assert!(op.is_fixnum());
-                let op: Op = unsafe { ::std::mem::transmute(op.to_fixnum()) };
                 match op {
-                    Op::CONSTANT => {
-                        assert!(idx < len);
-                        self.ac = ops[idx];
-                        idx += 1;
-
+                    Op::CONSTANT(c) => {
+                        self.ac = c;
                     },
                     Op::PUSH => {
                         assert!(sp < STACK_SIZE);
@@ -203,12 +192,10 @@ mod tests {
     #[test]
     fn test_vm_run() {
         let ops = vec![
-            scheme::Object::new_fixnum(scheme::Op::CONSTANT as isize),
-            scheme::Object::new_fixnum(99),
-            scheme::Object::new_fixnum(scheme::Op::PUSH as isize),
-            scheme::Object::new_fixnum(scheme::Op::CONSTANT as isize),
-            scheme::Object::new_fixnum(1),
-            scheme::Object::new_fixnum(scheme::Op::ADD as isize),            
+            scheme::Op::CONSTANT(scheme::Object::new_fixnum(99)),
+            scheme::Op::PUSH,
+            scheme::Op::CONSTANT(scheme::Object::new_fixnum(1)),
+            scheme::Op::ADD,
         ];
         let mut vm = scheme::Vm {
             ac: scheme::Object::new_fixnum(0),
