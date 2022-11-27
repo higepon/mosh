@@ -9,6 +9,8 @@ pub mod scheme {
     #[repr(isize)]
     pub enum Op {
         CONSTANT,
+        PUSH,
+        ADD,
     }
 
     pub struct Vm<'a> {
@@ -17,6 +19,9 @@ pub mod scheme {
 
     impl<'a> Vm<'a> {
         pub fn run(&mut self, ops: &Vec<&'a Object>) -> &Object {
+            const STACK_SIZE: usize = 256;
+            let mut stack: [&Object; STACK_SIZE] = [Object::new_fixnum(0); STACK_SIZE];
+            let mut sp: usize = 0;
             let len = ops.len();
             let mut idx = 0;
             while idx < len {
@@ -31,6 +36,15 @@ pub mod scheme {
                         idx += 1;
 
                     },
+                    Op::PUSH => {
+                        assert!(sp < STACK_SIZE);
+                        stack[sp] = self.ac;
+                        sp += 1;
+                    }
+                    Op::ADD => {
+                        sp -= 1;
+                        self.ac = Object::new_fixnum(stack[sp].to_fixnum() + self.ac.to_fixnum());
+                    }                    
                 }
             }
             self.ac
@@ -190,14 +204,18 @@ mod tests {
     fn test_vm_run() {
         let ops = vec![
             scheme::Object::new_fixnum(scheme::Op::CONSTANT as isize),
-            scheme::Object::new_fixnum(3),
+            scheme::Object::new_fixnum(99),
+            scheme::Object::new_fixnum(scheme::Op::PUSH as isize),
+            scheme::Object::new_fixnum(scheme::Op::CONSTANT as isize),
+            scheme::Object::new_fixnum(1),
+            scheme::Object::new_fixnum(scheme::Op::ADD as isize),            
         ];
         let mut vm = scheme::Vm {
             ac: scheme::Object::new_fixnum(0),
         };
         let ret = vm.run(&ops);
 
-        assert_eq!(3, ret.to_fixnum());
+        assert_eq!(100, ret.to_fixnum());
     }
 }
 
