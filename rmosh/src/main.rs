@@ -12,7 +12,19 @@ pub mod scheme {
 
     impl<'a> Vm<'a> {
         pub fn run(&mut self, ops: &Vec<&Object>) -> &Object {
-            self.ac = Object::new_fixnum(3);
+            let len = ops.len();
+            let mut idx = 0;
+            while idx < len {
+                let op = ops[idx];
+                idx += 1;
+                println!("before op={}", Object::new_fixnum(3) as *const Object as isize);                
+                println!("after op={}", op as *const Object as isize);
+                assert!(op.is_fixnum());
+                match op.to_fixnum() {
+                    3 => self.ac = Object::new_fixnum(3),
+                    _ => self.ac = Object::new_fixnum(0),
+                }
+            }
             self.ac
         }
     }
@@ -174,7 +186,7 @@ mod tests {
             ac: scheme::Object::new_fixnum(0),
         };
         let ret = vm.run(&ops);
-        
+
         assert_eq!(3, ret.to_fixnum());
     }
 }
