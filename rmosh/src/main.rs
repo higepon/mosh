@@ -5,7 +5,18 @@
 // - http://blog.pnkfx.org/blog/categories/gc/
 
 
+
+
 pub mod scheme {
+
+    pub struct Vm {}
+
+    impl Vm {
+        pub fn run(&self) -> &Object {
+            Object::new_fixnum(3)
+        }
+    }
+    
 
     #[derive(Debug, PartialEq)]
     pub enum ObjectType {
@@ -155,15 +166,16 @@ mod tests {
         let symbol = obj.to_symbol();
         assert_eq!(symbol.name_ptr, name_ptr);
     }
+
+    #[test]
+    fn test_vm_run() {
+        let vm = scheme::Vm {};
+        vm.run();
+    }    
 }
 
+
+
 fn main() {
-    let address = 0xdeadbeefusize;
-    let _raw_pointer = address as *const i32;
-    /*
-     * Of course this causes Segmentation fault.
-    unsafe {
-        println!("pointer={}", *_raw_pointer);
-    }
-    */
+
 }
