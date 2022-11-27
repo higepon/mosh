@@ -29,8 +29,8 @@ pub mod scheme {
                         assert!(idx < len);
                         self.ac = ops[idx];
                         idx += 1;
+
                     },
-                    _ => self.ac = Object::new_fixnum(0),
                 }
             }
             self.ac
