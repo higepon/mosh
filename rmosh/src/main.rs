@@ -8,10 +8,9 @@
 
 */
 
-
 pub mod scheme {
 
-    #[derive(Copy, Clone, Debug)]    
+    #[derive(Copy, Clone, Debug)]
     pub enum Op<'a> {
         CONSTANT(&'a Object),
         PUSH,
@@ -35,16 +34,26 @@ pub mod scheme {
                 match op {
                     Op::CONSTANT(c) => {
                         self.ac = c;
-                    },
+                    }
                     Op::PUSH => {
                         assert!(sp < STACK_SIZE);
                         stack[sp] = self.ac;
                         sp += 1;
                     }
                     Op::ADD => {
-                        sp -= 1;
-                        self.ac = Object::new_fixnum(stack[sp].to_fixnum() + self.ac.to_fixnum());
-                    }                    
+                        sp -= 1;                        
+                        match isize::try_from(stack[sp]) {
+                            Err(why) => panic!("{:?}", why),
+                            Ok(a) => match isize::try_from(self.ac) {
+                                Err(why) => panic!("{:?}", why),
+                                Ok(b) => {
+                                    println!("{} + {}", a, b);
+                                    self.ac = Object::new_fixnum(a + b);
+                                }
+                            },
+                        }
+
+                    }
                 }
             }
             self.ac
@@ -64,10 +73,21 @@ pub mod scheme {
         ptr: *const u8,
     }
 
+    impl std::convert::TryFrom<&Object> for isize {
+        type Error = ();
+        fn try_from(obj: &Object) -> Result<Self, Self::Error> {
+            if obj.is_fixnum() {
+                let ptr = obj as *const Object;
+                Ok(ptr as isize >> Object::NUM_TAG_BITS)
+            } else {
+                Err(())
+            }
+        }
+    }
+
     pub trait Obj {
         fn data(&self) -> *const u8;
     }
-
 
     impl Object {
         const NUM_TAG_BITS: isize = 3;
@@ -138,11 +158,6 @@ pub mod scheme {
             unsafe { &*ptr }
         }
 
-        pub fn to_fixnum(&self) -> isize {
-            let ptr = self as *const Object;
-            ptr as isize >> Self::NUM_TAG_BITS
-        }
-
         fn tag(&self) -> isize {
             let ptr = self as *const Object as isize;
             ptr & Self::TAG_MASK
@@ -168,7 +183,7 @@ mod tests {
     fn test_fixnum() {
         let obj = scheme::Object::new_fixnum(123456);
         assert!(obj.is_fixnum());
-        assert_eq!(obj.to_fixnum(), 123456);
+        assert_eq!(obj.try_into(), Ok(123456_isize));
     }
 
     #[test]
@@ -190,8 +205,8 @@ mod tests {
         let pair = obj.to_pair();
         assert!(pair.first.is_fixnum());
         assert!(pair.second.is_fixnum());
-        assert_eq!(pair.first.to_fixnum(), 1234);
-        assert_eq!(pair.second.to_fixnum(), 5678);
+        assert_eq!(isize::try_from(pair.first), Ok(1234));
+        assert_eq!(isize::try_from(pair.second), Ok(5678));
     }
 
     #[test]
@@ -213,8 +228,6 @@ mod tests {
         }
     }
 
-    use crate::scheme::Obj;
-
     #[test]
     fn test_vm_run() {
         let ops = vec![
@@ -227,8 +240,7 @@ mod tests {
             ac: scheme::Object::new_fixnum(0),
         };
         let ret = vm.run(&ops);
-        100_isize.data();
-        assert_eq!(100, ret.to_fixnum());
+        assert_eq!(Ok(100), isize::try_from(ret));
     }
 }
 
