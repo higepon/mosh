@@ -74,18 +74,6 @@ pub mod scheme {
         ptr: *const u8,
     }
 
-/*    impl std::convert::TryFrom<&Object> for isize {
-        type Error = ();
-        fn try_from(obj: &Object) -> Result<Self, Self::Error> {
-            if obj.is_fixnum() {
-                let ptr = obj as *const Object;
-                Ok(ptr as isize >> Object::NUM_TAG_BITS)
-            } else {
-                Err(())
-            }
-        }
-    }*/
-
     #[derive(Debug, PartialEq)]
     pub enum ConvError {
         NotPair,
@@ -182,7 +170,7 @@ pub mod scheme {
             } else {
                 Err(ConvError::NotFixnum)
             }
-        }        
+        }
     }
 
     pub struct Pair<'a> {
