@@ -146,11 +146,6 @@ pub mod scheme {
             self.tag() == Self::TAG_FIXNUM
         }
 
-        pub fn to_symbol(&self) -> &Symbol {
-            let ptr = self.ptr as *const Symbol;
-            unsafe { &*ptr }
-        }
-
         fn tag(&self) -> isize {
             let ptr = self as *const Object as isize;
             ptr & Self::TAG_MASK
@@ -175,7 +170,7 @@ pub mod scheme {
             } else {
                 Err(ConvError::NotSymbol)
             }
-        }        
+        }
     }
 
     pub struct Pair<'a> {
@@ -235,8 +230,12 @@ mod tests {
         let bump: bumpalo::Bump = bumpalo::Bump::new();
         let obj = scheme::Object::new_symbol(&bump, name_ptr);
         assert!(obj.is_symbol());
-        let symbol = obj.to_symbol();
-        assert_eq!(symbol.name_ptr, name_ptr);
+        match obj.into_symbol() {
+            Err(why) => panic!("{:?}", why),
+            Ok(symbol) => {
+                assert_eq!(symbol.name_ptr, name_ptr);
+            }
+        }
     }
 
     #[test]
