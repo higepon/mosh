@@ -12,7 +12,7 @@ pub mod scheme {
     pub struct Vm {}
 
     impl Vm {
-        pub fn run(&self) -> &Object {
+        pub fn run(&self, ops: &Vec<&Object>) -> &Object {
             Object::new_fixnum(3)
         }
     }
@@ -169,8 +169,9 @@ mod tests {
 
     #[test]
     fn test_vm_run() {
+        let ops = vec![scheme::Object::new_fixnum(3)];
         let vm = scheme::Vm {};
-        vm.run();
+        vm.run(&ops);
     }    
 }
 
