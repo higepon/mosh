@@ -8,7 +8,6 @@
 
 */
 
-
 pub mod scheme {
 
     #[derive(Copy, Clone, Debug)]
@@ -85,18 +84,6 @@ pub mod scheme {
         }
     }
 
-    pub trait Obj {
-        fn data(&self) -> *const u8;
-    }
-    /*
-    impl std::error::Error for Object {}
-
-    impl std::fmt::Display for Object {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            write!(f, "Oh no, something bad went down")
-        }
-    }*/
-
     #[derive(Debug)]
     pub enum ConvError {
         NotPair,
@@ -162,14 +149,6 @@ pub mod scheme {
             let ptr = self.ptr as *const Symbol;
             unsafe { &*ptr }
         }
-
-        /*        pub fn to_pair(&self) -> &Pair {
-            let ptr = self as *const Object;
-            let ptr = ptr as isize;
-            let ptr = ptr & Self::TAG_CLEAR;
-            let ptr = ptr as *const Pair;
-            unsafe { &*ptr }
-        }*/
 
         fn tag(&self) -> isize {
             let ptr = self as *const Object as isize;
@@ -248,13 +227,6 @@ mod tests {
         assert!(obj.is_symbol());
         let symbol = obj.to_symbol();
         assert_eq!(symbol.name_ptr, name_ptr);
-    }
-
-    impl scheme::Obj for isize {
-        fn data(&self) -> *const u8 {
-            print!("self={}", self);
-            self as *const dyn scheme::Obj as *const u8
-        }
     }
 
     #[test]
