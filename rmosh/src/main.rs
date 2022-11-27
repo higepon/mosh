@@ -24,6 +24,7 @@ pub mod scheme {
 
     // We use least significant bits as object tag.
     #[repr(C, align(8))]
+    #[derive(Debug)]    
     pub struct Object {
         obj_type: ObjectType,
         ptr: *const u8,
@@ -172,7 +173,9 @@ mod tests {
         let mut vm = scheme::Vm {
             ac: scheme::Object::new_fixnum(0),
         };
-        vm.run(&ops);
+        let ret = vm.run(&ops);
+        
+        assert_eq!(3, ret.to_fixnum());
     }
 }
 
