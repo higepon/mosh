@@ -10,6 +10,8 @@
 
 pub mod scheme {
 
+    type Fixnum = isize;
+
     #[derive(Copy, Clone, Debug)]
     pub enum Op<'a> {
         CONSTANT(&'a Object),
@@ -42,9 +44,9 @@ pub mod scheme {
                     }
                     Op::ADD => {
                         sp -= 1;
-                        match isize::try_from(stack[sp]) {
+                        match stack[sp].into_fixnum() {
                             Err(why) => panic!("{:?}", why),
-                            Ok(a) => match isize::try_from(self.ac) {
+                            Ok(a) => match self.ac.into_fixnum() {
                                 Err(why) => panic!("{:?}", why),
                                 Ok(b) => {
                                     println!("{} + {}", a, b);
@@ -72,7 +74,7 @@ pub mod scheme {
         ptr: *const u8,
     }
 
-    impl std::convert::TryFrom<&Object> for isize {
+/*    impl std::convert::TryFrom<&Object> for isize {
         type Error = ();
         fn try_from(obj: &Object) -> Result<Self, Self::Error> {
             if obj.is_fixnum() {
@@ -82,12 +84,13 @@ pub mod scheme {
                 Err(())
             }
         }
-    }
+    }*/
 
-    #[derive(Debug)]
+    #[derive(Debug, PartialEq)]
     pub enum ConvError {
         NotPair,
         NotSymbol,
+        NotFixnum,
     }
 
     impl Object {
@@ -171,6 +174,15 @@ pub mod scheme {
                 Err(ConvError::NotSymbol)
             }
         }
+
+        pub fn into_fixnum(&self) -> Result<Fixnum, ConvError> {
+            if self.is_fixnum() {
+                let ptr = self as *const Object;
+                Ok(ptr as Fixnum >> Object::NUM_TAG_BITS)
+            } else {
+                Err(ConvError::NotFixnum)
+            }
+        }        
     }
 
     pub struct Pair<'a> {
@@ -192,7 +204,7 @@ mod tests {
     fn test_fixnum() {
         let obj = scheme::Object::new_fixnum(123456);
         assert!(obj.is_fixnum());
-        assert_eq!(obj.try_into(), Ok(123456_isize));
+        assert_eq!(obj.into_fixnum(), Ok(123456_isize));
     }
 
     #[test]
@@ -216,8 +228,8 @@ mod tests {
             Ok(pair) => {
                 assert!(pair.first.is_fixnum());
                 assert!(pair.second.is_fixnum());
-                assert_eq!(isize::try_from(pair.first), Ok(1234));
-                assert_eq!(isize::try_from(pair.second), Ok(5678));
+                assert_eq!(pair.first.into_fixnum(), Ok(1234));
+                assert_eq!(pair.second.into_fixnum(), Ok(5678));
             }
         }
     }
@@ -250,7 +262,7 @@ mod tests {
             ac: scheme::Object::new_fixnum(0),
         };
         let ret = vm.run(&ops);
-        assert_eq!(Ok(100), isize::try_from(ret));
+        assert_eq!(ret.into_fixnum(), Ok(100));
     }
 }
 
