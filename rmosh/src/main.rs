@@ -8,6 +8,7 @@
 
 */
 
+
 pub mod scheme {
 
     #[derive(Copy, Clone, Debug)]
@@ -41,7 +42,7 @@ pub mod scheme {
                         sp += 1;
                     }
                     Op::ADD => {
-                        sp -= 1;                        
+                        sp -= 1;
                         match isize::try_from(stack[sp]) {
                             Err(why) => panic!("{:?}", why),
                             Ok(a) => match isize::try_from(self.ac) {
@@ -52,7 +53,6 @@ pub mod scheme {
                                 }
                             },
                         }
-
                     }
                 }
             }
@@ -87,6 +87,19 @@ pub mod scheme {
 
     pub trait Obj {
         fn data(&self) -> *const u8;
+    }
+    /*
+    impl std::error::Error for Object {}
+
+    impl std::fmt::Display for Object {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            write!(f, "Oh no, something bad went down")
+        }
+    }*/
+
+    #[derive(Debug)]
+    pub enum ConvError {
+        NotPair,
     }
 
     impl Object {
@@ -150,17 +163,29 @@ pub mod scheme {
             unsafe { &*ptr }
         }
 
-        pub fn to_pair(&self) -> &Pair {
+        /*        pub fn to_pair(&self) -> &Pair {
             let ptr = self as *const Object;
             let ptr = ptr as isize;
             let ptr = ptr & Self::TAG_CLEAR;
             let ptr = ptr as *const Pair;
             unsafe { &*ptr }
-        }
+        }*/
 
         fn tag(&self) -> isize {
             let ptr = self as *const Object as isize;
             ptr & Self::TAG_MASK
+        }
+
+        pub fn into_pair(&self) -> Result<&Pair, ConvError> {
+            if self.is_pair() {
+                let ptr = self as *const Object;
+                let ptr = ptr as isize;
+                let ptr = ptr & Self::TAG_CLEAR;
+                let ptr = ptr as *const Pair;
+                Ok(unsafe { &*ptr })
+            } else {
+                Err(ConvError::NotPair)
+            }
         }
     }
 
@@ -202,11 +227,15 @@ mod tests {
         let second = scheme::Object::new_fixnum(5678);
         let obj = scheme::Object::new_pair(&bump, first, second);
         assert!(obj.is_pair());
-        let pair = obj.to_pair();
-        assert!(pair.first.is_fixnum());
-        assert!(pair.second.is_fixnum());
-        assert_eq!(isize::try_from(pair.first), Ok(1234));
-        assert_eq!(isize::try_from(pair.second), Ok(5678));
+        match obj.into_pair() {
+            Err(why) => panic!("{:?}", why),
+            Ok(pair) => {
+                assert!(pair.first.is_fixnum());
+                assert!(pair.second.is_fixnum());
+                assert_eq!(isize::try_from(pair.first), Ok(1234));
+                assert_eq!(isize::try_from(pair.second), Ok(5678));
+            }
+        }
     }
 
     #[test]
