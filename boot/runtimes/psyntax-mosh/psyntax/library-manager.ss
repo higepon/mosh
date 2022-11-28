@@ -152,23 +152,24 @@
         (unless (null? ls)
           (display "/" p)
           (for-each
-            (lambda (c)
-              (cond
-                ((or (char<=? #\a c #\z)
-                     (char<=? #\A c #\Z)
-                     (char<=? #\0 c #\9)
-                     (memv c '(#\- #\. #\_ #\~)))
-                 (display c p))
-                (else
-                 (display "%" p)
-                 (let ((n (char->integer c)))
-                   (display-hex (quotient n 16))
-                   (display-hex (remainder n 16))))))
-            (string->list
+            (lambda (n)
+              (let ([c (integer->char n)])           
+                (cond
+                  ((or (char<=? #\a c #\z)
+                      (char<=? #\A c #\Z)
+                      (char<=? #\0 c #\9)
+                      (memv c '(#\- #\. #\_ #\~)))
+                  (display c p))
+                  (else
+                  (display "%" p)
+                  (let ((n (char->integer c)))
+                    (display-hex (quotient n 16))
+                    (display-hex (remainder n 16)))))))
+            (bytevector->u8-list (string->utf8
               (cond
                 [(symbol? (car ls)) (symbol->string (car ls))]
                 [(number? (car ls)) (number->string (car ls))]
-                [else (assertion-violation 'library-name->file-name "unknown name" (car ls))])))
+                [else (assertion-violation 'library-name->file-name "unknown name" (car ls))]))))
           (f (cdr ls))))
       (extract)))
 
