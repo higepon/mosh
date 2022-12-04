@@ -1,4 +1,5 @@
 // GC implementation based on loxido.
+use std::alloc;
 use std::fmt;
 use std::fmt::Display;
 use std::mem;
@@ -19,6 +20,36 @@ use std::{
 //   - Implement trace
 //   - Actually run garbage collection
 //   - Test push push push and see if object is allocated.
+
+struct GlobalAllocator {
+    bytes_allocated: AtomicUsize,
+}
+
+impl GlobalAllocator {
+    fn bytes_allocated(&self) -> usize {
+        self.bytes_allocated
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
+}
+
+unsafe impl alloc::GlobalAlloc for GlobalAllocator {
+    unsafe fn alloc(&self, layout: alloc::Layout) -> *mut u8 {
+        self.bytes_allocated
+            .fetch_add(layout.size(), std::sync::atomic::Ordering::Relaxed);
+        mimalloc::MiMalloc.alloc(layout)
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: alloc::Layout) {
+        mimalloc::MiMalloc.dealloc(ptr, layout);
+        self.bytes_allocated
+            .fetch_sub(layout.size(), std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+#[global_allocator]
+static GLOBAL: GlobalAllocator = GlobalAllocator {
+    bytes_allocated: AtomicUsize::new(0),
+};
 
 pub struct Fixnum {
     pub header: GcHeader,
@@ -117,6 +148,72 @@ impl Gc {
             GcRef { pointer }
         }
     }
+
+    pub fn mark_value(&mut self, value: Value) {
+        match value {
+            Value::Number(value) => self.mark_object(value),
+            Value::Pair(value) => self.mark_object(value),
+            _ => (),
+        }
+    }
+
+    pub fn mark_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
+        unsafe {
+            let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
+            header.as_mut().marked = true;
+            self.grey_stack.push(header);
+        }
+    }
+
+    fn trace_references(&mut self) {
+        while let Some(pointer) = self.grey_stack.pop() {
+            self.blacken_object(pointer);
+        }
+    }
+
+    fn blacken_object(&mut self, pointer: NonNull<GcHeader>) {
+        let object_type = unsafe { &pointer.as_ref().obj_type };
+        #[cfg(feature = "debug_log_gc")]
+        println!("blacken(adr:{:?})", pointer);
+
+        match object_type {
+            ObjectType::Fixnum => {}
+            ObjectType::Pair => {
+                let pair: &Pair2 = unsafe { mem::transmute(pointer.as_ref()) };
+                self.blacken_object(pair.first.pointer);
+                self.blacken_object(pair.second.pointer);
+            }
+        }
+    }
+
+    pub fn collect_garbage(&mut self) {
+        self.trace_references();
+        self.sweep();
+        self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
+    }
+    fn sweep(&mut self) {
+        let mut previous: Option<NonNull<GcHeader>> = None;
+        let mut current: Option<NonNull<GcHeader>> = self.first;
+        while let Some(mut object) = current {
+            unsafe {
+                let object_ptr = object.as_mut();
+                current = object_ptr.next;
+                if object_ptr.marked {
+                    object_ptr.marked = false;
+                    previous = Some(object);
+                } else {
+                    if let Some(mut previous) = previous {
+                        previous.as_mut().next = object_ptr.next
+                    } else {
+                        self.first = object_ptr.next
+                    }
+                    #[cfg(feature = "debug_log_gc")]
+                    println!("free(adr:{:?})", object_ptr as *mut GcObject);
+                    Box::from_raw(object_ptr);
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -153,19 +250,51 @@ pub enum Op {
 pub enum Value {
     Number(GcRef<Fixnum>),
     Pair(GcRef<Pair2>),
+    None,
 }
+
+const STACK_SIZE: usize = 256;
 
 pub struct Vm {
     pub ac: Value,
     pub gc: Gc,
+    pub stack: [Value; STACK_SIZE],
+    pub sp: usize,
 }
 
-impl<'a> Vm {
+impl Vm {
+    pub fn new() -> Self {
+        Self {
+            ac: Value::None,
+            gc: Gc::new(),
+            stack: [Value::None; STACK_SIZE],
+            sp: 0,
+        }
+    }
+
+    fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
+        self.mark_and_sweep();
+        self.gc.alloc(object)
+    }
+
+    fn mark_and_sweep(&mut self) {
+        println!("-- gc begin");
+
+        self.mark_roots();
+        self.gc.collect_garbage();
+
+        println!("-- gc end");
+    }
+
+    fn mark_roots(&mut self) {
+        for &value in &self.stack[0..self.sp] {
+            self.gc.mark_value(value);
+        }
+
+        self.gc.mark_value(self.ac);
+    }
+
     pub fn run(&mut self, ops: &Vec<Op>) -> Value {
-        const STACK_SIZE: usize = 256;
-        let mut stack: [Value; STACK_SIZE] =
-            [Value::Number(self.gc.alloc(Fixnum::new(1234))); STACK_SIZE];
-        let mut sp: usize = 0;
         let len = ops.len();
         let mut idx = 0;
         while idx < len {
@@ -176,21 +305,22 @@ impl<'a> Vm {
                     self.ac = c;
                 }
                 Op::PUSH => {
-                    assert!(sp < STACK_SIZE);
-                    stack[sp] = self.ac;
-                    sp += 1;
+                    assert!(self.sp < STACK_SIZE);
+                    self.stack[self.sp] = self.ac;
+                    self.sp += 1;
                 }
                 Op::ADD => {
-                    sp -= 1;
-                    match stack[sp] {
+                    self.sp -= 1;
+                    match self.stack[self.sp] {
                         Value::Number(a) => match self.ac {
                             Value::Number(b) => {
-                                self.ac =
-                                    Value::Number(self.gc.alloc(Fixnum::new(a.value + b.value)));
+                                self.ac = Value::Number(self.alloc(Fixnum::new(a.value + b.value)));
                             }
                             Value::Pair(_) => panic!("{:?}", "todo"),
+                            Value::None => panic!("{:?}", "todo"),
                         },
                         Value::Pair(_) => panic!("{:?}", "todo"),
+                        Value::None => panic!("{:?}", "todo"),
                     }
                 }
             }
@@ -205,23 +335,21 @@ pub mod tests {
 
     #[test]
     fn test_vm_run() {
-        let mut gc = Gc::new();
+        let mut vm = Vm::new();
         let ops = vec![
-            Op::CONSTANT(Value::Number(gc.alloc(Fixnum::new(99)))),
+            Op::CONSTANT(Value::Number(vm.alloc(Fixnum::new(99)))),
             Op::PUSH,
-            Op::CONSTANT(Value::Number(gc.alloc(Fixnum::new(1)))),
+            Op::CONSTANT(Value::Number(vm.alloc(Fixnum::new(1)))),
             Op::ADD,
         ];
-        let mut vm = Vm {
-            ac: Value::Number(gc.alloc(Fixnum::new(0))),
-            gc: gc,
-        };
+
         let ret = vm.run(&ops);
         match ret {
             Value::Number(a) => {
                 assert_eq!(a.value, 100);
             }
             Value::Pair(_) => panic!("{:?}", "todo"),
+            Value::None => panic!("{:?}", "todo"),
         }
     }
 
