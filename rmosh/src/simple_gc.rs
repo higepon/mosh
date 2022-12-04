@@ -1,4 +1,5 @@
-// GC implementation based on loxido.
+// GC implementation based on Loxido written by Manuel Cerón.
+// See https://github.com/ceronman/loxido.
 use std::alloc;
 use std::fmt;
 use std::fmt::Display;
@@ -15,11 +16,13 @@ use std::{
 //   - [*] Format and reorganize all
 //   - [*] Have GC in VM
 //   - [*] Define Value.
-//   - Run w/o caring garbage collection
-//   - Implement self alloc
-//   - Implement trace
-//   - Actually run garbage collection
-//   - Test push push push and see if object is allocated.
+//   - [*] Run w/o caring garbage collection
+//   - [*] Implement self alloc
+//   - [*] Implement trace
+//   - [*] Actually run garbage collection
+//   - [ ] Add debug for alloc and free.
+//   - [ ] Test push push push and see if object is allocated.
+//   - [ ]
 
 struct GlobalAllocator {
     bytes_allocated: AtomicUsize,
@@ -71,15 +74,15 @@ impl Display for Fixnum {
     }
 }
 
-pub struct Pair2 {
+pub struct Pair {
     pub header: GcHeader,
     pub first: GcRef<GcHeader>,
     pub second: GcRef<GcHeader>,
 }
 
-impl Pair2 {
+impl Pair {
     pub fn new(first: GcRef<GcHeader>, second: GcRef<GcHeader>) -> Self {
-        Pair2 {
+        Pair {
             header: GcHeader::new(ObjectType::Pair),
             first: first,
             second: second,
@@ -87,7 +90,7 @@ impl Pair2 {
     }
 }
 
-impl Display for Pair2 {
+impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "pair")
     }
@@ -179,7 +182,7 @@ impl Gc {
         match object_type {
             ObjectType::Fixnum => {}
             ObjectType::Pair => {
-                let pair: &Pair2 = unsafe { mem::transmute(pointer.as_ref()) };
+                let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.blacken_object(pair.first.pointer);
                 self.blacken_object(pair.second.pointer);
             }
@@ -207,8 +210,8 @@ impl Gc {
                     } else {
                         self.first = object_ptr.next
                     }
-                    #[cfg(feature = "debug_log_gc")]
-                    println!("free(adr:{:?})", object_ptr as *mut GcObject);
+
+                    println!("free(adr:{:?})", object_ptr as *mut GcHeader);
                     Box::from_raw(object_ptr);
                 }
             }
@@ -249,7 +252,7 @@ pub enum Op {
 #[derive(Copy, Clone)]
 pub enum Value {
     Number(GcRef<Fixnum>),
-    Pair(GcRef<Pair2>),
+    Pair(GcRef<Pair>),
     None,
 }
 
@@ -311,16 +314,13 @@ impl Vm {
                 }
                 Op::ADD => {
                     self.sp -= 1;
-                    match self.stack[self.sp] {
-                        Value::Number(a) => match self.ac {
-                            Value::Number(b) => {
-                                self.ac = Value::Number(self.alloc(Fixnum::new(a.value + b.value)));
-                            }
-                            Value::Pair(_) => panic!("{:?}", "todo"),
-                            Value::None => panic!("{:?}", "todo"),
-                        },
-                        Value::Pair(_) => panic!("{:?}", "todo"),
-                        Value::None => panic!("{:?}", "todo"),
+                    match (self.stack[self.sp], self.ac) {
+                        (Value::Number(a), Value::Number(b)) => {
+                            self.ac = Value::Number(self.alloc(Fixnum::new(a.value + b.value)));
+                        }
+                        _ => {
+                            panic!("{:?}", "todo");
+                        }
                     }
                 }
             }
@@ -336,8 +336,10 @@ pub mod tests {
     #[test]
     fn test_vm_run() {
         let mut vm = Vm::new();
+        let fixnum = vm.alloc(Fixnum::new(99));
+        println!("alloc(adr:{:?})", &fixnum.header as *const GcHeader);
         let ops = vec![
-            Op::CONSTANT(Value::Number(vm.alloc(Fixnum::new(99)))),
+            Op::CONSTANT(Value::Number(fixnum)),
             Op::PUSH,
             Op::CONSTANT(Value::Number(vm.alloc(Fixnum::new(1)))),
             Op::ADD,
@@ -348,8 +350,7 @@ pub mod tests {
             Value::Number(a) => {
                 assert_eq!(a.value, 100);
             }
-            Value::Pair(_) => panic!("{:?}", "todo"),
-            Value::None => panic!("{:?}", "todo"),
+            _ => panic!("{:?}", "todo"),
         }
     }
 
@@ -366,7 +367,7 @@ pub mod tests {
         let mut gc = Gc::new();
         let x: GcRef<Fixnum> = gc.alloc(Fixnum::new(1234));
         let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1));
-        let p = gc.alloc(Pair2::new(x.as_header(), y.as_header()));
+        let p = gc.alloc(Pair::new(x.as_header(), y.as_header()));
         assert_eq!(p.first.obj_type, ObjectType::Fixnum);
     }
 }
