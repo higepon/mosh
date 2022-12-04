@@ -1,7 +1,28 @@
 // GC implementation based on loxido.
 use std::ptr::NonNull;
-use std::{alloc, mem};
+use std::{mem};
+use std::fmt;
 use std::fmt::Display;
+
+pub struct Fixnum {
+    pub header: GcHeader,
+    pub value: isize,
+}
+
+impl Fixnum {
+    pub fn new(value: isize) -> Self {
+        Fixnum {
+            header: GcHeader::new(ObjectType::Fixnum),
+            value: value
+        }
+    }
+}
+
+impl Display for Fixnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
 pub struct GcRef<T> {
     pointer: NonNull<T>,
 }
@@ -283,5 +304,11 @@ pub mod tests {
         };
         let ret = vm.run(&ops);
         assert_eq!(ret.into_fixnum(), Ok(100));
+    }
+
+    #[test]    
+    fn test_gc() {
+        let mut gc = Gc::new();
+        let n = gc.alloc(Fixnum::new(1234));
     }
 }
