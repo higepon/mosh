@@ -3,6 +3,12 @@ use std::ptr::NonNull;
 use std::{mem};
 use std::fmt;
 use std::fmt::Display;
+use std::{
+    ops::{Deref, DerefMut},
+    sync::atomic::AtomicUsize,
+    usize,
+};
+
 
 pub struct Fixnum {
     pub header: GcHeader,
@@ -25,6 +31,14 @@ impl Display for Fixnum {
 }
 pub struct GcRef<T> {
     pointer: NonNull<T>,
+}
+
+impl<T> Deref for GcRef<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        unsafe { self.pointer.as_ref() }
+    }
 }
 
 pub struct Gc {
@@ -309,6 +323,9 @@ pub mod tests {
     #[test]    
     fn test_gc() {
         let mut gc = Gc::new();
-        let n = gc.alloc(Fixnum::new(1234));
+        let x: GcRef<Fixnum> = gc.alloc(Fixnum::new(1234));
+        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1)); 
+        let z = gc.alloc(Fixnum::new(x.value + y.value));
+        assert_eq!(z.value, 1235);
     }
 }
