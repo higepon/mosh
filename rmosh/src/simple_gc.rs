@@ -11,7 +11,7 @@ use std::{
 
 // TODO:
 // - Simple GC w/o tagged pointers.
-//   - Format and reorganize all
+//   - [*] Format and reorganize all
 //   - Have GC in VM
 //   - Define Value.
 //   - Run w/o caring garbage collection
@@ -268,6 +268,7 @@ pub enum Op {
 
 pub struct Vm {
     pub ac: Object,
+    pub gc: Gc,
 }
 
 impl<'a> Vm {
@@ -358,6 +359,7 @@ pub mod tests {
         ];
         let mut vm = Vm {
             ac: Object::from_fixnum(0),
+            gc: Gc::new(),
         };
         let ret = vm.run(&ops);
         assert_eq!(ret.into_fixnum(), Ok(100));
