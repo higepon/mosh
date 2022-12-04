@@ -1,15 +1,21 @@
 // GC implementation based on loxido.
-use std::ptr::NonNull;
-use std::{mem};
 use std::fmt;
 use std::fmt::Display;
+use std::mem;
+use std::ptr::NonNull;
 use std::{
     ops::{Deref, DerefMut},
     sync::atomic::AtomicUsize,
     usize,
 };
 
-
+// TODO:
+// - Simple GC w/o tagged pointers.
+//   - Format and reorganize all
+//   - Have GC in VM
+//   - Define Value.
+//   - Run w/o caring garbage collection
+//   - Implement self alloc
 
 pub struct Fixnum {
     pub header: GcHeader,
@@ -20,29 +26,7 @@ impl Fixnum {
     pub fn new(value: isize) -> Self {
         Fixnum {
             header: GcHeader::new(ObjectType::Fixnum),
-            value: value
-        }
-    }
-}
-
-pub struct Pair2 {
-    pub header: GcHeader,
-    pub first: GcRef<GcHeader>,
-    pub second: GcRef<GcHeader>,
-}
-
-impl Display for Pair2 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "pair")
-    }
-}
-
-impl Pair2 {
-    pub fn new(first: GcRef<GcHeader>, second: GcRef<GcHeader>) -> Self {
-        Pair2 {
-            header: GcHeader::new(ObjectType::Pair),
-            first: first,
-            second: second
+            value: value,
         }
     }
 }
@@ -52,6 +36,29 @@ impl Display for Fixnum {
         write!(f, "{}", self.value)
     }
 }
+
+pub struct Pair2 {
+    pub header: GcHeader,
+    pub first: GcRef<GcHeader>,
+    pub second: GcRef<GcHeader>,
+}
+
+impl Pair2 {
+    pub fn new(first: GcRef<GcHeader>, second: GcRef<GcHeader>) -> Self {
+        Pair2 {
+            header: GcHeader::new(ObjectType::Pair),
+            first: first,
+            second: second,
+        }
+    }
+}
+
+impl Display for Pair2 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "pair")
+    }
+}
+
 pub struct GcRef<T> {
     pointer: NonNull<T>,
 }
@@ -60,9 +67,7 @@ impl<T> GcRef<T> {
     pub fn as_header(&self) -> GcRef<GcHeader> {
         //let ptr: NonNull<T> = self.pointer;
         let header: NonNull<GcHeader> = unsafe { mem::transmute(self.pointer.as_ref()) };
-        GcRef {
-            pointer: header,
-        }
+        GcRef { pointer: header }
     }
 }
 impl<T> Copy for GcRef<T> {}
@@ -117,7 +122,6 @@ pub enum ObjectType {
     Pair,
 }
 
-
 #[repr(C)]
 pub struct GcHeader {
     marked: bool,
@@ -134,8 +138,6 @@ impl GcHeader {
         }
     }
 }
-
-
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug)]
@@ -361,22 +363,20 @@ pub mod tests {
         assert_eq!(ret.into_fixnum(), Ok(100));
     }
 
-    #[test]    
+    #[test]
     fn test_gc() {
         let mut gc = Gc::new();
         let x: GcRef<Fixnum> = gc.alloc(Fixnum::new(1234));
-        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1)); 
+        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1));
         let z = gc.alloc(Fixnum::new(x.value + y.value));
-        assert_eq!(z.value, 1235);      
+        assert_eq!(z.value, 1235);
     }
-    #[test]    
+    #[test]
     fn test_gc_pair() {
         let mut gc = Gc::new();
         let x: GcRef<Fixnum> = gc.alloc(Fixnum::new(1234));
-        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1)); 
+        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1));
         let p = gc.alloc(Pair2::new(x.as_header(), y.as_header()));
         assert_eq!(p.first.obj_type, ObjectType::Fixnum);
-
-
-    }    
+    }
 }
