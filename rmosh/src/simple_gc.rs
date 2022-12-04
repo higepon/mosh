@@ -12,7 +12,7 @@ use std::{
 // TODO:
 // - Simple GC w/o tagged pointers.
 //   - [*] Format and reorganize all
-//   - Have GC in VM
+//   - [*] Have GC in VM
 //   - Define Value.
 //   - Run w/o caring garbage collection
 //   - Implement self alloc
@@ -264,6 +264,11 @@ pub enum Op {
     CONSTANT(Object),
     PUSH,
     ADD,
+}
+
+pub enum Value {
+    Number(GcRef<Fixnum>),
+    Pair(GcRef<Pair2>),
 }
 
 pub struct Vm {
