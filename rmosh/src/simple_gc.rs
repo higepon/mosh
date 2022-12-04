@@ -18,6 +18,7 @@ use std::{
 //   - Implement self alloc
 //   - Implement trace
 //   - Actually run garbage collection
+//   - Test push push push and see if object is allocated.
 
 pub struct Fixnum {
     pub header: GcHeader,
