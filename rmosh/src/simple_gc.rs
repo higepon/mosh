@@ -1,6 +1,12 @@
 // GC implementation based on loxido.
 use std::ptr::NonNull;
 
+pub struct Gc {
+    next_gc: usize,
+    first: Option<NonNull<GcHeader>>,
+    grey_stack: Vec<NonNull<GcHeader>>,
+}
+
 #[derive(Debug)]
 pub enum ObjectType {
     Fixnum,
