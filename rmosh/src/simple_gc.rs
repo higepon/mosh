@@ -1,3 +1,21 @@
+// GC implementation based on loxido.
+use std::ptr::NonNull;
+
+#[derive(Debug)]
+pub enum ObjectType {
+    Fixnum,
+}
+
+
+#[repr(C)]
+pub struct GcObject {
+    marked: bool,
+    next: Option<NonNull<GcObject>>,
+    obj_type: ObjectType,
+}
+
+
+
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug)]
 pub struct Object {

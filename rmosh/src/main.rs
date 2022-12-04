@@ -1,3 +1,5 @@
+mod simple_gc;
+
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug)]
 pub struct Object {
