@@ -8,10 +8,20 @@ pub enum ObjectType {
 
 
 #[repr(C)]
-pub struct GcObject {
+pub struct GcHeader {
     marked: bool,
-    next: Option<NonNull<GcObject>>,
+    next: Option<NonNull<GcHeader>>,
     obj_type: ObjectType,
+}
+
+impl GcHeader {
+    pub fn new(obj_type: ObjectType) -> Self {
+        Self {
+            marked: false,
+            next: None,
+            obj_type,
+        }
+    }
 }
 
 
