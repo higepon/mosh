@@ -1,10 +1,39 @@
 // GC implementation based on loxido.
 use std::ptr::NonNull;
+use std::{alloc, mem};
+use std::fmt::Display;
+pub struct GcRef<T> {
+    pointer: NonNull<T>,
+}
 
 pub struct Gc {
     next_gc: usize,
     first: Option<NonNull<GcHeader>>,
     grey_stack: Vec<NonNull<GcHeader>>,
+}
+
+impl Gc {
+    const HEAP_GROW_FACTOR: usize = 2;
+
+    pub fn new() -> Self {
+        Gc {
+            next_gc: 1024 * 1024,
+            first: None,
+            grey_stack: Vec::new(),
+        }
+    }
+
+    pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
+        unsafe {
+            let boxed = Box::new(object);
+            let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
+            let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
+            header.as_mut().next = self.first.take();
+            self.first = Some(header);
+
+            GcRef { pointer }
+        }
+    }
 }
 
 #[derive(Debug)]
