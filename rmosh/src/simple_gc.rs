@@ -20,9 +20,10 @@ use std::{
 //   - [*] Implement self alloc
 //   - [*] Implement trace
 //   - [*] Actually run garbage collection
-//   - [ ] Add debug for alloc and free.
+//   - [*] Add debug for alloc and free.
+//   - [ ] Figure out how to add ops to root.
 //   - [ ] Test push push push and see if object is allocated.
-//   - [ ]
+
 
 struct GlobalAllocator {
     bytes_allocated: AtomicUsize,
@@ -102,7 +103,6 @@ pub struct GcRef<T> {
 
 impl<T> GcRef<T> {
     pub fn as_header(&self) -> GcRef<GcHeader> {
-        //let ptr: NonNull<T> = self.pointer;
         let header: NonNull<GcHeader> = unsafe { mem::transmute(self.pointer.as_ref()) };
         GcRef { pointer: header }
     }
@@ -212,14 +212,14 @@ impl Gc {
                     }
 
                     println!("free(adr:{:?})", object_ptr as *mut GcHeader);
-                    Box::from_raw(object_ptr);
+                    drop(Box::from_raw(object_ptr))
                 }
             }
         }
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
     Fixnum,
     Pair,
@@ -244,9 +244,10 @@ impl GcHeader {
 
 #[derive(Copy, Clone)]
 pub enum Op {
-    CONSTANT(Value),
-    PUSH,
-    ADD,
+    Constant(Value),
+    Push,
+    Add,
+    AddPair,
 }
 
 #[derive(Copy, Clone)]
@@ -263,6 +264,7 @@ pub struct Vm {
     pub gc: Gc,
     pub stack: [Value; STACK_SIZE],
     pub sp: usize,
+    ops: Option<&'static Vec<Op>>,    
 }
 
 impl Vm {
@@ -272,6 +274,7 @@ impl Vm {
             gc: Gc::new(),
             stack: [Value::None; STACK_SIZE],
             sp: 0,
+            ops: None,
         }
     }
 
@@ -297,6 +300,30 @@ impl Vm {
         self.gc.mark_value(self.ac);
     }
 
+    pub fn run_add(&mut self) -> Value {
+        // Don't call self.alloc here. It can trigger mark&sweep.
+        let fixnum = self.gc.alloc(Fixnum::new(99));
+        println!("alloc(adr:{:?})", &fixnum.header as *const GcHeader);
+        let ops = vec![
+            Op::Constant(Value::Number(fixnum)),
+            Op::Push,
+            Op::Constant(Value::Number(self.gc.alloc(Fixnum::new(1)))),
+            Op::Add,
+        ];
+        self.run(&ops)
+    }
+
+    pub fn run_add_pair(&mut self) -> Value {
+        let mut vm = Vm::new();
+        let x = vm.gc.alloc(Fixnum::new(99));
+        let y = vm.gc.alloc(Fixnum::new(101));
+        println!("alloc(adr:{:?})", &x.header as *const GcHeader);
+        println!("alloc(adr:{:?})", &y.header as *const GcHeader);
+        let pair = vm.gc.alloc(Pair::new(x.as_header(), y.as_header()));
+        let ops = vec![Op::Constant(Value::Pair(pair)), Op::AddPair];
+        self.run(&ops)  
+    }
+
     pub fn run(&mut self, ops: &Vec<Op>) -> Value {
         let len = ops.len();
         let mut idx = 0;
@@ -304,15 +331,15 @@ impl Vm {
             let op = ops[idx];
             idx += 1;
             match op {
-                Op::CONSTANT(c) => {
+                Op::Constant(c) => {
                     self.ac = c;
                 }
-                Op::PUSH => {
+                Op::Push => {
                     assert!(self.sp < STACK_SIZE);
                     self.stack[self.sp] = self.ac;
                     self.sp += 1;
                 }
-                Op::ADD => {
+                Op::Add => {
                     self.sp -= 1;
                     match (self.stack[self.sp], self.ac) {
                         (Value::Number(a), Value::Number(b)) => {
@@ -323,6 +350,21 @@ impl Vm {
                         }
                     }
                 }
+                Op::AddPair => match self.ac {
+                    Value::Pair(p) => match (p.first.obj_type, p.second.obj_type) {
+                        (ObjectType::Fixnum, ObjectType::Fixnum) => {
+                            let lhs: &Fixnum = unsafe { mem::transmute(p.first.pointer.as_ref()) };
+                            let rhs: &Fixnum = unsafe { mem::transmute(p.second.pointer.as_ref()) };
+                            self.ac = Value::Number(self.alloc(Fixnum::new(lhs.value + rhs.value)));
+                        }
+                        _ => {
+                            panic!("{:?}", "todo");
+                        }
+                    },
+                    _ => {
+                        panic!("{:?}", "todo");
+                    }
+                },
             }
         }
         self.ac
@@ -334,21 +376,24 @@ pub mod tests {
     use super::*;
 
     #[test]
-    fn test_vm_run() {
+    fn test_vm_run_add() {
         let mut vm = Vm::new();
-        let fixnum = vm.alloc(Fixnum::new(99));
-        println!("alloc(adr:{:?})", &fixnum.header as *const GcHeader);
-        let ops = vec![
-            Op::CONSTANT(Value::Number(fixnum)),
-            Op::PUSH,
-            Op::CONSTANT(Value::Number(vm.alloc(Fixnum::new(1)))),
-            Op::ADD,
-        ];
-
-        let ret = vm.run(&ops);
+        let ret = vm.run_add();
         match ret {
             Value::Number(a) => {
                 assert_eq!(a.value, 100);
+            }
+            _ => panic!("{:?}", "todo"),
+        }
+    }
+
+    #[test]
+    fn test_vm_run_add_pair() {
+        let mut vm = Vm::new();
+        let ret = vm.run_add_pair();
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a.value, 200);
             }
             _ => panic!("{:?}", "todo"),
         }
