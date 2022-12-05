@@ -5,11 +5,7 @@ use std::fmt;
 use std::fmt::Display;
 use std::mem;
 use std::ptr::NonNull;
-use std::{
-    ops::{Deref, DerefMut},
-    sync::atomic::AtomicUsize,
-    usize,
-};
+use std::{ops::Deref, sync::atomic::AtomicUsize, usize};
 
 // TODO:
 // - Simple GC w/o tagged pointers.
@@ -263,7 +259,7 @@ pub struct Vm {
     pub gc: Gc,
     pub stack: [Value; STACK_SIZE],
     pub sp: usize,
-    ops: Option<&'static Vec<Op>>,
+    ops: Vec<Op>,
 }
 
 impl Vm {
@@ -273,7 +269,7 @@ impl Vm {
             gc: Gc::new(),
             stack: [Value::None; STACK_SIZE],
             sp: 0,
-            ops: None,
+            ops: vec![],
         }
     }
 
@@ -309,7 +305,8 @@ impl Vm {
             Op::Constant(Value::Number(self.gc.alloc(Fixnum::new(1)))),
             Op::Add,
         ];
-        self.run(&ops)
+        self.ops = ops;
+        self.run()
     }
 
     pub fn run_add_pair(&mut self) -> Value {
@@ -320,14 +317,15 @@ impl Vm {
         println!("alloc(adr:{:?})", &y.header as *const GcHeader);
         let pair = vm.gc.alloc(Pair::new(x.as_header(), y.as_header()));
         let ops = vec![Op::Constant(Value::Pair(pair)), Op::AddPair];
-        self.run(&ops)
+        self.ops = ops;
+        self.run()
     }
 
-    pub fn run(&mut self, ops: &Vec<Op>) -> Value {
-        let len = ops.len();
+    pub fn run(&mut self) -> Value {
+        let len = self.ops.len();
         let mut idx = 0;
         while idx < len {
-            let op = ops[idx];
+            let op = self.ops[idx];
             idx += 1;
             match op {
                 Op::Constant(c) => {
