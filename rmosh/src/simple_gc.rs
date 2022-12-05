@@ -293,6 +293,17 @@ impl Vm {
         }
 
         self.gc.mark_value(self.ac);
+
+        for &value in &self.ops {
+            match value {
+                Op::Constant(v) => {
+                    self.gc.mark_value(v);
+                }
+                Op::Push => (),
+                Op::Add => (),
+                Op::AddPair => (),
+            }
+        }
     }
 
     pub fn run_add(&mut self) -> Value {
