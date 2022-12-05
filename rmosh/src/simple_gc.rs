@@ -24,7 +24,6 @@ use std::{
 //   - [ ] Figure out how to add ops to root.
 //   - [ ] Test push push push and see if object is allocated.
 
-
 struct GlobalAllocator {
     bytes_allocated: AtomicUsize,
 }
@@ -264,7 +263,7 @@ pub struct Vm {
     pub gc: Gc,
     pub stack: [Value; STACK_SIZE],
     pub sp: usize,
-    ops: Option<&'static Vec<Op>>,    
+    ops: Option<&'static Vec<Op>>,
 }
 
 impl Vm {
@@ -321,7 +320,7 @@ impl Vm {
         println!("alloc(adr:{:?})", &y.header as *const GcHeader);
         let pair = vm.gc.alloc(Pair::new(x.as_header(), y.as_header()));
         let ops = vec![Op::Constant(Value::Pair(pair)), Op::AddPair];
-        self.run(&ops)  
+        self.run(&ops)
     }
 
     pub fn run(&mut self, ops: &Vec<Op>) -> Value {
