@@ -343,8 +343,13 @@ impl Vm {
         let y = self.gc.alloc(Fixnum::new(101));
         println!("alloc(adr:{:?})", &x.header as *const GcHeader);
         println!("alloc(adr:{:?})", &y.header as *const GcHeader);
-        let pair = self.gc.alloc(Pair::new(x.as_header(), y.as_header()));
-        let ops = vec![Op::Constant(Value::Pair(pair)), Op::AddPair];
+        let ops = vec![
+            Op::Constant(Value::Number(x)),
+            Op::Push,
+            Op::Constant(Value::Number(y)),
+            Op::Cons,
+            Op::AddPair,
+        ];
         self.ops = ops;
         self.run()
     }
