@@ -243,20 +243,35 @@ pub enum Op {
     Push,
     Add,
     AddPair,
+    Cons,
 }
 
 #[derive(Copy, Clone)]
 pub enum Value {
     Number(GcRef<Fixnum>),
     Pair(GcRef<Pair>),
-    None,
+}
+
+impl Value {
+    pub fn as_header(&self) -> GcRef<GcHeader> {
+        match self {
+            Value::Number(o) => {
+                let header: NonNull<GcHeader> = unsafe { mem::transmute(o.pointer.as_ref()) };
+                GcRef { pointer: header }
+            }
+            Value::Pair(o) => {
+                let header: NonNull<GcHeader> = unsafe { mem::transmute(o.pointer.as_ref()) };
+                GcRef { pointer: header }
+            }
+        }
+    }
 }
 
 const STACK_SIZE: usize = 256;
 
 pub struct Vm {
     pub ac: Value,
-    pub gc: Gc,
+    pub gc: Box<Gc>,
     pub stack: [Value; STACK_SIZE],
     pub sp: usize,
     ops: Vec<Op>,
@@ -264,10 +279,12 @@ pub struct Vm {
 
 impl Vm {
     pub fn new() -> Self {
+        let mut gc = Box::new(Gc::new());
+        let zero = gc.alloc(Fixnum::new(0));
         Self {
-            ac: Value::None,
-            gc: Gc::new(),
-            stack: [Value::None; STACK_SIZE],
+            ac: Value::Number(zero),
+            gc: gc,
+            stack: [Value::Number(zero); STACK_SIZE],
             sp: 0,
             ops: vec![],
         }
@@ -302,6 +319,7 @@ impl Vm {
                 Op::Push => (),
                 Op::Add => (),
                 Op::AddPair => (),
+                Op::Cons => (),
             }
         }
     }
@@ -321,12 +339,11 @@ impl Vm {
     }
 
     pub fn run_add_pair(&mut self) -> Value {
-        let mut vm = Vm::new();
-        let x = vm.gc.alloc(Fixnum::new(99));
-        let y = vm.gc.alloc(Fixnum::new(101));
+        let x = self.gc.alloc(Fixnum::new(99));
+        let y = self.gc.alloc(Fixnum::new(101));
         println!("alloc(adr:{:?})", &x.header as *const GcHeader);
         println!("alloc(adr:{:?})", &y.header as *const GcHeader);
-        let pair = vm.gc.alloc(Pair::new(x.as_header(), y.as_header()));
+        let pair = self.gc.alloc(Pair::new(x.as_header(), y.as_header()));
         let ops = vec![Op::Constant(Value::Pair(pair)), Op::AddPair];
         self.ops = ops;
         self.run()
@@ -346,6 +363,13 @@ impl Vm {
                     assert!(self.sp < STACK_SIZE);
                     self.stack[self.sp] = self.ac;
                     self.sp += 1;
+                }
+                Op::Cons => {
+                    self.sp -= 1;
+                    let first = self.stack[self.sp];
+                    let second = self.ac;
+                    let pair = self.alloc(Pair::new(first.as_header(), second.as_header()));
+                    self.ac = Value::Pair(pair);
                 }
                 Op::Add => {
                     self.sp -= 1;
