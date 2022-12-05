@@ -7,19 +7,6 @@ use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, sync::atomic::AtomicUsize, usize};
 
-// TODO:
-// - Simple GC w/o tagged pointers.
-//   - [*] Format and reorganize all
-//   - [*] Have GC in VM
-//   - [*] Define Value.
-//   - [*] Run w/o caring garbage collection
-//   - [*] Implement self alloc
-//   - [*] Implement trace
-//   - [*] Actually run garbage collection
-//   - [*] Add debug for alloc and free.
-//   - [ ] Figure out how to add ops to root.
-//   - [ ] Test push push push and see if object is allocated.
-
 struct GlobalAllocator {
     bytes_allocated: AtomicUsize,
 }
@@ -151,7 +138,6 @@ impl Gc {
         match value {
             Value::Number(value) => self.mark_object(value),
             Value::Pair(value) => self.mark_object(value),
-            _ => (),
         }
     }
 
@@ -341,8 +327,6 @@ impl Vm {
     pub fn run_add_pair(&mut self) -> Value {
         let x = self.gc.alloc(Fixnum::new(99));
         let y = self.gc.alloc(Fixnum::new(101));
-        println!("alloc(adr:{:?})", &x.header as *const GcHeader);
-        println!("alloc(adr:{:?})", &y.header as *const GcHeader);
         let ops = vec![
             Op::Constant(Value::Number(x)),
             Op::Push,
@@ -351,7 +335,9 @@ impl Vm {
             Op::AddPair,
         ];
         self.ops = ops;
-        self.run()
+        let val = self.run();
+        self.mark_and_sweep();
+        val
     }
 
     pub fn run(&mut self) -> Value {
@@ -374,6 +360,7 @@ impl Vm {
                     let first = self.stack[self.sp];
                     let second = self.ac;
                     let pair = self.alloc(Pair::new(first.as_header(), second.as_header()));
+                    println!("pair alloc(adr:{:?})", &pair.header as *const GcHeader);
                     self.ac = Value::Pair(pair);
                 }
                 Op::Add => {
