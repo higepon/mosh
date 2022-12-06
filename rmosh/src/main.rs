@@ -1,4 +1,5 @@
 mod simple_gc;
+mod simple_gc2;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug)]
