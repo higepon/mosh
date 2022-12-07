@@ -135,7 +135,7 @@ impl Gc {
             Value::Number(_) => {}
             Value::Symbol(symbol) => {
                 self.mark_object(symbol);
-            }            
+            }
             Value::Pair(pair) => {
                 self.mark_object(pair);
             }
@@ -161,7 +161,7 @@ impl Gc {
             Value::Number(_) => {}
             Value::Symbol(pair) => {
                 self.trace_object(pair);
-            }            
+            }
             Value::Pair(pair) => {
                 self.trace_object(pair);
             }
@@ -423,7 +423,6 @@ pub mod tests {
         }
     }
 
-
     #[test]
     fn test_symbol() {
         let mut gc = Gc::new();
@@ -432,10 +431,11 @@ pub mod tests {
         match symbol {
             Value::Symbol(s) => {
                 assert_eq!(s.string, "define");
-            }_ => {
-                panic!("{:?}", "todo");                
+            }
+            _ => {
+                panic!("{:?}", "todo");
             }
         }
-    }    
+    }
 }
 fn main() {}
