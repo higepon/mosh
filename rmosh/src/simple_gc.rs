@@ -83,12 +83,6 @@ pub struct GcRef<T> {
     pointer: NonNull<T>,
 }
 
-impl<T> GcRef<T> {
-    pub fn as_header(&self) -> GcRef<GcHeader> {
-        let header: NonNull<GcHeader> = unsafe { mem::transmute(self.pointer.as_ref()) };
-        GcRef { pointer: header }
-    }
-}
 impl<T> Copy for GcRef<T> {}
 
 impl<T> Clone for GcRef<T> {
@@ -138,7 +132,7 @@ impl Gc {
     // This mark root objects only and push them to grey_stack.
     pub fn mark_value(&mut self, value: Value) {
         match value {
-            Value::Number(v) => self.mark_object(v),
+            Value::Number(_) => {}
             Value::Pair(pair) => {
                 self.mark_object(pair);
             }
@@ -161,7 +155,7 @@ impl Gc {
 
     fn trace_value(&mut self, value: Value) {
         match value {
-            Value::Number(v) => self.trace_object(v),
+            Value::Number(_) => {}
             Value::Pair(pair) => {
                 self.trace_object(pair);
             }
@@ -170,7 +164,7 @@ impl Gc {
 
     pub fn trace_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
-            let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
+            let header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
             self.trace_pointer(header);
         }
     }
@@ -256,23 +250,8 @@ pub enum Op {
 
 #[derive(Copy, Clone)]
 pub enum Value {
-    Number(GcRef<Fixnum>),
+    Number(isize),
     Pair(GcRef<Pair>),
-}
-
-impl Value {
-    pub fn as_header(&self) -> GcRef<GcHeader> {
-        match self {
-            Value::Number(o) => {
-                let header: NonNull<GcHeader> = unsafe { mem::transmute(o.pointer.as_ref()) };
-                GcRef { pointer: header }
-            }
-            Value::Pair(o) => {
-                let header: NonNull<GcHeader> = unsafe { mem::transmute(o.pointer.as_ref()) };
-                GcRef { pointer: header }
-            }
-        }
-    }
 }
 
 const STACK_SIZE: usize = 256;
@@ -287,12 +266,10 @@ pub struct Vm {
 
 impl Vm {
     pub fn new() -> Self {
-        let mut gc = Box::new(Gc::new());
-        let zero = gc.alloc(Fixnum::new(0));
         Self {
-            ac: Value::Number(zero),
-            gc: gc,
-            stack: [Value::Number(zero); STACK_SIZE],
+            ac: Value::Number(0),
+            gc: Box::new(Gc::new()),
+            stack: [Value::Number(0); STACK_SIZE],
             sp: 0,
             ops: vec![],
         }
@@ -334,12 +311,10 @@ impl Vm {
 
     pub fn run_add(&mut self) -> Value {
         // Don't call self.alloc here. It can trigger mark&sweep.
-        let fixnum = self.gc.alloc(Fixnum::new(99));
-        println!("alloc(adr:{:?})", &fixnum.header as *const GcHeader);
         let ops = vec![
-            Op::Constant(Value::Number(fixnum)),
+            Op::Constant(Value::Number(99)),
             Op::Push,
-            Op::Constant(Value::Number(self.gc.alloc(Fixnum::new(1)))),
+            Op::Constant(Value::Number(1)),
             Op::Add,
         ];
         self.ops = ops;
@@ -347,12 +322,10 @@ impl Vm {
     }
 
     pub fn run_add_pair(&mut self) -> Value {
-        let x = self.gc.alloc(Fixnum::new(99));
-        let y = self.gc.alloc(Fixnum::new(101));
         let ops = vec![
-            Op::Constant(Value::Number(x)),
+            Op::Constant(Value::Number(99)),
             Op::Push,
-            Op::Constant(Value::Number(y)),
+            Op::Constant(Value::Number(101)),
             Op::Cons,
             Op::AddPair,
         ];
@@ -389,7 +362,7 @@ impl Vm {
                     self.sp -= 1;
                     match (self.stack[self.sp], self.ac) {
                         (Value::Number(a), Value::Number(b)) => {
-                            self.ac = Value::Number(self.alloc(Fixnum::new(a.value + b.value)));
+                            self.ac = Value::Number(a + b);
                         }
                         _ => {
                             panic!("{:?}", "todo");
@@ -399,7 +372,7 @@ impl Vm {
                 Op::AddPair => match self.ac {
                     Value::Pair(p) => match (p.first, p.second) {
                         (Value::Number(lhs), Value::Number(rhs)) => {
-                            self.ac = Value::Number(self.alloc(Fixnum::new(lhs.value + rhs.value)));
+                            self.ac = Value::Number(lhs + rhs);
                         }
                         _ => {
                             panic!("{:?}", "todo");
@@ -425,7 +398,7 @@ pub mod tests {
         let ret = vm.run_add();
         match ret {
             Value::Number(a) => {
-                assert_eq!(a.value, 100);
+                assert_eq!(a, 100);
             }
             _ => panic!("{:?}", "todo"),
         }
@@ -437,7 +410,7 @@ pub mod tests {
         let ret = vm.run_add_pair();
         match ret {
             Value::Number(a) => {
-                assert_eq!(a.value, 200);
+                assert_eq!(a, 200);
             }
             _ => panic!("{:?}", "todo"),
         }
