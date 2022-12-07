@@ -37,26 +37,6 @@ static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
 
-pub struct Fixnum {
-    pub header: GcHeader,
-    pub value: isize,
-}
-
-impl Fixnum {
-    pub fn new(value: isize) -> Self {
-        Fixnum {
-            header: GcHeader::new(ObjectType::Fixnum),
-            value: value,
-        }
-    }
-}
-
-impl Display for Fixnum {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.value)
-    }
-}
-
 pub struct Pair {
     pub header: GcHeader,
     pub first: Value,
@@ -76,6 +56,26 @@ impl Pair {
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "pair")
+    }
+}
+
+pub struct Symbol {
+    pub header: GcHeader,
+    pub string: String,
+}
+
+impl Symbol {
+    pub fn new(s: String) -> Self {
+        Symbol {
+            header: GcHeader::new(ObjectType::Symbol),
+            string: s,
+        }
+    }
+}
+
+impl Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.string)
     }
 }
 
@@ -133,6 +133,9 @@ impl Gc {
     pub fn mark_value(&mut self, value: Value) {
         match value {
             Value::Number(_) => {}
+            Value::Symbol(symbol) => {
+                self.mark_object(symbol);
+            }            
             Value::Pair(pair) => {
                 self.mark_object(pair);
             }
@@ -156,6 +159,9 @@ impl Gc {
     fn trace_value(&mut self, value: Value) {
         match value {
             Value::Number(_) => {}
+            Value::Symbol(pair) => {
+                self.trace_object(pair);
+            }            
             Value::Pair(pair) => {
                 self.trace_object(pair);
             }
@@ -175,7 +181,7 @@ impl Gc {
         println!("blacken(adr:{:?})", pointer);
 
         match object_type {
-            ObjectType::Fixnum => {}
+            ObjectType::Symbol => {}
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_value(pair.first);
@@ -218,8 +224,8 @@ impl Gc {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
-    Fixnum,
     Pair,
+    Symbol,
 }
 
 #[repr(C)]
@@ -252,6 +258,7 @@ pub enum Op {
 pub enum Value {
     Number(isize),
     Pair(GcRef<Pair>),
+    Symbol(GcRef<Symbol>),
 }
 
 const STACK_SIZE: usize = 256;
@@ -416,12 +423,19 @@ pub mod tests {
         }
     }
 
+
     #[test]
-    fn test_gc() {
+    fn test_symbol() {
         let mut gc = Gc::new();
-        let x: GcRef<Fixnum> = gc.alloc(Fixnum::new(1234));
-        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1));
-        let z = gc.alloc(Fixnum::new(x.value + y.value));
-        assert_eq!(z.value, 1235);
-    }
+        let symbol = gc.alloc(Symbol::new("define".to_owned()));
+        let symbol = Value::Symbol(symbol);
+        match symbol {
+            Value::Symbol(s) => {
+                assert_eq!(s.string, "define");
+            }_ => {
+                panic!("{:?}", "todo");                
+            }
+        }
+    }    
 }
+fn main() {}
