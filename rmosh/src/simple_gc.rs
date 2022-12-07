@@ -59,12 +59,12 @@ impl Display for Fixnum {
 
 pub struct Pair {
     pub header: GcHeader,
-    pub first: GcRef<GcHeader>,
-    pub second: GcRef<GcHeader>,
+    pub first: Value,
+    pub second: Value,
 }
 
 impl Pair {
-    pub fn new(first: GcRef<GcHeader>, second: GcRef<GcHeader>) -> Self {
+    pub fn new(first: Value, second: Value) -> Self {
         Pair {
             header: GcHeader::new(ObjectType::Pair),
             first: first,
@@ -134,10 +134,14 @@ impl Gc {
         }
     }
 
+    // Top level mark.
+    // This mark root objects only and push them to grey_stack.
     pub fn mark_value(&mut self, value: Value) {
         match value {
-            Value::Number(value) => self.mark_object(value),
-            Value::Pair(value) => self.mark_object(value),
+            Value::Number(v) => self.mark_object(v),
+            Value::Pair(pair) => {
+                self.mark_object(pair);
+            }
         }
     }
 
@@ -151,11 +155,27 @@ impl Gc {
 
     fn trace_references(&mut self) {
         while let Some(pointer) = self.grey_stack.pop() {
-            self.blacken_object(pointer);
+            self.trace_pointer(pointer);
         }
     }
 
-    fn blacken_object(&mut self, pointer: NonNull<GcHeader>) {
+    fn trace_value(&mut self, value: Value) {
+        match value {
+            Value::Number(v) => self.trace_object(v),
+            Value::Pair(pair) => {
+                self.trace_object(pair);
+            }
+        }
+    }
+
+    pub fn trace_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
+        unsafe {
+            let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
+            self.trace_pointer(header);
+        }
+    }
+
+    fn trace_pointer(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
         #[cfg(feature = "debug_log_gc")]
         println!("blacken(adr:{:?})", pointer);
@@ -164,8 +184,10 @@ impl Gc {
             ObjectType::Fixnum => {}
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
-                self.blacken_object(pair.first.pointer);
-                self.blacken_object(pair.second.pointer);
+                self.mark_value(pair.first);
+                self.mark_value(pair.second);
+                self.trace_value(pair.first);
+                self.trace_value(pair.second);
             }
         }
     }
@@ -359,7 +381,7 @@ impl Vm {
                     self.sp -= 1;
                     let first = self.stack[self.sp];
                     let second = self.ac;
-                    let pair = self.alloc(Pair::new(first.as_header(), second.as_header()));
+                    let pair = self.alloc(Pair::new(first, second));
                     println!("pair alloc(adr:{:?})", &pair.header as *const GcHeader);
                     self.ac = Value::Pair(pair);
                 }
@@ -375,10 +397,8 @@ impl Vm {
                     }
                 }
                 Op::AddPair => match self.ac {
-                    Value::Pair(p) => match (p.first.obj_type, p.second.obj_type) {
-                        (ObjectType::Fixnum, ObjectType::Fixnum) => {
-                            let lhs: &Fixnum = unsafe { mem::transmute(p.first.pointer.as_ref()) };
-                            let rhs: &Fixnum = unsafe { mem::transmute(p.second.pointer.as_ref()) };
+                    Value::Pair(p) => match (p.first, p.second) {
+                        (Value::Number(lhs), Value::Number(rhs)) => {
                             self.ac = Value::Number(self.alloc(Fixnum::new(lhs.value + rhs.value)));
                         }
                         _ => {
@@ -430,13 +450,5 @@ pub mod tests {
         let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1));
         let z = gc.alloc(Fixnum::new(x.value + y.value));
         assert_eq!(z.value, 1235);
-    }
-    #[test]
-    fn test_gc_pair() {
-        let mut gc = Gc::new();
-        let x: GcRef<Fixnum> = gc.alloc(Fixnum::new(1234));
-        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1));
-        let p = gc.alloc(Pair::new(x.as_header(), y.as_header()));
-        assert_eq!(p.first.obj_type, ObjectType::Fixnum);
     }
 }
