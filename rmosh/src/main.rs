@@ -1,168 +1,387 @@
-mod simple_gc;
+// GC implementation based on Loxido written by Manuel Cerón.
+// See https://github.com/ceronman/loxido.
+use std::alloc;
+use std::fmt;
+use std::fmt::Display;
+use std::mem;
+use std::ptr::NonNull;
+use std::{ops::Deref, sync::atomic::AtomicUsize, usize};
 
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug)]
-pub struct Object {
-    raw_val: isize,
+struct GlobalAllocator {
+    bytes_allocated: AtomicUsize,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum HeapObjectType {
-    Symbol,
+impl GlobalAllocator {
+    fn bytes_allocated(&self) -> usize {
+        self.bytes_allocated
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
 }
 
-#[repr(transparent)]
-#[derive(Clone, Copy)]
-pub struct HeapObject {
-    obj_type: HeapObjectType,
-    ptr: *const u8,
-}
-
-pub struct Pair<'a> {
-    pub first: &'a Object,
-    pub second: &'a Object,
-}
-
-#[repr(transparent)]
-pub struct Symbol {
-    pub name_ptr: *const str,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct ConversionError {}
-
-impl Object {
-    const NUM_TAG_BITS: isize = 3;
-    const TAG_MASK: isize = 7;
-    const TAG_HEAP_OBJ: isize = 0;
-    const TAG_FIXNUM: isize = 1;
-    const TAG_PAIR: isize = 1 << 1;
-    const TAG_CLEAR: isize = !Self::TAG_MASK;
-
-    fn tag(&self) -> isize {
-        self.raw_val & Self::TAG_MASK
+unsafe impl alloc::GlobalAlloc for GlobalAllocator {
+    unsafe fn alloc(&self, layout: alloc::Layout) -> *mut u8 {
+        self.bytes_allocated
+            .fetch_add(layout.size(), std::sync::atomic::Ordering::Relaxed);
+        mimalloc::MiMalloc.alloc(layout)
     }
 
-    pub fn from_fixnum(n: isize) -> Object {
-        let raw_val = n << Self::NUM_TAG_BITS;
-        let raw_val = raw_val | Self::TAG_FIXNUM;
-        Object { raw_val: raw_val }
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: alloc::Layout) {
+        mimalloc::MiMalloc.dealloc(ptr, layout);
+        self.bytes_allocated
+            .fetch_sub(layout.size(), std::sync::atomic::Ordering::Relaxed);
     }
+}
 
-    pub fn new_pair(bump: &bumpalo::Bump, first: &Object, second: &Object) -> Object {
-        let pair = bump.alloc(Pair {
+#[global_allocator]
+static GLOBAL: GlobalAllocator = GlobalAllocator {
+    bytes_allocated: AtomicUsize::new(0),
+};
+
+pub struct Fixnum {
+    pub header: GcHeader,
+    pub value: isize,
+}
+
+impl Fixnum {
+    pub fn new(value: isize) -> Self {
+        Fixnum {
+            header: GcHeader::new(ObjectType::Fixnum),
+            value: value,
+        }
+    }
+}
+
+impl Display for Fixnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
+pub struct Pair {
+    pub header: GcHeader,
+    pub first: Value,
+    pub second: Value,
+}
+
+impl Pair {
+    pub fn new(first: Value, second: Value) -> Self {
+        Pair {
+            header: GcHeader::new(ObjectType::Pair),
             first: first,
             second: second,
-        });
-        let raw_val = pair as *const Pair as isize;
-        let raw_val = raw_val | Self::TAG_PAIR;
-        Object { raw_val: raw_val }
-    }
-
-    pub fn new_symbol(bump: &bumpalo::Bump, name_ptr: *const str) -> Object {
-        let symbol = bump.alloc(Symbol { name_ptr: name_ptr });
-        let ptr = symbol as *const Symbol as *const u8;
-        let heap_obj = bump.alloc(HeapObject {
-            obj_type: HeapObjectType::Symbol,
-            ptr: ptr,
-        });
-        let raw_val = heap_obj as *const HeapObject as isize;
-        let raw_val = raw_val | Self::TAG_HEAP_OBJ;
-        Object { raw_val: raw_val }
-    }
-
-    pub fn is_symbol(&self) -> bool {
-        if self.tag() != Self::TAG_HEAP_OBJ {
-            return false;
-        }
-        let ptr = self.raw_val & Self::TAG_CLEAR;
-        let ptr = ptr as *const HeapObject;
-        let heap_obj = unsafe { *ptr };
-        heap_obj.obj_type == HeapObjectType::Symbol
-    }
-
-    pub fn into_symbol(&self) -> Result<&Symbol, ConversionError> {
-        if self.is_symbol() {
-            let ptr = self.raw_val & Self::TAG_CLEAR;
-            let ptr = ptr as *const HeapObject;
-            let heap_obj = unsafe { *ptr };
-            let ptr = heap_obj.ptr as *const Symbol;
-            Ok(unsafe { &*ptr })
-        } else {
-            Err(ConversionError {})
-        }
-    }
-
-    pub fn is_pair(&self) -> bool {
-        self.tag() == Self::TAG_PAIR
-    }
-
-    pub fn into_pair(&self) -> Result<&Pair, ConversionError> {
-        if self.is_pair() {
-            let ptr = self.raw_val & Self::TAG_CLEAR;
-            let ptr = ptr as *const Pair;
-            Ok(unsafe { &*ptr })
-        } else {
-            Err(ConversionError {})
-        }
-    }
-
-    pub fn is_fixnum(&self) -> bool {
-        self.tag() == Self::TAG_FIXNUM
-    }
-
-    pub fn into_fixnum(&self) -> Result<isize, ConversionError> {
-        if self.is_fixnum() {
-            Ok(self.raw_val >> Object::NUM_TAG_BITS)
-        } else {
-            Err(ConversionError {})
         }
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+impl Display for Pair {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "pair")
+    }
+}
+
+pub struct GcRef<T> {
+    pointer: NonNull<T>,
+}
+
+impl<T> Copy for GcRef<T> {}
+
+impl<T> Clone for GcRef<T> {
+    fn clone(&self) -> GcRef<T> {
+        *self
+    }
+}
+
+impl<T> Deref for GcRef<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        unsafe { self.pointer.as_ref() }
+    }
+}
+
+pub struct Gc {
+    next_gc: usize,
+    first: Option<NonNull<GcHeader>>,
+    grey_stack: Vec<NonNull<GcHeader>>,
+}
+
+impl Gc {
+    const HEAP_GROW_FACTOR: usize = 2;
+
+    pub fn new() -> Self {
+        Gc {
+            next_gc: 1024 * 1024,
+            first: None,
+            grey_stack: Vec::new(),
+        }
+    }
+
+    pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
+        unsafe {
+            let boxed = Box::new(object);
+            let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
+            let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
+            header.as_mut().next = self.first.take();
+            self.first = Some(header);
+
+            GcRef { pointer }
+        }
+    }
+
+    // Top level mark.
+    // This mark root objects only and push them to grey_stack.
+    pub fn mark_value(&mut self, value: Value) {
+        match value {
+            Value::Number(_) => {}
+            Value::Pair(pair) => {
+                self.mark_object(pair);
+            }
+        }
+    }
+
+    pub fn mark_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
+        unsafe {
+            let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
+            header.as_mut().marked = true;
+            self.grey_stack.push(header);
+        }
+    }
+
+    fn trace_references(&mut self) {
+        while let Some(pointer) = self.grey_stack.pop() {
+            self.trace_pointer(pointer);
+        }
+    }
+
+    fn trace_value(&mut self, value: Value) {
+        match value {
+            Value::Number(_) => {}
+            Value::Pair(pair) => {
+                self.trace_object(pair);
+            }
+        }
+    }
+
+    pub fn trace_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
+        unsafe {
+            let header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
+            self.trace_pointer(header);
+        }
+    }
+
+    fn trace_pointer(&mut self, pointer: NonNull<GcHeader>) {
+        let object_type = unsafe { &pointer.as_ref().obj_type };
+        #[cfg(feature = "debug_log_gc")]
+        println!("blacken(adr:{:?})", pointer);
+
+        match object_type {
+            ObjectType::Fixnum => {}
+            ObjectType::Pair => {
+                let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_value(pair.first);
+                self.mark_value(pair.second);
+                self.trace_value(pair.first);
+                self.trace_value(pair.second);
+            }
+        }
+    }
+
+    pub fn collect_garbage(&mut self) {
+        self.trace_references();
+        self.sweep();
+        self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
+    }
+    fn sweep(&mut self) {
+        let mut previous: Option<NonNull<GcHeader>> = None;
+        let mut current: Option<NonNull<GcHeader>> = self.first;
+        while let Some(mut object) = current {
+            unsafe {
+                let object_ptr = object.as_mut();
+                current = object_ptr.next;
+                if object_ptr.marked {
+                    object_ptr.marked = false;
+                    previous = Some(object);
+                } else {
+                    if let Some(mut previous) = previous {
+                        previous.as_mut().next = object_ptr.next
+                    } else {
+                        self.first = object_ptr.next
+                    }
+
+                    println!("free(adr:{:?})", object_ptr as *mut GcHeader);
+                    drop(Box::from_raw(object_ptr))
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum ObjectType {
+    Fixnum,
+    Pair,
+}
+
+#[repr(C)]
+pub struct GcHeader {
+    marked: bool,
+    next: Option<NonNull<GcHeader>>,
+    obj_type: ObjectType,
+}
+
+impl GcHeader {
+    pub fn new(obj_type: ObjectType) -> Self {
+        Self {
+            marked: false,
+            next: None,
+            obj_type,
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
 pub enum Op {
-    CONSTANT(Object),
-    PUSH,
-    ADD,
+    Constant(Value),
+    Push,
+    Add,
+    AddPair,
+    Cons,
 }
+
+#[derive(Copy, Clone)]
+pub enum Value {
+    Number(isize),
+    Pair(GcRef<Pair>),
+}
+
+const STACK_SIZE: usize = 256;
 
 pub struct Vm {
-    pub ac: Object,
+    pub ac: Value,
+    pub gc: Box<Gc>,
+    pub stack: [Value; STACK_SIZE],
+    pub sp: usize,
+    ops: Vec<Op>,
 }
 
-impl<'a> Vm {
-    pub fn run(&mut self, ops: &Vec<Op>) -> Object {
-        const STACK_SIZE: usize = 256;
-        let mut stack: [Object; STACK_SIZE] = [Object::from_fixnum(0); STACK_SIZE];
-        let mut sp: usize = 0;
-        let len = ops.len();
+impl Vm {
+    pub fn new() -> Self {
+        Self {
+            ac: Value::Number(0),
+            gc: Box::new(Gc::new()),
+            stack: [Value::Number(0); STACK_SIZE],
+            sp: 0,
+            ops: vec![],
+        }
+    }
+
+    fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
+        self.mark_and_sweep();
+        self.gc.alloc(object)
+    }
+
+    fn mark_and_sweep(&mut self) {
+        println!("-- gc begin");
+
+        self.mark_roots();
+        self.gc.collect_garbage();
+
+        println!("-- gc end");
+    }
+
+    fn mark_roots(&mut self) {
+        for &value in &self.stack[0..self.sp] {
+            self.gc.mark_value(value);
+        }
+
+        self.gc.mark_value(self.ac);
+
+        for &value in &self.ops {
+            match value {
+                Op::Constant(v) => {
+                    self.gc.mark_value(v);
+                }
+                Op::Push => (),
+                Op::Add => (),
+                Op::AddPair => (),
+                Op::Cons => (),
+            }
+        }
+    }
+
+    pub fn run_add(&mut self) -> Value {
+        // Don't call self.alloc here. It can trigger mark&sweep.
+        let ops = vec![
+            Op::Constant(Value::Number(99)),
+            Op::Push,
+            Op::Constant(Value::Number(1)),
+            Op::Add,
+        ];
+        self.ops = ops;
+        self.run()
+    }
+
+    pub fn run_add_pair(&mut self) -> Value {
+        let ops = vec![
+            Op::Constant(Value::Number(99)),
+            Op::Push,
+            Op::Constant(Value::Number(101)),
+            Op::Cons,
+            Op::AddPair,
+        ];
+        self.ops = ops;
+        let val = self.run();
+        self.mark_and_sweep();
+        val
+    }
+
+    pub fn run(&mut self) -> Value {
+        let len = self.ops.len();
         let mut idx = 0;
         while idx < len {
-            let op = ops[idx];
+            let op = self.ops[idx];
             idx += 1;
             match op {
-                Op::CONSTANT(c) => {
+                Op::Constant(c) => {
                     self.ac = c;
                 }
-                Op::PUSH => {
-                    assert!(sp < STACK_SIZE);
-                    stack[sp] = self.ac;
-                    sp += 1;
+                Op::Push => {
+                    assert!(self.sp < STACK_SIZE);
+                    self.stack[self.sp] = self.ac;
+                    self.sp += 1;
                 }
-                Op::ADD => {
-                    sp -= 1;
-                    match stack[sp].into_fixnum() {
-                        Err(why) => panic!("{:?}", why),
-                        Ok(a) => match self.ac.into_fixnum() {
-                            Err(why) => panic!("{:?}", why),
-                            Ok(b) => {
-                                println!("{} + {}", a, b);
-                                self.ac = Object::from_fixnum(a + b);
-                            }
-                        },
+                Op::Cons => {
+                    self.sp -= 1;
+                    let first = self.stack[self.sp];
+                    let second = self.ac;
+                    let pair = self.alloc(Pair::new(first, second));
+                    println!("pair alloc(adr:{:?})", &pair.header as *const GcHeader);
+                    self.ac = Value::Pair(pair);
+                }
+                Op::Add => {
+                    self.sp -= 1;
+                    match (self.stack[self.sp], self.ac) {
+                        (Value::Number(a), Value::Number(b)) => {
+                            self.ac = Value::Number(a + b);
+                        }
+                        _ => {
+                            panic!("{:?}", "todo");
+                        }
                     }
                 }
+                Op::AddPair => match self.ac {
+                    Value::Pair(p) => match (p.first, p.second) {
+                        (Value::Number(lhs), Value::Number(rhs)) => {
+                            self.ac = Value::Number(lhs + rhs);
+                        }
+                        _ => {
+                            panic!("{:?}", "todo");
+                        }
+                    },
+                    _ => {
+                        panic!("{:?}", "todo");
+                    }
+                },
             }
         }
         self.ac
@@ -174,53 +393,35 @@ pub mod tests {
     use super::*;
 
     #[test]
-    fn test_fixnum() {
-        let obj = Object::from_fixnum(123456);
-        assert!(obj.is_fixnum());
-        assert_eq!(obj.into_fixnum(), Ok(123456_isize));
-    }
-    #[test]
-    fn test_pair() {
-        let bump: bumpalo::Bump = bumpalo::Bump::new();
-        let first = Object::from_fixnum(1234);
-        let second = Object::from_fixnum(5678);
-        let obj = Object::new_pair(&bump, &first, &second);
-        match obj.into_pair() {
-            Err(why) => panic!("{:?}", why),
-            Ok(pair) => {
-                assert!(pair.first.is_fixnum());
-                assert!(pair.second.is_fixnum());
-                assert_eq!(pair.first.into_fixnum(), Ok(1234));
-                assert_eq!(pair.second.into_fixnum(), Ok(5678));
+    fn test_vm_run_add() {
+        let mut vm = Vm::new();
+        let ret = vm.run_add();
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 100);
             }
-        }
-    }
-    #[test]
-    fn test_symbol() {
-        let name = "foo";
-        let bump: bumpalo::Bump = bumpalo::Bump::new();
-        let obj = Object::new_symbol(&bump, name);
-        assert!(obj.is_symbol());
-        match obj.into_symbol() {
-            Err(why) => panic!("{:?}", why),
-            Ok(symbol) => {
-                assert_eq!(symbol.name_ptr, name);
-            }
+            _ => panic!("{:?}", "todo"),
         }
     }
 
     #[test]
-    fn test_vm_run() {
-        let ops = vec![
-            Op::CONSTANT(Object::from_fixnum(99)),
-            Op::PUSH,
-            Op::CONSTANT(Object::from_fixnum(1)),
-            Op::ADD,
-        ];
-        let mut vm = Vm {
-            ac: Object::from_fixnum(0),
-        };
-        let ret = vm.run(&ops);
-        assert_eq!(ret.into_fixnum(), Ok(100));
+    fn test_vm_run_add_pair() {
+        let mut vm = Vm::new();
+        let ret = vm.run_add_pair();
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 200);
+            }
+            _ => panic!("{:?}", "todo"),
+        }
+    }
+
+    #[test]
+    fn test_gc() {
+        let mut gc = Gc::new();
+        let x: GcRef<Fixnum> = gc.alloc(Fixnum::new(1234));
+        let y: GcRef<Fixnum> = gc.alloc(Fixnum::new(1));
+        let z = gc.alloc(Fixnum::new(x.value + y.value));
+        assert_eq!(z.value, 1235);
     }
 }
