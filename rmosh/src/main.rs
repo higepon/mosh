@@ -1,6 +1,7 @@
 // GC implementation based on Loxido written by Manuel Cerón.
 // See https://github.com/ceronman/loxido.
 use std::alloc;
+use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
 use std::mem;
@@ -59,6 +60,7 @@ impl Display for Pair {
     }
 }
 
+#[derive(Debug)]
 pub struct Symbol {
     pub header: GcHeader,
     pub string: String,
@@ -79,6 +81,7 @@ impl Display for Symbol {
     }
 }
 
+#[derive(Debug)]
 pub struct GcRef<T> {
     pointer: NonNull<T>,
 }
@@ -103,6 +106,7 @@ pub struct Gc {
     next_gc: usize,
     first: Option<NonNull<GcHeader>>,
     grey_stack: Vec<NonNull<GcHeader>>,
+    symbols: HashMap<String, GcRef<Symbol>>,
 }
 
 impl Gc {
@@ -113,6 +117,7 @@ impl Gc {
             next_gc: 1024 * 1024,
             first: None,
             grey_stack: Vec::new(),
+            symbols: HashMap::new(),
         }
     }
 
@@ -125,6 +130,17 @@ impl Gc {
             self.first = Some(header);
 
             GcRef { pointer }
+        }
+    }
+
+    pub fn intern(&mut self, s: String) -> GcRef<Symbol> {
+        match self.symbols.get(s.as_str()) {
+            Some(&symbol) => symbol,
+            None => {
+                let symbol = self.alloc(Symbol::new(s.to_owned()));
+                self.symbols.insert(s, symbol);
+                symbol
+            }
         }
     }
 
@@ -229,6 +245,7 @@ pub enum ObjectType {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct GcHeader {
     marked: bool,
     next: Option<NonNull<GcHeader>>,
@@ -264,10 +281,12 @@ pub enum Value {
 const STACK_SIZE: usize = 256;
 
 pub struct Vm {
+    // ToDo: Do they need to be pub?
     pub ac: Value,
     pub gc: Box<Gc>,
     pub stack: [Value; STACK_SIZE],
     pub sp: usize,
+
     ops: Vec<Op>,
 }
 
@@ -340,6 +359,10 @@ impl Vm {
         let val = self.run();
         self.mark_and_sweep();
         val
+    }
+
+    pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
+        self.gc.intern(s.to_owned())
     }
 
     pub fn run(&mut self) -> Value {
@@ -436,6 +459,14 @@ pub mod tests {
                 panic!("{:?}", "todo");
             }
         }
+    }
+
+    #[test]
+    fn test_symbol_intern() {
+        let mut gc = Gc::new();
+        let symbol = gc.intern("foo".to_owned());
+        let symbol2 = gc.intern("foo".to_owned());
+        assert_eq!(symbol.pointer, symbol2.pointer);
     }
 }
 fn main() {}
