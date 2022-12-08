@@ -6,7 +6,7 @@ use std::fmt;
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::mem;
-use std::ptr::NonNull;
+use std::ptr::{null_mut, NonNull};
 use std::{ops::Deref, sync::atomic::AtomicUsize, usize};
 
 struct GlobalAllocator {
@@ -163,6 +163,7 @@ impl Gc {
     pub fn mark_value(&mut self, value: Value) {
         match value {
             Value::Number(_) => {}
+            Value::VMStackPointer(_) => {}
             Value::Symbol(symbol) => {
                 self.mark_object(symbol);
             }
@@ -189,6 +190,7 @@ impl Gc {
     fn trace_value(&mut self, value: Value) {
         match value {
             Value::Number(_) => {}
+            Value::VMStackPointer(_) => {}
             Value::Symbol(pair) => {
                 self.trace_object(pair);
             }
@@ -285,6 +287,10 @@ pub enum Op {
     Cons,
     DefineGlobal(GcRef<Symbol>),
     ReferGlobal(GcRef<Symbol>),
+    LetFrame(isize),
+    Enter(isize),
+    ReferLocal(isize),
+    Leave(isize),
 }
 
 #[derive(Copy, Clone)]
@@ -292,16 +298,19 @@ pub enum Value {
     Number(isize),
     Pair(GcRef<Pair>),
     Symbol(GcRef<Symbol>),
+    VMStackPointer(*mut Value),
 }
 
 const STACK_SIZE: usize = 256;
 
 pub struct Vm {
     // ToDo: Do they need to be pub?
-    pub ac: Value,
+    ac: Value,
+    dc: Value, // display closure
     pub gc: Box<Gc>,
     pub stack: [Value; STACK_SIZE],
-    pub sp: usize,
+    sp: *mut Value,
+    fp: *mut Value,
     globals: HashMap<GcRef<Symbol>, Value>,
     ops: Vec<Op>,
 }
@@ -310,9 +319,11 @@ impl Vm {
     pub fn new() -> Self {
         Self {
             ac: Value::Number(0),
+            dc: Value::Number(0), // todo
             gc: Box::new(Gc::new()),
             stack: [Value::Number(0); STACK_SIZE],
-            sp: 0,
+            sp: null_mut(),
+            fp: null_mut(),
             globals: HashMap::new(),
             ops: vec![],
         }
@@ -332,12 +343,17 @@ impl Vm {
         println!("-- gc end");
     }
 
+    fn stack_len(&self) -> usize {
+        unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
+    }
+
     fn mark_roots(&mut self) {
-        for &value in &self.stack[0..self.sp] {
+        for &value in &self.stack[0..self.stack_len()] {
             self.gc.mark_value(value);
         }
 
         self.gc.mark_value(self.ac);
+        self.gc.mark_value(self.dc);
 
         for &value in &self.ops {
             match value {
@@ -350,7 +366,10 @@ impl Vm {
                 Op::ReferGlobal(symbol) => {
                     self.gc.mark_object(symbol);
                 }
-
+                Op::LetFrame(_) => (),
+                Op::Enter(_) => (),
+                Op::ReferLocal(_) => (),
+                Op::Leave(_) => (),
                 Op::Push => (),
                 Op::Add => (),
                 Op::AddPair => (),
@@ -364,6 +383,19 @@ impl Vm {
             Op::Constant(Value::Number(9)),
             Op::DefineGlobal(self.gc.intern("a".to_owned())),
             Op::ReferGlobal(self.gc.intern("a".to_owned())),
+        ];
+        self.ops = ops;
+        self.run()
+    }
+
+    pub fn run_let(&mut self) -> Value {
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Constant(Value::Number(3)),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Leave(1),
         ];
         self.ops = ops;
         self.run()
@@ -399,7 +431,28 @@ impl Vm {
         self.gc.intern(s.to_owned())
     }
 
+    fn pop(&mut self) -> Value {
+        unsafe {
+            self.sp = self.sp.offset(-1);
+            *self.sp
+        }
+    }
+
+    fn push(&mut self, value: Value) {
+        unsafe {
+            *self.sp = value;
+            self.sp = self.sp.offset(1);
+        }
+    }
+
+    fn index(&mut self, sp: *mut Value, n: isize) -> Value {
+        unsafe { *sp.offset(-n - 1) }
+    }
+
     pub fn run(&mut self) -> Value {
+        // move!
+        self.sp = self.stack.as_mut_ptr();
+        self.fp = self.sp;
         let len = self.ops.len();
         let mut idx = 0;
         while idx < len {
@@ -410,29 +463,23 @@ impl Vm {
                     self.ac = c;
                 }
                 Op::Push => {
-                    assert!(self.sp < STACK_SIZE);
-                    self.stack[self.sp] = self.ac;
-                    self.sp += 1;
+                    self.push(self.ac);
                 }
                 Op::Cons => {
-                    self.sp -= 1;
-                    let first = self.stack[self.sp];
+                    let first = self.pop();
                     let second = self.ac;
                     let pair = self.alloc(Pair::new(first, second));
                     println!("pair alloc(adr:{:?})", &pair.header as *const GcHeader);
                     self.ac = Value::Pair(pair);
                 }
-                Op::Add => {
-                    self.sp -= 1;
-                    match (self.stack[self.sp], self.ac) {
-                        (Value::Number(a), Value::Number(b)) => {
-                            self.ac = Value::Number(a + b);
-                        }
-                        _ => {
-                            panic!("{:?}", "todo");
-                        }
+                Op::Add => match (self.pop(), self.ac) {
+                    (Value::Number(a), Value::Number(b)) => {
+                        self.ac = Value::Number(a + b);
                     }
-                }
+                    _ => {
+                        panic!("{:?}", "todo");
+                    }
+                },
                 Op::AddPair => match self.ac {
                     Value::Pair(p) => match (p.first, p.second) {
                         (Value::Number(lhs), Value::Number(rhs)) => {
@@ -457,6 +504,31 @@ impl Vm {
                         panic!("{:?}", "refer global error");
                     }
                 },
+                Op::Enter(n) => unsafe {
+                    self.fp = self.sp.offset(-n);
+                },
+                Op::LetFrame(_) => {
+                    // todo: expand stack here.
+                    self.push(self.dc);
+                    self.push(Value::VMStackPointer(self.fp));
+                }
+                Op::ReferLocal(n) => unsafe {
+                    self.ac = *self.fp.offset(n);
+                },
+                Op::Leave(n) => unsafe {
+                    let sp = self.sp.offset(-n);
+
+                    match self.index(sp, 0) {
+                        Value::VMStackPointer(fp) => {
+                            self.fp = fp;
+                        }
+                        _ => {
+                            panic!("{:?}", "fp not found");
+                        }
+                    }
+                    self.dc = self.index(sp, 1);
+                    self.sp = sp.offset(-2);
+                },
             }
         }
         self.ac
@@ -466,6 +538,18 @@ impl Vm {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+
+    #[test]
+    fn test_let() {
+        let mut vm = Vm::new();
+        let ret = vm.run_let();
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 3);
+            }
+            _ => panic!("{:?}", "todo"),
+        }
+    }
 
     #[test]
     fn test_vm_define() {
