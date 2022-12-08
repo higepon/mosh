@@ -4,6 +4,7 @@ use std::alloc;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, sync::atomic::AtomicUsize, usize};
@@ -84,6 +85,19 @@ impl Display for Symbol {
 #[derive(Debug)]
 pub struct GcRef<T> {
     pointer: NonNull<T>,
+}
+
+impl<T> PartialEq for GcRef<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.pointer == other.pointer
+    }
+}
+impl<T> Eq for GcRef<T> {}
+
+impl<T> Hash for GcRef<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.pointer.hash(state);
+    }
 }
 
 impl<T> Copy for GcRef<T> {}
@@ -269,6 +283,8 @@ pub enum Op {
     Add,
     AddPair,
     Cons,
+    DefineGlobal(GcRef<Symbol>),
+    ReferGlobal(GcRef<Symbol>),
 }
 
 #[derive(Copy, Clone)]
@@ -286,7 +302,7 @@ pub struct Vm {
     pub gc: Box<Gc>,
     pub stack: [Value; STACK_SIZE],
     pub sp: usize,
-
+    globals: HashMap<GcRef<Symbol>, Value>,
     ops: Vec<Op>,
 }
 
@@ -297,6 +313,7 @@ impl Vm {
             gc: Box::new(Gc::new()),
             stack: [Value::Number(0); STACK_SIZE],
             sp: 0,
+            globals: HashMap::new(),
             ops: vec![],
         }
     }
@@ -327,12 +344,29 @@ impl Vm {
                 Op::Constant(v) => {
                     self.gc.mark_value(v);
                 }
+                Op::DefineGlobal(symbol) => {
+                    self.gc.mark_object(symbol);
+                }
+                Op::ReferGlobal(symbol) => {
+                    self.gc.mark_object(symbol);
+                }
+
                 Op::Push => (),
                 Op::Add => (),
                 Op::AddPair => (),
                 Op::Cons => (),
             }
         }
+    }
+
+    pub fn run_define(&mut self) -> Value {
+        let ops = vec![
+            Op::Constant(Value::Number(9)),
+            Op::DefineGlobal(self.gc.intern("a".to_owned())),
+            Op::ReferGlobal(self.gc.intern("a".to_owned())),
+        ];
+        self.ops = ops;
+        self.run()
     }
 
     pub fn run_add(&mut self) -> Value {
@@ -412,6 +446,17 @@ impl Vm {
                         panic!("{:?}", "todo");
                     }
                 },
+                Op::DefineGlobal(symbol) => {
+                    self.globals.insert(symbol, self.ac);
+                }
+                Op::ReferGlobal(symbol) => match self.globals.get(&symbol) {
+                    Some(&value) => {
+                        self.ac = value;
+                    }
+                    None => {
+                        panic!("{:?}", "refer global error");
+                    }
+                },
             }
         }
         self.ac
@@ -421,6 +466,18 @@ impl Vm {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+
+    #[test]
+    fn test_vm_define() {
+        let mut vm = Vm::new();
+        let ret = vm.run_define();
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 9);
+            }
+            _ => panic!("{:?}", "todo"),
+        }
+    }
 
     #[test]
     fn test_vm_run_add() {
