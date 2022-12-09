@@ -39,6 +39,7 @@ static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
 
+#[derive(Debug)]
 pub struct Pair {
     pub header: GcHeader,
     pub first: Value,
@@ -82,6 +83,7 @@ impl Display for Symbol {
     }
 }
 
+#[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
     pub free_vars: Vec<Value>,
@@ -111,6 +113,12 @@ impl Display for Closure {
 #[derive(Debug)]
 pub struct GcRef<T> {
     pointer: NonNull<T>,
+}
+
+impl<T> Display for GcRef<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "GcRef<T>")
+    }
 }
 
 impl<T> PartialEq for GcRef<T> {
@@ -196,6 +204,7 @@ impl Gc {
         match value {
             Value::Number(_) => {}
             Value::VMStackPointer(_) => {}
+            Value::False => {}
             Value::Closure(closure) => {
                 self.mark_object(closure);
             }
@@ -225,6 +234,7 @@ impl Gc {
     fn trace_value(&mut self, value: Value) {
         match value {
             Value::Number(_) => {}
+            Value::False => {}
             Value::VMStackPointer(_) => {}
             Value::Closure(closure) => {
                 for var in &closure.free_vars {
@@ -323,7 +333,10 @@ impl GcHeader {
     }
 }
 
-#[derive(Copy, Clone)]
+//#[macro_use]
+//extern crate enum_display_derive;
+
+#[derive(Copy, Clone, Debug)]
 pub enum Op {
     Constant(Value),
     Push,
@@ -338,15 +351,27 @@ pub enum Op {
     Leave(isize),
     ReferFree(usize),
     Display(isize),
+    Test(usize),
+    LocalJump(usize),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Value {
     Number(isize),
     Pair(GcRef<Pair>),
     Symbol(GcRef<Symbol>),
     VMStackPointer(*mut Value),
     Closure(GcRef<Closure>),
+    False, // todo
+}
+
+impl Value {
+    pub fn is_false(&self) -> bool {
+        match self {
+            Value::False => true,
+            _ => false,
+        }
+    }
 }
 
 impl Display for Value {
@@ -364,11 +389,11 @@ impl Display for Value {
             Value::Symbol(_) => {
                 write!(f, "symbol")
             }
+            Value::False => {
+                write!(f, "false")
+            }
             Value::VMStackPointer(_) => {
                 write!(f, "stack pointer")
-            }
-            _ => {
-                write!(f, "obj")
             }
         }
     }
@@ -449,82 +474,10 @@ impl Vm {
                 Op::Add => (),
                 Op::AddPair => (),
                 Op::Cons => (),
+                Op::LocalJump(_) => (),
+                Op::Test(_) => (),
             }
         }
-    }
-
-    pub fn run_define(&mut self) -> Value {
-        let ops = vec![
-            Op::Constant(Value::Number(9)),
-            Op::DefineGlobal(self.gc.intern("a".to_owned())),
-            Op::ReferGlobal(self.gc.intern("a".to_owned())),
-        ];
-        self.ops = ops;
-        self.run()
-    }
-
-    pub fn run_nested_let(&mut self) -> Value {
-        //(let ([a 2]) (let ([b 1]) (+ a b)))
-        let ops: Vec<Op> = vec![
-            Op::LetFrame(3),
-            Op::Constant(Value::Number(2)),
-            Op::Push,
-            Op::Enter(1),
-            Op::LetFrame(2),
-            Op::ReferLocal(0),
-            Op::Push,
-            Op::Display(1),
-            Op::Constant(Value::Number(1)),
-            Op::Push,
-            Op::Enter(1),
-            Op::ReferFree(0),
-            Op::Push,
-            Op::ReferLocal(0),
-            Op::Add,
-            Op::Leave(1),
-            Op::Leave(1),
-        ];
-        self.ops = ops;
-        self.run()
-    }
-
-    pub fn run_let(&mut self) -> Value {
-        let ops = vec![
-            Op::LetFrame(1),
-            Op::Constant(Value::Number(3)),
-            Op::Push,
-            Op::Enter(1),
-            Op::ReferLocal(0),
-            Op::Leave(1),
-        ];
-        self.ops = ops;
-        self.run()
-    }
-
-    pub fn run_add(&mut self) -> Value {
-        // Don't call self.alloc here. It can trigger mark&sweep.
-        let ops = vec![
-            Op::Constant(Value::Number(99)),
-            Op::Push,
-            Op::Constant(Value::Number(1)),
-            Op::Add,
-        ];
-        self.ops = ops;
-        self.run()
-    }
-
-    pub fn run_add_pair(&mut self) -> Value {
-        let ops = vec![
-            Op::Constant(Value::Number(99)),
-            Op::Push,
-            Op::Constant(Value::Number(101)),
-            Op::Cons,
-            Op::AddPair,
-        ];
-        self.ops = ops;
-        let val = self.run();
-        self.mark_and_sweep();
-        val
     }
 
     pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
@@ -549,15 +502,16 @@ impl Vm {
         unsafe { *sp.offset(-n - 1) }
     }
 
-    pub fn run(&mut self) -> Value {
-        // move!
+    pub fn run(&mut self, ops: Vec<Op>) -> Value {
+        self.ops = ops; // gc roots
+                        // move!
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
         let len = self.ops.len();
-        let mut idx = 0;
-        while idx < len {
-            let op = self.ops[idx];
-            idx += 1;
+        let mut pc = 0;
+        while pc < len {
+            let op = self.ops[pc];
+            //println!("op={:?}", op);
             match op {
                 Op::Constant(c) => {
                     self.ac = c;
@@ -632,7 +586,7 @@ impl Vm {
                 },
                 Op::Display(num_free_vars) => {
                     let mut free_vars = vec![];
-                    let start = unsafe { self.sp.offset(- 1) };
+                    let start = unsafe { self.sp.offset(-1) };
                     for i in 0..num_free_vars {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
@@ -652,7 +606,16 @@ impl Vm {
                         panic!("todo");
                     }
                 },
+                Op::Test(skip_size) => {
+                    if self.ac.is_false() {
+                        pc = pc + skip_size - 1;
+                    }
+                }
+                Op::LocalJump(jump_size) => {
+                    pc = pc + jump_size - 1;
+                }
             }
+            pc += 1;
         }
         self.ac
     }
@@ -663,9 +626,55 @@ pub mod tests {
     use super::*;
 
     #[test]
+    fn test_if() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Value::Number(1)),
+            Op::Test(3),
+            Op::Constant(Value::Number(2)),
+            Op::LocalJump(2),
+            Op::Constant(Value::Number(3)),
+        ];
+        let ret = vm.run(ops);
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 2);
+            }
+            _ => panic!("{:?}", "todo"),
+        }
+    }
+    #[test]
+    fn test_if2() {
+        let mut vm = Vm::new();
+        // (if #f 2 3)
+        let ops = vec![
+            Op::Constant(Value::False),
+            Op::Test(3),
+            Op::Constant(Value::Number(2)),
+            Op::LocalJump(2),
+            Op::Constant(Value::Number(3)),
+        ];
+        let ret = vm.run(ops);
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 3);
+            }
+            _ => panic!("{:?}", "todo"),
+        }
+    }
+
+    #[test]
     fn test_let() {
         let mut vm = Vm::new();
-        let ret = vm.run_let();
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Constant(Value::Number(3)),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Leave(1),
+        ];
+        let ret = vm.run(ops);
         match ret {
             Value::Number(a) => {
                 assert_eq!(a, 3);
@@ -677,7 +686,12 @@ pub mod tests {
     #[test]
     fn test_vm_define() {
         let mut vm = Vm::new();
-        let ret = vm.run_define();
+        let ops = vec![
+            Op::Constant(Value::Number(9)),
+            Op::DefineGlobal(vm.gc.intern("a".to_owned())),
+            Op::ReferGlobal(vm.gc.intern("a".to_owned())),
+        ];
+        let ret = vm.run(ops);
         match ret {
             Value::Number(a) => {
                 assert_eq!(a, 9);
@@ -689,7 +703,13 @@ pub mod tests {
     #[test]
     fn test_vm_run_add() {
         let mut vm = Vm::new();
-        let ret = vm.run_add();
+        let ops = vec![
+            Op::Constant(Value::Number(99)),
+            Op::Push,
+            Op::Constant(Value::Number(1)),
+            Op::Add,
+        ];
+        let ret = vm.run(ops);
         match ret {
             Value::Number(a) => {
                 assert_eq!(a, 100);
@@ -701,7 +721,27 @@ pub mod tests {
     #[test]
     fn test_vm_run_nested_let() {
         let mut vm = Vm::new();
-        let ret = vm.run_nested_let();
+        // (let ([a 2]) (let ([b 1]) (+ a b)))
+        let ops: Vec<Op> = vec![
+            Op::LetFrame(3),
+            Op::Constant(Value::Number(2)),
+            Op::Push,
+            Op::Enter(1),
+            Op::LetFrame(2),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Display(1),
+            Op::Constant(Value::Number(1)),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferFree(0),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Add,
+            Op::Leave(1),
+            Op::Leave(1),
+        ];
+        let ret = vm.run(ops);
         match ret {
             Value::Number(a) => {
                 assert_eq!(a, 3);
@@ -713,7 +753,14 @@ pub mod tests {
     #[test]
     fn test_vm_run_add_pair() {
         let mut vm = Vm::new();
-        let ret = vm.run_add_pair();
+        let ops = vec![
+            Op::Constant(Value::Number(99)),
+            Op::Push,
+            Op::Constant(Value::Number(101)),
+            Op::Cons,
+            Op::AddPair,
+        ];
+        let ret = vm.run(ops);
         match ret {
             Value::Number(a) => {
                 assert_eq!(a, 200);
