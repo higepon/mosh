@@ -58,7 +58,7 @@ impl Pair {
 
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "pair")
+        write!(f, "({} {})", self.first, self.second)
     }
 }
 
