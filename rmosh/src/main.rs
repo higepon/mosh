@@ -7,7 +7,7 @@ use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::{null_mut, NonNull};
-use std::{ops::Deref, sync::atomic::AtomicUsize, usize};
+use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 struct GlobalAllocator {
     bytes_allocated: AtomicUsize,
@@ -82,6 +82,32 @@ impl Display for Symbol {
     }
 }
 
+pub struct Closure {
+    pub header: GcHeader,
+    pub free_vars: Vec<Value>,
+    pub prev: Value,
+}
+
+impl Closure {
+    pub fn new(free_vars: Vec<Value>) -> Self {
+        Closure {
+            header: GcHeader::new(ObjectType::Closure),
+            free_vars: free_vars,
+            prev: Value::Number(0),
+        }
+    }
+
+    pub fn refer_free(&mut self, n: usize) -> Value {
+        self.free_vars[n]
+    }
+}
+
+impl Display for Closure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "closure")
+    }
+}
+
 #[derive(Debug)]
 pub struct GcRef<T> {
     pointer: NonNull<T>,
@@ -113,6 +139,12 @@ impl<T> Deref for GcRef<T> {
 
     fn deref(&self) -> &T {
         unsafe { self.pointer.as_ref() }
+    }
+}
+
+impl<T> DerefMut for GcRef<T> {
+    fn deref_mut(&mut self) -> &mut T {
+        unsafe { self.pointer.as_mut() }
     }
 }
 
@@ -164,6 +196,9 @@ impl Gc {
         match value {
             Value::Number(_) => {}
             Value::VMStackPointer(_) => {}
+            Value::Closure(closure) => {
+                self.mark_object(closure);
+            }
             Value::Symbol(symbol) => {
                 self.mark_object(symbol);
             }
@@ -191,6 +226,12 @@ impl Gc {
         match value {
             Value::Number(_) => {}
             Value::VMStackPointer(_) => {}
+            Value::Closure(closure) => {
+                for var in &closure.free_vars {
+                    self.trace_value(*var);
+                }
+                self.trace_value(closure.prev);
+            }
             Value::Symbol(pair) => {
                 self.trace_object(pair);
             }
@@ -214,6 +255,9 @@ impl Gc {
 
         match object_type {
             ObjectType::Symbol => {}
+            ObjectType::Closure => {
+                panic!("TODO");
+            }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_value(pair.first);
@@ -258,6 +302,7 @@ impl Gc {
 pub enum ObjectType {
     Pair,
     Symbol,
+    Closure,
 }
 
 #[repr(C)]
@@ -291,6 +336,8 @@ pub enum Op {
     Enter(isize),
     ReferLocal(isize),
     Leave(isize),
+    ReferFree(usize),
+    Display(isize),
 }
 
 #[derive(Copy, Clone)]
@@ -299,6 +346,32 @@ pub enum Value {
     Pair(GcRef<Pair>),
     Symbol(GcRef<Symbol>),
     VMStackPointer(*mut Value),
+    Closure(GcRef<Closure>),
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Number(n) => {
+                write!(f, "{}", n)
+            }
+            Value::Closure(_) => {
+                write!(f, "closure")
+            }
+            Value::Pair(_) => {
+                write!(f, "pair")
+            }
+            Value::Symbol(_) => {
+                write!(f, "symbol")
+            }
+            Value::VMStackPointer(_) => {
+                write!(f, "stack pointer")
+            }
+            _ => {
+                write!(f, "obj")
+            }
+        }
+    }
 }
 
 const STACK_SIZE: usize = 256;
@@ -366,6 +439,8 @@ impl Vm {
                 Op::ReferGlobal(symbol) => {
                     self.gc.mark_object(symbol);
                 }
+                Op::Display(_) => (),
+                Op::ReferFree(_) => (),
                 Op::LetFrame(_) => (),
                 Op::Enter(_) => (),
                 Op::ReferLocal(_) => (),
@@ -383,6 +458,31 @@ impl Vm {
             Op::Constant(Value::Number(9)),
             Op::DefineGlobal(self.gc.intern("a".to_owned())),
             Op::ReferGlobal(self.gc.intern("a".to_owned())),
+        ];
+        self.ops = ops;
+        self.run()
+    }
+
+    pub fn run_nested_let(&mut self) -> Value {
+        //(let ([a 2]) (let ([b 1]) (+ a b)))
+        let ops: Vec<Op> = vec![
+            Op::LetFrame(3),
+            Op::Constant(Value::Number(2)),
+            Op::Push,
+            Op::Enter(1),
+            Op::LetFrame(2),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Display(1),
+            Op::Constant(Value::Number(1)),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferFree(0),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Add,
+            Op::Leave(1),
+            Op::Leave(1),
         ];
         self.ops = ops;
         self.run()
@@ -474,6 +574,7 @@ impl Vm {
                 }
                 Op::Add => match (self.pop(), self.ac) {
                     (Value::Number(a), Value::Number(b)) => {
+                        println!("a={} ac={}", a, b);
                         self.ac = Value::Number(a + b);
                     }
                     _ => {
@@ -529,6 +630,28 @@ impl Vm {
                     self.dc = self.index(sp, 1);
                     self.sp = sp.offset(-2);
                 },
+                Op::Display(num_free_vars) => {
+                    let mut free_vars = vec![];
+                    let start = unsafe { self.sp.offset(- 1) };
+                    for i in 0..num_free_vars {
+                        let var = unsafe { *start.offset(-i) };
+                        free_vars.push(var);
+                    }
+                    let mut display = self.alloc(Closure::new(free_vars));
+                    display.prev = self.dc;
+
+                    let display = Value::Closure(display);
+                    self.dc = display;
+                    self.sp = unsafe { self.sp.offset(-num_free_vars) };
+                }
+                Op::ReferFree(n) => match self.dc {
+                    Value::Closure(mut closure) => {
+                        self.ac = closure.refer_free(n);
+                    }
+                    _ => {
+                        panic!("todo");
+                    }
+                },
             }
         }
         self.ac
@@ -570,6 +693,18 @@ pub mod tests {
         match ret {
             Value::Number(a) => {
                 assert_eq!(a, 100);
+            }
+            _ => panic!("{:?}", "todo"),
+        }
+    }
+
+    #[test]
+    fn test_vm_run_nested_let() {
+        let mut vm = Vm::new();
+        let ret = vm.run_nested_let();
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 3);
             }
             _ => panic!("{:?}", "todo"),
         }
