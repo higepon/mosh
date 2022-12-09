@@ -106,7 +106,7 @@ impl Closure {
 
 impl Display for Closure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "closure")
+        write!(f, "<closure>")
     }
 }
 
@@ -333,9 +333,6 @@ impl GcHeader {
     }
 }
 
-//#[macro_use]
-//extern crate enum_display_derive;
-
 #[derive(Copy, Clone, Debug)]
 pub enum Op {
     Constant(Value),
@@ -380,20 +377,20 @@ impl Display for Value {
             Value::Number(n) => {
                 write!(f, "{}", n)
             }
-            Value::Closure(_) => {
-                write!(f, "closure")
+            Value::Closure(closure) => {
+                write!(f, "{}", closure)
             }
-            Value::Pair(_) => {
-                write!(f, "pair")
+            Value::Pair(pair) => {
+                write!(f, "{}", pair)
             }
-            Value::Symbol(_) => {
-                write!(f, "symbol")
+            Value::Symbol(symbol) => {
+                write!(f, "{}", symbol)
             }
             Value::False => {
                 write!(f, "false")
             }
             Value::VMStackPointer(_) => {
-                write!(f, "stack pointer")
+                write!(f, "<stack pointer>")
             }
         }
     }
