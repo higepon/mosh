@@ -1,6 +1,6 @@
 name: Build
 env:
-  mosh_stable: mosh-0.2.8 # Stable tagname
+  mosh_stable: mosh-0.2.9-rc1 # Stable tagname
   mosh_latest: mosh-0.2.9-rc1 # Built package name
   nmosh_prereq_ver: v0.1.1 # Prebuilt libraries for NMosh package
 
@@ -272,7 +272,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - name: "Setup Alpine chroot"
-        uses: jirutka/setup-alpine@v1.1.1
+        uses: jirutka/setup-alpine@v1.1.2
       - name: "Install prerequisites"
         run: apk add gcc g++ make gmp-dev oniguruma-dev pkgconfig
         shell: alpine.sh --root {0}
