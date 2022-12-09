@@ -205,6 +205,7 @@ impl Gc {
             Value::Number(_) => {}
             Value::VMStackPointer(_) => {}
             Value::False => {}
+            Value::Undef => {}
             Value::Closure(closure) => {
                 self.mark_object(closure);
             }
@@ -235,6 +236,7 @@ impl Gc {
         match value {
             Value::Number(_) => {}
             Value::False => {}
+            Value::Undef => {}
             Value::VMStackPointer(_) => {}
             Value::Closure(closure) => {
                 for var in &closure.free_vars {
@@ -359,7 +361,8 @@ pub enum Value {
     Symbol(GcRef<Symbol>),
     VMStackPointer(*mut Value),
     Closure(GcRef<Closure>),
-    False, // todo
+    False,
+    Undef,
 }
 
 impl Value {
@@ -392,6 +395,9 @@ impl Display for Value {
             Value::VMStackPointer(_) => {
                 write!(f, "<stack pointer>")
             }
+            Value::Undef => {
+                write!(f, "<undefined>")
+            }
         }
     }
 }
@@ -399,11 +405,11 @@ impl Display for Value {
 const STACK_SIZE: usize = 256;
 
 pub struct Vm {
+    pub gc: Box<Gc>,
     // ToDo: Do they need to be pub?
     ac: Value,
     dc: Value, // display closure
-    pub gc: Box<Gc>,
-    pub stack: [Value; STACK_SIZE],
+    stack: [Value; STACK_SIZE],
     sp: *mut Value,
     fp: *mut Value,
     globals: HashMap<GcRef<Symbol>, Value>,
@@ -413,8 +419,8 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         Self {
-            ac: Value::Number(0),
-            dc: Value::Number(0), // todo
+            ac: Value::Undef,
+            dc: Value::Undef,
             gc: Box::new(Gc::new()),
             stack: [Value::Number(0); STACK_SIZE],
             sp: null_mut(),
@@ -501,7 +507,6 @@ impl Vm {
 
     pub fn run(&mut self, ops: Vec<Op>) -> Value {
         self.ops = ops; // gc roots
-                        // move!
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
         let len = self.ops.len();
