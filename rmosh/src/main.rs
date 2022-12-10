@@ -784,6 +784,39 @@ pub mod tests {
     }
 
     #[test]
+    fn test_vm_call2() {
+        let mut vm = Vm::new();
+        // ((lambda (a b) (+ a b) 1 2)
+        let ops: Vec<Op> = vec![
+            Op::Frame(24),
+            Op::Constant(Value::Number(1)),
+            Op::Push,
+            Op::Constant(Value::Number(2)),
+            Op::Push,
+            Op::Closure {
+                size: 5,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::Add,
+            Op::Return(2),
+            Op::Call(2),
+        ];
+        let ret = vm.run(ops);
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 3);
+            }
+            _ => panic!("ac was {:?}", ret),
+        }
+    }
+
+
+    #[test]
     fn test_if() {
         let mut vm = Vm::new();
         let ops = vec![
