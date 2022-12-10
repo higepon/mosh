@@ -47,7 +47,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 #endif
     returnCode_[0] = Object::makeRaw(INSTRUCTION(RETURN));
     returnCode_[1] = Object::makeFixnum(0);
-    callCode_->set(0, Object::makeRaw(INSTRUCTION(CALL)));
+    callCode_->set(0, Object::makeRaw(INSTRUCTION((CALL))));
     callCode_->set(1, Object::makeFixnum(0));
     callCode_->set(2, Object::makeRaw(INSTRUCTION(HALT)));
 

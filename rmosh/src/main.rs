@@ -86,16 +86,30 @@ impl Display for Symbol {
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
+    pub pc: usize,
+    size: usize,
+    arg_len: isize,
+    is_optional_arg: bool,
     pub free_vars: Vec<Value>,
     pub prev: Value,
 }
 
 impl Closure {
-    pub fn new(free_vars: Vec<Value>) -> Self {
+    pub fn new(
+        pc: usize,
+        size: usize,
+        arg_len: isize,
+        is_optional_arg: bool,
+        free_vars: Vec<Value>,
+    ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
+            pc: pc,
+            size: size,
+            arg_len: arg_len,
+            is_optional_arg: is_optional_arg,
             free_vars: free_vars,
-            prev: Value::Number(0),
+            prev: Value::Undef,
         }
     }
 
@@ -352,6 +366,15 @@ pub enum Op {
     Display(isize),
     Test(usize),
     LocalJump(usize),
+    Closure {
+        size: usize,
+        arg_len: isize,
+        is_optional_arg: bool,
+        num_free_vars: isize,
+    },
+    Call(isize),
+    Return(isize),
+    Frame(usize),
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -458,6 +481,7 @@ impl Vm {
 
         for &value in &self.ops {
             match value {
+                Op::Closure { .. } => (),
                 Op::Constant(v) => {
                     self.gc.mark_value(v);
                 }
@@ -479,6 +503,9 @@ impl Vm {
                 Op::Cons => (),
                 Op::LocalJump(_) => (),
                 Op::Test(_) => (),
+                Op::Call(_) => (),
+                Op::Return(_) => (),
+                Op::Frame(_) => (),
             }
         }
     }
@@ -505,6 +532,14 @@ impl Vm {
         unsafe { *sp.offset(-n - 1) }
     }
 
+    fn print_stack(&mut self) {
+        println!("-----------------------------------------");
+        for &value in &self.stack[0..self.stack_len()] {
+            println!("{:?}", value);
+        }
+        println!("-----------------------------------------<== sp")
+    }
+
     pub fn run(&mut self, ops: Vec<Op>) -> Value {
         self.ops = ops; // gc roots
         self.sp = self.stack.as_mut_ptr();
@@ -513,7 +548,6 @@ impl Vm {
         let mut pc = 0;
         while pc < len {
             let op = self.ops[pc];
-            //println!("op={:?}", op);
             match op {
                 Op::Constant(c) => {
                     self.ac = c;
@@ -593,7 +627,7 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.alloc(Closure::new(free_vars));
+                    let mut display = self.alloc(Closure::new(0, 0, 0, false, free_vars));
                     display.prev = self.dc;
 
                     let display = Value::Closure(display);
@@ -616,7 +650,99 @@ impl Vm {
                 Op::LocalJump(jump_size) => {
                     pc = pc + jump_size - 1;
                 }
+                Op::Closure {
+                    size,
+                    arg_len,
+                    is_optional_arg,
+                    num_free_vars,
+                } => {
+                    let mut free_vars = vec![];
+                    let start = unsafe { self.sp.offset(-1) };
+                    for i in 0..num_free_vars {
+                        let var = unsafe { *start.offset(-i) };
+                        free_vars.push(var);
+                    }
+                    self.ac = Value::Closure(self.alloc(Closure::new(
+                        pc,
+                        size,
+                        arg_len,
+                        is_optional_arg,
+                        free_vars,
+                    )));
+
+                    self.sp = unsafe { self.sp.offset(-num_free_vars) };
+                    pc += size; // - 6; // suspicious
+                }
+                Op::Call(arg_len) => {
+                    let closure = match self.ac {
+                        Value::Closure(c) => c,
+                        _ => panic!("not a callable"),
+                    };
+                    self.dc = self.ac;
+                    // self.cl = self.ac;
+                    pc = closure.pc;
+                    if closure.is_optional_arg {
+                        panic!("not supported yet");
+                    } else if arg_len == closure.arg_len {
+                        self.fp = unsafe { self.sp.offset(-arg_len) };
+                    } else {
+                        panic!("wrong arguments");
+                    }
+                }
+                Op::Return(n) => {
+                    let sp = unsafe { self.sp.offset(-n) };
+                    match self.index(sp, 0) {
+                        Value::VMStackPointer(fp) => {
+                            self.fp = fp;
+                        }
+                        _ => {
+                            panic!("not fp pointer")
+                        }
+                    }
+                    // todo We don't have cl yet.
+                    // self.cl = index(sp, 1);
+                    self.dc = self.index(sp, 2);
+
+                    match self.index(sp, 3) {
+                        Value::Number(next_pc) => {
+                            pc = match usize::try_from(next_pc) {
+                                Ok(val) => val,
+                                _ => panic!("pc not a number"),
+                            }
+                        }
+                        _ => {
+                            panic!("not a pc");
+                        }
+                    }
+                    self.sp = unsafe { sp.offset(-4) }
+                }
+                Op::Frame(skip_size) => {
+                    // Call frame in stack.
+                    // ======================
+                    //          pc*
+                    // ======================
+                    //          dc
+                    // ======================
+                    //          cl
+                    // ======================
+                    //          fp
+                    // ======== sp ==========
+                    //
+                    // where pc* = pc + skip_size -1
+                    let next_pc = match isize::try_from(pc + skip_size - 1) {
+                        Ok(val) => val,
+                        _ => {
+                            panic!("hoge")
+                        }
+                    };
+                    self.push(Value::Number(next_pc));
+                    self.push(self.dc);
+                    self.push(self.dc); // todo this should be cl.
+                    self.push(Value::VMStackPointer(self.fp));
+                }
             }
+            println!("after op={:?} ac={:?}", op, self.ac);
+            self.print_stack();
             pc += 1;
         }
         self.ac
@@ -626,6 +752,36 @@ impl Vm {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+
+    #[test]
+    fn test_vm_call() {
+        let mut vm = Vm::new();
+        // ((lambda (a) (+ a a))
+        let ops: Vec<Op> = vec![
+            Op::Frame(21),
+            Op::Constant(Value::Number(1)),
+            Op::Push,
+            Op::Closure {
+                size: 5,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Add,
+            Op::Return(1),
+            Op::Call(1),
+        ];
+        let ret = vm.run(ops);
+        match ret {
+            Value::Number(a) => {
+                assert_eq!(a, 2);
+            }
+            _ => panic!("ac was {:?}", ret),
+        }
+    }
 
     #[test]
     fn test_if() {
