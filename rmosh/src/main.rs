@@ -705,10 +705,7 @@ impl Vm {
 
                     match self.index(sp, 3) {
                         Value::Number(next_pc) => {
-                            pc = match usize::try_from(next_pc) {
-                                Ok(val) => val,
-                                _ => panic!("pc not a number"),
-                            }
+                            pc = usize::try_from(next_pc).expect("pc it not a number");
                         }
                         _ => {
                             panic!("not a pc");
@@ -729,12 +726,7 @@ impl Vm {
                     // ======== sp ==========
                     //
                     // where pc* = pc + skip_size -1
-                    let next_pc = match isize::try_from(pc + skip_size - 1) {
-                        Ok(val) => val,
-                        _ => {
-                            panic!("hoge")
-                        }
-                    };
+                    let next_pc = isize::try_from(pc + skip_size - 1).expect("can't convert to isize");
                     self.push(Value::Number(next_pc));
                     self.push(self.dc);
                     self.push(self.dc); // todo this should be cl.
