@@ -567,23 +567,24 @@ impl Vm {
                         println!("a={} ac={}", a, b);
                         self.ac = Value::Number(a + b);
                     }
-                    _ => {
-                        panic!("{:?}", "todo");
+                    (a, b) => {
+                        panic!("add: numbers required but got {:?} {:?}", a, b);
                     }
                 },
-                Op::AddPair => match self.ac {
-                    Value::Pair(p) => match (p.first, p.second) {
-                        (Value::Number(lhs), Value::Number(rhs)) => {
-                            self.ac = Value::Number(lhs + rhs);
+                Op::AddPair => {
+                    if let Value::Pair(pair) = self.ac {
+                        match (pair.first, pair.second) {
+                            (Value::Number(lhs), Value::Number(rhs)) => {
+                                self.ac = Value::Number(lhs + rhs);
+                            }
+                            _ => {
+                                panic!("add pair: numbers require but got {:?} and {:?}", pair.first, pair.second);
+                            }
                         }
-                        _ => {
-                            panic!("{:?}", "todo");
-                        }
-                    },
-                    _ => {
-                        panic!("{:?}", "todo");
+                    } else {
+                        panic!("pair required but got {:?}", self.ac);
                     }
-                },
+                }
                 Op::DefineGlobal(symbol) => {
                     self.globals.insert(symbol, self.ac);
                 }
@@ -592,7 +593,7 @@ impl Vm {
                         self.ac = value;
                     }
                     None => {
-                        panic!("{:?}", "refer global error");
+                        panic!("identifier {:?} not found", symbol);
                     }
                 },
                 Op::Enter(n) => unsafe {
@@ -613,8 +614,8 @@ impl Vm {
                         Value::VMStackPointer(fp) => {
                             self.fp = fp;
                         }
-                        _ => {
-                            panic!("{:?}", "fp not found");
+                        x => {
+                            panic!("fp expected but got {:?}", x);
                         }
                     }
                     self.dc = self.index(sp, 1);
@@ -639,7 +640,7 @@ impl Vm {
                         self.ac = closure.refer_free(n);
                     }
                     _ => {
-                        panic!("todo");
+                        panic!("refer_free: display closure expected but got {:?}", self.dc);
                     }
                 },
                 Op::Test(skip_size) => {
@@ -671,12 +672,12 @@ impl Vm {
                     )));
 
                     self.sp = unsafe { self.sp.offset(-num_free_vars) };
-                    pc += size; // - 6; // suspicious
+                    pc += size;
                 }
                 Op::Call(arg_len) => {
                     let closure = match self.ac {
                         Value::Closure(c) => c,
-                        _ => panic!("not a callable"),
+                        _ => panic!("Can't call {:?}", self.ac),
                     };
                     self.dc = self.ac;
                     // self.cl = self.ac;
@@ -726,7 +727,8 @@ impl Vm {
                     // ======== sp ==========
                     //
                     // where pc* = pc + skip_size -1
-                    let next_pc = isize::try_from(pc + skip_size - 1).expect("can't convert to isize");
+                    let next_pc =
+                        isize::try_from(pc + skip_size - 1).expect("can't convert to isize");
                     self.push(Value::Number(next_pc));
                     self.push(self.dc);
                     self.push(self.dc); // todo this should be cl.
@@ -806,7 +808,6 @@ pub mod tests {
             _ => panic!("ac was {:?}", ret),
         }
     }
-
 
     #[test]
     fn test_if() {
