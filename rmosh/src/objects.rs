@@ -1,6 +1,8 @@
 use std::fmt::{self, Display};
 
-use crate::{GcHeader, ObjectType, Value};
+use crate::{gc::{GcHeader, ObjectType}, values::Value};
+
+
 
 /// Cons cell
 #[derive(Debug)]
@@ -116,7 +118,8 @@ impl Display for Closure {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use crate::Gc;
+
+    use crate::gc::Gc;
 
     use super::*;
 
