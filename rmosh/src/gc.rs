@@ -2,22 +2,23 @@
 // See https://github.com/ceronman/loxido.
 
 use std::collections::HashMap;
+use std::fmt;
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::NonNull;
-use std::{fmt};
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
-use crate::objects::{Pair, Symbol};
-use crate::values::Value;
 use crate::alloc::GlobalAllocator;
+use crate::objects::{Pair, Symbol, Object};
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
 
+/// GcRef.
+/// This holds raw pointer to an object.
 #[derive(Debug)]
 pub struct GcRef<T> {
     pub pointer: NonNull<T>,
@@ -134,20 +135,20 @@ impl Gc {
 
     // Top level mark.
     // This mark root objects only and push them to grey_stack.
-    pub fn mark_value(&mut self, value: Value) {
+    pub fn mark_value(&mut self, value: Object) {
         match value {
-            Value::Number(_) => {}
-            Value::VMStackPointer(_) => {}
-            Value::False => {}
-            Value::Undef => {}
-            Value::Procedure(_) => {}
-            Value::Closure(closure) => {
+            Object::Number(_) => {}
+            Object::VMStackPointer(_) => {}
+            Object::False => {}
+            Object::Undef => {}
+            Object::Procedure(_) => {}
+            Object::Closure(closure) => {
                 self.mark_object(closure);
             }
-            Value::Symbol(symbol) => {
+            Object::Symbol(symbol) => {
                 self.mark_object(symbol);
             }
-            Value::Pair(pair) => {
+            Object::Pair(pair) => {
                 self.mark_object(pair);
             }
         }
@@ -167,23 +168,23 @@ impl Gc {
         }
     }
 
-    fn trace_value(&mut self, value: Value) {
+    fn trace_value(&mut self, value: Object) {
         match value {
-            Value::Number(_) => {}
-            Value::False => {}
-            Value::Undef => {}
-            Value::Procedure(_) => {}
-            Value::VMStackPointer(_) => {}
-            Value::Closure(closure) => {
+            Object::Number(_) => {}
+            Object::False => {}
+            Object::Undef => {}
+            Object::Procedure(_) => {}
+            Object::VMStackPointer(_) => {}
+            Object::Closure(closure) => {
                 for var in &closure.free_vars {
                     self.trace_value(*var);
                 }
                 self.trace_value(closure.prev);
             }
-            Value::Symbol(pair) => {
+            Object::Symbol(pair) => {
                 self.trace_object(pair);
             }
-            Value::Pair(pair) => {
+            Object::Pair(pair) => {
                 self.trace_object(pair);
             }
         }

@@ -1,20 +1,72 @@
 use std::fmt::{self, Display};
 
-use crate::{
-    gc::{GcHeader, ObjectType},
-    values::Value,
-};
+use crate::gc::{GcHeader, ObjectType};
+
+use crate::gc::GcRef;
+
+/// Wrapper of heap allocated or simple objects.
+#[derive(Copy, Clone, Debug)]
+pub enum Object {
+    Closure(GcRef<Closure>),
+    False,
+    Number(isize),
+    Pair(GcRef<Pair>),
+    Procedure(GcRef<Procedure>),
+    Symbol(GcRef<Symbol>),
+    Undef,
+    VMStackPointer(*mut Object),
+}
+
+impl Object {
+    pub fn is_false(&self) -> bool {
+        match self {
+            Object::False => true,
+            _ => false,
+        }
+    }
+}
+
+impl Display for Object {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Object::Number(n) => {
+                write!(f, "{}", n)
+            }
+            Object::Closure(closure) => {
+                write!(f, "{}", closure)
+            }
+            Object::Pair(pair) => {
+                write!(f, "{}", pair)
+            }
+            Object::Symbol(symbol) => {
+                write!(f, "{}", symbol)
+            }
+            Object::False => {
+                write!(f, "false")
+            }
+            Object::VMStackPointer(_) => {
+                write!(f, "<stack pointer>")
+            }
+            Object::Undef => {
+                write!(f, "<undefined>")
+            }
+            Object::Procedure(_) => {
+                write!(f, "<procedure>")
+            }
+        }
+    }
+}
 
 /// Cons cell
 #[derive(Debug)]
 pub struct Pair {
     pub header: GcHeader,
-    pub first: Value,
-    pub second: Value,
+    pub first: Object,
+    pub second: Object,
 }
 
 impl Pair {
-    pub fn new(first: Value, second: Value) -> Self {
+    pub fn new(first: Object, second: Object) -> Self {
         Pair {
             header: GcHeader::new(ObjectType::Pair),
             first: first,
@@ -56,11 +108,11 @@ impl Display for Symbol {
 pub struct Procedure {
     pub header: GcHeader,
     // TODO(higepon): Multiples arugments.
-    pub func: fn(Value) -> Value,
+    pub func: fn(Object) -> Object,
 }
 
 impl Procedure {
-    pub fn new(func: fn(Value) -> Value) -> Self {
+    pub fn new(func: fn(Object) -> Object) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
@@ -82,8 +134,8 @@ pub struct Closure {
     pub arg_len: isize,
     pub is_optional_arg: bool,
     size: usize,
-    pub free_vars: Vec<Value>,
-    pub prev: Value,
+    pub free_vars: Vec<Object>,
+    pub prev: Object,
 }
 
 impl Closure {
@@ -92,7 +144,7 @@ impl Closure {
         arg_len: isize,
         is_optional_arg: bool,
         size: usize,
-        free_vars: Vec<Value>,
+        free_vars: Vec<Object>,
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
@@ -101,11 +153,11 @@ impl Closure {
             is_optional_arg: is_optional_arg,
             size: size,
             free_vars: free_vars,
-            prev: Value::Undef,
+            prev: Object::Undef,
         }
     }
 
-    pub fn refer_free(&mut self, n: usize) -> Value {
+    pub fn refer_free(&mut self, n: usize) -> Object {
         self.free_vars[n]
     }
 }
@@ -125,7 +177,7 @@ pub mod tests {
     use super::*;
 
     // Helpers.
-    pub fn procedure1(value: Value) -> Value {
+    pub fn procedure1(value: Object) -> Object {
         value
     }
 
@@ -133,9 +185,9 @@ pub mod tests {
     fn test_symbol() {
         let mut gc = Gc::new();
         let symbol = gc.alloc(Symbol::new("define".to_owned()));
-        let symbol = Value::Symbol(symbol);
+        let symbol = Object::Symbol(symbol);
         match symbol {
-            Value::Symbol(s) => {
+            Object::Symbol(s) => {
                 assert_eq!(s.string, "define");
             }
             _ => {
@@ -148,8 +200,8 @@ pub mod tests {
     fn test_procedure() {
         let mut gc = Gc::new();
         let p = gc.alloc(Procedure::new(procedure1));
-        match (p.func)(Value::False) {
-            Value::False => {}
+        match (p.func)(Object::False) {
+            Object::False => {}
             _ => {
                 panic!("Wrong return value");
             }
