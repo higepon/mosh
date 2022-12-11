@@ -4,7 +4,7 @@ use crate::gc::{GcHeader, ObjectType};
 
 use crate::gc::GcRef;
 
-/// Wrapper of heap allocated or simple objects.
+/// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, Debug)]
 pub enum Object {
     Closure(GcRef<Closure>),

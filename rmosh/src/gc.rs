@@ -10,7 +10,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Pair, Symbol, Object};
+use crate::objects::{Object, Pair, Symbol};
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
