@@ -83,6 +83,29 @@ impl Display for Symbol {
     }
 }
 
+
+#[derive(Debug)]
+pub struct Procedure {
+    pub header: GcHeader,
+    pub func: fn(Value) -> Value,
+}
+
+impl Display for Procedure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<procedure>")
+    }
+}
+
+
+impl Procedure {
+    pub fn new(func: fn(Value) -> Value) -> Self {
+        Procedure {
+            header:  GcHeader::new(ObjectType::Procedure),
+            func: func,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
@@ -220,6 +243,7 @@ impl Gc {
             Value::VMStackPointer(_) => {}
             Value::False => {}
             Value::Undef => {}
+            Value::Procedure(_) => {}            
             Value::Closure(closure) => {
                 self.mark_object(closure);
             }
@@ -251,6 +275,7 @@ impl Gc {
             Value::Number(_) => {}
             Value::False => {}
             Value::Undef => {}
+            Value::Procedure(_) => {}
             Value::VMStackPointer(_) => {}
             Value::Closure(closure) => {
                 for var in &closure.free_vars {
@@ -281,6 +306,7 @@ impl Gc {
 
         match object_type {
             ObjectType::Symbol => {}
+            ObjectType::Procedure => {}
             ObjectType::Closure => {
                 panic!("TODO");
             }
@@ -327,6 +353,7 @@ impl Gc {
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
     Pair,
+    Procedure,
     Symbol,
     Closure,
 }
@@ -384,6 +411,7 @@ pub enum Value {
     Symbol(GcRef<Symbol>),
     VMStackPointer(*mut Value),
     Closure(GcRef<Closure>),
+    Procedure(GcRef<Procedure>),
     False,
     Undef,
 }
@@ -421,11 +449,16 @@ impl Display for Value {
             Value::Undef => {
                 write!(f, "<undefined>")
             }
+            Value::Procedure(_)=> {
+                write!(f, "<procedure>")
+            }
         }
     }
 }
 
 const STACK_SIZE: usize = 256;
+
+
 
 pub struct Vm {
     pub gc: Box<Gc>,
@@ -974,6 +1007,23 @@ pub mod tests {
         let symbol = gc.intern("foo".to_owned());
         let symbol2 = gc.intern("foo".to_owned());
         assert_eq!(symbol.pointer, symbol2.pointer);
+    }
+
+    pub fn procedure1(value: Value) -> Value {
+        Value::Undef
+    }
+
+    #[test]
+    fn test_procedure() {
+        let mut gc = Gc::new();
+        let p = gc.alloc(Procedure::new(procedure1));
+        match (p.func)(Value::False) {
+            Value::Undef => {
+            }
+            _ => {
+                panic!("{:?}", "todo");
+            }            
+        }
     }
 }
 fn main() {}
