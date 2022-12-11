@@ -306,7 +306,7 @@ impl Gc {
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Closure => {
-                panic!("TODO");
+                //panic!("TODO");
             }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
@@ -456,6 +456,11 @@ impl Display for Value {
 
 const STACK_SIZE: usize = 256;
 
+pub fn scm_write(value: Value) -> Value {
+    println!("{:?}", value);
+    Value::Undef
+}
+
 pub struct Vm {
     pub gc: Box<Gc>,
     // ToDo: Do they need to be pub?
@@ -480,6 +485,17 @@ impl Vm {
             globals: HashMap::new(),
             ops: vec![],
         }
+    }
+
+    fn initialize_free_vars(&mut self) {
+        let mut free_vars = vec![];
+        let proc = self.gc.alloc(Procedure::new(scm_write));
+        let proc = Value::Procedure(proc);
+        free_vars.push(proc);
+        let mut display = self.gc.alloc(Closure::new(0, 0, 0, false, free_vars));
+        display.prev = self.dc;
+        let display = Value::Closure(display);
+        self.dc = display;
     }
 
     fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
@@ -570,10 +586,12 @@ impl Vm {
     }
 
     pub fn run(&mut self, ops: Vec<Op>) -> Value {
+        // todo move to the initializer
         self.ops = ops; // gc roots
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
         let len = self.ops.len();
+        self.initialize_free_vars();
         let mut pc = 0;
         while pc < len {
             let op = self.ops[pc];
@@ -707,44 +725,35 @@ impl Vm {
                     pc += size;
                 }
                 Op::Call(arg_len) => {
-                    let closure = match self.ac {
-                        Value::Closure(c) => c,
-                        _ => panic!("Can't call {:?}", self.ac),
-                    };
-                    self.dc = self.ac;
-                    // self.cl = self.ac;
-                    pc = closure.pc;
-                    if closure.is_optional_arg {
-                        panic!("not supported yet");
-                    } else if arg_len == closure.arg_len {
-                        self.fp = unsafe { self.sp.offset(-arg_len) };
-                    } else {
-                        panic!("wrong arguments");
+                    match self.ac {
+                        Value::Closure(closure) => {
+                            self.dc = self.ac;
+                            // self.cl = self.ac;
+                            pc = closure.pc;
+                            if closure.is_optional_arg {
+                                panic!("not supported yet");
+                            } else if arg_len == closure.arg_len {
+                                self.fp = unsafe { self.sp.offset(-arg_len) };
+                            } else {
+                                panic!("wrong arguments");
+                            }
+                        }
+                        Value::Procedure(procedure) => {
+                            // self.cl = self.ac
+                            assert_eq!(1, arg_len);
+                            let arg = unsafe { *self.fp.offset(arg_len) };
+                            //self.fp = unsafe { self.sp.offset(-arg_len) };
+                            self.ac = (procedure.func)(arg);
+
+                            self.return_n(1, &mut pc);
+                        }
+                        _ => {
+                            panic!("can't call {:?}", self.ac);
+                        }
                     }
                 }
                 Op::Return(n) => {
-                    let sp = unsafe { self.sp.offset(-n) };
-                    match self.index(sp, 0) {
-                        Value::VMStackPointer(fp) => {
-                            self.fp = fp;
-                        }
-                        _ => {
-                            panic!("not fp pointer")
-                        }
-                    }
-                    // todo We don't have cl yet.
-                    // self.cl = index(sp, 1);
-                    self.dc = self.index(sp, 2);
-
-                    match self.index(sp, 3) {
-                        Value::Number(next_pc) => {
-                            pc = usize::try_from(next_pc).expect("pc it not a number");
-                        }
-                        _ => {
-                            panic!("not a pc");
-                        }
-                    }
-                    self.sp = unsafe { sp.offset(-4) }
+                    self.return_n(n, &mut pc);
                 }
                 Op::Frame(skip_size) => {
                     // Call frame in stack.
@@ -773,11 +782,53 @@ impl Vm {
         }
         self.ac
     }
+
+    fn return_n(&mut self, n: isize, pc: &mut usize) {
+        let sp = unsafe { self.sp.offset(-n) };
+        match self.index(sp, 0) {
+            Value::VMStackPointer(fp) => {
+                self.fp = fp;
+            }
+            _ => {
+                panic!("not fp pointer")
+            }
+        }
+        // todo We don't have cl yet.
+        // self.cl = index(sp, 1);
+        self.dc = self.index(sp, 2);
+        match self.index(sp, 3) {
+            Value::Number(next_pc) => {
+                *pc = usize::try_from(next_pc).expect("pc it not a number");
+            }
+            _ => {
+                panic!("not a pc");
+            }
+        }
+        self.sp = unsafe { sp.offset(-4) }
+    }
 }
 
 #[cfg(test)]
 pub mod tests {
     use super::*;
+
+    #[test]
+    fn test_vm_call_proc() {
+        let mut vm = Vm::new();
+        // ((lambda (a) (+ a a))
+        let ops: Vec<Op> = vec![
+            Op::Frame(8),
+            Op::Constant(Value::Number(3)),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+        ];
+        let ret = vm.run(ops);
+        match ret {
+            Value::Undef => {}
+            _ => panic!("ac was {:?}", ret),
+        }
+    }
 
     #[test]
     fn test_vm_call() {
