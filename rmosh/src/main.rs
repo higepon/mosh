@@ -9,6 +9,8 @@ use std::mem;
 use std::ptr::{null_mut, NonNull};
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
+use objects::Symbol;
+
 use crate::objects::Pair;
 
 mod objects;
@@ -42,31 +44,6 @@ unsafe impl alloc::GlobalAlloc for GlobalAllocator {
 static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
-
-
-
-
-
-#[derive(Debug)]
-pub struct Symbol {
-    pub header: GcHeader,
-    pub string: String,
-}
-
-impl Symbol {
-    pub fn new(s: String) -> Self {
-        Symbol {
-            header: GcHeader::new(ObjectType::Symbol),
-            string: s,
-        }
-    }
-}
-
-impl Display for Symbol {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "'{}", self.string)
-    }
-}
 
 #[derive(Debug)]
 pub struct Procedure {
@@ -1018,21 +995,6 @@ pub mod tests {
                 assert_eq!(a, 200);
             }
             _ => panic!("{:?}", "todo"),
-        }
-    }
-
-    #[test]
-    fn test_symbol() {
-        let mut gc = Gc::new();
-        let symbol = gc.alloc(Symbol::new("define".to_owned()));
-        let symbol = Value::Symbol(symbol);
-        match symbol {
-            Value::Symbol(s) => {
-                assert_eq!(s.string, "define");
-            }
-            _ => {
-                panic!("{:?}", "todo");
-            }
         }
     }
 
