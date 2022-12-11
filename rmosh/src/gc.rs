@@ -1,6 +1,10 @@
 // GC implementation based on Loxido written by Manuel Cerón.
 // See https://github.com/ceronman/loxido.
 
+// TODO
+// https://github.com/ceronman/loxido/issues/3
+// 
+
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
