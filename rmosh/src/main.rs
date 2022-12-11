@@ -9,7 +9,7 @@ use std::mem;
 use std::ptr::{null_mut, NonNull};
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
-use objects::{Symbol, Procedure};
+use objects::{Closure, Procedure, Symbol};
 
 use crate::objects::Pair;
 
@@ -44,49 +44,6 @@ unsafe impl alloc::GlobalAlloc for GlobalAllocator {
 static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
-
-
-
-#[derive(Debug)]
-pub struct Closure {
-    pub header: GcHeader,
-    pub pc: usize,
-    size: usize,
-    arg_len: isize,
-    is_optional_arg: bool,
-    pub free_vars: Vec<Value>,
-    pub prev: Value,
-}
-
-impl Closure {
-    pub fn new(
-        pc: usize,
-        size: usize,
-        arg_len: isize,
-        is_optional_arg: bool,
-        free_vars: Vec<Value>,
-    ) -> Self {
-        Closure {
-            header: GcHeader::new(ObjectType::Closure),
-            pc: pc,
-            size: size,
-            arg_len: arg_len,
-            is_optional_arg: is_optional_arg,
-            free_vars: free_vars,
-            prev: Value::Undef,
-        }
-    }
-
-    pub fn refer_free(&mut self, n: usize) -> Value {
-        self.free_vars[n]
-    }
-}
-
-impl Display for Closure {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<closure>")
-    }
-}
 
 #[derive(Debug)]
 pub struct GcRef<T> {
@@ -435,7 +392,7 @@ impl Vm {
         let proc = self.gc.alloc(Procedure::new(scm_write));
         let proc = Value::Procedure(proc);
         free_vars.push(proc);
-        let mut display = self.gc.alloc(Closure::new(0, 0, 0, false, free_vars));
+        let mut display = self.gc.alloc(Closure::new(0, 0, false, 0, free_vars));
         display.prev = self.dc;
         let display = Value::Closure(display);
         self.dc = display;
@@ -621,7 +578,7 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.alloc(Closure::new(0, 0, 0, false, free_vars));
+                    let mut display = self.alloc(Closure::new(0, 0, false, 0, free_vars));
                     display.prev = self.dc;
 
                     let display = Value::Closure(display);
@@ -658,9 +615,9 @@ impl Vm {
                     }
                     self.ac = Value::Closure(self.alloc(Closure::new(
                         pc,
-                        size,
                         arg_len,
-                        is_optional_arg,
+                        is_optional_arg,                        
+                        size,
                         free_vars,
                     )));
 
@@ -986,6 +943,5 @@ pub mod tests {
         let symbol2 = gc.intern("foo".to_owned());
         assert_eq!(symbol.pointer, symbol2.pointer);
     }
-
 }
 fn main() {}

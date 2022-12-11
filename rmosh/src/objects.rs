@@ -71,13 +71,54 @@ impl Display for Procedure {
     }
 }
 
+/// Closure
+#[derive(Debug)]
+pub struct Closure {
+    pub header: GcHeader,
+    pub pc: usize,
+    pub arg_len: isize,
+    pub is_optional_arg: bool,
+    size: usize,
+    pub free_vars: Vec<Value>,
+    pub prev: Value,
+}
+
+impl Closure {
+    pub fn new(
+        pc: usize,
+        arg_len: isize,
+        is_optional_arg: bool,
+        size: usize,
+        free_vars: Vec<Value>,
+    ) -> Self {
+        Closure {
+            header: GcHeader::new(ObjectType::Closure),
+            pc: pc,
+            arg_len: arg_len,
+            is_optional_arg: is_optional_arg,
+            size: size,
+            free_vars: free_vars,
+            prev: Value::Undef,
+        }
+    }
+
+    pub fn refer_free(&mut self, n: usize) -> Value {
+        self.free_vars[n]
+    }
+}
+
+impl Display for Closure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<closure>")
+    }
+}
+
 /// Tests.
 #[cfg(test)]
 pub mod tests {
     use crate::Gc;
 
     use super::*;
-
 
     // Helpers.
     pub fn procedure1(value: Value) -> Value {
@@ -99,7 +140,6 @@ pub mod tests {
         }
     }
 
-
     #[test]
     fn test_procedure() {
         let mut gc = Gc::new();
@@ -110,5 +150,5 @@ pub mod tests {
                 panic!("Wrong return value");
             }
         }
-    }    
+    }
 }
