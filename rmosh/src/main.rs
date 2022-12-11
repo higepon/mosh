@@ -83,7 +83,6 @@ impl Display for Symbol {
     }
 }
 
-
 #[derive(Debug)]
 pub struct Procedure {
     pub header: GcHeader,
@@ -96,11 +95,10 @@ impl Display for Procedure {
     }
 }
 
-
 impl Procedure {
     pub fn new(func: fn(Value) -> Value) -> Self {
         Procedure {
-            header:  GcHeader::new(ObjectType::Procedure),
+            header: GcHeader::new(ObjectType::Procedure),
             func: func,
         }
     }
@@ -243,7 +241,7 @@ impl Gc {
             Value::VMStackPointer(_) => {}
             Value::False => {}
             Value::Undef => {}
-            Value::Procedure(_) => {}            
+            Value::Procedure(_) => {}
             Value::Closure(closure) => {
                 self.mark_object(closure);
             }
@@ -449,7 +447,7 @@ impl Display for Value {
             Value::Undef => {
                 write!(f, "<undefined>")
             }
-            Value::Procedure(_)=> {
+            Value::Procedure(_) => {
                 write!(f, "<procedure>")
             }
         }
@@ -457,8 +455,6 @@ impl Display for Value {
 }
 
 const STACK_SIZE: usize = 256;
-
-
 
 pub struct Vm {
     pub gc: Box<Gc>,
@@ -611,7 +607,10 @@ impl Vm {
                                 self.ac = Value::Number(lhs + rhs);
                             }
                             _ => {
-                                panic!("add pair: numbers require but got {:?} and {:?}", pair.first, pair.second);
+                                panic!(
+                                    "add pair: numbers require but got {:?} and {:?}",
+                                    pair.first, pair.second
+                                );
                             }
                         }
                     } else {
@@ -1018,11 +1017,10 @@ pub mod tests {
         let mut gc = Gc::new();
         let p = gc.alloc(Procedure::new(procedure1));
         match (p.func)(Value::False) {
-            Value::Undef => {
-            }
+            Value::Undef => {}
             _ => {
                 panic!("{:?}", "todo");
-            }            
+            }
         }
     }
 }
