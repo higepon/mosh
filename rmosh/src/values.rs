@@ -1,6 +1,9 @@
-use std::fmt::{Display, self};
+use std::fmt::{self, Display};
 
-use crate::{gc::GcRef, objects::{Pair, Symbol, Closure, Procedure}};
+use crate::{
+    gc::GcRef,
+    objects::{Closure, Pair, Procedure, Symbol},
+};
 
 #[derive(Copy, Clone, Debug)]
 pub enum Value {

@@ -9,7 +9,7 @@ use std::ptr::NonNull;
 use std::{alloc, fmt};
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
-use crate::objects::{Symbol, Pair};
+use crate::objects::{Pair, Symbol};
 use crate::values::Value;
 struct GlobalAllocator {
     bytes_allocated: AtomicUsize,
@@ -87,7 +87,6 @@ impl<T> DerefMut for GcRef<T> {
     }
 }
 
-
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
     Pair,
@@ -113,7 +112,6 @@ impl GcHeader {
         }
     }
 }
-
 
 pub struct Gc {
     next_gc: usize,

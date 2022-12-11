@@ -1,10 +1,8 @@
-
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
 
 use std::ptr::{null_mut, NonNull};
-
 
 use gc::{Gc, GcRef};
 use objects::{Closure, Procedure, Symbol};
@@ -13,8 +11,8 @@ use values::Value;
 use crate::gc::GcHeader;
 use crate::objects::Pair;
 
-mod objects;
 mod gc;
+mod objects;
 mod values;
 
 #[derive(Copy, Clone, Debug)]
@@ -44,7 +42,6 @@ pub enum Op {
     Return(isize),
     Frame(usize),
 }
-
 
 const STACK_SIZE: usize = 256;
 
@@ -308,7 +305,7 @@ impl Vm {
                     self.ac = Value::Closure(self.alloc(Closure::new(
                         pc,
                         arg_len,
-                        is_optional_arg,                        
+                        is_optional_arg,
                         size,
                         free_vars,
                     )));

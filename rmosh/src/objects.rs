@@ -1,8 +1,9 @@
 use std::fmt::{self, Display};
 
-use crate::{gc::{GcHeader, ObjectType}, values::Value};
-
-
+use crate::{
+    gc::{GcHeader, ObjectType},
+    values::Value,
+};
 
 /// Cons cell
 #[derive(Debug)]
