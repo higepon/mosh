@@ -6,35 +6,12 @@ use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::NonNull;
-use std::{alloc, fmt};
+use std::{fmt};
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::objects::{Pair, Symbol};
 use crate::values::Value;
-struct GlobalAllocator {
-    bytes_allocated: AtomicUsize,
-}
-
-impl GlobalAllocator {
-    fn bytes_allocated(&self) -> usize {
-        self.bytes_allocated
-            .load(std::sync::atomic::Ordering::Relaxed)
-    }
-}
-
-unsafe impl alloc::GlobalAlloc for GlobalAllocator {
-    unsafe fn alloc(&self, layout: alloc::Layout) -> *mut u8 {
-        self.bytes_allocated
-            .fetch_add(layout.size(), std::sync::atomic::Ordering::Relaxed);
-        mimalloc::MiMalloc.alloc(layout)
-    }
-
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: alloc::Layout) {
-        mimalloc::MiMalloc.dealloc(ptr, layout);
-        self.bytes_allocated
-            .fetch_sub(layout.size(), std::sync::atomic::Ordering::Relaxed);
-    }
-}
+use crate::alloc::GlobalAllocator;
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {

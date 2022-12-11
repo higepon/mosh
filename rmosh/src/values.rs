@@ -7,14 +7,14 @@ use crate::{
 
 #[derive(Copy, Clone, Debug)]
 pub enum Value {
+    Closure(GcRef<Closure>),
+    False,
     Number(isize),
     Pair(GcRef<Pair>),
-    Symbol(GcRef<Symbol>),
-    VMStackPointer(*mut Value),
-    Closure(GcRef<Closure>),
     Procedure(GcRef<Procedure>),
-    False,
+    Symbol(GcRef<Symbol>),
     Undef,
+    VMStackPointer(*mut Value),
 }
 
 impl Value {

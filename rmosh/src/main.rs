@@ -1,8 +1,7 @@
 use std::collections::HashMap;
-use std::fmt;
 use std::fmt::Display;
 
-use std::ptr::{null_mut, NonNull};
+use std::ptr::{null_mut};
 
 use gc::{Gc, GcRef};
 use objects::{Closure, Procedure, Symbol};
@@ -11,36 +10,39 @@ use values::Value;
 use crate::gc::GcHeader;
 use crate::objects::Pair;
 
+mod alloc;
 mod gc;
 mod objects;
 mod values;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Op {
-    Constant(Value),
-    Push,
     Add,
     AddPair,
+    Call(isize),
     Cons,
-    DefineGlobal(GcRef<Symbol>),
-    ReferGlobal(GcRef<Symbol>),
-    LetFrame(isize),
-    Enter(isize),
-    ReferLocal(isize),
-    Leave(isize),
-    ReferFree(usize),
-    Display(isize),
-    Test(usize),
-    LocalJump(usize),
+    Constant(Value),
     Closure {
         size: usize,
         arg_len: isize,
         is_optional_arg: bool,
         num_free_vars: isize,
-    },
-    Call(isize),
+    },    
+    DefineGlobal(GcRef<Symbol>),
+    Display(isize),
+    Enter(isize),
+    Frame(usize),    
+    Leave(isize),
+    LetFrame(isize),
+    LocalJump(usize),
+    Push,
+    ReferFree(usize),
+    ReferGlobal(GcRef<Symbol>),
+    ReferLocal(isize),
     Return(isize),
-    Frame(usize),
+    Test(usize),
+
+
 }
 
 const STACK_SIZE: usize = 256;
