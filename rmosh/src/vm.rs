@@ -60,23 +60,23 @@ impl Vm {
 
     fn mark_roots(&mut self) {
         for &value in &self.stack[0..self.stack_len()] {
-            self.gc.mark_value(value);
+            self.gc.mark_object(value);
         }
 
-        self.gc.mark_value(self.ac);
-        self.gc.mark_value(self.dc);
+        self.gc.mark_object(self.ac);
+        self.gc.mark_object(self.dc);
 
         for &value in &self.ops {
             match value {
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
-                    self.gc.mark_value(v);
+                    self.gc.mark_object(v);
                 }
                 Op::DefineGlobal(symbol) => {
-                    self.gc.mark_object(symbol);
+                    self.gc.mark_heap_object(symbol);
                 }
                 Op::ReferGlobal(symbol) => {
-                    self.gc.mark_object(symbol);
+                    self.gc.mark_heap_object(symbol);
                 }
                 Op::Display(_) => (),
                 Op::ReferFree(_) => (),

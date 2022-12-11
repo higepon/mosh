@@ -94,7 +94,7 @@ impl GcHeader {
 pub struct Gc {
     next_gc: usize,
     first: Option<NonNull<GcHeader>>,
-    grey_stack: Vec<NonNull<GcHeader>>,
+    marked_roots: Vec<NonNull<GcHeader>>,
     symbols: HashMap<String, GcRef<Symbol>>,
 }
 
@@ -105,7 +105,7 @@ impl Gc {
         Gc {
             next_gc: 1024 * 1024,
             first: None,
-            grey_stack: Vec::new(),
+            marked_roots: Vec::new(),
             symbols: HashMap::new(),
         }
     }
@@ -133,9 +133,9 @@ impl Gc {
         }
     }
 
-    // Top level mark.
-    // This mark root objects only and push them to grey_stack.
-    pub fn mark_value(&mut self, value: Object) {
+    // Mark Object as used and push it to marked_roots.
+    // This should be called only for root Objects.
+    pub fn mark_object(&mut self, value: Object) {
         match value {
             Object::Number(_) => {}
             Object::VMStackPointer(_) => {}
@@ -143,27 +143,29 @@ impl Gc {
             Object::Undef => {}
             Object::Procedure(_) => {}
             Object::Closure(closure) => {
-                self.mark_object(closure);
+                self.mark_heap_object(closure);
             }
             Object::Symbol(symbol) => {
-                self.mark_object(symbol);
+                self.mark_heap_object(symbol);
             }
             Object::Pair(pair) => {
-                self.mark_object(pair);
+                self.mark_heap_object(pair);
             }
         }
     }
 
-    pub fn mark_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
+    // Mark heap allocated object as used and push it to marked_roots.
+    // This should be called only for root objects.    
+    pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
             let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
             header.as_mut().marked = true;
-            self.grey_stack.push(header);
+            self.marked_roots.push(header);
         }
     }
 
     fn trace_references(&mut self) {
-        while let Some(pointer) = self.grey_stack.pop() {
+        while let Some(pointer) = self.marked_roots.pop() {
             self.trace_pointer(pointer);
         }
     }
@@ -210,8 +212,8 @@ impl Gc {
             }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_value(pair.first);
-                self.mark_value(pair.second);
+                self.mark_object(pair.first);
+                self.mark_object(pair.second);
                 self.trace_value(pair.first);
                 self.trace_value(pair.second);
             }
