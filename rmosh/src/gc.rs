@@ -10,7 +10,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Object, Pair, Symbol};
+use crate::objects::{Closure, Object, Pair, Symbol};
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
@@ -155,7 +155,7 @@ impl Gc {
     }
 
     // Mark heap allocated object as used and push it to marked_roots.
-    // This should be called only for root objects.    
+    // This should be called only for root objects.
     pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
             let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
@@ -164,9 +164,42 @@ impl Gc {
         }
     }
 
+    // Collect garbage.
+    // This traces all references used starting from marked_roots.
+    pub fn collect_garbage(&mut self) {
+        self.trace_references();
+        self.sweep();
+        self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
+    }
+
     fn trace_references(&mut self) {
         while let Some(pointer) = self.marked_roots.pop() {
             self.trace_pointer(pointer);
+        }
+    }    
+
+    fn trace_pointer(&mut self, pointer: NonNull<GcHeader>) {
+        let object_type = unsafe { &pointer.as_ref().obj_type };
+        #[cfg(feature = "debug_log_gc")]
+        println!("blacken(adr:{:?})", pointer);
+
+        match object_type {
+            ObjectType::Symbol => {}
+            ObjectType::Procedure => {}
+            ObjectType::Closure => {
+                //let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
+                //for obj in closure.free_vars {
+                //    self.mark_object(obj);
+                //    self.trace_value(obj);
+                //}
+            }
+            ObjectType::Pair => {
+                let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(pair.first);
+                self.mark_object(pair.second);
+                self.trace_value(pair.first);
+                self.trace_value(pair.second);
+            }
         }
     }
 
@@ -199,32 +232,6 @@ impl Gc {
         }
     }
 
-    fn trace_pointer(&mut self, pointer: NonNull<GcHeader>) {
-        let object_type = unsafe { &pointer.as_ref().obj_type };
-        #[cfg(feature = "debug_log_gc")]
-        println!("blacken(adr:{:?})", pointer);
-
-        match object_type {
-            ObjectType::Symbol => {}
-            ObjectType::Procedure => {}
-            ObjectType::Closure => {
-                //panic!("TODO");
-            }
-            ObjectType::Pair => {
-                let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(pair.first);
-                self.mark_object(pair.second);
-                self.trace_value(pair.first);
-                self.trace_value(pair.second);
-            }
-        }
-    }
-
-    pub fn collect_garbage(&mut self) {
-        self.trace_references();
-        self.sweep();
-        self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
-    }
     fn sweep(&mut self) {
         let mut previous: Option<NonNull<GcHeader>> = None;
         let mut current: Option<NonNull<GcHeader>> = self.first;
