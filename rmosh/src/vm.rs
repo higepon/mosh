@@ -11,14 +11,13 @@ const STACK_SIZE: usize = 256;
 
 pub struct Vm {
     pub gc: Box<Gc>,
-    // ToDo: Do they need to be pub?
-    ac: Object,
-    dc: Object, // display closure
+    ac: Object, // accumulator register.
+    dc: Object, // display closure register.
     stack: [Object; STACK_SIZE],
     sp: *mut Object,
     fp: *mut Object,
     globals: HashMap<GcRef<Symbol>, Object>,
-    ops: Vec<Op>,
+    ops: Vec<Op>, // Keep running ops so that they are not garbage collected.
 }
 
 impl Vm {
@@ -27,7 +26,7 @@ impl Vm {
             ac: Object::Undef,
             dc: Object::Undef,
             gc: Box::new(Gc::new()),
-            stack: [Object::Number(0); STACK_SIZE],
+            stack: [Object::Undef; STACK_SIZE],
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
@@ -36,16 +35,15 @@ impl Vm {
     }
 
     fn initialize_free_vars(&mut self) {
-        let mut free_vars = vec![];
-        let proc = self.gc.alloc(Procedure::new(scm_write));
-        let proc = Object::Procedure(proc);
-        free_vars.push(proc);
+        let free_vars = vec![
+            Object::Procedure(self.gc.alloc(Procedure::new(scm_write)))
+        ];
         let mut display = self.gc.alloc(Closure::new(0, 0, false, 0, free_vars));
         display.prev = self.dc;
-        let display = Object::Closure(display);
-        self.dc = display;
+        self.dc = Object::Closure(display);
     }
 
+    /// GC functions.
     fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         self.mark_and_sweep();
         self.gc.alloc(object)
@@ -58,10 +56,6 @@ impl Vm {
         self.gc.collect_garbage();
 
         println!("-- gc end");
-    }
-
-    fn stack_len(&self) -> usize {
-        unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
     }
 
     fn mark_roots(&mut self) {
@@ -125,6 +119,10 @@ impl Vm {
         unsafe { *sp.offset(-n - 1) }
     }
 
+    fn stack_len(&self) -> usize {
+        unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
+    }
+
     fn print_stack(&mut self) {
         println!("-----------------------------------------");
         for &value in &self.stack[0..self.stack_len()] {
@@ -135,7 +133,7 @@ impl Vm {
 
     pub fn run(&mut self, ops: Vec<Op>) -> Object {
         // todo move to the initializer
-        self.ops = ops; // gc roots
+        self.ops = ops;
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
         let len = self.ops.len();
