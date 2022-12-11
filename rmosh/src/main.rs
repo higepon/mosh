@@ -9,7 +9,7 @@ use std::mem;
 use std::ptr::{null_mut, NonNull};
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
-use objects::Symbol;
+use objects::{Symbol, Procedure};
 
 use crate::objects::Pair;
 
@@ -45,26 +45,7 @@ static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
 
-#[derive(Debug)]
-pub struct Procedure {
-    pub header: GcHeader,
-    pub func: fn(Value) -> Value,
-}
 
-impl Display for Procedure {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<procedure>")
-    }
-}
-
-impl Procedure {
-    pub fn new(func: fn(Value) -> Value) -> Self {
-        Procedure {
-            header: GcHeader::new(ObjectType::Procedure),
-            func: func,
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct Closure {
@@ -1006,20 +987,5 @@ pub mod tests {
         assert_eq!(symbol.pointer, symbol2.pointer);
     }
 
-    pub fn procedure1(value: Value) -> Value {
-        Value::Undef
-    }
-
-    #[test]
-    fn test_procedure() {
-        let mut gc = Gc::new();
-        let p = gc.alloc(Procedure::new(procedure1));
-        match (p.func)(Value::False) {
-            Value::Undef => {}
-            _ => {
-                panic!("{:?}", "todo");
-            }
-        }
-    }
 }
 fn main() {}

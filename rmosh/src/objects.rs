@@ -48,12 +48,41 @@ impl Display for Symbol {
     }
 }
 
+/// Procedures written in Rust.
+#[derive(Debug)]
+pub struct Procedure {
+    pub header: GcHeader,
+    // TODO(higepon): Multiples arugments.
+    pub func: fn(Value) -> Value,
+}
+
+impl Procedure {
+    pub fn new(func: fn(Value) -> Value) -> Self {
+        Procedure {
+            header: GcHeader::new(ObjectType::Procedure),
+            func: func,
+        }
+    }
+}
+
+impl Display for Procedure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<procedure>")
+    }
+}
+
 /// Tests.
 #[cfg(test)]
 pub mod tests {
     use crate::Gc;
 
     use super::*;
+
+
+    // Helpers.
+    pub fn procedure1(value: Value) -> Value {
+        value
+    }
 
     #[test]
     fn test_symbol() {
@@ -69,4 +98,17 @@ pub mod tests {
             }
         }
     }
+
+
+    #[test]
+    fn test_procedure() {
+        let mut gc = Gc::new();
+        let p = gc.alloc(Procedure::new(procedure1));
+        match (p.func)(Value::False) {
+            Value::False => {}
+            _ => {
+                panic!("Wrong return value");
+            }
+        }
+    }    
 }
