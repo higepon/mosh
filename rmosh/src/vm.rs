@@ -4,14 +4,10 @@ use crate::{
     gc::{Gc, GcHeader, GcRef},
     objects::{Closure, Object, Pair, Procedure, Symbol},
     op::Op,
+    procs::scm_write,
 };
 
 const STACK_SIZE: usize = 256;
-
-pub fn scm_write(value: Object) -> Object {
-    println!("{:?}", value);
-    Object::Undef
-}
 
 pub struct Vm {
     pub gc: Box<Gc>,

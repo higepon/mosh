@@ -8,6 +8,7 @@ pub mod gc;
 pub mod objects;
 pub mod op;
 pub mod vm;
+pub mod procs;
 
 fn main() {
     println!(
