@@ -9,6 +9,10 @@ use std::mem;
 use std::ptr::{null_mut, NonNull};
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
+use crate::objects::Pair;
+
+mod objects;
+
 struct GlobalAllocator {
     bytes_allocated: AtomicUsize,
 }
@@ -39,28 +43,9 @@ static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
 
-#[derive(Debug)]
-pub struct Pair {
-    pub header: GcHeader,
-    pub first: Value,
-    pub second: Value,
-}
 
-impl Pair {
-    pub fn new(first: Value, second: Value) -> Self {
-        Pair {
-            header: GcHeader::new(ObjectType::Pair),
-            first: first,
-            second: second,
-        }
-    }
-}
 
-impl Display for Pair {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({} {})", self.first, self.second)
-    }
-}
+
 
 #[derive(Debug)]
 pub struct Symbol {
