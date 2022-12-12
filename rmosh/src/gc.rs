@@ -139,8 +139,8 @@ impl Gc {
 
     // Mark Object as used and push it to marked_roots.
     // This should be called only for root Objects.
-    pub fn mark_object(&mut self, value: Object) {
-        match value {
+    pub fn mark_object(&mut self, obj: Object) {
+        match obj {
             Object::Number(_) => {}
             Object::VMStackPointer(_) => {}
             Object::False => {}
@@ -163,9 +163,9 @@ impl Gc {
     pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
             let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
-            if header.as_mut().marked {
-                return;
-            }
+            //if header.as_mut().marked {
+            //    return;
+            //}
             header.as_mut().marked = true;
 
             self.marked_roots.push(header);
@@ -199,20 +199,20 @@ impl Gc {
                 for i in 0..closure.free_vars.len() {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
-                    self.trace_value(obj)
+                    self.trace_object(obj)
                 }
             }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.first);
                 self.mark_object(pair.second);
-                self.trace_value(pair.first);
-                self.trace_value(pair.second);
+                self.trace_object(pair.first);
+                self.trace_object(pair.second);
             }
         }
     }
 
-    fn trace_value(&mut self, value: Object) {
+    fn trace_object(&mut self, value: Object) {
         match value {
             Object::Number(_) => {}
             Object::False => {}
@@ -221,20 +221,20 @@ impl Gc {
             Object::VMStackPointer(_) => {}
             Object::Closure(closure) => {
                 for var in &closure.free_vars {
-                    self.trace_value(*var);
+                    self.trace_object(*var);
                 }
-                self.trace_value(closure.prev);
+                self.trace_object(closure.prev);
             }
             Object::Symbol(pair) => {
-                self.trace_object(pair);
+                self.trace_heap_object(pair);
             }
             Object::Pair(pair) => {
-                self.trace_object(pair);
+                self.trace_heap_object(pair);
             }
         }
     }
 
-    pub fn trace_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
+    pub fn trace_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
             let header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
             self.trace_pointer(header);
