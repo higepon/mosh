@@ -3,7 +3,7 @@
 
 // TODO
 // https://github.com/ceronman/loxido/issues/3
-// 
+//
 
 use std::collections::HashMap;
 use std::fmt;
@@ -184,7 +184,7 @@ impl Gc {
         while let Some(pointer) = self.marked_roots.pop() {
             self.trace_pointer(pointer);
         }
-    }    
+    }
 
     fn trace_pointer(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
@@ -195,11 +195,12 @@ impl Gc {
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Closure => {
-                //let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
-                //for obj in closure.free_vars {
-                //    self.mark_object(obj);
-                //    self.trace_value(obj);
-                //}
+                let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
+                for i in 0..closure.free_vars.len() {
+                    let obj = closure.free_vars[i];
+                    self.mark_object(obj);
+                    self.trace_value(obj)
+                }
             }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };

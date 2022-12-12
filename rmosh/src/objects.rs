@@ -177,7 +177,7 @@ pub mod tests {
     use super::*;
 
     // Helpers.
-    pub fn procedure1(value: Object) -> Object {
+    fn procedure1(value: Object) -> Object {
         value
     }
 
