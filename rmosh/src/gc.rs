@@ -163,7 +163,11 @@ impl Gc {
     pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
             let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
+            if header.as_mut().marked {
+                return;
+            }
             header.as_mut().marked = true;
+
             self.marked_roots.push(header);
         }
     }
