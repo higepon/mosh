@@ -35,9 +35,7 @@ impl Vm {
     }
 
     fn initialize_free_vars(&mut self) {
-        let free_vars = vec![
-            Object::Procedure(self.gc.alloc(Procedure::new(scm_write)))
-        ];
+        let free_vars = vec![Object::Procedure(self.gc.alloc(Procedure::new(scm_write)))];
         let mut display = self.gc.alloc(Closure::new(0, 0, false, 0, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
@@ -50,12 +48,16 @@ impl Vm {
     }
 
     fn mark_and_sweep(&mut self) {
-        println!("-- gc begin");
+        if self.gc.should_gc() {
+            #[cfg(feature = "debug_log_gc")]
+            println!("-- gc begin");
 
-        self.mark_roots();
-        self.gc.collect_garbage();
+            self.mark_roots();
+            self.gc.collect_garbage();
 
-        println!("-- gc end");
+            #[cfg(feature = "debug_log_gc")]
+            println!("-- gc end");
+        }
     }
 
     fn mark_roots(&mut self) {
@@ -123,13 +125,17 @@ impl Vm {
         unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
     }
 
-    fn print_stack(&mut self) {
+    #[cfg(feature = "debug_log_vm")]
+    fn print_vm(&mut self, op: Op) {
+        println!("after op={:?} ac={:?}", op, self.ac);
         println!("-----------------------------------------");
         for &value in &self.stack[0..self.stack_len()] {
             println!("{:?}", value);
         }
         println!("-----------------------------------------<== sp")
     }
+    #[cfg(not(feature = "debug_log_vm"))]
+    fn print_vm(&mut self, _: Op) {}
 
     pub fn run(&mut self, ops: Vec<Op>) -> Object {
         // todo move to the initializer
@@ -322,8 +328,7 @@ impl Vm {
                     self.push(Object::VMStackPointer(self.fp));
                 }
             }
-            println!("after op={:?} ac={:?}", op, self.ac);
-            self.print_stack();
+            self.print_vm(op);
             pc += 1;
         }
         self.ac

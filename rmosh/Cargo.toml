@@ -5,6 +5,11 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+debug_log_gc = []
+debug_log_vm = []
+debug_stress_gc = []
+
 [dependencies]
 bumpalo = { version = "3.11.1" }
 mimalloc = { version = "0.1.27", default-features = false }

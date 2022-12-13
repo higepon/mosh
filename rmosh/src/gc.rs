@@ -95,6 +95,12 @@ impl GcHeader {
     }
 }
 
+#[cfg(feature = "debug_log_gc")]
+fn short_type_name<T: std::any::Any>() -> &'static str {
+    let full_name = std::any::type_name::<T>();
+    full_name.split("::").last().unwrap()
+}
+
 pub struct Gc {
     next_gc: usize,
     first: Option<NonNull<GcHeader>>,
@@ -116,11 +122,27 @@ impl Gc {
 
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
+            #[cfg(feature = "debug_log_gc")]
+            let repr = format!("{}", object)
+                .chars()
+                .into_iter()
+                .take(32)
+                .collect::<String>();
+
             let boxed = Box::new(object);
             let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
+            #[cfg(feature = "debug_log_gc")]
+            println!(
+                "alloc(adr:{:?} type:{} repr:{}, allocated bytes:{} next:{})",
+                header,
+                short_type_name::<T>(),
+                repr,
+                GLOBAL.bytes_allocated(),
+                self.next_gc,
+            );
 
             GcRef { pointer }
         }
@@ -169,15 +191,34 @@ impl Gc {
             header.as_mut().marked = true;
 
             self.marked_objects.push(header);
+
+            #[cfg(feature = "debug_log_gc")]
+            println!(
+                "mark(adr:{:?}, type:{:?})",
+                header,
+                header.as_ref().obj_type,
+            );
         }
     }
 
     // Collect garbage.
     // This traces all references used starting from marked_roots.
     pub fn collect_garbage(&mut self) {
+        #[cfg(feature = "debug_log_gc")]
+        let before: isize = GLOBAL.bytes_allocated() as isize;
+
         self.trace_references();
         self.sweep();
         self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
+
+        #[cfg(feature = "debug_log_gc")]
+        println!(
+            "collected(bytes:{} before:{} after:{} next:{})",
+            before - GLOBAL.bytes_allocated() as isize,
+            before,
+            GLOBAL.bytes_allocated(),
+            self.next_gc
+        );
     }
 
     // Mark each object's fields.
@@ -190,7 +231,7 @@ impl Gc {
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
         #[cfg(feature = "debug_log_gc")]
-        println!("blacken(adr:{:?})", pointer);
+        println!("mark_object_fields(adr:{:?})", pointer);
 
         match object_type {
             ObjectType::Symbol => {}
@@ -209,6 +250,17 @@ impl Gc {
             }
         }
     }
+
+    #[cfg(feature = "debug_stress_gc")]
+    pub fn should_gc(&self) -> bool {
+        true
+    }
+
+    #[cfg(not(feature = "debug_stress_gc"))]
+    pub fn should_gc(&self) -> bool {
+        GLOBAL.bytes_allocated() > self.next_gc
+    }
+
 
     fn sweep(&mut self) {
         let mut previous: Option<NonNull<GcHeader>> = None;
