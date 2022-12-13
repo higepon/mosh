@@ -36,7 +36,7 @@ impl Vm {
 
     fn initialize_free_vars(&mut self) {
         let free_vars = vec![Object::Procedure(self.gc.alloc(Procedure::new(scm_write)))];
-        let mut display = self.gc.alloc(Closure::new(0, 0, false, 0, free_vars));
+        let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
     }
@@ -230,7 +230,7 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.alloc(Closure::new(0, 0, false, 0, free_vars));
+                    let mut display = self.alloc(Closure::new(0, 0, false, free_vars));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -269,7 +269,6 @@ impl Vm {
                         pc,
                         arg_len,
                         is_optional_arg,
-                        size,
                         free_vars,
                     )));
 
@@ -375,6 +374,7 @@ pub mod tests {
             Op::Call(1),
         ];
         let ret = vm.run(ops);
+        vm.mark_and_sweep();
         match ret {
             Object::Undef => {}
             _ => panic!("ac was {:?}", ret),
@@ -435,6 +435,7 @@ pub mod tests {
             Op::Call(2),
         ];
         let ret = vm.run(ops);
+        vm.mark_and_sweep();
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 3);
@@ -560,6 +561,7 @@ pub mod tests {
             Op::Leave(1),
         ];
         let ret = vm.run(ops);
+        vm.mark_and_sweep();
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 3);
@@ -579,6 +581,7 @@ pub mod tests {
             Op::AddPair,
         ];
         let ret = vm.run(ops);
+        vm.mark_and_sweep();
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 200);

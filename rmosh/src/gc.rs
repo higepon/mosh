@@ -167,7 +167,9 @@ impl Gc {
             Object::VMStackPointer(_) => {}
             Object::False => {}
             Object::Undef => {}
-            Object::Procedure(_) => {}
+            Object::Procedure(procedure) => {
+                self.mark_heap_object(procedure);
+            }
             Object::Closure(closure) => {
                 self.mark_heap_object(closure);
             }
@@ -185,9 +187,9 @@ impl Gc {
     pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
             let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
-            //if header.as_mut().marked {
-            //    return;
-            //}
+            if header.as_mut().marked {
+                return;
+            }
             header.as_mut().marked = true;
 
             self.marked_objects.push(header);
@@ -239,6 +241,7 @@ impl Gc {
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
                 for i in 0..closure.free_vars.len() {
+
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
                 }

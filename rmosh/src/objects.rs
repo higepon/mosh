@@ -133,7 +133,7 @@ pub struct Closure {
     pub pc: usize,
     pub arg_len: isize,
     pub is_optional_arg: bool,
-    size: usize,
+    //size: usize,
     pub free_vars: Vec<Object>,
     pub prev: Object,
 }
@@ -143,7 +143,7 @@ impl Closure {
         pc: usize,
         arg_len: isize,
         is_optional_arg: bool,
-        size: usize,
+       // size: usize,
         free_vars: Vec<Object>,
     ) -> Self {
         Closure {
@@ -151,7 +151,7 @@ impl Closure {
             pc: pc,
             arg_len: arg_len,
             is_optional_arg: is_optional_arg,
-            size: size,
+            //size: size,
             free_vars: free_vars,
             prev: Object::Undef,
         }
