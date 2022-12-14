@@ -95,6 +95,8 @@ impl GcHeader {
     }
 }
 
+
+
 #[cfg(feature = "debug_log_gc")]
 fn short_type_name<T: std::any::Any>() -> &'static str {
     let full_name = std::any::type_name::<T>();
@@ -106,6 +108,7 @@ pub struct Gc {
     first: Option<NonNull<GcHeader>>,
     marked_objects: Vec<NonNull<GcHeader>>,
     symbols: HashMap<String, GcRef<Symbol>>,
+    current_alloc_size: usize,
 }
 
 impl Gc {
@@ -117,24 +120,39 @@ impl Gc {
             first: None,
             marked_objects: Vec::new(),
             symbols: HashMap::new(),
+            current_alloc_size: 0,
         }
     }
 
+    #[cfg(not(feature = "debug_log_gc"))]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
-            #[cfg(feature = "debug_log_gc")]
+            let boxed = Box::new(object);
+            let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
+            let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
+            header.as_mut().next = self.first.take();
+            self.first = Some(header);
+            GcRef { pointer }
+        }
+    }
+
+    #[cfg(feature = "debug_log_gc")]
+    pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
+        unsafe {
             let repr = format!("{}", object)
                 .chars()
                 .into_iter()
                 .take(32)
                 .collect::<String>();
 
+            let alloc_size = std::mem::size_of_val(&object);
+            self.current_alloc_size += alloc_size;
+
             let boxed = Box::new(object);
             let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
-            #[cfg(feature = "debug_log_gc")]
             println!(
                 "alloc(adr:{:?} type:{} repr:{}, allocated bytes:{} next:{})",
                 header,
@@ -157,6 +175,10 @@ impl Gc {
                 symbol
             }
         }
+    }
+
+    pub fn bytes_allocated(&self) -> usize {
+        self.current_alloc_size
     }
 
     // Mark Object as used and push it to marked_roots.
@@ -241,7 +263,6 @@ impl Gc {
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
                 for i in 0..closure.free_vars.len() {
-
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
                 }
@@ -264,6 +285,34 @@ impl Gc {
         GLOBAL.bytes_allocated() > self.next_gc
     }
 
+    #[cfg(feature = "debug_stress_gc")]
+    fn free(&mut self, object_ptr: &mut GcHeader) {
+        println!("free(adr:{:?})", object_ptr as *mut GcHeader);
+        let object_type = object_ptr.obj_type;
+
+        let hige: &GcHeader = object_ptr;
+
+
+        let free_size = match object_type {
+            ObjectType::Symbol => 0,
+            ObjectType::Procedure => 0,
+            ObjectType::Closure => {
+                let closure: &Closure = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(closure)
+            }
+            ObjectType::Pair => {
+                let pair: &Pair = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(pair)
+            }
+        };
+        self.current_alloc_size -= free_size;
+        unsafe { drop(Box::from_raw(object_ptr)) }
+    }
+
+    #[cfg(not(feature = "debug_stress_gc"))]
+    fn free(&self, object_ptr: &mut GcHeader) {
+        unsafe { drop(Box::from_raw(object_ptr)) }
+    }
 
     fn sweep(&mut self) {
         let mut previous: Option<NonNull<GcHeader>> = None;
@@ -281,9 +330,7 @@ impl Gc {
                     } else {
                         self.first = object_ptr.next
                     }
-
-                    println!("free(adr:{:?})", object_ptr as *mut GcHeader);
-                    drop(Box::from_raw(object_ptr))
+                    self.free(object_ptr);
                 }
             }
         }

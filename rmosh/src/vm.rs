@@ -362,6 +362,12 @@ impl Vm {
 pub mod tests {
     use super::*;
 
+    static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>();
+    static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
+    static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
+    // Base closure + procedure as free variable
+    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE;
+
     #[test]
     fn test_vm_call_proc() {
         let mut vm = Vm::new();
@@ -373,8 +379,11 @@ pub mod tests {
             Op::ReferFree(0),
             Op::Call(1),
         ];
+        let before_size = vm.gc.bytes_allocated();                        
         let ret = vm.run(ops);
-        vm.mark_and_sweep();
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);      
         match ret {
             Object::Undef => {}
             _ => panic!("ac was {:?}", ret),
@@ -402,7 +411,11 @@ pub mod tests {
             Op::Return(1),
             Op::Call(1),
         ];
+        let before_size = vm.gc.bytes_allocated();                        
         let ret = vm.run(ops);
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);      
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 2);
@@ -434,8 +447,11 @@ pub mod tests {
             Op::Return(2),
             Op::Call(2),
         ];
+        let before_size = vm.gc.bytes_allocated();                
         let ret = vm.run(ops);
-        vm.mark_and_sweep();
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);      
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 3);
@@ -454,7 +470,11 @@ pub mod tests {
             Op::LocalJump(2),
             Op::Constant(Object::Number(3)),
         ];
+        let before_size = vm.gc.bytes_allocated();                
         let ret = vm.run(ops);
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 2);
@@ -473,7 +493,12 @@ pub mod tests {
             Op::LocalJump(2),
             Op::Constant(Object::Number(3)),
         ];
+
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 3);
@@ -493,7 +518,11 @@ pub mod tests {
             Op::ReferLocal(0),
             Op::Leave(1),
         ];
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 3);
@@ -510,7 +539,11 @@ pub mod tests {
             Op::DefineGlobal(vm.gc.intern("a".to_owned())),
             Op::ReferGlobal(vm.gc.intern("a".to_owned())),
         ];
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 9);
@@ -528,7 +561,11 @@ pub mod tests {
             Op::Constant(Object::Number(1)),
             Op::Add,
         ];
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
+        vm.mark_and_sweep();        
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 100);
@@ -560,8 +597,11 @@ pub mod tests {
             Op::Leave(1),
             Op::Leave(1),
         ];
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
         vm.mark_and_sweep();
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 3);
@@ -580,8 +620,11 @@ pub mod tests {
             Op::Cons,
             Op::AddPair,
         ];
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
         vm.mark_and_sweep();
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 200);
@@ -591,8 +634,27 @@ pub mod tests {
     }
 
     #[test]
+    fn test_vm_alloc_many_pairs() {
+        let mut vm = Vm::new();
+        let mut ops = vec![];
+
+        for _ in 0..100 {
+            ops.push(Op::Constant(Object::Number(99)));
+            ops.push(Op::Push);
+            ops.push(Op::Constant(Object::Number(101)));
+            ops.push(Op::Cons);
+        }
+        let before_size = vm.gc.bytes_allocated();
+        vm.run(ops);
+        vm.mark_and_sweep();
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
+    }
+
+    #[test]
     fn test_symbol_intern() {
         let mut gc = Gc::new();
+
         let symbol = gc.intern("foo".to_owned());
         let symbol2 = gc.intern("foo".to_owned());
         assert_eq!(symbol.pointer, symbol2.pointer);
