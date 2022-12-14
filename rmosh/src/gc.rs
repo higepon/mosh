@@ -95,9 +95,7 @@ impl GcHeader {
     }
 }
 
-
-
-#[cfg(feature = "debug_log_gc")]
+#[cfg(feature = "test_gc_size")]
 fn short_type_name<T: std::any::Any>() -> &'static str {
     let full_name = std::any::type_name::<T>();
     full_name.split("::").last().unwrap()
@@ -124,7 +122,7 @@ impl Gc {
         }
     }
 
-    #[cfg(not(feature = "debug_log_gc"))]
+    #[cfg(not(feature = "test_gc_size"))]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
             let boxed = Box::new(object);
@@ -136,7 +134,7 @@ impl Gc {
         }
     }
 
-    #[cfg(feature = "debug_log_gc")]
+    #[cfg(feature = "test_gc_size")]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
             let repr = format!("{}", object)
@@ -216,7 +214,7 @@ impl Gc {
 
             self.marked_objects.push(header);
 
-            #[cfg(feature = "debug_log_gc")]
+            #[cfg(feature = "test_gc_size")]
             println!(
                 "mark(adr:{:?}, type:{:?})",
                 header,
@@ -228,14 +226,14 @@ impl Gc {
     // Collect garbage.
     // This traces all references used starting from marked_roots.
     pub fn collect_garbage(&mut self) {
-        #[cfg(feature = "debug_log_gc")]
+        #[cfg(feature = "test_gc_size")]
         let before: isize = GLOBAL.bytes_allocated() as isize;
 
         self.trace_references();
         self.sweep();
         self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
 
-        #[cfg(feature = "debug_log_gc")]
+        #[cfg(feature = "test_gc_size")]
         println!(
             "collected(bytes:{} before:{} after:{} next:{})",
             before - GLOBAL.bytes_allocated() as isize,
@@ -254,7 +252,7 @@ impl Gc {
 
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
-        #[cfg(feature = "debug_log_gc")]
+        #[cfg(feature = "test_gc_size")]
         println!("mark_object_fields(adr:{:?})", pointer);
 
         match object_type {
@@ -275,23 +273,22 @@ impl Gc {
         }
     }
 
-    #[cfg(feature = "debug_stress_gc")]
+    #[cfg(feature = "test_gc_size")]
     pub fn should_gc(&self) -> bool {
         true
     }
 
-    #[cfg(not(feature = "debug_stress_gc"))]
+    #[cfg(not(feature = "test_gc_size"))]
     pub fn should_gc(&self) -> bool {
         GLOBAL.bytes_allocated() > self.next_gc
     }
 
-    #[cfg(feature = "debug_stress_gc")]
+    #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
         println!("free(adr:{:?})", object_ptr as *mut GcHeader);
         let object_type = object_ptr.obj_type;
 
         let hige: &GcHeader = object_ptr;
-
 
         let free_size = match object_type {
             ObjectType::Symbol => 0,
@@ -309,7 +306,7 @@ impl Gc {
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 
-    #[cfg(not(feature = "debug_stress_gc"))]
+    #[cfg(not(feature = "test_gc_size"))]
     fn free(&self, object_ptr: &mut GcHeader) {
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
