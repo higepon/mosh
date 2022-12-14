@@ -379,11 +379,11 @@ pub mod tests {
             Op::ReferFree(0),
             Op::Call(1),
         ];
-        let before_size = vm.gc.bytes_allocated();                        
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);      
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Undef => {}
             _ => panic!("ac was {:?}", ret),
@@ -411,11 +411,11 @@ pub mod tests {
             Op::Return(1),
             Op::Call(1),
         ];
-        let before_size = vm.gc.bytes_allocated();                        
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);      
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 2);
@@ -447,11 +447,11 @@ pub mod tests {
             Op::Return(2),
             Op::Call(2),
         ];
-        let before_size = vm.gc.bytes_allocated();                
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);      
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 3);
@@ -470,9 +470,9 @@ pub mod tests {
             Op::LocalJump(2),
             Op::Constant(Object::Number(3)),
         ];
-        let before_size = vm.gc.bytes_allocated();                
+        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
@@ -496,7 +496,7 @@ pub mod tests {
 
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
@@ -520,7 +520,7 @@ pub mod tests {
         ];
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
@@ -541,7 +541,7 @@ pub mod tests {
         ];
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
@@ -563,7 +563,7 @@ pub mod tests {
         ];
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
-        vm.mark_and_sweep();        
+        vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
