@@ -1248,10 +1248,14 @@
                (evaluate obj)
                (loop (read))])))))
 
-(define (compile-string s)
+(define (compile-string s optimize?)
   (with-input-from-string s
     (lambda ()
-      (compile (read)))))
+      ((if optimize? compile compile-no-optimize) (read)))))
+
+
+(define (compile-file-string f optimize?)
+  (compile-string (file->string f) #f))
 
 ;; return compiled code as list. label is not fixed up yet.
 ;; (define (compile-partial sexp . lib)
@@ -1691,7 +1695,10 @@
     ]
    ;; compile string
    [(and (= (length args) 3) (string=? (second args) "compile"))
-    (print (compile-string (third args)))]
+    (print (compile-string (third args) #f))]
+   ;; compile string in a file
+   [(and (= (length args) 3) (string=? (second args) "compile-file"))
+    (print (compile-file-string (third args) #f))]    
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro"))
     (load-file base-library)
