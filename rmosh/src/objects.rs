@@ -8,6 +8,7 @@ use crate::gc::GcRef;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Object {
     Closure(GcRef<Closure>),
+    True,
     False,
     Number(isize),
     Pair(GcRef<Pair>),
@@ -42,6 +43,9 @@ impl Display for Object {
             Object::Symbol(symbol) => {
                 write!(f, "{}", symbol)
             }
+            Object::True => {
+                write!(f, "true")
+            }            
             Object::False => {
                 write!(f, "false")
             }

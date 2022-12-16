@@ -42,7 +42,10 @@
           (rewrite-insn* more* (+ idx 2))] 
         [((and (or 'CONSTANT) insn) #f . more*)
           (format #t "            Op::~a(Object::False),\n" (insn->string insn))
-          (rewrite-insn* more* (+ idx 2))]         
+          (rewrite-insn* more* (+ idx 2))]      
+        [((and (or 'CONSTANT) insn) #t . more*)
+          (format #t "            Op::~a(Object::True),\n" (insn->string insn))
+          (rewrite-insn* more* (+ idx 2))]              
         [((and (or 'CONSTANT) insn) () . more*)
           (format #t "            Op::~a(Object::Nil),\n" (insn->string insn))
           (rewrite-insn* more* (+ idx 2))]                           
@@ -74,6 +77,14 @@
          [else
           (loop (read p) (cons sexp sexp*))])))))
 
+(define (expected->rust expected)
+  (match expected
+    ['undef "Object::Undef"]
+    [#t "Object::True"]
+    [#f "Object::False"]
+    [(? number? n) (format "Object::Number(~a)" n)]
+    [else (error "expected->rust" expected)]))
+
 (define (main args)
   (let* ([op-file (cadr args)]
          [scm-file (regexp-replace-all #/\.op$/ op-file ".scm")]
@@ -88,9 +99,7 @@
     (match expr*
       [(expr expected size)
         (let ([insn* (vector->list (car sexp*))]
-              [expected (if (eq? 'undef expected)
-                            "Object::Undef"
-                            (format "Object::Number(~a)" expected))])
+              [expected (expected->rust expected)])
           (rewrite-insn* insn*)
           (format #t "        ];
         test_ops_with_size(&mut vm, ops, ~a, ~a);

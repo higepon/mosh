@@ -185,6 +185,7 @@ impl Gc {
         match obj {
             Object::Number(_) => {}
             Object::VMStackPointer(_) => {}
+            Object::True => {}            
             Object::False => {}
             Object::Undef => {}
             Object::Nil => {}

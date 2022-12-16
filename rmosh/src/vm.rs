@@ -701,4 +701,11 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(6), 0);
     }
+
+    #[test]
+    fn test_and() {
+        let mut vm = Vm::new();
+        let ops = vec![Op::Constant(Object::True), Op::Halt];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
 }
