@@ -92,7 +92,7 @@ impl Vm {
                 Op::NumberAdd => (),
                 Op::AddPair => (),
                 Op::Cons => (),
-                Op::LocalJump(_) => (),
+                Op::LocalJmp(_) => (),
                 Op::Test(_) => (),
                 Op::Call(_) => (),
                 Op::Return(_) => (),
@@ -253,7 +253,7 @@ impl Vm {
                         pc = pc + skip_size - 1;
                     }
                 }
-                Op::LocalJump(jump_size) => {
+                Op::LocalJmp(jump_size) => {
                     pc = pc + jump_size - 1;
                 }
                 Op::Closure {
@@ -441,7 +441,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(2)),
             Op::Push,
-            Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 6,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferLocal(1),
@@ -451,10 +456,24 @@ pub mod tests {
             Op::Halt,
             Op::Nop,
             Op::Nop,
-            
         ];
         test_ops_with_size(ops, Object::Number(3), 0);
-    }    
+    }
+
+    #[test]
+    fn test_if0() {
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Test(3),
+            Op::Constant(Object::Number(2)),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(3)),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(ops, Object::Number(2), 0);
+    }
     /*
     #[test]
     fn test_vm_call_proc() {

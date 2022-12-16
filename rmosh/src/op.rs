@@ -23,7 +23,7 @@ pub enum Op {
     Halt,
     Leave(isize),
     LetFrame(isize),
-    LocalJump(usize),
+    LocalJmp(usize),
     Nop,
     Push,
     ReferFree(usize),

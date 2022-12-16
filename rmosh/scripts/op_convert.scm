@@ -13,19 +13,20 @@
   (let loop ([insn* insn*]
              [cur-offset 0]
              [rust-offset 0])
-    ;(format (current-error-port) "cur=~a rust=~a off=~a insn*=~a\n" cur-offset rust-offset offset insn*)
+    (format (current-error-port) "cur=~a rust=~a off=~a insn*=~a\n" cur-offset rust-offset offset insn*)
     (cond        
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'FRAME 'REFER_LOCAL 'RETURN) _ . more*)
+
+          [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'FRAME 'LOCAL_JMP 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'HALT 'NOP 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
           [('CLOSURE _a _b _c _d _e _f . more*) 
             (loop more* (+ cur-offset 7) (+ rust-offset 1))]
           [() (error "never reach here1")]
-          [else (error "never reach here2")])])))
+          [else (error "never reach here2" insn*)])])))
 
 (define rewrite-insn*
   (case-lambda
@@ -36,9 +37,9 @@
           (format #t "Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
              (adjust-offset insn* idx size) arg-len (if optional? "true" "false") num-free-vars)
            (rewrite-insn* more* (+ idx 7))]
-        [((and (or 'FRAME) insn) offset . more*)
+        [((and (or 'FRAME 'TEST 'LOCAL_JMP) insn) offset . more*)
           (format #t "Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
-          (rewrite-insn* more* (+ idx 2))]            
+          (rewrite-insn* more* (+ idx 2))]         
         [((and (or 'CONSTANT) insn) n . more*)
           (format #t "Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]      
