@@ -332,9 +332,7 @@ impl Vm {
                     self.push(Object::VMStackPointer(self.fp));
                 }
                 Op::Halt => return self.ac,
-                Op::Undef => {
-                    self.ac = Object::Undef
-                }
+                Op::Undef => self.ac = Object::Undef,
                 Op::Nop => {}
             }
             self.print_vm(op);
@@ -378,7 +376,7 @@ pub mod tests {
     // Base closure + procedure as free variable
     static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE;
 
-    fn test_ops_with_size(vm: & mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
+    fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
         vm.mark_and_sweep();
@@ -390,10 +388,16 @@ pub mod tests {
         assert_eq!(ret, expected);
     }
 
-    // All ops in the following tests are generated in data/.
+    // Custom hand written tests.
+    #[test]
+    fn test_symbol_intern() {
+        let mut gc = Gc::new();
 
+        let symbol = gc.intern("foo".to_owned());
+        let symbol2 = gc.intern("foo".to_owned());
+        assert_eq!(symbol.pointer, symbol2.pointer);
+    }
 
-/*
     #[test]
     fn test_vm_call_proc() {
         let mut vm = Vm::new();
@@ -416,152 +420,23 @@ pub mod tests {
         }
     }
 
-*/
+    #[test]
+    fn test_vm_alloc_many_pairs() {
+        let mut vm = Vm::new();
+        let mut ops = vec![];
 
-
-#[test]
-fn test_call0() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::Frame(5),
-        Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
-        Op::Constant(Object::Number(3)),
-        Op::Return(0),
-        Op::Call(0),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
-}
-
-#[test]
-fn test_call1() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::Frame(10),
-        Op::Constant(Object::Number(1)),
-        Op::Push,
-        Op::Closure {size: 6, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferLocal(0),
-        Op::NumberAdd,
-        Op::Return(1),
-        Op::Call(1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
-}
-
-#[test]
-fn test_call2() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::Frame(12),
-        Op::Constant(Object::Number(1)),
-        Op::Push,
-        Op::Constant(Object::Number(2)),
-        Op::Push,
-        Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferLocal(1),
-        Op::NumberAdd,
-        Op::Return(2),
-        Op::Call(2),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
-}
-
-
-
-#[test]
-fn test_if0() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::Constant(Object::Number(1)),
-        Op::Test(3),
-        Op::Constant(Object::Number(2)),
-        Op::LocalJmp(2),
-        Op::Constant(Object::Number(3)),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
-}
-
-#[test]
-fn test_if1() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::Constant(Object::False),
-        Op::Test(3),
-        Op::Constant(Object::Number(2)),
-        Op::LocalJmp(2),
-        Op::Constant(Object::Number(3)),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
-}
-
-#[test]
-fn test_let0() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::LetFrame(1),
-        Op::Constant(Object::Number(0)),
-        Op::Push,
-        Op::Enter(1),
-        Op::ReferLocal(0),
-        Op::Leave(1),
-        Op::Halt,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Number(0), 0);
-}
-
-#[test]
-fn test_let1() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::LetFrame(2),
-        Op::Constant(Object::Number(1)),
-        Op::Push,
-        Op::Constant(Object::Number(2)),
-        Op::Push,
-        Op::Enter(2),
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferLocal(1),
-        Op::NumberAdd,
-        Op::Leave(2),
-        Op::Halt,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
-}
-
-
-#[test]
-fn test_define0() {
-    let mut vm = Vm::new();        
-    let ops = vec![
-        Op::Constant(Object::Number(3)),
-        Op::DefineGlobal(vm.gc.intern("a".to_owned())),
-        Op::Halt,
-    ];
-    test_ops_with_size(&mut vm, ops, Object::Undef, 0);
-}
-
-
-/*
+        for _ in 0..100 {
+            ops.push(Op::Constant(Object::Number(99)));
+            ops.push(Op::Push);
+            ops.push(Op::Constant(Object::Number(101)));
+            ops.push(Op::Cons);
+        }
+        let before_size = vm.gc.bytes_allocated();
+        vm.run(ops);
+        vm.mark_and_sweep();
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
+    }
 
     #[test]
     fn test_vm_define() {
@@ -579,64 +454,6 @@ fn test_define0() {
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 9);
-            }
-            _ => panic!("{:?}", "todo"),
-        }
-    }
-
-    #[test]
-    fn test_vm_run_add() {
-        let mut vm = Vm::new();
-        let ops = vec![
-            Op::Constant(Object::Number(99)),
-            Op::Push,
-            Op::Constant(Object::Number(1)),
-            Op::Add,
-        ];
-        let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
-        vm.mark_and_sweep();
-        let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
-        match ret {
-            Object::Number(a) => {
-                assert_eq!(a, 100);
-            }
-            _ => panic!("{:?}", "todo"),
-        }
-    }
-
-    #[test]
-    fn test_vm_run_nested_let() {
-        let mut vm = Vm::new();
-        // (let ([a 2]) (let ([b 1]) (+ a b)))
-        let ops: Vec<Op> = vec![
-            Op::LetFrame(3),
-            Op::Constant(Object::Number(2)),
-            Op::Push,
-            Op::Enter(1),
-            Op::LetFrame(2),
-            Op::ReferLocal(0),
-            Op::Push,
-            Op::Display(1),
-            Op::Constant(Object::Number(1)),
-            Op::Push,
-            Op::Enter(1),
-            Op::ReferFree(0),
-            Op::Push,
-            Op::ReferLocal(0),
-            Op::Add,
-            Op::Leave(1),
-            Op::Leave(1),
-        ];
-        let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
-        vm.mark_and_sweep();
-        let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
-        match ret {
-            Object::Number(a) => {
-                assert_eq!(a, 3);
             }
             _ => panic!("{:?}", "todo"),
         }
@@ -665,31 +482,184 @@ fn test_define0() {
         }
     }
 
+    // All ops in the following tests are generated in data/.
+
     #[test]
-    fn test_vm_alloc_many_pairs() {
+    fn test_call0() {
         let mut vm = Vm::new();
-        let mut ops = vec![];
-
-        for _ in 0..100 {
-            ops.push(Op::Constant(Object::Number(99)));
-            ops.push(Op::Push);
-            ops.push(Op::Constant(Object::Number(101)));
-            ops.push(Op::Cons);
-        }
-        let before_size = vm.gc.bytes_allocated();
-        vm.run(ops);
-        vm.mark_and_sweep();
-        let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
+        let ops = vec![
+            Op::Frame(5),
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
     #[test]
-    fn test_symbol_intern() {
-        let mut gc = Gc::new();
-
-        let symbol = gc.intern("foo".to_owned());
-        let symbol2 = gc.intern("foo".to_owned());
-        assert_eq!(symbol.pointer, symbol2.pointer);
+    fn test_call1() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(10),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Closure {
+                size: 6,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::NumberAdd,
+            Op::Return(1),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
     }
-    */
+
+    #[test]
+    fn test_call2() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(12),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Closure {
+                size: 6,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::NumberAdd,
+            Op::Return(2),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    #[test]
+    fn test_if0() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Test(3),
+            Op::Constant(Object::Number(2)),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(3)),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
+    }
+
+    #[test]
+    fn test_if1() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::Number(2)),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(3)),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    #[test]
+    fn test_let0() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(0), 0);
+    }
+
+    #[test]
+    fn test_let1() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Enter(2),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::NumberAdd,
+            Op::Leave(2),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    #[test]
+    fn test_define0() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::DefineGlobal(vm.gc.intern("a".to_owned())),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Undef, 0);
+    }
+
+    #[test]
+    fn test_nested_let0() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Enter(1),
+            Op::LetFrame(2),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Display(1),
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferFree(0),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::NumberAdd,
+            Op::Leave(1),
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
 }

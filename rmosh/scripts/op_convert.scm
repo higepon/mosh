@@ -19,7 +19,7 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+          [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'HALT 'UNDEF 'NOP 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
@@ -37,7 +37,7 @@
           (format #t "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
              (adjust-offset insn* idx size) arg-len (if optional? "true" "false") num-free-vars)
            (rewrite-insn* more* (+ idx 7))]
-        [((and (or 'FRAME 'TEST 'LOCAL_JMP 'LET_FRAME) insn) offset . more*)
+        [((and (or 'FRAME 'TEST 'LOCAL_JMP) insn) offset . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
           (rewrite-insn* more* (+ idx 2))] 
         [((and (or 'CONSTANT) insn) #f . more*)
@@ -55,7 +55,7 @@
         [((and (or 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) n . more*)
           (format #t "            Op::~a(vm.gc.intern(\"~a\".to_owned())),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]          
-        [((and (or 'CALL 'LEAVE 'RETURN 'REFER_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
+        [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'REFER_FREE 'REFER_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
         [((and (or 'HALT 'NOP 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
