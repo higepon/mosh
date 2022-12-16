@@ -3,8 +3,9 @@
 ;;   Example: (CLOSURE 10 0 #f 0 4 (((input string port) 2) a) CONSTANT 3 RETURN 0 DEFINE_GLOBAL a HALT NOP)
 ;;   Get the instructions by running `gosh vm.scm "compile-file" file-name`.
 
-(import (scheme base) (scheme file) (scheme read) (scheme write) (scheme process-context) (scheme case-lambda)
-        (match) (only (srfi :13) string-delete) (only (mosh) format) (only (rnrs) string-titlecase))
+(import (scheme base) (scheme file) (scheme read) (scheme write) (scheme process-context) (scheme case-lambda
+)
+        (match) (mosh control) (only (srfi :13) string-delete) (only (mosh) format regexp-replace-all rxmatch) (only (rnrs) string-titlecase))
 
 (define (insn->string insn)
     (string-delete (lambda (c) (equal? c #\_)) (string-titlecase  (symbol->string insn))))
@@ -33,23 +34,23 @@
     [(insn* idx)
       (match insn*
         [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
-          (format #t "Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
+          (format #t "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
              (adjust-offset insn* idx size) arg-len (if optional? "true" "false") num-free-vars)
            (rewrite-insn* more* (+ idx 7))]
         [((and (or 'FRAME 'TEST 'LOCAL_JMP) insn) offset . more*)
-          (format #t "Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
+          (format #t "            Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
           (rewrite-insn* more* (+ idx 2))] 
         [((and (or 'CONSTANT) insn) #f . more*)
-          (format #t "Op::~a(Object::False),\n" (insn->string insn))
+          (format #t "            Op::~a(Object::False),\n" (insn->string insn))
           (rewrite-insn* more* (+ idx 2))]                    
         [((and (or 'CONSTANT) insn) n . more*)
-          (format #t "Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
+          (format #t "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]      
         [((and (or 'CALL 'RETURN 'DEFINE_GLOBAL 'FRAME 'REFER_LOCAL) insn) n . more*)
-          (format #t "Op::~a(~a),\n" (insn->string insn) n)
+          (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
         [((and (or 'HALT 'NOP 'PUSH 'NUMBER_ADD) insn) . more*)
-          (format #t "Op::~a,\n" (insn->string insn))
+          (format #t "            Op::~a,\n" (insn->string insn))
           (rewrite-insn* more*  (+ idx 1))]
         [() #f]
         [else (display insn*)])]))
@@ -65,8 +66,22 @@
           (loop (read p) (cons sexp sexp*))])))))
 
 (define (main args)
-  (let ([insn* (vector->list (car (file->sexp* (cadr args))))])
-
-    (rewrite-insn* insn*)))
+  (let* ([op-file (cadr args)]
+         [scm-file (regexp-replace-all #/\.op$/ op-file ".scm")]
+         [test-name ((rxmatch #/([^\/]+)\.op$/ op-file) 1)]
+         [expr* (file->sexp* scm-file)]
+         [sexp* (file->sexp* op-file)])
+  (format #t "
+    #[test]
+    fn test_~a() {
+        let ops = vec![\n" test-name)         
+    (match expr*
+      [(expr expected size)
+        (let1 insn* (vector->list (car sexp*))
+          (rewrite-insn* insn*)
+          (format #t "        ];
+        test_ops_with_size(ops, Object::Number(~a), ~a);
+    }\n" expected size))]
+      [else (write sexp*)])))
 
 (main (command-line))

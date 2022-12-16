@@ -386,8 +386,25 @@ pub mod tests {
         assert_eq!(ret, expected);
     }
 
-    /// All ops in the following tests are generated in data/.
+    // All ops in the following tests are generated in data/.
 
+    #[test]
+    fn test_call0() {
+        let ops = vec![
+            Op::Frame(5),
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(ops, Object::Number(3), 0);
+    }
+
+
+/* 
     #[test]
     fn test_call0() {
         let ops = vec![
@@ -489,6 +506,7 @@ pub mod tests {
         ];
         test_ops_with_size(ops, Object::Number(3), 0);
     }
+    */
     /*
     #[test]
     fn test_vm_call_proc() {
