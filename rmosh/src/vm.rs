@@ -129,7 +129,7 @@ impl Vm {
 
     #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
-        println!("-----------------------------------------");        
+        println!("-----------------------------------------");
         println!("{:?} executed ac={:?}", op, self.ac);
         println!("-----------------------------------------");
         for &value in &self.stack[0..self.stack_len()] {
@@ -379,9 +379,11 @@ pub mod tests {
         let ret = vm.run(ops);
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + expected_heap_diff);
+        assert_eq!(
+            after_size - before_size,
+            SIZE_OF_MIN_VM + expected_heap_diff
+        );
         assert_eq!(ret, expected);
-
     }
 
     /// All ops in the following tests are generated in data/.
@@ -390,7 +392,12 @@ pub mod tests {
     fn test_vm_call0() {
         let ops = vec![
             Op::Frame(5),
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(3)),
             Op::Return(0),
             Op::Call(0),
@@ -400,7 +407,7 @@ pub mod tests {
         ];
         test_ops_with_size(ops, Object::Number(3), 0);
     }
-/*
+    /*
     #[test]
     fn test_vm_call_proc() {
         let mut vm = Vm::new();
