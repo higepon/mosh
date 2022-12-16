@@ -708,4 +708,20 @@ pub mod tests {
         let ops = vec![Op::Constant(Object::True), Op::Halt];
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
+
+    #[test]
+    fn test_if2() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::False),
+            Op::LocalJmp(2),
+            Op::Constant(Object::True),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
 }
