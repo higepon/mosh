@@ -18,7 +18,6 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-
           [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'FRAME 'LOCAL_JMP 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'HALT 'NOP 'NUMBER_ADD 'PUSH) . more*)
@@ -39,7 +38,10 @@
            (rewrite-insn* more* (+ idx 7))]
         [((and (or 'FRAME 'TEST 'LOCAL_JMP) insn) offset . more*)
           (format #t "Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
-          (rewrite-insn* more* (+ idx 2))]         
+          (rewrite-insn* more* (+ idx 2))] 
+        [((and (or 'CONSTANT) insn) #f . more*)
+          (format #t "Op::~a(Object::False),\n" (insn->string insn))
+          (rewrite-insn* more* (+ idx 2))]                    
         [((and (or 'CONSTANT) insn) n . more*)
           (format #t "Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]      

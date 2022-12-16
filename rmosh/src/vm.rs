@@ -474,6 +474,21 @@ pub mod tests {
         ];
         test_ops_with_size(ops, Object::Number(2), 0);
     }
+
+    #[test]
+    fn test_if1() {
+        let ops = vec![
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::Number(2)),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(3)),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(ops, Object::Number(3), 0);
+    }
     /*
     #[test]
     fn test_vm_call_proc() {
