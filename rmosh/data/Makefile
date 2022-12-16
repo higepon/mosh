@@ -15,3 +15,6 @@ $(OP_FILES): %.op: %.scm
 
 $(RUST_OP_FILES): %.rsop: %.op ../scripts/op_convert.scm
 	mosh ../scripts/op_convert.scm $< > $@
+
+clean:
+	rm $(RUST_OP_FILES) $(OP_FILES)

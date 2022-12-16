@@ -84,6 +84,8 @@ impl Vm {
                 Op::ReferFree(_) => (),
                 Op::LetFrame(_) => (),
                 Op::Enter(_) => (),
+                Op::Halt => (),
+                Op::Nop => (),
                 Op::ReferLocal(_) => (),
                 Op::Leave(_) => (),
                 Op::Push => (),
@@ -127,7 +129,8 @@ impl Vm {
 
     #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
-        println!("after op={:?} ac={:?}", op, self.ac);
+        println!("-----------------------------------------");        
+        println!("{:?} executed ac={:?}", op, self.ac);
         println!("-----------------------------------------");
         for &value in &self.stack[0..self.stack_len()] {
             println!("{:?}", value);
@@ -273,7 +276,7 @@ impl Vm {
                     )));
 
                     self.sp = unsafe { self.sp.offset(-num_free_vars) };
-                    pc += size;
+                    pc += size - 1;
                 }
                 Op::Call(arg_len) => {
                     match self.ac {
@@ -326,6 +329,8 @@ impl Vm {
                     self.push(self.dc); // todo this should be cl.
                     self.push(Object::VMStackPointer(self.fp));
                 }
+                Op::Halt => return self.ac,
+                Op::Nop => {}
             }
             self.print_vm(op);
             pc += 1;
@@ -368,6 +373,34 @@ pub mod tests {
     // Base closure + procedure as free variable
     static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE;
 
+    fn test_ops_with_size(ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
+        let mut vm = Vm::new();
+        let before_size = vm.gc.bytes_allocated();
+        let ret = vm.run(ops);
+        vm.mark_and_sweep();
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + expected_heap_diff);
+        assert_eq!(ret, expected);
+
+    }
+
+    /// All ops in the following tests are generated in data/.
+
+    #[test]
+    fn test_vm_call0() {
+        let ops = vec![
+            Op::Frame(5),
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(ops, Object::Number(3), 0);
+    }
+/*
     #[test]
     fn test_vm_call_proc() {
         let mut vm = Vm::new();
@@ -659,4 +692,5 @@ pub mod tests {
         let symbol2 = gc.intern("foo".to_owned());
         assert_eq!(symbol.pointer, symbol2.pointer);
     }
+    */
 }

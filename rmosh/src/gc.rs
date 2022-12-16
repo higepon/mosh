@@ -4,7 +4,7 @@
 // TODO
 // https://github.com/ceronman/loxido/issues/3
 //
-
+// Make test link work everytime.
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
