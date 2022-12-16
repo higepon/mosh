@@ -5,7 +5,7 @@ use crate::{
 
 #[derive(Copy, Clone, Debug)]
 pub enum Op {
-    Add,
+    NumberAdd,
     AddPair,
     Call(isize),
     Cons,
