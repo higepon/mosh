@@ -31,4 +31,5 @@ pub enum Op {
     ReferLocal(isize),
     Return(isize),
     Test(usize),
+    Undef,
 }

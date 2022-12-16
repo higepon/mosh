@@ -19,9 +19,9 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'FRAME 'LOCAL_JMP 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+          [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
-          [((or 'HALT 'NOP 'NUMBER_ADD 'PUSH) . more*)
+          [((or 'HALT 'UNDEF 'NOP 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
           [('CLOSURE _a _b _c _d _e _f . more*) 
             (loop more* (+ cur-offset 7) (+ rust-offset 1))]
@@ -37,19 +37,28 @@
           (format #t "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
              (adjust-offset insn* idx size) arg-len (if optional? "true" "false") num-free-vars)
            (rewrite-insn* more* (+ idx 7))]
-        [((and (or 'FRAME 'TEST 'LOCAL_JMP) insn) offset . more*)
+        [((and (or 'FRAME 'TEST 'LOCAL_JMP 'LET_FRAME) insn) offset . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
           (rewrite-insn* more* (+ idx 2))] 
         [((and (or 'CONSTANT) insn) #f . more*)
           (format #t "            Op::~a(Object::False),\n" (insn->string insn))
-          (rewrite-insn* more* (+ idx 2))]                    
+          (rewrite-insn* more* (+ idx 2))]         
+        [((and (or 'CONSTANT) insn) () . more*)
+          (format #t "            Op::~a(Object::Nil),\n" (insn->string insn))
+          (rewrite-insn* more* (+ idx 2))]                           
         [((and (or 'CONSTANT) insn) n . more*)
           (format #t "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]      
-        [((and (or 'CALL 'RETURN 'DEFINE_GLOBAL 'FRAME 'REFER_LOCAL) insn) n . more*)
+        [((and (or 'ENTER) insn) n . more*)
+          (format #t "            Op::~a(~a),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2))]                
+        [((and (or 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) n . more*)
+          (format #t "            Op::~a(vm.gc.intern(\"~a\".to_owned())),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2))]          
+        [((and (or 'CALL 'LEAVE 'RETURN 'REFER_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
-        [((and (or 'HALT 'NOP 'PUSH 'NUMBER_ADD) insn) . more*)
+        [((and (or 'HALT 'NOP 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
           (format #t "            Op::~a,\n" (insn->string insn))
           (rewrite-insn* more*  (+ idx 1))]
         [() #f]
@@ -74,13 +83,17 @@
   (format #t "
     #[test]
     fn test_~a() {
+        let mut vm = Vm::new();        
         let ops = vec![\n" test-name)         
     (match expr*
       [(expr expected size)
-        (let1 insn* (vector->list (car sexp*))
+        (let ([insn* (vector->list (car sexp*))]
+              [expected (if (eq? 'undef expected)
+                            "Object::Undef"
+                            (format "Object::Number(~a)" expected))])
           (rewrite-insn* insn*)
           (format #t "        ];
-        test_ops_with_size(ops, Object::Number(~a), ~a);
+        test_ops_with_size(&mut vm, ops, ~a, ~a);
     }\n" expected size))]
       [else (write sexp*)])))
 

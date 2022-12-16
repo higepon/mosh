@@ -187,6 +187,7 @@ impl Gc {
             Object::VMStackPointer(_) => {}
             Object::False => {}
             Object::Undef => {}
+            Object::Nil => {}
             Object::Procedure(procedure) => {
                 self.mark_heap_object(procedure);
             }

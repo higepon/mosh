@@ -13,6 +13,7 @@ pub enum Object {
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
     Symbol(GcRef<Symbol>),
+    Nil,
     Undef,
     VMStackPointer(*mut Object),
 }
@@ -50,6 +51,9 @@ impl Display for Object {
             Object::Undef => {
                 write!(f, "<undefined>")
             }
+            Object::Nil => {
+                write!(f, "()")
+            }            
             Object::Procedure(_) => {
                 write!(f, "<procedure>")
             }
