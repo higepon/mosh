@@ -745,5 +745,85 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
+    #[test]
+    fn test_test3() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+
+    #[test]
+    fn test_test4() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
+    }
+
+    #[test]
+    fn test_test5() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::False),
+            Op::LocalJmp(2),
+            Op::Constant(Object::True),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+
+    #[test]
+    fn test_test6() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(7),
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Closure {size: 3, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(1),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+
+    #[test]
+    fn test_test7() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(11),
+            Op::Constant(Object::Number(6)),
+            Op::Push,
+            Op::Closure {size: 7, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Test(3),
+            Op::Constant(Object::Number(7)),
+            Op::Return(1),
+            Op::Constant(Object::Number(5)),
+            Op::Return(1),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(7), 0);
+    }
 
 }
