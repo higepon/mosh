@@ -6,7 +6,9 @@ test:
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture
 
 gen:
+	mosh scripts/test_data_convert.scm ../src/test-data.scm
 	make -C data
 
 clean:
+	rm data/test*.scm
 	make -C data clean
