@@ -19,10 +19,12 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'CALL 'BOX 'ASSIGN_LOCAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+          [((or 'CALL 'BOX 'ASSIGN_LOCAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'HALT 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
+          [((or 'TAIL_CALL) m n . more*)
+            (loop more* (+ cur-offset 3) (+ rust-offset 1))]
           [('CLOSURE _a _b _c _d _e _f . more*) 
             (loop more* (+ cur-offset 7) (+ rust-offset 1))]
           [() (error "never reach here1")]
@@ -48,17 +50,20 @@
           (rewrite-insn* more* (+ idx 2))]              
         [((and (or 'CONSTANT) insn) () . more*)
           (format #t "            Op::~a(Object::Nil),\n" (insn->string insn))
-          (rewrite-insn* more* (+ idx 2))]                           
+          (rewrite-insn* more* (+ idx 2))]                                    
         [((and (or 'CONSTANT) insn) n . more*)
           (format #t "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]      
+          (rewrite-insn* more* (+ idx 2))]     
+        [((and (or 'TAIL_CALL) insn) m n . more*)
+          (format #t "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
+          (rewrite-insn* more* (+ idx 3))]              
         [((and (or 'ENTER 'BOX) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]                
         [((and (or 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) n . more*)
           (format #t "            Op::~a(vm.gc.intern(\"~a\".to_owned())),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]          
-        [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
+        [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
         [((and (or 'HALT 'NOP 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)

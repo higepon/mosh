@@ -86,6 +86,7 @@ impl Vm {
                 Op::Box(_) => (),
                 Op::Enter(_) => (),
                 Op::Halt => (),
+                Op::AssignFree(_) => (),
                 Op::AssignLocal(_) =>(),
                 Op::Indirect =>(),
                 Op::Nop => (),
@@ -97,6 +98,7 @@ impl Vm {
                 Op::AddPair => (),
                 Op::Cons => (),
                 Op::LocalJmp(_) => (),
+                Op::TailCall(_, _) => (),
                 Op::Test(_) => (),
                 Op::Call(_) => (),
                 Op::Return(_) => (),
@@ -275,6 +277,21 @@ impl Vm {
                         panic!("refer_free: display closure expected but got {:?}", self.dc);
                     }
                 },
+                Op::AssignFree(n) => match self.dc {
+                    Object::Closure(mut closure) => {
+                        match closure.refer_free(n) {
+                            Object::Vox(mut vox) => {
+                                vox.value = self.ac;
+                            }
+                            _ => {
+                                panic!("assign_free: vox not found")
+                            }
+                        }
+                    }
+                    _ => {
+                        panic!("assign_free: display closure expected but got {:?}", self.dc);
+                    }
+                },                
                 Op::Test(skip_size) => {
                     if self.ac.is_false() {
                         pc = pc + skip_size - 1;
@@ -304,6 +321,37 @@ impl Vm {
 
                     self.sp = unsafe { self.sp.offset(-num_free_vars) };
                     pc += size - 1;
+                }
+                Op::TailCall(depth, diff) => {
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
+                    let arg_len = depth;    
+                    // todo dedup logic with Op::Call
+                    match self.ac {
+                        Object::Closure(closure) => {
+                            self.dc = self.ac;
+                            // self.cl = self.ac;
+                            pc = closure.pc;
+                            if closure.is_optional_arg {
+                                panic!("not supported yet");
+                            } else if arg_len == closure.arg_len {
+                                self.fp = unsafe { self.sp.offset(-arg_len) };
+                            } else {
+                                panic!("wrong arguments");
+                            }
+                        }
+                        Object::Procedure(procedure) => {
+                            // self.cl = self.ac
+                            assert_eq!(1, arg_len);
+                            let arg = unsafe { *self.fp.offset(arg_len) };
+                            //self.fp = unsafe { self.sp.offset(-arg_len) };
+                            self.ac = (procedure.func)(arg);
+
+                            self.return_n(1, &mut pc);
+                        }
+                        _ => {
+                            panic!("can't call {:?}", self.ac);
+                        }
+                    }                    
                 }
                 Op::Call(arg_len) => {
                     match self.ac {
@@ -393,6 +441,16 @@ impl Vm {
         }
         self.sp = unsafe { sp.offset(-4) }
     }
+
+    fn shift_args_to_bottom(&mut self, sp: *mut Object, depth: isize, diff: isize) -> *mut Object {
+        let mut i = depth - 1;
+        while i >= 0 {
+            self.indexSet(sp, i+ diff, self.index(self.sp, i));
+            i = i - 1;
+        }
+        unsafe { sp.offset(-diff) }
+    }
+
 }
 
 #[cfg(test)]
@@ -1051,6 +1109,32 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(12), 0);
+    }
+
+    #[test]
+    fn test_test15() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(14),
+            Op::Constant(Object::Nil),
+            Op::Push,
+            Op::Closure {size: 10, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Box(0),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Closure {size: 4, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Constant(Object::Number(101)),
+            Op::AssignFree(0),
+            Op::Return(0),
+            Op::TailCall(0, 1),
+            Op::Return(1),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(101), 0);
     }
 
 }

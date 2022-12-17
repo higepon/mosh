@@ -7,6 +7,7 @@ use crate::{
 pub enum Op {
     NumberAdd,
     AddPair,
+    AssignFree(usize),
     AssignLocal(isize),
     Box(isize),
     Call(isize),
@@ -33,6 +34,7 @@ pub enum Op {
     ReferGlobal(GcRef<Symbol>),
     ReferLocal(isize),
     Return(isize),
+    TailCall(isize, isize),
     Test(usize),
     Undef,
 }
