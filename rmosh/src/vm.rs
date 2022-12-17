@@ -1513,4 +1513,17 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
+    #[test]
+    fn test_test32() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(4)),
+            Op::NumberEqual,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
 }
