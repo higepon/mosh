@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Display, ptr::null_mut};
 
 use crate::{
-    gc::{Gc, GcHeader, GcRef},
+    gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Procedure, Symbol, Vox},
     op::Op,
     procs,
@@ -131,7 +131,7 @@ impl Vm {
         unsafe { *sp.offset(-n - 1) }
     }
 
-    fn indexSet(&mut self, sp: *mut Object, n: isize, obj: Object) {
+    fn index_set(&mut self, sp: *mut Object, n: isize, obj: Object) {
         unsafe { *sp.offset(-n - 1) = obj }
     }
 
@@ -179,7 +179,7 @@ impl Vm {
                 },
                 Op::Box(n) => {
                     let vox = self.alloc(Vox::new(self.index(self.sp, n)));
-                    self.indexSet(self.sp, n, Object::Vox(vox));
+                    self.index_set(self.sp, n, Object::Vox(vox));
                 }
                 Op::Constant(c) => {
                     self.ac = c;
@@ -191,12 +191,10 @@ impl Vm {
                     let first = self.pop();
                     let second = self.ac;
                     let pair = self.alloc(Pair::new(first, second));
-                    println!("pair alloc(adr:{:?})", &pair.header as *const GcHeader);
                     self.ac = Object::Pair(pair);
                 }
                 Op::NumberAdd => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
-                        println!("a={} ac={}", a, b);
                         self.ac = Object::Number(a + b);
                     }
                     (a, b) => {
@@ -327,7 +325,7 @@ impl Vm {
                 }
                 Op::TailCall(depth, diff) => {
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
-                    let arg_len = depth;
+                    let argc = depth;
                     // todo dedup logic with Op::Call
                     match self.ac {
                         Object::Closure(closure) => {
@@ -336,18 +334,19 @@ impl Vm {
                             pc = closure.pc;
                             if closure.is_optional_arg {
                                 panic!("not supported yet");
-                            } else if arg_len == closure.arg_len {
-                                self.fp = unsafe { self.sp.offset(-arg_len) };
+                            } else if argc == closure.argc {
+                                self.fp = unsafe { self.sp.offset(-argc) };
                             } else {
                                 panic!("wrong arguments");
                             }
                         }
                         Object::Procedure(procedure) => {
                             // self.cl = self.ac
-                            assert_eq!(1, arg_len);
-                            let arg = unsafe { *self.fp.offset(arg_len) };
-                            //self.fp = unsafe { self.sp.offset(-arg_len) };
-                            self.ac = (procedure.func)(arg);
+                            let offset = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
+                            let offset:usize = usize::try_from(offset).expect("offset can't be usize");
+                            let argc:usize = usize::try_from(argc).expect("argc can't be usize");
+                            let args = &self.stack[offset .. offset+argc];
+                            self.ac = (procedure.func)(args);
 
                             self.return_n(1, &mut pc);
                         }
@@ -356,7 +355,7 @@ impl Vm {
                         }
                     }
                 }
-                Op::Call(arg_len) => {
+                Op::Call(argc) => {
                     match self.ac {
                         Object::Closure(closure) => {
                             self.dc = self.ac;
@@ -364,18 +363,19 @@ impl Vm {
                             pc = closure.pc;
                             if closure.is_optional_arg {
                                 panic!("not supported yet");
-                            } else if arg_len == closure.arg_len {
-                                self.fp = unsafe { self.sp.offset(-arg_len) };
+                            } else if argc == closure.argc {
+                                self.fp = unsafe { self.sp.offset(-argc) };
                             } else {
                                 panic!("wrong arguments");
                             }
                         }
                         Object::Procedure(procedure) => {
                             // self.cl = self.ac
-                            assert_eq!(1, arg_len);
-                            let arg = unsafe { *self.fp.offset(arg_len) };
-                            //self.fp = unsafe { self.sp.offset(-arg_len) };
-                            self.ac = (procedure.func)(arg);
+                            let offset = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
+                            let offset:usize = usize::try_from(offset).expect("offset can't be usize");
+                            let argc:usize = usize::try_from(argc).expect("argc can't be usize");
+                            let args = &self.stack[offset .. offset+argc];
+                            self.ac = (procedure.func)(args);
 
                             self.return_n(1, &mut pc);
                         }
@@ -448,7 +448,7 @@ impl Vm {
     fn shift_args_to_bottom(&mut self, sp: *mut Object, depth: isize, diff: isize) -> *mut Object {
         let mut i = depth - 1;
         while i >= 0 {
-            self.indexSet(sp, i + diff, self.index(self.sp, i));
+            self.index_set(sp, i + diff, self.index(self.sp, i));
             i = i - 1;
         }
         unsafe { sp.offset(-diff) }
@@ -1233,4 +1233,38 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(5), 0);
     }
+
+
+    #[test]
+    fn test_test18() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+ /*
+    #[test]
+    fn test_test19() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+*/
+
 }

@@ -37,19 +37,19 @@ impl Display for Object {
             }
             Object::Vox(obj) => {
                 write!(f, "{}", obj)
-            }            
+            }
             Object::Closure(closure) => {
-                write!(f, "{}", closure)
+                write!(f, "closure{:?}", closure)
             }
             Object::Pair(pair) => {
-                write!(f, "{}", pair)
+                write!(f, "pair{}", pair)
             }
             Object::Symbol(symbol) => {
-                write!(f, "{}", symbol)
+                write!(f, "symbol{}", symbol)
             }
             Object::True => {
                 write!(f, "true")
-            }            
+            }
             Object::False => {
                 write!(f, "false")
             }
@@ -61,7 +61,7 @@ impl Display for Object {
             }
             Object::Nil => {
                 write!(f, "()")
-            }            
+            }
             Object::Procedure(_) => {
                 write!(f, "<procedure>")
             }
@@ -138,21 +138,26 @@ impl Display for Symbol {
 }
 
 /// Procedures written in Rust.
-#[derive(Debug)]
 pub struct Procedure {
     pub header: GcHeader,
-    // TODO(higepon): Multiples arugments.
-    pub func: fn(Object) -> Object,
+    pub func: fn(&[Object]) -> Object,
 }
 
 impl Procedure {
-    pub fn new(func: fn(Object) -> Object) -> Self {
+    pub fn new(func: fn(&[Object]) -> Object) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
         }
     }
 }
+
+impl fmt::Debug for Procedure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("<procedure>")
+    }
+}
+
 
 impl Display for Procedure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -165,7 +170,7 @@ impl Display for Procedure {
 pub struct Closure {
     pub header: GcHeader,
     pub pc: usize,
-    pub arg_len: isize,
+    pub argc: isize,
     pub is_optional_arg: bool,
     //size: usize,
     pub free_vars: Vec<Object>,
@@ -175,15 +180,15 @@ pub struct Closure {
 impl Closure {
     pub fn new(
         pc: usize,
-        arg_len: isize,
+        argc: isize,
         is_optional_arg: bool,
-       // size: usize,
+        // size: usize,
         free_vars: Vec<Object>,
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
             pc: pc,
-            arg_len: arg_len,
+            argc: argc,
             is_optional_arg: is_optional_arg,
             //size: size,
             free_vars: free_vars,
@@ -211,8 +216,9 @@ pub mod tests {
     use super::*;
 
     // Helpers.
-    fn procedure1(value: Object) -> Object {
-        value
+    fn procedure1(args: &[Object]) -> Object {
+        assert_eq!(args.len(), 1);
+        args[0]
     }
 
     #[test]
@@ -234,8 +240,9 @@ pub mod tests {
     fn test_procedure() {
         let mut gc = Gc::new();
         let p = gc.alloc(Procedure::new(procedure1));
-        match (p.func)(Object::False) {
-            Object::False => {}
+        let stack = [Object::Number(1), Object::Number(2)];
+        match (p.func)(&stack[0..1]) {
+            Object::Number(1) => {}
             _ => {
                 panic!("Wrong return value");
             }

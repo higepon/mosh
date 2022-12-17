@@ -51,16 +51,20 @@
         [((and (or 'CONSTANT) insn) () . more*)
           (format #t "            Op::~a(Object::Nil),\n" (insn->string insn))
           (rewrite-insn* more* (+ idx 2))]                                    
-        [((and (or 'CONSTANT) insn) n . more*)
+        [((and (or 'CONSTANT) insn) (? number? n) . more*)
           (format #t "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]     
+        [((and (or 'CONSTANT) insn) (? symbol? n) . more*)
+          (format #t "            Op::~a(Object::Symbol(vm.gc.intern(\"~a\".to_owned()))),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2))]          
+
         [((and (or 'TAIL_CALL) insn) m n . more*)
           (format #t "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
           (rewrite-insn* more* (+ idx 3))]              
         [((and (or 'ENTER 'BOX 'MAKE_CONTINUATION) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]                
-        [((and (or 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) n . more*)
+        [((and (or 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)
           (format #t "            Op::~a(vm.gc.intern(\"~a\".to_owned())),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]          
         [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)

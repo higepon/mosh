@@ -8,6 +8,7 @@ edition = "2021"
 [features]
 test_gc_size = []
 debug_log_vm = []
+debug_log_gc = []
 
 [dependencies]
 bumpalo = { version = "3.11.1" }

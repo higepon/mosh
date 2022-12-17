@@ -97,7 +97,7 @@ impl GcHeader {
 }
 
 #[cfg(feature = "test_gc_size")]
-fn short_type_name<T: std::any::Any>() -> &'static str {
+pub fn short_type_name<T: std::any::Any>() -> &'static str {
     let full_name = std::any::type_name::<T>();
     full_name.split("::").last().unwrap()
 }
@@ -138,6 +138,7 @@ impl Gc {
     #[cfg(feature = "test_gc_size")]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
+            #[cfg(feature = "debug_log_gc")]                
             let repr = format!("{}", object)
                 .chars()
                 .into_iter()
@@ -152,6 +153,7 @@ impl Gc {
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
+            #[cfg(feature = "debug_log_gc")]            
             println!(
                 "alloc(adr:{:?} type:{} repr:{}, allocated bytes:{} next:{})",
                 header,
@@ -220,7 +222,7 @@ impl Gc {
 
             self.marked_objects.push(header);
 
-            #[cfg(feature = "test_gc_size")]
+            #[cfg(feature = "debug_log_gc")]
             println!(
                 "mark(adr:{:?}, type:{:?})",
                 header,
@@ -232,14 +234,14 @@ impl Gc {
     // Collect garbage.
     // This traces all references used starting from marked_roots.
     pub fn collect_garbage(&mut self) {
-        #[cfg(feature = "test_gc_size")]
+        #[cfg(feature = "debug_log_gc")]
         let before: isize = GLOBAL.bytes_allocated() as isize;
 
         self.trace_references();
         self.sweep();
         self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
 
-        #[cfg(feature = "test_gc_size")]
+        #[cfg(feature = "debug_log_gc")]
         println!(
             "collected(bytes:{} before:{} after:{} next:{})",
             before - GLOBAL.bytes_allocated() as isize,
@@ -258,7 +260,7 @@ impl Gc {
 
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
-        #[cfg(feature = "test_gc_size")]
+        #[cfg(feature = "debug_log_gc")]
         println!("mark_object_fields(adr:{:?})", pointer);
 
         match object_type {
@@ -295,6 +297,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
+        #[cfg(feature = "debug_log_gd")]
         println!("free(adr:{:?})", object_ptr as *mut GcHeader);
         let object_type = object_ptr.obj_type;
 
