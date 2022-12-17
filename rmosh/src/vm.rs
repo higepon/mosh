@@ -1933,4 +1933,23 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+    #[test]
+    fn test_test50() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Enter(3),
+            Op::ReferLocal(2),
+            Op::Leave(3),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
+    }
+
 }
