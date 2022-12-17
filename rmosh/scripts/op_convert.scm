@@ -19,9 +19,9 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'CALL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+          [((or 'CALL 'BOX 'ASSIGN_LOCAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
-          [((or 'HALT 'UNDEF 'NOP 'NUMBER_ADD 'PUSH) . more*)
+          [((or 'HALT 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
           [('CLOSURE _a _b _c _d _e _f . more*) 
             (loop more* (+ cur-offset 7) (+ rust-offset 1))]
@@ -52,16 +52,16 @@
         [((and (or 'CONSTANT) insn) n . more*)
           (format #t "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]      
-        [((and (or 'ENTER) insn) n . more*)
+        [((and (or 'ENTER 'BOX) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]                
         [((and (or 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) n . more*)
           (format #t "            Op::~a(vm.gc.intern(\"~a\".to_owned())),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]          
-        [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'REFER_FREE 'REFER_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
+        [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
-        [((and (or 'HALT 'NOP 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
+        [((and (or 'HALT 'NOP 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
           (format #t "            Op::~a,\n" (insn->string insn))
           (rewrite-insn* more*  (+ idx 1))]
         [() #f]

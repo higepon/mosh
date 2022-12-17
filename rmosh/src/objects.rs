@@ -7,6 +7,7 @@ use crate::gc::GcRef;
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Object {
+    Vox(GcRef<Vox>),
     Closure(GcRef<Closure>),
     True,
     False,
@@ -34,6 +35,9 @@ impl Display for Object {
             Object::Number(n) => {
                 write!(f, "{}", n)
             }
+            Object::Vox(obj) => {
+                write!(f, "{}", obj)
+            }            
             Object::Closure(closure) => {
                 write!(f, "{}", closure)
             }
@@ -86,6 +90,28 @@ impl Pair {
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({} {})", self.first, self.second)
+    }
+}
+
+/// Vox
+#[derive(Debug)]
+pub struct Vox {
+    pub header: GcHeader,
+    pub value: Object,
+}
+
+impl Vox {
+    pub fn new(value: Object) -> Self {
+        Vox {
+            header: GcHeader::new(ObjectType::Vox),
+            value: value,
+        }
+    }
+}
+
+impl Display for Vox {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Vox({})", self.value)
     }
 }
 

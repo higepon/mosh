@@ -7,6 +7,8 @@ use crate::{
 pub enum Op {
     NumberAdd,
     AddPair,
+    AssignLocal(isize),
+    Box(isize),
     Call(isize),
     Cons,
     Constant(Object),
@@ -21,6 +23,7 @@ pub enum Op {
     Enter(isize),
     Frame(usize),
     Halt,
+    Indirect,
     Leave(isize),
     LetFrame(isize),
     LocalJmp(usize),

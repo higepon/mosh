@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Symbol};
+use crate::objects::{Vox, Closure, Object, Pair, Symbol};
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
@@ -71,10 +71,11 @@ impl<T> DerefMut for GcRef<T> {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
+    Closure,
     Pair,
     Procedure,
     Symbol,
-    Closure,
+    Vox,
 }
 
 #[repr(C)]
@@ -188,7 +189,10 @@ impl Gc {
             Object::True => {}            
             Object::False => {}
             Object::Undef => {}
-            Object::Nil => {}
+            Object::Nil => {},
+            Object::Vox(vox) => {
+                self.mark_heap_object(vox);
+            }
             Object::Procedure(procedure) => {
                 self.mark_heap_object(procedure);
             }
@@ -267,6 +271,10 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
+            ObjectType::Vox => {
+                let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(vox.value);
+            }            
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.first);
@@ -299,6 +307,10 @@ impl Gc {
                 let closure: &Closure = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(closure)
             }
+            ObjectType::Vox => {
+                let vox: &Vox = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(vox)
+            }            
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(pair)
