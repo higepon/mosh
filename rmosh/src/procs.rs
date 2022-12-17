@@ -1,7 +1,14 @@
 /// Scheme procedures written in Rust.
 use crate::objects::Object;
 
-pub fn scm_write(value: Object) -> Object {
-    println!("{:?}", value);
+pub fn numberp(object: Object) -> Object {
+    match object {
+        Object::Number(_) => Object::True,
+        _ => Object::False,
+    }
+}
+
+pub fn write(object: Object) -> Object {
+    println!("{:?}", object);
     Object::Undef
 }

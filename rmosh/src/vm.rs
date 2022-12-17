@@ -4,7 +4,7 @@ use crate::{
     gc::{Gc, GcHeader, GcRef},
     objects::{Closure, Object, Pair, Procedure, Symbol, Vox},
     op::Op,
-    procs::scm_write,
+    procs,
 };
 
 const STACK_SIZE: usize = 256;
@@ -35,7 +35,9 @@ impl Vm {
     }
 
     fn initialize_free_vars(&mut self) {
-        let free_vars = vec![Object::Procedure(self.gc.alloc(Procedure::new(scm_write)))];
+        let free_vars = vec![
+            Object::Procedure(self.gc.alloc(Procedure::new(procs::numberp))),
+            Object::Procedure(self.gc.alloc(Procedure::new(procs::write)))];
         let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
@@ -461,7 +463,7 @@ pub mod tests {
     static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
     static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
     // Base closure + procedure as free variable
-    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE;
+    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE + SIZE_OF_PROCEDURE;
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
@@ -493,7 +495,7 @@ pub mod tests {
             Op::Frame(8),
             Op::Constant(Object::Number(3)),
             Op::Push,
-            Op::ReferFree(0),
+            Op::ReferFree(1),
             Op::Call(1),
         ];
         let before_size = vm.gc.bytes_allocated();
