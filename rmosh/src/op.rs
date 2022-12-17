@@ -32,6 +32,7 @@ pub enum Op {
     LetFrame(isize),
     LocalJmp(usize),
     Nop,
+    NumberEqual,
     Push,
     ReferFree(usize),
     ReferGlobal(GcRef<Symbol>),

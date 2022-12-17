@@ -91,7 +91,7 @@ impl Vm {
                 Op::Car => (),
                 Op::Cdr => (),
                 Op::Cadr => (),
-                
+                Op::NumberEqual => (),
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
                 Op::Indirect => (),
@@ -168,6 +168,18 @@ impl Vm {
         while pc < len {
             let op = self.ops[pc];
             match op {
+                Op::NumberEqual => {
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    match (lhs, rhs) {
+                        (Object::Number(l), Object::Number(r)) => {
+                            self.ac = if l == r { Object::True } else { Object::False }
+                        }
+                        _ => {
+                            panic!("= requres number")
+                        }
+                    }
+                }
                 Op::Car => {
                     match self.ac {
                         Object::Pair(pair) => { self.ac = pair.first; }
@@ -1486,6 +1498,19 @@ pub mod tests {
             Op::Halt,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    #[test]
+    fn test_test31() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberEqual,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
 }
