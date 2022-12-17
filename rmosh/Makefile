@@ -1,5 +1,5 @@
-TESTS = #test_vm_alloc_many_pairs  # test_vm_run_add_pair
-FEATURES = #--features debug_log_vm --features debug_log_gc
+TESTS = #test_test19 #test_vm_alloc_many_pairs  # test_vm_run_add_pair
+FEATURES = #--features debug_log_vm  #--features debug_log_vm --features debug_log_gc
 
 
 test:

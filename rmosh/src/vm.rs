@@ -144,8 +144,9 @@ impl Vm {
         println!("-----------------------------------------");
         println!("{:?} executed ac={:?}", op, self.ac);
         println!("-----------------------------------------");
-        for &value in &self.stack[0..self.stack_len()] {
-            println!("{:?}", value);
+        let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr())};
+        for i in 0..self.stack_len() {
+            println!("{:?}{}", self.stack[i], if fp_idx == i.try_into().unwrap() { "  <== fp" } else{ ""});            
         }
         println!("-----------------------------------------<== sp")
     }
@@ -371,7 +372,7 @@ impl Vm {
                         }
                         Object::Procedure(procedure) => {
                             // self.cl = self.ac
-                            let offset = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
+                            let offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - 1;
                             let offset:usize = usize::try_from(offset).expect("offset can't be usize");
                             let argc:usize = usize::try_from(argc).expect("argc can't be usize");
                             let args = &self.stack[offset .. offset+argc];
@@ -1250,7 +1251,7 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
- /*
+ 
     #[test]
     fn test_test19() {
         let mut vm = Vm::new();        
@@ -1265,6 +1266,6 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::False, 0);
     }
-*/
+
 
 }
