@@ -90,6 +90,7 @@ impl Vm {
                 Op::Halt => (),
                 Op::Car => (),
                 Op::Cdr => (),
+                Op::Cadr => (),
                 
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
@@ -182,7 +183,24 @@ impl Vm {
                             panic!("cdr pair required")
                         }
                     }
-                }                
+                }
+                Op::Cadr => {
+                    match self.ac {
+                        Object::Pair(pair) => { 
+                            match pair.second {
+                                Object::Pair(pair) => {
+                                    self.ac = pair.first;
+                                }
+                                _ => {
+                                    panic!("cadr pair required")
+                                }
+                            }
+                         }
+                        _ => {
+                            panic!("car pair required")
+                        }
+                    }
+                }                                
                 Op::Indirect => match self.ac {
                     Object::Vox(vox) => {
                         self.ac = vox.value;
@@ -1452,5 +1470,22 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+
+    #[test]
+    fn test_test30() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::Cons,
+            Op::Cons,
+            Op::Cadr,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
 
 }
