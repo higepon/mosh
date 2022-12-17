@@ -2096,4 +2096,37 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
     }
 
+    #[test]
+    fn test_test56() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Enter(2),
+            Op::LetFrame(1),
+            Op::ReferLocal(1),
+            Op::Push,
+            Op::Display(1),
+            Op::ReferLocal(1),
+            Op::Push,
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::ReferFree(0),
+            Op::Return(0),
+            Op::Push,
+            Op::Enter(1),
+            Op::Frame(3),
+            Op::ReferLocal(0),
+            Op::Call(0),
+            Op::Leave(1),
+            Op::Leave(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(1), 0);
+    }
+
 }
