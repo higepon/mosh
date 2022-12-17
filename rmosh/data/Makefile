@@ -1,7 +1,7 @@
 TESTS = #test_vm_alloc_many_pairs  # test_vm_run_add_pair
 FEATURES = #--features debug_log_vm
 
-SCHEME_FILES = $(wildcard *.scm)
+SCHEME_FILES = $(shell ls -1v *.scm)
 OP_FILES = $(abspath $(patsubst %.scm,%.op,$(SCHEME_FILES)))
 RUST_OP_FILES = $(abspath $(patsubst %.op,%.rsop,$(OP_FILES)))
 

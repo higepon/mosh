@@ -724,4 +724,26 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
+
+    #[test]
+    fn test_test0() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::True),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+    #[test]
+    fn test_test2() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::True),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+
 }
