@@ -87,8 +87,8 @@ impl Vm {
                 Op::Enter(_) => (),
                 Op::Halt => (),
                 Op::AssignFree(_) => (),
-                Op::AssignLocal(_) =>(),
-                Op::Indirect =>(),
+                Op::AssignLocal(_) => (),
+                Op::Indirect => (),
                 Op::Nop => (),
                 Op::Undef => (),
                 Op::ReferLocal(_) => (),
@@ -278,20 +278,21 @@ impl Vm {
                     }
                 },
                 Op::AssignFree(n) => match self.dc {
-                    Object::Closure(mut closure) => {
-                        match closure.refer_free(n) {
-                            Object::Vox(mut vox) => {
-                                vox.value = self.ac;
-                            }
-                            _ => {
-                                panic!("assign_free: vox not found")
-                            }
+                    Object::Closure(mut closure) => match closure.refer_free(n) {
+                        Object::Vox(mut vox) => {
+                            vox.value = self.ac;
                         }
-                    }
+                        _ => {
+                            panic!("assign_free: vox not found")
+                        }
+                    },
                     _ => {
-                        panic!("assign_free: display closure expected but got {:?}", self.dc);
+                        panic!(
+                            "assign_free: display closure expected but got {:?}",
+                            self.dc
+                        );
                     }
-                },                
+                },
                 Op::Test(skip_size) => {
                     if self.ac.is_false() {
                         pc = pc + skip_size - 1;
@@ -324,7 +325,7 @@ impl Vm {
                 }
                 Op::TailCall(depth, diff) => {
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
-                    let arg_len = depth;    
+                    let arg_len = depth;
                     // todo dedup logic with Op::Call
                     match self.ac {
                         Object::Closure(closure) => {
@@ -351,7 +352,7 @@ impl Vm {
                         _ => {
                             panic!("can't call {:?}", self.ac);
                         }
-                    }                    
+                    }
                 }
                 Op::Call(arg_len) => {
                     match self.ac {
@@ -445,12 +446,11 @@ impl Vm {
     fn shift_args_to_bottom(&mut self, sp: *mut Object, depth: isize, diff: isize) -> *mut Object {
         let mut i = depth - 1;
         while i >= 0 {
-            self.indexSet(sp, i+ diff, self.index(self.sp, i));
+            self.indexSet(sp, i + diff, self.index(self.sp, i));
             i = i - 1;
         }
         unsafe { sp.offset(-diff) }
     }
-
 }
 
 #[cfg(test)]
@@ -1088,15 +1088,19 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(10), 0);
     }
 
-
     #[test]
     fn test_test14() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(11),
             Op::Constant(Object::Number(2)),
             Op::Push,
-            Op::Closure {size: 7, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 7,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Box(0),
             Op::Constant(Object::Number(12)),
             Op::AssignLocal(0),
@@ -1113,16 +1117,26 @@ pub mod tests {
 
     #[test]
     fn test_test15() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(14),
             Op::Constant(Object::Nil),
             Op::Push,
-            Op::Closure {size: 10, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 10,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Box(0),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 4, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 4,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::Constant(Object::Number(101)),
             Op::AssignFree(0),
             Op::Return(0),
@@ -1139,24 +1153,44 @@ pub mod tests {
 
     #[test]
     fn test_test16() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(24),
-            Op::Closure {size: 3, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Return(1),
             Op::Push,
-            Op::Closure {size: 18, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 18,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 6, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 6,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferFree(0),
             Op::TailCall(1, 1),
             Op::Return(1),
             Op::Push,
-            Op::Closure {size: 6, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 6,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(2)),
             Op::Push,
             Op::ReferLocal(0),
@@ -1175,4 +1209,26 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
     }
 
+    #[test]
+    fn test_test17() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(7),
+            Op::Closure {
+                size: 5,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::Constant(Object::Number(3)),
+            Op::Constant(Object::Number(4)),
+            Op::Constant(Object::Number(5)),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(5), 0);
+    }
 }
