@@ -21,7 +21,7 @@
         (match insn*
           [((or 'MAKE_CONTINUATION 'CALL 'BOX 'ASSIGN_LOCAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
-          [((or 'HALT 'CONS 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'PUSH) . more*)
+          [((or 'HALT 'CAR 'CONS 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
           [((or 'TAIL_CALL) m n . more*)
             (loop more* (+ cur-offset 3) (+ rust-offset 1))]
@@ -70,7 +70,7 @@
         [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
-        [((and (or 'HALT 'CONS 'NOP 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
+        [((and (or 'HALT 'CAR 'CONS 'NOP 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
           (format #t "            Op::~a,\n" (insn->string insn))
           (rewrite-insn* more*  (+ idx 1))]
         [() #f]

@@ -11,6 +11,7 @@ pub enum Op {
     AssignLocal(isize),
     Box(isize),
     Call(isize),
+    Car,
     Cons,
     Constant(Object),
     Closure {

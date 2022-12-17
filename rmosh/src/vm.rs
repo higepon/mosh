@@ -88,6 +88,7 @@ impl Vm {
                 Op::Box(_) => (),
                 Op::Enter(_) => (),
                 Op::Halt => (),
+                Op::Car => (),
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
                 Op::Indirect => (),
@@ -164,6 +165,14 @@ impl Vm {
         while pc < len {
             let op = self.ops[pc];
             match op {
+                Op::Car => {
+                    match self.ac {
+                        Object::Pair(pair) => { self.ac = pair.first; }
+                        _ => {
+                            panic!("car pair required")
+                        }
+                    }
+                }
                 Op::Indirect => match self.ac {
                     Object::Vox(vox) => {
                         self.ac = vox.value;
@@ -1403,6 +1412,20 @@ pub mod tests {
                 panic!("not a pair");
             }
         }
+    }
+
+    #[test]
+    fn test_test28() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Cons,
+            Op::Car,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
     }
 
 
