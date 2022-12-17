@@ -37,7 +37,8 @@ impl Vm {
     fn initialize_free_vars(&mut self) {
         let free_vars = vec![
             Object::Procedure(self.gc.alloc(Procedure::new(procs::numberp))),
-            Object::Procedure(self.gc.alloc(Procedure::new(procs::write)))];
+            Object::Procedure(self.gc.alloc(Procedure::new(procs::write))),
+        ];
         let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
@@ -148,9 +149,17 @@ impl Vm {
         println!("-----------------------------------------");
         println!("{:?} executed ac={:?}", op, self.ac);
         println!("-----------------------------------------");
-        let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr())};
+        let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
         for i in 0..self.stack_len() {
-            println!("{:?}{}", self.stack[i], if fp_idx == i.try_into().unwrap() { "  <== fp" } else{ ""});            
+            println!(
+                "{:?}{}",
+                self.stack[i],
+                if fp_idx == i.try_into().unwrap() {
+                    "  <== fp"
+                } else {
+                    ""
+                }
+            );
         }
         println!("-----------------------------------------<== sp")
     }
@@ -180,39 +189,35 @@ impl Vm {
                         }
                     }
                 }
-                Op::Car => {
-                    match self.ac {
-                        Object::Pair(pair) => { self.ac = pair.first; }
-                        _ => {
-                            panic!("car pair required")
-                        }
+                Op::Car => match self.ac {
+                    Object::Pair(pair) => {
+                        self.ac = pair.first;
                     }
-                }
-                Op::Cdr => {
-                    match self.ac {
-                        Object::Pair(pair) => { self.ac = pair.second; }
-                        _ => {
-                            panic!("cdr pair required")
-                        }
+                    _ => {
+                        panic!("car pair required")
                     }
-                }
-                Op::Cadr => {
-                    match self.ac {
-                        Object::Pair(pair) => { 
-                            match pair.second {
-                                Object::Pair(pair) => {
-                                    self.ac = pair.first;
-                                }
-                                _ => {
-                                    panic!("cadr pair required")
-                                }
-                            }
-                         }
-                        _ => {
-                            panic!("car pair required")
-                        }
+                },
+                Op::Cdr => match self.ac {
+                    Object::Pair(pair) => {
+                        self.ac = pair.second;
                     }
-                }                                
+                    _ => {
+                        panic!("cdr pair required")
+                    }
+                },
+                Op::Cadr => match self.ac {
+                    Object::Pair(pair) => match pair.second {
+                        Object::Pair(pair) => {
+                            self.ac = pair.first;
+                        }
+                        _ => {
+                            panic!("cadr pair required")
+                        }
+                    },
+                    _ => {
+                        panic!("car pair required")
+                    }
+                },
                 Op::Indirect => match self.ac {
                     Object::Vox(vox) => {
                         self.ac = vox.value;
@@ -393,9 +398,10 @@ impl Vm {
                         Object::Procedure(procedure) => {
                             // self.cl = self.ac
                             let offset = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
-                            let offset:usize = usize::try_from(offset).expect("offset can't be usize");
-                            let argc:usize = usize::try_from(argc).expect("argc can't be usize");
-                            let args = &self.stack[offset .. offset+argc];
+                            let offset: usize =
+                                usize::try_from(offset).expect("offset can't be usize");
+                            let argc: usize = usize::try_from(argc).expect("argc can't be usize");
+                            let args = &self.stack[offset..offset + argc];
                             self.ac = (procedure.func)(args);
 
                             self.return_n(1, &mut pc);
@@ -422,9 +428,10 @@ impl Vm {
                         Object::Procedure(procedure) => {
                             // self.cl = self.ac
                             let offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - 1;
-                            let offset:usize = usize::try_from(offset).expect("offset can't be usize");
-                            let argc:usize = usize::try_from(argc).expect("argc can't be usize");
-                            let args = &self.stack[offset .. offset+argc];
+                            let offset: usize =
+                                usize::try_from(offset).expect("offset can't be usize");
+                            let argc: usize = usize::try_from(argc).expect("argc can't be usize");
+                            let args = &self.stack[offset..offset + argc];
                             self.ac = (procedure.func)(args);
 
                             self.return_n(1, &mut pc);
@@ -1284,10 +1291,9 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(5), 0);
     }
 
-
     #[test]
     fn test_test18() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(Object::Number(3)),
@@ -1300,10 +1306,9 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
- 
     #[test]
     fn test_test19() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
@@ -1316,10 +1321,9 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::False, 0);
     }
 
-
     #[test]
     fn test_test20() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
@@ -1334,18 +1338,14 @@ pub mod tests {
 
     #[test]
     fn test_test21() {
-        let mut vm = Vm::new();        
-        let ops = vec![
-            Op::Constant(Object::Number(4)),
-            Op::Halt,
-        ];
+        let mut vm = Vm::new();
+        let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
         test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
     }
 
-
     #[test]
     fn test_test22() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(4)),
             Op::Push,
@@ -1358,7 +1358,7 @@ pub mod tests {
 
     #[test]
     fn test_test23() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(4)),
             Op::Push,
@@ -1374,7 +1374,7 @@ pub mod tests {
 
     #[test]
     fn test_test24() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(1)),
             Op::Push,
@@ -1393,7 +1393,7 @@ pub mod tests {
 
     #[test]
     fn test_test25() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(10)),
             Op::Push,
@@ -1406,7 +1406,7 @@ pub mod tests {
 
     #[test]
     fn test_test26() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(10)),
             Op::Push,
@@ -1420,10 +1420,9 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
-    
     #[test]
     fn test_test27_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
             Op::Push,
@@ -1433,20 +1432,17 @@ pub mod tests {
         ];
         let a = Object::Symbol(vm.gc.intern("a".to_owned()));
         let b = Object::Symbol(vm.gc.intern("b".to_owned()));
-        let pair =  vm.gc.alloc(Pair::new(a, b));
+        let pair = vm.gc.alloc(Pair::new(a, b));
 
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
-        assert_eq!(
-            after_size - before_size,
-            SIZE_OF_MIN_VM
-        );
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Pair(pair2) => {
                 assert_eq!(pair.first, pair2.first);
-                assert_eq!(pair.second, pair2.second);                
+                assert_eq!(pair.second, pair2.second);
             }
             _ => {
                 panic!("not a pair");
@@ -1456,7 +1452,7 @@ pub mod tests {
 
     #[test]
     fn test_test28() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(2)),
             Op::Push,
@@ -1470,7 +1466,7 @@ pub mod tests {
 
     #[test]
     fn test_test29() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(2)),
             Op::Push,
@@ -1482,10 +1478,9 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
-
     #[test]
     fn test_test30() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(2)),
             Op::Push,
@@ -1502,7 +1497,7 @@ pub mod tests {
 
     #[test]
     fn test_test31() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(3)),
             Op::Push,
@@ -1515,7 +1510,7 @@ pub mod tests {
 
     #[test]
     fn test_test32() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(3)),
             Op::Push,
@@ -1528,7 +1523,7 @@ pub mod tests {
 
     #[test]
     fn test_test33() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
             Op::Constant(Object::Number(3)),
@@ -1543,7 +1538,7 @@ pub mod tests {
 
     #[test]
     fn test_test34() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1560,7 +1555,7 @@ pub mod tests {
 
     #[test]
     fn test_test35() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1577,7 +1572,7 @@ pub mod tests {
 
     #[test]
     fn test_test36() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1595,7 +1590,7 @@ pub mod tests {
 
     #[test]
     fn test_test37() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
             Op::Constant(Object::Number(3)),
@@ -1610,7 +1605,7 @@ pub mod tests {
 
     #[test]
     fn test_test38() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1630,7 +1625,7 @@ pub mod tests {
 
     #[test]
     fn test_test39() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1653,7 +1648,7 @@ pub mod tests {
 
     #[test]
     fn test_test40() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(3)),
@@ -1679,7 +1674,7 @@ pub mod tests {
 
     #[test]
     fn test_test41() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(5),
             Op::Constant(Object::Number(3)),
@@ -1716,10 +1711,9 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(12), 0);
     }
 
-
     #[test]
     fn test_test42() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(5),
             Op::Constant(Object::Number(3)),
@@ -1752,7 +1746,7 @@ pub mod tests {
 
     #[test]
     fn test_test43() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(6),
             Op::Constant(Object::Number(3)),
@@ -1788,7 +1782,7 @@ pub mod tests {
 
     #[test]
     fn test_test44() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1806,4 +1800,29 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
     }
 
+    #[test]
+    fn test_test45() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::AssignLocal(0),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(5), 0);
+    }
 }
