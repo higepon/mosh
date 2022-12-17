@@ -1268,4 +1268,107 @@ pub mod tests {
     }
 
 
+    #[test]
+    fn test_test20() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+    #[test]
+    fn test_test21() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
+    }
+
+
+    #[test]
+    fn test_test22() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberAdd,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(7), 0);
+    }
+
+    #[test]
+    fn test_test23() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Constant(Object::Number(10)),
+            Op::NumberAdd,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(17), 0);
+    }
+
+    #[test]
+    fn test_test24() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
+    }
+
+    #[test]
+    fn test_test25() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(10)),
+            Op::Push,
+            Op::Constant(Object::Number(-5)),
+            Op::NumberAdd,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(5), 0);
+    }
+
+    #[test]
+    fn test_test26() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(10)),
+            Op::Push,
+            Op::Constant(Object::Number(-5)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Constant(Object::Number(-2)),
+            Op::NumberAdd,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
 }
