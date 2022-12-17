@@ -39,6 +39,7 @@ impl<T> PartialEq for GcRef<T> {
         self.pointer == other.pointer
     }
 }
+
 impl<T> Eq for GcRef<T> {}
 
 impl<T> Hash for GcRef<T> {

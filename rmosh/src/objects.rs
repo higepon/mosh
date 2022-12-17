@@ -93,6 +93,12 @@ impl Display for Pair {
     }
 }
 
+impl PartialEq for Pair {
+    fn eq(&self, other: &Self) -> bool {
+        (self.first == other.first) && (self.second == other.second)
+    }
+}
+
 /// Vox
 #[derive(Debug)]
 pub struct Vox {
