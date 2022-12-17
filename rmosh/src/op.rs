@@ -12,6 +12,7 @@ pub enum Op {
     Box(isize),
     Call(isize),
     Car,
+    Cdr,
     Cons,
     Constant(Object),
     Closure {
