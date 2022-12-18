@@ -473,7 +473,11 @@ impl Vm {
                 if closure.is_optional_arg {
                     let extra_len = argc - closure.argc;
                     if -1 == extra_len {
-                        panic!("not supported");
+                        let sp = self.unshift_args(self.sp, 1);
+                        self.index_set(sp, 0, Object::Nil);
+                        self.sp = sp;
+                        self.fp = unsafe { sp.offset(-closure.argc)};
+
                     } else if extra_len >= 0 {
                         let args = self.stack_to_pair(extra_len + 1);
                         self.index_set(self.sp, extra_len, args);
@@ -540,6 +544,13 @@ impl Vm {
             i = i - 1;
         }
         unsafe { sp.offset(-diff) }
+    }
+
+    fn unshift_args(&mut self, sp: *mut Object, diff: isize) -> *mut Object {
+        for i in 0..diff {
+            self.index_set(unsafe { sp.offset(diff - i) }, 0, self.index(sp, 1));
+        }
+        unsafe { sp.offset(diff) }
     }
 
     fn stack_to_pair(&mut self, n: isize) -> Object {
@@ -3530,5 +3541,33 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(4)", 0);
+    }
+
+    // ((lambda (a b c . d) d) 1 2 3) => ()
+    #[test]
+    fn test_test97() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(11),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Closure {
+                size: 3,
+                arg_len: 4,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(3),
+            Op::Return(4),
+            Op::Call(3),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Nil, 0);
     }
 }
