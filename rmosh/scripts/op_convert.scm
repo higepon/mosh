@@ -93,6 +93,7 @@
     ['undef "Object::Undef"]
     [#t "Object::True"]
     [#f "Object::False"]
+    [() "Object::Nil"]
     [(a . b)
       (format "Object::Pair(vm.gc.alloc(Pair::new(~a, ~a))" (expected->rust a) (expected->rust b))]
     [(? number? n) (format "Object::Number(~a)" n)]
