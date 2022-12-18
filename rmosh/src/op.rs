@@ -42,6 +42,7 @@ pub enum Op {
     NumberEqual,
     NumberGe,
     NumberGt,
+    NumberLe,
     NumberLt,
     Push,
     ReferFree(usize),

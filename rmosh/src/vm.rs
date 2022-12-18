@@ -147,6 +147,7 @@ impl Vm {
                 Op::NumberEqual => (),
                 Op::NumberGe => (),
                 Op::NumberGt => (),
+                Op::NumberLe => (),                
                 Op::NumberLt => (),
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
@@ -257,6 +258,9 @@ impl Vm {
                 Op::NumberGt => {
                     number_op!(>, self);
                 }
+                Op::NumberLe => {
+                    number_op!(<=, self);
+                }                
                 Op::NumberLt => {
                     number_op!(<, self);
                 }
@@ -3933,4 +3937,57 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
+
+    // (< 1 2 3) => #t
+    #[test]
+    fn test_test116() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::BranchNotLt(5),
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberLt,
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+    // (< 1 5 3) => #f
+    #[test]
+    fn test_test117() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(5)),
+            Op::BranchNotLt(5),
+            Op::Constant(Object::Number(5)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberLt,
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+    // (<= 1 2) => #t
+    #[test]
+    fn test_test118() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberLe,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
 }
