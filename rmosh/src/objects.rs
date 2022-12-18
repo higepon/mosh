@@ -1,8 +1,8 @@
-use std::fmt::{self, Display};
-use regex::Regex;
-use crate::gc::{GcHeader, ObjectType};
-
 use crate::gc::GcRef;
+use crate::gc::{GcHeader, ObjectType};
+use crate::procs;
+use regex::Regex;
+use std::fmt::{self, Display};
 
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -53,7 +53,7 @@ impl Display for Object {
                 write!(f, "pair{}", pair)
             }
             Object::Symbol(symbol) => {
-                 write!(f, "{}", unsafe { symbol.pointer.as_ref() }) 
+                write!(f, "{}", unsafe { symbol.pointer.as_ref() })
             }
             Object::True => {
                 write!(f, "#t")
@@ -70,8 +70,8 @@ impl Display for Object {
             Object::Nil => {
                 write!(f, "()")
             }
-            Object::Procedure(_) => {
-                write!(f, "<procedure>")
+            Object::Procedure(proc) => {
+                write!(f, "#<procedure {}>", proc.name)
             }
         }
     }
@@ -155,13 +155,15 @@ impl Display for Symbol {
 pub struct Procedure {
     pub header: GcHeader,
     pub func: fn(&[Object]) -> Object,
+    pub name: String,
 }
 
 impl Procedure {
-    pub fn new(func: fn(&[Object]) -> Object) -> Self {
+    pub fn new(func: fn(&[Object]) -> Object, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
+            name: name,
         }
     }
 }
@@ -252,7 +254,7 @@ pub mod tests {
     #[test]
     fn test_procedure() {
         let mut gc = Gc::new();
-        let p = gc.alloc(Procedure::new(procedure1));
+        let p = gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
         let stack = [Object::Number(1), Object::Number(2)];
         match (p.func)(&stack[0..1]) {
             Object::Number(1) => {}
@@ -285,6 +287,14 @@ pub mod tests {
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();
-        assert!(re.is_match(&closure.to_string()));        
-    }    
+        assert!(re.is_match(&closure.to_string()));
+    }
+
+    #[test]
+    fn test_procedure_to_string() {
+        let mut gc = Gc::new();
+        let proc = gc.alloc(Procedure::new(procs::numberp, "number?".to_owned()));
+        let proc = Object::Procedure(proc);
+        assert_eq!("#<procedure number?>", proc.to_string());
+    }
 }

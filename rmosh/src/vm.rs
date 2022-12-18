@@ -36,8 +36,8 @@ impl Vm {
 
     fn initialize_free_vars(&mut self) {
         let free_vars = vec![
-            Object::Procedure(self.gc.alloc(Procedure::new(procs::numberp))),
-            Object::Procedure(self.gc.alloc(Procedure::new(procs::write))),
+            Object::Procedure(self.gc.alloc(Procedure::new(procs::numberp, "number?".to_owned()))),
+            Object::Procedure(self.gc.alloc(Procedure::new(procs::write, "write".to_owned()))),
         ];
         let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
