@@ -36,8 +36,14 @@ impl Vm {
 
     fn initialize_free_vars(&mut self) {
         let free_vars = vec![
-            Object::Procedure(self.gc.alloc(Procedure::new(procs::numberp, "number?".to_owned()))),
-            Object::Procedure(self.gc.alloc(Procedure::new(procs::write, "write".to_owned()))),
+            Object::Procedure(
+                self.gc
+                    .alloc(Procedure::new(procs::numberp, "number?".to_owned())),
+            ),
+            Object::Procedure(
+                self.gc
+                    .alloc(Procedure::new(procs::write, "write".to_owned())),
+            ),
         ];
         let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
@@ -419,7 +425,7 @@ impl Vm {
                 Op::TailCall(depth, diff) => {
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let argc = depth;
-                    self.call(&mut pc, argc);                    
+                    self.call(&mut pc, argc);
                 }
                 Op::Call(argc) => {
                     self.call(&mut pc, argc);
@@ -472,7 +478,7 @@ impl Vm {
                         let args = self.stack_to_pair(extra_len + 1);
                         self.index_set(self.sp, extra_len, args);
                         let sp = unsafe { self.sp.offset(-extra_len) };
-                        self.fp = unsafe {sp.offset(-closure.argc)};
+                        self.fp = unsafe { sp.offset(-closure.argc) };
                         self.sp = sp;
                     } else {
                         panic!("wrong arguments");
@@ -486,8 +492,7 @@ impl Vm {
             Object::Procedure(procedure) => {
                 // self.cl = self.ac
                 let offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - 1;
-                let offset: usize =
-                    usize::try_from(offset).expect("offset can't be usize");
+                let offset: usize = usize::try_from(offset).expect("offset can't be usize");
                 let argc: usize = usize::try_from(argc).expect("argc can't be usize");
                 let args = &self.stack[offset..offset + argc];
                 self.ac = (procedure.func)(args);
@@ -568,9 +573,16 @@ pub mod tests {
         assert_eq!(ret, expected);
     }
 
-    fn test_ops_with_size_as_str(vm: &mut Vm, ops: Vec<Op>, expected: &str, expected_heap_diff: usize) {
+    fn test_ops_with_size_as_str(
+        vm: &mut Vm,
+        ops: Vec<Op>,
+        expected: &str,
+        expected_heap_diff: usize,
+    ) {
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
+        // Remove reference to ret.
+        vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(
@@ -3337,16 +3349,26 @@ pub mod tests {
     // ((lambda () (define b (lambda () 3)) (b))) => 3
     #[test]
     fn test_test91() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(17),
-            Op::Closure {size: 15, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 15,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::LetFrame(0),
             Op::Undef,
             Op::Push,
             Op::Box(0),
             Op::Enter(1),
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(3)),
             Op::Return(0),
             Op::AssignLocal(0),
@@ -3366,8 +3388,8 @@ pub mod tests {
 
     // ((lambda a a) 1 2 3) => (1 2 3)
     #[test]
-    fn test_test92_modified() {
-        let mut vm = Vm::new();        
+    fn test_test92() {
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(11),
             Op::Constant(Object::Number(1)),
@@ -3376,7 +3398,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(3)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 1, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 1,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Return(1),
             Op::Call(3),
@@ -3384,7 +3411,34 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", SIZE_OF_PAIR * 3);
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
     }
 
+    // ((lambda (a . b) b) 1 2 3) => (2 3)
+    #[test]
+    fn test_test93() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(11),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Closure {
+                size: 3,
+                arg_len: 2,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(1),
+            Op::Return(2),
+            Op::Call(3),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(2 3)", 0);
+    }
 }
