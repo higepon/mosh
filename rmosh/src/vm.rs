@@ -30,6 +30,22 @@ macro_rules! branch_number_op {
     };
 }
 
+#[macro_export]
+macro_rules! number_op {
+    ($op:tt, $self:ident) => {
+        {
+            match ($self.pop(), $self.ac) {
+                (Object::Number(l), Object::Number(r)) => {
+                    $self.ac = if l $op r { Object::True } else { Object::False }
+                }
+                _ => {
+                    panic!("= requres number")
+                }
+            }
+        }
+    };
+}
+
 pub struct Vm {
     pub gc: Box<Gc>,
     ac: Object, // accumulator register.
@@ -127,6 +143,7 @@ impl Vm {
                 Op::Cadr => (),
                 Op::Not => (),
                 Op::NumberEqual => (),
+                Op::NumberGt => (),                
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
                 Op::Indirect => (),
@@ -222,17 +239,11 @@ impl Vm {
                     branch_number_op!(>=, self, pc, skip_size);                    
                 }
                 Op::NumberEqual => {
-                    let lhs = self.pop();
-                    let rhs = self.ac;
-                    match (lhs, rhs) {
-                        (Object::Number(l), Object::Number(r)) => {
-                            self.ac = if l == r { Object::True } else { Object::False }
-                        }
-                        _ => {
-                            panic!("= requres number")
-                        }
-                    }
+                    number_op!(==, self);
                 }
+                Op::NumberGt => {
+                    number_op!(>, self);
+                }                
                 Op::Car => match self.ac {
                     Object::Pair(pair) => {
                         self.ac = pair.first;
@@ -3783,4 +3794,19 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::False, 0);
     }
+
+    // (> 4 3) => #t
+    #[test]
+    fn test_test109() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberGt,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
 }
