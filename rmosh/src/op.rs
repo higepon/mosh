@@ -13,6 +13,7 @@ pub enum Op {
     Box(isize),
     BranchNotGe(usize),
     BranchNotGt(usize),
+    BranchNotLe(usize),    
     BranchNotLt(usize),
     BranchNotNumberEqual(usize),
     Call(isize),
