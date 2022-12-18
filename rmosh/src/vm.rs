@@ -307,7 +307,6 @@ impl Vm {
                 }
                 Op::DefineGlobal(symbol) => {
                     self.globals.insert(symbol, self.ac);
-                    self.ac = Object::Undef;
                 }
                 Op::ReferGlobal(symbol) => match self.globals.get(&symbol) {
                     Some(&value) => {
@@ -802,17 +801,6 @@ pub mod tests {
             Op::Halt,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
-    }
-
-    #[test]
-    fn test_define0() {
-        let mut vm = Vm::new();
-        let ops = vec![
-            Op::Constant(Object::Number(3)),
-            Op::DefineGlobal(vm.gc.intern("a".to_owned())),
-            Op::Halt,
-        ];
-        test_ops_with_size(&mut vm, ops, Object::Undef, 0);
     }
 
     #[test]
@@ -2620,4 +2608,18 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(20), 0);
     }
+
+
+    // (define a 3) => 3
+    #[test]
+    fn test_test68() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::DefineGlobal(vm.gc.intern("a".to_owned())),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
 }
