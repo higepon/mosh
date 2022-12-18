@@ -2658,4 +2658,24 @@ pub mod tests {
     }
 
 
+    // (= 3 4 5) => #f
+    #[test]
+    fn test_test72() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(4)),
+            Op::BranchNotNumberEqual(5),
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(5)),
+            Op::NumberEqual,
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+
 }
