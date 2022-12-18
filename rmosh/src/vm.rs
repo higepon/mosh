@@ -118,6 +118,7 @@ impl Vm {
             match value {
                 Op::BranchNotGe(_) => (),
                 Op::BranchNotGt(_) => (),
+                Op::BranchNotLt(_) => (),                
                 Op::BranchNotNumberEqual(_) => (),
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
@@ -244,6 +245,9 @@ impl Vm {
                 Op::BranchNotGt(skip_size) => {
                     branch_number_op!(>, self, pc, skip_size);
                 }
+                Op::BranchNotLt(skip_size) => {
+                    branch_number_op!(<, self, pc, skip_size);
+                }                
                 Op::NumberEqual => {
                     number_op!(==, self);
                 }
