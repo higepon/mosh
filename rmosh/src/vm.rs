@@ -330,7 +330,7 @@ impl Vm {
                 Op::LetFrame(_) => {
                     // todo: expand stack here.
                     self.push(self.dc);
-                    self.push(Object::VMStackPointer(self.fp));
+                    self.push(Object::StackPointer(self.fp));
                 }
                 Op::ReferLocal(n) => {
                     self.ac = self.refer_local(n);
@@ -339,7 +339,7 @@ impl Vm {
                     let sp = self.sp.offset(-n);
 
                     match self.index(sp, 0) {
-                        Object::VMStackPointer(fp) => {
+                        Object::StackPointer(fp) => {
                             self.fp = fp;
                         }
                         x => {
@@ -501,7 +501,7 @@ impl Vm {
                     self.push(Object::Number(next_pc));
                     self.push(self.dc);
                     self.push(self.dc); // todo this should be cl.
-                    self.push(Object::VMStackPointer(self.fp));
+                    self.push(Object::StackPointer(self.fp));
                 }
                 Op::Halt => return self.ac,
                 Op::Undef => self.ac = Object::Unspecified,
@@ -520,7 +520,7 @@ impl Vm {
     fn return_n(&mut self, n: isize, pc: &mut usize) {
         let sp = unsafe { self.sp.offset(-n) };
         match self.index(sp, 0) {
-            Object::VMStackPointer(fp) => {
+            Object::StackPointer(fp) => {
                 self.fp = fp;
             }
             _ => {

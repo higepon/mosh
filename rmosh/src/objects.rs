@@ -16,7 +16,7 @@ pub enum Object {
     Symbol(GcRef<Symbol>),
     True,
     Unspecified,
-    VMStackPointer(*mut Object),
+    StackPointer(*mut Object),
     Vox(GcRef<Vox>),
 }
 
@@ -61,8 +61,8 @@ impl Display for Object {
             Object::False => {
                 write!(f, "#f")
             }
-            Object::VMStackPointer(_) => {
-                write!(f, "<stack pointer>")
+            Object::StackPointer(v) => {
+                write!(f, "#<stack pointer {:?}>", v)
             }
             Object::Unspecified => {
                 write!(f, "#<unspecified>")
@@ -297,4 +297,13 @@ pub mod tests {
         let proc = Object::Procedure(proc);
         assert_eq!("#<procedure number?>", proc.to_string());
     }
+
+    #[test]
+    fn test_stack_pointer_to_string() {
+        let obj = Object::Number(10);
+        let pointer :*mut Object = &obj as *const Object as *mut Object;
+        let stack_pointer = Object::StackPointer(pointer);
+        let re = Regex::new(r"^#<stack pointer\s[^>]+>$").unwrap();
+        assert!(re.is_match(&stack_pointer.to_string()));
+    }    
 }

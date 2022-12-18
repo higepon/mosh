@@ -188,7 +188,7 @@ impl Gc {
     pub fn mark_object(&mut self, obj: Object) {
         match obj {
             Object::Number(_) => {}
-            Object::VMStackPointer(_) => {}
+            Object::StackPointer(_) => {}
             Object::True => {}            
             Object::False => {}
             Object::Unspecified => {}
