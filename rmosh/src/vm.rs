@@ -2895,4 +2895,27 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+    // ((lambda () ((lambda (x) x) 3))) => 3
+    #[test]
+    fn test_test82() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(10),
+            Op::Closure {size: 8, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Closure {size: 3, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::TailCall(1, 0),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
 }
