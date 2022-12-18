@@ -1,5 +1,5 @@
 use std::fmt::{self, Display};
-
+use regex::Regex;
 use crate::gc::{GcHeader, ObjectType};
 
 use crate::gc::GcRef;
@@ -7,17 +7,17 @@ use crate::gc::GcRef;
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Object {
-    Vox(GcRef<Vox>),
     Closure(GcRef<Closure>),
-    True,
     False,
+    Nil,
     Number(isize),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
     Symbol(GcRef<Symbol>),
-    Nil,
+    True,
     Unspecified,
     VMStackPointer(*mut Object),
+    Vox(GcRef<Vox>),
 }
 
 impl Object {
@@ -47,7 +47,7 @@ impl Display for Object {
                 write!(f, "{}", obj)
             }
             Object::Closure(closure) => {
-                write!(f, "closure{:?}", closure)
+                write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
             }
             Object::Pair(pair) => {
                 write!(f, "pair{}", pair)
@@ -277,4 +277,14 @@ pub mod tests {
         let symbol = Object::Symbol(symbol);
         assert_eq!("hello", symbol.to_string());
     }
+
+    #[test]
+    fn test_closure_to_string() {
+        let mut gc = Gc::new();
+        let closure = gc.alloc(Closure::new(0, 0, false, vec![]));
+        let closure = Object::Closure(closure);
+
+        let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();
+        assert!(re.is_match(&closure.to_string()));        
+    }    
 }

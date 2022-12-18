@@ -14,3 +14,4 @@ debug_log_gc = []
 bumpalo = { version = "3.11.1" }
 mimalloc = { version = "0.1.27", default-features = false }
 enum-display-derive = "0.1.1"
+regex = "1"
