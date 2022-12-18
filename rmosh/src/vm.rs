@@ -3878,4 +3878,39 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
+
+    // (>= 4 3 3) => #t
+    #[test]
+    fn test_test113() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::BranchNotGe(5),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberGe,
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+    // (>= 4 3) => #t
+    #[test]
+    fn test_test114() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberGe,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+
 }
