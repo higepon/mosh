@@ -457,7 +457,18 @@ impl Vm {
                             // self.cl = self.ac;
                             pc = closure.pc;
                             if closure.is_optional_arg {
-                                panic!("not supported yet");
+                                let extra_len = argc - closure.argc;
+                                if -1 == extra_len {
+                                    panic!("not supported");
+                                } else if extra_len >= 0 {
+                                    let args = self.stack_to_pair(extra_len + 1);
+                                    self.index_set(self.sp, extra_len, args);
+                                    let sp = unsafe { self.sp.offset(-extra_len) };
+                                    self.fp = unsafe {sp.offset(-closure.argc)};
+                                    self.sp = sp;
+                                } else {
+                                    panic!("wrong arguments");
+                                }
                             } else if argc == closure.argc {
                                 self.fp = unsafe { self.sp.offset(-argc) };
                             } else {
@@ -549,6 +560,14 @@ impl Vm {
         }
         unsafe { sp.offset(-diff) }
     }
+
+    fn stack_to_pair(&mut self, n: isize) -> Object {
+        let mut args = Object::Nil;
+        for i in 0..n {
+            args = self.gc.cons(self.index(self.sp, i), args);
+        }
+        args
+    }
 }
 
 #[cfg(test)]
@@ -571,6 +590,18 @@ pub mod tests {
             SIZE_OF_MIN_VM + expected_heap_diff
         );
         assert_eq!(ret, expected);
+    }
+
+    fn test_ops_with_size_as_str(vm: &mut Vm, ops: Vec<Op>, expected: &str, expected_heap_diff: usize) {
+        let before_size = vm.gc.bytes_allocated();
+        let ret = vm.run(ops);
+        vm.mark_and_sweep();
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(
+            after_size - before_size,
+            SIZE_OF_MIN_VM + expected_heap_diff
+        );
+        assert_eq!(ret.to_string(), expected);
     }
 
     // Custom hand written tests.
@@ -3355,6 +3386,29 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    // ((lambda a a) 1 2 3) => (1 2 3)
+    #[test]
+    fn test_test92_modified() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(11),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Closure {size: 3, arg_len: 1, is_optional_arg: true, num_free_vars: 0},
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::Call(3),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", SIZE_OF_PAIR * 3);
     }
 
 }

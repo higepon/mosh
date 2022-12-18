@@ -124,6 +124,11 @@ impl Gc {
         }
     }
 
+    pub fn cons(&mut self, first: Object, second: Object) -> Object {
+        let pair = self.alloc(Pair::new(first, second));
+        Object::Pair(pair)
+    }
+
     #[cfg(not(feature = "test_gc_size"))]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {

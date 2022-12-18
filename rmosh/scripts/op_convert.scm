@@ -107,6 +107,20 @@
          [sexp* (file->sexp* op-file)])     
     (match expr*
       [(expr expected size)
+        (cond
+          [(pair? expected)
+        (format #t "
+    // ~a => ~a
+    #[test]
+    fn test_~a() {
+        let mut vm = Vm::new();        
+        let ops = vec![\n" expr expected test-name)        
+        (let ([insn* (vector->list (car sexp*))])
+          (rewrite-insn* insn*)
+          (format #t "        ];
+        test_ops_with_size_as_str(&mut vm, ops, \"~a\", ~a);
+    }\n" expected size))]
+          [else
         (format #t "
     // ~a => ~a
     #[test]
@@ -118,7 +132,7 @@
           (rewrite-insn* insn*)
           (format #t "        ];
         test_ops_with_size(&mut vm, ops, ~a, ~a);
-    }\n" expected size))]
+    }\n" expected size))])]
       [else (write sexp*)])))
 
 (main (command-line))
