@@ -74,7 +74,7 @@ impl Vm {
         for &value in &self.ops {
             match value {
                 Op::BranchNotGe(_) => (),
-                Op::BranchNotNumberEqual(_) => (),                
+                Op::BranchNotNumberEqual(_) => (),
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
                     self.gc.mark_object(v);
@@ -141,7 +141,7 @@ impl Vm {
     fn index_set(&mut self, sp: *mut Object, n: isize, obj: Object) {
         unsafe { *sp.offset(-n - 1) = obj }
     }
-            
+
     fn stack_len(&self) -> usize {
         unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
     }
@@ -192,7 +192,7 @@ impl Vm {
                         _ => {
                             panic!("number expected")
                         }
-                    }                    
+                    }
                 }
                 Op::BranchNotGe(skip_size) => {
                     match (self.pop(), self.ac) {
@@ -2338,11 +2338,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(100), 0);
     }
 
-
     // (letrec ((a 1) (b (lambda () a))) (b)) => 1
     #[test]
     fn test_test61() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(0),
             Op::Undef,
@@ -2356,7 +2355,12 @@ pub mod tests {
             Op::AssignLocal(0),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 4, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 4,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Indirect,
             Op::Return(0),
@@ -2376,7 +2380,7 @@ pub mod tests {
     // (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0)) => 10
     #[test]
     fn test_test62() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
             Op::Undef,
@@ -2385,7 +2389,12 @@ pub mod tests {
             Op::Enter(1),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 16,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::Constant(Object::Number(10)),
@@ -2421,7 +2430,7 @@ pub mod tests {
     // (let ((a '())) (let ((G68 (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (set! a G68) (a 0))) => 1000
     #[test]
     fn test_test63() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Nil),
@@ -2436,7 +2445,12 @@ pub mod tests {
             Op::Display(2),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 16,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::Constant(Object::Number(1000)),
@@ -2473,11 +2487,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(1000), 0);
     }
 
-
     // (letrec ((a (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (a 0)) => 1000
     #[test]
     fn test_test64() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
             Op::Undef,
@@ -2486,7 +2499,12 @@ pub mod tests {
             Op::Enter(1),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 16,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::Constant(Object::Number(1000)),
@@ -2519,16 +2537,20 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(1000), 0);
     }
 
-
     // ((lambda (a) (set! a 1000) a) '()) => 1000
     #[test]
     fn test_test65() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(11),
             Op::Constant(Object::Nil),
             Op::Push,
-            Op::Closure {size: 7, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 7,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Box(0),
             Op::Constant(Object::Number(1000)),
             Op::AssignLocal(0),
@@ -2543,20 +2565,29 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(1000), 0);
     }
 
-
     // ((lambda (a) (set! a (lambda (i) (if (= i 20) i (a (+ i 1))))) (a 0)) '()) => 20
     #[test]
     fn test_test66() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(31),
             Op::Constant(Object::Nil),
             Op::Push,
-            Op::Closure {size: 27, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 27,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Box(0),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 16,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::Constant(Object::Number(20)),
@@ -2589,5 +2620,4 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(20), 0);
     }
-
 }
