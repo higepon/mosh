@@ -829,6 +829,8 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+
+
     #[test]
     fn test_nested_let1() {
         let mut vm = Vm::new();
@@ -2621,5 +2623,19 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
+    // (= 3 4) => #f
+    #[test]
+    fn test_test70() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(4)),
+            Op::NumberEqual,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
 
 }
