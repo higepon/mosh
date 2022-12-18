@@ -50,7 +50,7 @@ impl Display for Object {
                 write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
             }
             Object::Pair(pair) => {
-                write!(f, "pair{}", pair)
+                write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
             Object::Symbol(symbol) => {
                 write!(f, "{}", unsafe { symbol.pointer.as_ref() })
@@ -97,7 +97,7 @@ impl Pair {
 
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({} {})", self.first, self.second)
+        write!(f, "({} . {})", self.first, self.second)
     }
 }
 
@@ -320,5 +320,14 @@ pub mod tests {
         let vox = gc.alloc(Vox::new(symbol));
         let vox = Object::Vox(vox);
         assert_eq!("#<vox my-symbol>", vox.to_string());
+    }
+
+
+    #[test]    
+    fn test_simple_pair_to_string() {
+        let mut gc = Gc::new();
+        let pair = gc.alloc(Pair::new(Object::Number(1), Object::Number(2)));
+        let pair = Object::Pair(pair);
+        assert_eq!("(1 . 2)", pair.to_string());
     }
 }
