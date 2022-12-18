@@ -269,6 +269,7 @@ pub mod tests {
         assert_eq!("101", Object::Number(101).to_string());
         assert_eq!("#t", Object::True.to_string());
         assert_eq!("#f", Object::False.to_string());
+        assert_eq!("()", Object::Nil.to_string());        
         assert_eq!("#<unspecified>", Object::Unspecified.to_string());
     }
 
