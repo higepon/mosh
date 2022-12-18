@@ -419,76 +419,10 @@ impl Vm {
                 Op::TailCall(depth, diff) => {
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let argc = depth;
-                    // todo dedup logic with Op::Call
-                    match self.ac {
-                        Object::Closure(closure) => {
-                            self.dc = self.ac;
-                            // self.cl = self.ac;
-                            pc = closure.pc;
-                            if closure.is_optional_arg {
-                                panic!("not supported yet");
-                            } else if argc == closure.argc {
-                                self.fp = unsafe { self.sp.offset(-argc) };
-                            } else {
-                                panic!("wrong arguments");
-                            }
-                        }
-                        Object::Procedure(procedure) => {
-                            // self.cl = self.ac
-                            let offset = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
-                            let offset: usize =
-                                usize::try_from(offset).expect("offset can't be usize");
-                            let argc: usize = usize::try_from(argc).expect("argc can't be usize");
-                            let args = &self.stack[offset..offset + argc];
-                            self.ac = (procedure.func)(args);
-
-                            self.return_n(1, &mut pc);
-                        }
-                        _ => {
-                            panic!("can't call {:?}", self.ac);
-                        }
-                    }
+                    self.call(&mut pc, argc);                    
                 }
                 Op::Call(argc) => {
-                    match self.ac {
-                        Object::Closure(closure) => {
-                            self.dc = self.ac;
-                            // self.cl = self.ac;
-                            pc = closure.pc;
-                            if closure.is_optional_arg {
-                                let extra_len = argc - closure.argc;
-                                if -1 == extra_len {
-                                    panic!("not supported");
-                                } else if extra_len >= 0 {
-                                    let args = self.stack_to_pair(extra_len + 1);
-                                    self.index_set(self.sp, extra_len, args);
-                                    let sp = unsafe { self.sp.offset(-extra_len) };
-                                    self.fp = unsafe {sp.offset(-closure.argc)};
-                                    self.sp = sp;
-                                } else {
-                                    panic!("wrong arguments");
-                                }
-                            } else if argc == closure.argc {
-                                self.fp = unsafe { self.sp.offset(-argc) };
-                            } else {
-                                panic!("wrong arguments");
-                            }
-                        }
-                        Object::Procedure(procedure) => {
-                            // self.cl = self.ac
-                            let offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - 1;
-                            let offset: usize =
-                                usize::try_from(offset).expect("offset can't be usize");
-                            let argc: usize = usize::try_from(argc).expect("argc can't be usize");
-                            let args = &self.stack[offset..offset + argc];
-                            self.ac = (procedure.func)(args);
-
-                            self.return_n(1, &mut pc);
-                        }
-                        _ => {
-                            panic!("can't call {:?}", self.ac);
-                        }
-                    }
+                    self.call(&mut pc, argc);
                 }
                 Op::Return(n) => {
                     self.return_n(n, &mut pc);
@@ -521,6 +455,49 @@ impl Vm {
             pc += 1;
         }
         self.ac
+    }
+
+    #[inline(always)]
+    fn call(&mut self, pc: &mut usize, argc: isize) {
+        match self.ac {
+            Object::Closure(closure) => {
+                self.dc = self.ac;
+                // self.cl = self.ac;
+                *pc = closure.pc;
+                if closure.is_optional_arg {
+                    let extra_len = argc - closure.argc;
+                    if -1 == extra_len {
+                        panic!("not supported");
+                    } else if extra_len >= 0 {
+                        let args = self.stack_to_pair(extra_len + 1);
+                        self.index_set(self.sp, extra_len, args);
+                        let sp = unsafe { self.sp.offset(-extra_len) };
+                        self.fp = unsafe {sp.offset(-closure.argc)};
+                        self.sp = sp;
+                    } else {
+                        panic!("wrong arguments");
+                    }
+                } else if argc == closure.argc {
+                    self.fp = unsafe { self.sp.offset(-argc) };
+                } else {
+                    panic!("wrong arguments");
+                }
+            }
+            Object::Procedure(procedure) => {
+                // self.cl = self.ac
+                let offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - 1;
+                let offset: usize =
+                    usize::try_from(offset).expect("offset can't be usize");
+                let argc: usize = usize::try_from(argc).expect("argc can't be usize");
+                let args = &self.stack[offset..offset + argc];
+                self.ac = (procedure.func)(args);
+
+                self.return_n(1, pc);
+            }
+            _ => {
+                panic!("can't call {:?}", self.ac);
+            }
+        }
     }
 
     fn refer_local(&mut self, n: isize) -> Object {
