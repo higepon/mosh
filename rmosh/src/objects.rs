@@ -313,6 +313,12 @@ pub mod tests {
         let vox = gc.alloc(Vox::new(Object::Number(101)));
         let vox = Object::Vox(vox);
         assert_eq!("#<vox 101>", vox.to_string());
+
+        let symbol = gc.alloc(Symbol::new("my-symbol".to_owned()));
+        let symbol = Object::Symbol(symbol);        
+        let vox = gc.alloc(Vox::new(symbol));
+        let vox = Object::Vox(vox);
+        assert_eq!("#<vox my-symbol>", vox.to_string());        
     }    
 
 
