@@ -3833,5 +3833,29 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
+    // (> 4 3 1 2) => #f
+    #[test]
+    fn test_test111() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::BranchNotGt(9),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::BranchNotGt(5),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberGt,
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
 
 }
