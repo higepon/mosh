@@ -27,6 +27,14 @@ impl Object {
             _ => false,
         }
     }
+
+    pub fn make_bool(pred: bool) -> Self {
+        if pred {
+            Object::True
+        } else {
+            Object::False
+        }
+    }
 }
 
 impl Display for Object {
@@ -163,7 +171,6 @@ impl fmt::Debug for Procedure {
         f.write_str("<procedure>")
     }
 }
-
 
 impl Display for Procedure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

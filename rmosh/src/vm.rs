@@ -73,6 +73,7 @@ impl Vm {
 
         for &value in &self.ops {
             match value {
+                Op::BranchNotGe(_) => (),
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
                     self.gc.mark_object(v);
@@ -177,6 +178,23 @@ impl Vm {
         while pc < len {
             let op = self.ops[pc];
             match op {
+                Op::BranchNotGe(skip_size) => {
+                    // never tested :)
+                    assert!(false);
+                    match (self.pop(), self.ac) {
+                        (Object::Number(lhs), Object::Number(rhs)) => {
+                            self.ac = Object::make_bool(lhs >= rhs);
+                            if self.ac.is_false() {
+                                pc = pc - skip_size - 1;
+                            } else {
+                                pc = pc + 1;
+                            }
+                        }
+                        _ => {
+                            panic!("number expected")
+                        }
+                    }
+                }
                 Op::NumberEqual => {
                     let lhs = self.pop();
                     let rhs = self.ac;
@@ -1828,7 +1846,7 @@ pub mod tests {
 
     #[test]
     fn test_test46() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1855,7 +1873,7 @@ pub mod tests {
 
     #[test]
     fn test_test47() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(2)),
@@ -1872,7 +1890,7 @@ pub mod tests {
 
     #[test]
     fn test_test48() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1884,7 +1902,12 @@ pub mod tests {
             Op::Display(1),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Return(0),
             Op::Push,
@@ -1901,10 +1924,9 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
-
     #[test]
     fn test_test49() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(3)),
@@ -1916,7 +1938,12 @@ pub mod tests {
             Op::Display(1),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Return(0),
             Op::Push,
@@ -1935,7 +1962,7 @@ pub mod tests {
 
     #[test]
     fn test_test50() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(0)),
@@ -1954,7 +1981,7 @@ pub mod tests {
 
     #[test]
     fn test_test51() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(5),
             Op::Constant(Object::Number(1)),
@@ -1995,7 +2022,7 @@ pub mod tests {
 
     #[test]
     fn test_test52() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
             Op::Constant(Object::Number(3)),
@@ -2010,7 +2037,7 @@ pub mod tests {
 
     #[test]
     fn test_test53() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(3)),
@@ -2030,7 +2057,7 @@ pub mod tests {
 
     #[test]
     fn test_test54() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(3)),
@@ -2053,7 +2080,7 @@ pub mod tests {
 
     #[test]
     fn test_test55() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(3)),
@@ -2075,7 +2102,12 @@ pub mod tests {
             Op::Display(2),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Return(0),
             Op::Push,
@@ -2098,7 +2130,7 @@ pub mod tests {
 
     #[test]
     fn test_test56() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(0)),
@@ -2112,7 +2144,12 @@ pub mod tests {
             Op::Display(1),
             Op::ReferLocal(1),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Return(0),
             Op::Push,
@@ -2131,7 +2168,7 @@ pub mod tests {
 
     #[test]
     fn test_test57() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(0)),
@@ -2142,7 +2179,12 @@ pub mod tests {
             Op::Frame(7),
             Op::ReferLocal(1),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Return(0),
             Op::Call(0),
@@ -2156,7 +2198,7 @@ pub mod tests {
 
     #[test]
     fn test_test58() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(0)),
@@ -2171,7 +2213,12 @@ pub mod tests {
             Op::Display(1),
             Op::ReferLocal(1),
             Op::Push,
-            Op::Closure {size: 6, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 6,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::Constant(Object::Number(3)),
             Op::AssignFree(0),
             Op::ReferFree(0),
@@ -2193,7 +2240,7 @@ pub mod tests {
 
     #[test]
     fn test_test59() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(0)),
@@ -2208,7 +2255,12 @@ pub mod tests {
             Op::Display(1),
             Op::ReferLocal(1),
             Op::Push,
-            Op::Closure {size: 6, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 6,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::Constant(Object::Number(3)),
             Op::AssignFree(0),
             Op::ReferFree(0),
@@ -2230,7 +2282,7 @@ pub mod tests {
 
     #[test]
     fn test_test60() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(100)),
@@ -2246,7 +2298,12 @@ pub mod tests {
             Op::Display(1),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Return(0),
             Op::Push,
@@ -2265,6 +2322,41 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(100), 0);
+    }
+
+
+    // (letrec ((a 1) (b (lambda () a))) (b)) => 1
+    #[test]
+    fn test_test61() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(0),
+            Op::Undef,
+            Op::Push,
+            Op::Undef,
+            Op::Push,
+            Op::Box(1),
+            Op::Box(0),
+            Op::Enter(2),
+            Op::Constant(Object::Number(1)),
+            Op::AssignLocal(0),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Closure {size: 4, arg_len: 0, is_optional_arg: false, num_free_vars: 1},
+            Op::ReferFree(0),
+            Op::Indirect,
+            Op::Return(0),
+            Op::AssignLocal(1),
+            Op::Frame(4),
+            Op::ReferLocal(1),
+            Op::Indirect,
+            Op::Call(0),
+            Op::Leave(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(1), 0);
     }
 
 }

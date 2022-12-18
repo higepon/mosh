@@ -10,6 +10,7 @@ pub enum Op {
     AssignFree(usize),
     AssignLocal(isize),
     Box(isize),
+    BranchNotGe(usize),
     Call(isize),
     Car,
     Cdr,

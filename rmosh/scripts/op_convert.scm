@@ -19,7 +19,7 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'MAKE_CONTINUATION 'CALL 'BOX 'ASSIGN_LOCAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+          [((or 'MAKE_CONTINUATION 'CALL 'BRANCH_NOT_GE 'BOX 'ASSIGN_LOCAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'HALT 'CAR 'CDR 'CADR 'CONS 'NUMBER_EQUAL 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
@@ -39,7 +39,7 @@
           (format #t "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
              (adjust-offset insn* idx size) arg-len (if optional? "true" "false") num-free-vars)
            (rewrite-insn* more* (+ idx 7))]
-        [((and (or 'FRAME 'TEST 'LOCAL_JMP) insn) offset . more*)
+        [((and (or 'FRAME 'TEST 'LOCAL_JMP 'BRANCH_NOT_GE) insn) offset . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
           (rewrite-insn* more* (+ idx 2))] 
         [((and (or 'CONSTANT) insn) #f . more*)
@@ -70,7 +70,7 @@
         [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
-        [((and (or 'HALT 'CAR 'CDR 'CADR 'CONS 'NUMBER_EQUAL 'NOP 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
+        [((and (or 'HALT 'CAR 'CDR 'CADR 'CONS 'NUMBER_EQUAL 'BRANCH_NOT_GE 'NOP 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
           (format #t "            Op::~a,\n" (insn->string insn))
           (rewrite-insn* more*  (+ idx 1))]
         [() #f]
@@ -103,14 +103,15 @@
          [scm-file (regexp-replace-all #/\.op$/ op-file ".scm")]
          [test-name ((rxmatch #/([^\/]+)\.op$/ op-file) 1)]
          [expr* (file->sexp* scm-file)]
-         [sexp* (file->sexp* op-file)])
-  (format #t "
+         [sexp* (file->sexp* op-file)])     
+    (match expr*
+      [(expr expected size)
+        (format #t "
+    // ~a => ~a
     #[test]
     fn test_~a() {
         let mut vm = Vm::new();        
-        let ops = vec![\n" test-name)         
-    (match expr*
-      [(expr expected size)
+        let ops = vec![\n" expr expected test-name)        
         (let ([insn* (vector->list (car sexp*))]
               [expected (expected->rust expected)])
           (rewrite-insn* insn*)
