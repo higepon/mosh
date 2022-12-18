@@ -117,7 +117,7 @@ impl Vm {
         for &value in &self.ops {
             match value {
                 Op::BranchNotGe(_) => (),
-                Op::BranchNotGt(_) => (),                
+                Op::BranchNotGt(_) => (),
                 Op::BranchNotNumberEqual(_) => (),
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
@@ -144,7 +144,8 @@ impl Vm {
                 Op::Cadr => (),
                 Op::Not => (),
                 Op::NumberEqual => (),
-                Op::NumberGt => (),                
+                Op::NumberGe => (),
+                Op::NumberGt => (),
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
                 Op::Indirect => (),
@@ -237,17 +238,20 @@ impl Vm {
                     branch_number_op!(==, self, pc, skip_size);
                 }
                 Op::BranchNotGe(skip_size) => {
-                    branch_number_op!(>=, self, pc, skip_size);                    
+                    branch_number_op!(>=, self, pc, skip_size);
                 }
                 Op::BranchNotGt(skip_size) => {
-                    branch_number_op!(>, self, pc, skip_size);                    
-                }                
+                    branch_number_op!(>, self, pc, skip_size);
+                }
                 Op::NumberEqual => {
                     number_op!(==, self);
                 }
+                Op::NumberGe => {
+                    number_op!(>=, self);
+                }
                 Op::NumberGt => {
                     number_op!(>, self);
-                }                
+                }
                 Op::Car => match self.ac {
                     Object::Pair(pair) => {
                         self.ac = pair.first;
@@ -3802,7 +3806,7 @@ pub mod tests {
     // (> 4 3) => #t
     #[test]
     fn test_test109() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(4)),
             Op::Push,
@@ -3813,11 +3817,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
-
     // (> 4 3 2) => #t
     #[test]
     fn test_test110() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(4)),
             Op::Push,
@@ -3836,7 +3839,7 @@ pub mod tests {
     // (> 4 3 1 2) => #f
     #[test]
     fn test_test111() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(4)),
             Op::Push,
@@ -3857,5 +3860,22 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::False, 0);
     }
 
-
+    // (>= 3 3 3) => #t
+    #[test]
+    fn test_test112() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::BranchNotGe(5),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberGe,
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
 }

@@ -39,6 +39,7 @@ pub enum Op {
     Not,
     NullP,
     NumberEqual,
+    NumberGe,    
     NumberGt,
     Push,
     ReferFree(usize),
