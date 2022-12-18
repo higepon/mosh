@@ -2829,4 +2829,17 @@ pub mod tests {
         }
     }
 
+    // (begin 1 2 3) => 3
+    #[test]
+    fn test_test79() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Constant(Object::Number(2)),
+            Op::Constant(Object::Number(3)),
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
 }
