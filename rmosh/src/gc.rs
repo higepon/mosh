@@ -191,7 +191,7 @@ impl Gc {
             Object::VMStackPointer(_) => {}
             Object::True => {}            
             Object::False => {}
-            Object::Undef => {}
+            Object::Unspecified => {}
             Object::Nil => {},
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);

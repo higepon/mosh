@@ -16,7 +16,7 @@ pub enum Object {
     Procedure(GcRef<Procedure>),
     Symbol(GcRef<Symbol>),
     Nil,
-    Undef,
+    Unspecified,
     VMStackPointer(*mut Object),
 }
 
@@ -56,16 +56,16 @@ impl Display for Object {
                 write!(f, "symbol{}", symbol)
             }
             Object::True => {
-                write!(f, "true")
+                write!(f, "#t")
             }
             Object::False => {
-                write!(f, "false")
+                write!(f, "#f")
             }
             Object::VMStackPointer(_) => {
                 write!(f, "<stack pointer>")
             }
-            Object::Undef => {
-                write!(f, "<undefined>")
+            Object::Unspecified => {
+                write!(f, "#<unspecified>")
             }
             Object::Nil => {
                 write!(f, "()")
@@ -205,7 +205,7 @@ impl Closure {
             is_optional_arg: is_optional_arg,
             //size: size,
             free_vars: free_vars,
-            prev: Object::Undef,
+            prev: Object::Unspecified,
         }
     }
 
@@ -260,5 +260,14 @@ pub mod tests {
                 panic!("Wrong return value");
             }
         }
+    }
+
+    #[test]
+    fn test_to_string() {
+        assert_eq!("101", Object::Number(101).to_string());
+        assert_eq!("#t", Object::True.to_string());
+        assert_eq!("#f", Object::False.to_string());
+        assert_eq!("#<unspecified>", Object::Unspecified.to_string());
+
     }
 }

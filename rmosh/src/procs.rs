@@ -10,5 +10,5 @@ pub fn numberp(args: &[Object]) -> Object {
 }
 
 pub fn write(_args: &[Object]) -> Object {
-    Object::Undef
+    Object::Unspecified
 }

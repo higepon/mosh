@@ -23,10 +23,10 @@ pub struct Vm {
 impl Vm {
     pub fn new() -> Self {
         Self {
-            ac: Object::Undef,
-            dc: Object::Undef,
+            ac: Object::Unspecified,
+            dc: Object::Unspecified,
             gc: Box::new(Gc::new()),
-            stack: [Object::Undef; STACK_SIZE],
+            stack: [Object::Unspecified; STACK_SIZE],
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
@@ -504,7 +504,7 @@ impl Vm {
                     self.push(Object::VMStackPointer(self.fp));
                 }
                 Op::Halt => return self.ac,
-                Op::Undef => self.ac = Object::Undef,
+                Op::Undef => self.ac = Object::Unspecified,
                 Op::Nop => {}
             }
             self.print_vm(op);
@@ -600,7 +600,7 @@ pub mod tests {
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
-            Object::Undef => {}
+            Object::Unspecified => {}
             _ => panic!("ac was {:?}", ret),
         }
     }
