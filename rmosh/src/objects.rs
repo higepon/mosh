@@ -97,7 +97,29 @@ impl Pair {
 
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({} . {})", self.first, self.second)
+        let car_str = self.first.to_string();
+        write!(f, "({}", car_str)?;
+        let mut e = self.second;
+        loop {
+            match e {
+                Object::Pair(pair) => {
+                    write!(f, " ")?;
+                    write!(f, "{}", pair.first)?;
+                    e = pair.second;
+                }
+                Object::Nil => {
+                    break;
+                }
+                _ => {
+                    write!(f, " . ")?;
+                    write!(f, "{}", e)?;
+                    break;
+                }
+            }
+
+        }
+        write!(f, ")")?;
+        Ok(())
     }
 }
 
@@ -269,7 +291,7 @@ pub mod tests {
         assert_eq!("101", Object::Number(101).to_string());
         assert_eq!("#t", Object::True.to_string());
         assert_eq!("#f", Object::False.to_string());
-        assert_eq!("()", Object::Nil.to_string());        
+        assert_eq!("()", Object::Nil.to_string());
         assert_eq!("#<unspecified>", Object::Unspecified.to_string());
     }
 
@@ -322,12 +344,19 @@ pub mod tests {
         assert_eq!("#<vox my-symbol>", vox.to_string());
     }
 
-
-    #[test]    
+    #[test]
     fn test_simple_pair_to_string() {
         let mut gc = Gc::new();
         let pair = gc.alloc(Pair::new(Object::Number(1), Object::Number(2)));
         let pair = Object::Pair(pair);
         assert_eq!("(1 . 2)", pair.to_string());
+
+        let mut gc = Gc::new();
+        let pair1 = gc.alloc(Pair::new(Object::Number(2), Object::Nil));
+        let pair1 = Object::Pair(pair1);
+
+        let pair2 = gc.alloc(Pair::new(Object::Number(1), pair1));
+        let pair2 = Object::Pair(pair2);
+        assert_eq!("(1 2)", pair2.to_string());
     }
 }
