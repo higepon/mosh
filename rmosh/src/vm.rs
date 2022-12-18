@@ -117,6 +117,7 @@ impl Vm {
         for &value in &self.ops {
             match value {
                 Op::BranchNotGe(_) => (),
+                Op::BranchNotGt(_) => (),                
                 Op::BranchNotNumberEqual(_) => (),
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
@@ -238,6 +239,9 @@ impl Vm {
                 Op::BranchNotGe(skip_size) => {
                     branch_number_op!(>=, self, pc, skip_size);                    
                 }
+                Op::BranchNotGt(skip_size) => {
+                    branch_number_op!(>, self, pc, skip_size);                    
+                }                
                 Op::NumberEqual => {
                     number_op!(==, self);
                 }
@@ -3808,5 +3812,26 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
+
+
+    // (> 4 3 2) => #t
+    #[test]
+    fn test_test110() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::BranchNotGt(5),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberGt,
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
 
 }
