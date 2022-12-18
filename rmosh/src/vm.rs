@@ -79,8 +79,16 @@ impl Vm {
             ),
             Object::Procedure(
                 self.gc
-                    .alloc(Procedure::new(procs::write, "write".to_owned())),
+                    .alloc(Procedure::new(procs::write, "cons".to_owned())),
             ),
+            Object::Procedure(
+                self.gc
+                    .alloc(Procedure::new(procs::write, "cons*".to_owned())),
+            ),  
+            Object::Procedure(
+                self.gc
+                    .alloc(Procedure::new(procs::car, "car".to_owned())),
+            ),                         
         ];
         let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
@@ -142,6 +150,8 @@ impl Vm {
                 Op::Enter(_) => (),
                 Op::Halt => (),
                 Op::NullP => (),
+                Op::PairP => (),
+                Op::SymbolP => (),
                 Op::Car => (),
                 Op::Cdr => (),
                 Op::Cadr => (),
@@ -238,7 +248,9 @@ impl Vm {
                 Op::Not => {
                     self.ac = Object::make_bool(self.ac.is_false());
                 }
-                Op::NullP => self.ac = Object::make_bool(self.ac == Object::Nil),
+                Op::PairP => self.ac = Object::make_bool(self.ac.is_pair()),                
+                Op::NullP => self.ac = Object::make_bool(self.ac.is_nil()),
+                Op::SymbolP => self.ac = Object::make_bool(self.ac.is_symbol()),                
                 Op::BranchNotNumberEqual(skip_size) => {
                     branch_number_op!(==, self, pc, skip_size);
                 }
@@ -609,7 +621,7 @@ pub mod tests {
     static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
     static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
     // Base closure + procedure as free variable
-    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE + SIZE_OF_PROCEDURE;
+    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE * 4;
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
@@ -4109,6 +4121,165 @@ pub mod tests {
             Op::Halt,
         ];
         test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+    // (pair? (cons 1 2)) => #t
+    #[test]
+    fn test_test126() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Cons,
+            Op::PairP,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+    // (pair? 3) => #f
+    #[test]
+    fn test_test127() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::PairP,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+    // (symbol? 'a) => #t
+    #[test]
+    fn test_test128() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::SymbolP,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+    // (symbol? 3) => #f
+    #[test]
+    fn test_test129() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::SymbolP,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+    // (cond (#f 1) (#t 3)) => 3
+    #[test]
+    fn test_test130() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::Number(1)),
+            Op::LocalJmp(6),
+            Op::Constant(Object::True),
+            Op::Test(3),
+            Op::Constant(Object::Number(3)),
+            Op::LocalJmp(2),
+            Op::Undef,
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    // (cond (#f 1) (#f 2) (else 3)) => 3
+    #[test]
+    fn test_test131() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::Number(1)),
+            Op::LocalJmp(6),
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::Number(2)),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(3)),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    // (cond (#t 3) (#f 2) (else 1)) => 3
+    #[test]
+    fn test_test132() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::True),
+            Op::Test(3),
+            Op::Constant(Object::Number(3)),
+            Op::LocalJmp(6),
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::Number(2)),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(1)),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+    // (cond ((cons 1 2) => car) (#f 2) (else 3)) => 1
+    #[test]
+    fn test_test133() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::ReferFree(3),
+            Op::Push,
+            Op::Display(1),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Cons,
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Test(7),
+            Op::Frame(11),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::LocalJmp(6),
+            Op::Constant(Object::False),
+            Op::Test(3),
+            Op::Constant(Object::Number(2)),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(3)),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(1), 0);
     }
 
 }

@@ -27,6 +27,27 @@ impl Object {
             _ => false,
         }
     }
+    pub fn is_pair(&self) -> bool {
+        match self {
+            Object::Pair(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_nil(&self) -> bool {
+        match self {
+            Object::Nil => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_symbol(&self) -> bool {
+        match self {
+            Object::Symbol(_) => true,
+            _ => false,
+        }
+    }
+
 
     pub fn make_bool(pred: bool) -> Self {
         if pred {
@@ -369,5 +390,5 @@ pub mod tests {
         let pair2 = gc.cons(Object::Number(2), pair1);
         let pair3 = gc.cons(Object::Number(1), pair2);
         assert_eq!("(1 2 3)", pair3.to_string());
-    }    
+    }
 }
