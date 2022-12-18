@@ -4069,4 +4069,46 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
+    // (eq? #t #f) => #f
+    #[test]
+    fn test_test123() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::True),
+            Op::Push,
+            Op::Constant(Object::False),
+            Op::Eq,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+    // (eq? 'a 'a) => #t
+    #[test]
+    fn test_test124() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Push,
+            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Eq,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
+
+    // (eq? 'a 'b) => #f
+    #[test]
+    fn test_test125() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Push,
+            Op::Constant(Object::Symbol(vm.gc.intern("b".to_owned()))),
+            Op::Eq,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
 }
