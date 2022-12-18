@@ -3570,4 +3570,22 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Nil, 0);
     }
+
+    // ((lambda a a)) => ()
+    #[test]
+    fn test_test98() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Closure {size: 3, arg_len: 1, is_optional_arg: true, num_free_vars: 0},
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Nil, 0);
+    }
+
 }
