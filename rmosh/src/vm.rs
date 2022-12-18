@@ -135,6 +135,7 @@ impl Vm {
                     self.gc.mark_heap_object(symbol);
                 }
                 Op::Display(_) => (),
+                Op::Eq => (),
                 Op::ReferFree(_) => (),
                 Op::LetFrame(_) => (),
                 Op::Box(_) => (),
@@ -252,6 +253,9 @@ impl Vm {
                 }
                 Op::BranchNotLt(skip_size) => {
                     branch_number_op!(<, self, pc, skip_size);
+                }
+                Op::Eq => {
+                    self.ac = Object::make_bool(self.pop().eq(&self.ac));
                 }
                 Op::NumberEqual => {
                     number_op!(==, self);
@@ -3994,11 +3998,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
-
     // (<= 1 2 3) => #t
     #[test]
     fn test_test119() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(1)),
             Op::Push,
@@ -4017,7 +4020,7 @@ pub mod tests {
     // (<= 1 3 3) => #t
     #[test]
     fn test_test120() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(1)),
             Op::Push,
@@ -4036,7 +4039,7 @@ pub mod tests {
     // (<= 1 5 3) => #f
     #[test]
     fn test_test121() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(1)),
             Op::Push,
@@ -4050,6 +4053,20 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size(&mut vm, ops, Object::False, 0);
+    }
+
+    // (eq? #t #t) => #t
+    #[test]
+    fn test_test122() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::True),
+            Op::Push,
+            Op::Constant(Object::True),
+            Op::Eq,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
 }

@@ -31,6 +31,7 @@ pub enum Op {
     DefineGlobal(GcRef<Symbol>),
     Display(isize),
     Enter(isize),
+    Eq,
     Frame(usize),
     Halt,
     Indirect,

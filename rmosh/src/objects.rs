@@ -35,6 +35,10 @@ impl Object {
             Object::False
         }
     }
+
+    pub fn eq(&self, other: &Self) -> bool {
+        self == other
+    }
 }
 
 impl Display for Object {
