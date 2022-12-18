@@ -2766,4 +2766,34 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::False, 0);
     }
 
+
+    // (cons 1 2) => (1 . 2)
+    #[test]
+    fn test_test77_modified() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Cons,
+            Op::Halt,
+        ];
+        let pair = vm.gc.alloc(Pair::new(Object::Number(1), Object::Number(2)));
+        let before_size = vm.gc.bytes_allocated();
+        let ret = vm.run(ops);
+        vm.mark_and_sweep();
+        let after_size = vm.gc.bytes_allocated();
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
+        match ret {
+            Object::Pair(pair2) => {
+                assert_eq!(pair.first, pair2.first);
+                assert_eq!(pair.second, pair2.second);
+            }
+            _ => {
+                panic!("not a pair");
+            }
+        }
+    }        
+
+
 }
