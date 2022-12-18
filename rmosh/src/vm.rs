@@ -3000,4 +3000,61 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+    // ((lambda () (if 3 ((lambda () 3))))) => 3
+    #[test]
+    fn test_test86() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(12),
+            Op::Closure {size: 10, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Test(6),
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::TailCall(0, 0),
+            Op::Return(0),
+            Op::Undef,
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
+
+
+    // ((lambda () (if ((lambda () 3)) 4 5))) => 4
+    #[test]
+    fn test_test87() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(13),
+            Op::Closure {size: 11, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Frame(5),
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Test(3),
+            Op::Constant(Object::Number(4)),
+            Op::Return(0),
+            Op::Constant(Object::Number(5)),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
+    }
 }
