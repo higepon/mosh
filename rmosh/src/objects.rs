@@ -44,7 +44,7 @@ impl Display for Object {
                 write!(f, "{}", n)
             }
             Object::Vox(obj) => {
-                write!(f, "{}", obj)
+                write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
                 write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
@@ -305,5 +305,15 @@ pub mod tests {
         let stack_pointer = Object::StackPointer(pointer);
         let re = Regex::new(r"^#<stack pointer\s[^>]+>$").unwrap();
         assert!(re.is_match(&stack_pointer.to_string()));
+    }  
+    
+    #[test]
+    fn test_vox_to_string() {
+        let mut gc = Gc::new();
+        let vox = gc.alloc(Vox::new(Object::Number(101)));
+        let vox = Object::Vox(vox);
+        assert_eq!("#<vox 101>", vox.to_string());
     }    
+
+
 }
