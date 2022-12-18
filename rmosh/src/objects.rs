@@ -53,7 +53,7 @@ impl Display for Object {
                 write!(f, "pair{}", pair)
             }
             Object::Symbol(symbol) => {
-                write!(f, "symbol{}", symbol)
+                 write!(f, "{}", unsafe { symbol.pointer.as_ref() }) 
             }
             Object::True => {
                 write!(f, "#t")
@@ -147,7 +147,7 @@ impl Symbol {
 
 impl Display for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "'{}", self.string)
+        write!(f, "{}", self.string)
     }
 }
 
@@ -263,11 +263,18 @@ pub mod tests {
     }
 
     #[test]
-    fn test_to_string() {
+    fn test_simple_to_string() {
         assert_eq!("101", Object::Number(101).to_string());
         assert_eq!("#t", Object::True.to_string());
         assert_eq!("#f", Object::False.to_string());
         assert_eq!("#<unspecified>", Object::Unspecified.to_string());
+    }
 
+    #[test]
+    fn test_symbol_to_string() {
+        let mut gc = Gc::new();
+        let symbol = gc.alloc(Symbol::new("hello".to_owned()));
+        let symbol = Object::Symbol(symbol);
+        assert_eq!("hello", symbol.to_string());
     }
 }
