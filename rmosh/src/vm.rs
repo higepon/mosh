@@ -74,6 +74,7 @@ impl Vm {
         for &value in &self.ops {
             match value {
                 Op::BranchNotGe(_) => (),
+                Op::BranchNotNumberEqual(_) => (),                
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
                     self.gc.mark_object(v);
@@ -140,7 +141,7 @@ impl Vm {
     fn index_set(&mut self, sp: *mut Object, n: isize, obj: Object) {
         unsafe { *sp.offset(-n - 1) = obj }
     }
-
+            
     fn stack_len(&self) -> usize {
         unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
     }
@@ -153,7 +154,7 @@ impl Vm {
         let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
         for i in 0..self.stack_len() {
             println!(
-                "{:?}{}",
+                "  {:?}{}",
                 self.stack[i],
                 if fp_idx == i.try_into().unwrap() {
                     "  <== fp"
@@ -178,6 +179,21 @@ impl Vm {
         while pc < len {
             let op = self.ops[pc];
             match op {
+                Op::BranchNotNumberEqual(skip_size) => {
+                    match (self.pop(), self.ac) {
+                        (Object::Number(lhs), Object::Number(rhs)) => {
+                            self.ac = Object::make_bool(lhs == rhs);
+                            if self.ac.is_false() {
+                                pc = pc + skip_size - 1;
+                            } else {
+                                // go to next pc
+                            }
+                        }
+                        _ => {
+                            panic!("number expected")
+                        }
+                    }                    
+                }
                 Op::BranchNotGe(skip_size) => {
                     // never tested :)
                     assert!(false);
@@ -185,9 +201,9 @@ impl Vm {
                         (Object::Number(lhs), Object::Number(rhs)) => {
                             self.ac = Object::make_bool(lhs >= rhs);
                             if self.ac.is_false() {
-                                pc = pc - skip_size - 1;
+                                pc = pc + skip_size - 1;
                             } else {
-                                pc = pc + 1;
+                                // go to next pc
                             }
                         }
                         _ => {
@@ -2357,6 +2373,51 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(1), 0);
+    }
+
+    // (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0)) => 10
+    #[test]
+    fn test_test62() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Undef,
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(10)),
+            Op::BranchNotNumberEqual(3),
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Indirect,
+            Op::TailCall(1, 1),
+            Op::Return(1),
+            Op::AssignLocal(0),
+            Op::Frame(6),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Call(1),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(10), 0);
     }
 
 }

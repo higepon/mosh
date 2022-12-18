@@ -11,6 +11,7 @@ pub enum Op {
     AssignLocal(isize),
     Box(isize),
     BranchNotGe(usize),
+    BranchNotNumberEqual(usize),
     Call(isize),
     Car,
     Cdr,

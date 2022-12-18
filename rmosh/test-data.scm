@@ -109,32 +109,21 @@
  (let1 a 100
    (let1 c (let1 d (lambda () a) d)
      (c))))
-;; visit this later BRANCH_NOT_GE    
-#;(1000 (let ([a '()])
-        (let ([G68 (lambda (i) (if (>= i 1000) i (a (+ i 1))))])
-          (set! a G68)
-          (a 0))))
-;; visit this later BRANCH_NOT_GE              
-#;(1000 (letrec ((a (lambda (i)
-           (if (>= i 1000)
-               i
-               (a (+ i 1))))))
-        (a 0)))
 (1 (letrec ([a 1]
             [b (lambda () a)])
      (b)))
-(error (letrec ([a 3]
+#;(error (letrec ([a 3]
                 [b a])
          (display b)
          (newline)))
 
-(error (map cons '(1) '(1 2)))
-(error (for-each + '(1) '(1 2)))
-(error (for-all = '(1) '(1 2)))
-(error (exists = '(1) '(1 2)))
-(error (fold-right list '() '(1) '(1 2)))
-(error (fold-left list '() '(1) '(1 2)))
-((#t . #f) (letrec ((even?
+;(error (map cons '(1) '(1 2)))
+;(error (for-each + '(1) '(1 2)))
+;(error (for-all = '(1) '(1 2)))
+;(error (exists = '(1) '(1 2)))
+;(error (fold-right list '() '(1) '(1 2)))
+;(error (fold-left list '() '(1) '(1 2)))
+#;((#t . #f) (letrec ((even?
                      (lambda (n)
                        (if (= 0 n)
                            #t
@@ -147,6 +136,15 @@
              (cons (even? 88) (odd? 88))))
 (10 (letrec ([a (lambda (i) (if (= i 10) i (a (+ i 1))))])
       (a 0)))
+(1000 (let ([a '()])
+        (let ([G68 (lambda (i) (if (>= i 1000) i (a (+ i 1))))])
+          (set! a G68)
+          (a 0))))
+(1000 (letrec ((a (lambda (i)
+           (if (>= i 1000)
+               i
+               (a (+ i 1))))))
+        (a 0)))      
 (1000 ((lambda (a) (set! a 1000) a) '()))
 (20 ((lambda (a)
          (set! a (lambda (i)
