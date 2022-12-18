@@ -8,6 +8,7 @@ pub enum Op {
     NumberAdd,
     AddPair,
     AssignFree(usize),
+    AssignGlobal(GcRef<Symbol>),
     AssignLocal(isize),
     Box(isize),
     BranchNotGe(usize),
