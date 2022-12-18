@@ -2872,4 +2872,27 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
     }
+
+
+    // ((lambda () ((lambda () 3)))) => 3
+    #[test]
+    fn test_test81() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(8),
+            Op::Closure {size: 6, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::TailCall(0, 0),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
 }
