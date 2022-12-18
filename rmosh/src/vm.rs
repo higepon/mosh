@@ -195,8 +195,6 @@ impl Vm {
                     }                    
                 }
                 Op::BranchNotGe(skip_size) => {
-                    // never tested :)
-                    assert!(false);
                     match (self.pop(), self.ac) {
                         (Object::Number(lhs), Object::Number(rhs)) => {
                             self.ac = Object::make_bool(lhs >= rhs);
@@ -2418,6 +2416,61 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(10), 0);
+    }
+
+    // (let ((a '())) (let ((G68 (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (set! a G68) (a 0))) => 1000
+    #[test]
+    fn test_test63() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(Object::Nil),
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::LetFrame(2),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Display(2),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1000)),
+            Op::BranchNotGe(3),
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Indirect,
+            Op::TailCall(1, 1),
+            Op::Return(1),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::AssignFree(0),
+            Op::Frame(6),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Indirect,
+            Op::Call(1),
+            Op::Leave(1),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(1000), 0);
     }
 
 }
