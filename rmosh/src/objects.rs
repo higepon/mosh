@@ -346,33 +346,24 @@ pub mod tests {
     #[test]
     fn test_dot_pair_to_string() {
         let mut gc = Gc::new();
-        let pair = gc.alloc(Pair::new(Object::Number(1), Object::Number(2)));
-        let pair = Object::Pair(pair);
+        let pair = gc.cons(Object::Number(1), Object::Number(2));
         assert_eq!("(1 . 2)", pair.to_string());
     }
 
     #[test]
     fn test_simple_pair_to_string() {
         let mut gc = Gc::new();
-        let pair1 = gc.alloc(Pair::new(Object::Number(2), Object::Nil));
-        let pair1 = Object::Pair(pair1);
-
-        let pair2 = gc.alloc(Pair::new(Object::Number(1), pair1));
-        let pair2 = Object::Pair(pair2);
+        let pair1 = gc.cons(Object::Number(2), Object::Nil);
+        let pair2 = gc.cons(Object::Number(1), pair1);
         assert_eq!("(1 2)", pair2.to_string());
     }
 
     #[test]
     fn test_pair_to_string() {
         let mut gc = Gc::new();
-        let pair1 = gc.alloc(Pair::new(Object::Number(3), Object::Nil));
-        let pair1 = Object::Pair(pair1);
-
-        let pair2 = gc.alloc(Pair::new(Object::Number(2), pair1));
-        let pair2 = Object::Pair(pair2);
-
-        let pair3 = gc.alloc(Pair::new(Object::Number(1), pair2));
-        let pair3 = Object::Pair(pair3);        
+        let pair1 = gc.cons(Object::Number(3), Object::Nil);
+        let pair2 = gc.cons(Object::Number(2), pair1);
+        let pair3 = gc.cons(Object::Number(1), pair2);
         assert_eq!("(1 2 3)", pair3.to_string());
     }    
 }

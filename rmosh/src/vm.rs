@@ -282,8 +282,7 @@ impl Vm {
                 Op::Cons => {
                     let first = self.pop();
                     let second = self.ac;
-                    let pair = self.alloc(Pair::new(first, second));
-                    self.ac = Object::Pair(pair);
+                    self.ac = self.gc.cons(first, second);
                 }
                 Op::NumberAdd => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
