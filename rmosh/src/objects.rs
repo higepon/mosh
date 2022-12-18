@@ -301,12 +301,12 @@ pub mod tests {
     #[test]
     fn test_stack_pointer_to_string() {
         let obj = Object::Number(10);
-        let pointer :*mut Object = &obj as *const Object as *mut Object;
+        let pointer: *mut Object = &obj as *const Object as *mut Object;
         let stack_pointer = Object::StackPointer(pointer);
         let re = Regex::new(r"^#<stack pointer\s[^>]+>$").unwrap();
         assert!(re.is_match(&stack_pointer.to_string()));
-    }  
-    
+    }
+
     #[test]
     fn test_vox_to_string() {
         let mut gc = Gc::new();
@@ -315,11 +315,9 @@ pub mod tests {
         assert_eq!("#<vox 101>", vox.to_string());
 
         let symbol = gc.alloc(Symbol::new("my-symbol".to_owned()));
-        let symbol = Object::Symbol(symbol);        
+        let symbol = Object::Symbol(symbol);
         let vox = gc.alloc(Vox::new(symbol));
         let vox = Object::Vox(vox);
-        assert_eq!("#<vox my-symbol>", vox.to_string());        
-    }    
-
-
+        assert_eq!("#<vox my-symbol>", vox.to_string());
+    }
 }
