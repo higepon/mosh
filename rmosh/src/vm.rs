@@ -2473,4 +2473,50 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(1000), 0);
     }
 
+
+    // (letrec ((a (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (a 0)) => 1000
+    #[test]
+    fn test_test64() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Undef,
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1000)),
+            Op::BranchNotGe(3),
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Indirect,
+            Op::TailCall(1, 1),
+            Op::Return(1),
+            Op::AssignLocal(0),
+            Op::Frame(6),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Call(1),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(1000), 0);
+    }
+
 }
