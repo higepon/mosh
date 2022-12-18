@@ -104,6 +104,7 @@ impl Vm {
                 Op::Car => (),
                 Op::Cdr => (),
                 Op::Cadr => (),
+                Op::Not => (),
                 Op::NumberEqual => (),
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
@@ -189,6 +190,9 @@ impl Vm {
         while pc < len {
             let op = self.ops[pc];
             match op {
+                Op::Not => {
+                    self.ac = Object::make_bool(self.ac.is_false());
+                }
                 Op::NullP => self.ac = Object::make_bool(self.ac == Object::Nil),
                 Op::BranchNotNumberEqual(skip_size) => {
                     match (self.pop(), self.ac) {
@@ -3624,6 +3628,18 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(34), 0);
+    }
+
+    // (not 3) => #f
+    #[test]
+    fn test_test101() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Not,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::False, 0);
     }
 
 }

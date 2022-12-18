@@ -35,6 +35,7 @@ pub enum Op {
     LetFrame(isize),
     LocalJmp(usize),
     Nop,
+    Not,
     NullP,
     NumberEqual,
     Push,
