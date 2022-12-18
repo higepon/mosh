@@ -4282,4 +4282,43 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(1), 0);
     }
 
+    // (let ((a 0)) `(,a 4 5)) => (0 4 5)
+    #[test]
+    fn test_test134() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(vm.gc.list2(Object::Number(4), Object::Number(5))),
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(0 4 5)", 0);
+    }
+
+
+    // (let ((a '(1 2 3))) `(,a 4 5)) => ((1 2 3) 4 5)
+    #[test]
+    fn test_test135() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(vm.gc.list2(Object::Number(4), Object::Number(5))),
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "((1 2 3) 4 5)", 0);
+    }
+
 }

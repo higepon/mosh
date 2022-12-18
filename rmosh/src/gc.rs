@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Vox, Closure, Object, Pair, Symbol};
+use crate::objects::{Closure, Object, Pair, Symbol, Vox};
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
@@ -129,6 +129,22 @@ impl Gc {
         Object::Pair(pair)
     }
 
+    pub fn list1(&mut self, obj: Object) -> Object {
+        self.cons(obj, Object::Nil)
+    }
+
+    pub fn list2(&mut self, first: Object, second: Object) -> Object {
+        let second = self.cons(second, Object::Nil);
+        self.cons(first, second)
+    }
+
+    pub fn list3(&mut self, first: Object, second: Object, third: Object) -> Object {
+        let third = self.cons(third, Object::Nil);
+        let second = self.cons(second, third);
+        self.cons(first, second)
+    }
+    
+
     #[cfg(not(feature = "test_gc_size"))]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
@@ -144,7 +160,7 @@ impl Gc {
     #[cfg(feature = "test_gc_size")]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
-            #[cfg(feature = "debug_log_gc")]                
+            #[cfg(feature = "debug_log_gc")]
             let repr = format!("{}", object)
                 .chars()
                 .into_iter()
@@ -159,7 +175,7 @@ impl Gc {
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
-            #[cfg(feature = "debug_log_gc")]            
+            #[cfg(feature = "debug_log_gc")]
             println!(
                 "alloc(adr:{:?} type:{} repr:{}, allocated bytes:{} next:{})",
                 header,
@@ -194,10 +210,10 @@ impl Gc {
         match obj {
             Object::Number(_) => {}
             Object::StackPointer(_) => {}
-            Object::True => {}            
+            Object::True => {}
             Object::False => {}
             Object::Unspecified => {}
-            Object::Nil => {},
+            Object::Nil => {}
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);
             }
@@ -282,7 +298,7 @@ impl Gc {
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(vox.value);
-            }            
+            }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.first);
@@ -319,7 +335,7 @@ impl Gc {
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(vox)
-            }            
+            }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(pair)
