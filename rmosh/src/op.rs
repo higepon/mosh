@@ -7,6 +7,7 @@ use crate::{
 pub enum Op {
     NumberAdd,
     AddPair,
+    Append2,
     AssignFree(usize),
     AssignGlobal(GcRef<Symbol>),
     AssignLocal(isize),

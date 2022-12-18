@@ -48,7 +48,6 @@ impl Object {
         }
     }
 
-
     pub fn make_bool(pred: bool) -> Self {
         if pred {
             Object::True
@@ -116,6 +115,54 @@ impl Pair {
             header: GcHeader::new(ObjectType::Pair),
             first: first,
             second: second,
+        }
+    }
+
+    pub fn is_list(obj: Object) -> bool {
+        let mut obj = obj;
+        let mut seen = obj;
+        loop {
+            if obj.is_nil() {
+                return true;
+            }
+            match obj {
+                Object::Pair(pair) => {
+                    obj = pair.second;
+                    if obj.is_nil() {
+                        return true;
+                    }
+
+                    match obj {
+                        Object::Pair(pair) => {
+                            obj = pair.second;
+                            match seen {
+                                Object::Pair(pair) => {
+                                    seen = pair.second;
+                                    if obj == seen {
+                                        // Circular
+                                        return false;
+                                    }
+                                }
+                                _ => {
+                                    panic!("seen not a pair")
+                                }
+                            }
+                        }
+                        _ => {
+                            // Dot pair
+                            return false;
+                        }
+                    }
+                }
+                _ => {
+                    // Dot pair.
+                    return false;
+                }
+            }
+            if !obj.is_pair() {
+                // dot pair.
+                return false;
+            }
         }
     }
 }

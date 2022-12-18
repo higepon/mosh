@@ -143,7 +143,48 @@ impl Gc {
         let second = self.cons(second, third);
         self.cons(first, second)
     }
-    
+
+    // append o (list or obj) to l.
+    // if l is not list return o.
+    // allocate new cons sell.
+    pub fn append2(&mut self, list: Object, obj: Object) -> Object {
+        if !list.is_pair() {
+            return obj;
+        }
+        let mut start = Object::Nil;
+        let mut last = Object::Nil;
+        let mut p = list;
+        loop {
+            match p {
+                Object::Pair(pair) => {
+                    if start.is_nil() {
+                        start = self.cons(pair.first, Object::Nil);
+                        last = start
+                    } else {
+                        match last {
+                            Object::Pair(mut last_pair) => {
+                                last_pair.second = self.cons(pair.first, Object::Nil);
+                                last = last_pair.second;
+                            }
+                            _ => {
+                                panic!("last is not pair");
+                            }
+                        }
+                    }
+                    p = pair.second;
+                }
+                _ => match last {
+                    Object::Pair(mut pair) => {
+                        pair.second = obj;
+                        return start;
+                    }
+                    _ => {
+                        panic!("last is not pair");
+                    }
+                },
+            }
+        }
+    }
 
     #[cfg(not(feature = "test_gc_size"))]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
