@@ -146,6 +146,7 @@ impl Vm {
                 Op::NumberEqual => (),
                 Op::NumberGe => (),
                 Op::NumberGt => (),
+                Op::NumberLt => (),
                 Op::AssignFree(_) => (),
                 Op::AssignLocal(_) => (),
                 Op::Indirect => (),
@@ -251,6 +252,9 @@ impl Vm {
                 }
                 Op::NumberGt => {
                     number_op!(>, self);
+                }
+                Op::NumberLt => {
+                    number_op!(<, self);
                 }
                 Op::Car => match self.ac {
                     Object::Pair(pair) => {
@@ -3882,7 +3886,7 @@ pub mod tests {
     // (>= 4 3 3) => #t
     #[test]
     fn test_test113() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(4)),
             Op::Push,
@@ -3901,7 +3905,7 @@ pub mod tests {
     // (>= 4 3) => #t
     #[test]
     fn test_test114() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(4)),
             Op::Push,
@@ -3912,5 +3916,17 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::True, 0);
     }
 
-
+    // (< 1 2) => #t
+    #[test]
+    fn test_test115() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberLt,
+            Op::Halt,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::True, 0);
+    }
 }

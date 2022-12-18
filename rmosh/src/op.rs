@@ -41,6 +41,7 @@ pub enum Op {
     NumberEqual,
     NumberGe,    
     NumberGt,
+    NumberLt,    
     Push,
     ReferFree(usize),
     ReferGlobal(GcRef<Symbol>),
