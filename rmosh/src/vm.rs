@@ -246,13 +246,9 @@ impl Vm {
             let op = self.ops[pc];
             match op {
                 Op::Append2 => {
-                    println!("111");
                     let head = self.pop();
-                    println!("112");
                     if Pair::is_list(head) {
-                        println!("113");
                         self.ac = self.gc.append2(head, self.ac);
-                        println!("114");
                     } else {
                         panic!("append wrong argument");
                     }
