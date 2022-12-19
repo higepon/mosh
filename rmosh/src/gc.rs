@@ -144,6 +144,11 @@ impl Gc {
         self.cons(first, second)
     }
 
+    pub fn symbol_intern(&mut self, s: String) -> Object {
+        let symbol = self.intern(s);
+        Object::Symbol(symbol)
+    }
+
     // append o (list or obj) to l.
     // if l is not list return o.
     // allocate new cons sell.

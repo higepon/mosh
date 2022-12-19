@@ -175,14 +175,14 @@ impl Pair {
                 let car = self.first;
                 match car {
                     Object::Symbol(symbol) => {
-                        println!("symbol={}", symbol.string);
                         if symbol.string.eq("quote") {
                             match write!(f, "'") {
                                 Ok(_) => {
-                                    println!("wrote quote");
                                     return true;
                                 }
-                                Err(_) => {return false;}
+                                Err(_) => {
+                                    return false;
+                                }
                             }
                         }
                         return false;
@@ -196,33 +196,8 @@ impl Pair {
                 return false;
             }
         }
-    
-    }        
+    }
 }
-
-
-/*
-bool abbreviated = o.cdr().isPair() && o.cdr().cdr().isNil() && writeAbbreviated(o.car());
-
-// borrwed from Ypsilon
-bool TextualOutputPort::writeAbbreviated(Object obj)
-{
-    if (obj.isSymbol()) {
-        if (obj == Symbol::QUOTE || obj == Symbol::QUOTE_B) {
-            putChar('\'');
-            return true;
-        } else if (obj == Symbol::UNQUOTE || obj == Symbol::UNQUOTE_B) {
-            putChar(',');
-            return true;
-        } else if (obj == Symbol::UNQUOTE_SPLICING || obj == Symbol::UNQUOTE_SPLICING_B) {
-            putString(",@");
-            return true;
-        } else if (obj == Symbol::QUASIQUOTE || obj == Symbol::QUASIQUOTE_B) {
-            putChar('`');
-            return true;
-        }
-*/
-
 
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -232,10 +207,10 @@ impl Display for Pair {
             match e {
                 Object::Pair(pair) => {
                     let car_str = pair.first.to_string();
-                    write!(f, "{}", car_str)?;                    
+                    write!(f, "{}", car_str)?;
                     e = pair.second;
                 }
-                _ => panic!("should not reach")
+                _ => panic!("should not reach"),
             }
         } else {
             let car_str = self.first.to_string();
@@ -264,9 +239,6 @@ impl Display for Pair {
         }
         Ok(())
     }
-
-
-
 }
 
 impl PartialEq for Pair {
@@ -517,12 +489,9 @@ pub mod tests {
     #[test]
     fn test_quote_to_string() {
         let mut gc = Gc::new();
-        let quote = gc.intern("quote".to_owned());
-        let quote = Object::Symbol(quote);
-        
-        let symbol = gc.intern("a".to_owned());                
-        let symbol = Object::Symbol(symbol);
-        let pair = gc.list2(quote, symbol);
+        let sym_quote = gc.symbol_intern("quote".to_owned());
+        let sym_a = gc.symbol_intern("a".to_owned());
+        let pair = gc.list2(sym_quote, sym_a);
         assert_eq!("'a", pair.to_string());
-    }    
+    }
 }
