@@ -657,11 +657,12 @@ pub mod tests {
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
+        assert_eq!(ret.to_string(), expected);
         assert_eq!(
             after_size - before_size,
             SIZE_OF_MIN_VM + expected_heap_diff
         );
-        assert_eq!(ret.to_string(), expected);
+
     }
 
     // Custom hand written tests.
@@ -4346,4 +4347,36 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4 5)", 0);
     }
+
+    // (let ((name 'a)) `(list ,name ',name)) => (list a 'a)
+    #[test]
+    fn test_test137() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(6),
+            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(Object::Symbol(vm.gc.intern("list".to_owned()))),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Symbol(vm.gc.intern("quote".to_owned()))),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::Cons,
+            Op::Cons,
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::Cons,
+            Op::Cons,
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", 0);
+    }
+
 }
