@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Symbol, Vox, Procedure};
+use crate::objects::{Closure, Object, Pair, Procedure, Symbol, Vox};
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {

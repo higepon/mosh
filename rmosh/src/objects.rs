@@ -1,7 +1,5 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
-use crate::procs;
-use regex::Regex;
 use std::fmt::{self, Display};
 
 /// Wrapper of heap allocated or simple stack objects.
@@ -366,9 +364,9 @@ impl Display for Closure {
 #[cfg(test)]
 pub mod tests {
 
-    use crate::gc::Gc;
-
     use super::*;
+    use crate::gc::Gc;
+    use regex::Regex;
 
     // Helpers.
     fn procedure1(args: &[Object]) -> Object {
@@ -504,5 +502,5 @@ pub mod tests {
         let list = gc.list2(sym_a, sym_b);
         let pair = gc.list2(sym_quote, list);
         assert_eq!("'(a b)", pair.to_string());
-    }    
+    }
 }

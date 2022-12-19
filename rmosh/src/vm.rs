@@ -2,9 +2,9 @@ use std::{collections::HashMap, fmt::Display, ptr::null_mut};
 
 use crate::{
     gc::{Gc, GcRef},
-    objects::{Closure, Object, Pair, Procedure, Symbol, Vox},
+    objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
-    procs::{self, default_free_vars},
+    procs::default_free_vars,
 };
 
 const STACK_SIZE: usize = 256;
@@ -248,11 +248,11 @@ impl Vm {
                 Op::Append2 => {
                     println!("111");
                     let head = self.pop();
-                    println!("112")   ;                 
+                    println!("112");
                     if Pair::is_list(head) {
-                        println!("113")   ;                                         
+                        println!("113");
                         self.ac = self.gc.append2(head, self.ac);
-                        println!("114")   ;                                                                 
+                        println!("114");
                     } else {
                         panic!("append wrong argument");
                     }
@@ -627,13 +627,15 @@ impl Vm {
 
 #[cfg(test)]
 pub mod tests {
+    use crate::objects::Procedure;
+
     use super::*;
 
-    static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>();
-    static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
-    static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
+    pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>();
+    pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
+    pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
     // Base closure + procedure as free variable
-    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE * 4;
+    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE * 623;
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
@@ -664,7 +666,6 @@ pub mod tests {
             after_size - before_size,
             SIZE_OF_MIN_VM + expected_heap_diff
         );
-
     }
 
     // Custom hand written tests.
@@ -675,28 +676,6 @@ pub mod tests {
         let symbol = gc.intern("foo".to_owned());
         let symbol2 = gc.intern("foo".to_owned());
         assert_eq!(symbol.pointer, symbol2.pointer);
-    }
-
-    #[test]
-    fn test_vm_call_proc() {
-        let mut vm = Vm::new();
-        // ((lambda (a) (+ a a))
-        let ops: Vec<Op> = vec![
-            Op::Frame(8),
-            Op::Constant(Object::Number(3)),
-            Op::Push,
-            Op::ReferFree(1),
-            Op::Call(1),
-        ];
-        let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
-        vm.mark_and_sweep();
-        let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
-        match ret {
-            Object::Unspecified => {}
-            _ => panic!("ac was {:?}", ret),
-        }
     }
 
     #[test]
@@ -4353,7 +4332,7 @@ pub mod tests {
     // (let ((name 'a)) `(list ,name ',name)) => (list a 'a)
     #[test]
     fn test_test137() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(6),
             Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
@@ -4381,11 +4360,10 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", 0);
     }
 
-
     // `(list ,(+ 1 2) 4) => (list 3 4)
     #[test]
     fn test_test138() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Symbol(vm.gc.intern("list".to_owned()))),
             Op::Push,
@@ -4405,10 +4383,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `(1 . ,a)) => (1 1 2 3)
     #[test]
     fn test_test139() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::Constant(Object::Number(1)),
@@ -4424,10 +4405,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `,a) => (1 2 3)
     #[test]
     fn test_test140() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::ReferLocal(0),
@@ -4440,10 +4424,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `(,@a)) => (1 2 3)
     #[test]
     fn test_test141() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::ReferLocal(0),
@@ -4456,10 +4443,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `(0 ,@a)) => (0 1 2 3)
     #[test]
     fn test_test142() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::Constant(Object::Number(0)),
@@ -4475,10 +4465,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `(0 ,a 4)) => (0 (1 2 3) 4)
     #[test]
     fn test_test143() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::Constant(Object::Number(0)),
@@ -4497,10 +4490,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `(,@a 4)) => (1 2 3 4)
     #[test]
     fn test_test144() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::ReferLocal(0),
@@ -4516,10 +4512,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `((,@a) 4)) => ((1 2 3) 4)
     #[test]
     fn test_test145() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::ReferLocal(0),
@@ -4535,10 +4534,13 @@ pub mod tests {
     // (let ((a '(1 2 3))) `((,a) 4)) => (((1 2 3)) 4)
     #[test]
     fn test_test146() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
-            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
             Op::Push,
             Op::Enter(1),
             Op::ReferLocal(0),
@@ -4557,7 +4559,7 @@ pub mod tests {
     // `b => b
     #[test]
     fn test_test147_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Symbol(vm.gc.intern("b".to_owned()))),
             Op::Halt,
@@ -4566,11 +4568,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, obj, 0);
     }
 
-
     // (list 1 2 3) => (1 2 3)
     #[test]
     fn test_test148() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(9),
             Op::Constant(Object::Number(1)),
@@ -4586,5 +4587,4 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
     }
-
 }
