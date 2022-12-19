@@ -4,7 +4,7 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Procedure, Symbol, Vox},
     op::Op,
-    procs,
+    procs::{self, default_free_vars},
 };
 
 const STACK_SIZE: usize = 256;
@@ -72,6 +72,7 @@ impl Vm {
     }
 
     fn initialize_free_vars(&mut self) {
+        /*
         let free_vars = vec![
             Object::Procedure(
                 self.gc
@@ -86,7 +87,8 @@ impl Vm {
                     .alloc(Procedure::new(procs::write, "cons*".to_owned())),
             ),
             Object::Procedure(self.gc.alloc(Procedure::new(procs::car, "car".to_owned()))),
-        ];
+        ];*/
+        let free_vars = default_free_vars(&mut self.gc);
         let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
@@ -4377,6 +4379,212 @@ pub mod tests {
             Op::Halt,
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", 0);
+    }
+
+
+    // `(list ,(+ 1 2) 4) => (list 3 4)
+    #[test]
+    fn test_test138() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Symbol(vm.gc.intern("list".to_owned()))),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Constant(vm.gc.cons(Object::Number(4), Object::Nil)),
+            Op::Cons,
+            Op::Cons,
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(list 3 4)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `(1 . ,a)) => (1 1 2 3)
+    #[test]
+    fn test_test139() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 1 2 3)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `,a) => (1 2 3)
+    #[test]
+    fn test_test140() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `(,@a)) => (1 2 3)
+    #[test]
+    fn test_test141() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `(0 ,@a)) => (0 1 2 3)
+    #[test]
+    fn test_test142() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(0 1 2 3)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `(0 ,a 4)) => (0 (1 2 3) 4)
+    #[test]
+    fn test_test143() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(vm.gc.cons(Object::Number(4), Object::Nil)),
+            Op::Cons,
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(0 (1 2 3) 4)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `(,@a 4)) => (1 2 3 4)
+    #[test]
+    fn test_test144() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(vm.gc.cons(Object::Number(4), Object::Nil)),
+            Op::Append2,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `((,@a) 4)) => ((1 2 3) 4)
+    #[test]
+    fn test_test145() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(vm.gc.cons(Object::Number(4), Object::Nil)),
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "((1 2 3) 4)", 0);
+    }
+
+    // (let ((a '(1 2 3))) `((,a) 4)) => (((1 2 3)) 4)
+    #[test]
+    fn test_test146() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(vm.gc.list3(Object::Number(1), Object::Number(2), Object::Number(3))),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::Cons,
+            Op::Push,
+            Op::Constant(vm.gc.cons(Object::Number(4), Object::Nil)),
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(((1 2 3)) 4)", 0);
+    }
+
+    // `b => b
+    #[test]
+    fn test_test147_modified() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Symbol(vm.gc.intern("b".to_owned()))),
+            Op::Halt,
+        ];
+        let obj = vm.gc.symbol_intern("b".to_owned());
+        test_ops_with_size(&mut vm, ops, obj, 0);
+    }
+
+
+    // (list 1 2 3) => (1 2 3)
+    #[test]
+    fn test_test148() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(9),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::ReferFree(89),
+            Op::Call(3),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
     }
 
 }

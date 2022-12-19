@@ -1,7 +1,21 @@
 /// Scheme procedures written in Rust.
-use crate::objects::Object;
+use crate::{
+    gc::Gc,
+    objects::{Object, Procedure},
+};
 
-pub fn numberp(args: &[Object]) -> Object {
+pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
+    let free_vars = vec![
+        Object::Procedure(gc.alloc(Procedure::new(numberp, "number?".to_owned()))),
+        Object::Procedure(gc.alloc(Procedure::new(write, "cons".to_owned()))),
+        Object::Procedure(gc.alloc(Procedure::new(write, "cons*".to_owned()))),
+        Object::Procedure(gc.alloc(Procedure::new(car, "car".to_owned()))),
+    ];
+    free_vars
+}
+
+
+fn numberp(args: &[Object]) -> Object {
     assert_eq!(args.len(), 1);
     match args[0] {
         Object::Number(_) => Object::True,
@@ -9,7 +23,7 @@ pub fn numberp(args: &[Object]) -> Object {
     }
 }
 
-pub fn car(args: &[Object]) -> Object {
+fn car(args: &[Object]) -> Object {
     assert_eq!(args.len(), 1);
     match args[0] {
         Object::Pair(pair) => pair.first,
@@ -19,6 +33,6 @@ pub fn car(args: &[Object]) -> Object {
     }
 }
 
-pub fn write(_args: &[Object]) -> Object {
+fn write(_args: &[Object]) -> Object {
     Object::Unspecified
 }

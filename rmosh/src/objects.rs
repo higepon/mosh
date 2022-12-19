@@ -434,7 +434,7 @@ pub mod tests {
     #[test]
     fn test_procedure_to_string() {
         let mut gc = Gc::new();
-        let proc = gc.alloc(Procedure::new(procs::numberp, "number?".to_owned()));
+        let proc = gc.alloc(Procedure::new(procedure1, "number?".to_owned()));
         let proc = Object::Procedure(proc);
         assert_eq!("#<procedure number?>", proc.to_string());
     }
