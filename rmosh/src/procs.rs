@@ -764,8 +764,22 @@ pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
         gc.new_procedure(f64array_dot_product, "f64array-dot-product"),
     ]
 }
+
+
+#[macro_export]
+macro_rules! check_argc {
+    ($name:ident, $args:ident, $argc:expr) => {
+        {
+            if $args.len() != $argc {
+                panic!("{}: {} arguments required but got {}", $name, $argc, $args.len());
+            }
+        }
+    };
+}
+
 fn is_number(args: &[Object]) -> Object {
     let name: &str = "number?";
+    check_argc!(name, args, 1);
     assert_eq!(args.len(), 1);
     match args[0] {
         Object::Number(_) => Object::True,
