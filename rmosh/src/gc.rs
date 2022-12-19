@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Symbol, Vox};
+use crate::objects::{Closure, Object, Pair, Symbol, Vox, Procedure};
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
@@ -147,6 +147,10 @@ impl Gc {
     pub fn symbol_intern(&mut self, s: String) -> Object {
         let symbol = self.intern(s);
         Object::Symbol(symbol)
+    }
+
+    pub fn new_procedure(&mut self, func: fn(&[Object]) -> Object, name: &str) -> Object {
+        Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
     }
 
     // append o (list or obj) to l.
