@@ -573,14 +573,17 @@ impl Vm {
                         if i == argc - 1 {
                             let mut last_pair = args[i as usize];
                             if !last_pair.is_list() {
-                                panic!("apply last arguments shoulbe proper list but got {}", last_pair);
+                                panic!(
+                                    "apply last arguments shoulbe proper list but got {}",
+                                    last_pair
+                                );
                             }
-                            let mut j:isize = 0;
+                            let mut j: isize = 0;
                             loop {
                                 if last_pair.is_nil() {
-                                    let new_argc = argc  - 2 + j;
+                                    let new_argc = argc - 2 + j;
                                     self.call(pc, new_argc);
-                                    break
+                                    break;
                                 } else {
                                     match last_pair {
                                         Object::Pair(pair) => {
@@ -594,7 +597,6 @@ impl Vm {
                                 }
                                 j = j + 1;
                             }
-
                         } else {
                             self.push(args[i as usize]);
                         }
@@ -5085,5 +5087,40 @@ pub mod tests {
             Op::Nop,
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(3 2)", 0);
+    }
+
+    // (let ((a 3)) 3 2 1) => 1
+    #[test]
+    fn test_test170() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(Object::Number(3)),
+            Op::Constant(Object::Number(2)),
+            Op::Constant(Object::Number(1)),
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        let expected = Object::Number(1);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+    // (make-string 3) =>
+    #[test]
+    fn test_test171() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::ReferFree(17),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "\"   \"", 0);
     }
 }

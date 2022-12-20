@@ -859,9 +859,17 @@ fn rxmatch_substring(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch-substring";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_string(_vm: &mut Vm, args: &[Object]) -> Object {
+fn make_string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-string";
-    panic!("{}({}) not implemented", name, args.len());
+    assert_eq!(args.len(), 1);
+    match args[0] {
+        Object::Number(n) => { 
+            vm.gc.new_string(&" ".repeat(n as usize))
+        }
+        _ => {
+            panic!("{}: n required", name)
+        }
+    }
 }
 fn string_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-set!";
