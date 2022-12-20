@@ -65,7 +65,10 @@
             (rewrite-insn* more* (+ idx 2))]                             
         [((and (or 'CONSTANT) insn) (? symbol? n) . more*)
           (format #t "            Op::~a(Object::Symbol(vm.gc.intern(\"~a\".to_owned()))),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]          
+          (rewrite-insn* more* (+ idx 2))]         
+        [((and (or 'CONSTANT) insn) (? string? s) . more*)
+          (format #t "            Op::~a(vm.gc.new_string(~s)),\n" (insn->string insn) s)
+          (rewrite-insn* more* (+ idx 2))]              
         [((and (or 'TAIL_CALL) insn) m n . more*)
           (format #t "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
           (rewrite-insn* more* (+ idx 3))]              

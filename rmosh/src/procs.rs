@@ -869,7 +869,15 @@ fn string_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn string_length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-length";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::String(s) => {
+            Object::Number(s.string.len().try_into().unwrap())
+        }
+        v => {
+            panic!("{}: string required but got {}", name, v)
+        }
+    }
 }
 fn string_to_symbol(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->symbol";
