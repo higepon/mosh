@@ -872,7 +872,7 @@ fn string_length(_vm: &mut Vm, args: &[Object]) -> Object {
     check_argc!(name, args, 1);
     match args[0] {
         Object::String(s) => {
-            Object::Number(s.string.len().try_into().unwrap())
+            Object::Number(s.string.chars().count().try_into().unwrap())
         }
         v => {
             panic!("{}: string required but got {}", name, v)

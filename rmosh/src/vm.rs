@@ -4624,4 +4624,20 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+    // (string-length あいう) => 3
+    #[test]
+    fn test_test151() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(vm.gc.new_string("あいう")),
+            Op::Push,
+            Op::ReferFree(19),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
 }
