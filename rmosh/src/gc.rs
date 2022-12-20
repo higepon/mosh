@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Procedure, Symbol, Vox};
+use crate::objects::{Closure, Object, Pair, Procedure, Symbol, Vox, SString};
 use crate::vm::Vm;
 
 #[global_allocator]
@@ -154,6 +154,11 @@ impl Gc {
     pub fn new_procedure(&mut self, func: fn(&mut Vm, &[Object]) -> Object, name: &str) -> Object {
         Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
     }
+
+    pub fn new_string(&mut self, s: &str) -> Object {
+        let s = self.alloc(SString::new(s.to_string()));
+        Object::String(s)
+    }    
 
     // append o (list or obj) to l.
     // if l is not list return o.

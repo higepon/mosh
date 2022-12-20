@@ -12,7 +12,7 @@ pub enum Object {
     Number(isize),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
-    String(GcRef<String>),
+    String(GcRef<SString>),
     Symbol(GcRef<Symbol>),
     True,
     Unspecified,
