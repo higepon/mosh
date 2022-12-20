@@ -4606,5 +4606,4 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
-
 }
