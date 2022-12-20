@@ -4911,4 +4911,20 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+
+    // (begin (define x 3) x) => 3
+    #[test]
+    fn test_test165_modified() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::DefineGlobal(vm.gc.intern("x")),
+            Op::ReferGlobal(vm.gc.intern("x")),
+            Op::Halt,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+
 }
