@@ -12,6 +12,7 @@ pub enum Object {
     Number(isize),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
+    String(GcRef<String>),
     Symbol(GcRef<Symbol>),
     True,
     Unspecified,
@@ -75,6 +76,9 @@ impl Display for Object {
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
+            Object::String(s) => {
+                write!(f, "{}", unsafe { s.pointer.as_ref() })
+            }            
             Object::Symbol(symbol) => {
                 write!(f, "{}", unsafe { symbol.pointer.as_ref() })
             }
@@ -265,6 +269,28 @@ impl Vox {
 impl Display for Vox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Vox({})", self.value)
+    }
+}
+
+/// SString (Sceheme String)
+#[derive(Debug)]
+pub struct SString {
+    pub header: GcHeader,
+    pub string: String,
+}
+
+impl SString {
+    pub fn new(string: String) -> Self {
+        SString {
+            header: GcHeader::new(ObjectType::String),
+            string: string,
+        }
+    }
+}
+
+impl Display for SString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\"{}\"", self.string)
     }
 }
 

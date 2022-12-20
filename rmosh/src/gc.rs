@@ -76,6 +76,7 @@ pub enum ObjectType {
     Closure,
     Pair,
     Procedure,
+    String,
     Symbol,
     Vox,
 }
@@ -274,6 +275,9 @@ impl Gc {
             Object::Closure(closure) => {
                 self.mark_heap_object(closure);
             }
+            Object::String(string) => {
+                self.mark_heap_object(string);
+            }
             Object::Symbol(symbol) => {
                 self.mark_heap_object(symbol);
             }
@@ -337,6 +341,7 @@ impl Gc {
         println!("mark_object_fields(adr:{:?})", pointer);
 
         match object_type {
+            ObjectType::String => {}            
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Closure => {
@@ -378,6 +383,7 @@ impl Gc {
 
         let free_size = match object_type {
             ObjectType::Symbol => 0,
+            ObjectType::String => 0,
             ObjectType::Procedure => 0,
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(hige) };
