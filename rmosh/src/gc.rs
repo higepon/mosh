@@ -15,6 +15,7 @@ use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
 use crate::objects::{Closure, Object, Pair, Procedure, Symbol, Vox};
+use crate::vm::Vm;
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
@@ -149,7 +150,7 @@ impl Gc {
         Object::Symbol(symbol)
     }
 
-    pub fn new_procedure(&mut self, func: fn(&[Object]) -> Object, name: &str) -> Object {
+    pub fn new_procedure(&mut self, func: fn(&mut Vm, &[Object]) -> Object, name: &str) -> Object {
         Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
     }
 

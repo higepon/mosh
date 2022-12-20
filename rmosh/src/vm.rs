@@ -554,13 +554,14 @@ impl Vm {
             }
             Object::Procedure(procedure) => {
                 // self.cl = self.ac
-                let offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - 1;
-                let offset: usize = usize::try_from(offset).expect("offset can't be usize");
-                let argc: usize = usize::try_from(argc).expect("argc can't be usize");
-                let args = &self.stack[offset..offset + argc];
-                self.ac = (procedure.func)(args);
-
-                self.return_n(1, pc);
+                let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
+                let start: usize = usize::try_from(start).expect("start can't be usize");
+                let uargc: usize = usize::try_from(argc).expect("argc can't be usize");
+                let args = &self.stack[start..start + uargc];
+                // copying args here because we can't borrow.
+                let args = &args.to_owned()[..];                                
+                self.ac = (procedure.func)(self, args);
+                self.return_n(argc, pc);
             }
             _ => {
                 panic!("can't call {:?}", self.ac);

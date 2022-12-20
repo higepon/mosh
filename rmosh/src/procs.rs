@@ -1,6 +1,6 @@
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
-use crate::{gc::Gc, objects::Object};
+use crate::{gc::Gc, objects::Object, vm::Vm};
 
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
@@ -765,19 +765,21 @@ pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     ]
 }
 
-
 #[macro_export]
 macro_rules! check_argc {
-    ($name:ident, $args:ident, $argc:expr) => {
-        {
-            if $args.len() != $argc {
-                panic!("{}: {} arguments required but got {}", $name, $argc, $args.len());
-            }
+    ($name:ident, $args:ident, $argc:expr) => {{
+        if $args.len() != $argc {
+            panic!(
+                "{}: {} arguments required but got {}",
+                $name,
+                $argc,
+                $args.len()
+            );
         }
-    };
+    }};
 }
 
-fn is_number(args: &[Object]) -> Object {
+fn is_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "number?";
     check_argc!(name, args, 1);
     assert_eq!(args.len(), 1);
@@ -786,15 +788,15 @@ fn is_number(args: &[Object]) -> Object {
         _ => Object::False,
     }
 }
-fn cons(args: &[Object]) -> Object {
+fn cons(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn consmul(args: &[Object]) -> Object {
+fn consmul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons*";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn car(args: &[Object]) -> Object {
+fn car(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons";
     assert_eq!(args.len(), 1);
     match args[0] {
@@ -805,2456 +807,2467 @@ fn car(args: &[Object]) -> Object {
     }
 }
 
-fn cdr(args: &[Object]) -> Object {
+fn cdr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_null(args: &[Object]) -> Object {
+fn is_null(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "null?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_car_destructive(args: &[Object]) -> Object {
+fn set_car_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-car!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_cdr_destructive(args: &[Object]) -> Object {
+fn set_cdr_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-cdr!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sys_display(args: &[Object]) -> Object {
+fn sys_display(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sys-display";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn rxmatch(args: &[Object]) -> Object {
+fn rxmatch(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_regexp(args: &[Object]) -> Object {
+fn is_regexp(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "regexp?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn regexp_to_string(args: &[Object]) -> Object {
+fn regexp_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "regexp->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn rxmatch_start(args: &[Object]) -> Object {
+fn rxmatch_start(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch-start";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn rxmatch_end(args: &[Object]) -> Object {
+fn rxmatch_end(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch-end";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn rxmatch_after(args: &[Object]) -> Object {
+fn rxmatch_after(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch-after";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn rxmatch_before(args: &[Object]) -> Object {
+fn rxmatch_before(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch-before";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn rxmatch_substring(args: &[Object]) -> Object {
+fn rxmatch_substring(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch-substring";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_string(args: &[Object]) -> Object {
+fn make_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_set_destructive(args: &[Object]) -> Object {
+fn string_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_length(args: &[Object]) -> Object {
+fn string_length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-length";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_symbol(args: &[Object]) -> Object {
+fn string_to_symbol(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->symbol";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_number(args: &[Object]) -> Object {
+fn string_to_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->number";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_append(args: &[Object]) -> Object {
+fn string_append(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-append";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_split(args: &[Object]) -> Object {
+fn string_split(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-split";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string(args: &[Object]) -> Object {
+fn string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_to_string(args: &[Object]) -> Object {
+fn number_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "number->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn reverse(args: &[Object]) -> Object {
+fn reverse(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "reverse";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_eof_object(args: &[Object]) -> Object {
+fn is_eof_object(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eof-object?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn read_char(args: &[Object]) -> Object {
+fn read_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "read-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn peek_char(args: &[Object]) -> Object {
+fn peek_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "peek-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_charequal(args: &[Object]) -> Object {
+fn is_charequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_string(args: &[Object]) -> Object {
+fn is_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_environment_variable(args: &[Object]) -> Object {
+fn get_environment_variable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-environment-variable";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_environment_variables(args: &[Object]) -> Object {
+fn get_environment_variables(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-environment-variables";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_equal(args: &[Object]) -> Object {
+fn is_equal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "equal?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_string_input_port(args: &[Object]) -> Object {
+fn open_string_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-string-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_output_string(args: &[Object]) -> Object {
+fn open_output_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-output-string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sys_port_seek(args: &[Object]) -> Object {
+fn sys_port_seek(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sys-port-seek";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn close_output_port(args: &[Object]) -> Object {
+fn close_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "close-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn digit_to_integer(args: &[Object]) -> Object {
+fn digit_to_integer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "digit->integer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_remaining_input_string(args: &[Object]) -> Object {
+fn get_remaining_input_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-remaining-input-string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn directory_list(args: &[Object]) -> Object {
+fn directory_list(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "directory-list";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_file_exists(args: &[Object]) -> Object {
+fn is_file_exists(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-exists?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn delete_file(args: &[Object]) -> Object {
+fn delete_file(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "delete-file";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_output_string(args: &[Object]) -> Object {
+fn get_output_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-output-string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_regexp(args: &[Object]) -> Object {
+fn string_to_regexp(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->regexp";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn char_to_integer(args: &[Object]) -> Object {
+fn char_to_integer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char->integer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn integer_to_char(args: &[Object]) -> Object {
+fn integer_to_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "integer->char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn format(args: &[Object]) -> Object {
+fn format(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "format";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_input_port(args: &[Object]) -> Object {
+fn current_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "current-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_output_port(args: &[Object]) -> Object {
+fn current_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "current-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_current_input_port_destructive(args: &[Object]) -> Object {
+fn set_current_input_port_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-current-input-port!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_current_output_port_destructive(args: &[Object]) -> Object {
+fn set_current_output_port_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-current-output-port!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_char(args: &[Object]) -> Object {
+fn is_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn write(args: &[Object]) -> Object {
+fn write(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "write";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn gensym(args: &[Object]) -> Object {
+fn gensym(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "gensym";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_stringequal(args: &[Object]) -> Object {
+fn is_stringequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caaaar(args: &[Object]) -> Object {
+fn caaaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caaaar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caaadr(args: &[Object]) -> Object {
+fn caaadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caaadr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caaar(args: &[Object]) -> Object {
+fn caaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caaar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caadar(args: &[Object]) -> Object {
+fn caadar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caadar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caaddr(args: &[Object]) -> Object {
+fn caaddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caaddr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caadr(args: &[Object]) -> Object {
+fn caadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caadr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caar(args: &[Object]) -> Object {
+fn caar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cadaar(args: &[Object]) -> Object {
+fn cadaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cadaar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cadadr(args: &[Object]) -> Object {
+fn cadadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cadadr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cadar(args: &[Object]) -> Object {
+fn cadar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cadar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caddar(args: &[Object]) -> Object {
+fn caddar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caddar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cadddr(args: &[Object]) -> Object {
+fn cadddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cadddr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn caddr(args: &[Object]) -> Object {
+fn caddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caddr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cadr(args: &[Object]) -> Object {
+fn cadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cadr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdaaar(args: &[Object]) -> Object {
+fn cdaaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdaaar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdaadr(args: &[Object]) -> Object {
+fn cdaadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdaadr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdaar(args: &[Object]) -> Object {
+fn cdaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdaar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdadar(args: &[Object]) -> Object {
+fn cdadar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdadar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdaddr(args: &[Object]) -> Object {
+fn cdaddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdaddr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdadr(args: &[Object]) -> Object {
+fn cdadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdadr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdar(args: &[Object]) -> Object {
+fn cdar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cddaar(args: &[Object]) -> Object {
+fn cddaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cddaar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cddadr(args: &[Object]) -> Object {
+fn cddadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cddadr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cddar(args: &[Object]) -> Object {
+fn cddar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cddar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdddar(args: &[Object]) -> Object {
+fn cdddar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdddar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cddddr(args: &[Object]) -> Object {
+fn cddddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cddddr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cdddr(args: &[Object]) -> Object {
+fn cdddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdddr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cddr(args: &[Object]) -> Object {
+fn cddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cddr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_symbolequal(args: &[Object]) -> Object {
+fn is_symbolequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_booleanequal(args: &[Object]) -> Object {
+fn is_booleanequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "boolean=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_vector(args: &[Object]) -> Object {
+fn is_vector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_list(args: &[Object]) -> Object {
+fn is_list(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn list(args: &[Object]) -> Object {
-    let name: &str = "list";
-    panic!("{}({}) not implemented", name, args.len());
+fn list(vm: &mut Vm, args: &[Object]) -> Object {
+    let mut obj = Object::Nil;
+    let argc = args.len();
+    let mut i: isize = (argc - 1).try_into().unwrap();
+    loop {
+        let idx: usize = i.try_into().unwrap();
+        obj = vm.gc.cons(args[idx], obj);
+        i = i - 1;
+        if i < 0 {
+            break;
+        }
+    }
+    obj
 }
-fn memq(args: &[Object]) -> Object {
+
+fn memq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "memq";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_eq(args: &[Object]) -> Object {
+fn is_eq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eq?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_eqv(args: &[Object]) -> Object {
+fn is_eqv(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eqv?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn member(args: &[Object]) -> Object {
+fn member(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "member";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_boolean(args: &[Object]) -> Object {
+fn is_boolean(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "boolean?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn symbol_to_string(args: &[Object]) -> Object {
+fn symbol_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_ref(args: &[Object]) -> Object {
+fn string_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_timeofday(args: &[Object]) -> Object {
+fn get_timeofday(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-timeofday";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_eq_hashtable(args: &[Object]) -> Object {
+fn make_eq_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-eq-hashtable";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_eqv_hashtable(args: &[Object]) -> Object {
+fn make_eqv_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-eqv-hashtable";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_set_destructive(args: &[Object]) -> Object {
+fn hashtable_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_ref(args: &[Object]) -> Object {
+fn hashtable_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_keys(args: &[Object]) -> Object {
+fn hashtable_keys(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-keys";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_hash(args: &[Object]) -> Object {
+fn string_hash(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-hash";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn eqv_hash(args: &[Object]) -> Object {
+fn eqv_hash(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eqv-hash";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_ci_hash(args: &[Object]) -> Object {
+fn string_ci_hash(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-ci-hash";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn symbol_hash(args: &[Object]) -> Object {
+fn symbol_hash(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol-hash";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn equal_hash(args: &[Object]) -> Object {
+fn equal_hash(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "equal-hash";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn eq_hashtable_copy(args: &[Object]) -> Object {
+fn eq_hashtable_copy(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eq-hashtable-copy";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_error_port(args: &[Object]) -> Object {
+fn current_error_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "current-error-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn values(args: &[Object]) -> Object {
+fn values(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "values";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vm_apply(args: &[Object]) -> Object {
+fn vm_apply(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vm/apply";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_pair(args: &[Object]) -> Object {
+fn is_pair(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pair?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_custom_binary_input_port(args: &[Object]) -> Object {
+fn make_custom_binary_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-custom-binary-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_custom_binary_output_port(args: &[Object]) -> Object {
+fn make_custom_binary_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-custom-binary-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_custom_textual_input_port(args: &[Object]) -> Object {
+fn make_custom_textual_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-custom-textual-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_custom_textual_output_port(args: &[Object]) -> Object {
+fn make_custom_textual_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-custom-textual-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_u8(args: &[Object]) -> Object {
+fn get_u8(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-u8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn put_u8(args: &[Object]) -> Object {
+fn put_u8(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "put-u8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn put_string(args: &[Object]) -> Object {
+fn put_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "put-string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flush_output_port(args: &[Object]) -> Object {
+fn flush_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flush-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn output_port_buffer_mode(args: &[Object]) -> Object {
+fn output_port_buffer_mode(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "output-port-buffer-mode";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u8_set_destructive(args: &[Object]) -> Object {
+fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u8-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port_has_port_position(args: &[Object]) -> Object {
+fn is_port_has_port_position(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "port-has-port-position?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port_has_set_port_position_destructive(args: &[Object]) -> Object {
+fn is_port_has_set_port_position_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "port-has-set-port-position!?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn port_position(args: &[Object]) -> Object {
+fn port_position(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "port-position";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_port_position_destructive(args: &[Object]) -> Object {
+fn set_port_position_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-port-position!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_bytevector_n_destructive(args: &[Object]) -> Object {
+fn get_bytevector_n_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-bytevector-n!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_bytevector_some(args: &[Object]) -> Object {
+fn get_bytevector_some(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-bytevector-some";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_bytevector_all(args: &[Object]) -> Object {
+fn get_bytevector_all(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-bytevector-all";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn transcoded_port(args: &[Object]) -> Object {
+fn transcoded_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "transcoded-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn latin_1_codec(args: &[Object]) -> Object {
+fn latin_1_codec(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "latin-1-codec";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn utf_8_codec(args: &[Object]) -> Object {
+fn utf_8_codec(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "utf-8-codec";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn utf_16_codec(args: &[Object]) -> Object {
+fn utf_16_codec(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "utf-16-codec";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_transcoder(args: &[Object]) -> Object {
+fn make_transcoder(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-transcoder";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn eof_object(args: &[Object]) -> Object {
+fn eof_object(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eof-object";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sys_open_bytevector_output_port(args: &[Object]) -> Object {
+fn sys_open_bytevector_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sys-open-bytevector-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sys_get_bytevector(args: &[Object]) -> Object {
+fn sys_get_bytevector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sys-get-bytevector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_length(args: &[Object]) -> Object {
+fn bytevector_length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-length";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn standard_input_port(args: &[Object]) -> Object {
+fn standard_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "standard-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn standard_output_port(args: &[Object]) -> Object {
+fn standard_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "standard-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn standard_error_port(args: &[Object]) -> Object {
+fn standard_error_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "standard-error-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_bytevector_n(args: &[Object]) -> Object {
+fn get_bytevector_n(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-bytevector-n";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_file_output_port(args: &[Object]) -> Object {
+fn open_file_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-file-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_file_input_port(args: &[Object]) -> Object {
+fn open_file_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-file-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn close_input_port(args: &[Object]) -> Object {
+fn close_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "close-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vector(args: &[Object]) -> Object {
+fn vector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn regexp_replace(args: &[Object]) -> Object {
+fn regexp_replace(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "regexp-replace";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn regexp_replace_all(args: &[Object]) -> Object {
+fn regexp_replace_all(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "regexp-replace-all";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn source_info(args: &[Object]) -> Object {
+fn source_info(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "source-info";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn eval(args: &[Object]) -> Object {
+fn eval(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eval";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn eval_compiled(args: &[Object]) -> Object {
+fn eval_compiled(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eval-compiled";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn apply(args: &[Object]) -> Object {
+fn apply(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "apply";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn assq(args: &[Object]) -> Object {
+fn assq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "assq";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn assoc(args: &[Object]) -> Object {
+fn assoc(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "assoc";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn assv(args: &[Object]) -> Object {
+fn assv(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "assv";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn exit(args: &[Object]) -> Object {
+fn exit(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "exit";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn macroexpand_1(args: &[Object]) -> Object {
+fn macroexpand_1(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "macroexpand-1";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn memv(args: &[Object]) -> Object {
+fn memv(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "memv";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_procedure(args: &[Object]) -> Object {
+fn is_procedure(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "procedure?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn load(args: &[Object]) -> Object {
+fn load(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "load";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_symbol(args: &[Object]) -> Object {
+fn is_symbol(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_charle(args: &[Object]) -> Object {
+fn is_charle(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char<=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_charlt(args: &[Object]) -> Object {
+fn is_charlt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char<?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_charge(args: &[Object]) -> Object {
+fn is_charge(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char>=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_chargt(args: &[Object]) -> Object {
+fn is_chargt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char>?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn read(args: &[Object]) -> Object {
+fn read(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "read";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vector_to_list(args: &[Object]) -> Object {
+fn vector_to_list(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector->list";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_source_info_destructive(args: &[Object]) -> Object {
+fn set_source_info_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-source-info!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn call_process(args: &[Object]) -> Object {
+fn call_process(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%call-process";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn confstr(args: &[Object]) -> Object {
+fn confstr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%confstr";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn dup(args: &[Object]) -> Object {
+fn dup(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%dup";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn start_process(args: &[Object]) -> Object {
+fn start_process(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%start-process";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_closure_name(args: &[Object]) -> Object {
+fn get_closure_name(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%get-closure-name";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn append(args: &[Object]) -> Object {
+fn append(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "append";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn append2(args: &[Object]) -> Object {
+fn append2(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "append2";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn append_destructive(args: &[Object]) -> Object {
+fn append_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "append!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pass3_find_free(args: &[Object]) -> Object {
+fn pass3_find_free(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pass3/find-free";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pass3_find_sets(args: &[Object]) -> Object {
+fn pass3_find_sets(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pass3/find-sets";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pass4_fixup_labels(args: &[Object]) -> Object {
+fn pass4_fixup_labels(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pass4/fixup-labels";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_code_builder(args: &[Object]) -> Object {
+fn make_code_builder(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-code-builder";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_extra1_destructive(args: &[Object]) -> Object {
+fn code_builder_put_extra1_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-extra1!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_extra2_destructive(args: &[Object]) -> Object {
+fn code_builder_put_extra2_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-extra2!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_extra3_destructive(args: &[Object]) -> Object {
+fn code_builder_put_extra3_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-extra3!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_extra4_destructive(args: &[Object]) -> Object {
+fn code_builder_put_extra4_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-extra4!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_extra5_destructive(args: &[Object]) -> Object {
+fn code_builder_put_extra5_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-extra5!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_append_destructive(args: &[Object]) -> Object {
+fn code_builder_append_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-append!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_emit(args: &[Object]) -> Object {
+fn code_builder_emit(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-emit";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_insn_arg0_destructive(args: &[Object]) -> Object {
+fn code_builder_put_insn_arg0_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-insn-arg0!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_insn_arg1_destructive(args: &[Object]) -> Object {
+fn code_builder_put_insn_arg1_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-insn-arg1!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn code_builder_put_insn_arg2_destructive(args: &[Object]) -> Object {
+fn code_builder_put_insn_arg2_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-insn-arg2!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn length(args: &[Object]) -> Object {
+fn length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "length";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn list_to_vector(args: &[Object]) -> Object {
+fn list_to_vector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list->vector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pass3_compile_refer(args: &[Object]) -> Object {
+fn pass3_compile_refer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pass3/compile-refer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pass1_find_symbol_in_lvars(args: &[Object]) -> Object {
+fn pass1_find_symbol_in_lvars(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pass1/find-symbol-in-lvars";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn label(args: &[Object]) -> Object {
+fn label(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "$label";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn local_ref(args: &[Object]) -> Object {
+fn local_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "$local-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn list_transposeadd(args: &[Object]) -> Object {
+fn list_transposeadd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list-transpose+";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn symbol_value(args: &[Object]) -> Object {
+fn symbol_value(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol-value";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_symbol_value_destructive(args: &[Object]) -> Object {
+fn set_symbol_value_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-symbol-value!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_hashtable(args: &[Object]) -> Object {
+fn make_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-hashtable";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_hashtable(args: &[Object]) -> Object {
+fn is_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_size(args: &[Object]) -> Object {
+fn hashtable_size(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-size";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_delete_destructive(args: &[Object]) -> Object {
+fn hashtable_delete_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-delete!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_hashtable_contains(args: &[Object]) -> Object {
+fn is_hashtable_contains(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-contains?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_copy(args: &[Object]) -> Object {
+fn hashtable_copy(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-copy";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_hashtable_mutable(args: &[Object]) -> Object {
+fn is_hashtable_mutable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-mutable?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_clear_destructive(args: &[Object]) -> Object {
+fn hashtable_clear_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-clear!";
     panic!("{}({}) not implemented", name, args.len());
 }
 
-fn hashtable_equivalence_function(args: &[Object]) -> Object {
+fn hashtable_equivalence_function(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-equivalence-function";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn hashtable_hash_function(args: &[Object]) -> Object {
+fn hashtable_hash_function(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-hash-function";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn throw(args: &[Object]) -> Object {
+fn throw(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "throw";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_lt(args: &[Object]) -> Object {
+fn number_lt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "<";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_le(args: &[Object]) -> Object {
+fn number_le(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "<=";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_gt(args: &[Object]) -> Object {
+fn number_gt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = ">";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_ge(args: &[Object]) -> Object {
+fn number_ge(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = ">=";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_eq(args: &[Object]) -> Object {
+fn number_eq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "=";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_add(args: &[Object]) -> Object {
+fn number_add(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "+";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn nuber_sub(args: &[Object]) -> Object {
+fn nuber_sub(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "-";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_mul(args: &[Object]) -> Object {
+fn number_mul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "*";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_div(args: &[Object]) -> Object {
+fn number_div(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "/";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn max(args: &[Object]) -> Object {
+fn max(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "max";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn min(args: &[Object]) -> Object {
+fn min(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "min";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_char(args: &[Object]) -> Object {
+fn get_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn lookahead_char(args: &[Object]) -> Object {
+fn lookahead_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "lookahead-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_string_n(args: &[Object]) -> Object {
+fn get_string_n(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-string-n";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_string_n_destructive(args: &[Object]) -> Object {
+fn get_string_n_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-string-n!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_string_all(args: &[Object]) -> Object {
+fn get_string_all(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-string-all";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_line(args: &[Object]) -> Object {
+fn get_line(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-line";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_datum(args: &[Object]) -> Object {
+fn get_datum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-datum";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_bytevector(args: &[Object]) -> Object {
+fn is_bytevector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_directory(args: &[Object]) -> Object {
+fn current_directory(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "current-directory";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn standard_library_path(args: &[Object]) -> Object {
+fn standard_library_path(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "standard-library-path";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn native_endianness(args: &[Object]) -> Object {
+fn native_endianness(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "native-endianness";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_bytevector(args: &[Object]) -> Object {
+fn make_bytevector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-bytevector";
     panic!("{}({}) not implemented", name, args.len());
 }
 
-fn is_bytevectorequal(args: &[Object]) -> Object {
+fn is_bytevectorequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_fill_destructive(args: &[Object]) -> Object {
+fn bytevector_fill_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-fill!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_copy_destructive(args: &[Object]) -> Object {
+fn bytevector_copy_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-copy!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_copy(args: &[Object]) -> Object {
+fn bytevector_copy(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-copy";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u8_ref(args: &[Object]) -> Object {
+fn bytevector_u8_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u8-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
 
-fn bytevector_s8_ref(args: &[Object]) -> Object {
+fn bytevector_s8_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s8-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s8_set_destructive(args: &[Object]) -> Object {
+fn bytevector_s8_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s8-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_to_u8_list(args: &[Object]) -> Object {
+fn bytevector_to_u8_list(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector->u8-list";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn u8_list_to_bytevector(args: &[Object]) -> Object {
+fn u8_list_to_bytevector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "u8-list->bytevector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u16_ref(args: &[Object]) -> Object {
+fn bytevector_u16_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u16-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s16_ref(args: &[Object]) -> Object {
+fn bytevector_s16_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s16-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u16_native_ref(args: &[Object]) -> Object {
+fn bytevector_u16_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u16-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s16_native_ref(args: &[Object]) -> Object {
+fn bytevector_s16_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s16-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u16_set_destructive(args: &[Object]) -> Object {
+fn bytevector_u16_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u16-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s16_set_destructive(args: &[Object]) -> Object {
+fn bytevector_s16_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s16-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u16_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_u16_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u16-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s16_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_s16_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s16-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u32_ref(args: &[Object]) -> Object {
+fn bytevector_u32_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u32-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s32_ref(args: &[Object]) -> Object {
+fn bytevector_s32_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s32-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u32_native_ref(args: &[Object]) -> Object {
+fn bytevector_u32_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u32-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s32_native_ref(args: &[Object]) -> Object {
+fn bytevector_s32_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s32-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u32_set_destructive(args: &[Object]) -> Object {
+fn bytevector_u32_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u32-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s32_set_destructive(args: &[Object]) -> Object {
+fn bytevector_s32_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s32-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u32_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_u32_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u32-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s32_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_s32_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s32-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u64_ref(args: &[Object]) -> Object {
+fn bytevector_u64_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u64-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s64_ref(args: &[Object]) -> Object {
+fn bytevector_s64_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s64-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u64_native_ref(args: &[Object]) -> Object {
+fn bytevector_u64_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u64-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s64_native_ref(args: &[Object]) -> Object {
+fn bytevector_s64_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s64-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u64_set_destructive(args: &[Object]) -> Object {
+fn bytevector_u64_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u64-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s64_set_destructive(args: &[Object]) -> Object {
+fn bytevector_s64_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s64-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u64_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_u64_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-u64-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_s64_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_s64_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-s64-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_to_string(args: &[Object]) -> Object {
+fn bytevector_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_bytevector(args: &[Object]) -> Object {
+fn string_to_bytevector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->bytevector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_utf8(args: &[Object]) -> Object {
+fn string_to_utf8(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->utf8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn utf8_to_string(args: &[Object]) -> Object {
+fn utf8_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "utf8->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn null_terminated_bytevector_to_string(args: &[Object]) -> Object {
+fn null_terminated_bytevector_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "null-terminated-bytevector->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn null_terminated_utf8_to_string(args: &[Object]) -> Object {
+fn null_terminated_utf8_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "null-terminated-utf8->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_utf16(args: &[Object]) -> Object {
+fn string_to_utf16(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->utf16";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_utf32(args: &[Object]) -> Object {
+fn string_to_utf32(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->utf32";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn utf16_to_string(args: &[Object]) -> Object {
+fn utf16_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "utf16->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn utf32_to_string(args: &[Object]) -> Object {
+fn utf32_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "utf32->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn close_port(args: &[Object]) -> Object {
+fn close_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "close-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_instruction(args: &[Object]) -> Object {
+fn make_instruction(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-instruction";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_compiler_instruction(args: &[Object]) -> Object {
+fn make_compiler_instruction(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-compiler-instruction";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fasl_write(args: &[Object]) -> Object {
+fn fasl_write(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fasl-write";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fasl_read(args: &[Object]) -> Object {
+fn fasl_read(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fasl-read";
     panic!("{}({}) not implemented", name, args.len());
 }
 
-fn is_rational(args: &[Object]) -> Object {
+fn is_rational(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rational?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flonum(args: &[Object]) -> Object {
+fn is_flonum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flonum?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fixnum(args: &[Object]) -> Object {
+fn is_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fixnum?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_bignum(args: &[Object]) -> Object {
+fn is_bignum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bignum?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fixnum_width(args: &[Object]) -> Object {
+fn fixnum_width(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fixnum-width";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn least_fixnum(args: &[Object]) -> Object {
+fn least_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "least-fixnum";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn greatest_fixnum(args: &[Object]) -> Object {
+fn greatest_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "greatest-fixnum";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_rectangular(args: &[Object]) -> Object {
+fn make_rectangular(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-rectangular";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn real_part(args: &[Object]) -> Object {
+fn real_part(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "real-part";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn imag_part(args: &[Object]) -> Object {
+fn imag_part(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "imag-part";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_exact(args: &[Object]) -> Object {
+fn is_exact(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "exact?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_inexact(args: &[Object]) -> Object {
+fn is_inexact(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "inexact?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn exact(args: &[Object]) -> Object {
+fn exact(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "exact";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn inexact(args: &[Object]) -> Object {
+fn inexact(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "inexact";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_nan(args: &[Object]) -> Object {
+fn is_nan(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "nan?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_infinite(args: &[Object]) -> Object {
+fn is_infinite(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "infinite?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_finite(args: &[Object]) -> Object {
+fn is_finite(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "finite?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn real_to_flonum(args: &[Object]) -> Object {
+fn real_to_flonum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "real->flonum";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flequal(args: &[Object]) -> Object {
+fn is_flequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fllt(args: &[Object]) -> Object {
+fn is_fllt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl<?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flgt(args: &[Object]) -> Object {
+fn is_flgt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl>?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flge(args: &[Object]) -> Object {
+fn is_flge(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl>=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flle(args: &[Object]) -> Object {
+fn is_flle(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl<=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flinteger(args: &[Object]) -> Object {
+fn is_flinteger(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flinteger?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flzero(args: &[Object]) -> Object {
+fn is_flzero(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flzero?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flpositive(args: &[Object]) -> Object {
+fn is_flpositive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flpositive?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flnegative(args: &[Object]) -> Object {
+fn is_flnegative(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flnegative?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flodd(args: &[Object]) -> Object {
+fn is_flodd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flodd?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fleven(args: &[Object]) -> Object {
+fn is_fleven(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fleven?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flfinite(args: &[Object]) -> Object {
+fn is_flfinite(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flfinite?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flinfinite(args: &[Object]) -> Object {
+fn is_flinfinite(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flinfinite?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flnan(args: &[Object]) -> Object {
+fn is_flnan(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flnan?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flmax(args: &[Object]) -> Object {
+fn flmax(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flmax";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flmin(args: &[Object]) -> Object {
+fn flmin(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flmin";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fladd(args: &[Object]) -> Object {
+fn fladd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl+";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flmul(args: &[Object]) -> Object {
+fn flmul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl*";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flsub(args: &[Object]) -> Object {
+fn flsub(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl-";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fldiv_op(args: &[Object]) -> Object {
+fn fldiv_op(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fl/";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flabs(args: &[Object]) -> Object {
+fn flabs(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flabs";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fldiv(args: &[Object]) -> Object {
+fn fldiv(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fldiv";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flmod(args: &[Object]) -> Object {
+fn flmod(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flmod";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fldiv0(args: &[Object]) -> Object {
+fn fldiv0(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fldiv0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flmod0(args: &[Object]) -> Object {
+fn flmod0(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flmod0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flnumerator(args: &[Object]) -> Object {
+fn flnumerator(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flnumerator";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fldenominator(args: &[Object]) -> Object {
+fn fldenominator(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fldenominator";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flfloor(args: &[Object]) -> Object {
+fn flfloor(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flfloor";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flceiling(args: &[Object]) -> Object {
+fn flceiling(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flceiling";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fltruncate(args: &[Object]) -> Object {
+fn fltruncate(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fltruncate";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flround(args: &[Object]) -> Object {
+fn flround(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flround";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flexp(args: &[Object]) -> Object {
+fn flexp(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flexp";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fllog(args: &[Object]) -> Object {
+fn fllog(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fllog";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flsin(args: &[Object]) -> Object {
+fn flsin(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flsin";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flcos(args: &[Object]) -> Object {
+fn flcos(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flcos";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fltan(args: &[Object]) -> Object {
+fn fltan(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fltan";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flasin(args: &[Object]) -> Object {
+fn flasin(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flasin";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flacos(args: &[Object]) -> Object {
+fn flacos(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flacos";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flatan(args: &[Object]) -> Object {
+fn flatan(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flatan";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flsqrt(args: &[Object]) -> Object {
+fn flsqrt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flsqrt";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flexpt(args: &[Object]) -> Object {
+fn flexpt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "flexpt";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fixnum_to_flonum(args: &[Object]) -> Object {
+fn fixnum_to_flonum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fixnum->flonum";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_not(args: &[Object]) -> Object {
+fn bitwise_not(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-not";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_and(args: &[Object]) -> Object {
+fn bitwise_and(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-and";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_ior(args: &[Object]) -> Object {
+fn bitwise_ior(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-ior";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_xor(args: &[Object]) -> Object {
+fn bitwise_xor(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-xor";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_bit_count(args: &[Object]) -> Object {
+fn bitwise_bit_count(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-bit-count";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_length(args: &[Object]) -> Object {
+fn bitwise_length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-length";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_first_bit_set(args: &[Object]) -> Object {
+fn bitwise_first_bit_set(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-first-bit-set";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_arithmetic_shift_left(args: &[Object]) -> Object {
+fn bitwise_arithmetic_shift_left(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-arithmetic-shift-left";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_arithmetic_shift_right(args: &[Object]) -> Object {
+fn bitwise_arithmetic_shift_right(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-arithmetic-shift-right";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_arithmetic_shift(args: &[Object]) -> Object {
+fn bitwise_arithmetic_shift(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bitwise-arithmetic-shift";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_complex(args: &[Object]) -> Object {
+fn is_complex(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "complex?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_real(args: &[Object]) -> Object {
+fn is_real(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "real?";
     panic!("{}({}) not implemented", name, args.len());
 }
 
-fn is_integer(args: &[Object]) -> Object {
+fn is_integer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "integer?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_real_valued(args: &[Object]) -> Object {
+fn is_real_valued(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "real-valued?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_rational_valued(args: &[Object]) -> Object {
+fn is_rational_valued(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rational-valued?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_integer_valued(args: &[Object]) -> Object {
+fn is_integer_valued(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "integer-valued?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxequal(args: &[Object]) -> Object {
+fn is_fxequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxgt(args: &[Object]) -> Object {
+fn is_fxgt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx>?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxlt(args: &[Object]) -> Object {
+fn is_fxlt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx<?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxge(args: &[Object]) -> Object {
+fn is_fxge(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx>=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxle(args: &[Object]) -> Object {
+fn is_fxle(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx<=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxzero(args: &[Object]) -> Object {
+fn is_fxzero(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxzero?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxpositive(args: &[Object]) -> Object {
+fn is_fxpositive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxpositive?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxnegative(args: &[Object]) -> Object {
+fn is_fxnegative(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxnegative?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxodd(args: &[Object]) -> Object {
+fn is_fxodd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxodd?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxeven(args: &[Object]) -> Object {
+fn is_fxeven(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxeven?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxmax(args: &[Object]) -> Object {
+fn fxmax(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxmax";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxmin(args: &[Object]) -> Object {
+fn fxmin(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxmin";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxadd(args: &[Object]) -> Object {
+fn fxadd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx+";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxmul(args: &[Object]) -> Object {
+fn fxmul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx*";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxsub(args: &[Object]) -> Object {
+fn fxsub(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fx-";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxdiv(args: &[Object]) -> Object {
+fn fxdiv(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxdiv";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxmod(args: &[Object]) -> Object {
+fn fxmod(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxmod";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxdiv0(args: &[Object]) -> Object {
+fn fxdiv0(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxdiv0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxmod0(args: &[Object]) -> Object {
+fn fxmod0(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxmod0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxnot(args: &[Object]) -> Object {
+fn fxnot(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxnot";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxand(args: &[Object]) -> Object {
+fn fxand(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxand";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxior(args: &[Object]) -> Object {
+fn fxior(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxior";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxxor(args: &[Object]) -> Object {
+fn fxxor(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxxor";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxif(args: &[Object]) -> Object {
+fn fxif(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxif";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxbit_count(args: &[Object]) -> Object {
+fn fxbit_count(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxbit-count";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxlength(args: &[Object]) -> Object {
+fn fxlength(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxlength";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxfirst_bit_set(args: &[Object]) -> Object {
+fn fxfirst_bit_set(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxfirst-bit-set";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fxbit_set(args: &[Object]) -> Object {
+fn is_fxbit_set(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxbit-set?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxcopy_bit(args: &[Object]) -> Object {
+fn fxcopy_bit(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxcopy-bit";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxbit_field(args: &[Object]) -> Object {
+fn fxbit_field(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxbit-field";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxcopy_bit_field(args: &[Object]) -> Object {
+fn fxcopy_bit_field(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxcopy-bit-field";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxarithmetic_shift(args: &[Object]) -> Object {
+fn fxarithmetic_shift(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxarithmetic-shift";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxarithmetic_shift_left(args: &[Object]) -> Object {
+fn fxarithmetic_shift_left(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxarithmetic-shift-left";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxarithmetic_shift_right(args: &[Object]) -> Object {
+fn fxarithmetic_shift_right(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxarithmetic-shift-right";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxrotate_bit_field(args: &[Object]) -> Object {
+fn fxrotate_bit_field(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxrotate-bit-field";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxreverse_bit_field(args: &[Object]) -> Object {
+fn fxreverse_bit_field(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fxreverse-bit-field";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_single_native_ref(args: &[Object]) -> Object {
+fn bytevector_ieee_single_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-single-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_single_ref(args: &[Object]) -> Object {
+fn bytevector_ieee_single_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-single-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_double_native_ref(args: &[Object]) -> Object {
+fn bytevector_ieee_double_native_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-double-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_double_ref(args: &[Object]) -> Object {
+fn bytevector_ieee_double_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-double-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_single_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_ieee_single_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-single-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_single_set_destructive(args: &[Object]) -> Object {
+fn bytevector_ieee_single_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-single-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_double_native_set_destructive(args: &[Object]) -> Object {
+fn bytevector_ieee_double_native_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-double-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_ieee_double_set_destructive(args: &[Object]) -> Object {
+fn bytevector_ieee_double_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-ieee-double-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_even(args: &[Object]) -> Object {
+fn is_even(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "even?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_odd(args: &[Object]) -> Object {
+fn is_odd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "odd?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn abs(args: &[Object]) -> Object {
+fn abs(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "abs";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn div(args: &[Object]) -> Object {
+fn div(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "div";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn div0(args: &[Object]) -> Object {
+fn div0(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "div0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn numerator(args: &[Object]) -> Object {
+fn numerator(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "numerator";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn denominator(args: &[Object]) -> Object {
+fn denominator(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "denominator";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn floor(args: &[Object]) -> Object {
+fn floor(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "floor";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ceiling(args: &[Object]) -> Object {
+fn ceiling(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "ceiling";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn truncate(args: &[Object]) -> Object {
+fn truncate(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "truncate";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn round(args: &[Object]) -> Object {
+fn round(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "round";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn exp(args: &[Object]) -> Object {
+fn exp(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "exp";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn log(args: &[Object]) -> Object {
+fn log(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "log";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sin(args: &[Object]) -> Object {
+fn sin(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sin";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn cos(args: &[Object]) -> Object {
+fn cos(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cos";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn tan(args: &[Object]) -> Object {
+fn tan(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "tan";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn asin(args: &[Object]) -> Object {
+fn asin(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "asin";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn acos(args: &[Object]) -> Object {
+fn acos(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "acos";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sqrt(args: &[Object]) -> Object {
+fn sqrt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sqrt";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn magnitude(args: &[Object]) -> Object {
+fn magnitude(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "magnitude";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn angle(args: &[Object]) -> Object {
+fn angle(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "angle";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn atan(args: &[Object]) -> Object {
+fn atan(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "atan";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn expt(args: &[Object]) -> Object {
+fn expt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "expt";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_polar(args: &[Object]) -> Object {
+fn make_polar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-polar";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_copy(args: &[Object]) -> Object {
+fn string_copy(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-copy";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vector_fill_destructive(args: &[Object]) -> Object {
+fn vector_fill_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector-fill!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ungensym(args: &[Object]) -> Object {
+fn ungensym(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "ungensym";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn disasm(args: &[Object]) -> Object {
+fn disasm(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "disasm";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn print_stack(args: &[Object]) -> Object {
+fn print_stack(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "print-stack";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fast_equal(args: &[Object]) -> Object {
+fn is_fast_equal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fast-equal?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn native_eol_style(args: &[Object]) -> Object {
+fn native_eol_style(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "native-eol-style";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_buffer_mode(args: &[Object]) -> Object {
+fn is_buffer_mode(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "buffer-mode?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn microseconds(args: &[Object]) -> Object {
+fn microseconds(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "microseconds";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn local_tz_offset(args: &[Object]) -> Object {
+fn local_tz_offset(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "local-tz-offset";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fork(args: &[Object]) -> Object {
+fn fork(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%fork";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn exec(args: &[Object]) -> Object {
+fn exec(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%exec";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn waitpid(args: &[Object]) -> Object {
+fn waitpid(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%waitpid";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pipe(args: &[Object]) -> Object {
+fn pipe(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%pipe";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn getpid(args: &[Object]) -> Object {
+fn getpid(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%getpid";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_current_directory_destructive(args: &[Object]) -> Object {
+fn set_current_directory_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-current-directory!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_binary_port(args: &[Object]) -> Object {
+fn is_binary_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "binary-port?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_input_port(args: &[Object]) -> Object {
+fn is_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "input-port?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port_eof(args: &[Object]) -> Object {
+fn is_port_eof(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "port-eof?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn lookahead_u8(args: &[Object]) -> Object {
+fn lookahead_u8(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "lookahead-u8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_bytevector_input_port(args: &[Object]) -> Object {
+fn open_bytevector_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-bytevector-input-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_open(args: &[Object]) -> Object {
+fn ffi_open(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-open";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_lookup(args: &[Object]) -> Object {
+fn ffi_lookup(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-lookup";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_call(args: &[Object]) -> Object {
+fn ffi_call(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-call";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_ffi_supported(args: &[Object]) -> Object {
+fn is_ffi_supported(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-supported?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_malloc(args: &[Object]) -> Object {
+fn ffi_malloc(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-malloc";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_free(args: &[Object]) -> Object {
+fn ffi_free(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-free";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_make_c_callback_trampoline(args: &[Object]) -> Object {
+fn ffi_make_c_callback_trampoline(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-make-c-callback-trampoline";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_free_c_callback_trampoline(args: &[Object]) -> Object {
+fn ffi_free_c_callback_trampoline(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-free-c-callback-trampoline";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_close(args: &[Object]) -> Object {
+fn ffi_close(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-close";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ffi_error(args: &[Object]) -> Object {
+fn ffi_error(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%ffi-error";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn host_os(args: &[Object]) -> Object {
+fn host_os(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "host-os";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_output_port(args: &[Object]) -> Object {
+fn is_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "output-port?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_textual_port(args: &[Object]) -> Object {
+fn is_textual_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "textual-port?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port(args: &[Object]) -> Object {
+fn is_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "port?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn port_transcoder(args: &[Object]) -> Object {
+fn port_transcoder(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "port-transcoder";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn native_transcoder(args: &[Object]) -> Object {
+fn native_transcoder(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "native-transcoder";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn put_bytevector(args: &[Object]) -> Object {
+fn put_bytevector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "put-bytevector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn put_char(args: &[Object]) -> Object {
+fn put_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "put-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn write_char(args: &[Object]) -> Object {
+fn write_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "write-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn transcoder_codec(args: &[Object]) -> Object {
+fn transcoder_codec(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "transcoder-codec";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn transcoder_eol_style(args: &[Object]) -> Object {
+fn transcoder_eol_style(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "transcoder-eol-style";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn transcoder_error_handling_mode(args: &[Object]) -> Object {
+fn transcoder_error_handling_mode(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "transcoder-error-handling-mode";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn quotient(args: &[Object]) -> Object {
+fn quotient(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "quotient";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn remainder(args: &[Object]) -> Object {
+fn remainder(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "remainder";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn modulo(args: &[Object]) -> Object {
+fn modulo(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "modulo";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_file_input_output_port(args: &[Object]) -> Object {
+fn open_file_input_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-file-input/output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_custom_binary_input_output_port(args: &[Object]) -> Object {
+fn make_custom_binary_input_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-custom-binary-input/output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_custom_textual_input_output_port(args: &[Object]) -> Object {
+fn make_custom_textual_input_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-custom-textual-input/output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn put_datum(args: &[Object]) -> Object {
+fn put_datum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "put-datum";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn list_ref(args: &[Object]) -> Object {
+fn list_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn list_tail(args: &[Object]) -> Object {
+fn list_tail(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list-tail";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn time_usage(args: &[Object]) -> Object {
+fn time_usage(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "time-usage";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn mosh_executable_path(args: &[Object]) -> Object {
+fn mosh_executable_path(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "mosh-executable-path";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_socket(args: &[Object]) -> Object {
+fn is_socket(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_accept(args: &[Object]) -> Object {
+fn socket_accept(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-accept";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_client_socket(args: &[Object]) -> Object {
+fn make_client_socket(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-client-socket";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_server_socket(args: &[Object]) -> Object {
+fn make_server_socket(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-server-socket";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn os_constant(args: &[Object]) -> Object {
+fn os_constant(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "os-constant";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_recv(args: &[Object]) -> Object {
+fn socket_recv(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-recv";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_recv_destructive(args: &[Object]) -> Object {
+fn socket_recv_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-recv!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_send(args: &[Object]) -> Object {
+fn socket_send(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-send";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_close(args: &[Object]) -> Object {
+fn socket_close(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-close";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_shutdown(args: &[Object]) -> Object {
+fn socket_shutdown(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-shutdown";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_port(args: &[Object]) -> Object {
+fn socket_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_vm(args: &[Object]) -> Object {
+fn make_vm(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-vm";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vm_start_destructive(args: &[Object]) -> Object {
+fn vm_start_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vm-start!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_vm(args: &[Object]) -> Object {
+fn is_vm(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vm?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vm_set_value_destructive(args: &[Object]) -> Object {
+fn vm_set_value_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vm-set-value!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vm_join_destructive(args: &[Object]) -> Object {
+fn vm_join_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vm-join!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_main_vm(args: &[Object]) -> Object {
+fn is_main_vm(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "main-vm?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vm_self(args: &[Object]) -> Object {
+fn vm_self(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vm-self";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn register(args: &[Object]) -> Object {
+fn register(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "register";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn whereis(args: &[Object]) -> Object {
+fn whereis(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "whereis";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_condition_variable(args: &[Object]) -> Object {
+fn make_condition_variable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-condition-variable";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn condition_variable_wait_destructive(args: &[Object]) -> Object {
+fn condition_variable_wait_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "condition-variable-wait!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn condition_variable_notify_destructive(args: &[Object]) -> Object {
+fn condition_variable_notify_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "condition-variable-notify!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn condition_variable_notify_all_destructive(args: &[Object]) -> Object {
+fn condition_variable_notify_all_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "condition-variable-notify-all!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_mutex(args: &[Object]) -> Object {
+fn is_mutex(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "mutex?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_mutex(args: &[Object]) -> Object {
+fn make_mutex(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-mutex";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn mutex_lock_destructive(args: &[Object]) -> Object {
+fn mutex_lock_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "mutex-lock!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn mutex_try_lock_destructive(args: &[Object]) -> Object {
+fn mutex_try_lock_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "mutex-try-lock!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn mutex_unlock_destructive(args: &[Object]) -> Object {
+fn mutex_unlock_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "mutex-unlock!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_vector(args: &[Object]) -> Object {
+fn make_vector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-vector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vector_length(args: &[Object]) -> Object {
+fn vector_length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector-length";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vector_ref(args: &[Object]) -> Object {
+fn vector_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vector_set_destructive(args: &[Object]) -> Object {
+fn vector_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn create_directory(args: &[Object]) -> Object {
+fn create_directory(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "create-directory";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn delete_directory(args: &[Object]) -> Object {
+fn delete_directory(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "delete-directory";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn rename_file(args: &[Object]) -> Object {
+fn rename_file(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rename-file";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn create_symbolic_link(args: &[Object]) -> Object {
+fn create_symbolic_link(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "create-symbolic-link";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_file_directory(args: &[Object]) -> Object {
+fn is_file_directory(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-directory?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_file_symbolic_link(args: &[Object]) -> Object {
+fn is_file_symbolic_link(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-symbolic-link?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_file_regular(args: &[Object]) -> Object {
+fn is_file_regular(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-regular?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_file_readable(args: &[Object]) -> Object {
+fn is_file_readable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-readable?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_file_executable(args: &[Object]) -> Object {
+fn is_file_executable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-executable?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_file_writable(args: &[Object]) -> Object {
+fn is_file_writable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-writable?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn file_size_in_bytes(args: &[Object]) -> Object {
+fn file_size_in_bytes(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-size-in-bytes";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn file_stat_mtime(args: &[Object]) -> Object {
+fn file_stat_mtime(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-stat-mtime";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn file_stat_atime(args: &[Object]) -> Object {
+fn file_stat_atime(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-stat-atime";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn file_stat_ctime(args: &[Object]) -> Object {
+fn file_stat_ctime(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file-stat-ctime";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_pointer(args: &[Object]) -> Object {
+fn is_pointer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_to_integer(args: &[Object]) -> Object {
+fn pointer_to_integer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer->integer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn integer_to_pointer(args: &[Object]) -> Object {
+fn integer_to_pointer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "integer->pointer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_uint8(args: &[Object]) -> Object {
+fn pointer_ref_c_uint8(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-uint8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_uint16(args: &[Object]) -> Object {
+fn pointer_ref_c_uint16(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-uint16";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_uint32(args: &[Object]) -> Object {
+fn pointer_ref_c_uint32(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-uint32";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_uint64(args: &[Object]) -> Object {
+fn pointer_ref_c_uint64(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-uint64";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_int8(args: &[Object]) -> Object {
+fn pointer_ref_c_int8(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-int8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_int16(args: &[Object]) -> Object {
+fn pointer_ref_c_int16(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-int16";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_int32(args: &[Object]) -> Object {
+fn pointer_ref_c_int32(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-int32";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_int64(args: &[Object]) -> Object {
+fn pointer_ref_c_int64(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-int64";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_signed_char(args: &[Object]) -> Object {
+fn pointer_ref_c_signed_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-signed-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_unsigned_char(args: &[Object]) -> Object {
+fn pointer_ref_c_unsigned_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-unsigned-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_signed_short(args: &[Object]) -> Object {
+fn pointer_ref_c_signed_short(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-signed-short";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_unsigned_short(args: &[Object]) -> Object {
+fn pointer_ref_c_unsigned_short(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-unsigned-short";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_signed_int(args: &[Object]) -> Object {
+fn pointer_ref_c_signed_int(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-signed-int";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_unsigned_int(args: &[Object]) -> Object {
+fn pointer_ref_c_unsigned_int(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-unsigned-int";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_signed_long(args: &[Object]) -> Object {
+fn pointer_ref_c_signed_long(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-signed-long";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_unsigned_long(args: &[Object]) -> Object {
+fn pointer_ref_c_unsigned_long(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-unsigned-long";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_signed_long_long(args: &[Object]) -> Object {
+fn pointer_ref_c_signed_long_long(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-signed-long-long";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_unsigned_long_long(args: &[Object]) -> Object {
+fn pointer_ref_c_unsigned_long_long(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-unsigned-long-long";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_float(args: &[Object]) -> Object {
+fn pointer_ref_c_float(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-float";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_double(args: &[Object]) -> Object {
+fn pointer_ref_c_double(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-double";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_ref_c_pointer(args: &[Object]) -> Object {
+fn pointer_ref_c_pointer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-ref-c-pointer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_int8_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_int8_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-int8!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_int16_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_int16_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-int16!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_int32_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_int32_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-int32!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_int64_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_int64_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-int64!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_uint8_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_uint8_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-uint8!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_uint16_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_uint16_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-uint16!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_uint32_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_uint32_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-uint32!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_uint64_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_uint64_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-uint64!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_char_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_char_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-char!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_short_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_short_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-short!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_int_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_int_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-int!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_long_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_long_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-long!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_long_long_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_long_long_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-long-long!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_float_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_float_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-float!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_double_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_double_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-double!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_set_c_pointer_destructive(args: &[Object]) -> Object {
+fn pointer_set_c_pointer_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-set-c-pointer!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_copy_destructive(args: &[Object]) -> Object {
+fn pointer_copy_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer-copy!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_pointer(args: &[Object]) -> Object {
+fn bytevector_pointer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bytevector-pointer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn shared_errno(args: &[Object]) -> Object {
+fn shared_errno(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "shared-errno";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_simple_struct(args: &[Object]) -> Object {
+fn is_simple_struct(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_simple_struct(args: &[Object]) -> Object {
+fn make_simple_struct(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-simple-struct";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn simple_struct_ref(args: &[Object]) -> Object {
+fn simple_struct_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn simple_struct_set_destructive(args: &[Object]) -> Object {
+fn simple_struct_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn simple_struct_name(args: &[Object]) -> Object {
+fn simple_struct_name(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct-name";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn lookup_nongenerative_rtd(args: &[Object]) -> Object {
+fn lookup_nongenerative_rtd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "lookup-nongenerative-rtd";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn nongenerative_rtd_set_destructive(args: &[Object]) -> Object {
+fn nongenerative_rtd_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "nongenerative-rtd-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_same_marksmul(args: &[Object]) -> Object {
+fn is_same_marksmul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "same-marks*?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_same_marks(args: &[Object]) -> Object {
+fn is_same_marks(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "same-marks?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn id_to_real_label(args: &[Object]) -> Object {
+fn id_to_real_label(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "id->real-label";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn join_wraps(args: &[Object]) -> Object {
+fn join_wraps(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "join-wraps";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn gensym_prefix_set_destructive(args: &[Object]) -> Object {
+fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "gensym-prefix-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_dynamic_winders(args: &[Object]) -> Object {
+fn current_dynamic_winders(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "current-dynamic-winders";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sexp_map(args: &[Object]) -> Object {
+fn sexp_map(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sexp-map";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sexp_map_debug(args: &[Object]) -> Object {
+fn sexp_map_debug(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sexp-map/debug";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn write_ss(args: &[Object]) -> Object {
+fn write_ss(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "write/ss";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_message_send(args: &[Object]) -> Object {
+fn monapi_message_send(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-message-send";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_name_whereis(args: &[Object]) -> Object {
+fn monapi_name_whereis(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-name-whereis";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_message_receive(args: &[Object]) -> Object {
+fn monapi_message_receive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-message-receive";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_name_add_destructive(args: &[Object]) -> Object {
+fn monapi_name_add_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-name-add!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_message_send_receive(args: &[Object]) -> Object {
+fn monapi_message_send_receive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-message-send-receive";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_message_reply(args: &[Object]) -> Object {
+fn monapi_message_reply(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-message-reply";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_make_stream(args: &[Object]) -> Object {
+fn monapi_make_stream(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-make-stream";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_stream_handle(args: &[Object]) -> Object {
+fn monapi_stream_handle(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-stream-handle";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_stream_write(args: &[Object]) -> Object {
+fn monapi_stream_write(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-stream-write";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn monapi_stream_read(args: &[Object]) -> Object {
+fn monapi_stream_read(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%monapi-stream-read";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn process_list(args: &[Object]) -> Object {
+fn process_list(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "process-list";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn process_terminate_destructive(args: &[Object]) -> Object {
+fn process_terminate_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "process-terminate!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn socket_sslize_destructive(args: &[Object]) -> Object {
+fn socket_sslize_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "socket-sslize!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_ssl_socket(args: &[Object]) -> Object {
+fn is_ssl_socket(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "ssl-socket?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_ssl_supported(args: &[Object]) -> Object {
+fn is_ssl_supported(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "ssl-supported?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn file_to_string(args: &[Object]) -> Object {
+fn file_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn annotated_cons(args: &[Object]) -> Object {
+fn annotated_cons(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "annotated-cons";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_annotated_pair(args: &[Object]) -> Object {
+fn is_annotated_pair(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "annotated-pair?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_annotation(args: &[Object]) -> Object {
+fn get_annotation(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-annotation";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_annotation_destructive(args: &[Object]) -> Object {
+fn set_annotation_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-annotation!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn pointer_to_object(args: &[Object]) -> Object {
+fn pointer_to_object(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer->object";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn object_to_pointer(args: &[Object]) -> Object {
+fn object_to_pointer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "object->pointer";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_current_error_port_destructive(args: &[Object]) -> Object {
+fn set_current_error_port_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-current-error-port!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port_open(args: &[Object]) -> Object {
+fn is_port_open(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "port-open?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_f64array(args: &[Object]) -> Object {
+fn make_f64array(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-f64array";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_f64array(args: &[Object]) -> Object {
+fn is_f64array(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "f64array?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn f64array_ref(args: &[Object]) -> Object {
+fn f64array_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "f64array-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn f64array_set_destructive(args: &[Object]) -> Object {
+fn f64array_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "f64array-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn f64array_shape(args: &[Object]) -> Object {
+fn f64array_shape(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "f64array-shape";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn f64array_dot_product(args: &[Object]) -> Object {
+fn f64array_dot_product(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "f64array-dot-product";
     panic!("{}({}) not implemented", name, args.len());
 }
