@@ -27,6 +27,10 @@ impl Object {
             _ => false,
         }
     }
+
+    pub fn is_list(&self) -> bool {
+        Pair::is_list(*self)
+    }
     pub fn is_pair(&self) -> bool {
         match self {
             Object::Pair(_) => true,

@@ -1428,9 +1428,11 @@ fn eval_compiled(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eval-compiled";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn apply(_vm: &mut Vm, args: &[Object]) -> Object {
+
+// We make apply public so that Vm can access.
+pub fn apply(_vm: &mut Vm, _args: &[Object]) -> Object {
     let name: &str = "apply";
-    panic!("{}({}) not implemented", name, args.len());
+    panic!("{} should not be called. It is handled in call in vm", name);
 }
 fn assq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "assq";

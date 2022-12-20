@@ -4,7 +4,7 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
-    procs::default_free_vars,
+    procs::{self, apply, default_free_vars},
 };
 
 const STACK_SIZE: usize = 256;
@@ -553,15 +553,58 @@ impl Vm {
                 }
             }
             Object::Procedure(procedure) => {
-                // self.cl = self.ac
                 let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
                 let start: usize = usize::try_from(start).expect("start can't be usize");
                 let uargc: usize = usize::try_from(argc).expect("argc can't be usize");
                 let args = &self.stack[start..start + uargc];
                 // copying args here because we can't borrow.
                 let args = &args.to_owned()[..];
-                self.ac = (procedure.func)(self, args);
-                self.return_n(argc, pc);
+
+                // We convert apply call to Op::Call.
+                if procedure.func as usize == procs::apply as usize {
+                    if argc == 1 {
+                        panic!("apply: need two or more arguments");
+                    }
+                    self.sp = unsafe { self.sp.offset(-argc) };
+                    self.ac = args[0];
+                    // (apply proc arg1 arg2 ... args-as-list)
+                    // We push arguments here. The last argument is flatten list.
+                    for i in 1..argc {
+                        if i == argc - 1 {
+                            let mut last_pair = args[i as usize];
+                            if !last_pair.is_list() {
+                                panic!("apply last arguments shoulbe proper list but got {}", last_pair);
+                            }
+                            let mut j:isize = 0;
+                            loop {
+                                if last_pair.is_nil() {
+                                    let new_argc = argc  - 2 + j;
+                                    self.call(pc, new_argc);
+                                    break
+                                } else {
+                                    match last_pair {
+                                        Object::Pair(pair) => {
+                                            self.push(pair.first);
+                                            last_pair = pair.second;
+                                        }
+                                        _ => {
+                                            panic!("never reached");
+                                        }
+                                    }
+                                }
+                                j = j + 1;
+                            }
+
+                        } else {
+                            self.push(args[i as usize]);
+                        }
+                    }
+                } else {
+                    // self.cl = self.ac
+
+                    self.ac = (procedure.func)(self, args);
+                    self.return_n(argc, pc);
+                }
             }
             _ => {
                 panic!("can't call {:?}", self.ac);
@@ -625,7 +668,7 @@ impl Vm {
 #[cfg(test)]
 pub mod tests {
 
-    use crate::objects::{Procedure};
+    use crate::objects::Procedure;
 
     use super::*;
 
@@ -4659,7 +4702,7 @@ pub mod tests {
     // (number->string 123) => 123
     #[test]
     fn test_test153() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(Object::Number(123)),
@@ -4672,13 +4715,17 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "\"123\"", 0);
     }
 
-
     // (begin (define (proc1 . a) a) (proc1 1 2 3 4)) => (1 2 3 4)
     #[test]
     fn test_test154_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
-            Op::Closure {size: 3, arg_len: 1, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 1,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Return(1),
             Op::DefineGlobal(vm.gc.intern("proc1")),
@@ -4703,7 +4750,7 @@ pub mod tests {
     // ((lambda (a . b) b) 1 2 3) => (2 3)
     #[test]
     fn test_test155() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(11),
             Op::Constant(Object::Number(1)),
@@ -4712,7 +4759,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(3)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 2, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 2,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(1),
             Op::Return(2),
             Op::Call(3),
@@ -4726,7 +4778,7 @@ pub mod tests {
     // ((lambda (a . b) a) 1 2 3 4 5) => 1
     #[test]
     fn test_test156() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(15),
             Op::Constant(Object::Number(1)),
@@ -4739,7 +4791,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(5)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 2, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 2,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Return(2),
             Op::Call(5),
@@ -4754,7 +4811,7 @@ pub mod tests {
     // ((lambda (a . b) b) 1 2 3 4 5) => (2 3 4 5)
     #[test]
     fn test_test157() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(15),
             Op::Constant(Object::Number(1)),
@@ -4767,7 +4824,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(5)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 2, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 2,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(1),
             Op::Return(2),
             Op::Call(5),
@@ -4781,7 +4843,7 @@ pub mod tests {
     // ((lambda (a b c d . e) e) 1 2 3 4) => ()
     #[test]
     fn test_test158() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(13),
             Op::Constant(Object::Number(1)),
@@ -4792,7 +4854,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(4)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 5, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 5,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(4),
             Op::Return(5),
             Op::Call(4),
@@ -4804,11 +4871,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // ((lambda (a b c d . e) a) 1 2 3 4) => 1
     #[test]
     fn test_test159() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(13),
             Op::Constant(Object::Number(1)),
@@ -4819,7 +4885,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(4)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 5, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 5,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Return(5),
             Op::Call(4),
@@ -4834,7 +4905,7 @@ pub mod tests {
     // ((lambda (a b c d . e) b) 1 2 3 4) => 2
     #[test]
     fn test_test160() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(13),
             Op::Constant(Object::Number(1)),
@@ -4845,7 +4916,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(4)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 5, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 5,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(1),
             Op::Return(5),
             Op::Call(4),
@@ -4860,7 +4936,7 @@ pub mod tests {
     // ((lambda (a b c d . e) c) 1 2 3 4) => 3
     #[test]
     fn test_test161() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(13),
             Op::Constant(Object::Number(1)),
@@ -4871,7 +4947,12 @@ pub mod tests {
             Op::Push,
             Op::Constant(Object::Number(4)),
             Op::Push,
-            Op::Closure {size: 3, arg_len: 5, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 5,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(2),
             Op::Return(5),
             Op::Call(4),
@@ -4883,11 +4964,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (append '(1 2) '(3 4)) => (1 2 3 4)
     #[test]
     fn test_test163() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
             Op::Push,
@@ -4898,24 +4978,19 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4)", 0);
     }
 
-
     // (append) => ()
     #[test]
     fn test_test164() {
-        let mut vm = Vm::new();        
-        let ops = vec![
-            Op::Constant(Object::Nil),
-            Op::Halt,
-        ];
+        let mut vm = Vm::new();
+        let ops = vec![Op::Constant(Object::Nil), Op::Halt];
         let expected = Object::Nil;
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (begin (define x 3) x) => 3
     #[test]
     fn test_test165_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(3)),
             Op::DefineGlobal(vm.gc.intern("x")),
@@ -4926,5 +5001,89 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+    // (begin (define (hoge . a) a) (hoge 1 2 3)) => (1 2 3)
+    #[test]
+    fn test_test166() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Closure {
+                size: 3,
+                arg_len: 1,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::DefineGlobal(vm.gc.intern("hoge")),
+            Op::Frame(9),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::ReferGlobal(vm.gc.intern("hoge")),
+            Op::Call(3),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
+    }
 
+    // (begin (define (hige a . b) b) (hige 1 2 3)) => (2 3)
+    #[test]
+    fn test_test167() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Closure {
+                size: 3,
+                arg_len: 2,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(1),
+            Op::Return(2),
+            Op::DefineGlobal(vm.gc.intern("hige")),
+            Op::Frame(9),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::ReferGlobal(vm.gc.intern("hige")),
+            Op::Call(3),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(2 3)", 0);
+    }
+
+    // (apply (lambda a a) '(3 2)) => (3 2)
+    #[test]
+    fn test_test168() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(9),
+            Op::Closure {
+                size: 3,
+                arg_len: 1,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(0),
+            Op::Return(1),
+            Op::Push,
+            Op::Constant(vm.gc.list2(Object::Number(3), Object::Number(2))),
+            Op::Push,
+            Op::ReferFree(152),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(3 2)", 0);
+    }
 }

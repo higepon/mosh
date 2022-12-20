@@ -76,7 +76,7 @@
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]                
         [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)
-          (format #t "            Op::~a(vm.gc.symbol_intern(\"~a\")),\n" (insn->string insn) n)
+          (format #t "            Op::~a(vm.gc.intern(\"~a\")),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]          
         [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
