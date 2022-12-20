@@ -183,7 +183,7 @@ impl Vm {
     }
 
     pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
-        self.gc.intern(s.to_owned())
+        self.gc.intern(s)
     }
 
     fn pop(&mut self) -> Object {
@@ -670,8 +670,8 @@ pub mod tests {
     fn test_symbol_intern() {
         let mut gc = Gc::new();
 
-        let symbol = gc.intern("foo".to_owned());
-        let symbol2 = gc.intern("foo".to_owned());
+        let symbol = gc.intern("foo");
+        let symbol2 = gc.intern("foo");
         assert_eq!(symbol.pointer, symbol2.pointer);
     }
 
@@ -698,8 +698,8 @@ pub mod tests {
         let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(9)),
-            Op::DefineGlobal(vm.gc.intern("a".to_owned())),
-            Op::ReferGlobal(vm.gc.intern("a".to_owned())),
+            Op::DefineGlobal(vm.gc.intern("a")),
+            Op::ReferGlobal(vm.gc.intern("a")),
         ];
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
@@ -1409,7 +1409,7 @@ pub mod tests {
         let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::Push,
             Op::ReferFree(0),
             Op::Call(1),
@@ -1424,7 +1424,7 @@ pub mod tests {
         let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::Push,
             Op::ReferFree(0),
             Op::Call(1),
@@ -1522,14 +1522,14 @@ pub mod tests {
     fn test_test27_modified() {
         let mut vm = Vm::new();
         let ops = vec![
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::Push,
-            Op::Constant(Object::Symbol(vm.gc.intern("b".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("b"))),
             Op::Cons,
             Op::Halt,
         ];
-        let a = Object::Symbol(vm.gc.intern("a".to_owned()));
-        let b = Object::Symbol(vm.gc.intern("b".to_owned()));
+        let a = Object::Symbol(vm.gc.intern("a"));
+        let b = Object::Symbol(vm.gc.intern("b"));
         let pair = vm.gc.alloc(Pair::new(a, b));
 
         let before_size = vm.gc.bytes_allocated();
@@ -2693,7 +2693,7 @@ pub mod tests {
         let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(3)),
-            Op::DefineGlobal(vm.gc.intern("a".to_owned())),
+            Op::DefineGlobal(vm.gc.intern("a")),
             Op::Halt,
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
@@ -2932,8 +2932,8 @@ pub mod tests {
                 num_free_vars: 0,
             },
             Op::Constant(Object::Number(4)),
-            Op::AssignGlobal(vm.gc.intern("a".to_owned())),
-            Op::ReferGlobal(vm.gc.intern("a".to_owned())),
+            Op::AssignGlobal(vm.gc.intern("a")),
+            Op::ReferGlobal(vm.gc.intern("a")),
             Op::Return(0),
             Op::Call(0),
             Op::Halt,
@@ -4089,9 +4089,9 @@ pub mod tests {
     fn test_test124() {
         let mut vm = Vm::new();
         let ops = vec![
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::Push,
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::Eq,
             Op::Halt,
         ];
@@ -4103,9 +4103,9 @@ pub mod tests {
     fn test_test125() {
         let mut vm = Vm::new();
         let ops = vec![
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::Push,
-            Op::Constant(Object::Symbol(vm.gc.intern("b".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("b"))),
             Op::Eq,
             Op::Halt,
         ];
@@ -4140,7 +4140,7 @@ pub mod tests {
     fn test_test128() {
         let mut vm = Vm::new();
         let ops = vec![
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::SymbolP,
             Op::Halt,
         ];
@@ -4332,14 +4332,14 @@ pub mod tests {
         let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(6),
-            Op::Constant(Object::Symbol(vm.gc.intern("a".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("a"))),
             Op::Push,
             Op::Enter(1),
-            Op::Constant(Object::Symbol(vm.gc.intern("list".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("list"))),
             Op::Push,
             Op::ReferLocal(0),
             Op::Push,
-            Op::Constant(Object::Symbol(vm.gc.intern("quote".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("quote"))),
             Op::Push,
             Op::ReferLocal(0),
             Op::Push,
@@ -4362,7 +4362,7 @@ pub mod tests {
     fn test_test138() {
         let mut vm = Vm::new();
         let ops = vec![
-            Op::Constant(Object::Symbol(vm.gc.intern("list".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("list"))),
             Op::Push,
             Op::Constant(Object::Number(1)),
             Op::Push,
@@ -4558,10 +4558,10 @@ pub mod tests {
     fn test_test147_modified() {
         let mut vm = Vm::new();
         let ops = vec![
-            Op::Constant(Object::Symbol(vm.gc.intern("b".to_owned()))),
+            Op::Constant(Object::Symbol(vm.gc.intern("b"))),
             Op::Halt,
         ];
-        let obj = vm.gc.symbol_intern("b".to_owned());
+        let obj = vm.gc.symbol_intern("b");
         test_ops_with_size(&mut vm, ops, obj, 0);
     }
 

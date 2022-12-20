@@ -146,7 +146,7 @@ impl Gc {
         self.cons(first, second)
     }
 
-    pub fn symbol_intern(&mut self, s: String) -> Object {
+    pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);
         Object::Symbol(symbol)
     }
@@ -246,12 +246,12 @@ impl Gc {
         }
     }
 
-    pub fn intern(&mut self, s: String) -> GcRef<Symbol> {
-        match self.symbols.get(s.as_str()) {
+    pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
+        match self.symbols.get(s) {
             Some(&symbol) => symbol,
             None => {
                 let symbol = self.alloc(Symbol::new(s.to_owned()));
-                self.symbols.insert(s, symbol);
+                self.symbols.insert(s.to_string(), symbol);
                 symbol
             }
         }

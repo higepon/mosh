@@ -64,7 +64,7 @@
           (format #t "            Op::~a(vm.gc.list3(Object::Number(~a), Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b c)
             (rewrite-insn* more* (+ idx 2))]                             
         [((and (or 'CONSTANT) insn) (? symbol? n) . more*)
-          (format #t "            Op::~a(Object::Symbol(vm.gc.intern(\"~a\".to_owned()))),\n" (insn->string insn) n)
+          (format #t "            Op::~a(vm.gc.symbol_intern(\"~a\")),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]         
         [((and (or 'CONSTANT) insn) (? string? s) . more*)
           (format #t "            Op::~a(vm.gc.new_string(~s)),\n" (insn->string insn) s)
@@ -76,7 +76,7 @@
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]                
         [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)
-          (format #t "            Op::~a(vm.gc.intern(\"~a\".to_owned())),\n" (insn->string insn) n)
+          (format #t "            Op::~a(vm.gc.symbol_intern(\"~a\")),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]          
         [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
@@ -100,7 +100,7 @@
 (define (expected->rust expected)
   (match expected
     [(? symbol? s)
-      (format "Object::Symbol(vm.gc.intern(\"~a\".to_owned()))" s)]
+      (format "Object::Symbol(vm.gc.symbol_intern(\"~a\"))" s)]
     ['undef "Object::Undef"]
     [#t "Object::True"]
     [#f "Object::False"]

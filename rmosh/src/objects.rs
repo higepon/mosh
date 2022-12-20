@@ -514,8 +514,8 @@ pub mod tests {
     #[test]
     fn test_quote_to_string() {
         let mut gc = Gc::new();
-        let sym_quote = gc.symbol_intern("quote".to_owned());
-        let sym_a = gc.symbol_intern("a".to_owned());
+        let sym_quote = gc.symbol_intern("quote");
+        let sym_a = gc.symbol_intern("a");
         let pair = gc.list2(sym_quote, sym_a);
         assert_eq!("'a", pair.to_string());
     }
@@ -523,9 +523,9 @@ pub mod tests {
     #[test]
     fn test_quote_list_to_string() {
         let mut gc = Gc::new();
-        let sym_quote = gc.symbol_intern("quote".to_owned());
-        let sym_a = gc.symbol_intern("a".to_owned());
-        let sym_b = gc.symbol_intern("b".to_owned());
+        let sym_quote = gc.symbol_intern("quote");
+        let sym_a = gc.symbol_intern("a");
+        let sym_b = gc.symbol_intern("b");
         let list = gc.list2(sym_a, sym_b);
         let pair = gc.list2(sym_quote, list);
         assert_eq!("'(a b)", pair.to_string());
