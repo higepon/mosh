@@ -250,7 +250,7 @@ impl Vm {
                     if Pair::is_list(head) {
                         self.ac = self.gc.append2(head, self.ac);
                     } else {
-                        panic!("append wrong argument");
+                        panic!("append: pair required but got {}", head);
                     }
                 }
                 Op::Not => {
@@ -4882,5 +4882,21 @@ pub mod tests {
         let expected = Object::Number(3);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+
+    // (append '(1 2) '(3 4)) => (1 2 3 4)
+    #[test]
+    fn test_test163() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+            Op::Push,
+            Op::Constant(vm.gc.list2(Object::Number(3), Object::Number(4))),
+            Op::Append2,
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4)", 0);
+    }
+
 
 }

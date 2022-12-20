@@ -162,10 +162,6 @@ impl Pair {
                     return false;
                 }
             }
-            if !obj.is_pair() {
-                // dot pair.
-                return false;
-            }
         }
     }
 
