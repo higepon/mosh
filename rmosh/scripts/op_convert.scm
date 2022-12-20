@@ -100,7 +100,7 @@
 (define (expected->rust expected)
   (match expected
     [(? symbol? s)
-      (format "Object::Symbol(vm.gc.symbol_intern(\"~a\"))" s)]
+      (format "vm.gc.symbol_intern(\"~a\")" s)]
     ['undef "Object::Undef"]
     [#t "Object::True"]
     [#f "Object::False"]

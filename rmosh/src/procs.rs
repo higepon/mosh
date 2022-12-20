@@ -871,17 +871,21 @@ fn string_length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-length";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => {
-            Object::Number(s.string.chars().count().try_into().unwrap())
-        }
+        Object::String(s) => Object::Number(s.string.chars().count().try_into().unwrap()),
         v => {
             panic!("{}: string required but got {}", name, v)
         }
     }
 }
-fn string_to_symbol(_vm: &mut Vm, args: &[Object]) -> Object {
+fn string_to_symbol(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->symbol";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::String(s) => vm.gc.symbol_intern(&s.string),
+        v => {
+            panic!("{}: string required but got {}", name, v)
+        }
+    }
 }
 fn string_to_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->number";

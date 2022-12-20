@@ -4640,4 +4640,23 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+    // (string->symbol abc) => abc
+    #[test]
+    fn test_test152_modified() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(vm.gc.new_string("abc")),
+            Op::Push,
+            Op::ReferFree(20),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let s = vm.gc.symbol_intern("abc");
+        test_ops_with_size(&mut vm, ops, s, 0);
+    }
+
+
+
 }
