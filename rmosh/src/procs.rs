@@ -970,7 +970,11 @@ fn is_charequal(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::String(_) => Object::True,
+        _ => Object::False,
+    }
 }
 fn get_environment_variable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-environment-variable";

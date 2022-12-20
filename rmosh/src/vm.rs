@@ -5308,4 +5308,22 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "\"123456\"", 0);
     }
 
+
+    // (string? "hige") => #t
+    #[test]
+    fn test_test181() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(vm.gc.new_string("hige")),
+            Op::Push,
+            Op::ReferFree(31),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
