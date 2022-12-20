@@ -5185,4 +5185,29 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+    // (apply (lambda (a b) (+ a b)) '(5 2)) => 7
+    #[test]
+    fn test_test175() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(12),
+            Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::NumberAdd,
+            Op::Return(2),
+            Op::Push,
+            Op::Constant(vm.gc.list2(Object::Number(5), Object::Number(2))),
+            Op::Push,
+            Op::ReferFree(152),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(7);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
