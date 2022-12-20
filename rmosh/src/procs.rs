@@ -779,6 +779,21 @@ macro_rules! check_argc {
     }};
 }
 
+#[macro_export]
+macro_rules! check_argc_between {
+    ($name:ident, $args:ident, $min:expr, $max:expr) => {{
+        if $args.len() > $max || $args.len() < $min {
+            panic!(
+                "{}: {}-{} arguments required but got {}",
+                $name,
+                $min,
+                $max,
+                $args.len()
+            );
+        }
+    }};
+}
+
 fn is_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "number?";
     check_argc!(name, args, 1);
@@ -861,13 +876,16 @@ fn rxmatch_substring(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn make_string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-string";
-    assert_eq!(args.len(), 1);
-    match args[0] {
-        Object::Number(n) => { 
-            vm.gc.new_string(&" ".repeat(n as usize))
+    check_argc_between!(name, args, 1, 2);
+    match args {
+        [Object::Number(n)] => { 
+            vm.gc.new_string(&" ".repeat(*n as usize))
+        }
+        [Object::Number(n), Object::Char(c)] => {
+            vm.gc.new_string(&*c.to_string().repeat(*n as usize))
         }
         _ => {
-            panic!("{}: n required", name)
+            panic!("{}: wrong arguments {:?}", name, args)
         }
     }
 }

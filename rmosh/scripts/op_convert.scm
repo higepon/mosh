@@ -53,7 +53,10 @@
           (rewrite-insn* more* (+ idx 2))]                                    
         [((and (or 'CONSTANT) insn) (? number? n) . more*)
           (format #t "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]     
+          (rewrite-insn* more* (+ idx 2))]
+        [((and (or 'CONSTANT) insn) (? char? c) . more*)
+          (format #t "            Op::~a(Object::Char('~a')),\n" (insn->string insn) c)
+            (rewrite-insn* more* (+ idx 2))]               
         [((and (or 'CONSTANT) insn) ((? number? n)) . more*)
           (format #t "            Op::~a(vm.gc.cons(Object::Number(~a), Object::Nil)),\n" (insn->string insn) n)
             (rewrite-insn* more* (+ idx 2))]           
@@ -123,7 +126,7 @@
         (cond
           [(pair? expected)
         (format #t "
-    // ~a => ~a
+    // ~s => ~s
     #[test]
     fn test_~a() {
         let mut vm = Vm::new();        
@@ -135,7 +138,7 @@
     }\n" expected size))]        
           [(string? expected)
         (format #t "
-    // ~a => ~a
+    // ~s => ~s
     #[test]
     fn test_~a() {
         let mut vm = Vm::new();        
@@ -147,7 +150,7 @@
     }\n" expected size))]
           [else
         (format #t "
-    // ~a => ~a
+    // ~s => ~s
     #[test]
     fn test_~a() {
         let mut vm = Vm::new();        

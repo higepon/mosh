@@ -5123,4 +5123,22 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "\"   \"", 0);
     }
+
+    // (make-string 3 #\c) => "ccc"
+    #[test]
+    fn test_test172() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(7),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Char('c')),
+            Op::Push,
+            Op::ReferFree(17),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "\"ccc\"", 0);
+    }
 }

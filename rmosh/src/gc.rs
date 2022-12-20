@@ -265,12 +265,13 @@ impl Gc {
     // This should be called only for root Objects.
     pub fn mark_object(&mut self, obj: Object) {
         match obj {
+            Object::Char(_) => {}
+            Object::False => {}
+            Object::Nil => {}
             Object::Number(_) => {}
             Object::StackPointer(_) => {}
             Object::True => {}
-            Object::False => {}
             Object::Unspecified => {}
-            Object::Nil => {}
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);
             }

@@ -6,6 +6,7 @@ use std::fmt::{self, Display};
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Object {
+    Char(char),
     Closure(GcRef<Closure>),
     False,
     Nil,
@@ -68,6 +69,9 @@ impl Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::Char(c) => {
+                write!(f, "{}", c)                
+            }
             Object::Number(n) => {
                 write!(f, "{}", n)
             }
