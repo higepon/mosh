@@ -4899,4 +4899,16 @@ pub mod tests {
     }
 
 
+    // (append) => ()
+    #[test]
+    fn test_test164() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Nil),
+            Op::Halt,
+        ];
+        let expected = Object::Nil;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
