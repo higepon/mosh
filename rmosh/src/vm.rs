@@ -4584,4 +4584,27 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
     }
+
+    // (aif (+ 1 2) it #f) => 3
+    #[test]
+    fn test_test149() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Test(2),
+            Op::ReferLocal(0),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+    }
+
 }
