@@ -903,9 +903,15 @@ fn string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
+fn number_to_string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "number->string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Number(n) => vm.gc.new_string(&format!("{}", n)[..]),
+        v => {
+            panic!("{}: number required but got {}", name, v)
+        }
+    }
 }
 fn reverse(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "reverse";

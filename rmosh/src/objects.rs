@@ -1,6 +1,6 @@
 use crate::gc::GcRef;
-use crate::vm::Vm;
 use crate::gc::{GcHeader, ObjectType};
+use crate::vm::Vm;
 use std::fmt::{self, Display};
 
 /// Wrapper of heap allocated or simple stack objects.
@@ -78,7 +78,7 @@ impl Display for Object {
             }
             Object::String(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
-            }            
+            }
             Object::Symbol(symbol) => {
                 write!(f, "{}", unsafe { symbol.pointer.as_ref() })
             }
@@ -280,10 +280,10 @@ pub struct SString {
 }
 
 impl SString {
-    pub fn new(string: String) -> Self {
+    pub fn new(string: &str) -> Self {
         SString {
             header: GcHeader::new(ObjectType::String),
-            string: string,
+            string: string.to_string(),
         }
     }
 }
@@ -291,6 +291,12 @@ impl SString {
 impl Display for SString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "\"{}\"", self.string)
+    }
+}
+
+impl PartialEq for SString {
+    fn eq(&self, other: &Self) -> bool {
+        self.string.eq(&other.string)
     }
 }
 
@@ -529,5 +535,12 @@ pub mod tests {
         let list = gc.list2(sym_a, sym_b);
         let pair = gc.list2(sym_quote, list);
         assert_eq!("'(a b)", pair.to_string());
+    }
+
+    #[test]
+    fn test_sstring_eq() {
+        let a = SString::new("abc");
+        let b = SString::new("abc");
+        assert_eq!(a, b);
     }
 }

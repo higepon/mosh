@@ -101,6 +101,8 @@
   (match expected
     [(? symbol? s)
       (format "vm.gc.symbol_intern(\"~a\")" s)]
+    [(? string? s)
+      (format "vm.gc.new_string(\"~a\")" s)]
     ['undef "Object::Undef"]
     [#t "Object::True"]
     [#f "Object::False"]
@@ -130,6 +132,18 @@
           (rewrite-insn* insn*)
           (format #t "        ];
         test_ops_with_size_as_str(&mut vm, ops, \"~a\", ~a);
+    }\n" expected size))]        
+          [(string? expected)
+        (format #t "
+    // ~a => ~a
+    #[test]
+    fn test_~a() {
+        let mut vm = Vm::new();        
+        let ops = vec![\n" expr expected test-name)        
+        (let ([insn* (vector->list (car sexp*))])
+          (rewrite-insn* insn*)
+          (format #t "        ];
+        test_ops_with_size_as_str(&mut vm, ops, \"\\\"~a\\\"\", ~a);
     }\n" expected size))]
           [else
         (format #t "
@@ -142,7 +156,8 @@
               [expected (expected->rust expected)])
           (rewrite-insn* insn*)
           (format #t "        ];
-        test_ops_with_size(&mut vm, ops, ~a, ~a);
+        let expected = ~a;
+        test_ops_with_size(&mut vm, ops, expected, ~a);
     }\n" expected size))])]
       [else (write sexp*)])))
 

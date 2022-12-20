@@ -559,7 +559,7 @@ impl Vm {
                 let uargc: usize = usize::try_from(argc).expect("argc can't be usize");
                 let args = &self.stack[start..start + uargc];
                 // copying args here because we can't borrow.
-                let args = &args.to_owned()[..];                                
+                let args = &args.to_owned()[..];
                 self.ac = (procedure.func)(self, args);
                 self.return_n(argc, pc);
             }
@@ -624,7 +624,8 @@ impl Vm {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::objects::Procedure;
+
+    use crate::objects::{Procedure};
 
     use super::*;
 
@@ -637,6 +638,8 @@ pub mod tests {
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
+        // Remove reference to ret.
+        vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(
@@ -4557,10 +4560,7 @@ pub mod tests {
     #[test]
     fn test_test147_modified() {
         let mut vm = Vm::new();
-        let ops = vec![
-            Op::Constant(Object::Symbol(vm.gc.intern("b"))),
-            Op::Halt,
-        ];
+        let ops = vec![Op::Constant(Object::Symbol(vm.gc.intern("b"))), Op::Halt];
         let obj = vm.gc.symbol_intern("b");
         test_ops_with_size(&mut vm, ops, obj, 0);
     }
@@ -4588,7 +4588,7 @@ pub mod tests {
     // (aif (+ 1 2) it #f) => 3
     #[test]
     fn test_test149() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(Object::Number(1)),
@@ -4607,11 +4607,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
-
     // (string-length abc) => 3
     #[test]
     fn test_test150() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(vm.gc.new_string("abc")),
@@ -4627,7 +4626,7 @@ pub mod tests {
     // (string-length あいう) => 3
     #[test]
     fn test_test151() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(vm.gc.new_string("あいう")),
@@ -4643,7 +4642,7 @@ pub mod tests {
     // (string->symbol abc) => abc
     #[test]
     fn test_test152_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(vm.gc.new_string("abc")),
@@ -4657,6 +4656,20 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, s, 0);
     }
 
-
+    // (number->string 123) => 123
+    #[test]
+    fn test_test153() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(Object::Number(123)),
+            Op::Push,
+            Op::ReferFree(25),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "\"123\"", 0);
+    }
 
 }

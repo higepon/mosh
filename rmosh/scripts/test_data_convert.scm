@@ -92,7 +92,7 @@
     [(expected expr)
       (call-with-output-file (format "data/test~a.scm" idx)
         (lambda (p)
-          (format p "~s\n~a\n0\n" expr expected)))]
+          (format p "~s\n~s\n0\n" expr expected)))]
     ;; Ignore for now.
     [(expectred expr . more*) '()]      
     [else (error "match error" test-sexp)]))

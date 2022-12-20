@@ -156,7 +156,7 @@ impl Gc {
     }
 
     pub fn new_string(&mut self, s: &str) -> Object {
-        let s = self.alloc(SString::new(s.to_string()));
+        let s = self.alloc(SString::new(s));
         Object::String(s)
     }    
 
@@ -388,8 +388,11 @@ impl Gc {
 
         let free_size = match object_type {
             ObjectType::Symbol => 0,
-            ObjectType::String => 0,
             ObjectType::Procedure => 0,
+            ObjectType::String => {
+                let sstring: &SString = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(sstring)
+            },            
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(closure)
