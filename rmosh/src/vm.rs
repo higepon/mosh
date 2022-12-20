@@ -5288,4 +5288,24 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+    // (string-append "12" "345" "6") => "123456"
+    #[test]
+    fn test_test179() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(9),
+            Op::Constant(vm.gc.new_string("12")),
+            Op::Push,
+            Op::Constant(vm.gc.new_string("345")),
+            Op::Push,
+            Op::Constant(vm.gc.new_string("6")),
+            Op::Push,
+            Op::ReferFree(22),
+            Op::Call(3),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "\"123456\"", 0);
+    }
+
 }

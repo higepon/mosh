@@ -878,9 +878,7 @@ fn make_string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-string";
     check_argc_between!(name, args, 1, 2);
     match args {
-        [Object::Number(n)] => { 
-            vm.gc.new_string(&" ".repeat(*n as usize))
-        }
+        [Object::Number(n)] => vm.gc.new_string(&" ".repeat(*n as usize)),
         [Object::Number(n), Object::Char(c)] => {
             vm.gc.new_string(&*c.to_string().repeat(*n as usize))
         }
@@ -917,9 +915,20 @@ fn string_to_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->number";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_append(_vm: &mut Vm, args: &[Object]) -> Object {
+fn string_append(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-append";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut ret = "".to_string();
+    for arg in args {
+        match arg {
+            Object::String(s) => {
+                ret = ret + &s.string;
+            }
+            _ => {
+                panic!("{}: string required but got {:?}", name, args);
+            }
+        }
+    }
+    vm.gc.new_string(&ret)
 }
 fn string_split(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-split";
