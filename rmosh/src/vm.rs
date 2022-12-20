@@ -5141,4 +5141,26 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "\"ccc\"", 0);
     }
+
+
+    // (apply car '((3))) => 3
+    #[test]
+    fn test_test173_modified() {
+        let mut vm = Vm::new();        
+        let list = vm.gc.list1(Object::Number(3));        
+        let ops = vec![
+            Op::Frame(7),
+            Op::ReferFree(3),
+            Op::Push,
+            Op::Constant(vm.gc.list1(list)),
+            Op::Push,
+            Op::ReferFree(152),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }

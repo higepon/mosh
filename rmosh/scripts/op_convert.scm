@@ -59,7 +59,10 @@
             (rewrite-insn* more* (+ idx 2))]               
         [((and (or 'CONSTANT) insn) ((? number? n)) . more*)
           (format #t "            Op::~a(vm.gc.cons(Object::Number(~a), Object::Nil)),\n" (insn->string insn) n)
-            (rewrite-insn* more* (+ idx 2))]           
+            (rewrite-insn* more* (+ idx 2))]       
+        [((and (or 'CONSTANT) insn) (((? number? n))) . more*)
+          (format #t "            Op::~a(vm.gc.list1(vm.gc.list1(Object::Number(~a)))),\n" (insn->string insn) n)
+            (rewrite-insn* more* (+ idx 2))]                   
         [((and (or 'CONSTANT) insn) ((? number? a) (? number? b)) . more*)
           (format #t "            Op::~a(vm.gc.list2(Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b)
             (rewrite-insn* more* (+ idx 2))]       
