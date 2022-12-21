@@ -5448,4 +5448,17 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(3 . 2)", 0);
     }
+
+    // (begin #f #t) => #t
+    #[test]
+    fn test_test186() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::False),
+            Op::Constant(Object::True),
+            Op::Halt,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }
