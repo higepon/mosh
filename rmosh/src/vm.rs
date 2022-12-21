@@ -123,6 +123,7 @@ impl Vm {
 
         for &value in &self.ops {
             match value {
+                Op::MakeVector | Op::VectorLength => {}
                 Op::Append2 => {}
                 Op::SetCar | Op::SetCdr => {}
                 Op::BranchNotGe(_) => (),
@@ -246,6 +247,23 @@ impl Vm {
         while pc < len {
             let op = self.ops[pc];
             match op {
+                Op::MakeVector => match self.pop() {
+                    Object::Number(size) => {
+                        let v = vec![self.ac; size as usize];
+                        self.ac = self.gc.new_vector(&v);
+                    }
+                    obj => {
+                        panic!("make-vector: requires number but got {}", obj);
+                    }
+                },
+                Op::VectorLength => match self.ac {
+                    Object::Vector(v) => {
+                        self.ac = Object::Number(v.len() as isize);
+                    }
+                    obj => {
+                        panic!("vector-length: vector required bug got {}", obj)
+                    }
+                },
                 Op::Append2 => {
                     let head = self.pop();
                     if Pair::is_list(head) {
@@ -5459,6 +5477,22 @@ pub mod tests {
             Op::Halt,
         ];
         let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+    // (vector-length (make-vector 3)) => 3
+    #[test]
+    fn test_test187() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::MakeVector,
+            Op::VectorLength,
+            Op::Halt,
+        ];
+        let expected = Object::Number(3);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 }

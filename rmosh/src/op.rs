@@ -39,6 +39,8 @@ pub enum Op {
     Leave(isize),
     LetFrame(isize),
     LocalJmp(usize),
+    MakeVector,
+    VectorLength,
     Nop,
     Not,
     NullP,

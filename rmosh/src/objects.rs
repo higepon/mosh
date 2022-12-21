@@ -18,6 +18,7 @@ pub enum Object {
     True,
     Unspecified,
     StackPointer(*mut Object),
+    Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
 
@@ -70,7 +71,7 @@ impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Object::Char(c) => {
-                write!(f, "{}", c)                
+                write!(f, "{}", c)
             }
             Object::Number(n) => {
                 write!(f, "{}", n)
@@ -108,7 +109,43 @@ impl Display for Object {
             Object::Procedure(proc) => {
                 write!(f, "#<procedure {}>", proc.name)
             }
+            Object::Vector(vector) => {
+                write!(f, "{}", unsafe { vector.pointer.as_ref() })
+            }
         }
+    }
+}
+
+/// Vector
+#[derive(Debug)]
+pub struct Vector {
+    pub header: GcHeader,
+    pub data: Vec<Object>,
+}
+
+impl Vector {
+    pub fn new(data: &Vec<Object>) -> Self {
+        Vector {
+            header: GcHeader::new(ObjectType::Vector),
+            data: data.to_owned(),
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+}
+
+impl Display for Vector {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#[")?;
+        for i in 0..self.data.len() {
+            write!(f, "{}", self.data[i])?;
+            if i != self.data.len() - 1 {
+                write!(f, ", ")?;
+            }
+        }
+        write!(f, "]")
     }
 }
 
@@ -546,5 +583,13 @@ pub mod tests {
         let a = SString::new("abc");
         let b = SString::new("abc");
         assert_eq!(a, b);
+    }
+
+    #[test]
+    fn test_vector_to_string() {
+        let mut gc = Gc::new();
+        let data = vec![Object::Number(1), Object::Number(2)];
+        let v = gc.new_vector(&data);
+        assert_eq!("#[1, 2]", v.to_string());
     }
 }

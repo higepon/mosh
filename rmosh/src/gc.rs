@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Procedure, Symbol, Vox, SString};
+use crate::objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector, Vox};
 use crate::vm::Vm;
 
 #[global_allocator]
@@ -78,6 +78,7 @@ pub enum ObjectType {
     Procedure,
     String,
     Symbol,
+    Vector,
     Vox,
 }
 
@@ -158,7 +159,12 @@ impl Gc {
     pub fn new_string(&mut self, s: &str) -> Object {
         let s = self.alloc(SString::new(s));
         Object::String(s)
-    }    
+    }
+
+    pub fn new_vector(&mut self, data: &Vec<Object>) -> Object {
+        let v = self.alloc(Vector::new(data));
+        Object::Vector(v)
+    }
 
     // append o (list or obj) to l.
     // if l is not list return o.
@@ -290,6 +296,9 @@ impl Gc {
             Object::Pair(pair) => {
                 self.mark_heap_object(pair);
             }
+            Object::Vector(vector) => {
+                self.mark_heap_object(vector);
+            }
         }
     }
 
@@ -347,7 +356,7 @@ impl Gc {
         println!("mark_object_fields(adr:{:?})", pointer);
 
         match object_type {
-            ObjectType::String => {}            
+            ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Closure => {
@@ -365,6 +374,12 @@ impl Gc {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.first);
                 self.mark_object(pair.second);
+            }
+            ObjectType::Vector => {
+                let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
+                for i in 0..vector.data.len() {
+                    self.mark_object(vector.data[i]);
+                }
             }
         }
     }
@@ -393,7 +408,7 @@ impl Gc {
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(sstring)
-            },            
+            }
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(closure)
@@ -406,6 +421,10 @@ impl Gc {
                 let pair: &Pair = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(pair)
             }
+            ObjectType::Vector => {
+                let v: &Vector = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(v)
+            }            
         };
         self.current_alloc_size -= free_size;
         unsafe { drop(Box::from_raw(object_ptr)) }
