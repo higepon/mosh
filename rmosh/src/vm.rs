@@ -5496,11 +5496,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (let loop ((i 0)) (if (= i 100) (+ i 1) (loop (+ i 1)))) => 101
     #[test]
     fn test_test188() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
             Op::Undef,
@@ -5509,7 +5508,12 @@ pub mod tests {
             Op::Enter(1),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 19, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 19,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::Constant(Object::Number(100)),
@@ -5546,11 +5550,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (let ((a 0)) (cond (#t (set! a (+ a 1)) (set! a (+ a 1)) a))) => 2
     #[test]
     fn test_test189() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Number(0)),
@@ -5584,11 +5587,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (char? #\あ) => #t
     #[test]
     fn test_test190() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(Object::Char('あ')),
@@ -5602,11 +5604,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (eq? (list 'a) (list 'a)) => #f
     #[test]
     fn test_test191() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(vm.gc.symbol_intern("a")),
@@ -5628,4 +5629,31 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+    // (let ((x (list 'a))) (eq? x x)) => #t
+    #[test]
+    fn test_test192() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::ReferFree(89),
+            Op::Push,
+            Op::Display(1),
+            Op::Frame(5),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Eq,
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }
