@@ -1062,7 +1062,11 @@ fn set_current_output_port_destructive(_vm: &mut Vm, args: &[Object]) -> Object 
 }
 fn is_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Char(_) => Object::True,
+        _ => Object::False,
+    }
 }
 fn write(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "write";

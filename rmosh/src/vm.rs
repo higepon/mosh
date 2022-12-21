@@ -5584,4 +5584,22 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+
+    // (char? #\あ) => #t
+    #[test]
+    fn test_test190() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(Object::Char('あ')),
+            Op::Push,
+            Op::ReferFree(53),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
