@@ -53,6 +53,7 @@ pub enum Op {
     ReferGlobal(GcRef<Symbol>),
     ReferLocal(isize),
     Return(isize),
+    SetCar,
     SetCdr,
     SymbolP,
     TailCall(isize, isize),
