@@ -1,5 +1,6 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
+use crate::op::Op;
 use crate::vm::Vm;
 use std::fmt::{self, Display};
 
@@ -396,7 +397,7 @@ impl Display for Procedure {
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
-    pub pc: usize,
+    pub ops: Vec<Op>,
     pub argc: isize,
     pub is_optional_arg: bool,
     //size: usize,
@@ -406,7 +407,7 @@ pub struct Closure {
 
 impl Closure {
     pub fn new(
-        pc: usize,
+        ops: Vec<Op>,
         argc: isize,
         is_optional_arg: bool,
         // size: usize,
@@ -414,7 +415,7 @@ impl Closure {
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
-            pc: pc,
+            ops: ops,
             argc: argc,
             is_optional_arg: is_optional_arg,
             //size: size,
@@ -496,7 +497,7 @@ pub mod tests {
     #[test]
     fn test_closure_to_string() {
         let mut gc = Gc::new();
-        let closure = gc.alloc(Closure::new(0, 0, false, vec![]));
+        let closure = gc.alloc(Closure::new(vec![], 0, false, vec![]));
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();

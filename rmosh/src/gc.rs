@@ -15,6 +15,7 @@ use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
 use crate::objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector, Vox};
+use crate::op::Op;
 use crate::vm::Vm;
 
 #[global_allocator]
@@ -350,6 +351,69 @@ impl Gc {
         }
     }
 
+    pub fn mark_op(&mut self, op: Op) {
+        match op {
+            Op::MakeVector | Op::VectorLength => {}
+            Op::Append2 => {}
+            Op::SetCar | Op::SetCdr => {}
+            Op::BranchNotGe(_) => (),
+            Op::BranchNotGt(_) => (),
+            Op::BranchNotLe(_) => (),
+            Op::BranchNotLt(_) => (),
+            Op::BranchNotNull(_) => (),
+            Op::BranchNotNumberEqual(_) => (),
+            Op::Closure { .. } => (),
+            Op::Constant(v) => {
+                self.mark_object(v);
+            }
+            Op::AssignGlobal(symbol) => {
+                self.mark_heap_object(symbol);
+            }
+            Op::DefineGlobal(symbol) => {
+                self.mark_heap_object(symbol);
+            }
+            Op::ReferGlobal(symbol) => {
+                self.mark_heap_object(symbol);
+            }
+            Op::Display(_) => (),
+            Op::Eq => (),
+            Op::ReferFree(_) => (),
+            Op::LetFrame(_) => (),
+            Op::Box(_) => (),
+            Op::Enter(_) => (),
+            Op::Halt => (),
+            Op::NullP => (),
+            Op::PairP => (),
+            Op::SymbolP => (),
+            Op::Car => (),
+            Op::Cdr => (),
+            Op::Cadr => (),
+            Op::Not => (),
+            Op::NumberEqual => (),
+            Op::NumberGe => (),
+            Op::NumberGt => (),
+            Op::NumberLe => (),
+            Op::NumberLt => (),
+            Op::AssignFree(_) => (),
+            Op::AssignLocal(_) => (),
+            Op::Indirect => (),
+            Op::Nop => (),
+            Op::Undef => (),
+            Op::ReferLocal(_) => (),
+            Op::Leave(_) => (),
+            Op::Push => (),
+            Op::NumberAdd => (),
+            Op::AddPair => (),
+            Op::Cons => (),
+            Op::LocalJmp(_) => (),
+            Op::TailCall(_, _) => (),
+            Op::Test(_) => (),
+            Op::Call(_) => (),
+            Op::Return(_) => (),
+            Op::Frame(_) => (),
+        }
+    }    
+
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
         #[cfg(feature = "debug_log_gc")]
@@ -365,6 +429,10 @@ impl Gc {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
                 }
+                for i in 0..closure.ops.len() {
+                    let op = closure.ops[i];
+                    self.mark_op(op);
+                }                
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };

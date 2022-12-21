@@ -73,7 +73,7 @@ impl Vm {
 
     fn initialize_free_vars(&mut self) {
         let free_vars = default_free_vars(&mut self.gc);
-        let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
+        let mut display = self.gc.alloc(Closure::new(vec![], 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
     }
@@ -113,67 +113,8 @@ impl Vm {
         self.gc.mark_object(self.dc);
 
         // Code.
-        for &value in &self.ops {
-            match value {
-                Op::MakeVector | Op::VectorLength => {}
-                Op::Append2 => {}
-                Op::SetCar | Op::SetCdr => {}
-                Op::BranchNotGe(_) => (),
-                Op::BranchNotGt(_) => (),
-                Op::BranchNotLe(_) => (),
-                Op::BranchNotLt(_) => (),
-                Op::BranchNotNull(_) => (),
-                Op::BranchNotNumberEqual(_) => (),
-                Op::Closure { .. } => (),
-                Op::Constant(v) => {
-                    self.gc.mark_object(v);
-                }
-                Op::AssignGlobal(symbol) => {
-                    self.gc.mark_heap_object(symbol);
-                }
-                Op::DefineGlobal(symbol) => {
-                    self.gc.mark_heap_object(symbol);
-                }
-                Op::ReferGlobal(symbol) => {
-                    self.gc.mark_heap_object(symbol);
-                }
-                Op::Display(_) => (),
-                Op::Eq => (),
-                Op::ReferFree(_) => (),
-                Op::LetFrame(_) => (),
-                Op::Box(_) => (),
-                Op::Enter(_) => (),
-                Op::Halt => (),
-                Op::NullP => (),
-                Op::PairP => (),
-                Op::SymbolP => (),
-                Op::Car => (),
-                Op::Cdr => (),
-                Op::Cadr => (),
-                Op::Not => (),
-                Op::NumberEqual => (),
-                Op::NumberGe => (),
-                Op::NumberGt => (),
-                Op::NumberLe => (),
-                Op::NumberLt => (),
-                Op::AssignFree(_) => (),
-                Op::AssignLocal(_) => (),
-                Op::Indirect => (),
-                Op::Nop => (),
-                Op::Undef => (),
-                Op::ReferLocal(_) => (),
-                Op::Leave(_) => (),
-                Op::Push => (),
-                Op::NumberAdd => (),
-                Op::AddPair => (),
-                Op::Cons => (),
-                Op::LocalJmp(_) => (),
-                Op::TailCall(_, _) => (),
-                Op::Test(_) => (),
-                Op::Call(_) => (),
-                Op::Return(_) => (),
-                Op::Frame(_) => (),
-            }
+        for &op in &self.ops {
+            self.gc.mark_op(op);
         }
     }
 
@@ -210,12 +151,14 @@ impl Vm {
     #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
         println!("-----------------------------------------");
-        println!("{:?} executed ac={:?}", op, self.ac);
+        println!("{:?} executed", op);
+        println!("  ac={}", self.ac);        
+        println!("  dc={}", self.dc);                
         println!("-----------------------------------------");
         let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
         for i in 0..self.stack_len() {
             println!(
-                "  {:?}{}",
+                "  {}{}",
                 self.stack[i],
                 if fp_idx == i.try_into().unwrap() {
                     "  <== fp"
@@ -230,16 +173,18 @@ impl Vm {
     fn print_vm(&mut self, _: Op) {}
 
     pub fn run(&mut self, ops: Vec<Op>) -> Object {
-        // todo move to the initializer
-        // TODO: This is not very efficient.
-        let mut all_ops = self.precompiled_lib();
-        let mut script_ops = ops;
-        all_ops.append(&mut script_ops);
-        self.ops = all_ops;
+        let lib_ops = self.precompiled_lib();
+        self.initialize_free_vars();        
+        self.run_ops(lib_ops);
+        self.run_ops(ops)
+    }
+
+    fn run_ops(&mut self, ops: Vec<Op>) -> Object {
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
+
+        self.ops = ops;       
         let len = self.ops.len();
-        self.initialize_free_vars();
         let mut pc = 0;
         while pc < len {
             let op = self.ops[pc];
@@ -310,10 +255,10 @@ impl Vm {
                 }
                 Op::BranchNotNull(skip_size) => {
                     if self.ac.is_nil() {
+                        self.ac = Object::False;                        
+                    } else {
                         self.ac = Object::True;
                         pc = pc + skip_size;
-                    } else {
-                        self.ac = Object::False;
                     }
                 }
                 Op::Eq => {
@@ -463,7 +408,7 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.alloc(Closure::new(0, 0, false, free_vars));
+                    let mut display = self.alloc(Closure::new(vec![], 0, false, free_vars));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -515,7 +460,7 @@ impl Vm {
                         free_vars.push(var);
                     }
                     self.ac = Object::Closure(self.alloc(Closure::new(
-                        pc,
+                        self.ops[pc..pc+size].to_vec(),
                         arg_len,
                         is_optional_arg,
                         free_vars,
@@ -567,11 +512,13 @@ impl Vm {
 
     #[inline(always)]
     fn call(&mut self, pc: &mut usize, argc: isize) {
-        match self.ac {
+         println!("**** Entered Call ****");
+        match self.ac   {
             Object::Closure(closure) => {
                 self.dc = self.ac;
                 // self.cl = self.ac;
-                *pc = closure.pc;
+                self.ops = closure.ops.to_owned();
+                *pc = 0;
                 if closure.is_optional_arg {
                     let extra_len = argc - closure.argc;
                     if -1 == extra_len {
@@ -624,6 +571,7 @@ impl Vm {
                             loop {
                                 if last_pair.is_nil() {
                                     let new_argc = argc - 2 + j;
+                                    println!("**** Call call from call ****");
                                     self.call(pc, new_argc);
                                     break;
                                 } else {
@@ -5702,4 +5650,61 @@ pub mod tests {
         let expected = Object::True;
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+
+
+
+    // (map1 (lambda (x) 2) '(1)) => ("ABC123" "DEF123")
+    #[test]
+    fn test_test193_modified0() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(9),
+            Op::Closure {size: 3, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(2)),
+            Op::Return(1),
+            Op::Push,
+            Op::Constant(vm.gc.cons(Object::Number(1), Object::Nil)),
+            Op::Push,
+            Op::ReferGlobal(vm.gc.intern("map1")),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(ABC123 DEF123)", 0);
+    }
+
+
+
+    // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF")) => ("ABC123" "DEF123")
+    #[test]
+    fn test_test193_modified() {       
+        let mut vm = Vm::new();        
+        let abc = vm.gc.new_string("ABC");
+        let def = vm.gc.new_string("DEF");
+        let ops = vec![
+            Op::Frame(16),
+            Op::ReferFree(22),
+            Op::Push,
+            Op::Closure {size: 8, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(vm.gc.new_string("123")),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::TailCall(2, 1),
+            Op::Return(1),
+            Op::Push,
+            Op::Constant(vm.gc.list2(abc, def)),
+            Op::Push,
+            Op::ReferGlobal(vm.gc.intern("map1")),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(\"ABC123\" \"DEF123\")", 0);
+    }
+
 }
