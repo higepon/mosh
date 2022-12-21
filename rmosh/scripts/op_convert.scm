@@ -19,7 +19,7 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'MAKE_CONTINUATION 'CALL 'BRANCH_NOT_GE 'BRANCH_NOT_GT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BOX 'ASSIGN_LOCAL 'ASSIGN_GLOBAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+          [((or 'MAKE_CONTINUATION 'CALL 'BRANCH_NOT_GE 'BRANCH_NOT_GT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NULL 'BOX 'ASSIGN_LOCAL 'ASSIGN_GLOBAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'APPEND2 'MAKE_VECTOR 'VECTOR_LENGTH 'HALT 'SET_CAR 'SET_CDR 'EQ 'PAIR_P 'SYMBOL_P 'NOT 'CAR 'CDR 'CADR 'CONS 'NULL_P 'NUMBER_EQUAL 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
@@ -39,7 +39,7 @@
           (format #t "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
              (adjust-offset insn* idx size) arg-len (if optional? "true" "false") num-free-vars)
            (rewrite-insn* more* (+ idx 7))]
-        [((and (or 'FRAME 'TEST 'LOCAL_JMP 'BRANCH_NOT_GE 'BRANCH_NOT_GT 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NUMBER_EQUAL) insn) offset . more*)
+        [((and (or 'FRAME 'TEST 'LOCAL_JMP 'BRANCH_NOT_GE 'BRANCH_NOT_GT 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_NULL) insn) offset . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
           (rewrite-insn* more* (+ idx 2))] 
         [((and (or 'CONSTANT) insn) #f . more*)

@@ -16,6 +16,7 @@ pub enum Op {
     BranchNotGt(usize),
     BranchNotLe(usize),    
     BranchNotLt(usize),
+    BranchNotNull(usize),
     BranchNotNumberEqual(usize),
     Call(isize),
     Car,

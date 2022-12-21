@@ -10,6 +10,7 @@ pub mod op;
 pub mod vm;
 pub mod procs;
 
+
 fn main() {
     println!(
         "size_of<Object>={:?} size_of<GcRef<Symbol>>={} size_of<Op>={}",

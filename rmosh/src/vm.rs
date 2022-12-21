@@ -72,22 +72,6 @@ impl Vm {
     }
 
     fn initialize_free_vars(&mut self) {
-        /*
-        let free_vars = vec![
-            Object::Procedure(
-                self.gc
-                    .alloc(Procedure::new(procs::numberp, "number?".to_owned())),
-            ),
-            Object::Procedure(
-                self.gc
-                    .alloc(Procedure::new(procs::write, "cons".to_owned())),
-            ),
-            Object::Procedure(
-                self.gc
-                    .alloc(Procedure::new(procs::write, "cons*".to_owned())),
-            ),
-            Object::Procedure(self.gc.alloc(Procedure::new(procs::car, "car".to_owned()))),
-        ];*/
         let free_vars = default_free_vars(&mut self.gc);
         let mut display = self.gc.alloc(Closure::new(0, 0, false, free_vars));
         display.prev = self.dc;
@@ -114,13 +98,21 @@ impl Vm {
     }
 
     fn mark_roots(&mut self) {
-        for &value in &self.stack[0..self.stack_len()] {
-            self.gc.mark_object(value);
+        // Stack.
+        for &obj in &self.stack[0..self.stack_len()] {
+            self.gc.mark_object(obj);
         }
 
+        // Global variables.
+        for &obj in self.globals.values() {
+            self.gc.mark_object(obj);            
+        }
+
+        // Registers.
         self.gc.mark_object(self.ac);
         self.gc.mark_object(self.dc);
 
+        // Code.
         for &value in &self.ops {
             match value {
                 Op::MakeVector | Op::VectorLength => {}
@@ -130,6 +122,7 @@ impl Vm {
                 Op::BranchNotGt(_) => (),
                 Op::BranchNotLe(_) => (),
                 Op::BranchNotLt(_) => (),
+                Op::BranchNotNull(_) => (),
                 Op::BranchNotNumberEqual(_) => (),
                 Op::Closure { .. } => (),
                 Op::Constant(v) => {
@@ -238,7 +231,11 @@ impl Vm {
 
     pub fn run(&mut self, ops: Vec<Op>) -> Object {
         // todo move to the initializer
-        self.ops = ops;
+        // TODO: This is not very efficient.
+        let mut all_ops = self.precompiled_lib();
+        let mut script_ops = ops;
+        all_ops.append(&mut script_ops);
+        self.ops = all_ops;
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
         let len = self.ops.len();
@@ -310,6 +307,14 @@ impl Vm {
                 }
                 Op::BranchNotLt(skip_size) => {
                     branch_number_op!(<, self, pc, skip_size);
+                }
+                Op::BranchNotNull(skip_size) => {
+                    if self.ac.is_nil() {
+                        self.ac = Object::True;
+                        pc = pc + skip_size;
+                    } else {
+                        self.ac = Object::False;
+                    }
                 }
                 Op::Eq => {
                     self.ac = Object::make_bool(self.pop().eq(&self.ac));
@@ -702,6 +707,40 @@ impl Vm {
         }
         args
     }
+
+    fn precompiled_lib(&mut self) -> Vec<Op> {
+        // map1 procedure.
+        vec![
+            Op::Closure {
+                size: 22,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(1),
+            Op::BranchNotNull(3),
+            Op::ReferLocal(1),
+            Op::Return(2),
+            Op::Frame(6),
+            Op::ReferLocal(1),
+            Op::Car,
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Call(1),
+            Op::Push,
+            Op::Frame(8),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::Cdr,
+            Op::Push,
+            Op::ReferGlobal(self.gc.intern("map1")),
+            Op::Call(2),
+            Op::Cons,
+            Op::Return(2),
+            Op::DefineGlobal(self.gc.intern("map1")),
+        ]
+    }
 }
 
 #[cfg(test)]
@@ -711,11 +750,15 @@ pub mod tests {
 
     use super::*;
 
-    pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>();
-    pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
-    pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
+    pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>(); // 56
+    pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>(); // 88
+    pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>(); // 56
+    pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>();
     // Base closure + procedure as free variable
-    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + SIZE_OF_PROCEDURE * 623;
+    static SIZE_OF_MIN_VM: usize =
+        SIZE_OF_CLOSURE /* base display closure */
+        + SIZE_OF_PROCEDURE * 623 /* free variables */ 
+        + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL; /* baselib name and closure of map1 */
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
@@ -4783,7 +4826,8 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4)", 0);
+        // This register a closure globally and increase size.        
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4)", SIZE_OF_CLOSURE);
     }
 
     // ((lambda (a . b) b) 1 2 3) => (2 3)
@@ -5067,7 +5111,8 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
+        // This register a closure globally and increase size.
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", SIZE_OF_CLOSURE);
     }
 
     // (begin (define (hige a . b) b) (hige 1 2 3)) => (2 3)
@@ -5097,7 +5142,8 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(2 3)", 0);
+        // This register a closure globally and increase size.        
+        test_ops_with_size_as_str(&mut vm, ops, "(2 3)", SIZE_OF_CLOSURE);
     }
 
     // (apply (lambda a a) '(3 2)) => (3 2)
