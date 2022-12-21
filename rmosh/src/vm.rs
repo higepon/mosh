@@ -124,6 +124,7 @@ impl Vm {
         for &value in &self.ops {
             match value {
                 Op::Append2 => {}
+                Op::SetCdr => {}
                 Op::BranchNotGe(_) => (),
                 Op::BranchNotGt(_) => (),
                 Op::BranchNotLe(_) => (),
@@ -251,6 +252,17 @@ impl Vm {
                         self.ac = self.gc.append2(head, self.ac);
                     } else {
                         panic!("append: pair required but got {}", head);
+                    }
+                }
+                Op::SetCdr => {
+                    match self.pop() {
+                        Object::Pair(mut pair) => {
+                            pair.second = self.ac;
+                            self.ac = Object::Unspecified;
+                        }
+                        obj => {
+                            panic!("set-cdr!: pair requied but got {}", obj)
+                        }
                     }
                 }
                 Op::Not => {
@@ -5326,4 +5338,39 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+
+    // ((lambda () (define p (cons 1 2)) (set-cdr! p 3) p)) => (1 . 3)
+    #[test]
+    fn test_test184() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(22),
+            Op::Closure {size: 20, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::LetFrame(2),
+            Op::Undef,
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Cons,
+            Op::AssignLocal(0),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::SetCdr,
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Leave(1),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 . 3)", 0);
+    }
+    
 }
