@@ -5602,4 +5602,30 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+
+    // (eq? (list 'a) (list 'a)) => #f
+    #[test]
+    fn test_test191() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::ReferFree(89),
+            Op::Call(1),
+            Op::Push,
+            Op::Frame(5),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::ReferFree(89),
+            Op::Call(1),
+            Op::Eq,
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::False;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
