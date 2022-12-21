@@ -254,28 +254,24 @@ impl Vm {
                         panic!("append: pair required but got {}", head);
                     }
                 }
-                Op::SetCar => {
-                    match self.pop() {
-                        Object::Pair(mut pair) => {
-                            pair.first = self.ac;
-                            self.ac = Object::Unspecified;
-                        }
-                        obj => {
-                            panic!("set-car!: pair requied but got {}", obj)
-                        }
+                Op::SetCar => match self.pop() {
+                    Object::Pair(mut pair) => {
+                        pair.first = self.ac;
+                        self.ac = Object::Unspecified;
                     }
-                }                
-                Op::SetCdr => {
-                    match self.pop() {
-                        Object::Pair(mut pair) => {
-                            pair.second = self.ac;
-                            self.ac = Object::Unspecified;
-                        }
-                        obj => {
-                            panic!("set-cdr!: pair requied but got {}", obj)
-                        }
+                    obj => {
+                        panic!("set-car!: pair requied but got {}", obj)
                     }
-                }
+                },
+                Op::SetCdr => match self.pop() {
+                    Object::Pair(mut pair) => {
+                        pair.second = self.ac;
+                        self.ac = Object::Unspecified;
+                    }
+                    obj => {
+                        panic!("set-cdr!: pair requied but got {}", obj)
+                    }
+                },
                 Op::Not => {
                     self.ac = Object::make_bool(self.ac.is_false());
                 }
@@ -5165,12 +5161,11 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "\"ccc\"", 0);
     }
 
-
     // (apply car '((3))) => 3
     #[test]
     fn test_test173_modified() {
-        let mut vm = Vm::new();        
-        let list = vm.gc.list1(Object::Number(3));        
+        let mut vm = Vm::new();
+        let list = vm.gc.list1(Object::Number(3));
         let ops = vec![
             Op::Frame(7),
             Op::ReferFree(3),
@@ -5189,10 +5184,15 @@ pub mod tests {
     // (apply (lambda (a) a) '(3)) => 3
     #[test]
     fn test_test174() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(9),
-            Op::Closure {size: 3, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Return(1),
             Op::Push,
@@ -5211,10 +5211,15 @@ pub mod tests {
     // (apply (lambda (a b) (+ a b)) '(5 2)) => 7
     #[test]
     fn test_test175() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(12),
-            Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 6,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferLocal(1),
@@ -5236,10 +5241,15 @@ pub mod tests {
     // (apply (lambda (a b c) (+ a b c)) '(5 2 1)) => 8
     #[test]
     fn test_test176() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(15),
-            Op::Closure {size: 9, arg_len: 3, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 9,
+                arg_len: 3,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferLocal(1),
@@ -5249,7 +5259,10 @@ pub mod tests {
             Op::NumberAdd,
             Op::Return(3),
             Op::Push,
-            Op::Constant(vm.gc.list3(Object::Number(5), Object::Number(2), Object::Number(1))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(5), Object::Number(2), Object::Number(1)),
+            ),
             Op::Push,
             Op::ReferFree(152),
             Op::Call(2),
@@ -5264,11 +5277,16 @@ pub mod tests {
     // (apply (lambda (a) (car a)) '((3))) => 3
     #[test]
     fn test_test177_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let list = vm.gc.list1(Object::Number(3));
         let ops = vec![
             Op::Frame(10),
-            Op::Closure {size: 4, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 4,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Car,
             Op::Return(1),
@@ -5288,10 +5306,15 @@ pub mod tests {
     // (apply (lambda (a . b) (+ a (car b))) '(1 2)) => 3
     #[test]
     fn test_test178() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(13),
-            Op::Closure {size: 7, arg_len: 2, is_optional_arg: true, num_free_vars: 0},
+            Op::Closure {
+                size: 7,
+                arg_len: 2,
+                is_optional_arg: true,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferLocal(1),
@@ -5314,7 +5337,7 @@ pub mod tests {
     // (string-append "12" "345" "6") => "123456"
     #[test]
     fn test_test179() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(9),
             Op::Constant(vm.gc.new_string("12")),
@@ -5331,11 +5354,10 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "\"123456\"", 0);
     }
 
-
     // (string? "hige") => #t
     #[test]
     fn test_test181() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
             Op::Constant(vm.gc.new_string("hige")),
@@ -5349,14 +5371,18 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // ((lambda () (define p (cons 1 2)) (set-cdr! p 3) p)) => (1 . 3)
     #[test]
     fn test_test184() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(22),
-            Op::Closure {size: 20, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 20,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::LetFrame(2),
             Op::Undef,
             Op::Push,
@@ -5383,15 +5409,19 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(1 . 3)", 0);
     }
-    
 
     // ((lambda () (define q (cons 1 2)) (set-car! q 3) q)) => (3 . 2)
     #[test]
     fn test_test185() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(22),
-            Op::Closure {size: 20, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 20,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::LetFrame(2),
             Op::Undef,
             Op::Push,
@@ -5418,5 +5448,4 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(3 . 2)", 0);
     }
-
 }
