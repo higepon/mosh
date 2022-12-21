@@ -5546,4 +5546,42 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+
+    // (let ((a 0)) (cond (#t (set! a (+ a 1)) (set! a (+ a 1)) a))) => 2
+    #[test]
+    fn test_test189() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(3),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::Constant(Object::True),
+            Op::Test(16),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::AssignLocal(0),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::AssignLocal(0),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::LocalJmp(2),
+            Op::Undef,
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(2);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
