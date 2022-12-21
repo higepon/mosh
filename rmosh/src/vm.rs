@@ -5495,4 +5495,55 @@ pub mod tests {
         let expected = Object::Number(3);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+
+    // (let loop ((i 0)) (if (= i 100) (+ i 1) (loop (+ i 1)))) => 101
+    #[test]
+    fn test_test188() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Undef,
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Closure {size: 19, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(100)),
+            Op::BranchNotNumberEqual(6),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Return(1),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Indirect,
+            Op::TailCall(1, 1),
+            Op::Return(1),
+            Op::AssignLocal(0),
+            Op::Frame(6),
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Call(1),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(101);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
