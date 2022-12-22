@@ -204,10 +204,11 @@ impl Vm {
             Op::Cons,
             Op::Return(2),
             Op::DefineGlobal(self.gc.intern("map1")),
+            Op::Halt,
         ];        
         self.initialize_free_vars();    
-        //let lib_ops = &lib_ops[0] as *const Op;    
-        //self.run_ops(lib_ops, 10 /* TODO */);
+        let lib_ops = &lib_ops[0] as *const Op;    
+        self.run_ops(lib_ops, 10 /* TODO */);
         self.run_ops(ops, 10 /* TODO */)
     }
 
@@ -726,7 +727,7 @@ pub mod tests {
         let ret = vm.run(&ops as  *const Op);
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
-        //assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
+        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Number(a) => {
                 assert_eq!(a, 9);
@@ -734,7 +735,7 @@ pub mod tests {
             _ => panic!("{:?}", "todo"),
         }
     }    
-/*
+
     pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>(); // 56
     pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>(); // 88
     pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>(); // 56
@@ -744,7 +745,7 @@ pub mod tests {
         SIZE_OF_CLOSURE /* base display closure */
         + SIZE_OF_PROCEDURE * 623 /* free variables */ 
         + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL; /* baselib name and closure of map1 */
-
+/*
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
