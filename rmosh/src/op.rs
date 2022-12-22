@@ -3,7 +3,7 @@ use crate::{
     objects::{Object, Symbol},
 };
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Op {
     NumberAdd,
     AddPair,
@@ -14,7 +14,7 @@ pub enum Op {
     Box(isize),
     BranchNotGe(usize),
     BranchNotGt(usize),
-    BranchNotLe(usize),    
+    BranchNotLe(usize),
     BranchNotLt(usize),
     BranchNotNull(usize),
     BranchNotNumberEqual(usize),
@@ -62,4 +62,126 @@ pub enum Op {
     TailCall(isize, isize),
     Test(usize),
     Undef,
+}
+
+#[cfg(test)]
+pub mod tests {
+
+    use crate::{gc::Gc};
+    use super::*;
+
+    struct TestVm<'a> {
+        ops: &'a [Op],
+    }
+
+    impl<'a> TestVm<'a> {
+        fn run(&mut self, ops: &'a[Op]) -> Object {
+            self.ops = ops;
+            let mut val = Object::Unspecified;
+            for i in 0..ops.len() {
+                match ops[i] {
+                    Op::Constant(n) => {
+                        val = n;
+                    }
+                    _ => {
+                        panic!("{:?} not supported", ops[i]);
+                    }
+                }
+            }
+            val
+        }
+    }
+
+    fn print_slice_refs(s1: &[Op], s2: &[Op], s3: &[Op]) {
+        println!("{:?} {:?} {:?}", s1, s2, s3);
+    }
+    #[test]
+    fn test_vec_slice_op() {
+        let mut gc = Gc::new();
+        let mut vm = TestVm {
+            ops: &[]
+        };
+        let vec_ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Constant(Object::Number(2)),
+            Op::Constant(Object::Number(3)),
+            Op::Constant(Object::Number(4)),
+        ];
+
+        // Hold one slice ref.
+        let slice_ref: &[Op] = &vec_ops[1..3];
+        assert_eq!(slice_ref.len(), 2);
+        assert_eq!(slice_ref[0], Op::Constant(Object::Number(2)));
+
+        // Still can access original vec.
+        assert_eq!(vec_ops.len(), 4);
+
+        // Have different slice.
+        let slice_ref2: &[Op] = &vec_ops[2..3];
+        assert_eq!(slice_ref2.len(), 1);
+        assert_eq!(slice_ref2[0], Op::Constant(Object::Number(3)));
+
+        // Have sub slice_ref.
+        let sub_slice_ref: &[Op] = &slice_ref[1..2];
+        assert_eq!(sub_slice_ref.len(), 1);
+        assert_eq!(sub_slice_ref[0], Op::Constant(Object::Number(3)));
+
+        // Can pass refs to function.
+        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
+        // Can still access the refs.
+        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
+
+        // Can mark Op.
+        gc.mark_op(slice_ref[0]);
+
+        // Run the VM.
+        vm.run(slice_ref);
+        vm.run(slice_ref2);        
+        vm.run(sub_slice_ref);                
+    }
+
+    #[test]
+    fn test_array_slice_op() {
+        let mut vm = TestVm {
+            ops: &[]
+        };        
+        let mut gc = Gc::new();
+        let array_ops = [
+            Op::Constant(Object::Number(1)),
+            Op::Constant(Object::Number(2)),
+            Op::Constant(Object::Number(3)),
+            Op::Constant(Object::Number(4)),
+        ];
+
+        // Hold one slice ref.
+        let slice_ref: &[Op] = &array_ops[1..3];
+        assert_eq!(slice_ref.len(), 2);
+        assert_eq!(slice_ref[0], Op::Constant(Object::Number(2)));
+
+        // Still can access original array.
+        assert_eq!(array_ops.len(), 4);
+
+        // Have different slice.
+        let slice_ref2: &[Op] = &array_ops[2..3];
+        assert_eq!(slice_ref2.len(), 1);
+        assert_eq!(slice_ref2[0], Op::Constant(Object::Number(3)));
+
+        // Have sub slice_ref.
+        let sub_slice_ref: &[Op] = &slice_ref[1..2];
+        assert_eq!(sub_slice_ref.len(), 1);
+        assert_eq!(sub_slice_ref[0], Op::Constant(Object::Number(3)));
+
+        // Can pass refs to function.
+        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
+        // Can still access the refs.
+        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
+
+        // Can mark Op through ref.
+        gc.mark_op(slice_ref[0]);
+
+        // Run the VM.
+        vm.run(slice_ref);
+        vm.run(slice_ref2);        
+        vm.run(sub_slice_ref);          
+    }
 }
