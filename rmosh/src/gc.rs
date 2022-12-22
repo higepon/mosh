@@ -278,7 +278,7 @@ impl Gc {
             Object::Number(_) => {}
             Object::StackPointer(_) => {}
             Object::OpPointer(op) => {
-                self.mark_op(unsafe {*op});
+                self.mark_op(unsafe { *op });
             }
             Object::True => {}
             Object::Unspecified => {}
@@ -319,11 +319,13 @@ impl Gc {
             self.marked_objects.push(header);
 
             #[cfg(feature = "debug_log_gc")]
-            println!(
-                "mark(adr:{:?}, type:{:?})",
-                header,
-                header.as_ref().obj_type,
-            );
+            if header.as_ref().obj_type != ObjectType::Procedure {
+                println!(
+                    "mark(adr:{:?}, type:{:?})",
+                    header,
+                    header.as_ref().obj_type,
+                );
+            }
         }
     }
 
@@ -415,28 +417,49 @@ impl Gc {
             Op::Return(_) => (),
             Op::Frame(_) => (),
         }
-    }    
+    }
 
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
-        #[cfg(feature = "debug_log_gc")]
-        println!("mark_object_fields(adr:{:?})", pointer);
+        //#[cfg(feature = "debug_log_gc")]
+        //println!("mark_object_fields(adr:{:?})", pointer);
 
         match object_type {
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Closure => {
-                let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
+                let mut closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
                 for i in 0..closure.free_vars.len() {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
-
                 }
-                // TODO sorry!!
-               //     let op = closure.ops[i];
-                 //   self.mark_op(op);
-//                }                
+
+                loop {
+                    println!("mark Closure ops {:?} {}", closure as *const Closure, closure.ops_len);
+                    for i in 0..closure.ops_len {
+                        let op = unsafe { *closure.ops.offset(i as isize) };
+                        println!("try to mark {:?}", op);
+                        self.mark_op(op);
+                    }
+                    println!("closure.prev={}", closure.prev);
+                    if closure.prev.is_unspecified() {
+                        println!("break closure.prev={}", closure.prev);
+                        break;
+                    } else {
+                        self.mark_object(closure.prev);
+                        /*
+                        match closure.prev {
+                            Object::Closure(c) =>  {
+                                 c.pointer.as_ref() 
+                                },
+                            obj => {
+                                panic!("closure.prev was {}", obj)
+                            }
+                        }
+                        */
+                    }
+                }
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
@@ -468,8 +491,8 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        #[cfg(feature = "debug_log_gd")]
-        println!("free(adr:{:?})", object_ptr as *mut GcHeader);
+        //#[cfg(feature = "debug_log_gc")]
+        println!("****** free(adr:{:?})", object_ptr as *mut GcHeader);
         let object_type = object_ptr.obj_type;
 
         let hige: &GcHeader = object_ptr;
@@ -496,7 +519,7 @@ impl Gc {
             ObjectType::Vector => {
                 let v: &Vector = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(v)
-            }            
+            }
         };
         self.current_alloc_size -= free_size;
         unsafe { drop(Box::from_raw(object_ptr)) }
@@ -504,6 +527,7 @@ impl Gc {
 
     #[cfg(not(feature = "test_gc_size"))]
     fn free(&self, object_ptr: &mut GcHeader) {
+        panic!("oge");
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 
@@ -523,6 +547,7 @@ impl Gc {
                     } else {
                         self.first = object_ptr.next
                     }
+                    println!("******** free");
                     self.free(object_ptr);
                 }
             }

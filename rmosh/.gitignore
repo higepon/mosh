@@ -16,3 +16,5 @@ Cargo.lock
 data/*.op
 data/*.rsop
 data/test*.scm
+# top level text is probably a debug log file.
+*.txt 

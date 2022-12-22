@@ -55,6 +55,8 @@ pub struct Vm {
     fp: *mut Object,
     globals: HashMap<GcRef<Symbol>, Object>,
     ops: Vec<Op>, // Keep running ops so that they are not garbage collected.
+    lib_ops: Vec<Op>, // Closure for lib_ops should live longer than every run of eval.
+    // Otherwise we get crash on gc if lib_ops was destruted.
 }
 
 impl Vm {
@@ -68,12 +70,13 @@ impl Vm {
             fp: null_mut(),
             globals: HashMap::new(),
             ops: vec![],
+            lib_ops: vec![],            
         }
     }
 
-    fn initialize_free_vars(&mut self) {
+    fn initialize_free_vars(&mut self, ops: *const Op, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);
-        let mut display = self.gc.alloc(Closure::new(&[] as  *const Op, 0, false, free_vars));
+        let mut display = self.gc.alloc(Closure::new(ops, ops_len, 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
     }
@@ -97,6 +100,8 @@ impl Vm {
         }
     }
 
+    // VM実行中に op にあるもの消しているかも。
+    // closure にセットする vm-run みて
     fn mark_roots(&mut self) {
         // Stack.
         for &obj in &self.stack[0..self.stack_len()] {
@@ -172,10 +177,10 @@ impl Vm {
     #[cfg(not(feature = "debug_log_vm"))]
     fn print_vm(&mut self, _: Op) {}
 
-    pub fn run(&mut self, ops: *const Op) -> Object {
+    pub fn run(&mut self, ops: *const Op, ops_len:usize) -> Object {
         //let lib_ops = self.precompiled_lib();
         // map1 procedure.
-        let lib_ops = [
+        self.lib_ops = vec![
             Op::Closure {
                 size: 22,
                 arg_len: 2,
@@ -206,10 +211,12 @@ impl Vm {
             Op::DefineGlobal(self.gc.intern("map1")),
             Op::Halt,
         ];        
-        self.initialize_free_vars();    
-        let lib_ops = &lib_ops[0] as *const Op;    
+        self.initialize_free_vars(ops, ops_len);
+        let lib_ops = &self.lib_ops[0] as *const Op;    
         self.run_ops(lib_ops, 10 /* TODO */);
-        self.run_ops(ops, 10 /* TODO */)
+        let ret = self.run_ops(ops, 10 /* TODO */);
+        println!("{:?}", lib_ops);
+        ret
     }
 
     fn run_ops(&mut self, ops: *const Op, len: usize) -> Object {
@@ -452,7 +459,7 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.alloc(Closure::new(&[] as  *const Op, 0, false, free_vars));
+                    let mut display = self.alloc(Closure::new(&[] as  *const Op, 0, 0, false, free_vars));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -505,6 +512,7 @@ impl Vm {
                     }
                     self.ac = Object::Closure(self.alloc(Closure::new(
                        pc,
+                       size - 1,
                         arg_len,
                         is_optional_arg,
                         free_vars,
@@ -713,7 +721,7 @@ impl Vm {
 #[cfg(test)]
 pub mod tests {
 
-    use crate::objects::Procedure;
+    use crate::objects::{Procedure, SString};
 
     use super::*;
 
@@ -727,7 +735,7 @@ pub mod tests {
             Op::Halt,
         ];
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(&ops as  *const Op);
+        let ret = vm.run(&ops as  *const Op, ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
@@ -742,16 +750,17 @@ pub mod tests {
     pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>(); // 56
     pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>(); // 88
     pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>(); // 56
-    pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>();
+    pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>(); // 48
+    pub static SIZE_OF_STRING: usize = std::mem::size_of::<SString>(); // 48
     // Base closure + procedure as free variable
     static SIZE_OF_MIN_VM: usize =
         SIZE_OF_CLOSURE /* base display closure */
         + SIZE_OF_PROCEDURE * 623 /* free variables */ 
         + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL; /* baselib name and closure of map1 */
 
-    fn test_ops_with_size(vm: &mut Vm, ops: *const Op, expected: Object, expected_heap_diff: usize) {
+    fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
+        let ret = vm.run(&ops[0] as *const Op, ops.len());
         // Remove reference to ret.
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
@@ -765,12 +774,12 @@ pub mod tests {
 
     fn test_ops_with_size_as_str(
         vm: &mut Vm,
-        ops: *const Op,
+        ops: Vec<Op>,
         expected: &str,
         expected_heap_diff: usize,
     ) {
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
+        let ret = vm.run(&ops[0] as *const Op, ops.len());
         // Remove reference to ret.
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
@@ -805,7 +814,7 @@ pub mod tests {
         }
         ops.push(Op::Halt);        
         let before_size = vm.gc.bytes_allocated();
-        vm.run(&ops[..][0] as *const Op);
+        vm.run(&ops[..][0] as *const Op, ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
@@ -825,7 +834,7 @@ pub mod tests {
             Op::Halt,
         ];
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(&ops[..][0] as *const Op);
+        let ret = vm.run(&ops[0] as *const Op, ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
@@ -842,7 +851,7 @@ pub mod tests {
     #[test]
     fn test_call0() {
         let mut vm = Vm::new();
-        let ops = [
+        let ops = vec![
             Op::Frame(5),
             Op::Closure {
                 size: 3,
@@ -857,7 +866,7 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size(&mut vm, &ops as *const Op, Object::Number(3), 0);
+        test_ops_with_size(&mut vm, ops,  Object::Number(3), 0);
     }
 /*
     #[test]
@@ -5682,8 +5691,9 @@ pub mod tests {
     #[test]
     fn test_test193_modified0() {
         let mut vm = Vm::new();        
-        let ops = [
+        let ops = vec![
             Op::Frame(9),
+            // size was originally 3
             Op::Closure {size: 3, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
             Op::Constant(Object::Number(2)),
             Op::Return(1),
@@ -5696,18 +5706,22 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, &ops as *const Op, "(2)", 0);
+
+        test_ops_with_size_as_str(&mut vm, ops, "(2)", 0);
+
+
     }
 
 
 
     // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF")) => ("ABC123" "DEF123")
     #[test]
-    fn test_test193_modified() {       
+    fn test_test193_modified() {  
+
         let mut vm = Vm::new();        
         let abc = vm.gc.new_string("ABC");
         let def = vm.gc.new_string("DEF");
-        let ops = [
+        let ops = vec![
             Op::Frame(16),
             Op::ReferFree(22),
             Op::Push,
@@ -5728,7 +5742,8 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, &ops as *const Op, "(\"ABC123\" \"DEF123\")", 0);
+        test_ops_with_size_as_str(&mut vm, ops, "(\"ABC123\" \"DEF123\")", 0);
+
     }
 
 }

@@ -56,6 +56,14 @@ impl Object {
         }
     }
 
+    pub fn is_unspecified(&self) -> bool {
+        match self {
+            Object::Unspecified => true,
+            _ => false,
+        }
+    }
+
+
     pub fn make_bool(pred: bool) -> Self {
         if pred {
             Object::True
@@ -402,9 +410,9 @@ impl Display for Procedure {
 pub struct Closure {
     pub header: GcHeader,
     pub ops: *const Op,
+    pub ops_len: usize,
     pub argc: isize,
     pub is_optional_arg: bool,
-    //size: usize,
     pub free_vars: Vec<Object>,
     pub prev: Object,
 }
@@ -412,17 +420,17 @@ pub struct Closure {
 impl Closure {
     pub fn new(
         ops: *const Op,
+        ops_len: usize,
         argc: isize,
         is_optional_arg: bool,
-        // size: usize,
         free_vars: Vec<Object>,
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
             ops: ops,
+            ops_len: ops_len,
             argc: argc,
             is_optional_arg: is_optional_arg,
-            //size: size,
             free_vars: free_vars,
             prev: Object::Unspecified,
         }
@@ -501,7 +509,7 @@ pub mod tests {
     #[test]
     fn test_closure_to_string() {
         let mut gc = Gc::new();
-        let closure = gc.alloc(Closure::new(&[] as *const Op, 0, false, vec![]));
+        let closure = gc.alloc(Closure::new(&[] as *const Op, 0, 0, false, vec![]));
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();
