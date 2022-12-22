@@ -300,8 +300,9 @@ impl Vm {
                     if self.ac.is_nil() {
                         self.ac = Object::False;                        
                     } else {
+                        println!("skipping");
                         self.ac = Object::True;
-                        pc = unsafe {pc.offset(skip_size as isize)};
+                        pc = unsafe {pc.offset(skip_size as isize - 1)};
                     }
                 }
                 Op::Eq => {
@@ -653,13 +654,15 @@ impl Vm {
     }
 
     fn return_n(&mut self, n: isize, pc: &mut  *const Op) {
+        #[cfg(feature = "debug_log_vm")]
+        println!("  return {}", n);
         let sp = unsafe { self.sp.offset(-n) };
         match self.index(sp, 0) {
             Object::StackPointer(fp) => {
                 self.fp = fp;
             }
-            _ => {
-                panic!("not fp pointer")
+            obj => {
+                panic!("not fp pointer but {}", obj)
             }
         }
         // todo We don't have cl yet.
@@ -5673,13 +5676,13 @@ pub mod tests {
     }
 
 
+*/
 
-
-    // (map1 (lambda (x) 2) '(1)) => ("ABC123" "DEF123")
+    // (map1 (lambda (x) 2) '(1)) => (2)
     #[test]
     fn test_test193_modified0() {
         let mut vm = Vm::new();        
-        let ops = vec![
+        let ops = [
             Op::Frame(9),
             Op::Closure {size: 3, arg_len: 1, is_optional_arg: false, num_free_vars: 0},
             Op::Constant(Object::Number(2)),
@@ -5693,7 +5696,7 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(ABC123 DEF123)", 0);
+        test_ops_with_size_as_str(&mut vm, &ops as *const Op, "(2)", 0);
     }
 
 
@@ -5704,7 +5707,7 @@ pub mod tests {
         let mut vm = Vm::new();        
         let abc = vm.gc.new_string("ABC");
         let def = vm.gc.new_string("DEF");
-        let ops = vec![
+        let ops = [
             Op::Frame(16),
             Op::ReferFree(22),
             Op::Push,
@@ -5725,7 +5728,7 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(\"ABC123\" \"DEF123\")", 0);
+        test_ops_with_size_as_str(&mut vm, &ops as *const Op, "(\"ABC123\" \"DEF123\")", 0);
     }
-*/
+
 }
