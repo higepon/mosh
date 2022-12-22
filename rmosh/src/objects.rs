@@ -19,6 +19,7 @@ pub enum Object {
     True,
     Unspecified,
     StackPointer(*mut Object),
+    OpPointer(*const Op),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
@@ -71,6 +72,9 @@ impl Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::OpPointer(op) => {
+                write!(f, "{:?}", *op)
+            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }

@@ -536,10 +536,10 @@ impl Vm {
                     // ======== sp ==========
                     //
                     // where pc* = pc + skip_size -1
-                    assert!(false);
+                    let next_pc = unsafe { pc.offset(skip_size as isize - 1)};
                     //let next_pc =
                         //isize::try_from(pc + skip_size - 1).expect("can't convert to isize");
-                    //self.push(Object::Number(next_pc));
+                    self.push(Object::OpPointer(next_pc));
                     self.push(self.dc);
                     self.push(self.dc); // todo this should be cl.
                     self.push(Object::StackPointer(self.fp));
@@ -666,8 +666,8 @@ impl Vm {
         // self.cl = index(sp, 1);
         self.dc = self.index(sp, 2);
         match self.index(sp, 3) {
-            Object::Number(next_pc) => {
-                assert!(false);
+            Object::OpPointer(next_pc) => {
+                *pc = next_pc;
                // *pc = usize::try_from(next_pc).expect("pc it not a number");
             }
             _ => {
@@ -833,13 +833,13 @@ pub mod tests {
             _ => panic!("{:?}", "todo"),
         }
     }
-/*
+
     // All ops in the following tests are generated in data/.
 
     #[test]
     fn test_call0() {
         let mut vm = Vm::new();
-        let ops = vec![
+        let ops = [
             Op::Frame(5),
             Op::Closure {
                 size: 3,
@@ -854,9 +854,9 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+        test_ops_with_size(&mut vm, &ops as *const Op, Object::Number(3), 0);
     }
-
+/*
     #[test]
     fn test_call1() {
         let mut vm = Vm::new();

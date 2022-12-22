@@ -277,6 +277,9 @@ impl Gc {
             Object::Nil => {}
             Object::Number(_) => {}
             Object::StackPointer(_) => {}
+            Object::OpPointer(op) => {
+                self.mark_op(unsafe {*op});
+            }
             Object::True => {}
             Object::Unspecified => {}
             Object::Vox(vox) => {
