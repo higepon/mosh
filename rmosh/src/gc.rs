@@ -428,11 +428,12 @@ impl Gc {
                 for i in 0..closure.free_vars.len() {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
+
                 }
-                for i in 0..closure.ops.len() {
-                    let op = closure.ops[i];
-                    self.mark_op(op);
-                }                
+                // TODO sorry!!
+               //     let op = closure.ops[i];
+                 //   self.mark_op(op);
+//                }                
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };

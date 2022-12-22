@@ -397,7 +397,7 @@ impl Display for Procedure {
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
-    pub ops: Vec<Op>,
+    pub ops: *const Op,
     pub argc: isize,
     pub is_optional_arg: bool,
     //size: usize,
@@ -407,7 +407,7 @@ pub struct Closure {
 
 impl Closure {
     pub fn new(
-        ops: Vec<Op>,
+        ops: *const Op,
         argc: isize,
         is_optional_arg: bool,
         // size: usize,
@@ -497,7 +497,7 @@ pub mod tests {
     #[test]
     fn test_closure_to_string() {
         let mut gc = Gc::new();
-        let closure = gc.alloc(Closure::new(vec![], 0, false, vec![]));
+        let closure = gc.alloc(Closure::new(&[] as *const Op, 0, false, vec![]));
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();
