@@ -158,7 +158,7 @@ pub mod tests {
         gc.mark_op(unsafe {*pc}); 
         
         // Run the VM.
-        match vm.run_pc(pc, 4) {
+        match vm.run_pc(pc, 2) {
             Object::Number(n) => {
                 assert_eq!(n, 3);
             }

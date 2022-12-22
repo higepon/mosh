@@ -745,8 +745,8 @@ pub mod tests {
         SIZE_OF_CLOSURE /* base display closure */
         + SIZE_OF_PROCEDURE * 623 /* free variables */ 
         + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL; /* baselib name and closure of map1 */
-/*
-    fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
+
+    fn test_ops_with_size(vm: &mut Vm, ops: *const Op, expected: Object, expected_heap_diff: usize) {
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(ops);
         // Remove reference to ret.
@@ -762,7 +762,7 @@ pub mod tests {
 
     fn test_ops_with_size_as_str(
         vm: &mut Vm,
-        ops: Vec<Op>,
+        ops: *const Op,
         expected: &str,
         expected_heap_diff: usize,
     ) {
@@ -800,8 +800,9 @@ pub mod tests {
             ops.push(Op::Constant(Object::Number(101)));
             ops.push(Op::Cons);
         }
+        ops.push(Op::Halt);        
         let before_size = vm.gc.bytes_allocated();
-        vm.run(ops);
+        vm.run(&ops[..][0] as *const Op);
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
@@ -818,9 +819,10 @@ pub mod tests {
             Op::Constant(Object::Number(101)),
             Op::Cons,
             Op::AddPair,
+            Op::Halt,
         ];
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
+        let ret = vm.run(&ops[..][0] as *const Op);
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
@@ -831,7 +833,7 @@ pub mod tests {
             _ => panic!("{:?}", "todo"),
         }
     }
-
+/*
     // All ops in the following tests are generated in data/.
 
     #[test]
