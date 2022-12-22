@@ -67,11 +67,14 @@ pub enum Op {
 #[cfg(test)]
 pub mod tests {
 
+    use std::ptr;
+
     use crate::{gc::Gc};
     use super::*;
 
     struct TestVm<'a> {
         ops: &'a [Op],
+        pc: *const Op,
     }
 
     impl<'a> TestVm<'a> {
@@ -90,15 +93,88 @@ pub mod tests {
             }
             val
         }
+
+        fn run_pc(&mut self, start_pc: *const Op, len: usize) -> Object {
+            self.pc = start_pc;
+            let mut val = Object::Unspecified;
+            let mut pc = start_pc;
+            for i in 0..len {
+                match unsafe { *pc } {
+                    Op::Constant(n) => {
+                        val = n;
+                    }
+                    op => {
+                        panic!("{:?} not supported", op);
+                    }
+                }
+                pc = unsafe { pc.offset(1)};
+            }
+            val
+        }        
     }
 
     fn print_slice_refs(s1: &[Op], s2: &[Op], s3: &[Op]) {
         println!("{:?} {:?} {:?}", s1, s2, s3);
     }
+
+    // This tests if *const Op is good enough for vm.run arguments.
+    #[test]
+    fn test_op_pointer() {
+        let mut gc = Gc::new();                
+        let mut vm = TestVm {
+            pc: ptr::null(),
+            ops: &[]
+        };        
+        let array_ops = [
+            Op::Constant(Object::Number(1)),
+            Op::Constant(Object::Number(2)),
+            Op::Constant(Object::Number(3)),
+            Op::Constant(Object::Number(4)),
+        ];
+
+        // Have 1 pointer.
+        let pc: * const Op = &array_ops[1] as *const Op;
+        match unsafe {*pc} {
+            Op::Constant(c) => {
+                assert_eq!(c, Object::Number(2));
+            }
+            _ => {
+                panic!("not supported.")
+            }
+        }
+        // Have one more pointer.
+        let pc2: * const Op = &array_ops[2] as *const Op;
+        match unsafe {(*pc, *pc2)} {
+            (Op::Constant(c), Op::Constant(d)) => {
+                assert_eq!(c, Object::Number(2));
+                assert_eq!(d, Object::Number(3));                
+            }
+            _ => {
+                panic!("not supported.")
+            }
+        }
+
+        // Can mark Op but we can't know the lengths of the ops.
+        gc.mark_op(unsafe {*pc}); 
+        
+        // Run the VM.
+        match vm.run_pc(pc, 4) {
+            Object::Number(n) => {
+                assert_eq!(n, 3);
+            }
+            _ => {
+                panic!("error");
+            }
+        }
+    }
+ 
+
+    // This tests if &[Op] is good enough for vm.run argument.
     #[test]
     fn test_vec_slice_op() {
         let mut gc = Gc::new();
         let mut vm = TestVm {
+            pc: ptr::null(),
             ops: &[]
         };
         let vec_ops = vec![
@@ -143,6 +219,7 @@ pub mod tests {
     #[test]
     fn test_array_slice_op() {
         let mut vm = TestVm {
+            pc: ptr::null(),            
             ops: &[]
         };        
         let mut gc = Gc::new();
