@@ -15,11 +15,13 @@ macro_rules! branch_number_op {
         {
             match ($self.pop(), $self.ac) {
                 (Object::Number(lhs), Object::Number(rhs)) => {
-                    $self.ac = Object::make_bool(lhs $op rhs);
-                    if $self.ac.is_false() {
-                        $pc = $self.jump($pc, $skip_offset - 1);
+                    let op_result = lhs $op rhs;
+                    $self.ac = Object::make_bool(op_result);
+                    if op_result {
+                        // go to then.
                     } else {
-                        // go to the next pc.
+                        // Branch and jump to else.
+                        $pc = $self.jump($pc, $skip_offset - 1);                        
                     }
                 }
                 obj => {
@@ -36,7 +38,7 @@ macro_rules! number_op {
         {
             match ($self.pop(), $self.ac) {
                 (Object::Number(l), Object::Number(r)) => {
-                    $self.ac = if l $op r { Object::True } else { Object::False }
+                    $self.ac = Object::make_bool(l $op r)
                 }
                 obj => {
                     panic!("{}: requires numbers but got {:?}",  stringify!($op), obj);
@@ -57,6 +59,8 @@ pub struct Vm {
     // We keep the lib_ops here so that the lib_ops live longer than every call of run.
     // If we kept lib_ops as local variable, it can/will be immediately freed after run(lib_ops).
     lib_ops: Vec<Op>,
+    // Note when we add new vars here, please make sure we take care of them in mark_and_sweep.
+    // Otherwise it can cause memory leak or double free.
 }
 
 impl Vm {
