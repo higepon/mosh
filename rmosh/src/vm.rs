@@ -151,21 +151,12 @@ impl Vm {
         ret
     }
 
-
-
-
     fn run_ops(&mut self, ops: *const Op) -> Object {
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
 
-        //let len = self.ops.len();
-        //let mut pc = 0;
         let mut pc:  *const Op = ops;
-        //for i in 0..len {
         loop {
-            //pc =
-        //while pc < len {
-            //let op = self.ops[pc];
             let op = unsafe { *pc };
             match op {
                 Op::MakeVector => match self.pop() {
@@ -195,7 +186,7 @@ impl Vm {
                 }
                 Op::SetCar => match self.pop() {
                     Object::Pair(mut pair) => {
-                        pair.first = self.ac;
+                        pair.car = self.ac;
                         self.ac = Object::Unspecified;
                     }
                     obj => {
@@ -266,7 +257,7 @@ impl Vm {
                 }
                 Op::Car => match self.ac {
                     Object::Pair(pair) => {
-                        self.ac = pair.first;
+                        self.ac = pair.car;
                     }
                     _ => {
                         panic!("car pair required")
@@ -283,7 +274,7 @@ impl Vm {
                 Op::Cadr => match self.ac {
                     Object::Pair(pair) => match pair.second {
                         Object::Pair(pair) => {
-                            self.ac = pair.first;
+                            self.ac = pair.car;
                         }
                         _ => {
                             panic!("cadr pair required")
@@ -332,14 +323,14 @@ impl Vm {
                 },
                 Op::AddPair => {
                     if let Object::Pair(pair) = self.ac {
-                        match (pair.first, pair.second) {
+                        match (pair.car, pair.second) {
                             (Object::Number(lhs), Object::Number(rhs)) => {
                                 self.ac = Object::Number(lhs + rhs);
                             }
                             _ => {
                                 panic!(
                                     "add pair: numbers require but got {:?} and {:?}",
-                                    pair.first, pair.second
+                                    pair.car, pair.second
                                 );
                             }
                         }
@@ -564,7 +555,7 @@ impl Vm {
                                 } else {
                                     match last_pair {
                                         Object::Pair(pair) => {
-                                            self.push(pair.first);
+                                            self.push(pair.car);
                                             last_pair = pair.second;
                                         }
                                         _ => {
@@ -1708,7 +1699,7 @@ pub mod tests {
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Pair(pair2) => {
-                assert_eq!(pair.first, pair2.first);
+                assert_eq!(pair.car, pair2.car);
                 assert_eq!(pair.second, pair2.second);
             }
             _ => {
@@ -3033,7 +3024,7 @@ pub mod tests {
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Pair(pair2) => {
-                assert_eq!(pair.first, pair2.first);
+                assert_eq!(pair.car, pair2.car);
                 assert_eq!(pair.second, pair2.second);
             }
             _ => {
@@ -3067,7 +3058,7 @@ pub mod tests {
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
             Object::Pair(pair3) => {
-                assert_eq!(pair2.first, pair3.first);
+                assert_eq!(pair2.car, pair3.car);
             }
             _ => {
                 panic!("not a pair");

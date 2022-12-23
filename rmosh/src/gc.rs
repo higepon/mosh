@@ -181,12 +181,12 @@ impl Gc {
             match p {
                 Object::Pair(pair) => {
                     if start.is_nil() {
-                        start = self.cons(pair.first, Object::Nil);
+                        start = self.cons(pair.car, Object::Nil);
                         last = start
                     } else {
                         match last {
                             Object::Pair(mut last_pair) => {
-                                last_pair.second = self.cons(pair.first, Object::Nil);
+                                last_pair.second = self.cons(pair.car, Object::Nil);
                                 last = last_pair.second;
                             }
                             _ => {
@@ -472,7 +472,7 @@ impl Gc {
             }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(pair.first);
+                self.mark_object(pair.car);
                 self.mark_object(pair.second);
             }
             ObjectType::Vector => {

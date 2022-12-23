@@ -815,7 +815,7 @@ fn car(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons";
     assert_eq!(args.len(), 1);
     match args[0] {
-        Object::Pair(pair) => pair.first,
+        Object::Pair(pair) => pair.car,
         _ => {
             panic!("{}: pair required", name)
         }

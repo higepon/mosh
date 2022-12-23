@@ -166,7 +166,7 @@ impl Display for Vector {
 #[derive(Debug)]
 pub struct Pair {
     pub header: GcHeader,
-    pub first: Object,
+    pub car: Object,
     pub second: Object,
 }
 
@@ -174,7 +174,7 @@ impl Pair {
     pub fn new(first: Object, second: Object) -> Self {
         Pair {
             header: GcHeader::new(ObjectType::Pair),
-            first: first,
+            car: first,
             second: second,
         }
     }
@@ -229,7 +229,7 @@ impl Pair {
                 if !cdr.second.is_nil() {
                     return false;
                 }
-                let car = self.first;
+                let car = self.car;
                 match car {
                     Object::Symbol(symbol) => {
                         if symbol.string.eq("quote") {
@@ -263,14 +263,14 @@ impl Display for Pair {
         if abbreviated {
             match e {
                 Object::Pair(pair) => {
-                    let car_str = pair.first.to_string();
+                    let car_str = pair.car.to_string();
                     write!(f, "{}", car_str)?;
                     e = pair.second;
                 }
                 _ => panic!("should not reach"),
             }
         } else {
-            let car_str = self.first.to_string();
+            let car_str = self.car.to_string();
             write!(f, "({}", car_str)?;
         }
 
@@ -278,7 +278,7 @@ impl Display for Pair {
             match e {
                 Object::Pair(pair) => {
                     write!(f, " ")?;
-                    write!(f, "{}", pair.first)?;
+                    write!(f, "{}", pair.car)?;
                     e = pair.second;
                 }
                 Object::Nil => {
@@ -300,7 +300,7 @@ impl Display for Pair {
 
 impl PartialEq for Pair {
     fn eq(&self, other: &Self) -> bool {
-        (self.first == other.first) && (self.second == other.second)
+        (self.car == other.car) && (self.second == other.second)
     }
 }
 
