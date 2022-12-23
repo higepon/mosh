@@ -807,7 +807,7 @@ pub mod tests {
             SIZE_OF_MIN_VM + expected_heap_diff
         );
     }
-/*
+
     // Custom hand written tests.
     #[test]
     fn test_symbol_intern() {
@@ -817,7 +817,7 @@ pub mod tests {
         let symbol2 = gc.intern("foo");
         assert_eq!(symbol.pointer, symbol2.pointer);
     }
-*/
+
     #[test]
     fn test_vm_alloc_many_pairs() {
         let mut vm = Vm::new();
