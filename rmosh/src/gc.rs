@@ -23,8 +23,8 @@ static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
 
-/// GcRef.
-/// This holds raw pointer to an object.
+// GcRef.
+// This holds raw pointer to an object.
 #[derive(Debug)]
 pub struct GcRef<T> {
     pub pointer: NonNull<T>,
@@ -233,7 +233,6 @@ impl Gc {
 
             let alloc_size = std::mem::size_of_val(&object);
             self.current_alloc_size += alloc_size;
-            //println!("alloc: current_alloc_size={}", self.current_alloc_size);
 
             let boxed = Box::new(object);
             let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
@@ -270,8 +269,7 @@ impl Gc {
         self.current_alloc_size
     }
 
-    // Mark Object as used and push it to marked_roots.
-    // This should be called only for root Objects.
+    // Mark Object as used and push it to marked_objects.
     pub fn mark_object(&mut self, obj: Object) {
         match obj {
             Object::Char(_) => {}
@@ -308,8 +306,7 @@ impl Gc {
         }
     }
 
-    // Mark heap allocated object as used and push it to marked_roots.
-    // This should be called only for root objects.
+    // Mark heap allocated object as used and push it to marked_objects.
     pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
         unsafe {
             let mut header: NonNull<GcHeader> = mem::transmute(reference.pointer.as_mut());
@@ -321,18 +318,18 @@ impl Gc {
             self.marked_objects.push(header);
 
             #[cfg(feature = "debug_log_gc")]
-            //if header.as_ref().obj_type != ObjectType::Procedure {
-            println!(
-                "mark(adr:{:?}, type:{:?})",
-                header,
-                header.as_ref().obj_type,
-            );
-            //}
+            if header.as_ref().obj_type != ObjectType::Procedure {
+                println!(
+                    "mark(adr:{:?}, type:{:?})",
+                    header,
+                    header.as_ref().obj_type,
+                );
+            }
         }
     }
 
     // Collect garbage.
-    // This traces all references used starting from marked_roots.
+    // This traces all references starting from marked_objects.
     pub fn collect_garbage(&mut self) {
         #[cfg(feature = "debug_log_gc")]
         let before: isize = GLOBAL.bytes_allocated() as isize;
@@ -358,23 +355,14 @@ impl Gc {
         }
     }
 
+    // Some Op contains GC-ed objects.
     pub fn mark_op(&mut self, op: Op) {
         match op {
-            Op::MakeVector | Op::VectorLength => {}
-            Op::Append2 => {}
-            Op::SetCar | Op::SetCdr => {}
-            Op::BranchNotGe(_) => (),
-            Op::BranchNotGt(_) => (),
-            Op::BranchNotLe(_) => (),
-            Op::BranchNotLt(_) => (),
-            Op::BranchNotNull(_) => (),
-            Op::BranchNotNumberEqual(_) => (),
-            Op::Closure { .. } => (),
-            Op::Constant(v) => {
-                self.mark_object(v);
-            }
             Op::AssignGlobal(symbol) => {
                 self.mark_heap_object(symbol);
+            }
+            Op::Constant(v) => {
+                self.mark_object(v);
             }
             Op::DefineGlobal(symbol) => {
                 self.mark_heap_object(symbol);
@@ -382,41 +370,53 @@ impl Gc {
             Op::ReferGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
-            Op::Display(_) => (),
-            Op::Eq => (),
-            Op::ReferFree(_) => (),
-            Op::LetFrame(_) => (),
+            Op::Append2 => {}
+            Op::AssignFree(_) => (),
+            Op::AssignLocal(_) => (),
             Op::Box(_) => (),
-            Op::Enter(_) => (),
-            Op::Halt => (),
-            Op::NullP => (),
-            Op::PairP => (),
-            Op::SymbolP => (),
+            Op::BranchNotGe(_) => (),
+            Op::BranchNotGt(_) => (),
+            Op::BranchNotLe(_) => (),
+            Op::BranchNotLt(_) => (),
+            Op::BranchNotNull(_) => (),
+            Op::BranchNotNumberEqual(_) => (),
+            Op::Cadr => (),
+            Op::Call(_) => (),
             Op::Car => (),
             Op::Cdr => (),
-            Op::Cadr => (),
+            Op::Closure { .. } => (),
+            Op::Cons => (),
+            Op::Display(_) => (),
+            Op::Enter(_) => (),
+            Op::Eq => (),
+            Op::Frame(_) => (),
+            Op::Halt => (),
+            Op::Indirect => (),
+            Op::Leave(_) => (),
+            Op::LetFrame(_) => (),
+            Op::LocalJmp(_) => (),
+            Op::MakeVector => (),
+            Op::Nop => (),
             Op::Not => (),
+            Op::NullP => (),
+            Op::NumberAdd => (),
             Op::NumberEqual => (),
             Op::NumberGe => (),
             Op::NumberGt => (),
             Op::NumberLe => (),
             Op::NumberLt => (),
-            Op::AssignFree(_) => (),
-            Op::AssignLocal(_) => (),
-            Op::Indirect => (),
-            Op::Nop => (),
-            Op::Undef => (),
-            Op::ReferLocal(_) => (),
-            Op::Leave(_) => (),
+            Op::PairP => (),
             Op::Push => (),
-            Op::NumberAdd => (),
-            Op::Cons => (),
-            Op::LocalJmp(_) => (),
+            Op::ReferFree(_) => (),
+            Op::ReferLocal(_) => (),
+            Op::Return(_) => (),
+            Op::SetCar => (),
+            Op::SetCdr => (),
+            Op::SymbolP => (),
             Op::TailCall(_, _) => (),
             Op::Test(_) => (),
-            Op::Call(_) => (),
-            Op::Return(_) => (),
-            Op::Frame(_) => (),
+            Op::Undef => (),
+            Op::VectorLength => ()
         }
     }
 
