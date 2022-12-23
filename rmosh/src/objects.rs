@@ -508,7 +508,7 @@ pub mod tests {
     #[test]
     fn test_closure_to_string() {
         let mut gc = Gc::new();
-        let closure = gc.alloc(Closure::new(&[] as *const Op, 0, 0, false, vec![]));
+        let closure = gc.alloc(Closure::new([].as_ptr(), 0, 0, false, vec![]));
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();

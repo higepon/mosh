@@ -374,7 +374,7 @@ impl Vm {
                         free_vars.push(var);
                     }
                     let mut display =
-                        self.alloc(Closure::new(&[] as *const Op, 0, 0, false, free_vars));
+                        self.alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -768,7 +768,7 @@ pub mod tests {
             Op::Halt,
         ];
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(&ops as *const Op, ops.len());
+        let ret = vm.run(ops.as_ptr(), ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
@@ -788,13 +788,13 @@ pub mod tests {
     /*
        Base display closure
        free variables
-        baselib name and closure of map1
+       baselib name and closure of map1
     */
     static SIZE_OF_MIN_VM: usize =
         SIZE_OF_CLOSURE + (SIZE_OF_PROCEDURE * 623) + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL;
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
-        let ret = vm.run(&ops[0] as *const Op, ops.len());
+        let ret = vm.run(ops.as_ptr(), ops.len());
         // Remove reference to ret.
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
@@ -808,7 +808,7 @@ pub mod tests {
         expected: &str,
         expected_heap_diff: usize,
     ) {
-        let ret = vm.run(&ops[0] as *const Op, ops.len());
+        let ret = vm.run(ops.as_ptr(), ops.len());
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
         assert_eq!(ret.to_string(), expected);
@@ -819,7 +819,6 @@ pub mod tests {
     #[test]
     fn test_symbol_intern() {
         let mut gc = Gc::new();
-
         let symbol = gc.intern("foo");
         let symbol2 = gc.intern("foo");
         assert_eq!(symbol.pointer, symbol2.pointer);
@@ -2964,7 +2963,7 @@ pub mod tests {
         ];
         let pair = vm.gc.alloc(Pair::new(Object::Number(1), Object::Number(2)));
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(&ops[0] as *const Op, ops.len());
+        let ret = vm.run(ops.as_ptr(), ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
