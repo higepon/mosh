@@ -38,8 +38,8 @@ macro_rules! number_op {
                 (Object::Number(l), Object::Number(r)) => {
                     $self.ac = if l $op r { Object::True } else { Object::False }
                 }
-                _ => {
-                    panic!("= requres number")
+                obj => {
+                    panic!("{}: requires numbers but got {:?}",  stringify!($op), obj);
                 }
             }
         }
