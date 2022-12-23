@@ -51,12 +51,12 @@ pub struct Vm {
     ac: Object, // accumulator register.
     dc: Object, // display closure register.
     stack: [Object; STACK_SIZE],
-    sp: *mut Object,
-    fp: *mut Object,
-    globals: HashMap<GcRef<Symbol>, Object>,
-//    ops: Vec<Op>, // Keep running ops so that they are not garbage collected.
-    lib_ops: Vec<Op>, // Closure for lib_ops should live longer than every run of eval.
-    // Otherwise we get crash on gc if lib_ops was destruted.
+    sp: *mut Object, // stack pointer.
+    fp: *mut Object, // frame pointer.
+    globals: HashMap<GcRef<Symbol>, Object>, // global variables.
+    // We keep the lib_ops here so that the lib_ops live longer than every call of run.
+    // If we kept lib_ops as local variable, it can/will be immediately freed after run(lib_ops).
+    lib_ops: Vec<Op>,
 }
 
 impl Vm {
@@ -69,7 +69,6 @@ impl Vm {
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
-            //ops: vec![],
             lib_ops: vec![],            
         }
     }
