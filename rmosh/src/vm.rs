@@ -209,30 +209,24 @@ impl Vm {
                 Op::NullP => self.ac = Object::make_bool(self.ac.is_nil()),
                 Op::SymbolP => self.ac = Object::make_bool(self.ac.is_symbol()),
                 Op::BranchNotNumberEqual(skip_offset) => {
-
                     branch_number_op!(==, self, pc, skip_offset);
                 }
                 Op::BranchNotGe(skip_offset) => {
-                    
                     branch_number_op!(>=, self, pc, skip_offset);
                 }
                 Op::BranchNotGt(skip_offset) => {
-                    
                     branch_number_op!(>, self, pc, skip_offset);
                 }
                 Op::BranchNotLe(skip_offset) => {
-                    
                     branch_number_op!(<=, self, pc, skip_offset);
                 }
                 Op::BranchNotLt(skip_offset) => {
-
                     branch_number_op!(<, self, pc, skip_offset);
                 }
                 Op::BranchNotNull(skip_offset) => {
                     if self.ac.is_nil() {
                         self.ac = Object::False;                        
                     } else {
-                        println!("skipping");
                         self.ac = Object::True;
                         pc = self.jump(pc, skip_offset - 1);
                     }
