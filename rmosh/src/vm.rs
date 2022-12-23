@@ -19,11 +19,11 @@ macro_rules! branch_number_op {
                     if $self.ac.is_false() {
                         $pc = $self.jump($pc, $skip_offset - 1);
                     } else {
-                        // go to next pc.
+                        // go to the next pc.
                     }
                 }
-                _ => {
-                    panic!("number expected")
+                obj => {
+                    panic!("{}: requires numbers but got {:?}",  stringify!($op), obj);
                 }
             }
         }
