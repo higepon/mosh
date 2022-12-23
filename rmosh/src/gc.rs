@@ -416,54 +416,27 @@ impl Gc {
             Op::TailCall(_, _) => (),
             Op::Test(_) => (),
             Op::Undef => (),
-            Op::VectorLength => ()
+            Op::VectorLength => (),
         }
     }
 
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
-        //#[cfg(feature = "debug_log_gc")]
-        //println!("mark_object_fields(adr:{:?})", pointer);
-
         match object_type {
-            ObjectType::String => {}
-            ObjectType::Symbol => {}
-            ObjectType::Procedure => {}
             ObjectType::Closure => {
-                println!("closure:start");
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
-                println!("closure:free");
                 for i in 0..closure.free_vars.len() {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
                 }
-                println!("closure:ops len={}", closure.ops_len);
-                loop {
-                    for i in 0..closure.ops_len {
-                        let op = unsafe { *closure.ops.offset(i as isize) };
-                        self.mark_op(op);
-                    }
-                    println!("closure:ops end len={}", closure.ops_len);
-                    if closure.prev.is_unspecified() {
-                        println!("closure:ops unspec len={}", closure.ops_len);
-                        break;
-                    } else {
-                        println!("closure:ops perv ={}", closure.prev);
-                        self.mark_object(closure.prev);
-                        break;
-                        /*
-                        match closure.prev {
-                            Object::Closure(c) =>  {
-                                 c.pointer.as_ref()
-                                },
-                            obj => {
-                                panic!("closure.prev was {}", obj)
-                            }
-                        }
-                        */
-                    }
+                for i in 0..closure.ops_len {
+                    let op = unsafe { *closure.ops.offset(i as isize) };
+                    self.mark_op(op);
                 }
-                println!("closure:end");
+
+                if !closure.prev.is_unspecified() {
+                    self.mark_object(closure.prev);
+                }
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
@@ -480,6 +453,9 @@ impl Gc {
                     self.mark_object(vector.data[i]);
                 }
             }
+            ObjectType::String => {}
+            ObjectType::Symbol => {}
+            ObjectType::Procedure => {}
         }
     }
 
@@ -502,7 +478,7 @@ impl Gc {
         let free_size = match object_type {
             ObjectType::Symbol => 0,
             ObjectType::Procedure => {
-                panic!("should not be called")
+                panic!("procedure should not be freed");
             }
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(hige) };
@@ -532,13 +508,12 @@ impl Gc {
         );
 
         self.current_alloc_size -= free_size;
-        //println!("free: current_alloc_size={}",self.current_alloc_size);
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 
     #[cfg(not(feature = "test_gc_size"))]
     fn free(&self, object_ptr: &mut GcHeader) {
-        panic!("oge");
+        panic!("not tested");
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 
