@@ -167,7 +167,7 @@ impl Display for Vector {
 pub struct Pair {
     pub header: GcHeader,
     pub car: Object,
-    pub second: Object,
+    pub cdr: Object,
 }
 
 impl Pair {
@@ -175,7 +175,7 @@ impl Pair {
         Pair {
             header: GcHeader::new(ObjectType::Pair),
             car: first,
-            second: second,
+            cdr: second,
         }
     }
 
@@ -188,17 +188,17 @@ impl Pair {
             }
             match obj {
                 Object::Pair(pair) => {
-                    obj = pair.second;
+                    obj = pair.cdr;
                     if obj.is_nil() {
                         return true;
                     }
 
                     match obj {
                         Object::Pair(pair) => {
-                            obj = pair.second;
+                            obj = pair.cdr;
                             match seen {
                                 Object::Pair(pair) => {
-                                    seen = pair.second;
+                                    seen = pair.cdr;
                                     if obj == seen {
                                         // Circular
                                         return false;
@@ -224,9 +224,9 @@ impl Pair {
     }
 
     fn print_abbreviated(&self, f: &mut fmt::Formatter<'_>) -> bool {
-        match self.second {
+        match self.cdr {
             Object::Pair(cdr) => {
-                if !cdr.second.is_nil() {
+                if !cdr.cdr.is_nil() {
                     return false;
                 }
                 let car = self.car;
@@ -259,13 +259,13 @@ impl Pair {
 impl Display for Pair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let abbreviated = self.print_abbreviated(f);
-        let mut e = self.second;
+        let mut e = self.cdr;
         if abbreviated {
             match e {
                 Object::Pair(pair) => {
                     let car_str = pair.car.to_string();
                     write!(f, "{}", car_str)?;
-                    e = pair.second;
+                    e = pair.cdr;
                 }
                 _ => panic!("should not reach"),
             }
@@ -279,7 +279,7 @@ impl Display for Pair {
                 Object::Pair(pair) => {
                     write!(f, " ")?;
                     write!(f, "{}", pair.car)?;
-                    e = pair.second;
+                    e = pair.cdr;
                 }
                 Object::Nil => {
                     break;
@@ -300,7 +300,7 @@ impl Display for Pair {
 
 impl PartialEq for Pair {
     fn eq(&self, other: &Self) -> bool {
-        (self.car == other.car) && (self.second == other.second)
+        (self.car == other.car) && (self.cdr == other.cdr)
     }
 }
 

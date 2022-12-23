@@ -186,19 +186,19 @@ impl Gc {
                     } else {
                         match last {
                             Object::Pair(mut last_pair) => {
-                                last_pair.second = self.cons(pair.car, Object::Nil);
-                                last = last_pair.second;
+                                last_pair.cdr = self.cons(pair.car, Object::Nil);
+                                last = last_pair.cdr;
                             }
                             _ => {
                                 panic!("last is not pair");
                             }
                         }
                     }
-                    p = pair.second;
+                    p = pair.cdr;
                 }
                 _ => match last {
                     Object::Pair(mut pair) => {
-                        pair.second = obj;
+                        pair.cdr = obj;
                         return start;
                     }
                     _ => {
@@ -473,7 +473,7 @@ impl Gc {
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.car);
-                self.mark_object(pair.second);
+                self.mark_object(pair.cdr);
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };

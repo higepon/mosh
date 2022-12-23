@@ -195,7 +195,7 @@ impl Vm {
                 },
                 Op::SetCdr => match self.pop() {
                     Object::Pair(mut pair) => {
-                        pair.second = self.ac;
+                        pair.cdr = self.ac;
                         self.ac = Object::Unspecified;
                     }
                     obj => {
@@ -265,14 +265,14 @@ impl Vm {
                 },
                 Op::Cdr => match self.ac {
                     Object::Pair(pair) => {
-                        self.ac = pair.second;
+                        self.ac = pair.cdr;
                     }
                     _ => {
                         panic!("cdr pair required")
                     }
                 },
                 Op::Cadr => match self.ac {
-                    Object::Pair(pair) => match pair.second {
+                    Object::Pair(pair) => match pair.cdr {
                         Object::Pair(pair) => {
                             self.ac = pair.car;
                         }
@@ -323,14 +323,14 @@ impl Vm {
                 },
                 Op::AddPair => {
                     if let Object::Pair(pair) = self.ac {
-                        match (pair.car, pair.second) {
+                        match (pair.car, pair.cdr) {
                             (Object::Number(lhs), Object::Number(rhs)) => {
                                 self.ac = Object::Number(lhs + rhs);
                             }
                             _ => {
                                 panic!(
                                     "add pair: numbers require but got {:?} and {:?}",
-                                    pair.car, pair.second
+                                    pair.car, pair.cdr
                                 );
                             }
                         }
@@ -556,7 +556,7 @@ impl Vm {
                                     match last_pair {
                                         Object::Pair(pair) => {
                                             self.push(pair.car);
-                                            last_pair = pair.second;
+                                            last_pair = pair.cdr;
                                         }
                                         _ => {
                                             panic!("never reached");
@@ -1700,7 +1700,7 @@ pub mod tests {
         match ret {
             Object::Pair(pair2) => {
                 assert_eq!(pair.car, pair2.car);
-                assert_eq!(pair.second, pair2.second);
+                assert_eq!(pair.cdr, pair2.cdr);
             }
             _ => {
                 panic!("not a pair");
@@ -3025,7 +3025,7 @@ pub mod tests {
         match ret {
             Object::Pair(pair2) => {
                 assert_eq!(pair.car, pair2.car);
-                assert_eq!(pair.second, pair2.second);
+                assert_eq!(pair.cdr, pair2.cdr);
             }
             _ => {
                 panic!("not a pair");
