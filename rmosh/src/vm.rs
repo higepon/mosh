@@ -768,7 +768,7 @@ pub mod tests {
     // Base closure + procedure as free variable
     static SIZE_OF_MIN_VM: usize =
         SIZE_OF_CLOSURE /* base display closure */
-        + SIZE_OF_PROCEDURE * 623 /* free variables */ 
+        + (SIZE_OF_PROCEDURE * 623) /* free variables */ 
         + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL; /* baselib name and closure of map1 */
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
@@ -794,12 +794,16 @@ pub mod tests {
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(&ops[0] as *const Op, ops.len());
         // Remove reference to ret.
+        // todo this shouuld be done in run.
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
+        println!("before size={} after_size={}", before_size, after_size);
         assert_eq!(ret.to_string(), expected);
+    //pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>(); // 48
+        println!("SIZE_OF_CLOSURE={} SIZE_OF_SYMBOL={} SIZE_OF_PAIR={} SIZE_OF_MIN_VM={}", SIZE_OF_CLOSURE, SIZE_OF_SYMBOL, SIZE_OF_PAIR, SIZE_OF_MIN_VM);
         assert_eq!(
-            after_size - before_size,
+            after_size,
             SIZE_OF_MIN_VM + expected_heap_diff
         );
     }
@@ -813,7 +817,7 @@ pub mod tests {
         let symbol2 = gc.intern("foo");
         assert_eq!(symbol.pointer, symbol2.pointer);
     }
-
+*/
     #[test]
     fn test_vm_alloc_many_pairs() {
         let mut vm = Vm::new();
@@ -832,7 +836,7 @@ pub mod tests {
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
     }
-*/
+
 
 
     #[test]
@@ -848,6 +852,7 @@ pub mod tests {
         ];
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(&ops[0] as *const Op, ops.len());
+        vm.ac = Object::Unspecified;
         println!("BEFORE GC");
         vm.mark_and_sweep();
         println!("AFTER GC");        
@@ -5729,6 +5734,19 @@ pub mod tests {
 
     }
 
+    #[test]
+    fn test_vm_run_add_pair2() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(99)),
+            Op::Push,
+            Op::Constant(Object::Number(101)),
+            Op::Cons,
+            Op::AddPair,
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "200", 0);
+    }
 
 /*
     // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF")) => ("ABC123" "DEF123")
