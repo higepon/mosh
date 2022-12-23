@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, ptr::{null_mut, self, null}};
+use std::{collections::HashMap, fmt::Display, ptr::{null_mut, null}};
 
 use crate::{
     gc::{Gc, GcRef},
