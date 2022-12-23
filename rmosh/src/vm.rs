@@ -1601,7 +1601,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(17), 0);
     }
-
+/*
     #[test]
     fn test_test24() {
         let mut vm = Vm::new();
@@ -1782,7 +1782,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(1), 0);
     }
-/*
+
     #[test]
     fn test_test35() {
         let mut vm = Vm::new();
