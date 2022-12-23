@@ -54,7 +54,7 @@ pub struct Vm {
     sp: *mut Object,
     fp: *mut Object,
     globals: HashMap<GcRef<Symbol>, Object>,
-    ops: Vec<Op>, // Keep running ops so that they are not garbage collected.
+//    ops: Vec<Op>, // Keep running ops so that they are not garbage collected.
     lib_ops: Vec<Op>, // Closure for lib_ops should live longer than every run of eval.
     // Otherwise we get crash on gc if lib_ops was destruted.
 }
@@ -69,7 +69,7 @@ impl Vm {
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
-            ops: vec![],
+            //ops: vec![],
             lib_ops: vec![],            
         }
     }
@@ -124,9 +124,9 @@ impl Vm {
         self.gc.mark_object(self.dc);
 
         // Code.
-        for &op in &self.ops {
-            self.gc.mark_op(op);
-        }
+//        for &op in &self.ops {
+            //self.gc.mark_op(op);
+        //}
     }
 
     pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
@@ -786,7 +786,7 @@ pub mod tests {
         + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL; /* baselib name and closure of map1 */
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
-        let before_size = vm.gc.bytes_allocated();
+        //let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(&ops[0] as *const Op, ops.len());
         // Remove reference to ret.
         vm.ac = Object::Unspecified;
