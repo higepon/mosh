@@ -780,24 +780,25 @@ pub mod tests {
         }
     }
 
-    pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>(); // 56
-    pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>(); // 88
-    pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>(); // 56
-    pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>(); // 48
-    pub static SIZE_OF_STRING: usize = std::mem::size_of::<SString>(); // 48
-                                                                       // Base closure + procedure as free variable
-    static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE /* base display closure */
-        + (SIZE_OF_PROCEDURE * 623) /* free variables */
-        + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL; /* baselib name and closure of map1 */
+    pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>();
+    pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
+    pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
+    pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>();
+    pub static SIZE_OF_STRING: usize = std::mem::size_of::<SString>();
+    /*
+       Base display closure
+       free variables
+        baselib name and closure of map1
+    */
+    static SIZE_OF_MIN_VM: usize =
+        SIZE_OF_CLOSURE + (SIZE_OF_PROCEDURE * 623) + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL;
 
     fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
-        //let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(&ops[0] as *const Op, ops.len());
         // Remove reference to ret.
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
-        let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size, SIZE_OF_MIN_VM + expected_heap_diff);
+        assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff);
         assert_eq!(ret, expected);
     }
 
@@ -807,21 +808,11 @@ pub mod tests {
         expected: &str,
         expected_heap_diff: usize,
     ) {
-        let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(&ops[0] as *const Op, ops.len());
-        // Remove reference to ret.
-        // todo this shouuld be done in run.
         vm.ac = Object::Unspecified;
         vm.mark_and_sweep();
-        let after_size = vm.gc.bytes_allocated();
-        println!("before size={} after_size={}", before_size, after_size);
         assert_eq!(ret.to_string(), expected);
-        //pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>(); // 48
-        println!(
-            "SIZE_OF_CLOSURE={} SIZE_OF_SYMBOL={} SIZE_OF_PAIR={} SIZE_OF_MIN_VM={}",
-            SIZE_OF_CLOSURE, SIZE_OF_SYMBOL, SIZE_OF_PAIR, SIZE_OF_MIN_VM
-        );
-        assert_eq!(after_size, SIZE_OF_MIN_VM + expected_heap_diff);
+        assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff);
     }
 
     // Custom hand written tests.
