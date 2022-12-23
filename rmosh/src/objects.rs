@@ -63,7 +63,6 @@ impl Object {
         }
     }
 
-
     pub fn make_bool(pred: bool) -> Self {
         if pred {
             Object::True
