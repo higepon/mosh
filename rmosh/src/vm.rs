@@ -135,7 +135,7 @@ impl Vm {
 
     fn pop(&mut self) -> Object {
         unsafe {
-            self.sp = self.sp.offset(-1);
+            self.sp = self.dec(self.sp, 1);
             *self.sp
         }
     }
@@ -143,16 +143,16 @@ impl Vm {
     fn push(&mut self, value: Object) {
         unsafe {
             *self.sp = value;
-            self.sp = self.sp.offset(1);
+            self.sp = self.inc(self.sp, 1);
         }
     }
 
     fn index(&self, sp: *mut Object, n: isize) -> Object {
-        unsafe { *sp.offset(-n - 1) }
+        unsafe {*self.dec(sp, n + 1)}
     }
 
     fn index_set(&mut self, sp: *mut Object, n: isize, obj: Object) {
-        unsafe { *sp.offset(-n - 1) = obj }
+        unsafe { *self.dec(sp, n+1) = obj }
     }
 
     fn stack_len(&self) -> usize {
@@ -236,6 +236,16 @@ impl Vm {
     fn jump(&self, pc: *const Op, offset: usize) -> *const Op{
         unsafe { pc.offset(offset as isize) }
     }
+
+    #[inline(always)]
+    fn inc(&self, pointer: *mut Object, offset: isize) -> *mut Object {
+        unsafe { pointer.offset(offset) }
+    }      
+
+    #[inline(always)]
+    fn dec(&self, pointer: *mut Object, offset: isize) -> *mut Object {
+        unsafe { pointer.offset(-offset) }
+    }    
 
     fn run_ops(&mut self, ops: *const Op) -> Object {
         self.sp = self.stack.as_mut_ptr();
@@ -444,8 +454,8 @@ impl Vm {
                         panic!("identifier {:?} not found", symbol);
                     }
                 },
-                Op::Enter(n) => unsafe {
-                    self.fp = self.sp.offset(-n);
+                Op::Enter(n) => {
+                    self.fp = self.dec(self.sp, n);
                 },
                 Op::LetFrame(_) => {
                     // todo: expand stack here.
@@ -455,8 +465,8 @@ impl Vm {
                 Op::ReferLocal(n) => {
                     self.ac = self.refer_local(n);
                 }
-                Op::Leave(n) => unsafe {
-                    let sp = self.sp.offset(-n);
+                Op::Leave(n) => {
+                    let sp = self.dec(self.sp, n);
 
                     match self.index(sp, 0) {
                         Object::StackPointer(fp) => {
@@ -467,11 +477,11 @@ impl Vm {
                         }
                     }
                     self.dc = self.index(sp, 1);
-                    self.sp = sp.offset(-2);
+                    self.sp = self.dec(sp, 2);
                 },
                 Op::Display(num_free_vars) => {
                     let mut free_vars = vec![];
-                    let start = unsafe { self.sp.offset(-1) };
+                    let start = self.dec(self.sp, 1);
                     for i in 0..num_free_vars {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
@@ -481,7 +491,7 @@ impl Vm {
 
                     let display = Object::Closure(display);
                     self.dc = display;
-                    self.sp = unsafe { self.sp.offset(-num_free_vars) };
+                    self.sp =  self.dec(self.sp, num_free_vars);
                 }
                 Op::ReferFree(n) => match self.dc {
                     Object::Closure(mut closure) => {
@@ -522,7 +532,7 @@ impl Vm {
                     num_free_vars,
                 } => {
                     let mut free_vars = vec![];
-                    let start = unsafe { self.sp.offset(-1) };
+                    let start = self.dec(self.sp, 1);
                     for i in 0..num_free_vars {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
@@ -535,7 +545,7 @@ impl Vm {
                         free_vars,
                     )));
 
-                    self.sp = unsafe { self.sp.offset(-num_free_vars) };
+                    self.sp =  self.dec(self.sp, num_free_vars);
                     pc = self.jump(pc, size - 1);
                 }
                 Op::TailCall(depth, diff) => {
@@ -595,18 +605,18 @@ impl Vm {
                         let sp = self.unshift_args(self.sp, 1);
                         self.index_set(sp, 0, Object::Nil);
                         self.sp = sp;
-                        self.fp = unsafe { sp.offset(-closure.argc) };
+                        self.fp =  self.dec(self.sp, closure.argc);
                     } else if extra_len >= 0 {
                         let args = self.stack_to_pair(extra_len + 1);
                         self.index_set(self.sp, extra_len, args);
-                        let sp = unsafe { self.sp.offset(-extra_len) };
-                        self.fp = unsafe { sp.offset(-closure.argc) };
+                        let sp = self.dec(self.sp, extra_len);
+                        self.fp = self.dec(sp, closure.argc);
                         self.sp = sp;
                     } else {
                         panic!("wrong arguments");
                     }
                 } else if argc == closure.argc {
-                    self.fp = unsafe { self.sp.offset(-argc) };
+                    self.fp = self.dec(self.sp,argc);
                 } else {
                     panic!("wrong arguments");
                 }
@@ -624,7 +634,7 @@ impl Vm {
                     if argc == 1 {
                         panic!("apply: need two or more arguments");
                     }
-                    self.sp = unsafe { self.sp.offset(-argc) };
+                    self.sp = self.dec(self.sp, argc);
                     self.ac = args[0];
                     // (apply proc arg1 arg2 ... args-as-list)
                     // We push arguments here. The last argument is flatten list.
@@ -681,7 +691,7 @@ impl Vm {
     fn return_n(&mut self, n: isize, pc: &mut  *const Op) {
         #[cfg(feature = "debug_log_vm")]
         println!("  return {}", n);
-        let sp = unsafe { self.sp.offset(-n) };
+        let sp = self.dec(self.sp, n);
         match self.index(sp, 0) {
             Object::StackPointer(fp) => {
                 self.fp = fp;
@@ -702,7 +712,7 @@ impl Vm {
                 panic!("not a pc");
             }
         }
-        self.sp = unsafe { sp.offset(-4) }
+        self.sp = self.dec(sp, 4);
     }
 
     fn shift_args_to_bottom(&mut self, sp: *mut Object, depth: isize, diff: isize) -> *mut Object {
@@ -711,14 +721,14 @@ impl Vm {
             self.index_set(sp, i + diff, self.index(self.sp, i));
             i = i - 1;
         }
-        unsafe { sp.offset(-diff) }
+        self.dec(sp, diff)
     }
 
     fn unshift_args(&mut self, sp: *mut Object, diff: isize) -> *mut Object {
         for i in 0..diff {
-            self.index_set(unsafe { sp.offset(diff - i) }, 0, self.index(sp, 1));
+            self.index_set(self.inc(sp, diff -i), 0, self.index(sp, 1));
         }
-        unsafe { sp.offset(diff) }
+        self.inc(sp, diff)
     }
 
     fn stack_to_pair(&mut self, n: isize) -> Object {
