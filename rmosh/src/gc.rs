@@ -233,7 +233,7 @@ impl Gc {
 
             let alloc_size = std::mem::size_of_val(&object);
             self.current_alloc_size += alloc_size;
-            println!("alloc: current_alloc_size={}", self.current_alloc_size);
+            //println!("alloc: current_alloc_size={}", self.current_alloc_size);
 
             let boxed = Box::new(object);
             let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
@@ -526,7 +526,7 @@ impl Gc {
         println!("free(adr:{:?}) type={:?} size={} ******* ", object_ptr as *mut GcHeader, object_type, free_size);
 
         self.current_alloc_size -= free_size;
-        println!("free: current_alloc_size={}",self.current_alloc_size);
+        //println!("free: current_alloc_size={}",self.current_alloc_size);
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 

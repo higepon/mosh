@@ -944,7 +944,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
-/*
+
     #[test]
     fn test_if0() {
         let mut vm = Vm::new();
@@ -960,7 +960,6 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
     }
-
     #[test]
     fn test_if1() {
         let mut vm = Vm::new();
@@ -1038,6 +1037,7 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
 
+/*
     #[test]
     fn test_nested_let1() {
         let mut vm = Vm::new();
@@ -1664,7 +1664,7 @@ pub mod tests {
         let pair = vm.gc.alloc(Pair::new(a, b));
 
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
+        let ret = vm.run(&ops[0], ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
@@ -2989,7 +2989,7 @@ pub mod tests {
         ];
         let pair = vm.gc.alloc(Pair::new(Object::Number(1), Object::Number(2)));
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
+        let ret = vm.run(&ops[0] as *const Op, ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
@@ -3023,7 +3023,7 @@ pub mod tests {
         // (1 2)
         let pair2 = vm.gc.alloc(Pair::new(Object::Number(1), pair1));
         let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(ops);
+        let ret = vm.run(&ops[0], ops.len());
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
@@ -5707,7 +5707,6 @@ pub mod tests {
     }
 
 
-*/
 
     // (map1 (lambda (x) 2) '(1)) => (2)
     #[test]
@@ -5748,7 +5747,7 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "200", 0);
     }
 
-/*
+
     // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF")) => ("ABC123" "DEF123")
     #[test]
     fn test_test193_modified() {  
@@ -5780,5 +5779,5 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(\"ABC123\" \"DEF123\")", 0);
 
     }
-*/
+    */
 }
