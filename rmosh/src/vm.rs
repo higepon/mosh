@@ -868,7 +868,7 @@ pub mod tests {
     }
 
     // All ops in the following tests are generated in data/.
-/*
+
     #[test]
     fn test_call0() {
         let mut vm = Vm::new();
@@ -889,8 +889,8 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops,  Object::Number(3), 0);
     }
-*/
 /*
+
     #[test]
     fn test_call1() {
         let mut vm = Vm::new();
