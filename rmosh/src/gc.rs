@@ -308,7 +308,6 @@ impl Gc {
         }
     }
 
-
     // Mark heap allocated object as used and push it to marked_roots.
     // This should be called only for root objects.
     pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
@@ -323,11 +322,11 @@ impl Gc {
 
             #[cfg(feature = "debug_log_gc")]
             //if header.as_ref().obj_type != ObjectType::Procedure {
-                println!(
-                    "mark(adr:{:?}, type:{:?})",
-                    header,
-                    header.as_ref().obj_type,
-                );
+            println!(
+                "mark(adr:{:?}, type:{:?})",
+                header,
+                header.as_ref().obj_type,
+            );
             //}
         }
     }
@@ -434,29 +433,29 @@ impl Gc {
             ObjectType::Closure => {
                 println!("closure:start");
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
-                println!("closure:free");                
+                println!("closure:free");
                 for i in 0..closure.free_vars.len() {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
                 }
-                println!("closure:ops len={}", closure.ops_len);                
+                println!("closure:ops len={}", closure.ops_len);
                 loop {
                     for i in 0..closure.ops_len {
                         let op = unsafe { *closure.ops.offset(i as isize) };
                         self.mark_op(op);
                     }
-                    println!("closure:ops end len={}", closure.ops_len);                     
+                    println!("closure:ops end len={}", closure.ops_len);
                     if closure.prev.is_unspecified() {
-                        println!("closure:ops unspec len={}", closure.ops_len);                                             
+                        println!("closure:ops unspec len={}", closure.ops_len);
                         break;
                     } else {
-                        println!("closure:ops perv ={}", closure.prev);                                                                     
+                        println!("closure:ops perv ={}", closure.prev);
                         self.mark_object(closure.prev);
                         break;
                         /*
                         match closure.prev {
                             Object::Closure(c) =>  {
-                                 c.pointer.as_ref() 
+                                 c.pointer.as_ref()
                                 },
                             obj => {
                                 panic!("closure.prev was {}", obj)
@@ -465,7 +464,7 @@ impl Gc {
                         */
                     }
                 }
-                println!("closure:end");                                
+                println!("closure:end");
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
@@ -502,12 +501,10 @@ impl Gc {
         let hige: &GcHeader = object_ptr;
 
         let free_size = match object_type {
-            ObjectType::Symbol => {
-                0
-            },
+            ObjectType::Symbol => 0,
             ObjectType::Procedure => {
                 panic!("should not be called")
-            },
+            }
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(sstring)
@@ -530,7 +527,10 @@ impl Gc {
             }
         };
         #[cfg(feature = "debug_log_gc")]
-        println!("free(adr:{:?}) type={:?} size={} ******* ", object_ptr as *mut GcHeader, object_type, free_size);
+        println!(
+            "free(adr:{:?}) type={:?} size={} ******* ",
+            object_ptr as *mut GcHeader, object_type, free_size
+        );
 
         self.current_alloc_size -= free_size;
         //println!("free: current_alloc_size={}",self.current_alloc_size);
