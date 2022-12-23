@@ -17,7 +17,7 @@ macro_rules! branch_number_op {
                 (Object::Number(lhs), Object::Number(rhs)) => {
                     $self.ac = Object::make_bool(lhs $op rhs);
                     if $self.ac.is_false() {
-                        $pc = $pc + $skip_size - 1;
+                        $pc = unsafe { $pc.offset($skip_size as isize - 1)};
                     } else {
                         // go to next pc.
                     }
@@ -296,25 +296,24 @@ impl Vm {
                 Op::NullP => self.ac = Object::make_bool(self.ac.is_nil()),
                 Op::SymbolP => self.ac = Object::make_bool(self.ac.is_symbol()),
                 Op::BranchNotNumberEqual(skip_size) => {
-                    assert!(false);
-                    //branch_number_op!(==, self, pc, skip_size);
+
+                    branch_number_op!(==, self, pc, skip_size);
                 }
                 Op::BranchNotGe(skip_size) => {
-                    assert!(false);                    
-                    //branch_number_op!(>=, self, pc, skip_size);
+                    
+                    branch_number_op!(>=, self, pc, skip_size);
                 }
                 Op::BranchNotGt(skip_size) => {
-                    assert!(false);                    
-                    //branch_number_op!(>, self, pc, skip_size);
+                    
+                    branch_number_op!(>, self, pc, skip_size);
                 }
                 Op::BranchNotLe(skip_size) => {
-                    assert!(false);
-                    //branch_number_op!(<=, self, pc, skip_size);
+                    
+                    branch_number_op!(<=, self, pc, skip_size);
                 }
                 Op::BranchNotLt(skip_size) => {
 
-                    assert!(false);
-                    //branch_number_op!(<, self, pc, skip_size);
+                    branch_number_op!(<, self, pc, skip_size);
                 }
                 Op::BranchNotNull(skip_size) => {
                     if self.ac.is_nil() {
@@ -1036,7 +1035,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
-/*
+
 
     #[test]
     fn test_nested_let1() {
@@ -1076,7 +1075,6 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(6), 0);
     }
-    */
 
     #[test]
     fn test_and() {
@@ -1901,7 +1899,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(7), 0);
     }
-/*
+
     #[test]
     fn test_test41() {
         let mut vm = Vm::new();
@@ -2828,7 +2826,7 @@ pub mod tests {
             Op::DefineGlobal(vm.gc.intern("a")),
             Op::Halt,
         ];
-        test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
+        test_ops_with_size(&mut vm, ops, Object::Number(3), SIZE_OF_SYMBOL);
     }
     // (= 3 4) => #f
     #[test]
@@ -3072,7 +3070,7 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
-        test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
+        test_ops_with_size(&mut vm, ops, Object::Number(4), SIZE_OF_SYMBOL);
     }
 
     // ((lambda () ((lambda () 3)))) => 3
@@ -4227,7 +4225,7 @@ pub mod tests {
             Op::Eq,
             Op::Halt,
         ];
-        test_ops_with_size(&mut vm, ops, Object::True, 0);
+        test_ops_with_size(&mut vm, ops, Object::True, SIZE_OF_SYMBOL);
     }
 
     // (eq? 'a 'b) => #f
@@ -4241,7 +4239,7 @@ pub mod tests {
             Op::Eq,
             Op::Halt,
         ];
-        test_ops_with_size(&mut vm, ops, Object::False, 0);
+        test_ops_with_size(&mut vm, ops, Object::False, SIZE_OF_SYMBOL*2);
     }
 
     // (pair? (cons 1 2)) => #t
@@ -4276,7 +4274,7 @@ pub mod tests {
             Op::SymbolP,
             Op::Halt,
         ];
-        test_ops_with_size(&mut vm, ops, Object::True, 0);
+        test_ops_with_size(&mut vm, ops, Object::True, SIZE_OF_SYMBOL);
     }
 
     // (symbol? 3) => #f
@@ -4486,7 +4484,7 @@ pub mod tests {
             Op::Leave(1),
             Op::Halt,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", 0);
+        test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", SIZE_OF_SYMBOL * 3);
     }
 
     // `(list ,(+ 1 2) 4) => (list 3 4)
@@ -4506,7 +4504,7 @@ pub mod tests {
             Op::Cons,
             Op::Halt,
         ];
-        test_ops_with_size_as_str(&mut vm, ops, "(list 3 4)", 0);
+        test_ops_with_size_as_str(&mut vm, ops, "(list 3 4)", SIZE_OF_SYMBOL);
     }
 
     // (let ((a '(1 2 3))) `(1 . ,a)) => (1 1 2 3)
@@ -4691,7 +4689,7 @@ pub mod tests {
         let mut vm = Vm::new();
         let ops = vec![Op::Constant(Object::Symbol(vm.gc.intern("b"))), Op::Halt];
         let obj = vm.gc.symbol_intern("b");
-        test_ops_with_size(&mut vm, ops, obj, 0);
+        test_ops_with_size(&mut vm, ops, obj, SIZE_OF_SYMBOL);
     }
 
     // (list 1 2 3) => (1 2 3)
@@ -4782,7 +4780,7 @@ pub mod tests {
             Op::Nop,
         ];
         let s = vm.gc.symbol_intern("abc");
-        test_ops_with_size(&mut vm, ops, s, 0);
+        test_ops_with_size(&mut vm, ops, s, SIZE_OF_SYMBOL);
     }
 
     // (number->string 123) => 123
@@ -4831,7 +4829,7 @@ pub mod tests {
             Op::Nop,
         ];
         // This register a closure globally and increase size.        
-        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4)", SIZE_OF_CLOSURE);
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 4)", SIZE_OF_CLOSURE + SIZE_OF_SYMBOL);
     }
 
     // ((lambda (a . b) b) 1 2 3) => (2 3)
@@ -5085,7 +5083,7 @@ pub mod tests {
             Op::Halt,
         ];
         let expected = Object::Number(3);
-        test_ops_with_size(&mut vm, ops, expected, 0);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
     }
 
     // (begin (define (hoge . a) a) (hoge 1 2 3)) => (1 2 3)
@@ -5116,7 +5114,7 @@ pub mod tests {
             Op::Nop,
         ];
         // This register a closure globally and increase size.
-        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", SIZE_OF_CLOSURE);
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", SIZE_OF_CLOSURE+SIZE_OF_SYMBOL);
     }
 
     // (begin (define (hige a . b) b) (hige 1 2 3)) => (2 3)
@@ -5147,7 +5145,7 @@ pub mod tests {
             Op::Nop,
         ];
         // This register a closure globally and increase size.        
-        test_ops_with_size_as_str(&mut vm, ops, "(2 3)", SIZE_OF_CLOSURE);
+        test_ops_with_size_as_str(&mut vm, ops, "(2 3)", SIZE_OF_CLOSURE+SIZE_OF_SYMBOL);
     }
 
     // (apply (lambda a a) '(3 2)) => (3 2)
@@ -5676,7 +5674,7 @@ pub mod tests {
             Op::Nop,
         ];
         let expected = Object::False;
-        test_ops_with_size(&mut vm, ops, expected, 0);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
     }
 
     // (let ((x (list 'a))) (eq? x x)) => #t
@@ -5704,7 +5702,7 @@ pub mod tests {
             Op::Nop,
         ];
         let expected = Object::True;
-        test_ops_with_size(&mut vm, ops, expected, 0);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
     }
 
 
@@ -5780,5 +5778,5 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(\"ABC123\" \"DEF123\")", 0);
 
     }
-    */
+    
 }

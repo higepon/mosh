@@ -432,21 +432,27 @@ impl Gc {
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Closure => {
+                println!("closure:start");
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
+                println!("closure:free");                
                 for i in 0..closure.free_vars.len() {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
                 }
-
+                println!("closure:ops len={}", closure.ops_len);                
                 loop {
                     for i in 0..closure.ops_len {
                         let op = unsafe { *closure.ops.offset(i as isize) };
                         self.mark_op(op);
                     }
+                    println!("closure:ops end len={}", closure.ops_len);                     
                     if closure.prev.is_unspecified() {
+                        println!("closure:ops unspec len={}", closure.ops_len);                                             
                         break;
                     } else {
+                        println!("closure:ops perv ={}", closure.prev);                                                                     
                         self.mark_object(closure.prev);
+                        break;
                         /*
                         match closure.prev {
                             Object::Closure(c) =>  {
@@ -459,6 +465,7 @@ impl Gc {
                         */
                     }
                 }
+                println!("closure:end");                                
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
