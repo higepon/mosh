@@ -499,13 +499,14 @@ impl Vm {
                 let start: usize = start as usize;
                 let uargc: usize = argc as usize;
                 let args = &self.stack[start..start + uargc];
+
                 // copying args here because we can't borrow.
                 let args = &args.to_owned()[..];
 
                 // We convert apply call to Op::Call.
                 if procedure.func as usize == procs::apply as usize {
                     if argc == 1 {
-                        panic!("apply: need two or more arguments");
+                        panic!("apply: need two or more arguments but only 1 argument");
                     }
                     self.sp = self.dec(self.sp, argc);
                     self.ac = args[0];
@@ -516,7 +517,7 @@ impl Vm {
                             let mut last_pair = args[i as usize];
                             if !last_pair.is_list() {
                                 panic!(
-                                    "apply last arguments shoulbe proper list but got {}",
+                                    "apply: last arguments shoulbe proper list but got {}",
                                     last_pair
                                 );
                             }
@@ -524,7 +525,7 @@ impl Vm {
                             loop {
                                 if last_pair.is_nil() {
                                     let new_argc = argc - 2 + j;
-                                    println!("**** Call call from call ****");
+                                    println!("Warning recursive self.call()");
                                     self.call(pc, new_argc);
                                     break;
                                 } else {
@@ -545,8 +546,8 @@ impl Vm {
                         }
                     }
                 } else {
+                    // TODO: Take care of cl.
                     // self.cl = self.ac
-
                     self.ac = (procedure.func)(self, args);
                     self.return_n(argc, pc);
                 }
@@ -655,7 +656,6 @@ impl Vm {
     #[cfg(not(feature = "debug_log_vm"))]
     fn print_vm(&mut self, _: Op) {}
 
-
     #[inline(always)]    
     fn refer_local(&mut self, n: isize) -> Object {
         unsafe { *self.fp.offset(n) }
@@ -692,13 +692,12 @@ impl Vm {
                 panic!("not fp pointer but {}", obj)
             }
         }
-        // todo We don't have cl yet.
+        // TODO: Take care of cl register.
         // self.cl = index(sp, 1);
         self.dc = self.index(sp, 2);
         match self.index(sp, 3) {
             Object::OpPointer(next_pc) => {
                 *pc = next_pc;
-               // *pc = usize::try_from(next_pc).expect("pc it not a number");
             }
             _ => {
                 panic!("not a pc");
@@ -706,8 +705,6 @@ impl Vm {
         }
         self.sp = self.dec(sp, 4);
     }
-
-
 
     fn shift_args_to_bottom(&mut self, sp: *mut Object, depth: isize, diff: isize) -> *mut Object {
         let mut i = depth - 1;
@@ -732,11 +729,6 @@ impl Vm {
         }
         args
     }
-
-    //fn precompiled_lib(&mut self) -> &[Op] {
-
-//        &ops
-    //}
 }
 
 #[cfg(test)]
