@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, ptr::{null_mut, self}};
+use std::{collections::HashMap, fmt::Display, ptr::{null_mut, self, null}};
 
 use crate::{
     gc::{Gc, GcRef},
@@ -143,67 +143,16 @@ impl Vm {
         let lib_ops = self.register_baselib();        
         self.run_ops(lib_ops);
         
+        // Run the program.
         let ret = self.run_ops(ops);
-        println!("{:?}", lib_ops);
-        match self.dc {
-            Object::Closure(mut c) => {
-                c.ops = ptr::null();
-                c.ops_len = 0;
-            }
-            _ => {}
-        }
+
+        // Clean up so that GC can sweep them.
+        self.reset_roots();
         ret
     }
 
-    fn register_baselib(&mut self) -> *const Op {
-        self.lib_ops = vec![
-            Op::Closure {
-                size: 22,
-                arg_len: 2,
-                is_optional_arg: false,
-                num_free_vars: 0,
-            },
-            Op::ReferLocal(1),
-            Op::BranchNotNull(3),
-            Op::ReferLocal(1),
-            Op::Return(2),
-            Op::Frame(6),
-            Op::ReferLocal(1),
-            Op::Car,
-            Op::Push,
-            Op::ReferLocal(0),
-            Op::Call(1),
-            Op::Push,
-            Op::Frame(8),
-            Op::ReferLocal(0),
-            Op::Push,
-            Op::ReferLocal(1),
-            Op::Cdr,
-            Op::Push,
-            Op::ReferGlobal(self.gc.intern("map1")),
-            Op::Call(2),
-            Op::Cons,
-            Op::Return(2),
-            Op::DefineGlobal(self.gc.intern("map1")),
-            Op::Halt,
-        ];
-        self.lib_ops.as_ptr()
-    }
 
-    #[inline(always)]
-    fn jump(&self, pc: *const Op, offset: usize) -> *const Op{
-        unsafe { pc.offset(offset as isize) }
-    }
 
-    #[inline(always)]
-    fn inc(&self, pointer: *mut Object, offset: isize) -> *mut Object {
-        unsafe { pointer.offset(offset) }
-    }      
-
-    #[inline(always)]
-    fn dec(&self, pointer: *mut Object, offset: isize) -> *mut Object {
-        unsafe { pointer.offset(-offset) }
-    }    
 
     fn run_ops(&mut self, ops: *const Op) -> Object {
         self.sp = self.stack.as_mut_ptr();
@@ -642,6 +591,53 @@ impl Vm {
         }
     }
 
+    fn reset_roots(&mut self) {
+        // Clean up display closure so that Objects in ops can be freed.
+        match self.dc {
+            Object::Closure(mut c) => {
+                c.ops = null();
+                c.ops_len = 0;
+            }
+            _ => {}
+        }
+        // Note we keep self.ac here, so that it can live after it returned by run().
+    }
+
+    fn register_baselib(&mut self) -> *const Op {
+        self.lib_ops = vec![
+            Op::Closure {
+                size: 22,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(1),
+            Op::BranchNotNull(3),
+            Op::ReferLocal(1),
+            Op::Return(2),
+            Op::Frame(6),
+            Op::ReferLocal(1),
+            Op::Car,
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Call(1),
+            Op::Push,
+            Op::Frame(8),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::Cdr,
+            Op::Push,
+            Op::ReferGlobal(self.gc.intern("map1")),
+            Op::Call(2),
+            Op::Cons,
+            Op::Return(2),
+            Op::DefineGlobal(self.gc.intern("map1")),
+            Op::Halt,
+        ];
+        self.lib_ops.as_ptr()
+    }    
+
     // Helpers.
     fn pop(&mut self) -> Object {
         unsafe {
@@ -694,9 +690,25 @@ impl Vm {
     fn print_vm(&mut self, _: Op) {}
 
 
+    #[inline(always)]    
     fn refer_local(&mut self, n: isize) -> Object {
         unsafe { *self.fp.offset(n) }
     }
+
+    #[inline(always)]
+    fn jump(&self, pc: *const Op, offset: usize) -> *const Op{
+        unsafe { pc.offset(offset as isize) }
+    }
+
+    #[inline(always)]
+    fn inc(&self, pointer: *mut Object, offset: isize) -> *mut Object {
+        unsafe { pointer.offset(offset) }
+    }      
+
+    #[inline(always)]
+    fn dec(&self, pointer: *mut Object, offset: isize) -> *mut Object {
+        unsafe { pointer.offset(-offset) }
+    }        
 
     fn return_n(&mut self, n: isize, pc: &mut  *const Op) {
         #[cfg(feature = "debug_log_vm")]
