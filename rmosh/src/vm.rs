@@ -779,7 +779,7 @@ pub mod tests {
         vm.mark_and_sweep();
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(
-            after_size - before_size,
+            after_size,
             SIZE_OF_MIN_VM + expected_heap_diff
         );
         assert_eq!(ret, expected);
@@ -889,7 +889,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops,  Object::Number(3), 0);
     }
-/*
+
 
     #[test]
     fn test_call1() {
@@ -916,7 +916,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(2), 0);
     }
-
+/*
     #[test]
     fn test_call2() {
         let mut vm = Vm::new();
