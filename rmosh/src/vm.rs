@@ -25,7 +25,7 @@ macro_rules! branch_number_op {
                     }
                 }
                 obj => {
-                    panic!("{}: requires numbers but got {:?}",  stringify!($op), obj);
+                    panic!("{}: numbers requierd but got {:?}",  stringify!($op), obj);                    
                 }
             }
         }
@@ -41,7 +41,7 @@ macro_rules! number_op {
                     $self.ac = Object::make_bool(l $op r)
                 }
                 obj => {
-                    panic!("{}: requires numbers but got {:?}",  stringify!($op), obj);
+                    panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
                 }
             }
         }
@@ -165,7 +165,7 @@ impl Vm {
                         self.ac = self.gc.new_vector(&v);
                     }
                     obj => {
-                        panic!("make-vector: requires number but got {}", obj);
+                        self.arg_err("make-vector", "numbers", obj);
                     }
                 },
                 Op::VectorLength => match self.ac {
@@ -173,7 +173,7 @@ impl Vm {
                         self.ac = Object::Number(v.len() as isize);
                     }
                     obj => {
-                        panic!("vector-length: vector required bug got {}", obj)
+                        self.arg_err("vector-length", "vector", obj);
                     }
                 },
                 Op::Append2 => {
@@ -181,7 +181,7 @@ impl Vm {
                     if Pair::is_list(head) {
                         self.ac = self.gc.append2(head, self.ac);
                     } else {
-                        panic!("append: pair required but got {}", head);
+                        self.arg_err("append", "pair", head);                        
                     }
                 }
                 Op::SetCar => match self.pop() {
@@ -190,7 +190,7 @@ impl Vm {
                         self.ac = Object::Unspecified;
                     }
                     obj => {
-                        panic!("set-car!: pair requied but got {}", obj)
+                        self.arg_err("set-car!", "pair", obj);                        
                     }
                 },
                 Op::SetCdr => match self.pop() {
@@ -199,7 +199,7 @@ impl Vm {
                         self.ac = Object::Unspecified;
                     }
                     obj => {
-                        panic!("set-cdr!: pair requied but got {}", obj)
+                        self.arg_err("set-cdr!", "pair", obj);                     
                     }
                 },
                 Op::Not => {
@@ -232,7 +232,8 @@ impl Vm {
                     }
                 }
                 Op::Eq => {
-                    self.ac = Object::make_bool(self.pop().eq(&self.ac));
+                    let is_eq = self.pop().eq(&self.ac);
+                    self.ac = Object::make_bool(is_eq);
                 }
                 Op::NumberEqual => {
                     number_op!(==, self);
@@ -253,16 +254,16 @@ impl Vm {
                     Object::Pair(pair) => {
                         self.ac = pair.car;
                     }
-                    _ => {
-                        panic!("car pair required")
+                    obj => {
+                        self.arg_err("car", "pair", obj);                     
                     }
                 },
                 Op::Cdr => match self.ac {
                     Object::Pair(pair) => {
                         self.ac = pair.cdr;
                     }
-                    _ => {
-                        panic!("cdr pair required")
+                    obj => {
+                        self.arg_err("cdr", "pair", obj);                                             
                     }
                 },
                 Op::Cadr => match self.ac {
@@ -270,26 +271,26 @@ impl Vm {
                         Object::Pair(pair) => {
                             self.ac = pair.car;
                         }
-                        _ => {
-                            panic!("cadr pair required")
+                        obj => {
+                            self.arg_err("cadr", "pair", obj);                     
                         }
                     },
-                    _ => {
-                        panic!("car pair required")
+                    obj => {
+                        self.arg_err("cadr", "pair", obj);                     
                     }
                 },
                 Op::Indirect => match self.ac {
                     Object::Vox(vox) => {
                         self.ac = vox.value;
                     }
-                    _ => {
-                        panic!("indirect vox not found")
+                    obj => {
+                        self.arg_err("indirect", "vox", obj);                     
                     }
                 },
                 Op::AssignLocal(n) => match self.refer_local(n) {
                     Object::Vox(mut vox) => vox.value = self.ac,
                     _ => {
-                        panic!("assign local vox not found")
+                        panic!("assign_local: vox not found")
                     }
                 },
                 Op::Box(n) => {
@@ -303,35 +304,18 @@ impl Vm {
                     self.push(self.ac);
                 }
                 Op::Cons => {
-                    let first = self.pop();
-                    let second = self.ac;
-                    self.ac = self.gc.cons(first, second);
+                    let car = self.pop();
+                    let cdr = self.ac;
+                    self.ac = self.gc.cons(car, cdr);
                 }
                 Op::NumberAdd => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
                         self.ac = Object::Number(a + b);
                     }
                     (a, b) => {
-                        panic!("add: numbers required but got {:?} {:?}", a, b);
+                        panic!("+: numbers required but got {:?} {:?}", a, b);
                     }
                 },
-                Op::AddPair => {
-                    if let Object::Pair(pair) = self.ac {
-                        match (pair.car, pair.cdr) {
-                            (Object::Number(lhs), Object::Number(rhs)) => {
-                                self.ac = Object::Number(lhs + rhs);
-                            }
-                            _ => {
-                                panic!(
-                                    "add pair: numbers require but got {:?} and {:?}",
-                                    pair.car, pair.cdr
-                                );
-                            }
-                        }
-                    } else {
-                        panic!("pair required but got {:?}", self.ac);
-                    }
-                }
                 Op::DefineGlobal(symbol) => {
                     self.globals.insert(symbol, self.ac);
                 }
@@ -350,7 +334,7 @@ impl Vm {
                     self.fp = self.dec(self.sp, n);
                 },
                 Op::LetFrame(_) => {
-                    // todo: expand stack here.
+                    // TODO: expand stack.
                     self.push(self.dc);
                     self.push(Object::StackPointer(self.fp));
                 }
@@ -364,8 +348,8 @@ impl Vm {
                         Object::StackPointer(fp) => {
                             self.fp = fp;
                         }
-                        x => {
-                            panic!("fp expected but got {:?}", x);
+                        obj => {
+                            panic!("leave: fp expected but got {:?}", obj);
                         }
                     }
                     self.dc = self.index(sp, 1);
@@ -390,7 +374,7 @@ impl Vm {
                         self.ac = closure.refer_free(n);
                     }
                     _ => {
-                        panic!("refer_free: display closure expected but got {:?}", self.dc);
+                        panic!("refer_free: display closure required but got {:?}", self.dc);
                     }
                 },
                 Op::AssignFree(n) => match self.dc {
@@ -404,7 +388,7 @@ impl Vm {
                     },
                     _ => {
                         panic!(
-                            "assign_free: display closure expected but got {:?}",
+                            "assign_free: display closure required but got {:?}",
                             self.dc
                         );
                     }
@@ -432,11 +416,10 @@ impl Vm {
                     self.ac = Object::Closure(self.alloc(Closure::new(
                        pc,
                        size - 1,
-                        arg_len,
-                        is_optional_arg,
-                        free_vars,
+                       arg_len,
+                       is_optional_arg,
+                       free_vars,
                     )));
-
                     self.sp =  self.dec(self.sp, num_free_vars);
                     pc = self.jump(pc, size - 1);
                 }
@@ -465,11 +448,10 @@ impl Vm {
                     //
                     // where pc* = pc + skip_offset -1
                     let next_pc = self.jump(pc, skip_offset - 1);
-                    //let next_pc =
-                        //isize::try_from(pc + skip_offset - 1).expect("can't convert to isize");
                     self.push(Object::OpPointer(next_pc));
                     self.push(self.dc);
-                    self.push(self.dc); // todo this should be cl.
+                    // TODO: This should be cl register.
+                    self.push(self.dc);
                     self.push(Object::StackPointer(self.fp));
                 }
                 Op::Halt => { break; }
@@ -695,6 +677,10 @@ impl Vm {
         unsafe { pointer.offset(-offset) }
     }        
 
+    fn arg_err(&self, who: &str, expected: &str, actual: Object) {
+        panic!("{}: requires {} but got {}", who, expected, actual);
+    }
+
     fn return_n(&mut self, n: isize, pc: &mut  *const Op) {
         #[cfg(feature = "debug_log_vm")]
         println!("  return {}", n);
@@ -862,33 +848,6 @@ pub mod tests {
 
 
 
-    #[test]
-    fn test_vm_run_add_pair() {
-        let mut vm = Vm::new();
-        let ops = vec![
-            Op::Constant(Object::Number(99)),
-            Op::Push,
-            Op::Constant(Object::Number(101)),
-            Op::Cons,
-            Op::AddPair,
-            Op::Halt,
-        ];
-        let before_size = vm.gc.bytes_allocated();
-        let ret = vm.run(&ops[0] as *const Op, ops.len());
-        vm.ac = Object::Unspecified;
-        println!("BEFORE GC");
-        vm.mark_and_sweep();
-        println!("AFTER GC");        
-        let after_size = vm.gc.bytes_allocated();
-        assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
-        match ret {
-            Object::Number(a) => {
-                assert_eq!(a, 200);
-            }
-            _ => panic!("{:?}", "todo"),
-        }
-        println!("AFTER GC END");                
-    }
 
     // All ops in the following tests are generated in data/.
 
@@ -5756,19 +5715,6 @@ pub mod tests {
 
     }
 
-    #[test]
-    fn test_vm_run_add_pair2() {
-        let mut vm = Vm::new();
-        let ops = vec![
-            Op::Constant(Object::Number(99)),
-            Op::Push,
-            Op::Constant(Object::Number(101)),
-            Op::Cons,
-            Op::AddPair,
-            Op::Halt,
-        ];
-        test_ops_with_size_as_str(&mut vm, ops, "200", 0);
-    }
 
 
     // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF")) => ("ABC123" "DEF123")

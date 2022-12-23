@@ -6,7 +6,6 @@ use crate::{
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Op {
     NumberAdd,
-    AddPair,
     Append2,
     AssignFree(usize),
     AssignGlobal(GcRef<Symbol>),

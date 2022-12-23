@@ -410,7 +410,6 @@ impl Gc {
             Op::Leave(_) => (),
             Op::Push => (),
             Op::NumberAdd => (),
-            Op::AddPair => (),
             Op::Cons => (),
             Op::LocalJmp(_) => (),
             Op::TailCall(_, _) => (),
