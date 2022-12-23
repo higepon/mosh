@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, ptr::null_mut};
+use std::{collections::HashMap, fmt::Display, ptr::{null_mut, self}};
 
 use crate::{
     gc::{Gc, GcRef},
@@ -108,6 +108,12 @@ impl Vm {
             self.gc.mark_object(obj);
         }
 
+        // Symbols.
+        let symbols = self.gc.symbols.values().cloned().collect::<Vec<GcRef<Symbol>>>();
+        for s in symbols {
+            self.gc.mark_object(Object::Symbol(s));
+        }
+
         // Global variables.
         for &obj in self.globals.values() {
             self.gc.mark_object(obj);            
@@ -213,13 +219,20 @@ impl Vm {
         ];        
         self.initialize_free_vars(ops, ops_len);
         let lib_ops = &self.lib_ops[0] as *const Op;    
-        self.run_ops(lib_ops, 10 /* TODO */);
-        let ret = self.run_ops(ops, 10 /* TODO */);
+        self.run_ops(lib_ops);
+        let ret = self.run_ops(ops);
         println!("{:?}", lib_ops);
+        match self.dc {
+            Object::Closure(mut c) => {
+                c.ops = ptr::null();
+                c.ops_len = 0;
+            }
+            _ => {}
+        }
         ret
     }
 
-    fn run_ops(&mut self, ops: *const Op, len: usize) -> Object {
+    fn run_ops(&mut self, ops: *const Op) -> Object {
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
 
@@ -790,7 +803,7 @@ pub mod tests {
             SIZE_OF_MIN_VM + expected_heap_diff
         );
     }
-
+/*
     // Custom hand written tests.
     #[test]
     fn test_symbol_intern() {
@@ -819,7 +832,7 @@ pub mod tests {
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
     }
-
+*/
 
 
     #[test]
@@ -835,7 +848,9 @@ pub mod tests {
         ];
         let before_size = vm.gc.bytes_allocated();
         let ret = vm.run(&ops[0] as *const Op, ops.len());
+        println!("BEFORE GC");
         vm.mark_and_sweep();
+        println!("AFTER GC");        
         let after_size = vm.gc.bytes_allocated();
         assert_eq!(after_size - before_size, SIZE_OF_MIN_VM);
         match ret {
@@ -844,10 +859,11 @@ pub mod tests {
             }
             _ => panic!("{:?}", "todo"),
         }
+        println!("AFTER GC END");                
     }
 
     // All ops in the following tests are generated in data/.
-
+/*
     #[test]
     fn test_call0() {
         let mut vm = Vm::new();
@@ -868,6 +884,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops,  Object::Number(3), 0);
     }
+*/
 /*
     #[test]
     fn test_call1() {
@@ -5713,7 +5730,7 @@ pub mod tests {
     }
 
 
-
+/*
     // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF")) => ("ABC123" "DEF123")
     #[test]
     fn test_test193_modified() {  
@@ -5745,5 +5762,5 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(\"ABC123\" \"DEF123\")", 0);
 
     }
-
+*/
 }

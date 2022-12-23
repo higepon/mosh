@@ -111,7 +111,7 @@ pub struct Gc {
     next_gc: usize,
     first: Option<NonNull<GcHeader>>,
     marked_objects: Vec<NonNull<GcHeader>>,
-    symbols: HashMap<String, GcRef<Symbol>>,
+    pub symbols: HashMap<String, GcRef<Symbol>>,
     current_alloc_size: usize,
 }
 
@@ -306,6 +306,7 @@ impl Gc {
         }
     }
 
+
     // Mark heap allocated object as used and push it to marked_roots.
     // This should be called only for root objects.
     pub fn mark_heap_object<T: 'static>(&mut self, mut reference: GcRef<T>) {
@@ -429,22 +430,18 @@ impl Gc {
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Closure => {
-                let mut closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
+                let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
                 for i in 0..closure.free_vars.len() {
                     let obj = closure.free_vars[i];
                     self.mark_object(obj);
                 }
 
                 loop {
-                    println!("mark Closure ops {:?} {}", closure as *const Closure, closure.ops_len);
                     for i in 0..closure.ops_len {
                         let op = unsafe { *closure.ops.offset(i as isize) };
-                        println!("try to mark {:?}", op);
                         self.mark_op(op);
                     }
-                    println!("closure.prev={}", closure.prev);
                     if closure.prev.is_unspecified() {
-                        println!("break closure.prev={}", closure.prev);
                         break;
                     } else {
                         self.mark_object(closure.prev);
@@ -491,15 +488,19 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        //#[cfg(feature = "debug_log_gc")]
-        println!("****** free(adr:{:?})", object_ptr as *mut GcHeader);
+        #[cfg(feature = "debug_log_gc")]
+        println!("free(adr:{:?}) ******* ", object_ptr as *mut GcHeader);
         let object_type = object_ptr.obj_type;
 
         let hige: &GcHeader = object_ptr;
 
         let free_size = match object_type {
-            ObjectType::Symbol => 0,
-            ObjectType::Procedure => 0,
+            ObjectType::Symbol => {
+                0
+            },
+            ObjectType::Procedure => {
+                panic!("should not be called")
+            },
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(sstring)
@@ -547,7 +548,6 @@ impl Gc {
                     } else {
                         self.first = object_ptr.next
                     }
-                    println!("******** free");
                     self.free(object_ptr);
                 }
             }
