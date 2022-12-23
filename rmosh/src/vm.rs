@@ -1036,8 +1036,8 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
     }
-
 /*
+
     #[test]
     fn test_nested_let1() {
         let mut vm = Vm::new();
@@ -1076,6 +1076,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(6), 0);
     }
+    */
 
     #[test]
     fn test_and() {
@@ -1547,7 +1548,7 @@ pub mod tests {
             Op::Halt,
             Op::Nop,
         ];
-        test_ops_with_size(&mut vm, ops, Object::False, 0);
+        test_ops_with_size(&mut vm, ops, Object::False, SIZE_OF_SYMBOL);
     }
 
     #[test]
@@ -1562,7 +1563,7 @@ pub mod tests {
             Op::Halt,
             Op::Nop,
         ];
-        test_ops_with_size(&mut vm, ops, Object::False, 0);
+        test_ops_with_size(&mut vm, ops, Object::False, SIZE_OF_SYMBOL);
     }
 
     #[test]
@@ -1781,7 +1782,7 @@ pub mod tests {
         ];
         test_ops_with_size(&mut vm, ops, Object::Number(1), 0);
     }
-
+/*
     #[test]
     fn test_test35() {
         let mut vm = Vm::new();
