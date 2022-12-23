@@ -136,8 +136,26 @@ impl Vm {
     }
 
     pub fn run(&mut self, ops: *const Op, ops_len:usize) -> Object {
+        // Create display closure and make free variables accessible.
         self.initialize_free_vars(ops, ops_len);        
-        // map1 procedure.
+
+        // Load the base library.
+        let lib_ops = self.register_baselib();        
+        self.run_ops(lib_ops);
+        
+        let ret = self.run_ops(ops);
+        println!("{:?}", lib_ops);
+        match self.dc {
+            Object::Closure(mut c) => {
+                c.ops = ptr::null();
+                c.ops_len = 0;
+            }
+            _ => {}
+        }
+        ret
+    }
+
+    fn register_baselib(&mut self) -> *const Op {
         self.lib_ops = vec![
             Op::Closure {
                 size: 22,
@@ -168,20 +186,8 @@ impl Vm {
             Op::Return(2),
             Op::DefineGlobal(self.gc.intern("map1")),
             Op::Halt,
-        ];        
-
-        let lib_ops = &self.lib_ops[0] as *const Op;    
-        self.run_ops(lib_ops);
-        let ret = self.run_ops(ops);
-        println!("{:?}", lib_ops);
-        match self.dc {
-            Object::Closure(mut c) => {
-                c.ops = ptr::null();
-                c.ops_len = 0;
-            }
-            _ => {}
-        }
-        ret
+        ];
+        self.lib_ops.as_ptr()
     }
 
     #[inline(always)]
