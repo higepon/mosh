@@ -50,26 +50,32 @@ macro_rules! number_op {
 
 pub struct Vm {
     pub gc: Box<Gc>,
-    ac: Object, // accumulator register.
-    dc: Object, // display closure register.
-    stack: [Object; STACK_SIZE],
-    sp: *mut Object, // stack pointer.
-    fp: *mut Object, // frame pointer.
-    globals: HashMap<GcRef<Symbol>, Object>, // global variables.
+    // The stack.
+    stack: [Object; STACK_SIZE],             
+    // accumulator register.
+    ac: Object,                      
+    // display closure register.
+    dc: Object,                      
+    // stack pointer.
+    sp: *mut Object, 
+    // frame pointer.                
+    fp: *mut Object, 
+    // global variables.    
+    globals: HashMap<GcRef<Symbol>, Object>,
     // We keep the lib_ops here so that the lib_ops live longer than every call of run.
     // If we kept lib_ops as local variable, it can/will be immediately freed after run(lib_ops).
     lib_ops: Vec<Op>,
-    // Note when we add new vars here, please make sure we take care of them in mark_and_sweep.
-    // Otherwise it can cause memory leak or double free.
+    // Note when we add new vars here, please make sure we take care of them in mark_roots.
+    // Otherwise they can cause memory leak or double free.
 }
 
 impl Vm {
     pub fn new() -> Self {
         Self {
+            gc: Box::new(Gc::new()),            
+            stack: [Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
-            gc: Box::new(Gc::new()),
-            stack: [Object::Unspecified; STACK_SIZE],
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
@@ -103,8 +109,6 @@ impl Vm {
         }
     }
 
-    // VM実行中に op にあるもの消しているかも。
-    // closure にセットする vm-run みて
     fn mark_roots(&mut self) {
         // Stack.
         for &obj in &self.stack[0..self.stack_len()] {
@@ -113,8 +117,8 @@ impl Vm {
 
         // Symbols.
         let symbols = self.gc.symbols.values().cloned().collect::<Vec<GcRef<Symbol>>>();
-        for s in symbols {
-            self.gc.mark_object(Object::Symbol(s));
+        for symbol in symbols {
+            self.gc.mark_object(Object::Symbol(symbol));
         }
 
         // Global variables.
