@@ -83,6 +83,10 @@ impl Vm {
         }
     }
 
+    pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
+        self.gc.intern(s)
+    }    
+
     fn initialize_free_vars(&mut self, ops: *const Op, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);
         let mut display = self.gc.alloc(Closure::new(ops, ops_len, 0, false, free_vars));
@@ -90,7 +94,7 @@ impl Vm {
         self.dc = Object::Closure(display);
     }
 
-    /// GC functions.
+    // GC functions.
     fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         self.mark_and_sweep();
         self.gc.alloc(object)
@@ -129,66 +133,7 @@ impl Vm {
         // Registers.
         self.gc.mark_object(self.ac);
         self.gc.mark_object(self.dc);
-
-        // Code.
-//        for &op in &self.ops {
-            //self.gc.mark_op(op);
-        //}
     }
-
-    pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
-        self.gc.intern(s)
-    }
-
-    fn pop(&mut self) -> Object {
-        unsafe {
-            self.sp = self.dec(self.sp, 1);
-            *self.sp
-        }
-    }
-
-    fn push(&mut self, value: Object) {
-        unsafe {
-            *self.sp = value;
-            self.sp = self.inc(self.sp, 1);
-        }
-    }
-
-    fn index(&self, sp: *mut Object, n: isize) -> Object {
-        unsafe {*self.dec(sp, n + 1)}
-    }
-
-    fn index_set(&mut self, sp: *mut Object, n: isize, obj: Object) {
-        unsafe { *self.dec(sp, n+1) = obj }
-    }
-
-    fn stack_len(&self) -> usize {
-        unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
-    }
-
-    #[cfg(feature = "debug_log_vm")]
-    fn print_vm(&mut self, op: Op) {
-        println!("-----------------------------------------");
-        println!("{:?} executed", op);
-        println!("  ac={}", self.ac);        
-        println!("  dc={}", self.dc);                
-        println!("-----------------------------------------");
-        let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
-        for i in 0..self.stack_len() {
-            println!(
-                "  {}{}",
-                self.stack[i],
-                if fp_idx == i.try_into().unwrap() {
-                    "  <== fp"
-                } else {
-                    ""
-                }
-            );
-        }
-        println!("-----------------------------------------<== sp")
-    }
-    #[cfg(not(feature = "debug_log_vm"))]
-    fn print_vm(&mut self, _: Op) {}
 
     pub fn run(&mut self, ops: *const Op, ops_len:usize) -> Object {
         //let lib_ops = self.precompiled_lib();
@@ -691,6 +636,58 @@ impl Vm {
         }
     }
 
+    // Helpers.
+    fn pop(&mut self) -> Object {
+        unsafe {
+            self.sp = self.dec(self.sp, 1);
+            *self.sp
+        }
+    }
+
+    fn push(&mut self, value: Object) {
+        unsafe {
+            *self.sp = value;
+            self.sp = self.inc(self.sp, 1);
+        }
+    }
+
+    fn index(&self, sp: *mut Object, n: isize) -> Object {
+        unsafe {*self.dec(sp, n + 1)}
+    }
+
+    fn index_set(&mut self, sp: *mut Object, n: isize, obj: Object) {
+        unsafe { *self.dec(sp, n+1) = obj }
+    }
+
+    fn stack_len(&self) -> usize {
+        unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
+    }
+
+    #[cfg(feature = "debug_log_vm")]
+    fn print_vm(&mut self, op: Op) {
+        println!("-----------------------------------------");
+        println!("{:?} executed", op);
+        println!("  ac={}", self.ac);        
+        println!("  dc={}", self.dc);                
+        println!("-----------------------------------------");
+        let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
+        for i in 0..self.stack_len() {
+            println!(
+                "  {}{}",
+                self.stack[i],
+                if fp_idx == i.try_into().unwrap() {
+                    "  <== fp"
+                } else {
+                    ""
+                }
+            );
+        }
+        println!("-----------------------------------------<== sp")
+    }
+    #[cfg(not(feature = "debug_log_vm"))]
+    fn print_vm(&mut self, _: Op) {}
+
+
     fn refer_local(&mut self, n: isize) -> Object {
         unsafe { *self.fp.offset(n) }
     }
@@ -721,6 +718,8 @@ impl Vm {
         }
         self.sp = self.dec(sp, 4);
     }
+
+
 
     fn shift_args_to_bottom(&mut self, sp: *mut Object, depth: isize, diff: isize) -> *mut Object {
         let mut i = depth - 1;
