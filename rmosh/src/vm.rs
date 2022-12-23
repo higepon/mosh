@@ -4,7 +4,7 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
-    procs::{self, apply, default_free_vars},
+    procs::{self, default_free_vars},
 };
 
 const STACK_SIZE: usize = 256;
