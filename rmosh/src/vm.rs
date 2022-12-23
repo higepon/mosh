@@ -11,13 +11,13 @@ const STACK_SIZE: usize = 256;
 
 #[macro_export]
 macro_rules! branch_number_op {
-    ($op:tt, $self:ident, $pc:ident, $skip_size:ident) => {
+    ($op:tt, $self:ident, $pc:ident, $skip_offset:ident) => {
         {
             match ($self.pop(), $self.ac) {
                 (Object::Number(lhs), Object::Number(rhs)) => {
                     $self.ac = Object::make_bool(lhs $op rhs);
                     if $self.ac.is_false() {
-                        $pc = unsafe { $pc.offset($skip_size as isize - 1)};
+                        $pc = $self.jump($pc, $skip_offset - 1);
                     } else {
                         // go to next pc.
                     }
@@ -232,6 +232,11 @@ impl Vm {
         ret
     }
 
+    #[inline(always)]
+    fn jump(&self, pc: *const Op, offset: usize) -> *const Op{
+        unsafe { pc.offset(offset as isize) }
+    }
+
     fn run_ops(&mut self, ops: *const Op) -> Object {
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
@@ -295,33 +300,33 @@ impl Vm {
                 Op::PairP => self.ac = Object::make_bool(self.ac.is_pair()),
                 Op::NullP => self.ac = Object::make_bool(self.ac.is_nil()),
                 Op::SymbolP => self.ac = Object::make_bool(self.ac.is_symbol()),
-                Op::BranchNotNumberEqual(skip_size) => {
+                Op::BranchNotNumberEqual(skip_offset) => {
 
-                    branch_number_op!(==, self, pc, skip_size);
+                    branch_number_op!(==, self, pc, skip_offset);
                 }
-                Op::BranchNotGe(skip_size) => {
+                Op::BranchNotGe(skip_offset) => {
                     
-                    branch_number_op!(>=, self, pc, skip_size);
+                    branch_number_op!(>=, self, pc, skip_offset);
                 }
-                Op::BranchNotGt(skip_size) => {
+                Op::BranchNotGt(skip_offset) => {
                     
-                    branch_number_op!(>, self, pc, skip_size);
+                    branch_number_op!(>, self, pc, skip_offset);
                 }
-                Op::BranchNotLe(skip_size) => {
+                Op::BranchNotLe(skip_offset) => {
                     
-                    branch_number_op!(<=, self, pc, skip_size);
+                    branch_number_op!(<=, self, pc, skip_offset);
                 }
-                Op::BranchNotLt(skip_size) => {
+                Op::BranchNotLt(skip_offset) => {
 
-                    branch_number_op!(<, self, pc, skip_size);
+                    branch_number_op!(<, self, pc, skip_offset);
                 }
-                Op::BranchNotNull(skip_size) => {
+                Op::BranchNotNull(skip_offset) => {
                     if self.ac.is_nil() {
                         self.ac = Object::False;                        
                     } else {
                         println!("skipping");
                         self.ac = Object::True;
-                        pc = unsafe {pc.offset(skip_size as isize - 1)};
+                        pc = self.jump(pc, skip_offset - 1);
                     }
                 }
                 Op::Eq => {
@@ -502,13 +507,13 @@ impl Vm {
                         );
                     }
                 },
-                Op::Test(skip_size) => {
+                Op::Test(jump_offset) => {
                     if self.ac.is_false() {
-                        pc = unsafe { pc.offset(skip_size as isize - 1)};
+                        pc = self.jump(pc, jump_offset - 1);
                     }
                 }
-                Op::LocalJmp(jump_size) => {
-                    pc = unsafe { pc.offset(jump_size as isize - 1)};
+                Op::LocalJmp(jump_offset) => {
+                    pc = self.jump(pc, jump_offset - 1);
                 }
                 Op::Closure {
                     size,
@@ -531,7 +536,7 @@ impl Vm {
                     )));
 
                     self.sp = unsafe { self.sp.offset(-num_free_vars) };
-                    pc = unsafe { pc.offset(size as isize - 1)};
+                    pc = self.jump(pc, size - 1);
                 }
                 Op::TailCall(depth, diff) => {
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
@@ -544,7 +549,7 @@ impl Vm {
                 Op::Return(n) => {
                     self.return_n(n, &mut pc);
                 }
-                Op::Frame(skip_size) => {
+                Op::Frame(skip_offset) => {
                     // Call frame in stack.
                     // ======================
                     //          pc*
@@ -556,10 +561,10 @@ impl Vm {
                     //          fp
                     // ======== sp ==========
                     //
-                    // where pc* = pc + skip_size -1
-                    let next_pc = unsafe { pc.offset(skip_size as isize - 1)};
+                    // where pc* = pc + skip_offset -1
+                    let next_pc = self.jump(pc, skip_offset - 1);
                     //let next_pc =
-                        //isize::try_from(pc + skip_size - 1).expect("can't convert to isize");
+                        //isize::try_from(pc + skip_offset - 1).expect("can't convert to isize");
                     self.push(Object::OpPointer(next_pc));
                     self.push(self.dc);
                     self.push(self.dc); // todo this should be cl.
@@ -570,7 +575,7 @@ impl Vm {
                 Op::Nop => {}
             }
             self.print_vm(op);
-            pc = unsafe { pc.offset(1)};
+            pc = self.jump(pc, 1);
         }
         self.ac
     }
