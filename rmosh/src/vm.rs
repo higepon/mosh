@@ -136,7 +136,7 @@ impl Vm {
     }
 
     pub fn run(&mut self, ops: *const Op, ops_len:usize) -> Object {
-        //let lib_ops = self.precompiled_lib();
+        self.initialize_free_vars(ops, ops_len);        
         // map1 procedure.
         self.lib_ops = vec![
             Op::Closure {
@@ -169,7 +169,7 @@ impl Vm {
             Op::DefineGlobal(self.gc.intern("map1")),
             Op::Halt,
         ];        
-        self.initialize_free_vars(ops, ops_len);
+
         let lib_ops = &self.lib_ops[0] as *const Op;    
         self.run_ops(lib_ops);
         let ret = self.run_ops(ops);
