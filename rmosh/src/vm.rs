@@ -466,12 +466,11 @@ impl Vm {
 
     #[inline(always)]
     fn call(&mut self, pc: &mut *const Op, argc: isize) {
-         println!("**** Entered Call ****");
         match self.ac   {
             Object::Closure(closure) => {
                 self.dc = self.ac;
+                // TODO:
                 // self.cl = self.ac;
-                //self.ops = closure.ops.to_owned();
                 *pc = closure.ops;
                 if closure.is_optional_arg {
                     let extra_len = argc - closure.argc;
@@ -487,18 +486,18 @@ impl Vm {
                         self.fp = self.dec(sp, closure.argc);
                         self.sp = sp;
                     } else {
-                        panic!("wrong arguments");
+                        panic!("call: wrong number of arguments {} required bug got {}", closure.argc, argc);
                     }
                 } else if argc == closure.argc {
                     self.fp = self.dec(self.sp,argc);
                 } else {
-                    panic!("wrong arguments");
+                    panic!("call: wrong number of arguments {} required bug got {}", closure.argc, argc);
                 }
             }
             Object::Procedure(procedure) => {
                 let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
-                let start: usize = usize::try_from(start).expect("start can't be usize");
-                let uargc: usize = usize::try_from(argc).expect("argc can't be usize");
+                let start: usize = start as usize;
+                let uargc: usize = argc as usize;
                 let args = &self.stack[start..start + uargc];
                 // copying args here because we can't borrow.
                 let args = &args.to_owned()[..];
