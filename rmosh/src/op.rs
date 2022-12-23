@@ -98,7 +98,7 @@ pub mod tests {
             self.pc = start_pc;
             let mut val = Object::Unspecified;
             let mut pc = start_pc;
-            for i in 0..len {
+            for _ in 0..len {
                 match unsafe { *pc } {
                     Op::Constant(n) => {
                         val = n;
