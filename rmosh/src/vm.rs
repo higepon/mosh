@@ -6443,4 +6443,38 @@ pub mod tests {
     }
 
 
+    // (begin (define (proc-2) (define (rec) 3) (rec)) (proc-2)) => 3
+    #[test]
+    fn test_test218() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Closure {size: 15, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::LetFrame(0),
+            Op::Undef,
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::AssignLocal(0),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::TailCall(0, 3),
+            Op::Leave(1),
+            Op::Return(0),
+            Op::DefineGlobal(vm.gc.intern("proc-2")),
+            Op::Frame(3),
+            Op::ReferGlobal(vm.gc.intern("proc-2")),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
+    }
+
+
 }
