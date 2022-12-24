@@ -6004,11 +6004,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (let ((p (open-string-input-port "123 456"))) (read-char p)) => #\1
     #[test]
     fn test_test202() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::ReferFree(35),
@@ -6034,10 +6033,15 @@ pub mod tests {
     // (reverse '(1 2 3 4)) => (4 3 2 1)
     #[test]
     fn test_test203_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(5),
-            Op::Constant(vm.gc.list4(Object::Number(1), Object::Number(2), Object::Number(3), Object::Number(4))),
+            Op::Constant(vm.gc.list4(
+                Object::Number(1),
+                Object::Number(2),
+                Object::Number(3),
+                Object::Number(4),
+            )),
             Op::Push,
             Op::ReferFree(26),
             Op::Call(1),
@@ -6050,7 +6054,7 @@ pub mod tests {
     // (string-split "wiki&cmd" #\&) => ("wiki" "cmd")
     #[test]
     fn test_test204() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(7),
             Op::Constant(vm.gc.new_string("wiki&cmd")),
@@ -6068,7 +6072,7 @@ pub mod tests {
     // (begin (define str1 (make-string 3 #\c)) (string-set! str1 1 #\b) str1) => "cbc"
     #[test]
     fn test_test205() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(7),
             Op::Constant(Object::Number(3)),
@@ -6099,7 +6103,7 @@ pub mod tests {
     // (let* ((a 0) (b (lambda (x y) a))) (b (begin (set! a 1)) (begin (set! a 2)))) => 2
     #[test]
     fn test_test206() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(4),
             Op::Constant(Object::Number(0)),
@@ -6114,7 +6118,12 @@ pub mod tests {
             Op::Display(2),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 4, arg_len: 2, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 4,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferFree(0),
             Op::Indirect,
             Op::Return(2),
@@ -6139,5 +6148,12 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
+    // #\a => #\a
+    #[test]
+    fn test_test207() {
+        let mut vm = Vm::new();
+        let ops = vec![Op::Constant(Object::Char('a')), Op::Halt];
+        let expected = Object::Char('a');
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }
