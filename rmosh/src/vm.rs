@@ -246,10 +246,10 @@ impl Vm {
                     if self.pop().eqv(&self.ac) {
                         self.ac = Object::True;
                     } else {
-                        pc = self.jump(pc, skip_offset - 1);                                                
+                        pc = self.jump(pc, skip_offset - 1);
                         self.ac = Object::False;
                     }
-                }                
+                }
                 Op::Eq => {
                     let is_eq = self.pop().eq(&self.ac);
                     self.ac = Object::make_bool(is_eq);
@@ -330,6 +330,14 @@ impl Vm {
                 Op::NumberAdd => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
                         self.ac = Object::Number(a + b);
+                    }
+                    (a, b) => {
+                        panic!("*: numbers required but got {:?} {:?}", a, b);
+                    }
+                },
+                Op::NumberMul => match (self.pop(), self.ac) {
+                    (Object::Number(a), Object::Number(b)) => {
+                        self.ac = Object::Number(a * b);
                     }
                     (a, b) => {
                         panic!("+: numbers required but got {:?} {:?}", a, b);
@@ -5852,11 +5860,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (eof-object? (let ((p (open-string-input-port "1"))) (read-char p) (read-char p))) => #t
     #[test]
     fn test_test196() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Frame(20),
             Op::LetFrame(2),
@@ -5889,7 +5896,7 @@ pub mod tests {
     // (begin (let ((xxx 'a)) (case xxx ((b) 'b) ((a) 'a)))) => a
     #[test]
     fn test_test197_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(4),
             Op::Constant(vm.gc.symbol_intern("a")),
@@ -5927,7 +5934,7 @@ pub mod tests {
     // (begin (let ((xxy 'a)) (case xxy ((b) 'b) ((c) 'c) (else 3)))) => 3
     #[test]
     fn test_test198_mofidified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(4),
             Op::Constant(vm.gc.symbol_intern("a")),
@@ -5962,4 +5969,21 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
     }
 
+    // (* 2 3 4) => 24
+    #[test]
+    fn test_test200() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::NumberMul,
+            Op::Push,
+            Op::Constant(Object::Number(4)),
+            Op::NumberMul,
+            Op::Halt,
+        ];
+        let expected = Object::Number(24);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }

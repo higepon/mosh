@@ -50,6 +50,7 @@ pub enum Op {
     NumberGt,
     NumberLe,
     NumberLt,
+    NumberMul,
     PairP,
     Push,
     ReadChar,

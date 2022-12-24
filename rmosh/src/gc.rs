@@ -404,6 +404,7 @@ impl Gc {
             Op::Not => (),
             Op::NullP => (),
             Op::NumberAdd => (),
+            Op::NumberMul => (),            
             Op::NumberEqual => (),
             Op::NumberGe => (),
             Op::NumberGt => (),
