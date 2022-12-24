@@ -179,6 +179,14 @@ impl Vm {
                         self.arg_err("make-vector", "numbers", obj);
                     }
                 },
+                Op::VectorP => match self.ac {
+                    Object::Vector(v) => {
+                        self.ac = Object::True;
+                    }
+                    _ => {
+                        self.ac = Object::False;
+                    }
+                },
                 Op::VectorLength => match self.ac {
                     Object::Vector(v) => {
                         self.ac = Object::Number(v.len() as isize);
@@ -6177,11 +6185,8 @@ pub mod tests {
     // 102 => 102
     #[test]
     fn test_test209() {
-        let mut vm = Vm::new();        
-        let ops = vec![
-            Op::Constant(Object::Number(102)),
-            Op::Halt,
-        ];
+        let mut vm = Vm::new();
+        let ops = vec![Op::Constant(Object::Number(102)), Op::Halt];
         let expected = Object::Number(102);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
@@ -6189,7 +6194,7 @@ pub mod tests {
     // `(list ,(+ 1 2) 4) => (list 3 4)
     #[test]
     fn test_test210() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(vm.gc.symbol_intern("list")),
             Op::Push,
@@ -6209,7 +6214,7 @@ pub mod tests {
     // (let ((name 'a)) `(list ,name ',name)) => (list a 'a)
     #[test]
     fn test_test211() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(6),
             Op::Constant(vm.gc.symbol_intern("a")),
@@ -6237,11 +6242,10 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", SIZE_OF_SYMBOL * 3);
     }
 
-
     // `(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) => (a 3 4 5 6 b)
     #[test]
     fn test_test212_modified() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let b = vm.gc.symbol_intern("b");
         let ops = vec![
             Op::Constant(vm.gc.symbol_intern("a")),
@@ -6254,7 +6258,10 @@ pub mod tests {
             Op::Frame(7),
             Op::ReferFree(410),
             Op::Push,
-            Op::Constant(vm.gc.list3(Object::Number(4), Object::Number(-5), Object::Number(6))),
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(4), Object::Number(-5), Object::Number(6)),
+            ),
             Op::Push,
             Op::ReferGlobal(vm.gc.intern("map1")),
             Op::Call(2),
@@ -6269,5 +6276,16 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(a 3 4 5 6 b)", SIZE_OF_SYMBOL * 2);
     }
 
+    // (vector? #(3)) => #t
+    #[test]
+    fn test_test213() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(vm.gc.new_vector(&vec![Object::Number(3)])),
+            Op::VectorP,
+            Op::Halt,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }
-

@@ -436,6 +436,7 @@ impl Gc {
             Op::Test(_) => (),
             Op::Undef => (),
             Op::VectorLength => (),
+            Op::VectorP => (),
         }
     }
 

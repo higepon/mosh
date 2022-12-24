@@ -64,6 +64,7 @@ pub enum Op {
     TailCall(isize, isize),
     Test(usize),
     Undef,
+    VectorP,
 }
 
 #[cfg(test)]
