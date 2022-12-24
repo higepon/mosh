@@ -195,22 +195,23 @@ impl Vm {
                         self.arg_err("vector-length", "vector", obj);
                     }
                 },
-                Op::VectorRef => {
-                    match (self.pop(), self.ac) {
-                        (Object::Vector(v), Object::Number(idx)) => {
-                            let idx = idx as usize;
-                            if idx < v.data.len() {
-                                self.ac = v.data[idx];
-                            } else {
-                                self.arg_err("vector-ref", "valid idx to vector", self.ac);
-                            }
-                        }
-                        (a, b) => {
-                            panic!("vecto-ref: vector and number required but got {:?} {:?}", a, b);                            
+                Op::VectorRef => match (self.pop(), self.ac) {
+                    (Object::Vector(v), Object::Number(idx)) => {
+                        let idx = idx as usize;
+                        if idx < v.data.len() {
+                            self.ac = v.data[idx];
+                        } else {
+                            self.arg_err("vector-ref", "valid idx to vector", self.ac);
                         }
                     }
-                },        
-                Op::VectorSet => {   
+                    (a, b) => {
+                        panic!(
+                            "vecto-ref: vector and number required but got {:?} {:?}",
+                            a, b
+                        );
+                    }
+                },
+                Op::VectorSet => {
                     let n = self.pop();
                     let obj = self.pop();
                     match (obj, n) {
@@ -223,10 +224,13 @@ impl Vm {
                             }
                         }
                         (a, b) => {
-                            panic!("vecto-set: vector and number required but got {:?} {:?}", a, b);                            
+                            panic!(
+                                "vecto-set: vector and number required but got {:?} {:?}",
+                                a, b
+                            );
                         }
                     }
-                },                           
+                }
                 Op::Append2 => {
                     let head = self.pop();
                     if Pair::is_list(head) {
@@ -6326,9 +6330,14 @@ pub mod tests {
     // (begin (define (proc-01) 3) (proc-01)) => 3
     #[test]
     fn test_test214() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(3)),
             Op::Return(0),
             Op::DefineGlobal(vm.gc.intern("proc-01")),
@@ -6346,9 +6355,14 @@ pub mod tests {
     // (begin (define (add3 a b) (+ a b)) (add3 1 2)) => 3
     #[test]
     fn test_test215() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
-            Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 6,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferLocal(1),
@@ -6370,13 +6384,17 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
     }
 
-    
     // (begin (define add2 (lambda (a b) (+ a b))) (add2 1 2)) => 3
     #[test]
     fn test_test216() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
-            Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 6,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferLocal(1),
@@ -6401,7 +6419,7 @@ pub mod tests {
     // (begin (define z (make-vector 2)) (vector-set! z 0 1) (vector-set! z 1 2) (make-vector 3) (null? 3) (vector-set! z 1 3) (vector-ref z 1)) => 3
     #[test]
     fn test_test217() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(Object::Number(2)),
             Op::Push,
@@ -6442,19 +6460,28 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_VECTOR);
     }
 
-
     // (begin (define (proc-2) (define (rec) 3) (rec)) (proc-2)) => 3
     #[test]
     fn test_test218() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
-            Op::Closure {size: 15, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 15,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::LetFrame(0),
             Op::Undef,
             Op::Push,
             Op::Box(0),
             Op::Enter(1),
-            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(3)),
             Op::Return(0),
             Op::AssignLocal(0),
@@ -6476,5 +6503,37 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
     }
 
-
+    // (begin (define (func2) (define val 4) val) (func2)) => 4
+    #[test]
+    fn test_test219() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Closure {
+                size: 12,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::LetFrame(0),
+            Op::Undef,
+            Op::Push,
+            Op::Box(0),
+            Op::Enter(1),
+            Op::Constant(Object::Number(4)),
+            Op::AssignLocal(0),
+            Op::ReferLocal(0),
+            Op::Indirect,
+            Op::Leave(1),
+            Op::Return(0),
+            Op::DefineGlobal(vm.gc.intern("func2")),
+            Op::Frame(3),
+            Op::ReferGlobal(vm.gc.intern("func2")),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(4);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
+    }
 }
