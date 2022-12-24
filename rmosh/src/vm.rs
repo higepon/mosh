@@ -6092,6 +6092,7 @@ pub mod tests {
             Op::Nop,
             Op::Nop,
         ];
+        // The string is kept as global variable.
         test_ops_with_size_as_str(&mut vm, ops, "\"cbc\"", SIZE_OF_SYMBOL + SIZE_OF_STRING);
     }
 
