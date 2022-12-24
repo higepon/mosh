@@ -2,8 +2,7 @@ use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::vm::Vm;
-use std::fmt::{self, Display, Debug};
-use std::fs::File;
+use std::fmt::{self, Debug, Display};
 
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq)]
@@ -560,7 +559,7 @@ pub mod tests {
 
     use super::*;
     use crate::gc::Gc;
-    use regex::{internal::Input, Regex};
+    use regex::Regex;
 
     // Helpers.
     fn procedure1(_vm: &mut Vm, args: &[Object]) -> Object {
