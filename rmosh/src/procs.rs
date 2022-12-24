@@ -954,7 +954,11 @@ fn reverse(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_eof_object(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eof-object?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Eof => Object::True,
+        _ => Object::False,
+    }
 }
 fn read_char(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "read-char";

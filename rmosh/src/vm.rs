@@ -5843,4 +5843,39 @@ pub mod tests {
         let expected = Object::Char('2');
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+
+    // (eof-object? (let ((p (open-string-input-port "1"))) (read-char p) (read-char p))) => #t
+    #[test]
+    fn test_test196() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(20),
+            Op::LetFrame(2),
+            Op::ReferFree(35),
+            Op::Push,
+            Op::Display(1),
+            Op::Frame(5),
+            Op::Constant(vm.gc.new_string("1")),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::ReadChar,
+            Op::ReferLocal(0),
+            Op::ReadChar,
+            Op::Leave(1),
+            Op::Push,
+            Op::ReferFree(27),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
 }
