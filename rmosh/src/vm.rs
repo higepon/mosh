@@ -5924,4 +5924,42 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
     }
 
+    // (begin (let ((xxy 'a)) (case xxy ((b) 'b) ((c) 'c) (else 3)))) => 3
+    #[test]
+    fn test_test198_mofidified() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(4),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::Enter(1),
+            Op::LetFrame(3),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(vm.gc.symbol_intern("b")),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::BranchNotEqv(3),
+            Op::Constant(vm.gc.symbol_intern("b")),
+            Op::LocalJmp(8),
+            Op::Constant(vm.gc.symbol_intern("c")),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::BranchNotEqv(3),
+            Op::Constant(vm.gc.symbol_intern("c")),
+            Op::LocalJmp(2),
+            Op::Constant(Object::Number(3)),
+            Op::Leave(1),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
+    }
+
 }
