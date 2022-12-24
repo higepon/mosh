@@ -6173,4 +6173,38 @@ pub mod tests {
         let expected = Object::False;
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+    // 102 => 102
+    #[test]
+    fn test_test209() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(102)),
+            Op::Halt,
+        ];
+        let expected = Object::Number(102);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+    // `(list ,(+ 1 2) 4) => (list 3 4)
+    #[test]
+    fn test_test210() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(vm.gc.symbol_intern("list")),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Constant(vm.gc.cons(Object::Number(4), Object::Nil)),
+            Op::Cons,
+            Op::Cons,
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(list 3 4)", SIZE_OF_SYMBOL);
+    }
+
 }
+
