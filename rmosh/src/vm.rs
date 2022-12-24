@@ -6156,4 +6156,21 @@ pub mod tests {
         let expected = Object::Char('a');
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+    // (eof-object? 3) => #f
+    #[test]
+    fn test_test208() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::ReferFree(27),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::False;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }
