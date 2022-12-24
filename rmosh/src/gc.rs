@@ -149,13 +149,18 @@ impl Gc {
         self.cons(first, second)
     }
 
-    pub fn list4(&mut self, first: Object, second: Object, third: Object, fourth: Object) -> Object {
-        let fourth = self.cons(fourth, Object::Nil);        
+    pub fn list4(
+        &mut self,
+        first: Object,
+        second: Object,
+        third: Object,
+        fourth: Object,
+    ) -> Object {
+        let fourth = self.cons(fourth, Object::Nil);
         let third = self.cons(third, fourth);
         let second = self.cons(second, third);
         self.cons(first, second)
     }
-
 
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);
@@ -331,7 +336,7 @@ impl Gc {
             #[cfg(feature = "debug_log_gc")]
             if header.as_ref().obj_type != ObjectType::Procedure {
                 println!(
-                    "mark(adr:{:?}, type:{:?})",
+                    "mark(adr:{:?}, type:{:?}",
                     header,
                     header.as_ref().obj_type,
                 );
@@ -412,7 +417,7 @@ impl Gc {
             Op::Not => (),
             Op::NullP => (),
             Op::NumberAdd => (),
-            Op::NumberMul => (),            
+            Op::NumberMul => (),
             Op::NumberEqual => (),
             Op::NumberGe => (),
             Op::NumberGt => (),

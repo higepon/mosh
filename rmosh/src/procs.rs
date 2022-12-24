@@ -893,7 +893,17 @@ fn make_string(vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn string_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);    
+    match args {
+        [Object::String(mut s), Object::Number(idx), Object::Char(c)] => {
+            let idx = *idx as usize;
+            s.string.replace_range(idx..idx+1,&c.to_string());
+            Object::Unspecified
+        }
+        _ => {
+            panic!("{}: string, number and char required but got {:?}", name, args)
+        }
+    }
 }
 fn string_length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-length";

@@ -6065,5 +6065,35 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(\"wiki\" \"cmd\")", 0);
     }
 
+    // (begin (define str1 (make-string 3 #\c)) (string-set! str1 1 #\b) str1) => "cbc"
+    #[test]
+    fn test_test205() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(7),
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Char('c')),
+            Op::Push,
+            Op::ReferFree(17),
+            Op::Call(2),
+            Op::DefineGlobal(vm.gc.intern("str1")),
+            Op::Frame(9),
+            Op::ReferGlobal(vm.gc.intern("str1")),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Char('b')),
+            Op::Push,
+            Op::ReferFree(18),
+            Op::Call(3),
+            Op::ReferGlobal(vm.gc.intern("str1")),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "\"cbc\"", SIZE_OF_SYMBOL + SIZE_OF_STRING);
+    }
+
 
 }
