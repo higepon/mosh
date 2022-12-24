@@ -6288,4 +6288,81 @@ pub mod tests {
         let expected = Object::True;
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+    // (begin (define (proc-01) 3) (proc-01)) => 3
+    #[test]
+    fn test_test214() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Closure {size: 3, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(3)),
+            Op::Return(0),
+            Op::DefineGlobal(vm.gc.intern("proc-01")),
+            Op::Frame(3),
+            Op::ReferGlobal(vm.gc.intern("proc-01")),
+            Op::Call(0),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
+    }
+
+    // (begin (define (add3 a b) (+ a b)) (add3 1 2)) => 3
+    #[test]
+    fn test_test215() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::NumberAdd,
+            Op::Return(2),
+            Op::DefineGlobal(vm.gc.intern("add3")),
+            Op::Frame(7),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::ReferGlobal(vm.gc.intern("add3")),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
+    }
+
+    
+    // (begin (define add2 (lambda (a b) (+ a b))) (add2 1 2)) => 3
+    #[test]
+    fn test_test216() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Closure {size: 6, arg_len: 2, is_optional_arg: false, num_free_vars: 0},
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::NumberAdd,
+            Op::Return(2),
+            Op::DefineGlobal(vm.gc.intern("add2")),
+            Op::Frame(7),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::ReferGlobal(vm.gc.intern("add2")),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
+    }
+
+
 }
