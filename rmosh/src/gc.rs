@@ -335,11 +335,7 @@ impl Gc {
 
             #[cfg(feature = "debug_log_gc")]
             if header.as_ref().obj_type != ObjectType::Procedure {
-                println!(
-                    "mark(adr:{:?}, type:{:?}",
-                    header,
-                    header.as_ref().obj_type,
-                );
+                println!("mark(adr:{:?}, type:{:?}", header, header.as_ref().obj_type,);
             }
         }
     }
@@ -437,6 +433,8 @@ impl Gc {
             Op::Undef => (),
             Op::VectorLength => (),
             Op::VectorP => (),
+            Op::VectorRef => (),
+            Op::VectorSet => (),
         }
     }
 

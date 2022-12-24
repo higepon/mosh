@@ -195,6 +195,38 @@ impl Vm {
                         self.arg_err("vector-length", "vector", obj);
                     }
                 },
+                Op::VectorRef => {
+                    match (self.pop(), self.ac) {
+                        (Object::Vector(v), Object::Number(idx)) => {
+                            let idx = idx as usize;
+                            if idx < v.data.len() {
+                                self.ac = v.data[idx];
+                            } else {
+                                self.arg_err("vector-ref", "valid idx to vector", self.ac);
+                            }
+                        }
+                        (a, b) => {
+                            panic!("vecto-ref: vector and number required but got {:?} {:?}", a, b);                            
+                        }
+                    }
+                },        
+                Op::VectorSet => {   
+                    let n = self.pop();
+                    let obj = self.pop();
+                    match (obj, n) {
+                        (Object::Vector(mut v), Object::Number(idx)) => {
+                            let idx = idx as usize;
+                            if idx < v.data.len() {
+                                v.data[idx] = self.ac;
+                            } else {
+                                self.arg_err("vector-set", "valid idx to vector", obj);
+                            }
+                        }
+                        (a, b) => {
+                            panic!("vecto-set: vector and number required but got {:?} {:?}", a, b);                            
+                        }
+                    }
+                },                           
                 Op::Append2 => {
                     let head = self.pop();
                     if Pair::is_list(head) {
@@ -790,7 +822,7 @@ impl Vm {
 #[cfg(test)]
 pub mod tests {
 
-    use crate::objects::{Procedure, SString};
+    use crate::objects::{Procedure, SString, Vector};
 
     use super::*;
 
@@ -816,11 +848,13 @@ pub mod tests {
         }
     }
 
-    pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>();
     pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
+    pub static SIZE_OF_PAIR: usize = std::mem::size_of::<Pair>();
     pub static SIZE_OF_PROCEDURE: usize = std::mem::size_of::<Procedure>();
-    pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>();
     pub static SIZE_OF_STRING: usize = std::mem::size_of::<SString>();
+    pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>();
+    pub static SIZE_OF_VECTOR: usize = std::mem::size_of::<Vector>();
+
     /*
        Base display closure
        free variables
@@ -6362,6 +6396,50 @@ pub mod tests {
         ];
         let expected = Object::Number(3);
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
+    }
+
+    // (begin (define z (make-vector 2)) (vector-set! z 0 1) (vector-set! z 1 2) (make-vector 3) (null? 3) (vector-set! z 1 3) (vector-ref z 1)) => 3
+    #[test]
+    fn test_test217() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::MakeVector,
+            Op::DefineGlobal(vm.gc.intern("z")),
+            Op::ReferGlobal(vm.gc.intern("z")),
+            Op::Push,
+            Op::Constant(Object::Number(0)),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::VectorSet,
+            Op::ReferGlobal(vm.gc.intern("z")),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::VectorSet,
+            Op::Constant(Object::Number(3)),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::MakeVector,
+            Op::Constant(Object::Number(3)),
+            Op::NullP,
+            Op::ReferGlobal(vm.gc.intern("z")),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::VectorSet,
+            Op::ReferGlobal(vm.gc.intern("z")),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::VectorRef,
+            Op::Halt,
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_VECTOR);
     }
 
 

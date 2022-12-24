@@ -11,7 +11,7 @@ pub enum Op {
     AssignGlobal(GcRef<Symbol>),
     AssignLocal(isize),
     Box(isize),
-    BranchNotEqv(usize),    
+    BranchNotEqv(usize),
     BranchNotGe(usize),
     BranchNotGt(usize),
     BranchNotLe(usize),
@@ -41,7 +41,6 @@ pub enum Op {
     LetFrame(isize),
     LocalJmp(usize),
     MakeVector,
-    VectorLength,
     Nop,
     Not,
     NullP,
@@ -64,7 +63,10 @@ pub enum Op {
     TailCall(isize, isize),
     Test(usize),
     Undef,
+    VectorLength,
     VectorP,
+    VectorRef,    
+    VectorSet,        
 }
 
 #[cfg(test)]
