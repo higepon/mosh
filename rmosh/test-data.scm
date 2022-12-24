@@ -406,7 +406,7 @@
 ;; todo
 ;;(4 (call/cc (lambda (c) (c 4))))
 (123 (string->number "123"))
-(123 (let ([p (open-string-input-port "123 456")]) (read p)))
+;(123 (let ([p (open-string-input-port "123 456")]) (read p)))
 (#\1 (let ([p (open-string-input-port "123 456")]) (read-char p)))
 ((4 3 2 1) (reverse '(1 2 3 4)))
 (("wiki" "cmd") (string-split "wiki&cmd" #\&))

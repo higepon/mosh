@@ -149,6 +149,14 @@ impl Gc {
         self.cons(first, second)
     }
 
+    pub fn list4(&mut self, first: Object, second: Object, third: Object, fourth: Object) -> Object {
+        let fourth = self.cons(fourth, Object::Nil);        
+        let third = self.cons(third, fourth);
+        let second = self.cons(second, third);
+        self.cons(first, second)
+    }
+
+
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);
         Object::Symbol(symbol)

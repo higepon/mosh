@@ -1,6 +1,10 @@
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
-use crate::{gc::Gc, objects::{Object, InputPort}, vm::Vm};
+use crate::{
+    gc::Gc,
+    objects::{InputPort, Object},
+    vm::Vm,
+};
 
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
@@ -915,20 +919,16 @@ fn string_to_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->number";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => {
-            match s.string.parse::<isize>() {
-                Ok(n) => {
-                    Object::Number(n)
-                }
-                Err(err) => {
-                    panic!("{}: can't convert to numver {:?}", name, err)        
-                }
+        Object::String(s) => match s.string.parse::<isize>() {
+            Ok(n) => Object::Number(n),
+            Err(err) => {
+                panic!("{}: can't convert to numver {:?}", name, err)
             }
-        }
+        },
         v => {
             panic!("{}: string required but got {}", name, v)
         }
-    }    
+    }
 }
 fn string_append(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-append";
@@ -963,9 +963,23 @@ fn number_to_string(vm: &mut Vm, args: &[Object]) -> Object {
         }
     }
 }
-fn reverse(_vm: &mut Vm, args: &[Object]) -> Object {
+fn reverse(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "reverse";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let mut ret = Object::Nil;
+    let mut p = args[0];
+    loop {
+        match p {
+            Object::Pair(pair) => {
+                ret = vm.gc.cons(pair.car, ret);
+                p = pair.cdr;
+            }
+            _ => {
+                break;
+            }
+        }
+    }
+    return ret;
 }
 fn is_eof_object(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eof-object?";
@@ -1009,20 +1023,16 @@ fn is_equal(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn open_string_input_port(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-string-input-port";
-    check_argc!(name, args, 1);    
+    check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => {
-            match InputPort::open(&s.string) {
-                Ok(port) => {
-                    Object::InputPort(vm.gc.alloc(port))                
-                }
-                Err(err) =>{
-                    panic!("{}: {:?}", name, err);  
-                }
+        Object::String(s) => match InputPort::open(&s.string) {
+            Ok(port) => Object::InputPort(vm.gc.alloc(port)),
+            Err(err) => {
+                panic!("{}: {:?}", name, err);
             }
-        }
+        },
         _ => {
-            panic!("{}: string required but got {:?}", name, args);            
+            panic!("{}: string required but got {:?}", name, args);
         }
     }
 }

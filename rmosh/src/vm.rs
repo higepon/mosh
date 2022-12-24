@@ -6003,4 +6003,48 @@ pub mod tests {
         let expected = Object::Number(123);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+
+    // (let ((p (open-string-input-port "123 456"))) (read-char p)) => #\1
+    #[test]
+    fn test_test202() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::ReferFree(35),
+            Op::Push,
+            Op::Display(1),
+            Op::Frame(5),
+            Op::Constant(vm.gc.new_string("123 456")),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::ReadChar,
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::Char('1');
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+    // (reverse '(1 2 3 4)) => (4 3 2 1)
+    #[test]
+    fn test_test203() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(vm.gc.list4(Object::Number(1), Object::Number(2), Object::Number(3), Object::Number(4))),
+            Op::Push,
+            Op::ReferFree(26),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(4 3 2 1)", 0);
+    }
+
 }
