@@ -6033,7 +6033,7 @@ pub mod tests {
 
     // (reverse '(1 2 3 4)) => (4 3 2 1)
     #[test]
-    fn test_test203() {
+    fn test_test203_modified() {
         let mut vm = Vm::new();        
         let ops = vec![
             Op::Frame(5),
@@ -6046,5 +6046,24 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(4 3 2 1)", 0);
     }
+
+    // (string-split "wiki&cmd" #\&) => ("wiki" "cmd")
+    #[test]
+    fn test_test204() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Frame(7),
+            Op::Constant(vm.gc.new_string("wiki&cmd")),
+            Op::Push,
+            Op::Constant(Object::Char('&')),
+            Op::Push,
+            Op::ReferFree(23),
+            Op::Call(2),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(\"wiki\" \"cmd\")", 0);
+    }
+
 
 }

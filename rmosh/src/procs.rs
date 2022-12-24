@@ -945,9 +945,22 @@ fn string_append(vm: &mut Vm, args: &[Object]) -> Object {
     }
     vm.gc.new_string(&ret)
 }
-fn string_split(_vm: &mut Vm, args: &[Object]) -> Object {
+fn string_split(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-split";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::String(s), Object::Char(c)) => {
+            let mut l = Object::Nil;
+            for w in s.string.rsplit(c){
+                let obj = vm.gc.new_string(w);
+                l = vm.gc.cons(obj, l);
+            }
+            l
+        }
+        _ => {
+            panic!("{}: string and char required but got {:?}", name, args);
+        }
+    }
 }
 fn string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string";
