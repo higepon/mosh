@@ -5986,4 +5986,21 @@ pub mod tests {
         let expected = Object::Number(24);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+    // (string->number "123") => 123
+    #[test]
+    fn test_test201() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(vm.gc.new_string("123")),
+            Op::Push,
+            Op::ReferFree(21),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::Number(123);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }

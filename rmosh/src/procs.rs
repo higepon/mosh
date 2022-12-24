@@ -913,7 +913,22 @@ fn string_to_symbol(vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn string_to_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string->number";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::String(s) => {
+            match s.string.parse::<isize>() {
+                Ok(n) => {
+                    Object::Number(n)
+                }
+                Err(err) => {
+                    panic!("{}: can't convert to numver {:?}", name, err)        
+                }
+            }
+        }
+        v => {
+            panic!("{}: string required but got {}", name, v)
+        }
+    }    
 }
 fn string_append(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-append";
