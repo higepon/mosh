@@ -274,6 +274,7 @@ impl Gc {
     pub fn mark_object(&mut self, obj: Object) {
         match obj {
             Object::Char(_) => {}
+            Object::Eof => {}
             Object::False => {}
             Object::InputPort(_) => {}            
             Object::Nil => {}

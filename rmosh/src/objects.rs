@@ -10,6 +10,7 @@ use std::fs::File;
 pub enum Object {
     Char(char),
     Closure(GcRef<Closure>),
+    Eof,
     False,
     InputPort(GcRef<InputPort>),
     Nil,
@@ -109,6 +110,9 @@ impl Display for Object {
             Object::Symbol(symbol) => {
                 write!(f, "{}", unsafe { symbol.pointer.as_ref() })
             }
+            Object::Eof => {
+                write!(f, "#<eof>")
+            }            
             Object::True => {
                 write!(f, "#t")
             }
@@ -456,19 +460,27 @@ impl Display for Closure {
 #[derive(Debug)]
 pub struct InputPort {
     pub header: GcHeader,
-    file: File,
+    source: String,
+    idx: usize,
 }
 
 impl InputPort {
-    fn new(file: File) -> Self {
+    fn new(source: &str) -> Self {
         InputPort {
             header: GcHeader::new(ObjectType::InputPort),
-            file: file,
+            source: source.to_owned(),
+            idx: 0,
         }
     }
-    pub fn open(path: &str) -> std::io::Result<InputPort> {
-        let file = File::open(path)?;
-        Ok(InputPort::new(file))
+    pub fn open(source: &str) -> std::io::Result<InputPort> {
+        Ok(InputPort::new(source))
+    }
+
+    pub fn read_char(&mut self) -> Option<char> {
+        let mut chars = self.source.chars();
+        let ret = chars.nth(self.idx);
+        self.idx = self.idx + 1;
+        ret
     }
 }
 

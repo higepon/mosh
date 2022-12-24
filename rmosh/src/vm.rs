@@ -373,8 +373,7 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display =
-                        self.alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
+                    let mut display = self.alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -469,9 +468,19 @@ impl Vm {
                 Op::Halt => {
                     break;
                 }
-                Op::ReadChar => {
-                    
-                }
+                Op::ReadChar => match self.ac {
+                    Object::InputPort(mut port) => match port.read_char() {
+                        Some(c) => {
+                            self.ac = Object::Char(c);
+                        }
+                        None => {
+                            self.ac = Object::Eof;
+                        }
+                    },
+                    obj => {
+                        self.arg_err("read-char", "text-input-port", obj);
+                    }
+                },
                 Op::Undef => self.ac = Object::Unspecified,
                 Op::Nop => {}
             }
@@ -5746,11 +5755,10 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(\"ABC123\" \"DEF123\")", 0);
     }
 
-
     // (let1 a '() (let1 G68 (lambda (i) (if (>= i 10000) i (a (+ i 1)))) (set! a G68) (a 0))) => 10000
     #[test]
     fn test_test194() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(3),
             Op::Constant(Object::Nil),
@@ -5765,7 +5773,12 @@ pub mod tests {
             Op::Display(2),
             Op::ReferLocal(0),
             Op::Push,
-            Op::Closure {size: 16, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
+            Op::Closure {
+                size: 16,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::Constant(Object::Number(10000)),
@@ -5803,11 +5816,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (let ((p (open-string-input-port "12345"))) (read-char p) (read-char p)) => #\2
     #[test]
     fn test_test195() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::ReferFree(35),
@@ -5831,5 +5843,4 @@ pub mod tests {
         let expected = Object::Char('2');
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
-    
 }

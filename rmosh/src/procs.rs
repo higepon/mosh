@@ -1,6 +1,6 @@
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
-use crate::{gc::Gc, objects::Object, vm::Vm};
+use crate::{gc::Gc, objects::{Object, InputPort}, vm::Vm};
 
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
@@ -988,9 +988,24 @@ fn is_equal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "equal?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_string_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
+fn open_string_input_port(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-string-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);    
+    match args[0] {
+        Object::String(s) => {
+            match InputPort::open(&s.string) {
+                Ok(port) => {
+                    Object::InputPort(vm.gc.alloc(port))                
+                }
+                Err(err) =>{
+                    panic!("{}: {:?}", name, err);  
+                }
+            }
+        }
+        _ => {
+            panic!("{}: string required but got {:?}", name, args);            
+        }
+    }
 }
 fn open_output_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "open-output-string";
