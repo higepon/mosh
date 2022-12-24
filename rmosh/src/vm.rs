@@ -242,6 +242,14 @@ impl Vm {
                         pc = self.jump(pc, skip_offset - 1);
                     }
                 }
+                Op::BranchNotEqv(skip_offset) => {
+                    if self.pop().eqv(&self.ac) {
+                        self.ac = Object::True;
+                    } else {
+                        pc = self.jump(pc, skip_offset - 1);                                                
+                        self.ac = Object::False;
+                    }
+                }                
                 Op::Eq => {
                     let is_eq = self.pop().eq(&self.ac);
                     self.ac = Object::make_bool(is_eq);
@@ -5876,6 +5884,44 @@ pub mod tests {
         ];
         let expected = Object::True;
         test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+    // (begin (let ((xxx 'a)) (case xxx ((b) 'b) ((a) 'a)))) => a
+    #[test]
+    fn test_test197_modified() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(4),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::Enter(1),
+            Op::LetFrame(3),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(vm.gc.symbol_intern("b")),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::BranchNotEqv(3),
+            Op::Constant(vm.gc.symbol_intern("b")),
+            Op::LocalJmp(8),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::BranchNotEqv(3),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::LocalJmp(2),
+            Op::Undef,
+            Op::Leave(1),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = vm.gc.symbol_intern("a");
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
     }
 
 }

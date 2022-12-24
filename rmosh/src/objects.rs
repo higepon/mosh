@@ -2,11 +2,11 @@ use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::vm::Vm;
-use std::fmt::{self, Display};
+use std::fmt::{self, Display, Debug};
 use std::fs::File;
 
 /// Wrapper of heap allocated or simple stack objects.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Object {
     Char(char),
     Closure(GcRef<Closure>),
@@ -78,6 +78,68 @@ impl Object {
     pub fn eq(&self, other: &Self) -> bool {
         self == other
     }
+    // TODO: Implement eqv?
+    pub fn eqv(&self, other: &Self) -> bool {
+        self == other
+    }
+}
+
+impl Debug for Object {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Object::InputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::OpPointer(op) => {
+                write!(f, "{:?}", *op)
+            }
+            Object::Char(c) => {
+                write!(f, "{}", c)
+            }
+            Object::Number(n) => {
+                write!(f, "{}", n)
+            }
+            Object::Vox(obj) => {
+                write!(f, "#<vox {}>", obj.value)
+            }
+            Object::Closure(closure) => {
+                write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
+            }
+            Object::Pair(pair) => {
+                write!(f, "{}", unsafe { pair.pointer.as_ref() })
+            }
+            Object::String(s) => {
+                write!(f, "{}", unsafe { s.pointer.as_ref() })
+            }
+            Object::Symbol(symbol) => {
+                write!(f, "{}", unsafe { symbol.pointer.as_ref() })
+            }
+            Object::Eof => {
+                write!(f, "#<eof>")
+            }
+            Object::True => {
+                write!(f, "#t")
+            }
+            Object::False => {
+                write!(f, "#f")
+            }
+            Object::StackPointer(v) => {
+                write!(f, "#<stack pointer {:?}>", v)
+            }
+            Object::Unspecified => {
+                write!(f, "#<unspecified>")
+            }
+            Object::Nil => {
+                write!(f, "()")
+            }
+            Object::Procedure(proc) => {
+                write!(f, "#<procedure {}>", proc.name)
+            }
+            Object::Vector(vector) => {
+                write!(f, "{}", unsafe { vector.pointer.as_ref() })
+            }
+        }
+    }
 }
 
 impl Display for Object {
@@ -112,7 +174,7 @@ impl Display for Object {
             }
             Object::Eof => {
                 write!(f, "#<eof>")
-            }            
+            }
             Object::True => {
                 write!(f, "#t")
             }
@@ -560,6 +622,7 @@ pub mod tests {
         let mut gc = Gc::new();
         let symbol = gc.alloc(Symbol::new("hello".to_owned()));
         let symbol = Object::Symbol(symbol);
+        println!("hoge symbol{:?}", symbol);
         assert_eq!("hello", symbol.to_string());
     }
 
@@ -688,7 +751,7 @@ pub mod tests {
 
         // Now we are free the object as InputPort.
         let pointer = input_port as *mut dyn InputPort;
-        unsafe { drop(Box::from_raw(pointer)) }        
+        unsafe { drop(Box::from_raw(pointer)) }
     }
 
     #[test]
@@ -700,11 +763,9 @@ pub mod tests {
             unsafe { mem::transmute(pointer.as_ref()) };
 
         // Call read() as StringInputPort
-        unsafe {string_input_port.as_ref().read() };
+        unsafe { string_input_port.as_ref().read() };
 
         // Use the object as InputPort.
         unsafe { do_something(string_input_port.as_mut()) };
-
     }
 }
-

@@ -11,6 +11,7 @@ pub enum Op {
     AssignGlobal(GcRef<Symbol>),
     AssignLocal(isize),
     Box(isize),
+    BranchNotEqv(usize),    
     BranchNotGe(usize),
     BranchNotGt(usize),
     BranchNotLe(usize),

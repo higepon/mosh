@@ -276,7 +276,7 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
-            Object::InputPort(_) => {}            
+            Object::InputPort(_) => {}
             Object::Nil => {}
             Object::Number(_) => {}
             Object::StackPointer(_) => {}
@@ -377,6 +377,7 @@ impl Gc {
             Op::AssignFree(_) => (),
             Op::AssignLocal(_) => (),
             Op::Box(_) => (),
+            Op::BranchNotEqv(_) => (),
             Op::BranchNotGe(_) => (),
             Op::BranchNotGt(_) => (),
             Op::BranchNotLe(_) => (),
@@ -498,7 +499,7 @@ impl Gc {
             ObjectType::InputPort => {
                 let port: &InputPort = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(port)
-            }            
+            }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(vox)
