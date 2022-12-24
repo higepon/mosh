@@ -75,6 +75,7 @@ impl<T> DerefMut for GcRef<T> {
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
     Closure,
+    InputPort,
     Pair,
     Procedure,
     String,
@@ -274,6 +275,7 @@ impl Gc {
         match obj {
             Object::Char(_) => {}
             Object::False => {}
+            Object::InputPort(_) => {}            
             Object::Nil => {}
             Object::Number(_) => {}
             Object::StackPointer(_) => {}
@@ -407,6 +409,7 @@ impl Gc {
             Op::NumberLt => (),
             Op::PairP => (),
             Op::Push => (),
+            Op::ReadChar => (),
             Op::ReferFree(_) => (),
             Op::ReferLocal(_) => (),
             Op::Return(_) => (),
@@ -453,6 +456,7 @@ impl Gc {
                     self.mark_object(vector.data[i]);
                 }
             }
+            ObjectType::InputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
@@ -471,6 +475,8 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
+        use crate::objects::InputPort;
+
         let object_type = object_ptr.obj_type;
 
         let hige: &GcHeader = object_ptr;
@@ -488,6 +494,10 @@ impl Gc {
                 let closure: &Closure = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(closure)
             }
+            ObjectType::InputPort => {
+                let port: &InputPort = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(port)
+            }            
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(vox)

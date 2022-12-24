@@ -51,6 +51,7 @@ pub enum Op {
     NumberLt,
     PairP,
     Push,
+    ReadChar,
     ReferFree(usize),
     ReferGlobal(GcRef<Symbol>),
     ReferLocal(isize),

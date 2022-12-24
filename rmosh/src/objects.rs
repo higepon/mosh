@@ -3,6 +3,7 @@ use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::vm::Vm;
 use std::fmt::{self, Display};
+use std::fs::File;
 
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -10,6 +11,7 @@ pub enum Object {
     Char(char),
     Closure(GcRef<Closure>),
     False,
+    InputPort(GcRef<InputPort>),
     Nil,
     Number(isize),
     Pair(GcRef<Pair>),
@@ -35,7 +37,7 @@ impl Object {
     pub fn is_list(&self) -> bool {
         Pair::is_list(*self)
     }
-    
+
     pub fn is_pair(&self) -> bool {
         match self {
             Object::Pair(_) => true,
@@ -80,6 +82,9 @@ impl Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::InputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::OpPointer(op) => {
                 write!(f, "{:?}", *op)
             }
@@ -447,19 +452,59 @@ impl Display for Closure {
     }
 }
 
+/// InputPort
+#[derive(Debug)]
+pub struct InputPort {
+    pub header: GcHeader,
+    file: File,
+}
+
+impl InputPort {
+    fn new(file: File) -> Self {
+        InputPort {
+            header: GcHeader::new(ObjectType::InputPort),
+            file: file,
+        }
+    }
+    pub fn open(path: &str) -> std::io::Result<InputPort> {
+        let file = File::open(path)?;
+        Ok(InputPort::new(file))
+    }
+}
+
+impl Display for InputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<input port>")
+    }
+}
+
 /// Tests.
 #[cfg(test)]
 pub mod tests {
 
+    use std::{mem, ptr::NonNull};
+
     use super::*;
     use crate::gc::Gc;
-    use regex::Regex;
+    use regex::{internal::Input, Regex};
 
     // Helpers.
     fn procedure1(_vm: &mut Vm, args: &[Object]) -> Object {
         assert_eq!(args.len(), 1);
         args[0]
     }
+
+    /*
+    #[test]
+    fn test_input_port() {
+        match InputPort::open("file_not_exists") {
+            Ok(_) => {}
+            Err(e) => {
+                println!("port error {:?}", e);
+            }
+        }
+    }
+    */
 
     #[test]
     fn test_symbol() {
@@ -605,4 +650,49 @@ pub mod tests {
         let v = gc.new_vector(&data);
         assert_eq!("#[1, 2]", v.to_string());
     }
+
+    trait InputPort {
+        fn read(&self);
+    }
+
+    struct StringInputPort {}
+
+    impl Drop for StringInputPort {
+        fn drop(&mut self) {
+            println!("StringInputPort dropped");
+        }
+    }
+
+    impl InputPort for StringInputPort {
+        fn read(&self) {
+            println!("StringInputPort::read called");
+        }
+    }
+
+    fn do_something(input_port: &mut dyn InputPort) {
+        // Do something with input_port.
+        // We don't care if it is StringInputPort or not.
+        input_port.read();
+
+        // Now we are free the object as InputPort.
+        let pointer = input_port as *mut dyn InputPort;
+        unsafe { drop(Box::from_raw(pointer)) }        
+    }
+
+    #[test]
+    fn test_string_input_port() {
+        let boxed = Box::new(StringInputPort {});
+        // The GC manages the pointer going forward.
+        let pointer = unsafe { NonNull::new_unchecked(Box::into_raw(boxed)) };
+        let mut string_input_port: NonNull<StringInputPort> =
+            unsafe { mem::transmute(pointer.as_ref()) };
+
+        // Call read() as StringInputPort
+        unsafe {string_input_port.as_ref().read() };
+
+        // Use the object as InputPort.
+        unsafe { do_something(string_input_port.as_mut()) };
+
+    }
 }
+

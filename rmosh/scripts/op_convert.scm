@@ -90,7 +90,7 @@
         [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]
-        [((and (or 'APPEND2 'MAKE_VECTOR 'VECTOR_LENGTH 'HALT 'SET_CAR 'SET_CDR 'EQ 'PAIR_P 'SYMBOL_P 'NOT 'CAR 'CDR 'CADR 'CONS 'NUMBER_EQUAL 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'NOP 'NULL_P 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
+        [((and (or 'APPEND2 'MAKE_VECTOR 'VECTOR_LENGTH 'READ_CHAR 'HALT 'SET_CAR 'SET_CDR 'EQ 'PAIR_P 'SYMBOL_P 'NOT 'CAR 'CDR 'CADR 'CONS 'NUMBER_EQUAL 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'NOP 'NULL_P 'INDIRECT 'PUSH 'NUMBER_ADD 'UNDEF) insn) . more*)
           (format #t "            Op::~a,\n" (insn->string insn))
           (rewrite-insn* more*  (+ idx 1))]
         [() #f]
@@ -108,6 +108,8 @@
 
 (define (expected->rust expected)
   (match expected
+    [(? char? c)
+      (format "Object::Char('~a')" c)]    
     [(? symbol? s)
       (format "vm.gc.symbol_intern(\"~a\")" s)]
     [(? string? s)

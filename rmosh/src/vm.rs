@@ -469,6 +469,9 @@ impl Vm {
                 Op::Halt => {
                     break;
                 }
+                Op::ReadChar => {
+                    
+                }
                 Op::Undef => self.ac = Object::Unspecified,
                 Op::Nop => {}
             }
@@ -5800,4 +5803,33 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+
+    // (let ((p (open-string-input-port "12345"))) (read-char p) (read-char p)) => #\2
+    #[test]
+    fn test_test195() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::ReferFree(35),
+            Op::Push,
+            Op::Display(1),
+            Op::Frame(5),
+            Op::Constant(vm.gc.new_string("12345")),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(1),
+            Op::Push,
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::ReadChar,
+            Op::ReferLocal(0),
+            Op::ReadChar,
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::Char('2');
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+    
 }
