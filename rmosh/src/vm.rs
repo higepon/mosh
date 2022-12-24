@@ -6237,5 +6237,37 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", SIZE_OF_SYMBOL * 3);
     }
 
+
+    // `(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) => (a 3 4 5 6 b)
+    #[test]
+    fn test_test212_modified() {
+        let mut vm = Vm::new();        
+        let b = vm.gc.symbol_intern("b");
+        let ops = vec![
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::NumberAdd,
+            Op::Push,
+            Op::Frame(7),
+            Op::ReferFree(410),
+            Op::Push,
+            Op::Constant(vm.gc.list3(Object::Number(4), Object::Number(-5), Object::Number(6))),
+            Op::Push,
+            Op::ReferGlobal(vm.gc.intern("map1")),
+            Op::Call(2),
+            Op::Push,
+            Op::Constant(vm.gc.cons(b, Object::Nil)),
+            Op::Append2,
+            Op::Cons,
+            Op::Cons,
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(a 3 4 5 6 b)", SIZE_OF_SYMBOL * 2);
+    }
+
 }
 

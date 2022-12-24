@@ -3,7 +3,8 @@ FEATURES = #--features debug_log_vm  --features debug_log_gc
 
 test:
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture
-
+	grep "not implemented" src/procs.rs | wc -l	
+	grep "Object {" src/procs.rs | wc -l
 gen:
 	mosh scripts/test_data_convert.scm ./test-data.scm
 	make -C data

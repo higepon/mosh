@@ -893,15 +893,18 @@ fn make_string(vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn string_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-set!";
-    check_argc!(name, args, 3);    
+    check_argc!(name, args, 3);
     match args {
         [Object::String(mut s), Object::Number(idx), Object::Char(c)] => {
             let idx = *idx as usize;
-            s.string.replace_range(idx..idx+1,&c.to_string());
+            s.string.replace_range(idx..idx + 1, &c.to_string());
             Object::Unspecified
         }
         _ => {
-            panic!("{}: string, number and char required but got {:?}", name, args)
+            panic!(
+                "{}: string, number and char required but got {:?}",
+                name, args
+            )
         }
     }
 }
@@ -961,7 +964,7 @@ fn string_split(vm: &mut Vm, args: &[Object]) -> Object {
     match (args[0], args[1]) {
         (Object::String(s), Object::Char(c)) => {
             let mut l = Object::Nil;
-            for w in s.string.rsplit(c){
+            for w in s.string.rsplit(c) {
                 let obj = vm.gc.new_string(w);
                 l = vm.gc.cons(obj, l);
             }
@@ -2555,7 +2558,13 @@ fn is_odd(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn abs(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "abs";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Number(n) => Object::Number(n.abs()),
+        _ => {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    }
 }
 fn div(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "div";
