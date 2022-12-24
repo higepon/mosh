@@ -6206,5 +6206,36 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(list 3 4)", SIZE_OF_SYMBOL);
     }
 
+    // (let ((name 'a)) `(list ,name ',name)) => (list a 'a)
+    #[test]
+    fn test_test211() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(6),
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::Enter(1),
+            Op::Constant(vm.gc.symbol_intern("list")),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(vm.gc.symbol_intern("quote")),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::Cons,
+            Op::Cons,
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::Cons,
+            Op::Cons,
+            Op::Cons,
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(list a 'a)", SIZE_OF_SYMBOL * 3);
+    }
+
 }
 
