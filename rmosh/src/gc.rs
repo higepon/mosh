@@ -177,6 +177,24 @@ impl Gc {
         self.cons(first, second)
     }    
 
+
+    pub fn list6(
+        &mut self,
+        first: Object,
+        second: Object,
+        third: Object,
+        fourth: Object,
+        fifth: Object,        
+        sixth: Object,                
+    ) -> Object {
+        let sixth = self.cons(sixth, Object::Nil);                
+        let fifth = self.cons(fifth, sixth);        
+        let fourth = self.cons(fourth, fifth);        
+        let third = self.cons(third, fourth);
+        let second = self.cons(second, third);
+        self.cons(first, second)
+    }        
+
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);
         Object::Symbol(symbol)
@@ -432,6 +450,7 @@ impl Gc {
             Op::NumberAdd => (),
             Op::NumberDiv => (),
             Op::NumberMul => (),
+            Op::NumberSub => (),            
             Op::NumberEqual => (),
             Op::NumberGe => (),
             Op::NumberGt => (),

@@ -461,9 +461,17 @@ impl Vm {
                         self.set_return_value(Object::Number(a + b));
                     }
                     (a, b) => {
-                        panic!("*: numbers required but got {:?} {:?}", a, b);
+                        panic!("+: numbers required but got {:?} {:?}", a, b);
                     }
                 },
+                Op::NumberSub => match (self.pop(), self.ac) {
+                    (Object::Number(a), Object::Number(b)) => {
+                        self.set_return_value(Object::Number(a - b));
+                    }
+                    (a, b) => {
+                        panic!("-: numbers required but got {:?} {:?}", a, b);
+                    }
+                },                
                 Op::NumberMul => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
                         self.set_return_value(Object::Number(a * b));
