@@ -1077,7 +1077,26 @@ fn close_output_port(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn digit_to_integer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "digit->integer";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::Char(c), Object::Number(radix)) => {
+            match c.to_digit(radix as u32) {
+                Some(v) => Object::Number(v as isize),
+                None => {
+                    panic!(
+                        "{}: could not convert ({}, {})",
+                        name, args[0], args[1]
+                    );
+                }
+            }
+        }
+        _ => {
+            panic!(
+                "{}: char and number required but got {} and {}",
+                name, args[0], args[1]
+            );
+        }
+    }
 }
 fn get_remaining_input_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-remaining-input-string";
