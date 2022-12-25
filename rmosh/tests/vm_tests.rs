@@ -6237,40 +6237,961 @@ fn test_test241() {
     test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
 }
 
-    // (reverse '(a b c)) => (c b a)
-    #[test]
-    fn test_test242() {
-        let mut vm = Vm::new();        
-        let c = vm.gc.symbol_intern("c");
-        let b = vm.gc.symbol_intern("b");
-        let a = vm.gc.symbol_intern("a");
+// (reverse '(a b c)) => (c b a)
+#[test]
+fn test_test242() {
+    let mut vm = Vm::new();
+    let c = vm.gc.symbol_intern("c");
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
 
-        let ops = vec![
-            Op::Frame(5),
-            Op::Constant(vm.gc.list3(a, b, c)),
-            Op::Push,
-            Op::ReferFree(26),
-            Op::Call(1),
-            Op::Halt,
-            Op::Nop,
-        ];
-        test_ops_with_size_as_str(&mut vm, ops, "(c b a)", SIZE_OF_SYMBOL * 3);
-    }
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(vm.gc.list3(a, b, c)),
+        Op::Push,
+        Op::ReferFree(26),
+        Op::Call(1),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(c b a)", SIZE_OF_SYMBOL * 3);
+}
 
+// (equal? 'a 'a) => #t
+#[test]
+fn test_test244() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
 
-    // (equal? 'a 'a) => #t
-    #[test]
-    fn test_test244() {
-        let mut vm = Vm::new();
-        let a = vm.gc.symbol_intern("a");
-        
-        let ops = vec![
-            Op::Constant(a),
-            Op::Push,
-            Op::Constant(a),
-            Op::Equal,
-            Op::Halt,
-        ];
-        let expected = Object::True;
-        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
-    }
+    let ops = vec![
+        Op::Constant(a),
+        Op::Push,
+        Op::Constant(a),
+        Op::Equal,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (equal? '(a) '(a)) => #t
+#[test]
+fn test_test245() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Constant(vm.gc.cons(a, Object::Nil)),
+        Op::Push,
+        Op::Constant(vm.gc.cons(a, Object::Nil)),
+        Op::Equal,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (equal? "abc" "abc") => #t
+#[test]
+fn test_test247() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.new_string("abc")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("abc")),
+        Op::Equal,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (equal? 2 2) => #t
+#[test]
+fn test_test248() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Equal,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (equal? (make-vector 5 'a) (make-vector 5 'a)) => #t
+#[test]
+fn test_test249() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Constant(Object::Number(5)),
+        Op::Push,
+        Op::Constant(a),
+        Op::MakeVector,
+        Op::Push,
+        Op::Constant(Object::Number(5)),
+        Op::Push,
+        Op::Constant(a),
+        Op::MakeVector,
+        Op::Equal,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (eq? 'a 'a) => #t
+#[test]
+fn test_test250() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![Op::Constant(a), Op::Push, Op::Constant(a), Op::Eq, Op::Halt];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (eq? '(a) '(a)) => #f
+#[test]
+fn test_test251() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Constant(vm.gc.cons(a, Object::Nil)),
+        Op::Push,
+        Op::Constant(vm.gc.cons(a, Object::Nil)),
+        Op::Eq,
+        Op::Halt,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (eq? (list 'a) (list 'a)) => #f
+#[test]
+fn test_test252() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(a),
+        Op::Push,
+        Op::ReferFree(89),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(5),
+        Op::Constant(a),
+        Op::Push,
+        Op::ReferFree(89),
+        Op::Call(1),
+        Op::Eq,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (eq? "a" "a") => #f
+#[test]
+fn test_test253() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.new_string("a")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("a")),
+        Op::Eq,
+        Op::Halt,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (eq? "" "") => #f
+#[test]
+fn test_test254() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.new_string("")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("")),
+        Op::Eq,
+        Op::Halt,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (eq? '() '()) => #t
+#[test]
+fn test_test255() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Nil),
+        Op::Push,
+        Op::Constant(Object::Nil),
+        Op::Eq,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (eq? 2 2) => #t
+#[test]
+fn test_test256() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Eq,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (eq? #\A #\A) => #t
+#[test]
+fn test_test257() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Char('A')),
+        Op::Push,
+        Op::Constant(Object::Char('A')),
+        Op::Eq,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (eq? car car) => #t
+#[test]
+fn test_test258() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::ReferFree(3),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Eq,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let ((n (+ 2 3))) (eq? n n)) => #t
+#[test]
+fn test_test259() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(3),
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::NumberAdd,
+        Op::Push,
+        Op::Enter(1),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Eq,
+        Op::Leave(1),
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let ((x '(a))) (eq? x x)) => #t
+#[test]
+fn test_test260() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::LetFrame(2),
+        Op::Constant(vm.gc.cons(a, Object::Nil)),
+        Op::Push,
+        Op::Enter(1),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Eq,
+        Op::Leave(1),
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (let ((x '#())) (eq? x x)) => #t
+#[test]
+fn test_test261() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(2),
+        Op::Constant(vm.gc.new_vector(&vec![])),
+        Op::Push,
+        Op::Enter(1),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Eq,
+        Op::Leave(1),
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let ((p (lambda (x) x))) (eq? p p)) => #t
+#[test]
+fn test_test262() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(2),
+        Op::Closure {
+            size: 3,
+            arg_len: 1,
+            is_optional_arg: false,
+            num_free_vars: 0,
+        },
+        Op::ReferLocal(0),
+        Op::Return(1),
+        Op::Push,
+        Op::Enter(1),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Eq,
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (- 3 4) => -1
+#[test]
+fn test_test263() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(-4)),
+        Op::NumberAdd,
+        Op::Halt,
+    ];
+    let expected = Object::Number(-1);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (- 3 4 5) => -6
+#[test]
+fn test_test264() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(-4)),
+        Op::NumberAdd,
+        Op::Push,
+        Op::Constant(Object::Number(-5)),
+        Op::NumberAdd,
+        Op::Halt,
+    ];
+    let expected = Object::Number(-6);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (- 3) => -3
+#[test]
+fn test_test265() {
+    let mut vm = Vm::new();
+
+    let ops = vec![Op::Constant(Object::Number(-3)), Op::Halt];
+    let expected = Object::Number(-3);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (cond ((> 3 2) 'greater) ((< 3 2) 'less)) => greater
+#[test]
+fn test_test266() {
+    let mut vm = Vm::new();
+    let b = vm.gc.symbol_intern("less");
+    let a = vm.gc.symbol_intern("greater");
+
+    let ops = vec![
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::BranchNotGt(3),
+        Op::Constant(a),
+        Op::LocalJmp(8),
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::BranchNotLt(3),
+        Op::Constant(b),
+        Op::LocalJmp(2),
+        Op::Undef,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = vm.gc.symbol_intern("greater");
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
+}
+
+// (cond ((> 3 3) 'greater) ((< 3 3) 'less) (else 'equal)) => equal
+#[test]
+fn test_test267() {
+    let mut vm = Vm::new();
+    let c = vm.gc.symbol_intern("equal");
+    let b = vm.gc.symbol_intern("less");
+    let a = vm.gc.symbol_intern("greater");
+
+    let ops = vec![
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::BranchNotGt(3),
+        Op::Constant(a),
+        Op::LocalJmp(8),
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::BranchNotLt(3),
+        Op::Constant(b),
+        Op::LocalJmp(2),
+        Op::Constant(c),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = vm.gc.symbol_intern("equal");
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
+}
+
+// (cond ('(1 2 3) => cadr) (else #f)) => 2
+#[test]
+fn test_test268() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(2),
+        Op::ReferFree(70),
+        Op::Push,
+        Op::Display(1),
+        Op::Constant(
+            vm.gc
+                .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+        ),
+        Op::Push,
+        Op::Enter(1),
+        Op::ReferLocal(0),
+        Op::Test(6),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::Number(2);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (do ((vec (make-vector 5)) (i 0 (+ i 1))) ((= i 5) vec) (vector-set! vec i i)) => #(0 1 2 3 4)
+#[test]
+fn test_test269() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(41),
+        Op::Frame(21),
+        Op::Frame(10),
+        Op::Constant(Object::Number(0)),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("i")),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::NumberAdd,
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("i")),
+        Op::Call(2),
+        Op::Push,
+        Op::Frame(8),
+        Op::Constant(Object::Number(5)),
+        Op::Push,
+        Op::Constant(Object::Nil),
+        Op::MakeVector,
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("vec")),
+        Op::Call(1),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(8),
+        Op::ReferGlobal(vm.gc.intern("vec")),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("i")),
+        Op::Push,
+        Op::Constant(Object::Number(5)),
+        Op::NumberEqual,
+        Op::Call(1),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("vec")),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("i")),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("i")),
+        Op::VectorSet,
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("do")),
+        Op::Call(3),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "#(0 1 2 3 4)", SIZE_OF_SYMBOL * 0);
+}
+
+// (cons 'a 'b) => (a . b)
+#[test]
+fn test_test27() {
+    let mut vm = Vm::new();
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Constant(a),
+        Op::Push,
+        Op::Constant(b),
+        Op::Cons,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(a . b)", SIZE_OF_SYMBOL * 2);
+}
+
+// (let ((x '(1 3 5 7 9))) (do ((x x (cdr x)) (sum 0 (+ sum (car x)))) ((null? x) sum))) => 25
+#[test]
+fn test_test270() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(10),
+        Op::Constant(vm.gc.list5(
+            Object::Number(1),
+            Object::Number(3),
+            Object::Number(5),
+            Object::Number(7),
+            Object::Number(9),
+        )),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(33),
+        Op::Frame(22),
+        Op::Frame(11),
+        Op::Constant(Object::Number(0)),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("sum")),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Car,
+        Op::NumberAdd,
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("sum")),
+        Op::Call(2),
+        Op::Push,
+        Op::Frame(8),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Cdr,
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Call(2),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(6),
+        Op::ReferGlobal(vm.gc.intern("sum")),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::NullP,
+        Op::Call(1),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("do")),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::Number(25);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (or (= 2 2) (> 2 1)) => #t
+#[test]
+fn test_test273() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::BranchNotNumberEqual(2),
+        Op::LocalJmp(5),
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::NumberGt,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (or (= 2 2) (< 2 1)) => #t
+#[test]
+fn test_test274() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::BranchNotNumberEqual(2),
+        Op::LocalJmp(5),
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::NumberLt,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (or #f #f #f) => #f
+#[test]
+fn test_test275() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::False),
+        Op::Test(2),
+        Op::LocalJmp(3),
+        Op::Constant(Object::False),
+        Op::Test(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (or '(b c) (/ 3 0)) => (b c)
+#[test]
+fn test_test276() {
+    let mut vm = Vm::new();
+    let b = vm.gc.symbol_intern("c");
+    let a = vm.gc.symbol_intern("b");
+
+    let ops = vec![
+        Op::Constant(vm.gc.list2(a, b)),
+        Op::Test(2),
+        Op::LocalJmp(5),
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(0)),
+        Op::NumberDiv,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(b c)", SIZE_OF_SYMBOL * 2);
+}
+
+// (not #t) => #f
+#[test]
+fn test_test277() {
+    let mut vm = Vm::new();
+
+    let ops = vec![Op::Constant(Object::True), Op::Not, Op::Halt];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (not 3) => #f
+#[test]
+fn test_test278() {
+    let mut vm = Vm::new();
+
+    let ops = vec![Op::Constant(Object::Number(3)), Op::Not, Op::Halt];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (not (list 3)) => #f
+#[test]
+fn test_test279() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::ReferFree(89),
+        Op::Call(1),
+        Op::Not,
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (not #f) => #t
+#[test]
+fn test_test280() {
+    let mut vm = Vm::new();
+
+    let ops = vec![Op::Constant(Object::False), Op::Not, Op::Halt];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (not '()) => #f
+#[test]
+fn test_test281() {
+    let mut vm = Vm::new();
+
+    let ops = vec![Op::Constant(Object::Nil), Op::Not, Op::Halt];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (not (list)) => #f
+#[test]
+fn test_test282() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(3),
+        Op::ReferFree(89),
+        Op::Call(0),
+        Op::Not,
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (not 'nil) => #f
+#[test]
+fn test_test283() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("nil");
+
+    let ops = vec![Op::Constant(a), Op::Not, Op::Halt];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (let ((x 2) (y 3)) (* x y)) => 6
+#[test]
+fn test_test284() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(3),
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Enter(2),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferLocal(1),
+        Op::NumberMul,
+        Op::Leave(2),
+        Op::Halt,
+    ];
+    let expected = Object::Number(6);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let ((x 2) (y 3)) (let ((x 7) (z (+ x y))) (* z x))) => 35
+#[test]
+fn test_test285() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(6),
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Enter(2),
+        Op::LetFrame(4),
+        Op::Constant(Object::Number(7)),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferLocal(1),
+        Op::NumberAdd,
+        Op::Push,
+        Op::Enter(2),
+        Op::ReferLocal(1),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::NumberMul,
+        Op::Leave(2),
+        Op::Leave(2),
+        Op::Halt,
+    ];
+    let expected = Object::Number(35);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let ((x 2) (y 3)) (let* ((x 7) (z (+ x y))) (* z x))) => 70
+#[test]
+fn test_test286() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(6),
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Enter(2),
+        Op::LetFrame(4),
+        Op::ReferLocal(1),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Display(2),
+        Op::Constant(Object::Number(7)),
+        Op::Push,
+        Op::Enter(1),
+        Op::LetFrame(3),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::Display(2),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::NumberAdd,
+        Op::Push,
+        Op::Enter(1),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::NumberMul,
+        Op::Leave(1),
+        Op::Leave(1),
+        Op::Leave(2),
+        Op::Halt,
+    ];
+    let expected = Object::Number(70);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (eqv? 'a 'a) => #t
+#[test]
+fn test_test287() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Constant(a),
+        Op::Push,
+        Op::Constant(a),
+        Op::Eqv,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (eqv? 'a 'b) => #f
+#[test]
+fn test_test288() {
+    let mut vm = Vm::new();
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Constant(a),
+        Op::Push,
+        Op::Constant(b),
+        Op::Eqv,
+        Op::Halt,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
+}
+
+// (eqv? 2 2) => #t
+#[test]
+fn test_test289() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Eqv,
+        Op::Halt,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}

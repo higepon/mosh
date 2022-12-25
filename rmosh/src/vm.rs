@@ -373,10 +373,15 @@ impl Vm {
                     self.set_return_value(Object::make_bool(is_eq));
                 }
                 Op::Equal => {
-                    // TODO 
+                    // TODO
                     let is_eq = self.pop().eq(&self.ac);
                     self.set_return_value(Object::make_bool(is_eq));
-                }                
+                }
+                Op::Eqv => {
+                    // TODO
+                    let is_eq = self.pop().eq(&self.ac);
+                    self.set_return_value(Object::make_bool(is_eq));
+                }
                 Op::NumberEqual => {
                     number_op!(==, self);
                 }
@@ -465,6 +470,14 @@ impl Vm {
                     }
                     (a, b) => {
                         panic!("+: numbers required but got {:?} {:?}", a, b);
+                    }
+                },
+                Op::NumberDiv => match (self.pop(), self.ac) {
+                    (Object::Number(a), Object::Number(b)) => {
+                        self.set_return_value(Object::Number(a / b));
+                    }
+                    (a, b) => {
+                        panic!("/: numbers required but got {:?} {:?}", a, b);
                     }
                 },
                 Op::DefineGlobal(symbol) => {

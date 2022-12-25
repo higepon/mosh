@@ -162,6 +162,21 @@ impl Gc {
         self.cons(first, second)
     }
 
+    pub fn list5(
+        &mut self,
+        first: Object,
+        second: Object,
+        third: Object,
+        fourth: Object,
+        fifth: Object,        
+    ) -> Object {
+        let fifth = self.cons(fifth, Object::Nil);        
+        let fourth = self.cons(fourth, fifth);        
+        let third = self.cons(third, fourth);
+        let second = self.cons(second, third);
+        self.cons(first, second)
+    }    
+
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);
         Object::Symbol(symbol)
@@ -403,6 +418,7 @@ impl Gc {
             Op::Enter(_) => (),
             Op::Eq => (),
             Op::Equal => (),            
+            Op::Eqv => (),                      
             Op::Frame(_) => (),
             Op::Halt => (),
             Op::Indirect => (),
@@ -414,6 +430,7 @@ impl Gc {
             Op::Not => (),
             Op::NullP => (),
             Op::NumberAdd => (),
+            Op::NumberDiv => (),
             Op::NumberMul => (),
             Op::NumberEqual => (),
             Op::NumberGe => (),
