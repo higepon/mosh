@@ -6745,4 +6745,43 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
+    // (call-with-values (lambda () (values 1 2 3)) list) => (1 2 3)
+    #[test]
+    fn test_test223() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::ReferFree(89),
+            Op::Push,
+            Op::ReferFree(152),
+            Op::Push,
+            Op::Display(2),
+            Op::Frame(10),
+            Op::Closure {size: 8, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Values(3),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Receive(0, 1),
+            Op::Enter(1),
+            Op::Frame(7),
+            Op::ReferFree(1),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(2),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
+    }
+
 }
