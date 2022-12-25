@@ -6733,63 +6733,6 @@ fn test_test268() {
     test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
 }
 
-// (do ((vec (make-vector 5)) (i 0 (+ i 1))) ((= i 5) vec) (vector-set! vec i i)) => #(0 1 2 3 4)
-#[test]
-fn test_test269() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(41),
-        Op::Frame(21),
-        Op::Frame(10),
-        Op::Constant(Object::Number(0)),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("i")),
-        Op::Push,
-        Op::Constant(Object::Number(1)),
-        Op::NumberAdd,
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("i")),
-        Op::Call(2),
-        Op::Push,
-        Op::Frame(8),
-        Op::Constant(Object::Number(5)),
-        Op::Push,
-        Op::Constant(Object::Nil),
-        Op::MakeVector,
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("vec")),
-        Op::Call(1),
-        Op::Call(1),
-        Op::Push,
-        Op::Frame(8),
-        Op::ReferGlobal(vm.gc.intern("vec")),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("i")),
-        Op::Push,
-        Op::Constant(Object::Number(5)),
-        Op::NumberEqual,
-        Op::Call(1),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("vec")),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("i")),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("i")),
-        Op::VectorSet,
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("do")),
-        Op::Call(3),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    test_ops_with_size_as_str(&mut vm, ops, "#(0 1 2 3 4)", SIZE_OF_SYMBOL * 0);
-}
-
 // (cons 'a 'b) => (a . b)
 #[test]
 fn test_test27() {
@@ -6805,67 +6748,6 @@ fn test_test27() {
         Op::Halt,
     ];
     test_ops_with_size_as_str(&mut vm, ops, "(a . b)", SIZE_OF_SYMBOL * 2);
-}
-
-// (let ((x '(1 3 5 7 9))) (do ((x x (cdr x)) (sum 0 (+ sum (car x)))) ((null? x) sum))) => 25
-#[test]
-fn test_test270() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::LetFrame(10),
-        Op::Constant(vm.gc.list5(
-            Object::Number(1),
-            Object::Number(3),
-            Object::Number(5),
-            Object::Number(7),
-            Object::Number(9),
-        )),
-        Op::Push,
-        Op::Enter(1),
-        Op::Frame(33),
-        Op::Frame(22),
-        Op::Frame(11),
-        Op::Constant(Object::Number(0)),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("sum")),
-        Op::Push,
-        Op::ReferLocal(0),
-        Op::Car,
-        Op::NumberAdd,
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("sum")),
-        Op::Call(2),
-        Op::Push,
-        Op::Frame(8),
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferLocal(0),
-        Op::Cdr,
-        Op::Push,
-        Op::ReferLocal(0),
-        Op::Call(2),
-        Op::Call(1),
-        Op::Push,
-        Op::Frame(6),
-        Op::ReferGlobal(vm.gc.intern("sum")),
-        Op::Push,
-        Op::ReferLocal(0),
-        Op::NullP,
-        Op::Call(1),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("do")),
-        Op::Call(2),
-        Op::Leave(1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::Number(25);
-    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
 }
 
 // (or (= 2 2) (> 2 1)) => #t
