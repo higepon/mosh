@@ -21,7 +21,7 @@ macro_rules! branch_number_op {
             match ($self.pop(), $self.ac) {
                 (Object::Number(lhs), Object::Number(rhs)) => {
                     let op_result = lhs $op rhs;
-                    $self.ac = Object::make_bool(op_result);
+                    $self.set_return_value(Object::make_bool(op_result));
                     if op_result {
                         // go to then.
                     } else {
@@ -43,7 +43,7 @@ macro_rules! number_op {
         {
             match ($self.pop(), $self.ac) {
                 (Object::Number(l), Object::Number(r)) => {
-                    $self.ac = Object::make_bool(l $op r)
+                    $self.set_return_value(Object::make_bool(l $op r))
                 }
                 obj => {
                     panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
@@ -184,7 +184,8 @@ impl Vm {
                 Op::MakeVector => match self.pop() {
                     Object::Number(size) => {
                         let v = vec![self.ac; size as usize];
-                        self.ac = self.gc.new_vector(&v);
+                        let v = self.gc.new_vector(&v);
+                        self.set_return_value(v);
                     }
                     obj => {
                         self.arg_err("make-vector", "numbers", obj);
@@ -192,15 +193,15 @@ impl Vm {
                 },
                 Op::VectorP => match self.ac {
                     Object::Vector(_) => {
-                        self.ac = Object::True;
+                        self.set_return_value(Object::True);
                     }
                     _ => {
-                        self.ac = Object::False;
+                        self.set_return_value(Object::False);
                     }
                 },
                 Op::VectorLength => match self.ac {
                     Object::Vector(v) => {
-                        self.ac = Object::Number(v.len() as isize);
+                        self.set_return_value(Object::Number(v.len() as isize));
                     }
                     obj => {
                         self.arg_err("vector-length", "vector", obj);
@@ -210,7 +211,7 @@ impl Vm {
                     (Object::Vector(v), Object::Number(idx)) => {
                         let idx = idx as usize;
                         if idx < v.data.len() {
-                            self.ac = v.data[idx];
+                            self.set_return_value(v.data[idx]);
                         } else {
                             self.arg_err("vector-ref", "valid idx to vector", self.ac);
                         }
@@ -245,7 +246,8 @@ impl Vm {
                 Op::Append2 => {
                     let head = self.pop();
                     if Pair::is_list(head) {
-                        self.ac = self.gc.append2(head, self.ac);
+                        let p = self.gc.append2(head, self.ac);
+                        self.set_return_value(p);
                     } else {
                         self.arg_err("append", "pair", head);
                     }
@@ -298,7 +300,7 @@ impl Vm {
                 Op::SetCar => match self.pop() {
                     Object::Pair(mut pair) => {
                         pair.car = self.ac;
-                        self.ac = Object::Unspecified;
+                        self.set_return_value(Object::Unspecified);
                     }
                     obj => {
                         self.arg_err("set-car!", "pair", obj);
@@ -307,18 +309,18 @@ impl Vm {
                 Op::SetCdr => match self.pop() {
                     Object::Pair(mut pair) => {
                         pair.cdr = self.ac;
-                        self.ac = Object::Unspecified;
+                        self.set_return_value(Object::Unspecified);
                     }
                     obj => {
                         self.arg_err("set-cdr!", "pair", obj);
                     }
                 },
                 Op::Not => {
-                    self.ac = Object::make_bool(self.ac.is_false());
+                    self.set_return_value(Object::make_bool(self.ac.is_false()));
                 }
-                Op::PairP => self.ac = Object::make_bool(self.ac.is_pair()),
-                Op::NullP => self.ac = Object::make_bool(self.ac.is_nil()),
-                Op::SymbolP => self.ac = Object::make_bool(self.ac.is_symbol()),
+                Op::PairP => self.set_return_value(Object::make_bool(self.ac.is_pair())),
+                Op::NullP => self.set_return_value(Object::make_bool(self.ac.is_nil())),
+                Op::SymbolP => self.set_return_value(Object::make_bool(self.ac.is_symbol())),
                 Op::BranchNotNumberEqual(skip_offset) => {
                     branch_number_op!(==, self, pc, skip_offset);
                 }
@@ -336,23 +338,23 @@ impl Vm {
                 }
                 Op::BranchNotNull(skip_offset) => {
                     if self.ac.is_nil() {
-                        self.ac = Object::False;
+                        self.set_return_value(Object::False);
                     } else {
-                        self.ac = Object::True;
+                        self.set_return_value(Object::True);
                         pc = self.jump(pc, skip_offset - 1);
                     }
                 }
                 Op::BranchNotEqv(skip_offset) => {
                     if self.pop().eqv(&self.ac) {
-                        self.ac = Object::True;
+                        self.set_return_value(Object::True);
                     } else {
                         pc = self.jump(pc, skip_offset - 1);
-                        self.ac = Object::False;
+                        self.set_return_value(Object::False);
                     }
                 }
                 Op::Eq => {
                     let is_eq = self.pop().eq(&self.ac);
-                    self.ac = Object::make_bool(is_eq);
+                    self.set_return_value(Object::make_bool(is_eq));
                 }
                 Op::NumberEqual => {
                     number_op!(==, self);
@@ -371,7 +373,7 @@ impl Vm {
                 }
                 Op::Car => match self.ac {
                     Object::Pair(pair) => {
-                        self.ac = pair.car;
+                        self.set_return_value(pair.car);
                     }
                     obj => {
                         self.arg_err("car", "pair", obj);
@@ -379,7 +381,7 @@ impl Vm {
                 },
                 Op::Cdr => match self.ac {
                     Object::Pair(pair) => {
-                        self.ac = pair.cdr;
+                        self.set_return_value(pair.cdr);
                     }
                     obj => {
                         self.arg_err("cdr", "pair", obj);
@@ -388,7 +390,7 @@ impl Vm {
                 Op::Cadr => match self.ac {
                     Object::Pair(pair) => match pair.cdr {
                         Object::Pair(pair) => {
-                            self.ac = pair.car;
+                            self.set_return_value(pair.car);
                         }
                         obj => {
                             self.arg_err("cadr", "pair", obj);
@@ -400,7 +402,7 @@ impl Vm {
                 },
                 Op::Indirect => match self.ac {
                     Object::Vox(vox) => {
-                        self.ac = vox.value;
+                        self.set_return_value(vox.value);
                     }
                     obj => {
                         self.arg_err("indirect", "vox", obj);
@@ -417,7 +419,7 @@ impl Vm {
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
                 Op::Constant(c) => {
-                    self.ac = c;
+                    self.set_return_value(c);
                 }
                 Op::Push => {
                     self.push(self.ac);
@@ -425,11 +427,12 @@ impl Vm {
                 Op::Cons => {
                     let car = self.pop();
                     let cdr = self.ac;
-                    self.ac = self.gc.cons(car, cdr);
+                    let pair = self.gc.cons(car, cdr);
+                    self.set_return_value(pair);
                 }
                 Op::NumberAdd => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
-                        self.ac = Object::Number(a + b);
+                        self.set_return_value(Object::Number(a + b));
                     }
                     (a, b) => {
                         panic!("*: numbers required but got {:?} {:?}", a, b);
@@ -437,7 +440,7 @@ impl Vm {
                 },
                 Op::NumberMul => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
-                        self.ac = Object::Number(a * b);
+                        self.set_return_value(Object::Number(a * b));
                     }
                     (a, b) => {
                         panic!("+: numbers required but got {:?} {:?}", a, b);
@@ -451,7 +454,7 @@ impl Vm {
                 }
                 Op::ReferGlobal(symbol) => match self.globals.get(&symbol) {
                     Some(&value) => {
-                        self.ac = value;
+                        self.set_return_value(value);
                     }
                     None => {
                         panic!("identifier {:?} not found", symbol);
@@ -501,7 +504,8 @@ impl Vm {
                     self.push(Object::StackPointer(self.fp));
                 }
                 Op::ReferLocal(n) => {
-                    self.ac = self.refer_local(n);
+                    let obj = self.refer_local(n);
+                    self.set_return_value(obj);
                 }
                 Op::Leave(n) => {
                     let sp = self.dec(self.sp, n);
@@ -533,7 +537,7 @@ impl Vm {
                 }
                 Op::ReferFree(n) => match self.dc {
                     Object::Closure(mut closure) => {
-                        self.ac = closure.refer_free(n);
+                        self.set_return_value(closure.refer_free(n));
                     }
                     _ => {
                         panic!("refer_free: display closure required but got {:?}", self.dc);
@@ -575,13 +579,14 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    self.ac = Object::Closure(self.alloc(Closure::new(
+                    let c = self.alloc(Closure::new(
                         pc,
                         size - 1,
                         arg_len,
                         is_optional_arg,
                         free_vars,
-                    )));
+                    ));
+                    self.set_return_value(Object::Closure(c));
                     self.sp = self.dec(self.sp, num_free_vars);
                     pc = self.jump(pc, size - 1);
                 }
@@ -622,17 +627,17 @@ impl Vm {
                 Op::ReadChar => match self.ac {
                     Object::InputPort(mut port) => match port.read_char() {
                         Some(c) => {
-                            self.ac = Object::Char(c);
+                            self.set_return_value(Object::Char(c));
                         }
                         None => {
-                            self.ac = Object::Eof;
+                            self.set_return_value(Object::Eof);
                         }
                     },
                     obj => {
                         self.arg_err("read-char", "text-input-port", obj);
                     }
                 },
-                Op::Undef => self.ac = Object::Unspecified,
+                Op::Undef => self.set_return_value(Object::Unspecified),
                 Op::Nop => {}
             }
             self.print_vm(op);
@@ -838,6 +843,12 @@ impl Vm {
     }
     #[cfg(not(feature = "debug_log_vm"))]
     fn print_vm(&mut self, _: Op) {}
+
+    #[inline(always)]
+    fn set_return_value(&mut self, obj: Object) {
+        self.ac = obj;
+        self.num_values = 1;
+    }
 
     #[inline(always)]
     fn refer_local(&mut self, n: isize) -> Object {
@@ -6697,18 +6708,22 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (call-with-values (lambda () (values 1 2 3)) (lambda (a b c) (+ a b c))) => 6
     #[test]
     fn test_test222() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::ReferFree(152),
             Op::Push,
             Op::Display(1),
             Op::Frame(10),
-            Op::Closure {size: 8, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 8,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(1)),
             Op::Push,
             Op::Constant(Object::Number(2)),
@@ -6720,7 +6735,12 @@ pub mod tests {
             Op::Receive(0, 1),
             Op::Enter(1),
             Op::Frame(15),
-            Op::Closure {size: 9, arg_len: 3, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 9,
+                arg_len: 3,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::ReferLocal(0),
             Op::Push,
             Op::ReferLocal(1),
@@ -6748,7 +6768,7 @@ pub mod tests {
     // (call-with-values (lambda () (values 1 2 3)) list) => (1 2 3)
     #[test]
     fn test_test223() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::ReferFree(89),
@@ -6757,7 +6777,12 @@ pub mod tests {
             Op::Push,
             Op::Display(2),
             Op::Frame(10),
-            Op::Closure {size: 8, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 8,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(1)),
             Op::Push,
             Op::Constant(Object::Number(2)),
@@ -6784,4 +6809,52 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
     }
 
+    // (call-with-values (lambda () 1) (lambda (x) (+ x 1234))) => 1235
+    #[test]
+    fn test_test224() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::ReferFree(152),
+            Op::Push,
+            Op::Display(1),
+            Op::Frame(5),
+            Op::Closure {
+                size: 3,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::Constant(Object::Number(1)),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Receive(0, 1),
+            Op::Enter(1),
+            Op::Frame(12),
+            Op::Closure {
+                size: 6,
+                arg_len: 1,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::Constant(Object::Number(1234)),
+            Op::NumberAdd,
+            Op::Return(1),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(2),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(1235);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
 }
