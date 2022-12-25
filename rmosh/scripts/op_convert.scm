@@ -5,7 +5,7 @@
 
 (import (scheme base) (scheme file) (scheme read) (scheme write) (scheme process-context) (scheme case-lambda
 )
-        (match) (mosh control) (only (srfi :13) string-delete) (only (mosh) format regexp-replace-all rxmatch) (only (rnrs) string-titlecase))
+        (match) (mosh control) (only (srfi :13) string-delete) (only (mosh) format regexp-replace-all rxmatch) (only (rnrs) open-string-output-port string-titlecase))
 
 (define (insn->string insn)
     (string-delete (lambda (c) (equal? c #\_)) (string-titlecase  (symbol->string insn))))
@@ -32,84 +32,84 @@
 
 (define rewrite-insn*
   (case-lambda
-    [(insn*) (rewrite-insn* insn* 0)]
-    [(insn* idx)
+    [(insn* port)  (rewrite-insn* insn* 0 port)]
+    [(insn* idx port)
       (match insn*
         [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
-          (format #t "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
+          (format port "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
              (adjust-offset insn* idx size) arg-len (if optional? "true" "false") num-free-vars)
-           (rewrite-insn* more* (+ idx 7))]
+           (rewrite-insn* more* (+ idx 7) port)]
         [((and (or 'FRAME 'TEST 'LOCAL_JMP 'BRANCH_NOT_GE 'BRANCH_NOT_EQV 'BRANCH_NOT_GT 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_NULL) insn) offset . more*)
-          (format #t "            Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
-          (rewrite-insn* more* (+ idx 2))] 
+          (format port "            Op::~a(~a),\n" (insn->string insn) (adjust-offset insn* idx offset))
+          (rewrite-insn* more* (+ idx 2) port)] 
         [((and (or 'CONSTANT) insn) #f . more*)
-          (format #t "            Op::~a(Object::False),\n" (insn->string insn))
-          (rewrite-insn* more* (+ idx 2))]      
+          (format port "            Op::~a(Object::False),\n" (insn->string insn))
+          (rewrite-insn* more* (+ idx 2) port)]      
         [((and (or 'CONSTANT) insn) #t . more*)
-          (format #t "            Op::~a(Object::True),\n" (insn->string insn))
-          (rewrite-insn* more* (+ idx 2))]              
+          (format port "            Op::~a(Object::True),\n" (insn->string insn))
+          (rewrite-insn* more* (+ idx 2) port)]              
         [((and (or 'CONSTANT) insn) () . more*)
-          (format #t "            Op::~a(Object::Nil),\n" (insn->string insn))
-          (rewrite-insn* more* (+ idx 2))]                                    
+          (format port "            Op::~a(Object::Nil),\n" (insn->string insn))
+          (rewrite-insn* more* (+ idx 2) port)]                                    
         [((and (or 'CONSTANT) insn) (? number? n) . more*)
-          (format #t "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]
+          (format port "            Op::~a(Object::Number(~a)),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2) port)]
         [((and (or 'CONSTANT) insn) (? char? c) . more*)
-          (format #t "            Op::~a(Object::Char('~a')),\n" (insn->string insn) c)
-            (rewrite-insn* more* (+ idx 2))]       
+          (format port "            Op::~a(Object::Char('~a')),\n" (insn->string insn) c)
+            (rewrite-insn* more* (+ idx 2) port)]       
         [((and (or 'CONSTANT) insn) ((? symbol? n)) . more*)
-          (format #t "            Op::~a(vm.gc.cons(vm.gc.symbol_intern(\"~a\"), Object::Nil)),\n" (insn->string insn) n)
-            (rewrite-insn* more* (+ idx 2))]     
+          (format port "            Op::~a(vm.gc.cons(vm.gc.symbol_intern(\"~a\"), Object::Nil)),\n" (insn->string insn) n)
+            (rewrite-insn* more* (+ idx 2) port)]     
         [((and (or 'CONSTANT) insn) ((? symbol? a) (? symbol? b)) . more*)
-          (format #t "            Op::~a(vm.gc.list2(vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"))),\n" (insn->string insn) a b)
-            (rewrite-insn* more* (+ idx 2))]                       
+          (format port "            Op::~a(vm.gc.list2(vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"))),\n" (insn->string insn) a b)
+            (rewrite-insn* more* (+ idx 2) port)]                       
         [((and (or 'CONSTANT) insn) ((? symbol? a) (? symbol? b) (? symbol? c)) . more*)
-          (format #t "            Op::~a(vm.gc.list3(vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"))),\n" (insn->string insn) a b c)
-            (rewrite-insn* more* (+ idx 2))]             
+          (format port "            Op::~a(vm.gc.list3(vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"))),\n" (insn->string insn) a b c)
+            (rewrite-insn* more* (+ idx 2) port)]             
         [((and (or 'CONSTANT) insn) #((? number? n)) . more*)
-          (format #t "            Op::~a(vm.gc.new_vector(&vec![Object::Number(~a)])),\n" (insn->string insn) n)
-            (rewrite-insn* more* (+ idx 2))]                                        
+          (format port "            Op::~a(vm.gc.new_vector(&vec![Object::Number(~a)])),\n" (insn->string insn) n)
+            (rewrite-insn* more* (+ idx 2) port)]                                        
         [((and (or 'CONSTANT) insn) ((? number? n)) . more*)
-          (format #t "            Op::~a(vm.gc.cons(Object::Number(~a), Object::Nil)),\n" (insn->string insn) n)
-            (rewrite-insn* more* (+ idx 2))]       
+          (format port "            Op::~a(vm.gc.cons(Object::Number(~a), Object::Nil)),\n" (insn->string insn) n)
+            (rewrite-insn* more* (+ idx 2) port)]       
         [((and (or 'CONSTANT) insn) (((? number? n))) . more*)
-          (format #t "            Op::~a(vm.gc.list1(vm.gc.list1(Object::Number(~a)))),\n" (insn->string insn) n)
-            (rewrite-insn* more* (+ idx 2))]                   
+          (format port "            Op::~a(vm.gc.list1(vm.gc.list1(Object::Number(~a)))),\n" (insn->string insn) n)
+            (rewrite-insn* more* (+ idx 2) port)]                   
         [((and (or 'CONSTANT) insn) ((? number? a) (? number? b)) . more*)
-          (format #t "            Op::~a(vm.gc.list2(Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b)
-            (rewrite-insn* more* (+ idx 2))]    
+          (format port "            Op::~a(vm.gc.list2(Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b)
+            (rewrite-insn* more* (+ idx 2) port)]    
         [((and (or 'CONSTANT) insn) ((? number? a) (? number? b) (? number? c) (? number? d)) . more*)
-          (format #t "            Op::~a(vm.gc.list4(Object::Number(~a), Object::Number(~a), Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b c d)
-            (rewrite-insn* more* (+ idx 2))]                 
+          (format port "            Op::~a(vm.gc.list4(Object::Number(~a), Object::Number(~a), Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b c d)
+            (rewrite-insn* more* (+ idx 2) port)]                 
         [((and (or 'CONSTANT) insn) ((? string? a) (? string? b)) . more*)
-          (format #t "            Op::~a(vm.gc.list2(vm.gc.new_string(~s), vm.gc.new_string(~s))),\n" (insn->string insn) a b)
-            (rewrite-insn* more* (+ idx 2))]                  
+          (format port "            Op::~a(vm.gc.list2(vm.gc.new_string(~s), vm.gc.new_string(~s))),\n" (insn->string insn) a b)
+            (rewrite-insn* more* (+ idx 2) port)]                  
         [((and (or 'CONSTANT) insn) ((? number? a) (? number? b) (? number? c)) . more*)
-          (format #t "            Op::~a(vm.gc.list3(Object::Number(~a), Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b c)
-            (rewrite-insn* more* (+ idx 2))]                             
+          (format port "            Op::~a(vm.gc.list3(Object::Number(~a), Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b c)
+            (rewrite-insn* more* (+ idx 2) port)]                             
         [((and (or 'CONSTANT) insn) (? symbol? n) . more*)
-          (format #t "            Op::~a(vm.gc.symbol_intern(\"~a\")),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]         
+          (format port "            Op::~a(vm.gc.symbol_intern(\"~a\")),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2) port)]         
         [((and (or 'CONSTANT) insn) (? string? s) . more*)
-          (format #t "            Op::~a(vm.gc.new_string(~s)),\n" (insn->string insn) s)
-          (rewrite-insn* more* (+ idx 2))]              
+          (format port "            Op::~a(vm.gc.new_string(~s)),\n" (insn->string insn) s)
+          (rewrite-insn* more* (+ idx 2) port)]              
         [((and (or 'TAIL_CALL 'RECEIVE) insn) m n . more*)
-          (format #t "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
-          (rewrite-insn* more* (+ idx 3))]              
+          (format port "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
+          (rewrite-insn* more* (+ idx 3) port)]              
         [((and (or 'ENTER 'BOX 'MAKE_CONTINUATION 'VALUES) insn) n . more*)
-          (format #t "            Op::~a(~a),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]                
+          (format port "            Op::~a(~a),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2) port)]                
         [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)
-          (format #t "            Op::~a(vm.gc.intern(\"~a\")),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]          
+          (format port "            Op::~a(vm.gc.intern(\"~a\")),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2) port)]          
         [((and (or 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
-          (format #t "            Op::~a(~a),\n" (insn->string insn) n)
-          (rewrite-insn* more* (+ idx 2))]
+          (format port "            Op::~a(~a),\n" (insn->string insn) n)
+          (rewrite-insn* more* (+ idx 2) port)]
         [((and (or 'APPEND2 'MAKE_VECTOR 'VECTOR_LENGTH 'VECTOR_SET 'VECTOR_REF 'READ_CHAR 'HALT 'SET_CAR 'SET_CDR 'EQ 'PAIR_P 'SYMBOL_P 'VECTOR_P 'NOT 'CAR 'CDR 'CADR 'CONS 'NUMBER_EQUAL 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'NOP 'NULL_P 'INDIRECT 'PUSH 'NUMBER_ADD 'NUMBER_MUL 'UNDEF) insn) . more*)
-          (format #t "            Op::~a,\n" (insn->string insn))
-          (rewrite-insn* more*  (+ idx 1))]
+          (format port "            Op::~a,\n" (insn->string insn))
+          (rewrite-insn* more*  (+ idx 1) port)]
         [() #f]
-        [else (display insn*)])]))
+        [else (display insn* port)])]))
 
 (define (file->sexp* file)
   (call-with-input-file file
@@ -143,36 +143,37 @@
          [scm-file (regexp-replace-all #/\.op$/ op-file ".scm")]
          [test-name ((rxmatch #/([^\/]+)\.op$/ op-file) 1)]
          [expr* (file->sexp* scm-file)]
-         [sexp* (file->sexp* op-file)])     
+         [sexp* (file->sexp* op-file)])
+    (let-values ([(port get) (open-string-output-port)])
     (match expr*
       [(expr expected size)
         (cond
           [(pair? expected)
-        (format #t "
+        (format port "
     // ~s => ~s
     #[test]
     fn test_~a() {
         let mut vm = Vm::new();        
         let ops = vec![\n" expr expected test-name)        
         (let ([insn* (vector->list (car sexp*))])
-          (rewrite-insn* insn*)
-          (format #t "        ];
+          (rewrite-insn* insn* port)
+          (format port "        ];
         test_ops_with_size_as_str(&mut vm, ops, \"~a\", ~a);
     }\n" expected size))]        
           [(string? expected)
-        (format #t "
+        (format port "
     // ~s => ~s
     #[test]
     fn test_~a() {
         let mut vm = Vm::new();        
         let ops = vec![\n" expr expected test-name)        
         (let ([insn* (vector->list (car sexp*))])
-          (rewrite-insn* insn*)
-          (format #t "        ];
+          (rewrite-insn* insn* port)
+          (format port "        ];
         test_ops_with_size_as_str(&mut vm, ops, \"\\\"~a\\\"\", ~a);
     }\n" expected size))]
           [else
-        (format #t "
+        (format port "
     // ~s => ~s
     #[test]
     fn test_~a() {
@@ -180,11 +181,13 @@
         let ops = vec![\n" expr expected test-name)        
         (let ([insn* (vector->list (car sexp*))]
               [expected (expected->rust expected)])
-          (rewrite-insn* insn*)
-          (format #t "        ];
+          (rewrite-insn* insn* port)
+          (format port "        ];
         let expected = ~a;
         test_ops_with_size(&mut vm, ops, expected, ~a);
     }\n" expected size))])]
-      [else (write sexp*)])))
+      [else (write sexp* port)])
+      (display (get))
+      )))
 
 (main (command-line))
