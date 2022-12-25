@@ -807,9 +807,11 @@ fn is_number(_vm: &mut Vm, args: &[Object]) -> Object {
         _ => Object::False,
     }
 }
-fn cons(_vm: &mut Vm, args: &[Object]) -> Object {
+fn cons(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);    
+    vm.gc.cons(args[0], args[1])
+
 }
 fn consmul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons*";
@@ -1374,7 +1376,6 @@ fn current_error_port(_vm: &mut Vm, args: &[Object]) -> Object {
     panic!("{}({}) not implemented", name, args.len());
 }
 fn values(vm: &mut Vm, args: &[Object]) -> Object {
-    let name: &str = "values";
     vm.values(args)
 }
 fn vm_apply(_vm: &mut Vm, args: &[Object]) -> Object {

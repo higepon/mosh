@@ -6994,4 +6994,42 @@ pub mod tests {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
     }
+
+    // (call-with-values (lambda () (values 1 2)) cons) => (1 . 2)
+    #[test]
+    fn test_test230() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::ReferFree(1),
+            Op::Push,
+            Op::ReferFree(152),
+            Op::Push,
+            Op::Display(2),
+            Op::Frame(8),
+            Op::Closure {size: 6, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Values(2),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Receive(0, 1),
+            Op::Enter(1),
+            Op::Frame(7),
+            Op::ReferFree(1),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(2),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 . 2)", 0);
+    }
+
 }
