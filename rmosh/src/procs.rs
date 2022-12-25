@@ -829,7 +829,13 @@ fn car(_vm: &mut Vm, args: &[Object]) -> Object {
 
 fn cdr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdr";
-    panic!("{}({}) not implemented", name, args.len());
+    assert_eq!(args.len(), 1);
+    match args[0] {
+        Object::Pair(pair) => pair.cdr,
+        _ => {
+            panic!("{}: pair required", name)
+        }
+    }
 }
 fn is_null(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "null?";
