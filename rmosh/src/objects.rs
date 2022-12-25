@@ -324,6 +324,42 @@ impl Pair {
             }
         }
     }
+
+    fn last_pair(p: Object) -> Object {
+        let mut o = p;
+        loop {
+            match o {
+                Object::Pair(pair) => {
+                    let kdr = pair.cdr;
+                    if kdr.is_nil() {
+                        return o;
+                    } else {
+                        o = kdr;
+                    }
+                }
+                _ => {
+                    panic!("last_pair: pair requied but got {}", o);
+                }
+            }
+        }
+    }
+
+    // append!
+    pub fn append_destructive(l1: Object, l2: Object) -> Object {
+        if l1.is_nil() {
+            return l2;
+        }
+        let last = Self::last_pair(l1);
+        match last {
+            Object::Pair(mut pair) => {
+                pair.cdr = l2;
+                return l1;
+            }
+            _ => {
+                panic!("never reached");
+            }
+        }
+    }
 }
 
 impl Display for Pair {

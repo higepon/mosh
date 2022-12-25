@@ -422,6 +422,7 @@ impl Gc {
             Op::PairP => (),
             Op::Push => (),
             Op::ReadChar => (),
+            Op::Receive(_, _) => (),            
             Op::ReferFree(_) => (),
             Op::ReferLocal(_) => (),
             Op::Return(_) => (),

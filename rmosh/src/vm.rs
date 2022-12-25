@@ -250,6 +250,51 @@ impl Vm {
                         self.arg_err("append", "pair", head);
                     }
                 }
+                Op::Receive(num_req_args, num_opt_args) => {
+                    if self.num_values < num_req_args {
+                        panic!(
+                            "receive: received fewer valeus than expected {} {}",
+                            num_req_args, self.num_values
+                        );
+                    } else if num_opt_args == 0 && self.num_values > num_req_args {
+                        panic!(
+                            "receive: received more values than expected {} {}",
+                            num_req_args, self.num_values
+                        );
+                    }
+                    // (receive (a b c) ...)
+                    if num_opt_args == 0 {
+                        if num_req_args > 0 {
+                            self.push(self.ac);
+                        }
+                        for i in 0..num_req_args - 1 {
+                            self.push(self.values[i]);
+                        }
+                    // (receive a ...)
+                    } else if num_req_args == 0 {
+                        let mut ret = if self.num_values == 0 {
+                            Object::Nil
+                        } else {
+                            self.gc.list1(self.ac)
+                        };
+                        for i in 0..self.num_values - 1 {
+                            ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                        }
+                        self.push(ret);
+                    // (receive (a b . c) ...)
+                    } else {
+                        let mut ret = Object::Nil;
+                        self.push(self.ac);
+                        for i in 0..self.num_values - 1 {
+                            if i < num_req_args - 1 {
+                                self.push(self.values[i]);
+                            } else {
+                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                            }
+                        }
+                        self.push(ret);
+                    }
+                }
                 Op::SetCar => match self.pop() {
                     Object::Pair(mut pair) => {
                         pair.car = self.ac;
@@ -6600,6 +6645,55 @@ pub mod tests {
             Op::Nop,
         ];
         let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+    // (call-with-values (lambda () (values 4 5)) (lambda (a b) b)) => 5
+    #[test]
+    fn test_test221() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::ReferFree(152),
+            Op::Push,
+            Op::Display(1),
+            Op::Frame(8),
+            Op::Closure {
+                size: 6,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::Constant(Object::Number(4)),
+            Op::Push,
+            Op::Constant(Object::Number(5)),
+            Op::Values(2),
+            Op::Return(0),
+            Op::Call(0),
+            Op::Receive(0, 1),
+            Op::Enter(1),
+            Op::Frame(9),
+            Op::Closure {
+                size: 3,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
+            Op::ReferLocal(1),
+            Op::Return(2),
+            Op::Push,
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(2),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+        ];
+        let expected = Object::Number(5);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 }

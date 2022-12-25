@@ -23,7 +23,7 @@
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'APPEND2 'MAKE_VECTOR 'VECTOR_LENGTH 'HALT 'SET_CAR 'SET_CDR 'READ_CHAR 'EQ 'PAIR_P 'SYMBOL_P 'VECTOR_P 'NOT 'CAR 'CDR 'CADR 'CONS 'NULL_P 'NUMBER_EQUAL 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'NUMBER_MUL 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
-          [((or 'TAIL_CALL) m n . more*)
+          [((or 'TAIL_CALL 'RECEIVE) m n . more*)
             (loop more* (+ cur-offset 3) (+ rust-offset 1))]
           [('CLOSURE _a _b _c _d _e _f . more*) 
             (loop more* (+ cur-offset 7) (+ rust-offset 1))]
@@ -87,7 +87,7 @@
         [((and (or 'CONSTANT) insn) (? string? s) . more*)
           (format #t "            Op::~a(vm.gc.new_string(~s)),\n" (insn->string insn) s)
           (rewrite-insn* more* (+ idx 2))]              
-        [((and (or 'TAIL_CALL) insn) m n . more*)
+        [((and (or 'TAIL_CALL 'RECEIVE) insn) m n . more*)
           (format #t "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
           (rewrite-insn* more* (+ idx 3))]              
         [((and (or 'ENTER 'BOX 'MAKE_CONTINUATION 'VALUES) insn) n . more*)

@@ -53,6 +53,7 @@ pub enum Op {
     PairP,
     Push,
     ReadChar,
+    Receive(usize, usize),
     ReferFree(usize),
     ReferGlobal(GcRef<Symbol>),
     ReferLocal(isize),
