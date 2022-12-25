@@ -59,7 +59,10 @@
             (rewrite-insn* more* (+ idx 2))]       
         [((and (or 'CONSTANT) insn) ((? symbol? n)) . more*)
           (format #t "            Op::~a(vm.gc.cons(vm.gc.symbol_intern(\"~a\"), Object::Nil)),\n" (insn->string insn) n)
-            (rewrite-insn* more* (+ idx 2))]             
+            (rewrite-insn* more* (+ idx 2))]     
+        [((and (or 'CONSTANT) insn) ((? symbol? a) (? symbol? b)) . more*)
+          (format #t "            Op::~a(vm.gc.list2(vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"))),\n" (insn->string insn) a b)
+            (rewrite-insn* more* (+ idx 2))]                       
         [((and (or 'CONSTANT) insn) ((? symbol? a) (? symbol? b) (? symbol? c)) . more*)
           (format #t "            Op::~a(vm.gc.list3(vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"), vm.gc.symbol_intern(\"~a\"))),\n" (insn->string insn) a b c)
             (rewrite-insn* more* (+ idx 2))]             
