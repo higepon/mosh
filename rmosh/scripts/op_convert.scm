@@ -82,7 +82,12 @@
             (let ([name1 (add-symbols! a)]
                   [name2 (add-symbols! b)])
               (format port "            Op::~a(vm.gc.list2(~a, ~a)),\n" (insn->string insn) name1 name2)
-              (rewrite-insn* more* (+ idx 2) port))]                       
+              (rewrite-insn* more* (+ idx 2) port))]          
+           [((and (or 'CONSTANT) insn) (((? symbol? a) (? symbol? b))) . more*)
+            (let ([name1 (add-symbols! a)]
+                  [name2 (add-symbols! b)])
+              (format port "            Op::~a(vm.gc.list1(vm.gc.list2(~a, ~a))),\n" (insn->string insn) name1 name2)
+              (rewrite-insn* more* (+ idx 2) port))]                            
            [((and (or 'CONSTANT) insn) ((? symbol? a) (? symbol? b) (? symbol? c)) . more*)
             (let ([name1 (add-symbols! a)]
                   [name2 (add-symbols! b)]          
@@ -112,6 +117,9 @@
            [((and (or 'CONSTANT) insn) ((? number? a) (? number? b)) . more*)
             (format port "            Op::~a(vm.gc.list2(Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b)
             (rewrite-insn* more* (+ idx 2) port)]    
+           [((and (or 'CONSTANT) insn) (((? number? a) (? number? b))) . more*)
+            (format port "            Op::~a(vm.gc.list1(vm.gc.list2(Object::Number(~a), Object::Number(~a)))),\n" (insn->string insn) a b)
+            (rewrite-insn* more* (+ idx 2) port)]               
            [((and (or 'CONSTANT) insn) ((? number? a) (? number? b) (? number? c) (? number? d)) . more*)
             (format port "            Op::~a(vm.gc.list4(Object::Number(~a), Object::Number(~a), Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b c d)
             (rewrite-insn* more* (+ idx 2) port)]   
@@ -221,7 +229,7 @@
 ~a       
         let ops = vec![\n~a" expr expected test-name (decl-symbol) insn-str)      
                       (format port "        ];
-        test_ops_with_size_as_str(&mut vm, ops, \"\\\"~a\\\"\", SIZE_OF_SYMBOL ~a);
+        test_ops_with_size_as_str(&mut vm, ops, \"\\\"~a\\\"\", SIZE_OF_SYMBOL * ~a);
     }\n" expected (length symbols))]
                      [else
                       (format port "
