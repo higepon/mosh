@@ -9704,3 +9704,2336 @@ fn test_test399() {
     let expected = Object::True;
     test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
 }
+
+// (char>=? #\c #\b #\a) => #t
+#[test]
+fn test_test400() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(9),
+        Op::Constant(Object::Char('c')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('a')),
+        Op::Push,
+        Op::ReferFree(164),
+        Op::Call(3),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char>=? #\b #\b) => #t
+#[test]
+fn test_test401() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(164),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char>=? #\b #\c) => #f
+#[test]
+fn test_test402() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('c')),
+        Op::Push,
+        Op::ReferFree(164),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char>? #\b #\a) => #t
+#[test]
+fn test_test403() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('a')),
+        Op::Push,
+        Op::ReferFree(165),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char>? #\b #\b) => #f
+#[test]
+fn test_test404() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(165),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char>? #\b #\c) => #f
+#[test]
+fn test_test405() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('c')),
+        Op::Push,
+        Op::ReferFree(165),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char<=? #\a #\b) => #t
+#[test]
+fn test_test406() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('a')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(162),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char<=? #\b #\b) => #t
+#[test]
+fn test_test407() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(162),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char<=? #\c #\b) => #f
+#[test]
+fn test_test408() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('c')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(162),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char<? #\a #\b) => #t
+#[test]
+fn test_test409() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('a')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(163),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char<? #\b #\b) => #f
+#[test]
+fn test_test410() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(163),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (char<? #\c #\b) => #f
+#[test]
+fn test_test411() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Char('c')),
+        Op::Push,
+        Op::Constant(Object::Char('b')),
+        Op::Push,
+        Op::ReferFree(163),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (cons* 1 2 3 4) => (1 2 3 . 4)
+#[test]
+fn test_test412() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(11),
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::Constant(Object::Number(4)),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(4),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 . 4)", SIZE_OF_SYMBOL * 0);
+}
+
+// (cons* 1) => 1
+#[test]
+fn test_test413() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(1),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::Number(1);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (append 1) => 1
+#[test]
+fn test_test414() {
+    let mut vm = Vm::new();
+
+    let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
+    let expected = Object::Number(1);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (append '(1) 2) => (1 . 2)
+#[test]
+fn test_test415() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.cons(Object::Number(1), Object::Nil)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Append2,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 . 2)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append '(1 2) 3) => (1 2 . 3)
+#[test]
+fn test_test416() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::Append2,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 . 3)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append '(1 2) '(3)) => (1 2 3)
+#[test]
+fn test_test417() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(vm.gc.cons(Object::Number(3), Object::Nil)),
+        Op::Append2,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append '(1 2) '(3) 4) => (1 2 3 . 4)
+#[test]
+fn test_test418() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(vm.gc.cons(Object::Number(3), Object::Nil)),
+        Op::Append2,
+        Op::Push,
+        Op::Constant(Object::Number(4)),
+        Op::Append2,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 . 4)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append '(1 2) '(3) 4) => (1 2 3 . 4)
+#[test]
+fn test_test419() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(vm.gc.cons(Object::Number(3), Object::Nil)),
+        Op::Append2,
+        Op::Push,
+        Op::Constant(Object::Number(4)),
+        Op::Append2,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 . 4)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append '() 1) => 1
+#[test]
+fn test_test420() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(Object::Nil),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Append2,
+        Op::Halt,
+    ];
+    let expected = Object::Number(1);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (append '(1) '()) => (1)
+#[test]
+fn test_test421() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.cons(Object::Number(1), Object::Nil)),
+        Op::Push,
+        Op::Constant(Object::Nil),
+        Op::Append2,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append! 1) => 1
+#[test]
+fn test_test422() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(1),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::Number(1);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (append! '(1) 2) => (1 . 2)
+#[test]
+fn test_test423() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(vm.gc.cons(Object::Number(1), Object::Nil)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 . 2)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append! '(1 2) 3) => (1 2 . 3)
+#[test]
+fn test_test424() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(Object::Number(3)),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 . 3)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append! '(1 2) '(3)) => (1 2 3)
+#[test]
+fn test_test425() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(vm.gc.cons(Object::Number(3), Object::Nil)),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append! '(1 2) '(3) 4) => (1 2 3 . 4)
+#[test]
+fn test_test426() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(9),
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(vm.gc.cons(Object::Number(3), Object::Nil)),
+        Op::Push,
+        Op::Constant(Object::Number(4)),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(3),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 . 4)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append! '(1 2) '(3) 4) => (1 2 3 . 4)
+#[test]
+fn test_test427() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(9),
+        Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
+        Op::Push,
+        Op::Constant(vm.gc.cons(Object::Number(3), Object::Nil)),
+        Op::Push,
+        Op::Constant(Object::Number(4)),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(3),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2 3 . 4)", SIZE_OF_SYMBOL * 0);
+}
+
+// (append! '() 1) => 1
+#[test]
+fn test_test428() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(Object::Nil),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::Number(1);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (append! '(1) '()) => (1)
+#[test]
+fn test_test429() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Constant(vm.gc.cons(Object::Number(1), Object::Nil)),
+        Op::Push,
+        Op::Constant(Object::Nil),
+        Op::Push,
+        Op::ReferFree(176),
+        Op::Call(2),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1)", SIZE_OF_SYMBOL * 0);
+}
+
+// (string #\1 #\2 #\3) => "123"
+#[test]
+fn test_test430() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(9),
+        Op::Constant(Object::Char('1')),
+        Op::Push,
+        Op::Constant(Object::Char('2')),
+        Op::Push,
+        Op::Constant(Object::Char('3')),
+        Op::Push,
+        Op::ReferFree(24),
+        Op::Call(3),
+        Op::Halt,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "\"123\"", SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable (lambda (x) 2) (lambda (a b) #t)) (hashtable-set! ht 1 1) (hashtable-set! ht 2 2) (hashtable-ref ht 1)) => 2
+#[test]
+fn test_test432() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(11),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(3),
+        Op::Frame(11),
+        Op::Closure {
+            size: 3,
+            arg_len: 1,
+            is_optional_arg: false,
+            num_free_vars: 0,
+        },
+        Op::Constant(Object::Number(2)),
+        Op::Return(1),
+        Op::Push,
+        Op::Closure {
+            size: 3,
+            arg_len: 2,
+            is_optional_arg: false,
+            num_free_vars: 0,
+        },
+        Op::Constant(Object::True),
+        Op::Return(2),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::Number(2);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "my" "apple") (hashtable-set! ht "our" "water") (hashtable-ref ht "my")) => "apple"
+#[test]
+fn test_test433() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(11),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(5),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("my")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("apple")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("our")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("water")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("my")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "\"apple\"", SIZE_OF_SYMBOL * 0);
+}
+
+// (hashtable? (make-hashtable string-hash string=?)) => #t
+#[test]
+fn test_test434() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(11),
+        Op::Frame(7),
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Call(2),
+        Op::Push,
+        Op::ReferFree(201),
+        Op::Call(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (hashtable? (make-eq-hashtable)) => #t
+#[test]
+fn test_test435() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Frame(3),
+        Op::ReferFree(98),
+        Op::Call(0),
+        Op::Push,
+        Op::ReferFree(201),
+        Op::Call(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (hashtable? '(a . b)) => #f
+#[test]
+fn test_test436() {
+    let mut vm = Vm::new();
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(vm.gc.cons(a, b)),
+        Op::Push,
+        Op::ReferFree(201),
+        Op::Call(1),
+        Op::Halt,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "my" "apple") (hashtable-set! ht "our" "water") (hashtable-size ht)) => 2
+#[test]
+fn test_test437() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(10),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(202),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(5),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("my")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("apple")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("our")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("water")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::Number(2);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht "my" "apple") (hashtable-set! ht "my" "apple") (hashtable-size ht)) => 2
+#[test]
+fn test_test438() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(8),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(202),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(3),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("my")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("apple")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("my")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("apple")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(3),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::Number(2);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-delete! ht 1) (hashtable-ref ht 1 #f)) => #f
+#[test]
+fn test_test439() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(9),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(203),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(4),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(2),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(Object::False),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(3),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" 1) (hashtable-delete! ht "one") (hashtable-ref ht "one" #f)) => #f
+#[test]
+fn test_test440() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(11),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(203),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(6),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(5),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(2),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(Object::False),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(3),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-contains? ht 2)) => #f
+#[test]
+fn test_test441() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(6),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(204),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(3),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-contains? ht 1)) => #t
+#[test]
+fn test_test442() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(6),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(204),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(3),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" 1) (hashtable-contains? ht "two")) => #f
+#[test]
+fn test_test443() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(8),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(204),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(5),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" 1) (hashtable-contains? ht "one")) => #t
+#[test]
+fn test_test444() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(8),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(204),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(5),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" "one") (hashtable-update! ht "one" (lambda (x) (string-append "!" x "!")) "hige") (hashtable-update! ht "two" (lambda (x) (string-append "!" x "!")) "hige") (string-append (hashtable-ref ht "one") (hashtable-ref ht "two"))) => "!one!!hige!"
+#[test]
+fn test_test445() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(20),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(22),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(6),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(5),
+        Op::Call(3),
+        Op::Frame(22),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Push,
+        Op::Closure {
+            size: 10,
+            arg_len: 1,
+            is_optional_arg: false,
+            num_free_vars: 1,
+        },
+        Op::Constant(vm.gc.new_string("!")),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("!")),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::TailCall(3, 1),
+        Op::Return(1),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("hige")),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("hashtable-update!")),
+        Op::Call(4),
+        Op::Frame(22),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Push,
+        Op::Closure {
+            size: 10,
+            arg_len: 1,
+            is_optional_arg: false,
+            num_free_vars: 1,
+        },
+        Op::Constant(vm.gc.new_string("!")),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("!")),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::TailCall(3, 1),
+        Op::Return(1),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("hige")),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("hashtable-update!")),
+        Op::Call(4),
+        Op::Frame(19),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Push,
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "\"!one!!hige!\"", SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (let1 ht-copy (hashtable-copy ht) (and (string=? (hashtable-ref ht-copy 1) "one") (not (hashtable-mutable? ht-copy))))) => #t
+#[test]
+fn test_test446() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(11),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(205),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(206),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(6),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(5),
+        Op::Call(3),
+        Op::LetFrame(7),
+        Op::ReferFree(3),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Push,
+        Op::Display(4),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(1),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(13),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(2),
+        Op::Test(7),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Not,
+        Op::Leave(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (let1 ht-copy (hashtable-copy ht #t) (and (string=? (hashtable-ref ht-copy 1) "one") (hashtable-mutable? ht-copy)))) => #t
+#[test]
+fn test_test447() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(12),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(205),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(206),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(6),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(5),
+        Op::Call(3),
+        Op::LetFrame(8),
+        Op::ReferFree(3),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Push,
+        Op::Display(4),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::True),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(13),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(2),
+        Op::Test(6),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Leave(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" "one") (let1 ht-copy (hashtable-copy ht) (and (string=? (hashtable-ref ht-copy "one") "one") (not (hashtable-mutable? ht-copy))))) => #t
+#[test]
+fn test_test448() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(13),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(205),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(206),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(8),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(7),
+        Op::Call(3),
+        Op::LetFrame(7),
+        Op::ReferFree(5),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Push,
+        Op::ReferFree(6),
+        Op::Push,
+        Op::Display(4),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(1),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(13),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(2),
+        Op::Test(7),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Not,
+        Op::Leave(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" "one") (let1 ht-copy (hashtable-copy ht #t) (and (string=? (hashtable-ref ht-copy "one") "one") (hashtable-mutable? ht-copy)))) => #t
+#[test]
+fn test_test449() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(14),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(205),
+        Op::Push,
+        Op::ReferFree(101),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(206),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(8),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(7),
+        Op::Call(3),
+        Op::LetFrame(8),
+        Op::ReferFree(5),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Push,
+        Op::ReferFree(6),
+        Op::Push,
+        Op::Display(4),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::True),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(13),
+        Op::Frame(7),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(2),
+        Op::Test(6),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Leave(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-set! ht 2 "two") (hashtable-clear! ht) (hashtable-size ht)) => 0
+#[test]
+fn test_test450() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(9),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(207),
+        Op::Push,
+        Op::ReferFree(202),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(4),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(3),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(1),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::Number(0);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" 1) (hashtable-set! ht "two" 2) (hashtable-clear! ht) (hashtable-size ht)) => 0
+#[test]
+fn test_test451() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(11),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(207),
+        Op::Push,
+        Op::ReferFree(202),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(6),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(5),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::ReferFree(5),
+        Op::Call(3),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(1),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::Number(0);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-set! ht 2 "two") (list-sort < (vector->list (hashtable-keys ht)))) => (1 2)
+#[test]
+fn test_test452() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(11),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(212),
+        Op::Push,
+        Op::ReferFree(102),
+        Op::Push,
+        Op::ReferFree(167),
+        Op::Push,
+        Op::ReferFree(98),
+        Op::Push,
+        Op::Display(5),
+        Op::Frame(3),
+        Op::ReferFree(0),
+        Op::Call(0),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(15),
+        Op::ReferFree(3),
+        Op::Push,
+        Op::Frame(9),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(1),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("list-sort")),
+        Op::Call(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(1 2)", SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" 1) (hashtable-set! ht "two" 2) (let1 keys (vector->list (hashtable-keys ht)) (and (member "one" keys) (member "two" keys) (= 2 (length keys))))) => #t
+#[test]
+fn test_test453() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(18),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(102),
+        Op::Push,
+        Op::ReferFree(167),
+        Op::Push,
+        Op::ReferFree(93),
+        Op::Push,
+        Op::ReferFree(191),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(8),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(7),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::ReferFree(7),
+        Op::Call(3),
+        Op::LetFrame(9),
+        Op::ReferFree(4),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Push,
+        Op::ReferFree(6),
+        Op::Push,
+        Op::ReferFree(5),
+        Op::Push,
+        Op::Display(4),
+        Op::Frame(9),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Call(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(1),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(7),
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Test(17),
+        Op::Frame(7),
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(3),
+        Op::Call(2),
+        Op::Test(9),
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(2),
+        Op::Call(1),
+        Op::NumberEqual,
+        Op::Leave(1),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (let1 ht (make-hashtable string-hash string=?) (hashtable-set! ht "one" 1) (hashtable-set! ht "two" 2) (receive (keys vals) (hashtable-entries ht) (append (vector->list keys) (vector->list vals)))) => ("two" "one" 2 1)
+#[test]
+fn test_test454() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::LetFrame(13),
+        Op::ReferFree(100),
+        Op::Push,
+        Op::ReferFree(167),
+        Op::Push,
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Push,
+        Op::Display(5),
+        Op::Frame(7),
+        Op::ReferFree(2),
+        Op::Push,
+        Op::ReferFree(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(2),
+        Op::Push,
+        Op::Enter(1),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("one")),
+        Op::Push,
+        Op::Constant(Object::Number(1)),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::Frame(9),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::Constant(vm.gc.new_string("two")),
+        Op::Push,
+        Op::Constant(Object::Number(2)),
+        Op::Push,
+        Op::ReferFree(4),
+        Op::Call(3),
+        Op::LetFrame(4),
+        Op::ReferFree(3),
+        Op::Push,
+        Op::Display(1),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("hashtable-entries")),
+        Op::Call(1),
+        Op::Receive(2, 0),
+        Op::Enter(2),
+        Op::Frame(5),
+        Op::ReferLocal(0),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(5),
+        Op::ReferLocal(1),
+        Op::Push,
+        Op::ReferFree(0),
+        Op::Call(1),
+        Op::Append2,
+        Op::Leave(2),
+        Op::Leave(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+        Op::Nop,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "(two one 2 1)", SIZE_OF_SYMBOL * 0);
+}
+
+// (equal? eq? (hashtable-equivalence-function (make-eq-hashtable))) => #t
+#[test]
+fn test_test455() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::ReferFree(91),
+        Op::Push,
+        Op::Frame(7),
+        Op::Frame(3),
+        Op::ReferFree(98),
+        Op::Call(0),
+        Op::Push,
+        Op::ReferFree(209),
+        Op::Call(1),
+        Op::Equal,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (hashtable-hash-function (make-eq-hashtable)) => #f
+#[test]
+fn test_test456() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(7),
+        Op::Frame(3),
+        Op::ReferFree(98),
+        Op::Call(0),
+        Op::Push,
+        Op::ReferFree(210),
+        Op::Call(1),
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (equal? string=? (hashtable-equivalence-function (make-hashtable string-hash string=?))) => #t
+#[test]
+fn test_test457() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::ReferFree(56),
+        Op::Push,
+        Op::Frame(11),
+        Op::Frame(7),
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Call(2),
+        Op::Push,
+        Op::ReferFree(209),
+        Op::Call(1),
+        Op::Equal,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (equal? string-hash (hashtable-hash-function (make-hashtable string-hash string=?))) => #t
+#[test]
+fn test_test458() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::ReferFree(103),
+        Op::Push,
+        Op::Frame(11),
+        Op::Frame(7),
+        Op::ReferFree(103),
+        Op::Push,
+        Op::ReferFree(56),
+        Op::Push,
+        Op::ReferFree(200),
+        Op::Call(2),
+        Op::Push,
+        Op::ReferFree(210),
+        Op::Call(1),
+        Op::Equal,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (= (string-ci-hash "abc") (string-ci-hash "AbC")) => #t
+#[test]
+fn test_test459() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(vm.gc.new_string("abc")),
+        Op::Push,
+        Op::ReferFree(105),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(5),
+        Op::Constant(vm.gc.new_string("AbC")),
+        Op::Push,
+        Op::ReferFree(105),
+        Op::Call(1),
+        Op::NumberEqual,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (= (symbol-hash 'abc) (symbol-hash 'abc)) => #t
+#[test]
+fn test_test460() {
+    let mut vm = Vm::new();
+    let a = vm.gc.symbol_intern("abc");
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(a),
+        Op::Push,
+        Op::ReferFree(106),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(5),
+        Op::Constant(a),
+        Op::Push,
+        Op::ReferFree(106),
+        Op::Call(1),
+        Op::NumberEqual,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+}
+
+// (= (symbol-hash 'abc) (symbol-hash 'aBc)) => #f
+#[test]
+fn test_test461() {
+    let mut vm = Vm::new();
+    let b = vm.gc.symbol_intern("aBc");
+    let a = vm.gc.symbol_intern("abc");
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(a),
+        Op::Push,
+        Op::ReferFree(106),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(5),
+        Op::Constant(b),
+        Op::Push,
+        Op::ReferFree(106),
+        Op::Call(1),
+        Op::NumberEqual,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::False;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
+}
+
+// (= (equal-hash '(a b c)) (equal-hash '(a b c))) => #t
+#[test]
+fn test_test462() {
+    let mut vm = Vm::new();
+    let c = vm.gc.symbol_intern("c");
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(vm.gc.list3(a, b, c)),
+        Op::Push,
+        Op::ReferFree(107),
+        Op::Call(1),
+        Op::Push,
+        Op::Frame(5),
+        Op::Constant(vm.gc.list3(a, b, c)),
+        Op::Push,
+        Op::ReferFree(107),
+        Op::Call(1),
+        Op::NumberEqual,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
+}
+
+// (equal? eqv? (hashtable-equivalence-function (make-eqv-hashtable))) => #t
+#[test]
+fn test_test463() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::ReferFree(92),
+        Op::Push,
+        Op::Frame(7),
+        Op::Frame(3),
+        Op::ReferFree(99),
+        Op::Call(0),
+        Op::Push,
+        Op::ReferFree(209),
+        Op::Call(1),
+        Op::Equal,
+        Op::Halt,
+        Op::Nop,
+        Op::Nop,
+    ];
+    let expected = Object::True;
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
