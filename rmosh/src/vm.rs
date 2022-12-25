@@ -6998,7 +6998,7 @@ pub mod tests {
     // (call-with-values (lambda () (values 1 2)) cons) => (1 . 2)
     #[test]
     fn test_test230() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::ReferFree(1),
@@ -7007,7 +7007,12 @@ pub mod tests {
             Op::Push,
             Op::Display(2),
             Op::Frame(8),
-            Op::Closure {size: 6, arg_len: 0, is_optional_arg: false, num_free_vars: 0},
+            Op::Closure {
+                size: 6,
+                arg_len: 0,
+                is_optional_arg: false,
+                num_free_vars: 0,
+            },
             Op::Constant(Object::Number(1)),
             Op::Push,
             Op::Constant(Object::Number(2)),
@@ -7035,7 +7040,7 @@ pub mod tests {
     // (cons 'a '()) => (a)
     #[test]
     fn test_test232() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::Constant(vm.gc.symbol_intern("a")),
             Op::Push,
@@ -7046,5 +7051,21 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(a)", SIZE_OF_SYMBOL);
     }
 
+    // (cons '(a) '(b c d)) => ((a) b c d)
+    #[test]
+    fn test_test233_modified() {
+        let mut vm = Vm::new();
+        let a = vm.gc.symbol_intern("a");
+        let b = vm.gc.symbol_intern("b");
+        let c = vm.gc.symbol_intern("c");
+        let d = vm.gc.symbol_intern("d");
+        let ops = vec![
+            Op::Constant(vm.gc.cons(a, Object::Nil)),
+            Op::Push,
+            Op::Constant(vm.gc.list3(b, c, d)),
+            Op::Cons,
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "((a) b c d)", SIZE_OF_SYMBOL * 4);
+    }
 }
-
