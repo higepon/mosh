@@ -7032,4 +7032,19 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(1 . 2)", 0);
     }
 
+    // (cons 'a '()) => (a)
+    #[test]
+    fn test_test232() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::Constant(vm.gc.symbol_intern("a")),
+            Op::Push,
+            Op::Constant(Object::Nil),
+            Op::Cons,
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(a)", SIZE_OF_SYMBOL);
+    }
+
 }
+

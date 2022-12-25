@@ -89,6 +89,7 @@
   (match test-sexp
     ;; Ignore for now.
     [('mosh-only . more) (rewrite-test more idx)]
+    [('error . more) '()]
     [(expected expr)
       (call-with-output-file (format "data/test~a.scm" idx)
         (lambda (p)
