@@ -372,6 +372,11 @@ impl Vm {
                     let is_eq = self.pop().eq(&self.ac);
                     self.set_return_value(Object::make_bool(is_eq));
                 }
+                Op::Equal => {
+                    // TODO 
+                    let is_eq = self.pop().eq(&self.ac);
+                    self.set_return_value(Object::make_bool(is_eq));
+                }                
                 Op::NumberEqual => {
                     number_op!(==, self);
                 }

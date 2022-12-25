@@ -402,6 +402,7 @@ impl Gc {
             Op::Display(_) => (),
             Op::Enter(_) => (),
             Op::Eq => (),
+            Op::Equal => (),            
             Op::Frame(_) => (),
             Op::Halt => (),
             Op::Indirect => (),

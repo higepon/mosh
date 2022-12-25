@@ -6222,3 +6222,55 @@ fn test_test240() {
     let ops = vec![Op::Constant(vm.gc.list4(list, b, c, d)), Op::Cdr, Op::Halt];
     test_ops_with_size_as_str(&mut vm, ops, "(b c d)", SIZE_OF_SYMBOL * 4);
 }
+
+// (cdr '(1 . 2)) => 2
+#[test]
+fn test_test241() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.cons(Object::Number(1), Object::Number(2))),
+        Op::Cdr,
+        Op::Halt,
+    ];
+    let expected = Object::Number(2);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+    // (reverse '(a b c)) => (c b a)
+    #[test]
+    fn test_test242() {
+        let mut vm = Vm::new();        
+        let c = vm.gc.symbol_intern("c");
+        let b = vm.gc.symbol_intern("b");
+        let a = vm.gc.symbol_intern("a");
+
+        let ops = vec![
+            Op::Frame(5),
+            Op::Constant(vm.gc.list3(a, b, c)),
+            Op::Push,
+            Op::ReferFree(26),
+            Op::Call(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(c b a)", SIZE_OF_SYMBOL * 3);
+    }
+
+
+    // (equal? 'a 'a) => #t
+    #[test]
+    fn test_test244() {
+        let mut vm = Vm::new();
+        let a = vm.gc.symbol_intern("a");
+        
+        let ops = vec![
+            Op::Constant(a),
+            Op::Push,
+            Op::Constant(a),
+            Op::Equal,
+            Op::Halt,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1);
+    }

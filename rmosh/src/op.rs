@@ -34,6 +34,7 @@ pub enum Op {
     Display(isize),
     Enter(isize),
     Eq,
+    Equal,
     Frame(usize),
     Halt,
     Indirect,
