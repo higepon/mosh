@@ -87,7 +87,7 @@
           (let ([name1 (add-symbols! a)]
                 [name2 (add-symbols! b)]          
                 [name3 (add-symbols! c)])        
-          (format port "            Op::~a(vm.gc.list3(~a, ~a, ~a),\n" (insn->string insn) name1 name2 name3)
+          (format port "            Op::~a(vm.gc.list3(~a, ~a, ~a)),\n" (insn->string insn) name1 name2 name3)
             (rewrite-insn* more* (+ idx 2) port))]             
         [((and (or 'CONSTANT) insn) #((? number? n)) . more*)
           (format port "            Op::~a(vm.gc.new_vector(&vec![Object::Number(~a)])),\n" (insn->string insn) n)
@@ -204,7 +204,7 @@
 ~a       
         let ops = vec![\n~a" expr expected test-name (decl-symbol) insn-str)      
           (format port "        ];
-        test_ops_with_size_as_str(&mut vm, ops, \"\\\"~a\\\"\", SIZE_OF_SYMBOLS ~a);
+        test_ops_with_size_as_str(&mut vm, ops, \"\\\"~a\\\"\", SIZE_OF_SYMBOL ~a);
     }\n" expected (length symbols))]
           [else
         (format port "
@@ -213,11 +213,11 @@
     fn test_~a() {
         let mut vm = Vm::new();
 ~a        
-        let ops = vec![\n" expr expected test-name (decl-symbol) insn-str)        
+        let ops = vec![\n~a" expr expected test-name (decl-symbol) insn-str)        
         (let ([expected (expected->rust expected)])
           (format port "        ];
         let expected = ~a;
-        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOLS * ~a);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * ~a);
     }\n" expected (length symbols)))])]
       [else (write sexp* port)])
       (display (get))

@@ -6170,3 +6170,20 @@ fn test_test235() {
         ];
         test_ops_with_size_as_str(&mut vm, ops, "((a b) . c)", SIZE_OF_SYMBOL * 3);
     }
+
+    // (car '(a b c)) => a
+    #[test]
+    fn test_test237() {
+        let mut vm = Vm::new();
+        let c = vm.gc.symbol_intern("c");
+        let b = vm.gc.symbol_intern("b");
+        let a = vm.gc.symbol_intern("a");
+        
+        let ops = vec![
+            Op::Constant(vm.gc.list3(a, b, c)),
+            Op::Car,
+            Op::Halt,
+        ];
+        let expected = vm.gc.symbol_intern("a");
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
+    }
