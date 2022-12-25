@@ -809,9 +809,8 @@ fn is_number(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn cons(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons";
-    check_argc!(name, args, 2);    
+    check_argc!(name, args, 2);
     vm.gc.cons(args[0], args[1])
-
 }
 fn consmul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons*";
@@ -1206,7 +1205,17 @@ fn caddr(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn cadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => return pair2.car,
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdaaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdaaar";
