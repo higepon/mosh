@@ -1291,15 +1291,14 @@ fn is_list(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn list(vm: &mut Vm, args: &[Object]) -> Object {
     let mut obj = Object::Nil;
-    let argc = args.len();
-    let mut i: isize = (argc - 1).try_into().unwrap();
+    let argc = args.len() as isize;
+    let mut i = argc - 1;
     loop {
-        let idx: usize = i.try_into().unwrap();
-        obj = vm.gc.cons(args[idx], obj);
-        i = i - 1;
         if i < 0 {
             break;
         }
+        obj = vm.gc.cons(args[i as usize], obj);
+        i = i - 1;
     }
     obj
 }
