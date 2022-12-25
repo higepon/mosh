@@ -1373,9 +1373,9 @@ fn current_error_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "current-error-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn values(_vm: &mut Vm, args: &[Object]) -> Object {
+fn values(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "values";
-    panic!("{}({}) not implemented", name, args.len());
+    vm.values(args)
 }
 fn vm_apply(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vm/apply";

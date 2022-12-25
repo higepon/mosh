@@ -97,6 +97,22 @@ impl Vm {
         self.gc.intern(s)
     }
 
+    pub fn values(&mut self, values: &[Object]) -> Object {
+        let n = values.len();
+        self.num_values = n;
+        if 0 == n {
+            return Object::Unspecified;
+        }
+        for i in 1..n as usize {
+            if i >= MAX_NUM_VALUES {
+                panic!("values: too many values");
+            }
+            self.values[i - 1] = values[i];
+        }
+        // this is set to ac later.
+        return values[0];
+    }
+
     fn initialize_free_vars(&mut self, ops: *const Op, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);
         let mut display = self
@@ -6858,11 +6874,10 @@ pub mod tests {
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
 
-
     // (receive (a b c) (values 1 2 3) (+ a b c)) => 6
     #[test]
     fn test_test225() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(4),
             Op::Constant(Object::Number(1)),
@@ -6890,7 +6905,7 @@ pub mod tests {
     // (receive z (values 'x 'y) z) => (x y)
     #[test]
     fn test_test226() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(1),
             Op::Constant(vm.gc.symbol_intern("x")),
@@ -6909,7 +6924,7 @@ pub mod tests {
     // (receive (a . b) (values 'x 'y 'z) b) => (y z)
     #[test]
     fn test_test227() {
-        let mut vm = Vm::new();        
+        let mut vm = Vm::new();
         let ops = vec![
             Op::LetFrame(2),
             Op::Constant(vm.gc.symbol_intern("x")),
@@ -6927,4 +6942,56 @@ pub mod tests {
         test_ops_with_size_as_str(&mut vm, ops, "(y z)", SIZE_OF_SYMBOL * 3);
     }
 
+    // (receive (a . b) (values 'x 'y 'z) a) => x
+    #[test]
+    fn test_test228() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(vm.gc.symbol_intern("x")),
+            Op::Push,
+            Op::Constant(vm.gc.symbol_intern("y")),
+            Op::Push,
+            Op::Constant(vm.gc.symbol_intern("z")),
+            Op::Values(3),
+            Op::Receive(1, 1),
+            Op::Enter(2),
+            Op::ReferLocal(0),
+            Op::Leave(2),
+            Op::Halt,
+        ];
+        let expected = vm.gc.symbol_intern("x");
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
+    }
+
+    // (receive x (apply values '(1 2 3)) x) => (1 2 3)
+    #[test]
+    fn test_test229() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::ReferFree(110),
+            Op::Push,
+            Op::ReferFree(152),
+            Op::Push,
+            Op::Display(2),
+            Op::Frame(7),
+            Op::ReferFree(1),
+            Op::Push,
+            Op::Constant(
+                vm.gc
+                    .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
+            ),
+            Op::Push,
+            Op::ReferFree(0),
+            Op::Call(2),
+            Op::Receive(0, 1),
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Leave(1),
+            Op::Halt,
+            Op::Nop,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(1 2 3)", 0);
+    }
 }
