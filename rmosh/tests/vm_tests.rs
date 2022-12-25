@@ -6152,38 +6152,73 @@ fn test_test235() {
     test_ops_with_size_as_str(&mut vm, ops, "(a . 3)", SIZE_OF_SYMBOL);
 }
 
+// (cons '(a b) 'c) => ((a b) . c)
+#[test]
+fn test_test236() {
+    let mut vm = Vm::new();
+    let c = vm.gc.symbol_intern("c");
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
 
-    // (cons '(a b) 'c) => ((a b) . c)
-    #[test]
-    fn test_test236() {
-        let mut vm = Vm::new();        
-        let c = vm.gc.symbol_intern("c");
-        let b = vm.gc.symbol_intern("b");
-        let a = vm.gc.symbol_intern("a");
+    let ops = vec![
+        Op::Constant(vm.gc.list2(a, b)),
+        Op::Push,
+        Op::Constant(c),
+        Op::Cons,
+        Op::Halt,
+    ];
+    test_ops_with_size_as_str(&mut vm, ops, "((a b) . c)", SIZE_OF_SYMBOL * 3);
+}
 
-        let ops = vec![
-            Op::Constant(vm.gc.list2(a, b)),
-            Op::Push,
-            Op::Constant(c),
-            Op::Cons,
-            Op::Halt,
-        ];
-        test_ops_with_size_as_str(&mut vm, ops, "((a b) . c)", SIZE_OF_SYMBOL * 3);
-    }
+// (car '(a b c)) => a
+#[test]
+fn test_test237() {
+    let mut vm = Vm::new();
+    let c = vm.gc.symbol_intern("c");
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
 
-    // (car '(a b c)) => a
-    #[test]
-    fn test_test237() {
-        let mut vm = Vm::new();
-        let c = vm.gc.symbol_intern("c");
-        let b = vm.gc.symbol_intern("b");
-        let a = vm.gc.symbol_intern("a");
-        
-        let ops = vec![
-            Op::Constant(vm.gc.list3(a, b, c)),
-            Op::Car,
-            Op::Halt,
-        ];
-        let expected = vm.gc.symbol_intern("a");
-        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
-    }
+    let ops = vec![Op::Constant(vm.gc.list3(a, b, c)), Op::Car, Op::Halt];
+    let expected = vm.gc.symbol_intern("a");
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 3);
+}
+
+// (car '((a) b c d)) => (a)
+#[test]
+fn test_test238() {
+    let mut vm = Vm::new();
+    let d = vm.gc.symbol_intern("d");
+    let c = vm.gc.symbol_intern("c");
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
+    let list = vm.gc.list1(a);
+    let ops = vec![Op::Constant(vm.gc.list4(list, b, c, d)), Op::Car, Op::Halt];
+    test_ops_with_size_as_str(&mut vm, ops, "(a)", SIZE_OF_SYMBOL * 4);
+}
+
+// (car '(1 . 2)) => 1
+#[test]
+fn test_test239() {
+    let mut vm = Vm::new();
+
+    let ops = vec![
+        Op::Constant(vm.gc.cons(Object::Number(1), Object::Number(2))),
+        Op::Car,
+        Op::Halt,
+    ];
+    let expected = Object::Number(1);
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
+}
+
+// (cdr '((a) b c d)) => (b c d)
+#[test]
+fn test_test240() {
+    let mut vm = Vm::new();
+    let d = vm.gc.symbol_intern("d");
+    let c = vm.gc.symbol_intern("c");
+    let b = vm.gc.symbol_intern("b");
+    let a = vm.gc.symbol_intern("a");
+    let list = vm.gc.list1(a);
+    let ops = vec![Op::Constant(vm.gc.list4(list, b, c, d)), Op::Cdr, Op::Halt];
+    test_ops_with_size_as_str(&mut vm, ops, "(b c d)", SIZE_OF_SYMBOL * 4);
+}

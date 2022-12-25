@@ -86,9 +86,17 @@
         [((and (or 'CONSTANT) insn) ((? symbol? a) (? symbol? b) (? symbol? c)) . more*)
           (let ([name1 (add-symbols! a)]
                 [name2 (add-symbols! b)]          
-                [name3 (add-symbols! c)])        
+                [name3 (add-symbols! c)])    
           (format port "            Op::~a(vm.gc.list3(~a, ~a, ~a)),\n" (insn->string insn) name1 name2 name3)
-            (rewrite-insn* more* (+ idx 2) port))]             
+            (rewrite-insn* more* (+ idx 2) port))]  
+
+        [((and (or 'CONSTANT) insn) (((? symbol? a)) (? symbol? b) (? symbol? c) (? symbol? d)) . more*)
+          (let ([name1 (add-symbols! a)]
+                [name2 (add-symbols! b)]          
+                [name3 (add-symbols! c)]                
+                [name4 (add-symbols! d)])                        
+          (format port "            Op::~a(vm.gc.list4(vm.gc.list1(~a), ~a, ~a, ~a)),\n" (insn->string insn) name1 name2 name3 name4)
+            (rewrite-insn* more* (+ idx 2) port))]  
         [((and (or 'CONSTANT) insn) #((? number? n)) . more*)
           (format port "            Op::~a(vm.gc.new_vector(&vec![Object::Number(~a)])),\n" (insn->string insn) n)
             (rewrite-insn* more* (+ idx 2) port)]                                        
@@ -97,7 +105,10 @@
             (rewrite-insn* more* (+ idx 2) port)]       
         [((and (or 'CONSTANT) insn) (((? number? n))) . more*)
           (format port "            Op::~a(vm.gc.list1(vm.gc.list1(Object::Number(~a)))),\n" (insn->string insn) n)
-            (rewrite-insn* more* (+ idx 2) port)]                   
+            (rewrite-insn* more* (+ idx 2) port)]  
+        [((and (or 'CONSTANT) insn) ((? number? a) . (? number? b)) . more*)
+          (format port "            Op::~a(vm.gc.cons(Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b)
+            (rewrite-insn* more* (+ idx 2) port)]                                
         [((and (or 'CONSTANT) insn) ((? number? a) (? number? b)) . more*)
           (format port "            Op::~a(vm.gc.list2(Object::Number(~a), Object::Number(~a))),\n" (insn->string insn) a b)
             (rewrite-insn* more* (+ idx 2) port)]    
