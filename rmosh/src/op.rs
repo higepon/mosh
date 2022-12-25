@@ -63,6 +63,7 @@ pub enum Op {
     TailCall(isize, isize),
     Test(usize),
     Undef,
+    Values(usize),
     VectorLength,
     VectorP,
     VectorRef,    

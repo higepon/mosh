@@ -431,6 +431,7 @@ impl Gc {
             Op::TailCall(_, _) => (),
             Op::Test(_) => (),
             Op::Undef => (),
+            Op::Values(_) => (),
             Op::VectorLength => (),
             Op::VectorP => (),
             Op::VectorRef => (),

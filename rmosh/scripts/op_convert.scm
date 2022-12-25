@@ -19,7 +19,7 @@
       [(= cur-offset (+ offset 1)) rust-offset]
       [else
         (match insn*
-          [((or 'MAKE_CONTINUATION 'CALL 'BRANCH_NOT_EQV 'BRANCH_NOT_GE 'BRANCH_NOT_GT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NULL 'BOX 'ASSIGN_LOCAL 'ASSIGN_GLOBAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+          [((or 'MAKE_CONTINUATION 'VALUES 'CALL 'BRANCH_NOT_EQV 'BRANCH_NOT_GE 'BRANCH_NOT_GT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NULL 'BOX 'ASSIGN_LOCAL 'ASSIGN_GLOBAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'ENTER 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
             (loop more* (+ cur-offset 2) (+ rust-offset 1))]
           [((or 'APPEND2 'MAKE_VECTOR 'VECTOR_LENGTH 'HALT 'SET_CAR 'SET_CDR 'READ_CHAR 'EQ 'PAIR_P 'SYMBOL_P 'VECTOR_P 'NOT 'CAR 'CDR 'CADR 'CONS 'NULL_P 'NUMBER_EQUAL 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'NUMBER_MUL 'PUSH) . more*)
             (loop more* (+ cur-offset 1) (+ rust-offset 1))]
@@ -90,7 +90,7 @@
         [((and (or 'TAIL_CALL) insn) m n . more*)
           (format #t "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
           (rewrite-insn* more* (+ idx 3))]              
-        [((and (or 'ENTER 'BOX 'MAKE_CONTINUATION) insn) n . more*)
+        [((and (or 'ENTER 'BOX 'MAKE_CONTINUATION 'VALUES) insn) n . more*)
           (format #t "            Op::~a(~a),\n" (insn->string insn) n)
           (rewrite-insn* more* (+ idx 2))]                
         [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)

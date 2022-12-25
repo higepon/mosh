@@ -12,6 +12,7 @@ use crate::{
 };
 
 const STACK_SIZE: usize = 256;
+const MAX_NUM_VALUES: usize = 256;
 
 #[macro_export]
 macro_rules! branch_number_op {
@@ -69,6 +70,9 @@ pub struct Vm {
     // We keep the lib_ops here so that the lib_ops live longer than every call of run.
     // If we kept lib_ops as local variable, it can/will be immediately freed after run(lib_ops).
     lib_ops: Vec<Op>,
+    // Return values.
+    values: [Object; MAX_NUM_VALUES],
+    num_values: usize,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }
@@ -84,6 +88,8 @@ impl Vm {
             fp: null_mut(),
             globals: HashMap::new(),
             lib_ops: vec![],
+            num_values: 0,
+            values: [Object::Unspecified; MAX_NUM_VALUES],
         }
     }
 
@@ -122,6 +128,11 @@ impl Vm {
     fn mark_roots(&mut self) {
         // Stack.
         for &obj in &self.stack[0..self.stack_len()] {
+            self.gc.mark_object(obj);
+        }
+
+        // Values.
+        for &obj in &self.values[0..self.num_values] {
             self.gc.mark_object(obj);
         }
 
@@ -180,7 +191,7 @@ impl Vm {
                     }
                 },
                 Op::VectorP => match self.ac {
-                    Object::Vector(v) => {
+                    Object::Vector(_) => {
                         self.ac = Object::True;
                     }
                     _ => {
@@ -401,6 +412,41 @@ impl Vm {
                         panic!("identifier {:?} not found", symbol);
                     }
                 },
+                Op::Values(n) => {
+                    //  values stack layout
+                    //    (value 'a 'b 'c 'd)
+                    //    ==>
+                    //    =====
+                    //      a
+                    //    =====
+                    //      b
+                    //    =====
+                    //      c    [ac_] = d
+                    //    =====
+                    //  values are stored in [valuez vector] and [a-reg] like following.
+                    //  #(b c d)
+                    //  [ac_] = a
+
+                    if n > MAX_NUM_VALUES + 1 {
+                        panic!("values too many values {}", n);
+                    } else {
+                        self.num_values = n;
+
+                        for i in (1..n).rev() {
+                            self.values[i - 1] = self.ac;
+                            self.ac = self.index(self.sp, (n - i - 1) as isize);
+                        }
+
+                        if n > 1 {
+                            self.sp = self.dec(self.sp, self.num_values as isize - 1);
+                        } else {
+                            // there's no need to push
+                        }
+                    }
+                    if n == 0 {
+                        self.ac = Object::Unspecified;
+                    }
+                }
                 Op::Enter(n) => {
                     self.fp = self.dec(self.sp, n);
                 }
@@ -6535,5 +6581,25 @@ pub mod tests {
         ];
         let expected = Object::Number(4);
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_CLOSURE);
+    }
+
+    // (if (values 1 2 3) #t #f) => #t
+    #[test]
+    fn test_test220() {
+        let mut vm = Vm::new();
+        let ops = vec![
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Values(3),
+            Op::Test(2),
+            Op::Constant(Object::True),
+            Op::Halt,
+            Op::Nop,
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, 0);
     }
 }
