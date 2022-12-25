@@ -88,7 +88,7 @@
 (define (rewrite-test test-sexp idx)
   (match test-sexp
     ;; Ignore for now.
-    [('mosh-only . more) '()]
+    [('mosh-only . more) (rewrite-test more idx)]
     [(expected expr)
       (call-with-output-file (format "data/test~a.scm" idx)
         (lambda (p)

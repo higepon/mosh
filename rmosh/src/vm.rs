@@ -6857,4 +6857,74 @@ pub mod tests {
         let expected = Object::Number(1235);
         test_ops_with_size(&mut vm, ops, expected, 0);
     }
+
+
+    // (receive (a b c) (values 1 2 3) (+ a b c)) => 6
+    #[test]
+    fn test_test225() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(4),
+            Op::Constant(Object::Number(1)),
+            Op::Push,
+            Op::Constant(Object::Number(2)),
+            Op::Push,
+            Op::Constant(Object::Number(3)),
+            Op::Values(3),
+            Op::Receive(3, 0),
+            Op::Enter(3),
+            Op::ReferLocal(0),
+            Op::Push,
+            Op::ReferLocal(1),
+            Op::NumberAdd,
+            Op::Push,
+            Op::ReferLocal(2),
+            Op::NumberAdd,
+            Op::Leave(3),
+            Op::Halt,
+        ];
+        let expected = Object::Number(6);
+        test_ops_with_size(&mut vm, ops, expected, 0);
+    }
+
+    // (receive z (values 'x 'y) z) => (x y)
+    #[test]
+    fn test_test226() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(1),
+            Op::Constant(vm.gc.symbol_intern("x")),
+            Op::Push,
+            Op::Constant(vm.gc.symbol_intern("y")),
+            Op::Values(2),
+            Op::Receive(0, 1),
+            Op::Enter(1),
+            Op::ReferLocal(0),
+            Op::Leave(1),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(x y)", SIZE_OF_SYMBOL * 2);
+    }
+
+    // (receive (a . b) (values 'x 'y 'z) b) => (y z)
+    #[test]
+    fn test_test227() {
+        let mut vm = Vm::new();        
+        let ops = vec![
+            Op::LetFrame(2),
+            Op::Constant(vm.gc.symbol_intern("x")),
+            Op::Push,
+            Op::Constant(vm.gc.symbol_intern("y")),
+            Op::Push,
+            Op::Constant(vm.gc.symbol_intern("z")),
+            Op::Values(3),
+            Op::Receive(1, 1),
+            Op::Enter(2),
+            Op::ReferLocal(1),
+            Op::Leave(2),
+            Op::Halt,
+        ];
+        test_ops_with_size_as_str(&mut vm, ops, "(y z)", SIZE_OF_SYMBOL * 3);
+    }
+
 }
