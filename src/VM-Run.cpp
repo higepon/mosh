@@ -1289,7 +1289,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
                                                     L1(n));
                     }
                 } else {
-                    callAssertionViolation(After(this,
+                    callAssertionViolationAfter(this,
                                                 UC("vector-set!"),
                                                 UC("index, number required"),
                                                 L1(n));
