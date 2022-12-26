@@ -2,7 +2,7 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{InputPort, Object},
+    objects::{InputPort, Object, Pair},
     vm::Vm,
 };
 
@@ -1084,17 +1084,12 @@ fn digit_to_integer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "digit->integer";
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
-        (Object::Char(c), Object::Number(radix)) => {
-            match c.to_digit(radix as u32) {
-                Some(v) => Object::Number(v as isize),
-                None => {
-                    panic!(
-                        "{}: could not convert ({}, {})",
-                        name, args[0], args[1]
-                    );
-                }
+        (Object::Char(c), Object::Number(radix)) => match c.to_digit(radix as u32) {
+            Some(v) => Object::Number(v as isize),
+            None => {
+                panic!("{}: could not convert ({}, {})", name, args[0], args[1]);
             }
-        }
+        },
         _ => {
             panic!(
                 "{}: char and number required but got {} and {}",
@@ -1674,7 +1669,24 @@ fn append2(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn append_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "append!";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        &[] => Object::Nil,
+        _ => {
+            let mut ret = args[args.len() - 1];
+            let mut i = args.len() as isize - 2;
+            loop {
+                if i < 0 {
+                    break;
+                }
+                if !args[i as usize].is_list() {
+                    panic!("{}: list required but got {}", name, args[i as usize]);
+                }
+                ret = Pair::append_destructive(args[i as usize], ret);
+                i = i - 1;
+            }
+            ret
+        }
+    }
 }
 fn pass3_find_free(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pass3/find-free";
@@ -2585,9 +2597,7 @@ fn is_even(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "even?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Number(n) => {
-            Object::make_bool(n % 2 == 0)
-        }
+        Object::Number(n) => Object::make_bool(n % 2 == 0),
         _ => {
             panic!("{}: required number but got {}", name, args[0]);
         }
