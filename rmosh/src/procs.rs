@@ -1020,9 +1020,21 @@ fn string_split(vm: &mut Vm, args: &[Object]) -> Object {
         }
     }
 }
-fn string(_vm: &mut Vm, args: &[Object]) -> Object {
+fn string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut chars: Vec<char> = vec![];
+    for obj in args {
+        match obj {
+            Object::Char(c) => {
+                chars.push(*c);
+            }
+            v => {
+                panic!("{}: char required but got {}", name, v)                
+            }
+        }
+    }
+    let s: String = chars.into_iter().collect();
+    vm.gc.new_string(&s)
 }
 fn number_to_string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "number->string";
