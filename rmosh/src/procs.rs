@@ -1652,7 +1652,30 @@ fn is_symbol(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_charle(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char<=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() {
+        match args[i] {
+            Object::Char(c) => {
+                if i == args.len() - 1 {
+                    break;
+                }
+                match args[i + 1] {
+                    Object::Char(cnext) => {
+                        if c > cnext {
+                            return Object::False;
+                        }
+                    }
+                    obj => {
+                        panic!("{}: char required but got {}", name, obj);
+                    }
+                }
+            }
+            obj => {
+                panic!("{}: char required but got {}", name, obj);
+            }
+        }
+    }
+    Object::True
 }
 fn is_charlt(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char<?";
