@@ -1345,7 +1345,8 @@ fn is_vector(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_list(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_list())
 }
 fn list(vm: &mut Vm, args: &[Object]) -> Object {
     let mut obj = Object::Nil;
