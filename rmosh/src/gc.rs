@@ -215,6 +215,11 @@ impl Gc {
         Object::Vector(v)
     }
 
+    pub fn new_eq_hash_table(&mut self) -> Object {
+        let obj = self.alloc(EqHashTable::new());
+        Object::EqHashTable(obj)
+    }    
+
     // append o (list or obj) to l.
     // if l is not list return o.
     // allocate new cons sell.

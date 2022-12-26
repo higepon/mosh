@@ -1408,9 +1408,8 @@ fn get_timeofday(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-timeofday";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_eq_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
-    let name: &str = "make-eq-hashtable";
-    panic!("{}({}) not implemented", name, args.len());
+fn make_eq_hashtable(vm: &mut Vm, _args: &[Object]) -> Object {
+    vm.gc.new_eq_hash_table()
 }
 fn make_eqv_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-eqv-hashtable";
@@ -1936,7 +1935,11 @@ fn make_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::EqHashTable(_) => Object::True,
+        _ => Object::False,
+    }
 }
 fn hashtable_size(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-size";

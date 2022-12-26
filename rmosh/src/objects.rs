@@ -569,7 +569,7 @@ pub struct EqHashTable {
 }
 
 impl EqHashTable {
-    fn new() -> Self {
+    pub fn new() -> Self {
         EqHashTable {
             header: GcHeader::new(ObjectType::EqHashTable),
             hash_map: HashMap::new(),
