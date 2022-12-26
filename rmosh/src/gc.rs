@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector, Vox, EqHashTable};
+use crate::objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector, Vox, EqHashtable};
 use crate::op::Op;
 use crate::vm::Vm;
 
@@ -75,7 +75,7 @@ impl<T> DerefMut for GcRef<T> {
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
     Closure,
-    EqHashTable,
+    EqHashtable,
     InputPort,
     Pair,
     Procedure,
@@ -215,9 +215,9 @@ impl Gc {
         Object::Vector(v)
     }
 
-    pub fn new_eq_hash_table(&mut self) -> Object {
-        let obj = self.alloc(EqHashTable::new());
-        Object::EqHashTable(obj)
+    pub fn new_eq_hashtable(&mut self) -> Object {
+        let obj = self.alloc(EqHashtable::new());
+        Object::EqHashtable(obj)
     }    
 
     // append o (list or obj) to l.
@@ -340,8 +340,8 @@ impl Gc {
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);
             }
-            Object::EqHashTable(hash_table) => {
-                self.mark_heap_object(hash_table);
+            Object::EqHashtable(hashtable) => {
+                self.mark_heap_object(hashtable);
             }            
             Object::Procedure(procedure) => {
                 self.mark_heap_object(procedure);
@@ -519,13 +519,13 @@ impl Gc {
                     self.mark_object(vector.data[i]);
                 }
             }
-            ObjectType::EqHashTable => {
-                let hash_table: &EqHashTable = unsafe { mem::transmute(pointer.as_ref()) };
+            ObjectType::EqHashtable => {
+                let hashtable: &EqHashtable = unsafe { mem::transmute(pointer.as_ref()) };
 
-                for &obj in hash_table.hash_map.values() {
+                for &obj in hashtable.hash_map.values() {
                     self.mark_object(obj);
                 }
-                for &obj in hash_table.hash_map.keys() {
+                for &obj in hashtable.hash_map.keys() {
                     self.mark_object(obj);
                 }
             }            
@@ -583,9 +583,9 @@ impl Gc {
                 let v: &Vector = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(v)
             }
-            ObjectType::EqHashTable => {
-                let hash_table: &EqHashTable = unsafe { mem::transmute(hige) };
-                std::mem::size_of_val(hash_table)
+            ObjectType::EqHashtable => {
+                let hashtable: &EqHashtable = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(hashtable)
             }            
         };
         #[cfg(feature = "debug_log_gc")]

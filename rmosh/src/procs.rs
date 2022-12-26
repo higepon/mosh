@@ -1409,7 +1409,7 @@ fn get_timeofday(_vm: &mut Vm, args: &[Object]) -> Object {
     panic!("{}({}) not implemented", name, args.len());
 }
 fn make_eq_hashtable(vm: &mut Vm, _args: &[Object]) -> Object {
-    vm.gc.new_eq_hash_table()
+    vm.gc.new_eq_hashtable()
 }
 fn make_eqv_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-eqv-hashtable";
@@ -1421,7 +1421,19 @@ fn hashtable_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn hashtable_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 3);
+    match args[0] {
+        Object::EqHashtable(hashtable) => {
+            if args.len() == 2 {
+                hashtable.get(args[1], Object::False)
+            } else {
+                hashtable.get(args[1], args[2])
+            }
+        }
+        _ => {
+            panic!("{}: hashtable required but got {:?}", name, args)
+        }
+    }
 }
 fn hashtable_keys(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-keys";
@@ -1937,7 +1949,7 @@ fn is_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::EqHashTable(_) => Object::True,
+        Object::EqHashtable(_) => Object::True,
         _ => Object::False,
     }
 }

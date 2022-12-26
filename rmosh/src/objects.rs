@@ -6,12 +6,12 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 
 /// Wrapper of heap allocated or simple stack objects.
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
     Char(char),
     Closure(GcRef<Closure>),
     Eof,
-    EqHashTable(GcRef<EqHashTable>),
+    EqHashtable(GcRef<EqHashtable>),
     False,
     InputPort(GcRef<InputPort>),
     Nil,
@@ -85,6 +85,9 @@ impl Object {
     }
 }
 
+// For HashMap<Object, Object>
+impl Eq for Object {}
+
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -106,7 +109,7 @@ impl Debug for Object {
             Object::Closure(closure) => {
                 write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
             }
-            Object::EqHashTable(table) => {
+            Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
             }
             Object::Pair(pair) => {
@@ -167,7 +170,7 @@ impl Display for Object {
             Object::Closure(closure) => {
                 write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
             }
-            Object::EqHashTable(table) => {
+            Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
             }
             Object::Pair(pair) => {
@@ -561,23 +564,30 @@ impl Display for Closure {
     }
 }
 
-/// EqHashTable
+/// EqHashtable
 #[derive(Debug)]
-pub struct EqHashTable {
+pub struct EqHashtable {
     pub header: GcHeader,
     pub hash_map: HashMap<Object, Object>,
 }
 
-impl EqHashTable {
+impl EqHashtable {
     pub fn new() -> Self {
-        EqHashTable {
-            header: GcHeader::new(ObjectType::EqHashTable),
+        EqHashtable {
+            header: GcHeader::new(ObjectType::EqHashtable),
             hash_map: HashMap::new(),
+        }
+    }
+
+    pub fn get(&self, key: Object, default: Object) -> Object {
+        match self.hash_map.get(&key) {
+            Some(value) => *value,
+            _ => default,
         }
     }
 }
 
-impl Display for EqHashTable {
+impl Display for EqHashtable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<eq-hashtable>")
     }
