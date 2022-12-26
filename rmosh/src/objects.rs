@@ -608,6 +608,14 @@ impl EqHashtable {
             _ => (),
         }
     }
+
+    pub fn is_mutable(&self) -> bool {
+        return true;
+    }
+
+    pub fn clear(&mut self) {
+        self.hash_map.clear()
+    }
 }
 
 impl Display for EqHashtable {

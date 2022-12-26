@@ -2,7 +2,7 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{InputPort, Object, Pair},
+    objects::{EqHashtable, InputPort, Object, Pair},
     vm::Vm,
 };
 
@@ -1991,17 +1991,40 @@ fn is_hashtable_contains(_vm: &mut Vm, args: &[Object]) -> Object {
         }
     }
 }
-fn hashtable_copy(_vm: &mut Vm, args: &[Object]) -> Object {
+fn hashtable_copy(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-copy";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::EqHashtable(hashtable) => {
+            let mut ret = vm.gc.alloc(EqHashtable::new());
+            for (key, value) in &hashtable.hash_map {
+                ret.set(*key, *value);
+            }
+            Object::EqHashtable(ret)
+        }
+        _ => {
+            panic!("{}: hashtable required but got {:?}", name, args)
+        }
+    }
 }
 fn is_hashtable_mutable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-mutable?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::EqHashtable(hashtable) => Object::make_bool(hashtable.is_mutable()),
+        _ => Object::False,
+    }
 }
 fn hashtable_clear_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-clear!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::EqHashtable(mut hashtable) => hashtable.clear(),
+        _ => {
+            panic!("{}: hashtable required but got {:?}", name, args)
+        }
+    }
+    Object::Unspecified
 }
 
 fn hashtable_equivalence_function(_vm: &mut Vm, args: &[Object]) -> Object {
