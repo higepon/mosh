@@ -801,7 +801,6 @@ macro_rules! check_argc_between {
 fn is_number(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "number?";
     check_argc!(name, args, 1);
-    assert_eq!(args.len(), 1);
     match args[0] {
         Object::Number(_) => Object::True,
         _ => Object::False,
@@ -2584,7 +2583,15 @@ fn bytevector_ieee_double_set_destructive(_vm: &mut Vm, args: &[Object]) -> Obje
 }
 fn is_even(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "even?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Number(n) => {
+            Object::make_bool(n % 2 == 0)
+        }
+        _ => {
+            panic!("{}: required number but got {}", name, args[0]);
+        }
+    }
 }
 fn is_odd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "odd?";
