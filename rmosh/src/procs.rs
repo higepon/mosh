@@ -2769,7 +2769,28 @@ fn abs(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn div(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "div";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args {
+        [Object::Number(x), Object::Number(0)] => {
+            panic!("{}: division by zero", name)
+        }
+        [Object::Number(x), Object::Number(y)] => {
+            let ret;
+            if *x == 0 {
+                ret = 0;
+            } else if *x > 0 {
+                ret = *x / *y;
+            } else if *y > 0 {
+                ret = (*x - *y + 1) / *y;
+            } else {
+                ret = (*x + *y + 1) / *y;
+            }
+            return Object::Number(ret);
+        }
+        _ => {
+            panic!("{}: numbers required but got {:?}", name, args)
+        }
+    }
 }
 fn div0(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "div0";
