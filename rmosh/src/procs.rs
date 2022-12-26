@@ -1640,7 +1640,11 @@ fn memv(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_procedure(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "procedure?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Procedure(_) | Object::Closure(_) => Object::True,
+        _ => Object::False,
+    }
 }
 fn load(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "load";
