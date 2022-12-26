@@ -2008,10 +2008,10 @@ fn hashtable_copy(vm: &mut Vm, args: &[Object]) -> Object {
             for (key, value) in &hashtable.hash_map {
                 ret.set(*key, *value);
             }
-            if args.len() == 2 && args[1].is_false() {
-                ret.is_mutable = false;
+            if args.len() == 2 && !args[1].is_false() {
+                ret.is_mutable = true;
             } else {
-                ret.is_mutable = true;                
+                ret.is_mutable = false;                
             }
             Object::EqHashtable(ret)
         }
