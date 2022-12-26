@@ -667,13 +667,56 @@ impl Display for InputPort {
     }
 }
 
-pub struct Equal {
-
-}
+pub struct Equal {}
 
 impl Equal {
     pub fn is_equal(&self, lhs: &Object, rhs: &Object) -> bool {
         lhs.eq(rhs)
+    }
+
+    fn is_equal_fast(lhs: &Object, rhs: &Object) -> bool {
+        let mut obj1 = lhs;
+        let mut obj2 = rhs;
+        loop {
+            'inner: loop {
+                if obj1 == obj2 {
+                    return true;
+                }
+                match (obj1, obj2) {
+                    (Object::Pair(pair1), Object::Pair(pair2)) => {
+                        if Self::is_equal_fast(&pair1.car, &pair2.car) {
+                            obj1 = &pair1.cdr;
+                            obj2 = &pair2.cdr;
+                            break 'inner;
+                        }
+                    }
+                    (Object::Number(n1), Object::Number(n2)) => {
+                        return n1 == n2;
+                    }
+                    (Object::Vector(v1), Object::Vector(v2)) => {
+                        if v1.len() == v2.len() {
+                            for i in 0..v1.len() {
+                                if !Self::is_equal_fast(&v1.data[i], &v2.data[i]) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    (Object::String(s1), Object::String(s2)) => {
+                        return s1.string.eq(&s2.string);
+                    }
+                    (Object::Procedure(p1), Object::Procedure(p2)) => {
+                        return p1.func as isize == p2.func as isize;
+                    }
+                    _ => {
+                        return obj1.eqv(obj2);
+                    }
+                }
+            }
+        }
     }
 }
 
