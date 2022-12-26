@@ -1983,7 +1983,13 @@ fn hashtable_delete_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_hashtable_contains(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-contains?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args[0] {
+        Object::EqHashtable(hashtable) => Object::make_bool(hashtable.contains(args[1])),
+        _ => {
+            panic!("{}: hashtable required but got {:?}", name, args)
+        }
+    }
 }
 fn hashtable_copy(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-copy";

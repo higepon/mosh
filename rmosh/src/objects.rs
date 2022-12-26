@@ -586,6 +586,13 @@ impl EqHashtable {
         }
     }
 
+    pub fn contains(&self, key: Object) -> bool {
+        match self.hash_map.get(&key) {
+            Some(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn set(&mut self, key: Object, value: Object) {
         match self.hash_map.insert(key, value) {
             _ => (),
