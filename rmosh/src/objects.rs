@@ -585,6 +585,16 @@ impl EqHashtable {
             _ => default,
         }
     }
+
+    pub fn set(&mut self, key: Object, value: Object) {
+        match self.hash_map.insert(key, value) {
+            _ => ()
+        }
+    }
+
+    pub fn size(&self) -> usize {
+        self.hash_map.len()
+    }
 }
 
 impl Display for EqHashtable {

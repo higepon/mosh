@@ -1417,7 +1417,14 @@ fn make_eqv_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn hashtable_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match args[0] {
+        Object::EqHashtable(mut hashtable) => hashtable.set(args[1], args[2]),
+        _ => {
+            panic!("{}: hashtable required but got {:?}", name, args)
+        }
+    }
+    Object::Unspecified
 }
 fn hashtable_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-ref";
@@ -1955,7 +1962,13 @@ fn is_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn hashtable_size(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-size";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::EqHashtable(hashtable) => Object::Number(hashtable.size() as isize),
+        _ => {
+            panic!("{}: hashtable required but got {:?}", name, args)
+        }
+    }
 }
 fn hashtable_delete_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-delete!";
