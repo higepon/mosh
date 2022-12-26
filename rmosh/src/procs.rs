@@ -1207,7 +1207,15 @@ fn gensym(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_stringequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args {
+        [Object::String(s1), Object::String(s2)] => {
+            Object::make_bool(s1.string.eq(&s2.string))
+        }
+        _ => {
+            panic!("{}: string required but got {:?}", name, args);            
+        }
+    }
 }
 fn caaaar(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caaaar";
@@ -2002,6 +2010,8 @@ fn hashtable_copy(vm: &mut Vm, args: &[Object]) -> Object {
             }
             if args.len() == 2 && args[1].is_false() {
                 ret.is_mutable = false;
+            } else {
+                ret.is_mutable = true;                
             }
             Object::EqHashtable(ret)
         }
