@@ -1388,7 +1388,21 @@ fn symbol_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn string_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args {
+        [Object::String(s), Object::Number(idx)] => {
+            let idx = *idx as usize;
+            match s.string.chars().nth(idx) {
+                Some(c) => Object::Char(c),
+                _ => {
+                    panic!("{}: string index out of bound {:?}", name, args)
+                }
+            }
+        }
+        _ => {
+            panic!("{}: string and number required but got {:?}", name, args)
+        }
+    }
 }
 fn get_timeofday(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-timeofday";
