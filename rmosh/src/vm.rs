@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     gc::{Gc, GcRef},
-    objects::{Closure, Object, Pair, Symbol, Vox},
+    objects::{Closure, Equal, Object, Pair, Symbol, Vox},
     op::Op,
     procs::{self, default_free_vars},
 };
@@ -373,14 +373,13 @@ impl Vm {
                     self.set_return_value(Object::make_bool(is_eq));
                 }
                 Op::Equal => {
-                    // TODO
-                    let is_eq = self.pop().eq(&self.ac);
-                    self.set_return_value(Object::make_bool(is_eq));
+                    let e = Equal {};
+                    let ret = e.is_equal(&self.pop(), &self.ac);
+                    self.set_return_value(Object::make_bool(ret));
                 }
                 Op::Eqv => {
-                    // TODO
-                    let is_eq = self.pop().eq(&self.ac);
-                    self.set_return_value(Object::make_bool(is_eq));
+                    let ret = self.pop().eqv(&self.ac);
+                    self.set_return_value(Object::make_bool(ret));
                 }
                 Op::NumberEqual => {
                     number_op!(==, self);
@@ -471,7 +470,7 @@ impl Vm {
                     (a, b) => {
                         panic!("-: numbers required but got {:?} {:?}", a, b);
                     }
-                },                
+                },
                 Op::NumberMul => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
                         self.set_return_value(Object::Number(a * b));

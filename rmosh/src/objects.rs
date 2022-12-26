@@ -667,6 +667,16 @@ impl Display for InputPort {
     }
 }
 
+pub struct Equal {
+
+}
+
+impl Equal {
+    pub fn is_equal(&self, lhs: &Object, rhs: &Object) -> bool {
+        lhs.eq(rhs)
+    }
+}
+
 /// Tests.
 #[cfg(test)]
 pub mod tests {
