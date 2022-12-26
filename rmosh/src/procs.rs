@@ -2771,7 +2771,7 @@ fn div(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "div";
     check_argc!(name, args, 2);
     match args {
-        [Object::Number(x), Object::Number(0)] => {
+        [Object::Number(_), Object::Number(0)] => {
             panic!("{}: division by zero", name)
         }
         [Object::Number(x), Object::Number(y)] => {
