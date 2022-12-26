@@ -79,6 +79,15 @@ impl Object {
     pub fn eq(&self, other: &Self) -> bool {
         self == other
     }
+
+    pub fn to_number(self) -> isize {
+        if let Self::Number(n) = self {
+            n
+        } else {
+            panic!("Not a Object::Number")
+        }
+    }
+
     // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
         match (self, other) {
@@ -667,16 +676,138 @@ impl Display for InputPort {
     }
 }
 
-pub struct Equal {}
-
+pub struct Equal {
+    k0: Object,
+    kb: Object,
+}
 impl Equal {
-    pub fn is_equal(&self, lhs: &Object, rhs: &Object) -> bool {
-        lhs.eq(rhs)
+    pub fn new() -> Self {
+        Self {
+            k0: Object::Number(400),
+            kb: Object::Number(-40),
+        }
+    }
+    pub fn is_equal(&self, x: &Object, y: &Object) -> bool {
+        self.is_precheck_interleave_equal(x, y)
     }
 
-    fn is_equal_fast(lhs: &Object, rhs: &Object) -> bool {
-        let mut obj1 = lhs;
-        let mut obj2 = rhs;
+    //   (define (precheck/interleave-equal? x y)
+    //     (let ([k (pre? x y k0)])
+    //       (and k (or (> k 0) (interleave? x y 0)))))
+    fn is_precheck_interleave_equal(&self, x: &Object, y: &Object) -> bool {
+        let k = self.is_pre(x, y, self.k0);
+        if k.is_false() {
+            return false;
+        }
+        match k {
+            Object::Number(nk) => {
+                if nk > 0 {
+                    return true;
+                }
+            }
+            _ => {
+                panic!("bug")
+            }
+        }
+        self.is_interleave(x, y, Object::Number(0))
+    }
+
+    // (define (pre? x y k)
+    //     (import UNSAFE)
+    //     (cond
+    //       [(eq? x y) k]
+    //       [(pair? x)
+    //        (and (pair? y)
+    //             (if (<= k 0)
+    //                 k
+    //                 (let ([k (pre? (car x) (car y) (- k 1))])
+    //                   (and k (pre? (cdr x) (cdr y) k)))))]
+    //       [(vector? x)
+    //        (and (vector? y)
+    //             (let ([n (vector-length x)])
+    //               (and (= (vector-length y) n)
+    //                    (let f ([i 0] [k k])
+    //                      (if (or (= i n) (<= k 0))
+    //                          k
+    //                          (let ([k (pre?
+    //                                     (vector-ref x i)
+    //                                     (vector-ref y i)
+    //                                     (- k 1))])
+    //                            (and k (f (+ i 1) k))))))))]
+    //       [(string? x) (and (string? y) (string=? x y) k)]
+    //       [(bytevector? x) (and (bytevector? y) (bytevector=? x y) k)]
+    //       [else (and (eqv? x y) k)]))
+    fn is_pre(&self, x: &Object, y: &Object, k: Object) -> Object {
+        if x == y {
+            return k;
+        }
+        match (x, y) {
+            (Object::Pair(pair1), Object::Pair(pair2)) => {
+                if k.to_number() <= 0 {
+                    return k;
+                } else {
+                    let k2 = self.is_pre(&pair1.car, &pair2.car, Object::Number(k.to_number() - 1));
+                    if k2.is_false() {
+                        return Object::False;
+                    }
+                    return self.is_pre(&pair1.cdr, &pair2.cdr, k2);
+                }
+            }
+            (Object::Vector(v1), Object::Vector(v2)) => {
+                let n = v1.len();
+                if v2.len() != n {
+                    return Object::False;
+                }
+                let mut i: usize = 0;
+                let mut k = k;
+                loop {
+                    if i == n || k.to_number() <= 0 {
+                        return k;
+                    } else {
+                        let k2 = self.is_pre(
+                            &v1.data[i],
+                            &v2.data[i],
+                            Object::Number(k.to_number() - 1),
+                        );
+                        if k2.is_false() {
+                            return Object::False;
+                        }
+                        i += 1;
+                        k = k2;
+                    }
+                }
+            }
+            (Object::String(s1), Object::String(s2)) => {
+                if s1.string.eq(&s2.string) {
+                    return k;
+                } else {
+                    return Object::False;
+                }
+            }
+            (Object::Procedure(p1), Object::Procedure(p2)) => {
+                if p1.func as isize == p2.func as isize {
+                    return k;
+                } else {
+                    return Object::False;
+                }
+            }
+            _ => {
+                if x.eqv(y) {
+                    return k;
+                } else {
+                    Object::False
+                }
+            }
+        }
+    }
+
+    fn is_interleave(&self, x: &Object, y: &Object, k: Object) -> bool {
+        true
+    }
+
+    fn is_equal_fast(x: &Object, y: &Object) -> bool {
+        let mut obj1 = x;
+        let mut obj2 = y;
         loop {
             'inner: loop {
                 if obj1 == obj2 {
