@@ -825,9 +825,34 @@ fn cons(vm: &mut Vm, args: &[Object]) -> Object {
     check_argc!(name, args, 2);
     vm.gc.cons(args[0], args[1])
 }
-fn consmul(_vm: &mut Vm, args: &[Object]) -> Object {
+fn consmul(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons*";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let argc = args.len();
+    if argc == 1 {
+        return args[0];
+    }
+    let obj = vm.gc.cons(args[0], Object::Nil);
+    let mut tail = obj;
+    for i in 1..argc - 1 {
+        let e = vm.gc.cons(args[i], Object::Nil);
+        match tail {
+            Object::Pair(mut pair) => {
+                pair.cdr = e;
+                tail = e;
+            }
+            _ => {
+                panic!("{}: pair required but got {}", name, tail);
+            }
+        }
+    }
+    match tail {
+        Object::Pair(mut pair) => pair.cdr = args[argc - 1],
+        _ => {
+            panic!("{}: pair required but got {}", name, tail);
+        }
+    }
+    obj
 }
 fn car(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cons";
