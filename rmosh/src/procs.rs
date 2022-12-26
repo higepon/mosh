@@ -1972,7 +1972,14 @@ fn hashtable_size(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn hashtable_delete_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-delete!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args[0] {
+        Object::EqHashtable(mut hashtable) => hashtable.delte(args[1]),
+        _ => {
+            panic!("{}: hashtable required but got {:?}", name, args)
+        }
+    }
+    Object::Unspecified
 }
 fn is_hashtable_contains(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-contains?";

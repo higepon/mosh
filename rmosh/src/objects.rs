@@ -588,12 +588,18 @@ impl EqHashtable {
 
     pub fn set(&mut self, key: Object, value: Object) {
         match self.hash_map.insert(key, value) {
-            _ => ()
+            _ => (),
         }
     }
 
     pub fn size(&self) -> usize {
         self.hash_map.len()
+    }
+
+    pub fn delte(&mut self, key: Object) {
+        match self.hash_map.remove(&key) {
+            _ => (),
+        }
     }
 }
 
