@@ -1993,12 +1993,15 @@ fn is_hashtable_contains(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn hashtable_copy(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-copy";
-    check_argc!(name, args, 1);
+    check_argc_between!(name, args, 1, 2);
     match args[0] {
         Object::EqHashtable(hashtable) => {
             let mut ret = vm.gc.alloc(EqHashtable::new());
             for (key, value) in &hashtable.hash_map {
                 ret.set(*key, *value);
+            }
+            if args.len() == 2 && args[1].is_false() {
+                ret.is_mutable = false;
             }
             Object::EqHashtable(ret)
         }

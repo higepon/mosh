@@ -569,6 +569,7 @@ impl Display for Closure {
 pub struct EqHashtable {
     pub header: GcHeader,
     pub hash_map: HashMap<Object, Object>,
+    pub is_mutable: bool
 }
 
 impl EqHashtable {
@@ -576,6 +577,7 @@ impl EqHashtable {
         EqHashtable {
             header: GcHeader::new(ObjectType::EqHashtable),
             hash_map: HashMap::new(),
+            is_mutable: true,
         }
     }
 
@@ -610,7 +612,7 @@ impl EqHashtable {
     }
 
     pub fn is_mutable(&self) -> bool {
-        return true;
+        return self.is_mutable;
     }
 
     pub fn clear(&mut self) {
