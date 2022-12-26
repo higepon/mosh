@@ -81,7 +81,14 @@ impl Object {
     }
     // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
-        self == other
+        match (self, other) {
+            (Object::Number(a), Object::Number(b)) => {
+                return a == b;
+            }
+            _ => {
+                return self.eq(other);
+            }
+        }
     }
 }
 
@@ -569,7 +576,7 @@ impl Display for Closure {
 pub struct EqHashtable {
     pub header: GcHeader,
     pub hash_map: HashMap<Object, Object>,
-    pub is_mutable: bool
+    pub is_mutable: bool,
 }
 
 impl EqHashtable {
