@@ -1715,7 +1715,7 @@ fn is_charge(_vm: &mut Vm, args: &[Object]) -> Object {
                 }
                 match args[i + 1] {
                     Object::Char(cnext) => {
-                        if c >= cnext {
+                        if c < cnext {
                             return Object::False;
                         }
                     }
