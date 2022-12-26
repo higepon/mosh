@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector, Vox};
+use crate::objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector, Vox, EqHashTable};
 use crate::op::Op;
 use crate::vm::Vm;
 
@@ -75,6 +75,7 @@ impl<T> DerefMut for GcRef<T> {
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
     Closure,
+    EqHashTable,
     InputPort,
     Pair,
     Procedure,
@@ -334,6 +335,9 @@ impl Gc {
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);
             }
+            Object::EqHashTable(hash_table) => {
+                self.mark_heap_object(hash_table);
+            }            
             Object::Procedure(procedure) => {
                 self.mark_heap_object(procedure);
             }
@@ -510,6 +514,16 @@ impl Gc {
                     self.mark_object(vector.data[i]);
                 }
             }
+            ObjectType::EqHashTable => {
+                let hash_table: &EqHashTable = unsafe { mem::transmute(pointer.as_ref()) };
+
+                for &obj in hash_table.hash_map.values() {
+                    self.mark_object(obj);
+                }
+                for &obj in hash_table.hash_map.keys() {
+                    self.mark_object(obj);
+                }
+            }            
             ObjectType::InputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
@@ -564,6 +578,10 @@ impl Gc {
                 let v: &Vector = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(v)
             }
+            ObjectType::EqHashTable => {
+                let hash_table: &EqHashTable = unsafe { mem::transmute(hige) };
+                std::mem::size_of_val(hash_table)
+            }            
         };
         #[cfg(feature = "debug_log_gc")]
         println!(

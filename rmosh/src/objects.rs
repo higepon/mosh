@@ -2,6 +2,7 @@ use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::vm::Vm;
+use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 
 /// Wrapper of heap allocated or simple stack objects.
@@ -10,6 +11,7 @@ pub enum Object {
     Char(char),
     Closure(GcRef<Closure>),
     Eof,
+    EqHashTable(GcRef<EqHashTable>),
     False,
     InputPort(GcRef<InputPort>),
     Nil,
@@ -104,6 +106,9 @@ impl Debug for Object {
             Object::Closure(closure) => {
                 write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
             }
+            Object::EqHashTable(table) => {
+                write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
+            }
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
@@ -161,6 +166,9 @@ impl Display for Object {
             }
             Object::Closure(closure) => {
                 write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
+            }
+            Object::EqHashTable(table) => {
+                write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
             }
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
@@ -550,6 +558,28 @@ impl Closure {
 impl Display for Closure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "<closure>")
+    }
+}
+
+/// EqHashTable
+#[derive(Debug)]
+pub struct EqHashTable {
+    pub header: GcHeader,
+    pub hash_map: HashMap<Object, Object>,
+}
+
+impl EqHashTable {
+    fn new() -> Self {
+        EqHashTable {
+            header: GcHeader::new(ObjectType::EqHashTable),
+            hash_map: HashMap::new(),
+        }
+    }
+}
+
+impl Display for EqHashTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<eq-hashtable>")
     }
 }
 
