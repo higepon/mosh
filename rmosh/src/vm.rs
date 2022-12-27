@@ -6,9 +6,9 @@ use std::{
 
 use crate::{
     gc::{Gc, GcRef},
-    objects::{Closure, Equal, Object, Pair, Symbol, Vox},
+    objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
-    procs::{self, default_free_vars},
+    procs::{self, default_free_vars}, equal::Equal,
 };
 
 const STACK_SIZE: usize = 256;
