@@ -374,7 +374,8 @@ impl Vm {
                 }
                 Op::Equal => {
                     let e = Equal::new();
-                    let ret = e.is_equal(&self.pop(), &self.ac);
+                    let val = self.pop();
+                    let ret = e.is_equal(&mut self.gc, &val, &self.ac);
                     self.set_return_value(Object::make_bool(ret));
                 }
                 Op::Eqv => {
