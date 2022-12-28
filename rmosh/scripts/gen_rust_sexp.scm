@@ -8,8 +8,10 @@
 (import (only (srfi :13) string-join))
 
 (define sym-idx  0)
+(define pair-idx  0)
 (define list-idx  0)
 (define sym* '())
+(define pair* '())
 (define list* '())
 
 ;; Char.
@@ -38,6 +40,19 @@
     (set! sym-idx (+ sym-idx 1))
      var))
 
+;; Dot pair.
+(define (gen-pair first second)
+  (let* ([var1 (gen first)]
+         [var2 (gen second)]
+         [var (next-pair-var)])
+    (set! pair* (cons `(,var . (,var1 . ,var2)) pair*))
+    var))
+
+(define (next-pair-var)
+  (let1 var (format "pair~a" pair-idx)
+    (set! pair-idx (+ pair-idx 1))
+     var))     
+
 ;; List.
 (define (gen-list expr*)
   (let loop ([var* '()]
@@ -65,6 +80,7 @@
     [(? boolean? b) (gen-boolean b)]
     [() "Object::Nil"]
     [(expr* ...) (gen-list expr*)]
+    [(first . second) (gen-pair first second)]
     [else
       (error (format "sexp ~s didn't match" sexp))]
   ))
@@ -72,8 +88,10 @@
 ;; Test helpers
 (define (reset)
   (set! sym-idx 0)
+  (set! pair-idx 0)    
   (set! list-idx 0)  
   (set! sym* '())
+  (set! pair* '())
   (set! list* '()))
 
 ;; Test Chars.
@@ -93,10 +111,20 @@
 (test-equal "sym1" (gen 'b))
 (test-equal '((a . "sym0") (b . "sym1")) (reverse sym*))
 
+;; Test Dot Pairs.
+(reset)
+(test-equal "pair0" (gen '(1 . 2)))
+(test-equal '(("pair0" . ("Object::Number(1)" . "Object::Number(2)"))) (reverse pair*))
+
+(reset)
+(test-equal "pair1" (gen '(1 2 . 3)))
+(test-equal '(("pair0" "Object::Number(2)" . "Object::Number(3)") ("pair1" "Object::Number(1)" . "pair0")) (reverse pair*))
+
 ;; Test Pairs.
 (reset)
 (test-equal "Object::Nil" (gen '()))
 (test-equal '() (reverse list*))
+
 (reset)
 (test-equal "list0" (gen '(1)))
 (test-equal '(("list0" . ("Object::Number(1)"))) (reverse list*))
