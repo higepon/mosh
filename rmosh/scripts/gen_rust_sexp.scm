@@ -236,6 +236,8 @@
     (mosh)))
 
 (gen "")
+(gen #(1 2))
+(gen #(1 #(2)))
 
 (for-each 
   (lambda (sym) 
@@ -248,8 +250,15 @@
   (lambda (list) 
     (match list
       [(var . elm*)
-        (format #t "let ~a = vm.gc.listn(&[~a]);\n" var (string-join elm* ","))]))
+        (format #t "let ~a = vm.gc.listn(&[~a]);\n" var (string-join elm* ", "))]))
   (reverse list*))
+
+(for-each 
+  (lambda (vec) 
+    (match vec
+      [(var . elm*)
+        (format #t "let ~a = vm.gc.new_vector(&vec![~a]);\n" var (string-join elm* ", "))]))
+  (reverse vec*))  
 
 (for-each 
   (lambda (str) 
