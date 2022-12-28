@@ -17,7 +17,7 @@
 ;; Symbol
 (define (gen-symbol sym)
   (let1 var (next-sym-var)
-    (set! sym* (reverse (cons `(,var . ,sym) sym*)))
+    (set! sym* (cons `(,var . ,sym) sym*))
     (format "~a" var)))
 
 (define (next-sym-var)
@@ -32,7 +32,7 @@
     (cond
       [(null? expr*)
         (let1 var (next-list-var)
-          (set! list* (reverse (cons `(,var . ,(reverse var*)) list*)))
+          (set! list* (cons `(,var . ,(reverse var*)) list*))
           var)]
       [else
         (let1 var (gen (car expr*))
@@ -66,20 +66,31 @@
 (test-equal "sym0" (gen 'a))
 (test-equal '(("sym0" . a)) sym*)
 (test-equal "sym1" (gen 'b))
-(test-equal '(("sym0" . a) ("sym1" . b)) sym*)
+(test-equal '(("sym0" . a) ("sym1" . b)) (reverse sym*))
 
 ;; Test Pairs.
 (reset)
 (test-equal "list0" (gen '(1)))
-(test-equal '(("list0" . ("Object::Number(1)"))) list*)
+(test-equal '(("list0" . ("Object::Number(1)"))) (reverse list*))
 
 (reset)
 (test-equal "list0" (gen '(1 2)))
-(test-equal '(("list0" . ("Object::Number(1)" "Object::Number(2)"))) list*)
+(test-equal '(("list0" . ("Object::Number(1)" "Object::Number(2)"))) (reverse list*))
 
 (reset)
 (test-equal "list0" (gen '(1)))
-(test-equal '(("list0" . ("Object::Number(1)"))) list*)
+(test-equal '(("list0" . ("Object::Number(1)"))) (reverse list*))
 (test-equal "list1" (gen '(1 2)))
-(test-equal '(("list0" . ("Object::Number(1)")) ("list1" . ("Object::Number(1)" "Object::Number(2)"))) list*)
+(test-equal '(("list0" . ("Object::Number(1)")) ("list1" . ("Object::Number(1)" "Object::Number(2)"))) (reverse list*))
+
+(reset)
+(test-equal "list1" (gen '(1 (2))))
+(test-equal '(("list0" . ("Object::Number(2)")) ("list1" . ("Object::Number(1)" "list0"))) (reverse list*))
+
+(reset)
+(test-equal "list2" (gen '(1 (2 (3 4)))))
+(test-equal '(("list0" . ("Object::Number(3)" "Object::Number(4)"))
+              ("list1" . ("Object::Number(2)" "list0"))
+              ("list2" . ("Object::Number(1)" "list1"))) (reverse list*))
+
 (test-results)
