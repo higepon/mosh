@@ -7,12 +7,25 @@
 (import (mosh test))
 (import (only (srfi :13) string-join))
 
+(define str-idx  0)
 (define sym-idx  0)
 (define pair-idx  0)
 (define list-idx  0)
+(define str* '())
 (define sym* '())
 (define pair* '())
 (define list* '())
+
+;; Reset the stage.
+(define (reset)
+  (set! str-idx 0)
+  (set! sym-idx 0)
+  (set! pair-idx 0)    
+  (set! list-idx 0)  
+  (set! str* '())  
+  (set! sym* '())
+  (set! pair* '())
+  (set! list* '()))
 
 ;; Char.
 (define (gen-char c)
@@ -25,6 +38,17 @@
 ;; Boolean.
 (define (gen-boolean b)
   (format "Object::~a" (if b "True" "False")))
+
+;; String
+(define (gen-string str)
+  (let1 var (next-str-var)
+    (set! str* (cons `(,str . ,var) str*))
+    (format "~a" var)))
+
+(define (next-str-var)
+  (let1 var (format "str~a" str-idx)
+    (set! str-idx (+ str-idx 1))
+     var))
 
 ;; Symbol
 (define (gen-symbol sym)
@@ -76,6 +100,7 @@
   (match sexp
     [(? char? n) (gen-char n)]
     [(? number? n) (gen-number n)]
+    [(? string? str) (gen-string str)]    
     [(? symbol? sym) (gen-symbol sym)]
     [(? boolean? b) (gen-boolean b)]
     [() "Object::Nil"]
@@ -84,15 +109,6 @@
     [else
       (error (format "sexp ~s didn't match" sexp))]
   ))
-    
-;; Test helpers
-(define (reset)
-  (set! sym-idx 0)
-  (set! pair-idx 0)    
-  (set! list-idx 0)  
-  (set! sym* '())
-  (set! pair* '())
-  (set! list* '()))
 
 ;; Test Chars.
 (test-equal "Object::Char('a')" (gen #\a))
@@ -103,6 +119,13 @@
 ;; Test Booleans.
 (test-equal "Object::True" (gen #t))
 (test-equal "Object::False" (gen #f))
+
+;; Test Strings
+(reset)
+(test-equal "str0" (gen "a"))
+(test-equal '(("a" . "str0")) str*)
+(test-equal "str1" (gen "b"))
+(test-equal '(("a" . "str0") ("b" . "str1")) (reverse str*))
 
 ;; Test Symbols.
 (reset)
