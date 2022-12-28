@@ -32,7 +32,7 @@
     (cond
       [(null? expr*)
         (let1 var (next-list-var)
-          (set! list* (cons `(,var . ,var*) list*))
+          (set! list* (cons `(,var . ,(reverse var*)) list*))
           var)]
       [else
         (let1 var (gen (car expr*))
@@ -55,7 +55,8 @@
 (define (reset)
   (set! sym-idx 0)
   (set! list-idx 0)  
-  (set! sym* '()))
+  (set! sym* '())
+  (set! list* '()))
 
 ;; Test Numbers.
 (test-equal "Object::Number(1)" (gen 1))
@@ -71,4 +72,8 @@
 (reset)
 (test-equal "list0" (gen '(1)))
 (test-equal '(("list0" . ("Object::Number(1)"))) list*)
+
+(reset)
+(test-equal "list0" (gen '(1 2)))
+(test-equal '(("list0" . ("Object::Number(1)" "Object::Number(2)"))) list*)
 (test-results)
