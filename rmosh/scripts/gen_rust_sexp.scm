@@ -11,10 +11,12 @@
 (define sym-idx  0)
 (define pair-idx  0)
 (define list-idx  0)
+(define vec-idx  0)
 (define str* '())
 (define sym* '())
 (define pair* '())
 (define list* '())
+(define vec* '())
 
 ;; Reset the stage.
 (define (reset)
@@ -22,10 +24,12 @@
   (set! sym-idx 0)
   (set! pair-idx 0)    
   (set! list-idx 0)  
+  (set! vec-idx 0)    
   (set! str* '())  
   (set! sym* '())
   (set! pair* '())
-  (set! list* '()))
+  (set! list* '())
+  (set! vec* '()))
 
 ;; Char.
 (define (gen-char c)
@@ -63,6 +67,24 @@
   (let1 var (format "sym~a" sym-idx)
     (set! sym-idx (+ sym-idx 1))
      var))
+
+;; Vector.
+(define (gen-vector v)
+  (let loop ([var* '()]
+             [expr* (vector->list v)])
+    (cond
+      [(null? expr*)
+        (let1 var (next-vector-var)
+          (set! vec* (cons `(,var . ,(reverse var*)) vec*))
+          var)]
+      [else
+        (let1 var (gen (car expr*))
+          (loop (cons var var*) (cdr expr*)))])))
+
+(define (next-vector-var)
+  (let1 var (format "vec~a" vec-idx)
+    (set! vec-idx (+ vec-idx 1))
+     var))          
 
 ;; Dot pair.
 (define (gen-pair first second)
@@ -103,6 +125,7 @@
     [(? string? str) (gen-string str)]    
     [(? symbol? sym) (gen-symbol sym)]
     [(? boolean? b) (gen-boolean b)]
+    [(? vector? v) (gen-vector v)]    
     [() "Object::Nil"]
     [(expr* ...) (gen-list expr*)]
     [(first . second) (gen-pair first second)]
@@ -133,6 +156,15 @@
 (test-equal '((a . "sym0")) sym*)
 (test-equal "sym1" (gen 'b))
 (test-equal '((a . "sym0") (b . "sym1")) (reverse sym*))
+
+;; Test Vectors.
+(reset)
+(test-equal "vec0" (gen '#(1)))
+(test-equal '(("vec0" "Object::Number(1)")) (reverse vec*))
+
+(reset)
+(test-equal "vec1" (gen '#(1 #(2))))
+(test-equal '(("vec0" . ("Object::Number(2)")) ("vec1" . ("Object::Number(1)" "vec0"))) (reverse vec*))
 
 ;; Test Dot Pairs.
 (reset)
