@@ -103,5 +103,9 @@
 (test-equal '(("sym0" . a) ("sym1" . b)) (reverse sym*))
 (test-equal '(("list0" . ("sym1")) ("list1" . ("sym0" "list0"))) (reverse list*))
 
+(reset)
+(test-equal "list2" (gen '(a (b (c d)))))
+(test-equal '(("sym0" . a) ("sym1" . b) ("sym2" . c) ("sym3" . d)) (reverse sym*))
+(test-equal '(("list0" . ("sym2" "sym3")) ("list1" . ("sym1" "list0")) ("list2" . ("sym0" "list1"))) (reverse list*))
 
 (test-results)
