@@ -1703,7 +1703,7 @@
    [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro"))
     (load-file base-library)
     (load-file match-library)
-    (write (compile-file-with-macro (third args) #t))]
+    (write (compile-file-with-macro (third args) #f))]
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-without-macro"))
     (load-file base-library)
