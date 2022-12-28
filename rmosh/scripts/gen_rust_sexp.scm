@@ -93,4 +93,10 @@
               ("list1" . ("Object::Number(2)" "list0"))
               ("list2" . ("Object::Number(1)" "list1"))) (reverse list*))
 
+(reset)
+(test-equal "list0" (gen '(a b)))
+(test-equal '(("sym0" . a) ("sym1" . b)) (reverse sym*))
+(test-equal '(("list0" . ("sym0" "sym1"))) (reverse list*))
+
+
 (test-results)
