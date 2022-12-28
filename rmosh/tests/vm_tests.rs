@@ -7548,6 +7548,8 @@ fn test_test315() {
 fn test_test316() {
     let mut vm = Vm::new();
 
+    
+
     let ops = vec![
         Op::Frame(14),
         Op::Closure {

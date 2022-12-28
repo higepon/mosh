@@ -1,9 +1,11 @@
 ;; Generate Rust code to construct sexp* in Rust.
 (import (scheme base))
+(import (scheme write))
 (import (match))
 (import (only (mosh) format))
 (import (only (mosh control) let1))
 (import (mosh test))
+(import (only (srfi :13) string-join))
 
 (define sym-idx  0)
 (define list-idx  0)
@@ -114,3 +116,22 @@
 (test-equal '(("list0" . ("sym0")) ("list1" . ("list0" "sym1"))) (reverse list*))
 
 (test-results)
+
+(gen '((srfi 0) (srfi 1) (srfi 11) (srfi 13) (srfi 14) (srfi 16) (srfi 176) (srfi 19) (srfi 2) (srfi 23) (srfi 26) (srfi 27) (srfi 31) (srfi 37) (srfi 38) (srfi 39) (srfi 41) (srfi 42) (srfi 43) (srfi 48) (srfi 6) (srfi 61) (srfi 64) (srfi 67) (srfi 78) (srfi 8) (srfi 9) (srfi 98) (srfi 99) (srfi 151)
+    (mosh)))
+
+(for-each 
+  (lambda (sym) 
+    (match sym
+      [(var . val)
+        (format #t "let ~a = vm.gc.symbol_intern(\"~a\");\n" var val)]))
+  (reverse sym*))
+
+(for-each 
+  (lambda (list) 
+    (match list
+      [(var . elm*)
+        (format #t "let ~a = list!(vm.gc, ~a);\n" var (string-join elm* ","))]))
+  (reverse list*))
+
+  
