@@ -5,10 +5,11 @@ use std::{
 };
 
 use crate::{
+    equal::Equal,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
-    procs::{self, default_free_vars}, equal::Equal,
+    procs::{self, default_free_vars},
 };
 
 const STACK_SIZE: usize = 256;

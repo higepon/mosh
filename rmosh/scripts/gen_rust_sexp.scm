@@ -131,7 +131,7 @@
   (lambda (list) 
     (match list
       [(var . elm*)
-        (format #t "let ~a = list!(vm.gc, ~a);\n" var (string-join elm* ","))]))
+        (format #t "let ~a = vm.gc.listn(&[~a]);\n" var (string-join elm* ","))]))
   (reverse list*))
 
   

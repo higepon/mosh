@@ -196,6 +196,17 @@ impl Gc {
         self.cons(first, second)
     }        
 
+    pub fn listn(
+        &mut self,
+        objects: &[Object],
+    ) -> Object {
+        let mut ret = Object::Nil;
+        for obj in objects.iter().rev() {
+            ret = self.cons(*obj, ret);
+        }
+        ret
+    }        
+
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);
         Object::Symbol(symbol)
