@@ -12,9 +12,13 @@
 (define sym* '())
 (define list* '())
 
-;; Number
+;; Number.
 (define (gen-number n)
   (format "Object::Number(~a)" n))
+
+;; Boolean.
+(define (gen-boolean b)
+  (format "Object::~a" (if b "True" "False")))
 
 ;; Symbol
 (define (gen-symbol sym)
@@ -53,6 +57,7 @@
   (match sexp
     [(? number? n) (gen-number n)]
     [(? symbol? sym) (gen-symbol sym)]
+    [(? boolean? b) (gen-boolean b)]
     [(expr* ...) (gen-list expr*)]
   ))
     
@@ -65,6 +70,10 @@
 
 ;; Test Numbers.
 (test-equal "Object::Number(1)" (gen 1))
+
+;; Test Booleans.
+(test-equal "Object::True" (gen #t))
+(test-equal "Object::False" (gen #f))
 
 ;; Test Symbols.
 (reset)
