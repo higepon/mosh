@@ -58,6 +58,7 @@
     [(? number? n) (gen-number n)]
     [(? symbol? sym) (gen-symbol sym)]
     [(? boolean? b) (gen-boolean b)]
+    [() "Object::Nil"]
     [(expr* ...) (gen-list expr*)]
   ))
     
@@ -83,6 +84,9 @@
 (test-equal '((a . "sym0") (b . "sym1")) (reverse sym*))
 
 ;; Test Pairs.
+(reset)
+(test-equal "Object::Nil" (gen '()))
+(test-equal '() (reverse list*))
 (reset)
 (test-equal "list0" (gen '(1)))
 (test-equal '(("list0" . ("Object::Number(1)"))) (reverse list*))
