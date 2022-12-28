@@ -19,7 +19,7 @@
 ;; Symbol
 (define (gen-symbol sym)
   (let1 var (next-sym-var)
-    (set! sym* (cons `(,var . ,sym) sym*))
+    (set! sym* (cons `(,sym . ,var) sym*))
     (format "~a" var)))
 
 (define (next-sym-var)
@@ -66,9 +66,9 @@
 ;; Test Symbols.
 (reset)
 (test-equal "sym0" (gen 'a))
-(test-equal '(("sym0" . a)) sym*)
+(test-equal '((a . "sym0")) sym*)
 (test-equal "sym1" (gen 'b))
-(test-equal '(("sym0" . a) ("sym1" . b)) (reverse sym*))
+(test-equal '((a . "sym0") (b . "sym1")) (reverse sym*))
 
 ;; Test Pairs.
 (reset)
@@ -97,22 +97,22 @@
 
 (reset)
 (test-equal "list0" (gen '(a b)))
-(test-equal '(("sym0" . a) ("sym1" . b)) (reverse sym*))
+(test-equal '((a . "sym0") (b . "sym1")) (reverse sym*))
 (test-equal '(("list0" . ("sym0" "sym1"))) (reverse list*))
 
 (reset)
 (test-equal "list1" (gen '(a (b))))
-(test-equal '(("sym0" . a) ("sym1" . b)) (reverse sym*))
+(test-equal '((a . "sym0") (b . "sym1")) (reverse sym*))
 (test-equal '(("list0" . ("sym1")) ("list1" . ("sym0" "list0"))) (reverse list*))
 
 (reset)
 (test-equal "list2" (gen '(a (b (c d)))))
-(test-equal '(("sym0" . a) ("sym1" . b) ("sym2" . c) ("sym3" . d)) (reverse sym*))
+(test-equal '((a . "sym0") (b . "sym1") (c . "sym2") (d . "sym3")) (reverse sym*))
 (test-equal '(("list0" . ("sym2" "sym3")) ("list1" . ("sym1" "list0")) ("list2" . ("sym0" "list1"))) (reverse list*))
 
 (reset)
 (test-equal "list1" (gen '((a) b)))
-(test-equal '(("sym0" . a) ("sym1" . b)) (reverse sym*))
+(test-equal '((a . "sym0") (b . "sym1")) (reverse sym*))
 (test-equal '(("list0" . ("sym0")) ("list1" . ("list0" "sym1"))) (reverse list*))
 
 (test-results)
