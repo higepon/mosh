@@ -12,6 +12,10 @@
 (define sym* '())
 (define list* '())
 
+;; Char.
+(define (gen-char c)
+  (format "Object::Char('~a')" c))
+
 ;; Number.
 (define (gen-number n)
   (format "Object::Number(~a)" n))
@@ -55,11 +59,14 @@
 ;; The main generator.
 (define (gen sexp)
   (match sexp
+    [(? char? n) (gen-char n)]
     [(? number? n) (gen-number n)]
     [(? symbol? sym) (gen-symbol sym)]
     [(? boolean? b) (gen-boolean b)]
     [() "Object::Nil"]
     [(expr* ...) (gen-list expr*)]
+    [else
+      (error (format "sexp ~s didn't match" sexp))]
   ))
     
 ;; Test helpers
@@ -68,6 +75,9 @@
   (set! list-idx 0)  
   (set! sym* '())
   (set! list* '()))
+
+;; Test Chars.
+(test-equal "Object::Char('a')" (gen #\a))
 
 ;; Test Numbers.
 (test-equal "Object::Number(1)" (gen 1))
