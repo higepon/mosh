@@ -17,14 +17,24 @@
 
   ;; Instruction with no argument.
   (define (arg0-insn? insn)
-    (memq insn '(APPEND2 CAAR CAR CAR_PUSH CDR CDR_PUSH CONS INDIRECT
-                 NUMBER_ADD_PUSH NUMBER_SUB_PUSH PAIR_P PUSH)))
+    (memq insn '(APPEND2 CAAR CADR CAR CAR_PUSH CDAR CDDR
+                 CDR CDR_PUSH CONS EQ EQUAL EQV
+                 INDIRECT NOT NULL_P
+                 NUMBER_ADD NUMBER_ADD_PUSH NUMBER_DIV NUMBER_GT
+                 NUMBER_LT NUMBER_MUL NUMBER_SUB NUMBER_SUB_PUSH
+                 PAIR_P
+                 PUSH READ_CHAR SET_CAR SET_CDR
+                 SIMPLE_STRUCT_REF SYMBOL_P UNDEF
+                 VECTOR_LENGTH VECTOR_P VECTOR_REF VECTOR_SET)))
 
   ;; Instruction with 1 argument.
   (define (arg1-insn? insn)
     (or (jump1-insn? insn)
-        (memq insn '(CONSTANT CONSTANT_PUSH DISPLAY ENTER LEAVE LET_FRAME
-                     LOCAL_CALL PUSH_CONSTANT PUSH_ENTER REFER_FREE REFER_FREE_PUSH
+        (memq insn '(ASSIGN_FREE ASSIGN_GLOBAL ASSIGN_LOCAL
+                     BOX CALL CONSTANT CONSTANT_PUSH
+                     DISPLAY ENTER LEAVE LET_FRAME
+                     LOCAL_CALL MAKE_CONTINUATION PUSH_CONSTANT
+                     PUSH_ENTER REFER_FREE REFER_FREE_PUSH
                      REFER_GLOBAL REFER_GLOBAL_PUSH
                      REFER_LOCAL REFER_LOCAL_PUSH RETURN VALUES))))
 
@@ -43,7 +53,7 @@
 
   ;; Jump instuction with 2 arguments.
   (define (jump2-insn? insn)
-    (memq insn '(REFER_LOCAL_BRANCH_NOT_NULL)))
+    (memq insn '(REFER_LOCAL_BRANCH_NOT_LT REFER_LOCAL_BRANCH_NOT_NULL)))
 
   ;; Instruction with 3 arguments.
   (define (arg3-insn? insn)
