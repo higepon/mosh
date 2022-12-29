@@ -31,7 +31,7 @@
   ;; Instruction with 2 arguments.
   (define (arg2-insn? insn)
     (or (jump2-insn? insn)
-        (memq insn '(REFER_FREE_CALL))))      
+        (memq insn '(REFER_FREE_CALL REFER_LOCAL_CALL))))      
 
   ;; Jump instuction with 2 arguments.
   (define (jump2-insn? insn)

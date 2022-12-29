@@ -13,6 +13,7 @@
 (import (mosh control))
 (import (rust_sexp))
 (import (except (rust_jump) run-tests))
+(import (only (srfi :1) list-ref))
 (import (only (srfi :13) string-delete string-join))
 (import (only (mosh) format regexp-replace-all rxmatch))
 (import (only (rnrs) open-string-output-port string-titlecase))
@@ -28,7 +29,7 @@
       (rewrite-insn* all-insn* insn* 0 port)
       (get))]
    [(all-insn* insn* idx port)
-           (display (if (null? insn*) 'done (car insn*)))
+           (format #t "insn*=~a idx=~a" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
            (newline)   
     (match insn*
            [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
@@ -67,7 +68,7 @@
            [((and (or 'REFER_LOCAL_PUSH_CONSTANT) insn) n c . more*)
              (let1 var (gen c)
                (format port "            Op::~a(~a, ~a),\n" (insn->string insn) n var)
-               (rewrite-insn* all-insn* more* (+ idx 2) port))]            
+               (rewrite-insn* all-insn* more* (+ idx 3) port))]            
            [((and (or 'PUSH_ENTER 'ENTER 'BOX 'MAKE_CONTINUATION 'VALUES) insn) n . more*)
             (format port "            Op::~a(~a),\n" (insn->string insn) n)
             (rewrite-insn* all-insn* more* (+ idx 2) port)]                
