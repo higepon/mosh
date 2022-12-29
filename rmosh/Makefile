@@ -14,7 +14,8 @@ gen-free-vars:
 
 test:
 	mosh --loadpath=./scripts/ tests/rust_sexp.scm 
-
+	mosh --loadpath=./scripts/ tests/rust_jump.scm 
+	
 clean:
 	rm data/test*.scm
 	make -C data clean
