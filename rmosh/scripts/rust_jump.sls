@@ -16,11 +16,11 @@
 ;; Instruction with 1 argument.
 (define (arg1-insn? insn)
   (or (jump1-insn? insn)
-      (memq insn '(CONSTANT))))
+      (memq insn '(CONSTANT REFER_LOCAL RETURN))))
 
 ;; Jump instuction with 1 argument.
 (define (jump1-insn? insn)
-  (memq insn '(LOCAL_JMP TEST)))
+  (memq insn '(LOCAL_JMP TEST BRANCH_NOT_NUMBER_EQUAL)))
 
 (define (adjust-offset insn*)
   (match insn*
@@ -46,5 +46,8 @@
 
 ;; Jump destination is CONSTANT #t
 (test-equal 3 (adjust-offset '(TEST 5 CONSTANT #f LOCAL_JMP 3 CONSTANT #t HALT NOP)))
+
+;; Jump destination s REFER_LOCAL 0.
+(test-equal 3 (adjust-offset '(BRANCH_NOT_NUMBER_EQUAL 5 REFER_LOCAL 0 RETURN 1 REFER_LOCAL 0 PUSH CONSTANT 1)))
 
 (test-results)
