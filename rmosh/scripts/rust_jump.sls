@@ -6,11 +6,12 @@
 
 (import (scheme base))
 (import (scheme write))
+(import (scheme case-lambda))
 (import (match))
 (import (only (mosh) format))
 (import (only (mosh control) let1))
 (import (mosh test))
-(import (only (srfi :1) take))
+(import (only (srfi :1) take drop))
 (import (only (srfi :13) string-join))
 
 ;; Instruction with 1 argument.
@@ -22,12 +23,16 @@
 (define (jump1-insn? insn)
   (memq insn '(BRANCH_NOT_NUMBER_EQUAL LOCAL_JMP TEST)))
 
-(define (adjust-offset insn*)
-  (match insn*
-    [((? jump1-insn? _) offset . more)
-      (rust-offset (take more (- offset 1)))]
-    [else
-      (error (format "adjust-offset: no matching pattern ~a" (and (pair? insn*) (car insn*))))]))
+(define adjust-offset
+  (case-lambda
+    [(insn*)
+      (adjust-offset insn* 0)]
+    [(insn* start)
+      (match (drop insn* start)
+        [((? jump1-insn? _) offset . more)
+          (rust-offset (take more (- offset 1)))]
+        [any
+          (error (format "adjust-offset: no matching pattern ~a" (and (pair? any) (car any))))])]))
 
 (define (rust-offset insn*)
   (define (count-insn* insn*)
@@ -44,10 +49,15 @@
 ;; Jump destination is HALT.
 (test-equal 2 (adjust-offset '(LOCAL_JMP 3 CONSTANT #t HALT NOP)))
 
+;; Jump destination is HALT.
+(test-equal 2 (adjust-offset '(CONSTANT 3 LOCAL_JMP 3 CONSTANT #t HALT NOP) 2))
+
 ;; Jump destination is CONSTANT #t
 (test-equal 3 (adjust-offset '(TEST 5 CONSTANT #f LOCAL_JMP 3 CONSTANT #t HALT NOP)))
 
 ;; Jump destination is REFER_LOCAL 0.
 (test-equal 3 (adjust-offset '(BRANCH_NOT_NUMBER_EQUAL 5 REFER_LOCAL 0 RETURN 1 REFER_LOCAL 0 PUSH CONSTANT 1)))
+
+;ENTER 1 REFER_LOCAL_BRANCH_NOT_NULL 0 5 CONSTANT #t LOCAL_JMP 15 REFER_LOCAL 0 CAR BRANCH_NOT_NULL 10 REFER_LOCAL 0 CDR_PUSH SHIFTJ 1 1 0 LOCAL_JMP -20 LEAVE 1 RETURN 1
 
 (test-results)
