@@ -26,12 +26,12 @@
 
   ;; Jump instuction with 1 argument.
   (define (jump1-insn? insn)
-    (memq insn '(BRANCH_NOT_EQ BRANCH_NOT_NULL BRANCH_NOT_NUMBER_EQUAL LOCAL_JMP TEST)))
+    (memq insn '(BRANCH_NOT_EQ BRANCH_NOT_NULL BRANCH_NOT_NUMBER_EQUAL FRAME LOCAL_JMP TEST)))
 
   ;; Instruction with 2 arguments.
   (define (arg2-insn? insn)
     (or (jump2-insn? insn)
-        (memq insn '())))      
+        (memq insn '(REFER_FREE_CALL))))      
 
   ;; Jump instuction with 2 arguments.
   (define (jump2-insn? insn)
@@ -87,6 +87,9 @@
 
     ;; Jump destination is CONSTANT #t
     (test-equal 3 (adjust-offset '(TEST 5 CONSTANT #f LOCAL_JMP 3 CONSTANT #t HALT NOP)))
+
+    ;; Skip destination is
+    (test-equal 3 (adjust-offset '(FRAME 6 REFER_LOCAL_PUSH 0 REFER_FREE_CALL 4 1 PUSH REFER_LOCAL 1 BRANCH_NOT_GT 112)))
 
     ;; Jumpt destination is (REFER_LOCAL_BRANCH_NOT_NULL 1 5)
     (test-equal 3 (adjust-offset '(REFER_LOCAL_BRANCH_NOT_NULL 0 5 REFER_LOCAL 1 RETURN 2 REFER_LOCAL_BRANCH_NOT_NULL 1 5 REFER_LOCAL 0)))
