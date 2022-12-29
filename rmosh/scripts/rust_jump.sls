@@ -4,7 +4,8 @@
 ;;   For that reason we have to adjust offset.
 ;;   Note that offsets can be negative for some instructions.
 (define-library (rust_jump)
-  (export adjust-offset arg1-insn? arg2-insn? arg3-insn? jump1-insn? jump3-insn? run-tests)
+  (export adjust-offset arg0-insn? arg1-insn? arg2-insn? arg3-insn?
+     jump1-insn? jump3-insn? run-tests)
   (import (scheme base))
   (import (scheme write))
   (import (scheme case-lambda))
@@ -18,11 +19,11 @@
   ;; Instruction with no argument.
   (define (arg0-insn? insn)
     (memq insn '(APPEND2 CAAR CADR CAR CAR_PUSH CDAR CDDR
-                 CDR CDR_PUSH CONS EQ EQUAL EQV
-                 INDIRECT NOT NULL_P
+                 CDR CDR_PUSH CONS EQ EQUAL EQV HALT
+                 INDIRECT MAKE_VECTOR NOP NOT NULL_P
                  NUMBER_ADD NUMBER_ADD_PUSH
                  NUMBER_DIV NUMBER_EQUAL NUMBER_GE NUMBER_GT
-                 NUMBER_LT NUMBER_MUL NUMBER_SUB NUMBER_SUB_PUSH
+                 NUMBER_LE NUMBER_LT NUMBER_MUL NUMBER_SUB NUMBER_SUB_PUSH
                  PAIR_P
                  PUSH READ_CHAR SET_CAR SET_CDR
                  SIMPLE_STRUCT_REF SYMBOL_P UNDEF

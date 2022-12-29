@@ -89,7 +89,7 @@
            [((? arg1-insn? insn) n . more*)
            (format port "            Op::~a(~a),\n" (insn->string insn) n)
            (rewrite-insn* all-insn* more* (+ idx 2) port)]                     
-           [((and (or 'APPEND2 'MAKE_VECTOR 'VECTOR_LENGTH 'SIMPLE_STRUCT_REF 'NUMBER_ADD_PUSH 'VECTOR_REF 'CDAR 'CAAR 'CDR_PUSH 'VECTOR_SET 'VECTOR_REF 'READ_CHAR 'HALT 'SET_CAR 'SET_CDR 'CDDR 'EQ 'PAIR_P 'SYMBOL_P 'VECTOR_P 'CAR_PUSH 'NOT 'CAR 'CDR 'CADR 'CONS 'EQUAL 'EQV 'NUMBER_EQUAL 'NUMBER_DIV 'NUMBER_SUB 'NUMBER_SUB_PUSH 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'NOP 'NULL_P 'INDIRECT 'PUSH 'NUMBER_ADD 'NUMBER_MUL 'UNDEF) insn) . more*)
+           [((? arg0-insn? insn) . more*)
             (format port "            Op::~a,\n" (insn->string insn))
             (rewrite-insn* all-insn* more*  (+ idx 1) port)]
            [() #f]
