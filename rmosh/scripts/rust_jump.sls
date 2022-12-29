@@ -20,7 +20,7 @@
 
 ;; Jump instuction with 1 argument.
 (define (jump1-insn? insn)
-  (memq insn '(LOCAL_JMP TEST BRANCH_NOT_NUMBER_EQUAL)))
+  (memq insn '(BRANCH_NOT_NUMBER_EQUAL LOCAL_JMP TEST)))
 
 (define (adjust-offset insn*)
   (match insn*
