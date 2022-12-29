@@ -31,6 +31,10 @@
 (define (sym1-insn? insn)
   (memq insn '(ASSIGN_GLOBAL DEFINE_GLOBAL REFER_GLOBAL REFER_GLOBAL_PUSH)))
 
+;; Constant instruction with 1 argument.
+(define (const1-insn? insn)
+  (memq insn '(CONSTANT CONSTANT_PUSH PUSH_CONSTANT)))
+
 (define rewrite-insn*
   (case-lambda
    [(all-insn* insn*)
@@ -52,7 +56,7 @@
            [((? jump1-insn? insn) offset . more*)
             (format port "            Op::~a(~a),\n" (insn->string insn) (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 2) port)] 
-           [((and (or 'CONSTANT 'CONSTANT_PUSH 'PUSH_CONSTANT) insn) v . more*)
+           [((? const1-insn? insn) v . more*)
              (let1 var (gen v)
                (format port "            Op::~a(~a),\n" (insn->string insn) var)
                (rewrite-insn* all-insn* more* (+ idx 2) port))]
