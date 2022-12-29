@@ -17,7 +17,7 @@
 
   ;; Instruction with no argument.
   (define (arg0-insn? insn)
-    (memq insn '(CAR CDR_PUSH)))
+    (memq insn '(CAR CAR_PUSH CDR_PUSH)))
 
   ;; Instruction with 1 argument.
   (define (arg1-insn? insn)
