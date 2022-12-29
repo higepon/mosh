@@ -52,8 +52,8 @@
            [((and (or 'SHIFTJ) insn) l m n . more*)
             (format port "            Op::~a(~a, ~a, ~a),\n" (insn->string insn) l m n)
             (rewrite-insn* all-insn* more* (+ idx 4) port)]
-           [((and (or 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) insn) l m offset . more*)
-            (format port "            Op::~a(~a, ~a, ~a),\n" (insn->string insn) l m (adjust-offset all-insn* offset))
+           [((? jump3-insn? insn) l m offset . more*)
+            (format port "            Op::~a(~a, ~a, ~a),\n" (insn->string insn) l m (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 4) port)]            
            ;; 2 args
            [((? arg2-insn? insn) m n . more*)

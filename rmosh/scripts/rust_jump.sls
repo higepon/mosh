@@ -4,7 +4,7 @@
 ;;   For that reason we have to adjust offset.
 ;;   Note that offsets can be negative for some instructions.
 (define-library (rust_jump)
-  (export adjust-offset arg2-insn? jump1-insn? run-tests)
+  (export adjust-offset arg2-insn? jump1-insn? jump3-insn? run-tests)
   (import (scheme base))
   (import (scheme write))
   (import (scheme case-lambda))
@@ -77,7 +77,7 @@
             (let1 new-insn* (take (drop insn* (+ start offset 1)) (- (abs offset) -1))
               (* -1 (- (count-insn* new-insn*) 1)))]            
           [any
-            (error (format "adjust-offset: no matching pattern ~a" (and (pair? any) (car any))))])]))
+            (error (format "adjust-offset: no matching pattern ~a" (take any 3)))])]))
 
   ;; Count # of instructions in the sequence.
   (define (count-insn* insn*)
