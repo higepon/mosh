@@ -19,7 +19,12 @@
 (define (insn->string insn)
   (string-delete (lambda (c) (equal? c #\_)) (string-titlecase  (symbol->string insn))))
 
-(define (adjust-offset insn* start offset)
+  (define (adjust-offset insn* start offset)
+    (if (>= offset 0)
+        (adjust-offset-forward insn* start offset)
+        (adjust-offset-backward insn* start (+ 1 offset))))
+
+(define (adjust-offset-forward insn* start offset)
   (let loop ([insn* insn*]
              [cur-offset 0]
              [rust-offset 0])
@@ -43,6 +48,31 @@
               (loop more* (+ cur-offset 7) (+ rust-offset 1))]
              [() (error "never reach here1")]
              [else (error "never reach here2" (car insn*) (cadr insn*))])])))
+
+(define (adjust-offset-backward insn* start offset)
+  (let loop ([insn* insn*]
+             [cur-offset 0]
+             [rust-offset 0])
+    (format (current-error-port) "cur=~a off+1=~a rust=~a  insn*=~a\n" cur-offset (+ offset 1) rust-offset (car insn*))
+    (cond        
+     [(= cur-offset (+ offset 1)) rust-offset]
+     [else
+      (match insn*      
+             ;; 0 arg      
+             [((or 'APPEND2 'MAKE_VECTOR 'NUMBER_ADD_PUSH 'VECTOR_REF 'SIMPLE_STRUCT_REF 'CAAR 'CDR_PUSH 'VECTOR_LENGTH 'CDAR 'VECTOR_SET 'HALT 'SET_CAR 'SET_CDR 'CAR_PUSH 'READ_CHAR 'EQ 'EQUAL 'EQV 'PAIR_P 'SYMBOL_P 'VECTOR_P 'NOT 'CAR 'CDDR 'CDR 'CADR 'CONS 'NULL_P 'NUMBER_EQUAL 'NUMBER_DIV 'NUMBER_SUB 'NUMBER_SUB_PUSH 'NUMBER_GE 'NUMBER_GT 'NUMBER_LE 'NUMBER_LT 'UNDEF 'NOP 'INDIRECT 'NUMBER_ADD 'NUMBER_MUL 'PUSH) . more*)
+              (loop more* (- cur-offset 1) (- rust-offset 1))]
+             ;; 1 arg
+             [((or 'MAKE_CONTINUATION 'VECTOR 'CONSTANT_PUSH 'PUSH_CONSTANT 'NOT_TEST 'REFER_LOCAL_PUSH 'REFER_GLOBAL_PUSH 'LOCAL_CALL 'REFER_FREE_PUSH 'VALUES 'CALL 'BRANCH_NOT_EQ 'BRANCH_NOT_EQV 'BRANCH_NOT_GE 'BRANCH_NOT_EQUAL 'BRANCH_NOT_GT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NULL 'BOX 'ASSIGN_LOCAL 'ASSIGN_GLOBAL 'CONSTANT 'DEFINE_GLOBAL 'DISPLAY 'REFER_GLOBAL 'PUSH_ENTER 'ENTER 'PUSH_FRAME 'FRAME 'LEAVE 'LET_FRAME 'LOCAL_JMP 'REFER_FREE 'ASSIGN_FREE 'REFER_LOCAL 'RETURN 'TEST) _ . more*)
+              (loop more* (- cur-offset 2) (- rust-offset 1))]
+             ;; 2 args
+             [((or 'TAIL_CALL 'REFER_FREE_CALL 'RECEIVE 'REFER_LOCAL_BRANCH_NOT_LT 'REFER_LOCAL_BRANCH_NOT_NULL 'REFER_GLOBAL_CALL 'LOCAL_TAIL_CALL 'REFER_LOCAL_CALL 'REFER_FREE_CALL 'REFER_LOCAL_PUSH_CONSTANT) m n . more*)
+              (loop more* (- cur-offset 3) (- rust-offset 1))]
+             [((or 'SHIFTJ 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) l m n . more*)
+              (loop more* (- cur-offset 4) (- rust-offset 1))]
+             [('CLOSURE _a _b _c _d _e _f . more*) 
+              (loop more* (- cur-offset 7) (- rust-offset 1))]
+             [() (error "never reach here1")]
+             [else (error "never reach here2" (car insn*) (cadr insn*))])])))             
 
 (define rewrite-insn*
   (case-lambda
