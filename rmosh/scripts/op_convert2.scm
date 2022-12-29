@@ -94,10 +94,10 @@
           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
           (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
           (rewrite-insn* all-insn* more* (+ idx 3) port)]                               
-          [((and (or 'REFER_LOCAL_PUSH_CONSTANT) insn) n c . more*)
-            (let1 var (gen c)
-              (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) n var)
-              (rewrite-insn* all-insn* more* (+ idx 3) port))]      
+          ;[((and (or 'REFER_LOCAL_PUSH_CONSTANT) insn) n c . more*)
+           ; (let1 var (gen c)
+            ;  (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) n var)
+             ; (rewrite-insn* all-insn* more* (+ idx 3) port))]      
 
                  
 
