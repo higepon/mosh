@@ -4,7 +4,7 @@
 ;;   For that reason we have to adjust offset.
 ;;   Note that offsets can be negative for some instructions.
 (define-library (rust_jump)
-  (export adjust-offset arg2-insn? arg3-insn? jump1-insn? jump3-insn? run-tests)
+  (export adjust-offset arg1-insn? arg2-insn? arg3-insn? jump1-insn? jump3-insn? run-tests)
   (import (scheme base))
   (import (scheme write))
   (import (scheme case-lambda))
@@ -37,7 +37,7 @@
                      LOCAL_CALL MAKE_CONTINUATION PUSH_CONSTANT
                      PUSH_ENTER REFER_FREE REFER_FREE_PUSH
                      REFER_GLOBAL REFER_GLOBAL_PUSH
-                     REFER_LOCAL REFER_LOCAL_PUSH RETURN VALUES))))
+                     REFER_LOCAL REFER_LOCAL_PUSH RETURN VALUES VECTOR))))
 
   ;; Jump instuction with 1 argument.
   (define (jump1-insn? insn)
