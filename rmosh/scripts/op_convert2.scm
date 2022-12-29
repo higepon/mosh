@@ -56,13 +56,15 @@
              (let1 var (gen v)
                (format port "            Op::~a(~a),\n" (insn->string insn) var)
                (rewrite-insn* all-insn* more* (+ idx 2) port))]
-           ;; 3 args
-           [((and (or 'SHIFTJ) insn) l m n . more*)
-            (format port "            Op::~a(~a, ~a, ~a),\n" (insn->string insn) l m n)
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
+           ;; 3 arg jump instructions.
+           ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
+           ;;   Because arg3-insn? include jump3-insn?
            [((? jump3-insn? insn) l m offset . more*)
             (format port "            Op::~a(~a, ~a, ~a),\n" (insn->string insn) l m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]            
+            (rewrite-insn* all-insn* more* (+ idx 4) port)]                
+           [((? arg3-insn? insn) l m n . more*)
+            (format port "            Op::~a(~a, ~a, ~a),\n" (insn->string insn) l m n)
+            (rewrite-insn* all-insn* more* (+ idx 4) port)]
            ;; 2 args
            [((? arg2-insn? insn) m n . more*)
             (format port "            Op::~a(~a, ~a),\n" (insn->string insn) m n)

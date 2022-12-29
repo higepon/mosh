@@ -4,7 +4,7 @@
 ;;   For that reason we have to adjust offset.
 ;;   Note that offsets can be negative for some instructions.
 (define-library (rust_jump)
-  (export adjust-offset arg2-insn? jump1-insn? jump3-insn? run-tests)
+  (export adjust-offset arg2-insn? arg3-insn? jump1-insn? jump3-insn? run-tests)
   (import (scheme base))
   (import (scheme write))
   (import (scheme case-lambda))
