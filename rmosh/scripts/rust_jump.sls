@@ -13,18 +13,30 @@
 (import (only (srfi :1) take))
 (import (only (srfi :13) string-join))
 
+;; Instruction with 1 argument.
+(define (arg1-insn? insn)
+  (or (jump1-insn? insn)
+      (memq insn '(CONSTANT))))
+
+;; Jump instuction with 1 argument.
+(define (jump1-insn? insn)
+  (memq insn '(LOCAL_JMP TEST)))
+
 (define (adjust-offset insn*)
   (match insn*
-    [('LOCAL_JMP offset . more)
-      
-      (rust-offset (take more (- offset 1)))]))
+    [((? jump1-insn? _) offset . more)
+      (rust-offset (take more (- offset 1)))]
+    [else
+      (error (format "adjust-offset: no matching pattern ~a" (and (pair? insn*) (car insn*))))]))
 
 (define (rust-offset insn*)
   (define (count-insn* insn*)
     (match insn*
       [() 0]
-      [('CONSTANT _ . more)
-        (+ 1 (count-insn* more))]))
+      [((? arg1-insn? _) _arg1 . more)
+        (+ 1 (count-insn* more))]
+      [else
+        (error (format "rust-offset: no matching pattern ~a" (and (pair? insn*) (car insn*))))]))
   ;; Count # of instructions in between jump source and destination.
   ;; Then +1 to get destination offset.
   (+ 1 (count-insn* insn*)))
@@ -32,5 +44,7 @@
 ;; Jump destination is HALT.
 (test-equal 2 (adjust-offset '(LOCAL_JMP 3 CONSTANT #t HALT NOP)))
 
+;; Jump destination is CONSTANT #t
+(test-equal 3 (adjust-offset '(TEST 5 CONSTANT #f LOCAL_JMP 3 CONSTANT #t HALT NOP)))
 
 (test-results)
