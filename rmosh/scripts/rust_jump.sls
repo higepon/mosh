@@ -54,6 +54,10 @@
   (define (jump3-insn? insn)
     (memq insn '(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE)))    
 
+  ;; Instruction with 6 arguments.
+  (define (arg6-insn? insn)
+    (memq insn '(CLOSURE)))    
+
   (define adjust-offset
     (case-lambda
       [(insn*)
@@ -90,7 +94,9 @@
       [((? arg2-insn? _) _arg1 _arg2 . more)
         (+ 1 (count-insn* more))]       
       [((? arg3-insn? _) _arg1 _arg2 _arg3 . more)
-        (+ 1 (count-insn* more))]           
+        (+ 1 (count-insn* more))]    
+      [((? arg6-insn? _) _arg1 _arg2 _arg3 _arg4 _arg5 _arg6 . more)
+        (+ 1 (count-insn* more))]                
       [any
         (error (format "count-insn*: no matching pattern ~a" (and (pair? any) (car any))))]))          
 
