@@ -47,7 +47,7 @@
 ;; Jump destination is CONSTANT #t
 (test-equal 3 (adjust-offset '(TEST 5 CONSTANT #f LOCAL_JMP 3 CONSTANT #t HALT NOP)))
 
-;; Jump destination s REFER_LOCAL 0.
+;; Jump destination is REFER_LOCAL 0.
 (test-equal 3 (adjust-offset '(BRANCH_NOT_NUMBER_EQUAL 5 REFER_LOCAL 0 RETURN 1 REFER_LOCAL 0 PUSH CONSTANT 1)))
 
 (test-results)
