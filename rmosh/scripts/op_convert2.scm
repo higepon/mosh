@@ -36,7 +36,7 @@
             (format port "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
                     0 arg-len (if optional? "true" "false") num-free-vars)
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
-           ;; adjust
+           ;; Jump instuction with 1 argument.
            [((? jump1-insn? insn) offset . more*)
             (format port "            Op::~a(~a),\n" (insn->string insn) (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 2) port)] 
@@ -52,7 +52,7 @@
             (format port "            Op::~a(~a, ~a, ~a),\n" (insn->string insn) l m (adjust-offset all-insn* offset))
             (rewrite-insn* all-insn* more* (+ idx 4) port)]            
            ;; 2 args
-           [((and (or 'TAIL_CALL 'RECEIVE 'REFER_LOCAL_CALL 'REFER_FREE_CALL 'LOCAL_TAIL_CALL 'REFER_LOCAL_CALL) insn) m n . more*)
+           [((? arg2-insn? insn) m n . more*)
             (format port "            Op::~a(~a, ~a),\n" (insn->string insn) m n)
             (rewrite-insn* all-insn* more* (+ idx 3) port)]
             ;; 2 args jump. Please note that we increment offset there because jump source is the end of instruction.
