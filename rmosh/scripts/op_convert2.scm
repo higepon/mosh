@@ -32,7 +32,8 @@
            (format #t "insn*=~a idx=~a" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
            (newline)   
     (match insn*
-           [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)
+           ;; GLOBAL family with 1 argument
+           [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL 'REFER_GLOBAL_PUSH) insn) (? symbol? n) . more*)
             (format port "            Op::~a(vm.gc.intern(\"~a\")),\n" (insn->string insn) n)
             (rewrite-insn* all-insn* more* (+ idx 2) port)]    
            [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
@@ -62,9 +63,7 @@
            [((and (or 'REFER_LOCAL_BRANCH_NOT_NULL 'REFER_LOCAL_BRANCH_NOT_LT) insn) m offset . more*)
             (format port "            Op::~a(~a, ~a),\n" (insn->string insn) m (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 3) port)] 
-           [((and (or 'REFER_GLOBAL_PUSH) insn) (? symbol? s) . more*)
-            (format port "            Op::~a(vm.gc.intern(\"~a\"), ~a),\n" (insn->string insn) s)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]             
+          
            [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
             (format port "            Op::~a(vm.gc.intern(\"~a\"), ~a),\n" (insn->string insn) s n)
             (rewrite-insn* all-insn* more* (+ idx 3) port)]                               

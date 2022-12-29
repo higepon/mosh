@@ -17,19 +17,21 @@
 
   ;; Instruction with no argument.
   (define (arg0-insn? insn)
-    (memq insn '(CAR CAR_PUSH CDR_PUSH PUSH)))
+    (memq insn '(APPEND2 CAAR CAR CAR_PUSH CDR_PUSH CONS INDIRECT
+                 PAIR_P PUSH)))
 
   ;; Instruction with 1 argument.
   (define (arg1-insn? insn)
     (or (jump1-insn? insn)
-        (memq insn '(CONSTANT CONSTANT_PUSH REFER_FREE_PUSH REFER_LOCAL
-                     REFER_LOCAL_PUSH RETURN))))
+        (memq insn '(CONSTANT CONSTANT_PUSH DISPLAY ENTER LEAVE LET_FRAME
+                     LOCAL_CALL REFER_FREE REFER_FREE_PUSH REFER_GLOBAL_PUSH
+                     REFER_LOCAL REFER_LOCAL_PUSH RETURN))))
 
   ;; Jump instuction with 1 argument.
   (define (jump1-insn? insn)
     (memq insn '(BRANCH_NOT_EQ BRANCH_NOT_EQUAL BRANCH_NOT_EQV BRANCH_NOT_GE
                  BRANCH_NOT_GT BRANCH_NOT_LE BRANCH_NOT_LT BRANCH_NOT_NULL
-                 BRANCH_NOT_NUMBER_EQUAL FRAME LET_FRAME LOCAL_JMP NOT_TEST
+                 BRANCH_NOT_NUMBER_EQUAL FRAME LOCAL_JMP NOT_TEST
                  PUSH_FRAME REFER_GLOBAL TEST)))
 
   ;; Instruction with 2 arguments.
