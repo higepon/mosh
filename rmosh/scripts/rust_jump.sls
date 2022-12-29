@@ -50,12 +50,15 @@
         [((? jump1-insn? _) (? positive? offset) . more)
           (let1 new-insn* (take more (- offset 1))
             (+ (count-insn* new-insn*) 1))]
+        [((? jump2-insn? _) _arg1 (? positive? offset) . more)
+          (let1 new-insn* (take more (- offset 1))
+            (+ (count-insn* new-insn*) 1))]            
         ;; Jump backward.
         [((? jump1-insn? _) (? negative? offset) . more)
           ;; new-insn*
           ;; [...] [destination] ... [jump] [...] => [destination] ...
           (let1 new-insn* (take (drop insn* (+ start offset 1)) (- (abs offset) -1))
-            (* -1 (- (count-insn* new-insn*) 1)))]
+            (* -1 (- (count-insn* new-insn*) 1)))]            
         [any
           (error (format "adjust-offset: no matching pattern ~a" (and (pair? any) (car any))))])]))
 
@@ -82,6 +85,9 @@
 
 ;; Jump destination is CONSTANT #t
 (test-equal 3 (adjust-offset '(TEST 5 CONSTANT #f LOCAL_JMP 3 CONSTANT #t HALT NOP)))
+
+;; Jumpt destination is (REFER_LOCAL_BRANCH_NOT_NULL 1 5)
+(test-equal 3 (adjust-offset '(REFER_LOCAL_BRANCH_NOT_NULL 0 5 REFER_LOCAL 1 RETURN 2 REFER_LOCAL_BRANCH_NOT_NULL 1 5 REFER_LOCAL 0)))
 
 ;; Jump destination is REFER_LOCAL 0.
 (test-equal 3 (adjust-offset '(BRANCH_NOT_NUMBER_EQUAL 5 REFER_LOCAL 0 RETURN 1 REFER_LOCAL 0 PUSH CONSTANT 1)))
