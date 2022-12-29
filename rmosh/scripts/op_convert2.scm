@@ -32,6 +32,9 @@
            (format #t "insn*=~a idx=~a" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
            (newline)   
     (match insn*
+           [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)
+            (format port "            Op::~a(vm.gc.intern(\"~a\")),\n" (insn->string insn) n)
+            (rewrite-insn* all-insn* more* (+ idx 2) port)]    
            [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
             (format port "            Op::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
                     0 arg-len (if optional? "true" "false") num-free-vars)
@@ -72,9 +75,7 @@
            [((and (or 'PUSH_ENTER 'ENTER 'BOX 'MAKE_CONTINUATION 'VALUES) insn) n . more*)
             (format port "            Op::~a(~a),\n" (insn->string insn) n)
             (rewrite-insn* all-insn* more* (+ idx 2) port)]                
-           [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL) insn) (? symbol? n) . more*)
-            (format port "            Op::~a(vm.gc.intern(\"~a\")),\n" (insn->string insn) n)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
+
             ;; 1 arg          
            [((and (or 'LOCAL_CALL 'VECTOR 'CALL 'DISPLAY 'LEAVE 'LET_FRAME 'RETURN 'ASSIGN_FREE 'REFER_FREE 'REFER_FREE_PUSH 'REFER_LOCAL_PUSH 'REFER_LOCAL 'ASSIGN_LOCAL 'FRAME 'REFER_LOCAL) insn) n . more*)
             (format port "            Op::~a(~a),\n" (insn->string insn) n)
