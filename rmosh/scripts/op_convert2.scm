@@ -42,59 +42,65 @@
       (rewrite-insn* all-insn* insn* 0 port)
       (get))]
    [(all-insn* insn* idx port)
-    (let1 indent "            "
-   (log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
-    (match insn*
-           ;; GLOBAL family with 1 argument
-           [((? sym1-insn? insn) (? symbol? n) . more*)
-            (format port "~aOp::~a(vm.gc.intern(\"~a\")),\n" indent (insn->string insn) n)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]    
-           [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
+     (log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
+     (let1 indent "            "
+       (match insn*
+  
+          [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
             (format port "~aOp::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
-                    indent 0 arg-len (if optional? "true" "false") num-free-vars)
+              indent 0 arg-len (if optional? "true" "false") num-free-vars)
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
-           ;; Jump instuction with 1 argument.
-           [((? jump1-insn? insn) offset . more*)
+          ;; 0 arg instructions.  
+          [((? arg0-insn? insn) . more*)
+            (format port "~aOp::~a,\n" indent (insn->string insn))
+            (rewrite-insn* all-insn* more*  (+ idx 1) port)]            
+          ;; 1 arg jump instruction.
+          [((? jump1-insn? insn) offset . more*)
             (format port "~aOp::~a(~a),\n" indent (insn->string insn) (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 2) port)] 
-           [((? const1-insn? insn) v . more*)
-             (let1 var (gen v)
-               (format port "~aOp::~a(~a),\n" indent (insn->string insn) var)
-               (rewrite-insn* all-insn* more* (+ idx 2) port))]
-           ;; 3 arg jump instructions.
-           ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
-           ;;   Because arg3-insn? include jump3-insn?
-           [((? jump3-insn? insn) l m offset . more*)
-            (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]                
-           [((? arg3-insn? insn) l m n . more*)
-            (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
-           ;; 2 args
-           [((? arg2-insn? insn) m n . more*)
-            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
-            ;; 2 args jump. Please note that we increment offset there because jump source is the end of instruction.
-           [((and (or 'REFER_LOCAL_BRANCH_NOT_NULL 'REFER_LOCAL_BRANCH_NOT_LT) insn) m offset . more*)
-            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 3) port)] 
-          
-           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
-            (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]                               
-           [((and (or 'REFER_LOCAL_PUSH_CONSTANT) insn) n c . more*)
-             (let1 var (gen c)
-               (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) n var)
-               (rewrite-insn* all-insn* more* (+ idx 3) port))]      
+          ;; CONSTANT family with 1 arg.
+          [((? const1-insn? insn) v . more*)
+            (let1 var (gen v)
+              (format port "~aOp::~a(~a),\n" indent (insn->string insn) var)
+              (rewrite-insn* all-insn* more* (+ idx 2) port))]
+          ;; GLOBAL family with 1 symbol argument.
+          [((? sym1-insn? insn) (? symbol? n) . more*)
+            (format port "~aOp::~a(vm.gc.intern(\"~a\")),\n" indent (insn->string insn) n)
+            (rewrite-insn* all-insn* more* (+ idx 2) port)]                
+          ;; Other 1 arg instructions.    
+          [((? arg1-insn? insn) n . more*)
+            (format port "~aOp::~a(~a),\n" indent (insn->string insn) n)
+            (rewrite-insn* all-insn* more* (+ idx 2) port)]                  
+          ;; 3 arg jump instructions.
+          ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
+          ;;   Because arg3-insn? include jump3-insn?
+          [((? jump3-insn? insn) l m offset . more*)
+          (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m (adjust-offset all-insn* idx))
+          (rewrite-insn* all-insn* more* (+ idx 4) port)]                
+          [((? arg3-insn? insn) l m n . more*)
+          (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
+          (rewrite-insn* all-insn* more* (+ idx 4) port)]
+          ;; 2 args
+          [((? arg2-insn? insn) m n . more*)
+          (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
+          (rewrite-insn* all-insn* more* (+ idx 3) port)]
+          ;; 2 args jump. Please note that we increment offset there because jump source is the end of instruction.
+          [((and (or 'REFER_LOCAL_BRANCH_NOT_NULL 'REFER_LOCAL_BRANCH_NOT_LT) insn) m offset . more*)
+          (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
+          (rewrite-insn* all-insn* more* (+ idx 3) port)] 
+        
+          [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
+          (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
+          (rewrite-insn* all-insn* more* (+ idx 3) port)]                               
+          [((and (or 'REFER_LOCAL_PUSH_CONSTANT) insn) n c . more*)
+            (let1 var (gen c)
+              (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) n var)
+              (rewrite-insn* all-insn* more* (+ idx 3) port))]      
 
-           [((? arg1-insn? insn) n . more*)
-           (format port "~aOp::~a(~a),\n" indent (insn->string insn) n)
-           (rewrite-insn* all-insn* more* (+ idx 2) port)]                     
-           [((? arg0-insn? insn) . more*)
-            (format port "~aOp::~a,\n" indent (insn->string insn))
-            (rewrite-insn* all-insn* more*  (+ idx 1) port)]
-           [() #f]
-           [else (error "unknown insn" (car insn*) (cadr insn*))]))]))
+                 
+
+          [() #f]
+          [else (error "unknown insn" (car insn*) (cadr insn*))]))]))
 
 (define (file->sexp* file)
   (call-with-input-file file
