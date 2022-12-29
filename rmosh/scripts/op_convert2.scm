@@ -100,36 +100,19 @@
          [else
           (loop (read p) (cons sexp sexp*))])))))
 
-(define (expected->rust expected)
-  (match expected
-         [(? char? c)
-          (format "Object::Char('~a')" c)]    
-         [(? symbol? s)
-          (format "vm.gc.symbol_intern(\"~a\")" s)]
-         [(? string? s)
-          (format "vm.gc.new_string(\"~a\")" s)]
-         ['undef "Object::Undef"]
-         [#t "Object::True"]
-         [#f "Object::False"]
-         [() "Object::Nil"]
-         [(a . b)
-          (format "Object::Pair(vm.gc.alloc(Pair::new(~a, ~a))" (expected->rust a) (expected->rust b))]
-         [(? number? n) (format "Object::Number(~a)" n)]
-         [else (error "expected->rust" expected)]))
+
 
 (define (main args)
-  (let* ([op-file (cadr args)]
-         [sexp* (file->sexp* op-file)]
-         [insn* (vector->list (car sexp*))]
-         [insn-str (rewrite-insn* insn* insn*)])
-    (let-values ([(port get) (open-string-output-port)])    
-         
-
-                      (format port "
+  (let-values ([(port get) (open-string-output-port)])
+    (let* ([op-file (cadr args)]
+           [sexp* (file->sexp* op-file)]
+           [insn* (vector->list (car sexp*))]
+           [insn-str (rewrite-insn* insn* insn*)]
+           [decl-str (and (gen-code port) (get))])
+      (format #t "
 
         let mut vm = Vm::new();
 ~a        
-        let ops = vec![\n~a" (gen-code port)  insn-str)        
-            (display (get)))))
+        let ops = vec![\n~a];\n" decl-str  insn-str))))            
 
 (main (command-line))

@@ -140,28 +140,28 @@
       (lambda (sym) 
         (match sym
           [(val . var)
-            (format port "let ~a = vm.gc.symbol_intern(\"~a\");\n" var val)]))
+            (format port "        let ~a = vm.gc.symbol_intern(\"~a\");\n" var val)]))
       (reverse sym*))
 
     (for-each 
       (lambda (list) 
         (match list
           [(var . elm*)
-            (format port "let ~a = vm.gc.listn(&[~a]);\n" var (string-join elm* ", "))]))
+            (format port "        let ~a = vm.gc.listn(&[~a]);\n" var (string-join elm* ", "))]))
       (reverse list*))
 
     (for-each 
       (lambda (vec) 
         (match vec
           [(var . elm*)
-            (format port "let ~a = vm.gc.new_vector(&vec![~a]);\n" var (string-join elm* ", "))]))
+            (format port "        let ~a = vm.gc.new_vector(&vec![~a]);\n" var (string-join elm* ", "))]))
       (reverse vec*))  
 
     (for-each 
       (lambda (str) 
         (match str
           [(val . var)
-            (format port "let ~a = vm.gc.new_string(~s);\n" var val)]))
+            (format port "        let ~a = vm.gc.new_string(~s);\n" var val)]))
       (reverse str*)))    
 
   (define (run-tests)
