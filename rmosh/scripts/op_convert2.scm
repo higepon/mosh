@@ -18,6 +18,12 @@
 (import (only (mosh) format regexp-replace-all rxmatch))
 (import (only (rnrs) open-string-output-port string-titlecase))
 
+;; Enable debug log.
+(define debug? #f)
+(define (log str . args)
+  (when debug?
+    (apply format (current-error-port) str args)))
+
 (define (insn->string insn)
   (string-delete (lambda (c) (equal? c #\_)) (string-titlecase  (symbol->string insn))))
             
@@ -29,8 +35,7 @@
       (rewrite-insn* all-insn* insn* 0 port)
       (get))]
    [(all-insn* insn* idx port)
-           (format #t "insn*=~a idx=~a" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
-           (newline)   
+           (log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
     (match insn*
            ;; GLOBAL family with 1 argument
            [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL 'REFER_GLOBAL_PUSH) insn) (? symbol? n) . more*)
@@ -115,17 +120,16 @@
 (define (main args)
   (let* ([op-file (cadr args)]
          [sexp* (file->sexp* op-file)]
-         [insn* (vector->list (car sexp*))])
-    (let1 insn-str (rewrite-insn* insn* insn*)
-
-          (let-values ([(port get) (open-string-output-port)])    
-        (gen-code port)
+         [insn* (vector->list (car sexp*))]
+         [insn-str (rewrite-insn* insn* insn*)])
+    (let-values ([(port get) (open-string-output-port)])    
+         
 
                       (format port "
 
         let mut vm = Vm::new();
 ~a        
-        let ops = vec![\n~a"   insn-str)        
-            (display (get))))))
+        let ops = vec![\n~a" (gen-code port)  insn-str)        
+            (display (get)))))
 
 (main (command-line))
