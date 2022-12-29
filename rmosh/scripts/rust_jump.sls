@@ -47,7 +47,12 @@
 
   ;; Instruction with 3 arguments.
   (define (arg3-insn? insn)
-    (memq insn '(SHIFTJ)))  
+    (or (jump3-insn? insn)
+        (memq insn '(SHIFTJ))))
+
+  ;; Jump instuction with 3 arguments.
+  (define (jump3-insn? insn)
+    (memq insn '(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE)))    
 
   (define adjust-offset
     (case-lambda
@@ -61,7 +66,10 @@
               (+ (count-insn* new-insn*) 1))]
           [((? jump2-insn? _) _arg1 (? positive? offset) . more)
             (let1 new-insn* (take more (- offset 1))
-              (+ (count-insn* new-insn*) 1))]            
+              (+ (count-insn* new-insn*) 1))]   
+          [((? jump3-insn? _) _arg1 _arg2 (? positive? offset) . more)
+            (let1 new-insn* (take more (- offset 1))
+              (+ (count-insn* new-insn*) 1))]                        
           ;; Jump backward.
           [((? jump1-insn? _) (? negative? offset) . more)
             ;; new-insn*
@@ -96,8 +104,11 @@
     ;; Jump destination is CONSTANT #t
     (test-equal 3 (adjust-offset '(TEST 5 CONSTANT #f LOCAL_JMP 3 CONSTANT #t HALT NOP)))
 
-    ;; Skip destination is
+    ;; Skip destination is PUSH.
     (test-equal 3 (adjust-offset '(FRAME 6 REFER_LOCAL_PUSH 0 REFER_FREE_CALL 4 1 PUSH REFER_LOCAL 1 BRANCH_NOT_GT 112)))
+
+    ;; Jump desitnation is REFER_LOCAL_PUSH_CONSTANT.
+    (test-equal 3 (adjust-offset '(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE 0 0 5 REFER_LOCAL 1 LOCAL_JMP 21 REFER_LOCAL_PUSH_CONSTANT 0 1 NUMBER_SUB_PUSH FRAME 8 REFER_FREE_PUSH 4 REFER_LOCAL_PUSH 1 REFER)))
 
     ;; Jumpt destination is (REFER_LOCAL_BRANCH_NOT_NULL 1 5)
     (test-equal 3 (adjust-offset '(REFER_LOCAL_BRANCH_NOT_NULL 0 5 REFER_LOCAL 1 RETURN 2 REFER_LOCAL_BRANCH_NOT_NULL 1 5 REFER_LOCAL 0)))
