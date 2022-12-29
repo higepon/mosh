@@ -21,11 +21,11 @@
 ;; Instruction with 1 argument.
 (define (arg1-insn? insn)
   (or (jump1-insn? insn)
-      (memq insn '(CONSTANT REFER_LOCAL RETURN))))
+      (memq insn '(CONSTANT REFER_LOCAL REFER_LOCAL_PUSH RETURN))))
 
 ;; Jump instuction with 1 argument.
 (define (jump1-insn? insn)
-  (memq insn '(BRANCH_NOT_NULL BRANCH_NOT_NUMBER_EQUAL LOCAL_JMP TEST)))
+  (memq insn '(BRANCH_NOT_EQ BRANCH_NOT_NULL BRANCH_NOT_NUMBER_EQUAL LOCAL_JMP TEST)))
 
 ;; Instruction with 2 arguments.
 (define (arg2-insn? insn)
@@ -55,7 +55,7 @@
           ;; new-insn*
           ;; [...] [destination] ... [jump] [...] => [destination] ...
           (let1 new-insn* (take (drop insn* (+ start offset 1)) (- (abs offset) -1))
-            (- (count-insn* new-insn*) 1))]
+            (* -1 (- (count-insn* new-insn*) 1)))]
         [any
           (error (format "adjust-offset: no matching pattern ~a" (and (pair? any) (car any))))])]))
 
@@ -74,11 +74,6 @@
     [any
       (error (format "count-insn*: no matching pattern ~a" (and (pair? any) (car any))))]))          
 
-(define (rust-offset insn*)
-  ;; Count # of instructions in between jump source and destination.
-  ;; Then +1 to get destination offset.
-  (+ 1 (count-insn* insn*)))
-
 ;; Jump destination is HALT.
 (test-equal 2 (adjust-offset '(LOCAL_JMP 3 CONSTANT #t HALT NOP)))
 
@@ -92,8 +87,11 @@
 (test-equal 3 (adjust-offset '(BRANCH_NOT_NUMBER_EQUAL 5 REFER_LOCAL 0 RETURN 1 REFER_LOCAL 0 PUSH CONSTANT 1)))
 
 ;; Jump source is (LOCAL_JMP -20) and the destination is (REFER_LOCAL_BRANCH_NOT_NULL 0 5).
-(test-equal 9 (adjust-offset
+(test-equal -9 (adjust-offset
                 '(ENTER 1 REFER_LOCAL_BRANCH_NOT_NULL 0 5 CONSTANT #t LOCAL_JMP 15 REFER_LOCAL 0 CAR BRANCH_NOT_NULL 10 REFER_LOCAL 0 CDR_PUSH SHIFTJ 1 1 0 LOCAL_JMP -20 LEAVE 1 RETURN 1)
                 21))
+
+;; Jump source is (LOCAL_JMP -21) and the destination is (REFER_LOCAL_PUSH 0).
+(test-equal -10 (adjust-offset '(PUSH_ENTER 2 REFER_LOCAL_PUSH 0 REFER_LOCAL 1 BRANCH_NOT_EQ 5 REFER_LOCAL 0 LOCAL_JMP 13 REFER_LOCAL 0 CDR_PUSH REFER_LOCAL 1 CDR_PUSH SHIFTJ 2 2 0 LOCAL_JMP -21 LEAVE 2 LEAVE 2) 22))
 
 (test-results)
