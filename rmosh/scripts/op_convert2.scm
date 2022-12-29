@@ -83,24 +83,15 @@
           ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
           ;;   Because arg3-insn? include jump3-insn?
           [((? jump3-insn? insn) l m offset . more*)
-          (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m (adjust-offset all-insn* idx))
-          (rewrite-insn* all-insn* more* (+ idx 4) port)]                
+            (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m (adjust-offset all-insn* idx))
+            (rewrite-insn* all-insn* more* (+ idx 4) port)]                
+          ;; Other 3 arg instructions.
           [((? arg3-insn? insn) l m n . more*)
-          (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
-          (rewrite-insn* all-insn* more* (+ idx 4) port)]
-
-
-        
+            (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
+            (rewrite-insn* all-insn* more* (+ idx 4) port)]
           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
-          (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
-          (rewrite-insn* all-insn* more* (+ idx 3) port)]                               
-          ;[((and (or 'REFER_LOCAL_PUSH_CONSTANT) insn) n c . more*)
-           ; (let1 var (gen c)
-            ;  (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) n var)
-             ; (rewrite-insn* all-insn* more* (+ idx 3) port))]      
-
-                 
-
+            (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
+            (rewrite-insn* all-insn* more* (+ idx 3) port)]                               
           [() #f]
           [else (error "unknown insn" (car insn*) (cadr insn*))]))]))
 
