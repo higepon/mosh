@@ -105,8 +105,6 @@
          [else
           (loop (read p) (cons sexp sexp*))])))))
 
-
-
 (define (main args)
   (let-values ([(port get) (open-string-output-port)])
     (let* ([op-file (cadr args)]
@@ -115,7 +113,6 @@
            [insn-str (rewrite-insn* insn* insn*)]
            [decl-str (and (gen-code port) (get))])
       (format #t "
-
         let mut vm = Vm::new();
 ~a        
         let ops = vec![\n~a];\n" decl-str  insn-str))))            
