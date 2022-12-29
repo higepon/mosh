@@ -26,7 +26,10 @@
 
 (define (insn->string insn)
   (string-delete (lambda (c) (equal? c #\_)) (string-titlecase  (symbol->string insn))))
-            
+
+;; Instruction with 1 symbol argument.
+(define (sym1-insn? insn)
+  (memq insn '(ASSIGN_GLOBAL DEFINE_GLOBAL REFER_GLOBAL REFER_GLOBAL_PUSH)))
 
 (define rewrite-insn*
   (case-lambda
@@ -35,10 +38,10 @@
       (rewrite-insn* all-insn* insn* 0 port)
       (get))]
    [(all-insn* insn* idx port)
-           (log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
+   (log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
     (match insn*
            ;; GLOBAL family with 1 argument
-           [((and (or 'ASSIGN_GLOBAL 'DEFINE_GLOBAL 'REFER_GLOBAL 'REFER_GLOBAL_PUSH) insn) (? symbol? n) . more*)
+           [((? sym1-insn? insn) (? symbol? n) . more*)
             (format port "            Op::~a(vm.gc.intern(\"~a\")),\n" (insn->string insn) n)
             (rewrite-insn* all-insn* more* (+ idx 2) port)]    
            [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
