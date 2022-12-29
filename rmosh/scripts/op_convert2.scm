@@ -71,6 +71,14 @@
           [((? arg1-insn? insn) n . more*)
             (format port "~aOp::~a(~a),\n" indent (insn->string insn) n)
             (rewrite-insn* all-insn* more* (+ idx 2) port)]                  
+          ;; 2 args jump instructions.
+          [((? jump2-insn? insn) m offset . more*)
+            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
+            (rewrite-insn* all-insn* more* (+ idx 3) port)]           
+          ;; 2 args
+          [((? arg2-insn? insn) m n . more*)
+            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
+            (rewrite-insn* all-insn* more* (+ idx 3) port)]            
           ;; 3 arg jump instructions.
           ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
           ;;   Because arg3-insn? include jump3-insn?
@@ -80,14 +88,7 @@
           [((? arg3-insn? insn) l m n . more*)
           (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
           (rewrite-insn* all-insn* more* (+ idx 4) port)]
-          ;; 2 args jump instructions.
-          [((? jump2-insn? insn) m offset . more*)
-            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]           
-          ;; 2 args
-          [((? arg2-insn? insn) m n . more*)
-            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
+
 
         
           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
