@@ -80,14 +80,14 @@
           [((? arg3-insn? insn) l m n . more*)
           (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
           (rewrite-insn* all-insn* more* (+ idx 4) port)]
-          ;; 2 args jump. Please note that we increment offset there because jump source is the end of instruction.
-          [((and (or 'REFER_LOCAL_BRANCH_NOT_NULL 'REFER_LOCAL_BRANCH_NOT_LT) insn) m offset . more*)
-          (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
-          (rewrite-insn* all-insn* more* (+ idx 3) port)]           
+          ;; 2 args jump instructions.
+          [((? jump2-insn? insn) m offset . more*)
+            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
+            (rewrite-insn* all-insn* more* (+ idx 3) port)]           
           ;; 2 args
           [((? arg2-insn? insn) m n . more*)
-          (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
-          (rewrite-insn* all-insn* more* (+ idx 3) port)]
+            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
+            (rewrite-insn* all-insn* more* (+ idx 3) port)]
 
         
           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
