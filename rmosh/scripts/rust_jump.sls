@@ -4,7 +4,7 @@
 ;;   For that reason we have to adjust offset.
 ;;   Note that offsets can be negative for some instructions.
 (define-library (rust_jump)
-  (export adjust-offset run-tests)
+  (export adjust-offset jump1-insn? run-tests)
   (import (scheme base))
   (import (scheme write))
   (import (scheme case-lambda))
@@ -26,7 +26,9 @@
 
   ;; Jump instuction with 1 argument.
   (define (jump1-insn? insn)
-    (memq insn '(BRANCH_NOT_EQ BRANCH_NOT_NULL BRANCH_NOT_NUMBER_EQUAL FRAME LOCAL_JMP TEST)))
+    (memq insn '(BRANCH_NOT_EQ BRANCH_NOT_EQUAL BRANCH_NOT_EQV BRANCH_NOT_GE
+                 BRANCH_NOT_GT BRANCH_NOT_LE BRANCH_NOT_LT BRANCH_NOT_NULL
+                 BRANCH_NOT_NUMBER_EQUAL FRAME LOCAL_JMP NOT_TEST PUSH_FRAME TEST)))
 
   ;; Instruction with 2 arguments.
   (define (arg2-insn? insn)

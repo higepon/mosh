@@ -37,7 +37,7 @@
                     0 arg-len (if optional? "true" "false") num-free-vars)
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
            ;; adjust
-           [((and (or 'PUSH_FRAME 'FRAME 'TEST 'NOT_TEST 'LOCAL_JMP 'BRANCH_NOT_GE 'BRANCH_NOT_EQUAL 'BRANCH_NOT_EQV 'BRANCH_NOT_GT 'BRANCH_NOT_EQ 'BRANCH_NOT_LE 'BRANCH_NOT_LT 'BRANCH_NOT_NUMBER_EQUAL 'BRANCH_NOT_NULL) insn) offset . more*)
+           [((? jump1-insn? insn) offset . more*)
             (format port "            Op::~a(~a),\n" (insn->string insn) (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 2) port)] 
            [((and (or 'CONSTANT 'CONSTANT_PUSH 'PUSH_CONSTANT) insn) v . more*)
