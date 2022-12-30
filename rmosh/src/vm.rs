@@ -143,6 +143,11 @@ impl Vm {
     }
 
     fn mark_roots(&mut self) {
+        // Base library ops.
+        for &op in &self.lib_ops {
+            self.gc.mark_op(op);
+        }
+
         // Stack.
         for &obj in &self.stack[0..self.stack_len()] {
             self.gc.mark_object(obj);
