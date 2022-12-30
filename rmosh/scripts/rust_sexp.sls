@@ -153,6 +153,13 @@
       (reverse sym*))
 
     (for-each 
+      (lambda (pair) 
+        (match pair
+          [(var . (first . second))
+            (format port "        let ~a = vm.gc.cons(~a, ~a);\n" var first second)]))
+      (reverse pair*))      
+
+    (for-each 
       (lambda (list) 
         (match list
           [(var . elm*)
