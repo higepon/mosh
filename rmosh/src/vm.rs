@@ -198,6 +198,44 @@ impl Vm {
         loop {
             let op = unsafe { *pc };
             match op {
+                Op::ReferLocalPushConstant(_, _) => {
+                    panic!("not implemented");
+                }                
+    
+                Op::ReferLocalPush(_) => {
+                    panic!("not implemented");
+                }                
+
+                Op::ReferLocalCall(_, _) => {
+                    panic!("not implemented");
+                }                
+
+
+                Op::ReferLocalBranchNotNull(_, _) => {
+                    panic!("not implemented");
+                }
+
+                Op::ReferGlobalCall(_, _) => {
+                    panic!("not implemented");
+                }
+
+                Op::ReferFreePush(_) => {
+                    panic!("not implemented");
+                }
+
+                Op::CarPush => {
+                    panic!("not implemented");
+                }
+                Op::ConstantPush(_) => {
+                    panic!("not implemented");
+                }
+                Op::CdrPush => {
+                    panic!("not implemented");
+                }
+                Op::PushFrame(_) => {
+                    panic!("not implemented");
+                }
+
                 Op::MakeVector => match self.pop() {
                     Object::Number(size) => {
                         let v = vec![self.ac; size as usize];

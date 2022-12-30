@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector, Vox, EqHashtable};
+use crate::objects::{Closure, EqHashtable, Object, Pair, Procedure, SString, Symbol, Vector, Vox};
 use crate::op::Op;
 use crate::vm::Vm;
 
@@ -169,15 +169,14 @@ impl Gc {
         second: Object,
         third: Object,
         fourth: Object,
-        fifth: Object,        
+        fifth: Object,
     ) -> Object {
-        let fifth = self.cons(fifth, Object::Nil);        
-        let fourth = self.cons(fourth, fifth);        
+        let fifth = self.cons(fifth, Object::Nil);
+        let fourth = self.cons(fourth, fifth);
         let third = self.cons(third, fourth);
         let second = self.cons(second, third);
         self.cons(first, second)
-    }    
-
+    }
 
     pub fn list6(
         &mut self,
@@ -185,27 +184,24 @@ impl Gc {
         second: Object,
         third: Object,
         fourth: Object,
-        fifth: Object,        
-        sixth: Object,                
+        fifth: Object,
+        sixth: Object,
     ) -> Object {
-        let sixth = self.cons(sixth, Object::Nil);                
-        let fifth = self.cons(fifth, sixth);        
-        let fourth = self.cons(fourth, fifth);        
+        let sixth = self.cons(sixth, Object::Nil);
+        let fifth = self.cons(fifth, sixth);
+        let fourth = self.cons(fourth, fifth);
         let third = self.cons(third, fourth);
         let second = self.cons(second, third);
         self.cons(first, second)
-    }        
+    }
 
-    pub fn listn(
-        &mut self,
-        objects: &[Object],
-    ) -> Object {
+    pub fn listn(&mut self, objects: &[Object]) -> Object {
         let mut ret = Object::Nil;
         for obj in objects.iter().rev() {
             ret = self.cons(*obj, ret);
         }
         ret
-    }        
+    }
 
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);
@@ -229,7 +225,7 @@ impl Gc {
     pub fn new_eq_hashtable(&mut self) -> Object {
         let obj = self.alloc(EqHashtable::new());
         Object::EqHashtable(obj)
-    }    
+    }
 
     // append o (list or obj) to l.
     // if l is not list return o.
@@ -353,7 +349,7 @@ impl Gc {
             }
             Object::EqHashtable(hashtable) => {
                 self.mark_heap_object(hashtable);
-            }            
+            }
             Object::Procedure(procedure) => {
                 self.mark_heap_object(procedure);
             }
@@ -429,12 +425,21 @@ impl Gc {
             Op::Constant(v) => {
                 self.mark_object(v);
             }
+            Op::ConstantPush(v) => {
+                self.mark_object(v);
+            }            
             Op::DefineGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
             Op::ReferGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
+            Op::ReferGlobalCall(symbol, _) => {
+                self.mark_heap_object(symbol);
+            }            
+            Op::ReferLocalPushConstant(_, v) => {
+                self.mark_object(v);
+            }                        
             Op::Append2 => {}
             Op::AssignFree(_) => (),
             Op::AssignLocal(_) => (),
@@ -449,14 +454,16 @@ impl Gc {
             Op::Cadr => (),
             Op::Call(_) => (),
             Op::Car => (),
+            Op::CarPush => (),
             Op::Cdr => (),
+            Op::CdrPush => (),
             Op::Closure { .. } => (),
             Op::Cons => (),
             Op::Display(_) => (),
             Op::Enter(_) => (),
             Op::Eq => (),
-            Op::Equal => (),            
-            Op::Eqv => (),                      
+            Op::Equal => (),
+            Op::Eqv => (),
             Op::Frame(_) => (),
             Op::Halt => (),
             Op::Indirect => (),
@@ -470,7 +477,7 @@ impl Gc {
             Op::NumberAdd => (),
             Op::NumberDiv => (),
             Op::NumberMul => (),
-            Op::NumberSub => (),            
+            Op::NumberSub => (),
             Op::NumberEqual => (),
             Op::NumberGe => (),
             Op::NumberGt => (),
@@ -478,10 +485,15 @@ impl Gc {
             Op::NumberLt => (),
             Op::PairP => (),
             Op::Push => (),
+            Op::PushFrame(_) => (),            
             Op::ReadChar => (),
-            Op::Receive(_, _) => (),            
+            Op::Receive(_, _) => (),
             Op::ReferFree(_) => (),
+            Op::ReferFreePush(_) => (),            
             Op::ReferLocal(_) => (),
+            Op::ReferLocalBranchNotNull(_, _) => (),
+            Op::ReferLocalCall(_, _) => (),            
+            Op::ReferLocalPush(_) => (),             
             Op::Return(_) => (),
             Op::SetCar => (),
             Op::SetCdr => (),
@@ -539,7 +551,7 @@ impl Gc {
                 for &obj in hashtable.hash_map.keys() {
                     self.mark_object(obj);
                 }
-            }            
+            }
             ObjectType::InputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
@@ -597,7 +609,7 @@ impl Gc {
             ObjectType::EqHashtable => {
                 let hashtable: &EqHashtable = unsafe { mem::transmute(hige) };
                 std::mem::size_of_val(hashtable)
-            }            
+            }
         };
         #[cfg(feature = "debug_log_gc")]
         println!(
