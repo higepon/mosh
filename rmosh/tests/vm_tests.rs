@@ -9204,67 +9204,7 @@ fn test_test447() {
 // (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-set! ht 2 "two") (hashtable-clear! ht) (hashtable-size ht)) => 0
 #[test]
 fn test_test450() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::LetFrame(9),
-        Op::ReferFree(100),
-        Op::Push,
-        Op::ReferFree(207),
-        Op::Push,
-        Op::ReferFree(202),
-        Op::Push,
-        Op::ReferFree(98),
-        Op::Push,
-        Op::Display(4),
-        Op::Frame(3),
-        Op::ReferFree(0),
-        Op::Call(0),
-        Op::Push,
-        Op::Enter(1),
-        Op::Frame(9),
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::Constant(Object::Number(1)),
-        Op::Push,
-        Op::Constant(vm.gc.new_string("one")),
-        Op::Push,
-        Op::ReferFree(3),
-        Op::Call(3),
-        Op::Frame(9),
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::Constant(Object::Number(2)),
-        Op::Push,
-        Op::Constant(vm.gc.new_string("two")),
-        Op::Push,
-        Op::ReferFree(3),
-        Op::Call(3),
-        Op::Frame(5),
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferFree(2),
-        Op::Call(1),
-        Op::Frame(5),
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferFree(1),
-        Op::Call(1),
-        Op::Leave(1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::Number(0);
-    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
-}
-
-#[test]
-fn test_compiler() {
-
+ 
     let mut vm = Vm::new();
     let sym0 = vm.gc.symbol_intern("r6rs");
     let sym1 = vm.gc.symbol_intern("r7rs");
@@ -21934,7 +21874,7 @@ fn test_compiler() {
         Op::Push,
         Op::ReferGlobalCall(vm.gc.intern("wrong-type-argument-message"), 3),
         Op::PushFrame(5),
-        Op::ReferLocalPush(0), 
+        Op::ReferLocalPush(0),
         Op::ReferLocalPush(1),
         Op::ReferLocalPush(2),
         Op::ReferFreeCall(2, 3),
@@ -24502,7 +24442,7 @@ fn test_compiler() {
         Op::ReferFreePush(2),
         Op::ReferFreeCall(1, 2),
         Op::PushEnter(2),
-        Op::ReferLocalPushConstantBranchNotLe(0, 0, 3),
+        Op::ReferLocalPushConstantBranchNotLe(0, Object::Number(0), 3),
         Op::ReferLocal(1),
         Op::LocalJmp(10),
         Op::ReferLocalPushConstant(0, Object::Number(1)),
@@ -24561,7 +24501,7 @@ fn test_compiler() {
         Op::ReferFreePush(2),
         Op::ReferFreeCall(1, 2),
         Op::PushEnter(2),
-        Op::ReferLocalPushConstantBranchNotLe(0, 0, 3),
+        Op::ReferLocalPushConstantBranchNotLe(0, Object::Number(0), 3),
         Op::ReferLocal(1),
         Op::LocalJmp(10),
         Op::ReferLocalPushConstant(0, Object::Number(1)),
@@ -58907,7 +58847,7 @@ fn test_compiler() {
         Op::Test(3),
         Op::Constant(Object::Number(0) /* TODO this should be +nan.0 */),
         Op::Return(2),
-        Op::Constant(Object::Number(0.0)),
+        Op::Constant(Object::Number(0) /* TODO this should be 0.0 */),
         Op::Return(2),
         Op::ReferLocalPushConstant(0, Object::Number(0)),
         Op::BranchNotNumberEqual(3),

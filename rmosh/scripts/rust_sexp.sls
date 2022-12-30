@@ -47,6 +47,8 @@
     (cond
       [(and (flonum? n) (flnan? n))
         (format "Object::Number(0) /* TODO this should be +nan.0 */")]
+      [(flonum? n)
+        (format "Object::Number(0) /* TODO this should be ~a */" n)]
       [else
         (format "Object::Number(~a)" n)]))
 

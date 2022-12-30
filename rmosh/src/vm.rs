@@ -198,6 +198,36 @@ impl Vm {
         loop {
             let op = unsafe { *pc };
             match op {
+                Op::ReferLocalBranchNotLt(_, _) | Op::SimpleStructRef | Op::Vector(_) => todo!(),
+                Op::BranchNotEqual(_) => todo!(),
+                Op::Cddr => {
+                    panic!("not implemented");
+                }
+                Op::NotTest(_) => {
+                    panic!("not implemented");
+                }
+
+                Op::NumberAddPush => {
+                    panic!("not implemented");
+                }
+                Op::ReferGlobalPush(_) => {
+                    panic!("not implemented");
+                }
+                Op::BranchNotEq(_) => {
+                    panic!("not implemented");
+                }
+                Op::PushConstant(_) => {
+                    panic!("not implemented");
+                }
+                Op::NumberSubPush => {
+                    panic!("not implemented");
+                }
+                Op::ReferLocalPushConstantBranchNotLe(_, _, _) => {
+                    panic!("not implemented");
+                }
+                Op::MakeContinuation(_) => {
+                    panic!("not implemented");
+                }
                 Op::Shiftj(_, _, _) => {
                     panic!("not implemented");
                 }
@@ -207,7 +237,7 @@ impl Vm {
                 Op::PushEnter(_) => {
                     panic!("not implemented");
                 }
-                Op::LocalTailCall(_) => {
+                Op::LocalTailCall(_, _) => {
                     panic!("not implemented");
                 }
                 Op::LocalCall(_) => {

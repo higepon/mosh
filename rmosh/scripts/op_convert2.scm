@@ -91,12 +91,16 @@
           [((? arg2-insn? insn) m n . more*)
             (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
             (rewrite-insn* all-insn* more* (+ idx 3) port)]            
+          [((and (or 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) insn) m v offset . more*)
+            (let1 var (gen v)          
+              (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) m var (adjust-offset all-insn* idx))
+              (rewrite-insn* all-insn* more* (+ idx 4) port))]              
           ;; 3 arg jump instructions.
           ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
           ;;   Because arg3-insn? include jump3-insn?
           [((? jump3-insn? insn) l m offset . more*)
             (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]                
+            (rewrite-insn* all-insn* more* (+ idx 4) port)]                           
           ;; Other 3 arg instructions.
           [((? arg3-insn? insn) l m n . more*)
             (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
