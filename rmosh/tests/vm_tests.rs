@@ -19964,8 +19964,7 @@ fn test_compiler() {
         Op::Nop,
         Op::ReferFreePush(23),
         Op::Closure {size: 0, arg_len: 1, is_optional_arg: false, num_free_vars: 1},
-        Op::ReferLocalPushConstant(0, Object::Char('
-')),
+        Op::ReferLocalPushConstant(0, Object::Char('\n')),
         Op::Push,
         Op::ReferFree(0),
         Op::TailCall(2, 1),
@@ -20097,8 +20096,7 @@ fn test_compiler() {
         Op::Test(2),
         Op::LocalJmp(5),
         Op::Frame(4),
-        Op::ConstantPush(Object::Char('
-')),
+        Op::ConstantPush(Object::Char('\n')),
         Op::ReferLocalPush(0),
         Op::ReferFreeCall(5, 2),
         Op::Test(9),

@@ -5,6 +5,8 @@ test:
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture
 	grep "not implemented" src/procs.rs | wc -l	
 	grep "Object {" src/procs.rs | wc -l
+	mosh --loadpath=./scripts/ tests/rust_sexp.scm 
+	mosh --loadpath=./scripts/ tests/rust_jump.scm 	
 gen:
 	mosh scripts/test_data_convert.scm ./test-data.scm
 	make -C data
@@ -12,10 +14,7 @@ gen:
 gen-free-vars:
 	mosh scripts/gen_free_vars_procs.scm ../boot/free-vars-decl.scm
 
-test:
-	mosh --loadpath=./scripts/ tests/rust_sexp.scm 
-	mosh --loadpath=./scripts/ tests/rust_jump.scm 
-	
+
 clean:
 	rm data/test*.scm
 	make -C data clean

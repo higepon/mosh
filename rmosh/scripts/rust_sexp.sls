@@ -4,6 +4,7 @@
   (import (scheme base))
   (import (scheme write))
   (import (match))
+  (import (only (rnrs arithmetic flonums) flnan? flonum?))
   (import (only (mosh) format))
   (import (only (mosh control) let1))
   (import (mosh test))
@@ -35,11 +36,19 @@
 
   ;; Char.
   (define (gen-char c)
-    (format "Object::Char('~a')" (if (char=? c #\') "\\'" c)))
+    (format "Object::Char('~a')" 
+      (cond
+        [(char=? c #\') "\\'"]
+        [(char=? c #\newline) "\\n"]
+        [else c])))
 
   ;; Number.
   (define (gen-number n)
-    (format "Object::Number(~a)" n))
+    (cond
+      [(and (flonum? n) (flnan? n))
+        (format "Object::Number(0) /* TODO this should be +nan.0 */")]
+      [else
+        (format "Object::Number(~a)" n)]))
 
   ;; Boolean.
   (define (gen-boolean b)
