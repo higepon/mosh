@@ -419,29 +419,25 @@ impl Gc {
     // Some Op contains GC-ed objects.
     pub fn mark_op(&mut self, op: Op) {
         match op {
-            Op::ReferLocalBranchNotLt(_, _) => {},
-            Op::SimpleStructRef => {},
+            Op::ReferLocalBranchNotLt(_, _) => {}
+            Op::SimpleStructRef => {}
             Op::Vector(_) => {}
             Op::BranchNotEqual(_) => {}
             Op::Cddr => {}
             Op::NotTest(_) => {}
-            Op::NumberAddPush => {
-              }                    
-              Op::ReferGlobalPush(symbol) => {
-                self.mark_heap_object(symbol);                    
-              }     
-              Op::BranchNotEq(_) => {
-            }                                  
-              Op::PushConstant(v) => {
-                self.mark_object(v);                
-              }                    
-              Op::NumberSubPush => {
-              }                    
-              Op::ReferLocalPushConstantBranchNotLe(_, v, _) => {
+            Op::NumberAddPush => {}
+            Op::ReferGlobalPush(symbol) => {
+                self.mark_heap_object(symbol);
+            }
+            Op::BranchNotEq(_) => {}
+            Op::PushConstant(v) => {
                 self.mark_object(v);
-              }                    
-              Op::MakeContinuation(_) => {
-              }                                
+            }
+            Op::NumberSubPush => {}
+            Op::ReferLocalPushConstantBranchNotLe(_, v, _) => {
+                self.mark_object(v);
+            }
+            Op::MakeContinuation(_) => {}
             Op::AssignGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
@@ -474,7 +470,7 @@ impl Gc {
             Op::BranchNotLt(_) => (),
             Op::BranchNotNull(_) => (),
             Op::BranchNotNumberEqual(_) => (),
-            Op::Caar => {}            
+            Op::Caar => {}
             Op::Cadr => (),
             Op::Call(_) => (),
             Op::Car => (),

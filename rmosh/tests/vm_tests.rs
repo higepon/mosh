@@ -49,8 +49,7 @@ pub static SIZE_OF_VECTOR: usize = std::mem::size_of::<Vector>();
    free variables
    baselib name and closure of map1
 */
-static SIZE_OF_MIN_VM: usize =
-    SIZE_OF_CLOSURE + (SIZE_OF_PROCEDURE * 623) + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL;
+static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + (SIZE_OF_PROCEDURE * 623) + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL * 1;
 
 fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
     let ret = vm.run(ops.as_ptr(), ops.len());

@@ -252,32 +252,60 @@ impl Vm {
                 Op::ReferLocalPushConstant(_, _) => {
                     panic!("not implemented");
                 }
-                Op::ReferLocalPush(_) => {
-                    panic!("not implemented");
+                Op::ReferLocalPush(n) => {
+                    self.refer_local_op(n);
+                    self.push(self.ac);
                 }
-                Op::ReferLocalCall(_, _) => {
-                    panic!("not implemented");
+                Op::ReferLocalCall(n, argc) => {
+                    self.refer_local_op(n);
+                    self.call(&mut pc, argc);
                 }
-                Op::ReferLocalBranchNotNull(_, _) => {
-                    panic!("not implemented");
+                Op::ReferLocalBranchNotNull(n, skip_offset) => {
+                    self.refer_local_op(n);
+                    if self.ac.is_nil() {
+                        self.set_return_value(Object::False);
+                    } else {
+                        self.set_return_value(Object::True);
+                        pc = self.jump(pc, skip_offset - 1);
+                    }
                 }
-                Op::ReferGlobalCall(_, _) => {
-                    panic!("not implemented");
+                Op::ReferGlobalCall(symbol, argc) => {
+                    self.refer_global_op(symbol);
+                    self.call(&mut pc, argc);
                 }
-                Op::ReferFreePush(_) => {
-                    panic!("not implemented");
-                }
-                Op::CarPush => {
-                    panic!("not implemented");
-                }
+                Op::ReferFreePush(n) => match self.dc {
+                    Object::Closure(mut closure) => {
+                        self.set_return_value(closure.refer_free(n));
+                        self.push(self.ac);
+                    }
+                    _ => {
+                        panic!("refer_free: display closure required but got {:?}", self.dc);
+                    }
+                },
+                Op::CarPush => match self.ac {
+                    Object::Pair(pair) => {
+                        self.set_return_value(pair.car);
+                        self.push(self.ac);
+                    }
+                    obj => {
+                        self.arg_err("car", "pair", obj);
+                    }
+                },
                 Op::ConstantPush(_) => {
                     panic!("not implemented");
                 }
                 Op::CdrPush => {
-                    panic!("not implemented");
+                    self.push(self.ac);
+                    self.cdr_op();
                 }
-                Op::PushFrame(_) => {
-                    panic!("not implemented");
+                Op::PushFrame(skip_offset) => {
+                    self.push(self.ac);
+                    let next_pc = self.jump(pc, skip_offset - 1);
+                    self.push(Object::OpPointer(next_pc));
+                    self.push(self.dc);
+                    // TODO: This should be cl register.
+                    self.push(self.dc);
+                    self.push(Object::StackPointer(self.fp));
                 }
                 Op::MakeVector => match self.pop() {
                     Object::Number(size) => {
@@ -487,14 +515,9 @@ impl Vm {
                         self.arg_err("car", "pair", obj);
                     }
                 },
-                Op::Cdr => match self.ac {
-                    Object::Pair(pair) => {
-                        self.set_return_value(pair.cdr);
-                    }
-                    obj => {
-                        self.arg_err("cdr", "pair", obj);
-                    }
-                },
+                Op::Cdr => {
+                    self.cdr_op();
+                }
                 Op::Cadr => match self.ac {
                     Object::Pair(pair) => match pair.cdr {
                         Object::Pair(pair) => {
@@ -576,13 +599,8 @@ impl Vm {
                 Op::AssignGlobal(symbol) => {
                     self.globals.insert(symbol, self.ac);
                 }
-                Op::ReferGlobal(symbol) => match self.globals.get(&symbol) {
-                    Some(&value) => {
-                        self.set_return_value(value);
-                    }
-                    None => {
-                        panic!("identifier {:?} not found", symbol);
-                    }
+                Op::ReferGlobal(symbol) => {
+                    self.refer_global_op(symbol);
                 },
                 Op::Values(n) => {
                     //  values stack layout
@@ -628,8 +646,7 @@ impl Vm {
                     self.push(Object::StackPointer(self.fp));
                 }
                 Op::ReferLocal(n) => {
-                    let obj = self.refer_local(n);
-                    self.set_return_value(obj);
+                    self.refer_local_op(n);
                 }
                 Op::Leave(n) => {
                     let sp = self.dec(self.sp, n);
@@ -770,6 +787,36 @@ impl Vm {
         self.ac
     }
 
+    #[inline(always)]    
+    fn refer_local_op(&mut self, n: isize) {
+        let obj = self.refer_local(n);
+        self.set_return_value(obj);
+    }
+
+    #[inline(always)]    
+    fn refer_global_op(&mut self, symbol: GcRef<Symbol>) {
+        match self.globals.get(&symbol) {
+        Some(&value) => {
+            self.set_return_value(value);
+        }
+        None => {
+            panic!("identifier {:?} not found", symbol);
+
+        }}
+    }
+
+    #[inline(always)]
+    fn cdr_op(&mut self) {
+        match self.ac {
+            Object::Pair(pair) => {
+                self.set_return_value(pair.cdr);
+            }
+            obj => {
+                self.arg_err("cdr", "pair", obj);
+            }
+        }
+    }
+
     #[inline(always)]
     fn call(&mut self, pc: &mut *const Op, argc: isize) {
         match self.ac {
@@ -885,35 +932,34 @@ impl Vm {
     fn register_baselib(&mut self) -> *const Op {
         self.lib_ops = vec![
             Op::Closure {
-                size: 22,
+                size: 15,
                 arg_len: 2,
                 is_optional_arg: false,
                 num_free_vars: 0,
             },
-            Op::ReferLocal(1),
-            Op::BranchNotNull(3),
+            Op::ReferLocalBranchNotNull(1, 3),
             Op::ReferLocal(1),
             Op::Return(2),
-            Op::Frame(6),
+            Op::Frame(4),
             Op::ReferLocal(1),
-            Op::Car,
-            Op::Push,
-            Op::ReferLocal(0),
-            Op::Call(1),
-            Op::Push,
-            Op::Frame(8),
-            Op::ReferLocal(0),
-            Op::Push,
+            Op::CarPush,
+            Op::ReferLocalCall(0, 1),
+            Op::PushFrame(5),
+            Op::ReferLocalPush(0),
             Op::ReferLocal(1),
-            Op::Cdr,
-            Op::Push,
-            Op::ReferGlobal(self.gc.intern("map1")),
-            Op::Call(2),
+            Op::CdrPush,
+            Op::ReferGlobalCall(self.gc.intern("map1"), 2),
             Op::Cons,
             Op::Return(2),
             Op::DefineGlobal(self.gc.intern("map1")),
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
             Op::Halt,
         ];
+
         self.lib_ops.as_ptr()
     }
 

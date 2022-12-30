@@ -72,7 +72,7 @@ pub enum Op {
     Push,
     PushConstant(Object),
     PushEnter(isize),
-    PushFrame(usize),
+    PushFrame(isize),
     ReadChar,
     Receive(usize, usize),
     ReferFree(usize),
