@@ -200,29 +200,22 @@ impl Vm {
             match op {
                 Op::ReferLocalPushConstant(_, _) => {
                     panic!("not implemented");
-                }                
-    
+                }
                 Op::ReferLocalPush(_) => {
                     panic!("not implemented");
-                }                
-
+                }
                 Op::ReferLocalCall(_, _) => {
                     panic!("not implemented");
-                }                
-
-
+                }
                 Op::ReferLocalBranchNotNull(_, _) => {
                     panic!("not implemented");
                 }
-
                 Op::ReferGlobalCall(_, _) => {
                     panic!("not implemented");
                 }
-
                 Op::ReferFreePush(_) => {
                     panic!("not implemented");
                 }
-
                 Op::CarPush => {
                     panic!("not implemented");
                 }
