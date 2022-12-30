@@ -80,7 +80,7 @@ pub enum Op {
     Return(isize),
     SetCar,
     SetCdr,
-    Shiftj(isize, isize),
+    Shiftj(isize, isize, isize),
     SymbolP,
     TailCall(isize, isize),
     Test(usize),

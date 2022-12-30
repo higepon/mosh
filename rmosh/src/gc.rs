@@ -503,7 +503,7 @@ impl Gc {
             Op::Return(_) => (),
             Op::SetCar => (),
             Op::SetCdr => (),
-            Op::Shiftj(_, _) => {}
+            Op::Shiftj(_, _, _) => {}
             Op::SymbolP => (),
             Op::TailCall(_, _) => (),
             Op::Test(_) => (),

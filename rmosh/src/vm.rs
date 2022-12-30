@@ -198,7 +198,7 @@ impl Vm {
         loop {
             let op = unsafe { *pc };
             match op {
-                Op::Shiftj(_, _) => {
+                Op::Shiftj(_, _, _) => {
                     panic!("not implemented");
                 }
                 Op::ReferFreeCall(_, _) => {
