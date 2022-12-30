@@ -427,7 +427,7 @@ impl Gc {
             }
             Op::ConstantPush(v) => {
                 self.mark_object(v);
-            }            
+            }
             Op::DefineGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
@@ -436,10 +436,10 @@ impl Gc {
             }
             Op::ReferGlobalCall(symbol, _) => {
                 self.mark_heap_object(symbol);
-            }            
+            }
             Op::ReferLocalPushConstant(_, v) => {
                 self.mark_object(v);
-            }                        
+            }
             Op::Append2 => {}
             Op::AssignFree(_) => (),
             Op::AssignLocal(_) => (),
@@ -451,10 +451,12 @@ impl Gc {
             Op::BranchNotLt(_) => (),
             Op::BranchNotNull(_) => (),
             Op::BranchNotNumberEqual(_) => (),
+            Op::Caar => {}            
             Op::Cadr => (),
             Op::Call(_) => (),
             Op::Car => (),
             Op::CarPush => (),
+            Op::Cdar => {}
             Op::Cdr => (),
             Op::CdrPush => (),
             Op::Closure { .. } => (),
@@ -469,34 +471,39 @@ impl Gc {
             Op::Indirect => (),
             Op::Leave(_) => (),
             Op::LetFrame(_) => (),
+            Op::LocalCall(_) => {}
             Op::LocalJmp(_) => (),
+            Op::LocalTailCall(_) => {}
             Op::MakeVector => (),
             Op::Nop => (),
             Op::Not => (),
             Op::NullP => (),
             Op::NumberAdd => (),
             Op::NumberDiv => (),
-            Op::NumberMul => (),
-            Op::NumberSub => (),
             Op::NumberEqual => (),
             Op::NumberGe => (),
             Op::NumberGt => (),
             Op::NumberLe => (),
             Op::NumberLt => (),
+            Op::NumberMul => (),
+            Op::NumberSub => (),
             Op::PairP => (),
             Op::Push => (),
-            Op::PushFrame(_) => (),            
+            Op::PushEnter(_) => {}
+            Op::PushFrame(_) => (),
             Op::ReadChar => (),
             Op::Receive(_, _) => (),
             Op::ReferFree(_) => (),
-            Op::ReferFreePush(_) => (),            
+            Op::ReferFreeCall(_, _) => {}
+            Op::ReferFreePush(_) => (),
             Op::ReferLocal(_) => (),
             Op::ReferLocalBranchNotNull(_, _) => (),
-            Op::ReferLocalCall(_, _) => (),            
-            Op::ReferLocalPush(_) => (),             
+            Op::ReferLocalCall(_, _) => (),
+            Op::ReferLocalPush(_) => (),
             Op::Return(_) => (),
             Op::SetCar => (),
             Op::SetCdr => (),
+            Op::Shiftj(_, _) => {}
             Op::SymbolP => (),
             Op::TailCall(_, _) => (),
             Op::Test(_) => (),
