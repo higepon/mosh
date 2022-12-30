@@ -47,7 +47,7 @@ pub enum Op {
     Leave(isize),
     LetFrame(isize),
     LocalCall(isize),
-    LocalJmp(usize),
+    LocalJmp(isize),
     LocalTailCall(isize),
     MakeVector,
     Nop,
