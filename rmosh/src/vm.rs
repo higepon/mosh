@@ -682,7 +682,7 @@ impl Vm {
                     ));
                     self.set_return_value(Object::Closure(c));
                     self.sp = self.dec(self.sp, num_free_vars);
-                    pc = self.jump(pc, size - 1);
+                    pc = self.jump(pc, size as isize - 1);
                 }
                 Op::TailCall(depth, diff) => {
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
@@ -950,8 +950,8 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn jump(&self, pc: *const Op, offset: usize) -> *const Op {
-        unsafe { pc.offset(offset as isize) }
+    fn jump(&self, pc: *const Op, offset: isize) -> *const Op {
+        unsafe { pc.offset(offset) }
     }
 
     #[inline(always)]
