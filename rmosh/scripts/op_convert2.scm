@@ -35,6 +35,10 @@
 (define (const1-insn? insn)
   (memq insn '(CONSTANT CONSTANT_PUSH PUSH_CONSTANT)))
 
+;; Constant instruction with 2 arguments.
+(define (const2-insn? insn)
+  (memq insn '(REFER_LOCAL_PUSH_CONSTANT)))
+
 (define rewrite-insn*
   (case-lambda
    [(all-insn* insn*)
@@ -74,8 +78,16 @@
           ;; 2 args jump instructions.
           [((? jump2-insn? insn) m offset . more*)
             (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]           
-          ;; 2 args
+            (rewrite-insn* all-insn* more* (+ idx 3) port)]     
+          ;; CONSTANT family with 2 args.
+          [((? const2-insn? insn) m v . more*)
+            (let1 var (gen v)
+              (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m var)
+              (rewrite-insn* all-insn* more* (+ idx 3) port))]                     
+          [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
+            (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
+            (rewrite-insn* all-insn* more* (+ idx 3) port)]                
+          ;; Other 2 args insturctions.
           [((? arg2-insn? insn) m n . more*)
             (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
             (rewrite-insn* all-insn* more* (+ idx 3) port)]            
@@ -88,10 +100,7 @@
           ;; Other 3 arg instructions.
           [((? arg3-insn? insn) l m n . more*)
             (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
-          [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
-            (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]                               
+            (rewrite-insn* all-insn* more* (+ idx 4) port)]                           
           [() #f]
           [else (error "unknown insn" (car insn*) (cadr insn*))]))]))
 

@@ -35,7 +35,7 @@
 
   ;; Char.
   (define (gen-char c)
-    (format "Object::Char('~a')" c))
+    (format "Object::Char('~a')" (if (char=? c #\') "\\'" c)))
 
   ;; Number.
   (define (gen-number n)
