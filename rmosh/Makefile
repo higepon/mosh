@@ -5,6 +5,8 @@ test:
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture
 	grep "not implemented" src/procs.rs | wc -l	
 	grep "Object {" src/procs.rs | wc -l
+
+test-scheme:	
 	mosh --loadpath=./scripts/ tests/rust_sexp.scm 
 	mosh --loadpath=./scripts/ tests/rust_jump.scm 	
 gen:

@@ -52,7 +52,7 @@
   
           [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
             (format port "~aOp::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
-              indent 0 arg-len (if optional? "true" "false") num-free-vars)
+              indent (adjust-offset all-insn* idx) arg-len (if optional? "true" "false") num-free-vars)
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.  
           [((? arg0-insn? insn) . more*)

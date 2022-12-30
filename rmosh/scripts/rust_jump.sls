@@ -10,6 +10,7 @@
   (import (scheme write))
   (import (scheme case-lambda))
   (import (match))
+  (import (only (rnrs programs) exit))
   (import (only (mosh) format))
   (import (only (mosh control) let1))
   (import (mosh test))
@@ -76,6 +77,11 @@
         (adjust-offset insn* 0)]
       [(insn* start)
         (match (drop insn* start)
+          ;; Closure size.
+          [('CLOSURE size _arg-len _optional? _num-free-vars _stack-size _src . more)
+            ;; size is based on postition of size we substruct len(_arglen _optional? _num-free-vars _starc-size _src).
+            (let1 new-insn* (take more (- size 5 1))
+              (+ (count-insn* new-insn*) 1))]          
           ;; Jump forward.
           [((? jump1-insn? _) (? positive? offset) . more)
             (let1 new-insn* (take more (- offset 1))
@@ -124,6 +130,9 @@
 
     ;; Skip destination is PUSH.
     (test-equal 3 (adjust-offset '(FRAME 6 REFER_LOCAL_PUSH 0 REFER_FREE_CALL 4 1 PUSH REFER_LOCAL 1 BRANCH_NOT_GT 112)))
+
+    ;; Size desitinaion is DEFINE_GLOBAL.
+    (test-equal 3 (adjust-offset '(CLOSURE 10 2 #f 0 6 (("baselib.scm" 8591) pass2/empty iform closures) REFER_LOCAL 0 RETURN 2 DEFINE_GLOBAL pass2/empty)))
 
     ;; Jump desitnation is REFER_LOCAL_PUSH_CONSTANT.
     (test-equal 3 (adjust-offset '(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE 0 0 5 REFER_LOCAL 1 LOCAL_JMP 21 REFER_LOCAL_PUSH_CONSTANT 0 1 NUMBER_SUB_PUSH FRAME 8 REFER_FREE_PUSH 4 REFER_LOCAL_PUSH 1 REFER)))
