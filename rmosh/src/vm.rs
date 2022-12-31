@@ -268,8 +268,9 @@ impl Vm {
                     self.refer_free_op(n);
                     self.call_op(&mut pc, argc);
                 }
-                Op::PushEnter(_) => {
-                    panic!("not implemented");
+                Op::PushEnter(n) => {
+                    self.push_op();
+                    self.enter_op(n);
                 }
                 Op::LocalTailCall(_, _) => {
                     panic!("not implemented");
@@ -643,7 +644,7 @@ impl Vm {
                     }
                 }
                 Op::Enter(n) => {
-                    self.fp = self.dec(self.sp, n);
+                    self.enter_op(n);
                 }
                 Op::LetFrame(_) => {
                     // TODO: expand stack.
@@ -761,6 +762,11 @@ impl Vm {
             pc = self.jump(pc, 1);
         }
         self.ac
+    }
+
+    #[inline(always)]    
+    fn enter_op(&mut self, n: isize) {
+        self.fp = self.dec(self.sp, n);
     }
 
     #[inline(always)]
