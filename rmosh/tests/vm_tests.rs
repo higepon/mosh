@@ -45,11 +45,25 @@ pub static SIZE_OF_SYMBOL: usize = std::mem::size_of::<Symbol>();
 pub static SIZE_OF_VECTOR: usize = std::mem::size_of::<Vector>();
 
 /*
+fn show_size() {
+    println!("SIZE_OF_CLOSURE={}", SIZE_OF_CLOSURE);
+    println!("SIZE_OF_PAIR={}", SIZE_OF_PAIR);
+    println!("SIZE_OF_PROCEDURE={}", SIZE_OF_PROCEDURE);
+    println!("SIZE_OF_STRING={}", SIZE_OF_STRING);
+    println!("SIZE_OF_SYMBOL={}", SIZE_OF_SYMBOL);
+    println!("SIZE_OF_VECTOR={}", SIZE_OF_VECTOR);
+}
+*/
+
+/*
    Base display closure
    free variables
-   baselib name and closure of map1
+   symbols for closure names.
+   3 strings.
+   4 closures.
 */
-static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE + (SIZE_OF_PROCEDURE * 623) + SIZE_OF_CLOSURE + SIZE_OF_SYMBOL * 1;
+static SIZE_OF_MIN_VM: usize =
+    SIZE_OF_CLOSURE + (SIZE_OF_PROCEDURE * 623) + SIZE_OF_CLOSURE * 4 + SIZE_OF_SYMBOL * 5 + SIZE_OF_STRING * 3;
 
 fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
     let ret = vm.run(ops.as_ptr(), ops.len());
@@ -84,7 +98,7 @@ fn test_vm_alloc_many_pairs() {
     vm.run(&ops[..][0] as *const Op, ops.len());
     vm.mark_and_sweep();
     let after_size = vm.gc.bytes_allocated();
-    assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR);
+    assert_eq!(after_size - before_size, SIZE_OF_MIN_VM + SIZE_OF_PAIR );
 }
 
 // All ops in the following tests are generated in data/.
@@ -7500,84 +7514,6 @@ fn test_test314() {
         Op::Nop,
     ];
     let expected = Object::Number(14);
-    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
-}
-
-// (for-all (lambda (a b) (< a b)) '(1 2 3) '(2 3 4)) => #t
-#[test]
-fn test_test315() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(14),
-        Op::Closure {
-            size: 6,
-            arg_len: 2,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferLocal(1),
-        Op::NumberLt,
-        Op::Return(2),
-        Op::Push,
-        Op::Constant(
-            vm.gc
-                .list3(Object::Number(1), Object::Number(2), Object::Number(3)),
-        ),
-        Op::Push,
-        Op::Constant(
-            vm.gc
-                .list3(Object::Number(2), Object::Number(3), Object::Number(4)),
-        ),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("for-all")),
-        Op::Call(3),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
-}
-
-// (for-all (lambda (a b) (< a b)) '(1 2 4) '(2 3 4)) => #f
-#[test]
-fn test_test316() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(14),
-        Op::Closure {
-            size: 6,
-            arg_len: 2,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::ReferLocal(0),
-        Op::Push,
-        Op::ReferLocal(1),
-        Op::NumberLt,
-        Op::Return(2),
-        Op::Push,
-        Op::Constant(
-            vm.gc
-                .list3(Object::Number(1), Object::Number(2), Object::Number(4)),
-        ),
-        Op::Push,
-        Op::Constant(
-            vm.gc
-                .list3(Object::Number(2), Object::Number(3), Object::Number(4)),
-        ),
-        Op::Push,
-        Op::ReferGlobal(vm.gc.intern("for-all")),
-        Op::Call(3),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::False;
     test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0);
 }
 
