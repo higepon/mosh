@@ -263,7 +263,7 @@ impl Vm {
                 }
                 Op::ReferLocalCall(n, argc) => {
                     self.refer_local_op(n);
-                    self.call(&mut pc, argc);
+                    self.call_op(&mut pc, argc);
                 }
                 Op::ReferLocalBranchNotNull(n, skip_offset) => {
                     self.refer_local_op(n);
@@ -276,7 +276,7 @@ impl Vm {
                 }
                 Op::ReferGlobalCall(symbol, argc) => {
                     self.refer_global_op(symbol);
-                    self.call(&mut pc, argc);
+                    self.call_op(&mut pc, argc);
                 }
                 Op::ReferFreePush(n) => {
                     self.refer_free_op(n);
@@ -295,12 +295,7 @@ impl Vm {
                 }
                 Op::PushFrame(skip_offset) => {
                     self.push_op();
-                    let next_pc = self.jump(pc, skip_offset - 1);
-                    self.push(Object::OpPointer(next_pc));
-                    self.push(self.dc);
-                    // TODO: This should be cl register.
-                    self.push(self.dc);
-                    self.push(Object::StackPointer(self.fp));
+                    self.frame_op(pc, skip_offset);
                 }
                 Op::MakeVector => match self.pop() {
                     Object::Number(size) => {
@@ -717,33 +712,16 @@ impl Vm {
                 Op::TailCall(depth, diff) => {
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let argc = depth;
-                    self.call(&mut pc, argc);
+                    self.call_op(&mut pc, argc);
                 }
                 Op::Call(argc) => {
-                    self.call(&mut pc, argc);
+                    self.call_op(&mut pc, argc);
                 }
                 Op::Return(n) => {
                     self.return_n(n, &mut pc);
                 }
                 Op::Frame(skip_offset) => {
-                    // Call frame in stack.
-                    // ======================
-                    //          pc*
-                    // ======================
-                    //          dc
-                    // ======================
-                    //          cl
-                    // ======================
-                    //          fp
-                    // ======== sp ==========
-                    //
-                    // where pc* = pc + skip_offset -1
-                    let next_pc = self.jump(pc, skip_offset - 1);
-                    self.push(Object::OpPointer(next_pc));
-                    self.push(self.dc);
-                    // TODO: This should be cl register.
-                    self.push(self.dc);
-                    self.push(Object::StackPointer(self.fp));
+                    self.frame_op(pc, skip_offset);
                 }
                 Op::Halt => {
                     break;
@@ -770,6 +748,31 @@ impl Vm {
         self.ac
     }
 
+
+    #[inline(always)]    
+    fn frame_op(&mut self, pc: *const Op, skip_offset: isize) {
+        // Call frame in stack.
+        // ======================
+        //          pc*
+        // ======================
+        //          dc
+        // ======================
+        //          cl
+        // ======================
+        //          fp
+        // ======== sp ==========
+        //
+        // where pc* = pc + skip_offset -1
+        let next_pc = self.jump(pc, skip_offset - 1);
+        self.push(Object::OpPointer(next_pc));
+        self.push(self.dc);
+        // TODO: This should be cl register.
+        self.push(self.dc);
+        self.push(Object::StackPointer(self.fp));
+    }
+
+
+    #[inline(always)]    
     fn refer_free_op(&mut self, n: usize) {
         match self.dc {
             Object::Closure(mut closure) => {
@@ -829,7 +832,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn call(&mut self, pc: &mut *const Op, argc: isize) {
+    fn call_op(&mut self, pc: &mut *const Op, argc: isize) {
         match self.ac {
             Object::Closure(closure) => {
                 self.dc = self.ac;
@@ -896,7 +899,7 @@ impl Vm {
                                 if last_pair.is_nil() {
                                     let new_argc = argc - 2 + j;
                                     println!("Warning recursive self.call()");
-                                    self.call(pc, new_argc);
+                                    self.call_op(pc, new_argc);
                                     break;
                                 } else {
                                     match last_pair {
