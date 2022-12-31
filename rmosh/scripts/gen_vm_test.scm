@@ -91,7 +91,7 @@
           [((? arg2-insn? insn) m n . more*)
             (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
             (rewrite-insn* all-insn* more* (+ idx 3) port)]            
-          [((and (or 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) insn) m v offset . more*)
+          [((and (or 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) insn) m v offset . more*)
             (let1 var (gen v)          
               (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) m var (adjust-offset all-insn* idx))
               (rewrite-insn* all-insn* more* (+ idx 4) port))]              
@@ -118,13 +118,14 @@
          [else
           (loop (read p) (cons sexp sexp*))])))))
 
-(define (test-header name)
+(define (test-header name scheme-expr)
   (format
 "
+    // ~s
     #[test]
     fn ~a_optimized() {
         let mut vm = Vm::new();
-" name))
+" scheme-expr name))
 
 (define (main args)
   (let-values ([(port get) (open-string-output-port)])
@@ -132,6 +133,7 @@
            [scm-file (regexp-replace-all #/\.op$/ op-file ".scm")]
            [test-name ((rxmatch #/([^\/]+)\.op$/ op-file) 1)]
            [raw-insn* (first (file->sexp* op-file))]
+           [scheme-expr (first (file->sexp* scm-file))]
            [expected (second (file->sexp* scm-file))]
            [expected (gen expected)]
            [insn* (vector->list raw-insn*)]
@@ -144,6 +146,6 @@
         let expected = ~a;
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * ~a + SIZE_OF_STRING * ~a);
     }\n        
-        " (test-header test-name) decl-str insn-str expected (num-sym*) (num-str*)))))            
+        " (test-header test-name scheme-expr) decl-str insn-str expected (num-sym*) (num-str*)))))            
 
 (main (command-line))

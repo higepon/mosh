@@ -437,6 +437,9 @@ impl Gc {
             Op::ReferLocalPushConstantBranchNotLe(_, v, _) => {
                 self.mark_object(v);
             }
+            Op::ReferLocalPushConstantBranchNotGe(_, v, _) => {
+                self.mark_object(v);
+            }
             Op::MakeContinuation(_) => {}
             Op::AssignGlobal(symbol) => {
                 self.mark_heap_object(symbol);
@@ -490,6 +493,7 @@ impl Gc {
             Op::Indirect => (),
             Op::Leave(_) => (),
             Op::LetFrame(_) => (),
+            Op::List(_) => (),
             Op::LocalCall(_) => {}
             Op::LocalJmp(_) => (),
             Op::LocalTailCall(_, _) => {}

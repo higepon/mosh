@@ -11,7 +11,7 @@ $(OP_FILES): %.op: %.scm
 	(cd ../../boot && gosh vm.scm compile-file $< > $@)
 
 $(RUST_OP_FILES): %.rsop: %.op # ../scripts/op_convert.scm
-	mosh ../scripts/op_convert.scm $< > $@
+	mosh --loadpath=../scripts ../scripts/gen_vm_test.scm $< > $@
 
 clean:
 	rm $(RUST_OP_FILES) $(OP_FILES)

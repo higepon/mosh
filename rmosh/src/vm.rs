@@ -203,7 +203,16 @@ impl Vm {
         loop {
             let op = unsafe { *pc };
             match op {
+                Op::List(n) => {
+                    let mut list = Object::Nil;
+                    for i in 0..n {
+                        list = self.gc.cons(self.index(self.sp, i as isize), list);
+                    }
+                    self.set_return_value(list);
+                    self.sp = self.dec(self.sp, n as isize);
+                }
                 Op::ReferLocalBranchNotLt(_, _) | Op::SimpleStructRef | Op::Vector(_) => todo!(),
+                
                 Op::BranchNotEqual(_) => todo!(),
                 Op::Cddr => {
                     panic!("not implemented");
@@ -211,7 +220,6 @@ impl Vm {
                 Op::NotTest(_) => {
                     panic!("not implemented");
                 }
-
                 Op::NumberAddPush => {
                     panic!("not implemented");
                 }
@@ -230,6 +238,9 @@ impl Vm {
                 Op::ReferLocalPushConstantBranchNotLe(_, _, _) => {
                     panic!("not implemented");
                 }
+                Op::ReferLocalPushConstantBranchNotGe(_, _, _) => {
+                    panic!("not implemented");
+                }                
                 Op::MakeContinuation(_) => {
                     panic!("not implemented");
                 }

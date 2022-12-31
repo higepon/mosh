@@ -166,12 +166,12 @@
           (reverse sym*))
 
         (for-each 
-          (lambda (pair) 
-            (match pair
-              [(var . (first . second))
-                (format port "        let ~a = ~a.gc.cons(~a, ~a);\n" var self first second)]))
-          (reverse pair*))      
-
+          (lambda (str) 
+            (match str
+              [(val . var)
+                (format port "        let ~a = ~a.gc.new_string(~s);\n" var self val)]))
+          (reverse str*))
+        
         (for-each 
           (lambda (list) 
             (match list
@@ -179,19 +179,21 @@
                 (format port "        let ~a = ~a.gc.listn(&[~a]);\n" var self (string-join elm* ", "))]))
           (reverse list*))
 
+
+        (for-each 
+          (lambda (pair) 
+            (match pair
+              [(var . (first . second))
+                (format port "        let ~a = ~a.gc.cons(~a, ~a);\n" var self first second)]))
+          (reverse pair*))      
+
         (for-each 
           (lambda (vec) 
             (match vec
               [(var . elm*)
                 (format port "        let ~a = ~a.gc.new_vector(&vec![~a]);\n" var self (string-join elm* ", "))]))
           (reverse vec*))  
-
-        (for-each 
-          (lambda (str) 
-            (match str
-              [(val . var)
-                (format port "        let ~a = ~a.gc.new_string(~s);\n" var self val)]))
-          (reverse str*))]))
+]))
 
   (define (run-tests)
     ;; Test Chars.

@@ -35,7 +35,7 @@
     (or (jump1-insn? insn)
         (memq insn '(ASSIGN_FREE ASSIGN_GLOBAL ASSIGN_LOCAL
                      BOX CALL CONSTANT CONSTANT_PUSH
-                     DISPLAY ENTER LEAVE LET_FRAME
+                     DISPLAY ENTER LEAVE LET_FRAME LIST
                      LOCAL_CALL MAKE_CONTINUATION PUSH_CONSTANT
                      PUSH_ENTER REFER_FREE REFER_FREE_PUSH
                      REFER_GLOBAL REFER_GLOBAL_PUSH
@@ -65,7 +65,8 @@
 
   ;; Jump instuction with 3 arguments.
   (define (jump3-insn? insn)
-    (memq insn '(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE)))    
+    (memq insn '(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE
+                REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE)))    
 
   ;; Instruction with 6 arguments.
   (define (arg6-insn? insn)

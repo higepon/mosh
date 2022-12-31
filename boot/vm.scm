@@ -1255,7 +1255,7 @@
 
 
 (define (compile-file-string f optimize?)
-  (compile-string (file->string f) #f))
+  (compile-string (file->string f) optimize?))
 
 ;; return compiled code as list. label is not fixed up yet.
 ;; (define (compile-partial sexp . lib)
@@ -1698,14 +1698,14 @@
     (print (compile-string (third args) #f))]
    ;; compile string in a file
    [(and (= (length args) 3) (string=? (second args) "compile-file"))
-    (write (compile-file-string (third args) #f))]    
+    (write (compile-file-string (third args) #t))]    
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro"))
     (load-file base-library)
     (load-file match-library)
     (write (compile-file-with-macro (third args) #t))]
    ;;  compile a file
-   [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro-insn"))
+   [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro-i"))
     (load-file base-library)
     (load-file match-library)
     (write (compile-file-with-macro (third args) #f))]    
