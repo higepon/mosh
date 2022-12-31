@@ -38,6 +38,8 @@ macro_rules! branch_number_op {
     };
 }
 
+
+
 #[macro_export]
 macro_rules! number_op {
     ($op:tt, $self:ident) => {
@@ -261,7 +263,7 @@ impl Vm {
                     panic!("not implemented");
                 }
                 Op::ReferLocalPushConstantBranchNotGe(n, c, skip_offset) => {
-                    self.refer_local(n);
+                    self.refer_local_op(n);
                     self.push_op();
                     self.constant_op(c);
                     branch_number_op!(>=, self, pc, skip_offset);
