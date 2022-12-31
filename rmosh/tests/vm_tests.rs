@@ -1,9 +1,10 @@
 use rmosh::{
     self,
+    equal::Equal,
     gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    vm::Vm, equal::Equal,
+    vm::Vm,
 };
 
 // Custom hand written tests.
@@ -9157,7 +9158,6 @@ fn and_optimized() {
     );
 }
 
-
 // ((lambda () 3))
 #[test]
 fn call0_optimized() {
@@ -9202,7 +9202,6 @@ fn call2_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
 
 // (if 1 2 3)
 #[test]
@@ -9333,33 +9332,6 @@ fn test0_optimized() {
         ops,
         expected,
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (source-info '(3))
-#[test]
-fn test1_optimized() {
-    let mut vm = Vm::new();
-
-    let str0 = vm
-        .gc
-        .new_string("<transcoded-textual-input-port <binary-input-port src/all-tests.scm>>");
-    let list0 = vm.gc.listn(&[str0, Object::Number(2)]);
-    let list1 = vm.gc.listn(&[Object::Number(3)]);
-
-    let ops = vec![
-        Op::Frame(3),
-        Op::ConstantPush(list1),
-        Op::ReferFreeCall(149, 1),
-        Op::Halt,
-        Op::Nop,
-    ];
-    let expected = list0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -11548,7 +11520,6 @@ fn test18_optimized() {
     );
 }
 
-
 // (string? "hige")
 #[test]
 fn test181_optimized() {
@@ -11571,7 +11542,6 @@ fn test181_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
 
 // ((lambda () (define p (cons 1 2)) (set-cdr! p 3) p))
 #[test]
@@ -12016,7 +11986,7 @@ fn test196_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12459,7 +12429,6 @@ fn test211_optimized() {
     );
 }
 
-
 // (vector? #(3))
 #[test]
 fn test213_optimized() {
@@ -12537,7 +12506,7 @@ fn test215_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 +SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12612,7 +12581,7 @@ fn test217_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 +SIZE_OF_VECTOR+ SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_VECTOR + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12642,7 +12611,7 @@ fn test218_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE+ SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12672,7 +12641,7 @@ fn test219_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 +SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13762,48 +13731,6 @@ fn test26_optimized() {
     );
 }
 
-// (let ((x '(a))) (eq? x x))
-#[test]
-fn test260_optimized() {
-    let mut vm = Vm::new();
-
-    let sym0 = vm.gc.symbol_intern("a");
-    let list0 = vm.gc.listn(&[sym0]);
-    let list1 = vm.gc.listn(&[sym0]);
-
-    let ops = vec![
-        Op::ConstantPush(list0),
-        Op::Constant(list1),
-        Op::Eq,
-        Op::Halt,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (let ((x '#())) (eq? x x))
-#[test]
-fn test261_optimized() {
-    let mut vm = Vm::new();
-
-    let vec0 = vm.gc.new_vector(&vec![]);
-    let vec1 = vm.gc.new_vector(&vec![]);
-
-    let ops = vec![Op::ConstantPush(vec0), Op::Constant(vec1), Op::Eq, Op::Halt];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
 // (let ((p (lambda (x) x))) (eq? p p))
 #[test]
 fn test262_optimized() {
@@ -13983,64 +13910,6 @@ fn test268_optimized() {
     );
 }
 
-// (do ((vec (make-vector 5)) (i 0 (+ i 1))) ((= i 5) vec) (vector-set! vec i i))
-#[test]
-fn test269_optimized() {
-    let mut vm = Vm::new();
-
-    let vec0 = vm.gc.new_vector(&vec![
-        Object::Number(0),
-        Object::Number(1),
-        Object::Number(2),
-        Object::Number(3),
-        Object::Number(4),
-    ]);
-
-    let ops = vec![
-        Op::Frame(28),
-        Op::Frame(14),
-        Op::Frame(6),
-        Op::ConstantPush(Object::Number(0)),
-        Op::ReferGlobalPush(vm.gc.intern("i")),
-        Op::Constant(Object::Number(1)),
-        Op::NumberAddPush,
-        Op::ReferGlobalCall(vm.gc.intern("i"), 2),
-        Op::PushFrame(6),
-        Op::ConstantPush(Object::Number(5)),
-        Op::Constant(Object::Nil),
-        Op::MakeVector,
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("vec"), 1),
-        Op::Call(1),
-        Op::PushFrame(6),
-        Op::ReferGlobalPush(vm.gc.intern("vec")),
-        Op::ReferGlobalPush(vm.gc.intern("i")),
-        Op::Constant(Object::Number(5)),
-        Op::NumberEqual,
-        Op::Call(1),
-        Op::Push,
-        Op::ReferGlobalPush(vm.gc.intern("vec")),
-        Op::ReferGlobalPush(vm.gc.intern("i")),
-        Op::ReferGlobal(vm.gc.intern("i")),
-        Op::VectorSet,
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("do"), 3),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = vec0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
 // (cons 'a 'b)
 #[test]
 fn test27_optimized() {
@@ -14064,8 +13933,6 @@ fn test27_optimized() {
         SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
-
-
 
 // (let ((vec (vector 0 '(2 2 2 2) "Anna"))) (vector-set! vec 1 '("Sue" "Sue")) vec)
 #[test]
@@ -14739,8 +14606,6 @@ fn test30_optimized() {
     );
 }
 
-
-
 // (apply (lambda (a b c) (+ a b c)) 1 2 '(3))
 #[test]
 fn test303_optimized() {
@@ -14920,8 +14785,6 @@ fn test307_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
-
 
 // (even? 2)
 #[test]
@@ -15113,8 +14976,6 @@ fn test314_optimized() {
     );
 }
 
-
-
 // (- (/ 1 2) (/ 1 4) (/ 1 4))
 #[test]
 fn test318_optimized() {
@@ -15216,8 +15077,6 @@ fn test320_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
-
 
 // (/ (/ 4 2) 1)
 #[test]
@@ -15321,7 +15180,6 @@ fn test331_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
 
 // (<= (/ 1 2) 1)
 #[test]
@@ -15518,8 +15376,6 @@ fn test340_optimized() {
     );
 }
 
-
-
 // (= (/ 2 2) 1)
 #[test]
 fn test342_optimized() {
@@ -15588,9 +15444,6 @@ fn test344_optimized() {
     );
 }
 
-
-
-
 // (let ((a 3) (b 1)) a)
 #[test]
 fn test35_optimized() {
@@ -15605,9 +15458,6 @@ fn test35_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
-
-
 
 // (= (/ (+ (greatest-fixnum) 1) 1) (+ (greatest-fixnum) 1))
 #[test]
@@ -15627,41 +15477,6 @@ fn test352_optimized() {
         Op::NumberAdd,
         Op::NumberEqual,
         Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-
-// (flonum? (/ (+ (greatest-fixnum) 1) (inexact (/ 1 3))))
-#[test]
-fn test354_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(14),
-        Op::Frame(2),
-        Op::ReferFreeCall(293, 0),
-        Op::PushConstant(Object::Number(1)),
-        Op::NumberAddPush,
-        Op::Frame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(288, 1),
-        Op::Halt,
-        Op::Nop,
         Op::Nop,
         Op::Nop,
     ];
@@ -15840,8 +15655,6 @@ fn test360_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
-
 
 // (number? (+ (greatest-fixnum) 1))
 #[test]
@@ -16058,11 +15871,6 @@ fn test370_optimized() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
-
-
-
-
 
 // (div 123 10)
 #[test]
