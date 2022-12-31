@@ -223,8 +223,9 @@ impl Vm {
                 Op::NumberAddPush => {
                     panic!("not implemented");
                 }
-                Op::ReferGlobalPush(_) => {
-                    panic!("not implemented");
+                Op::ReferGlobalPush(symbol) => {
+                    self.refer_global_op(symbol);
+                    self.push_op();
                 }
                 Op::BranchNotEq(_) => {
                     panic!("not implemented");
