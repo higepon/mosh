@@ -237,7 +237,8 @@ impl Vm {
                     self.constant_op(c);
                 }
                 Op::NumberSubPush => {
-                    panic!("not implemented");
+                    self.number_sub_op();
+                    self.push_op();
                 }
                 Op::ReferLocalPushConstantBranchNotLe(_, _, _) => {
                     panic!("not implemented");
@@ -576,14 +577,7 @@ impl Vm {
                     self.set_return_value(pair);
                 }
                 Op::NumberAdd => self.number_add_op(),
-                Op::NumberSub => match (self.pop(), self.ac) {
-                    (Object::Number(a), Object::Number(b)) => {
-                        self.set_return_value(Object::Number(a - b));
-                    }
-                    (a, b) => {
-                        panic!("-: numbers required but got {:?} {:?}", a, b);
-                    }
-                },
+                Op::NumberSub => self.number_sub_op(),
                 Op::NumberMul => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
                         self.set_return_value(Object::Number(a * b));
@@ -765,6 +759,20 @@ impl Vm {
         self.ac
     }
 
+
+    #[inline(always)]    
+    fn number_sub_op(&mut self) {
+        match (self.pop(), self.ac) {
+            (Object::Number(a), Object::Number(b)) => {
+                self.set_return_value(Object::Number(a - b));
+            }
+            (a, b) => {
+                panic!("-: numbers required but got {:?} {:?}", a, b);
+            }
+        }
+    }
+
+    #[inline(always)]
     fn number_add_op(&mut self) {
         match (self.pop(), self.ac) {
             (Object::Number(a), Object::Number(b)) => {
