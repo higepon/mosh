@@ -12178,7 +12178,7 @@ fn test201_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12208,7 +12208,7 @@ fn test202_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12269,7 +12269,7 @@ fn test204_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 3,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12301,7 +12301,7 @@ fn test205_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -12459,48 +12459,6 @@ fn test211_optimized() {
     );
 }
 
-// `(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b)
-#[test]
-fn test212_optimized() {
-    let mut vm = Vm::new();
-
-    let sym0 = vm.gc.symbol_intern("a");
-    let sym1 = vm.gc.symbol_intern("b");
-    let list0 = vm.gc.listn(&[
-        sym0,
-        Object::Number(3),
-        Object::Number(4),
-        Object::Number(5),
-        Object::Number(6),
-        sym1,
-    ]);
-    let list1 = vm
-        .gc
-        .listn(&[Object::Number(4), Object::Number(-5), Object::Number(6)]);
-    let list2 = vm.gc.listn(&[sym1]);
-
-    let ops = vec![
-        Op::ConstantPush(sym0),
-        Op::ConstantPush(Object::Number(3)),
-        Op::Frame(4),
-        Op::ReferFreePush(410),
-        Op::ConstantPush(list1),
-        Op::ReferGlobalCall(vm.gc.intern("map"), 2),
-        Op::PushConstant(list2),
-        Op::Append2,
-        Op::Cons,
-        Op::Cons,
-        Op::Halt,
-        Op::Nop,
-    ];
-    let expected = list0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (vector? #(3))
 #[test]
@@ -12545,7 +12503,7 @@ fn test214_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0 + SIZE_OF_CLOSURE,
     );
 }
 
@@ -12579,7 +12537,7 @@ fn test215_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 +SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12613,7 +12571,7 @@ fn test216_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12654,7 +12612,7 @@ fn test217_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 +SIZE_OF_VECTOR+ SIZE_OF_STRING * 0,
     );
 }
 
@@ -12684,7 +12642,7 @@ fn test218_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE+ SIZE_OF_STRING * 0,
     );
 }
 
@@ -12714,7 +12672,7 @@ fn test219_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 +SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13199,7 +13157,7 @@ fn test234_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 2,
+        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13524,7 +13482,7 @@ fn test247_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 2,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13672,7 +13630,7 @@ fn test253_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 2,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13690,7 +13648,7 @@ fn test254_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 2,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
