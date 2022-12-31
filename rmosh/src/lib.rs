@@ -1,5 +1,6 @@
 pub mod alloc;
 pub mod equal;
+pub mod fasl;
 pub mod gc;
 pub mod objects;
 pub mod op;
