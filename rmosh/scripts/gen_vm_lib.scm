@@ -126,7 +126,6 @@
            [insn-str (rewrite-insn* insn* insn*)]
            [decl-str (and (gen-code port) (get))])
       (format #t "
-        let mut vm = Vm::new();
 ~a        
         let ops = vec![\n~a];\n" decl-str  insn-str))))            
 
