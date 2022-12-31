@@ -212,7 +212,7 @@ impl Vm {
                     self.sp = self.dec(self.sp, n as isize);
                 }
                 Op::ReferLocalBranchNotLt(_, _) => todo!(),
-                Op::SimpleStructRef  => todo!(),
+                Op::SimpleStructRef => todo!(),
                 Op::Vector(_) => todo!(),
                 Op::BranchNotEqual(_) => todo!(),
                 Op::Cddr => {
@@ -222,7 +222,8 @@ impl Vm {
                     panic!("not implemented");
                 }
                 Op::NumberAddPush => {
-                    panic!("not implemented");
+                    self.number_add_op();
+                    self.push_op();
                 }
                 Op::ReferGlobalPush(symbol) => {
                     self.refer_global_op(symbol);
@@ -571,14 +572,7 @@ impl Vm {
                     let pair = self.gc.cons(car, cdr);
                     self.set_return_value(pair);
                 }
-                Op::NumberAdd => match (self.pop(), self.ac) {
-                    (Object::Number(a), Object::Number(b)) => {
-                        self.set_return_value(Object::Number(a + b));
-                    }
-                    (a, b) => {
-                        panic!("+: numbers required but got {:?} {:?}", a, b);
-                    }
-                },
+                Op::NumberAdd => self.number_add_op(),
                 Op::NumberSub => match (self.pop(), self.ac) {
                     (Object::Number(a), Object::Number(b)) => {
                         self.set_return_value(Object::Number(a - b));
@@ -768,7 +762,18 @@ impl Vm {
         self.ac
     }
 
-    #[inline(always)]    
+    fn number_add_op(&mut self) {
+        match (self.pop(), self.ac) {
+            (Object::Number(a), Object::Number(b)) => {
+                self.set_return_value(Object::Number(a + b));
+            }
+            (a, b) => {
+                panic!("+: numbers required but got {:?} {:?}", a, b);
+            }
+        }
+    }
+
+    #[inline(always)]
     fn enter_op(&mut self, n: isize) {
         self.fp = self.dec(self.sp, n);
     }
