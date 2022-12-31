@@ -11548,42 +11548,6 @@ fn test18_optimized() {
     );
 }
 
-// (find (lambda (e) (= e 3)) (list 1 2 3))
-#[test]
-fn test180_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(12),
-        Op::Closure {
-            size: 4,
-            arg_len: 1,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::ReferLocalPushConstant(0, Object::Number(3)),
-        Op::NumberEqual,
-        Op::Return(1),
-        Op::PushFrame(5),
-        Op::ConstantPush(Object::Number(1)),
-        Op::ConstantPush(Object::Number(2)),
-        Op::ConstantPush(Object::Number(3)),
-        Op::ReferFreeCall(89, 3),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("find"), 2),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::Number(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (string? "hige")
 #[test]
@@ -11604,40 +11568,10 @@ fn test181_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
-// (assoc "key" '(("key" "value")))
-#[test]
-fn test182_optimized() {
-    let mut vm = Vm::new();
-
-    let str0 = vm.gc.new_string("key");
-    let str1 = vm.gc.new_string("value");
-    let str2 = vm.gc.new_string("key");
-    let str3 = vm.gc.new_string("key");
-    let str4 = vm.gc.new_string("value");
-    let list0 = vm.gc.listn(&[str0, str1]);
-    let list1 = vm.gc.listn(&[str3, str4]);
-    let list2 = vm.gc.listn(&[list1]);
-
-    let ops = vec![
-        Op::Frame(4),
-        Op::ConstantPush(str2),
-        Op::ConstantPush(list2),
-        Op::ReferFreeCall(154, 2),
-        Op::Halt,
-        Op::Nop,
-    ];
-    let expected = list0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 5,
-    );
-}
 
 // ((lambda () (define p (cons 1 2)) (set-cdr! p 3) p))
 #[test]
@@ -11959,7 +11893,7 @@ fn test193_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 5,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12046,7 +11980,7 @@ fn test195_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
