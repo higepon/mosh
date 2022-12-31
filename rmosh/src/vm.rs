@@ -233,11 +233,28 @@ impl Vm {
                 Op::MakeContinuation(_) => {
                     panic!("not implemented");
                 }
-                Op::Shiftj(_, _, _) => {
-                    panic!("not implemented");
+                Op::Shiftj(depth, diff, display_count) => {
+                    // SHIFT for embedded jump which appears in named let optimization.
+                    //   Two things happens.
+                    //   1. SHIFT the stack (same as SHIFT operation)
+                    //   2. Restore fp and c registers.
+                    //      This is necessary for jump which is across let or closure boundary.
+                    //      new-fp => new-sp - arg-length
+                    //
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
+                    self.fp = self.dec(self.sp, depth);
+                    let mut i = display_count;
+                    loop {
+                        if i == 0 {
+                            break;
+                        }
+                        self.dc = self.dc.to_closure().prev;
+                        i -= 1;
+                    }
                 }
-                Op::ReferFreeCall(_, _) => {
-                    panic!("not implemented");
+                Op::ReferFreeCall(n, argc) => {
+                    self.refer_free_op(n);
+                    self.call_op(&mut pc, argc);
                 }
                 Op::PushEnter(_) => {
                     panic!("not implemented");
@@ -652,22 +669,17 @@ impl Vm {
                     self.sp = self.dec(self.sp, num_free_vars);
                 }
                 Op::ReferFree(n) => self.refer_free_op(n),
-                Op::AssignFree(n) => match self.dc {
-                    Object::Closure(mut closure) => match closure.refer_free(n) {
+                Op::AssignFree(n) => {
+                    let closure = self.dc.to_closure();
+                    match closure.refer_free(n) {
                         Object::Vox(mut vox) => {
                             vox.value = self.ac;
                         }
                         _ => {
                             panic!("assign_free: vox not found")
                         }
-                    },
-                    _ => {
-                        panic!(
-                            "assign_free: display closure required but got {:?}",
-                            self.dc
-                        );
                     }
-                },
+                }
                 Op::Test(jump_offset) => {
                     if self.ac.is_false() {
                         pc = self.jump(pc, jump_offset - 1);
@@ -747,8 +759,7 @@ impl Vm {
         }
     }
 
-
-    #[inline(always)]    
+    #[inline(always)]
     fn frame_op(&mut self, pc: *const Op, skip_offset: isize) {
         // Call frame in stack.
         // ======================
@@ -770,17 +781,10 @@ impl Vm {
         self.push(Object::StackPointer(self.fp));
     }
 
-
-    #[inline(always)]    
+    #[inline(always)]
     fn refer_free_op(&mut self, n: usize) {
-        match self.dc {
-            Object::Closure(mut closure) => {
-                self.set_return_value(closure.refer_free(n));
-            }
-            _ => {
-                panic!("refer_free: display closure required but got {:?}", self.dc);
-            }
-        }
+        let val = self.dc.to_closure().refer_free(n);
+        self.set_return_value(val);
     }
 
     #[inline(always)]
@@ -932,17 +936,22 @@ impl Vm {
 
     fn reset_roots(&mut self) {
         // Clean up display closure so that Objects in ops can be freed.
-        match self.dc {
-            Object::Closure(mut c) => {
-                c.ops = null();
-                c.ops_len = 0;
-            }
-            _ => {}
-        }
-        // Note we keep self.ac here, so that it can live after it returned by run().
+        let mut closure = self.dc.to_closure();
+        closure.ops = null();
+        closure.ops_len = 0;
     }
+    // Note we keep self.ac here, so that it can live after it returned by run().
 
     fn register_baselib(&mut self) -> *const Op {
+        let sym0 = self.gc.symbol_intern("for-all");
+        let str0 = self.gc.new_string("expected same length proper lists");
+        let str1 = self
+            .gc
+            .new_string("traversal reached to non-pair element ~s");
+        let str2 = self
+            .gc
+            .new_string("expected chain of pairs, but got ~r, as argument 2");
+
         self.lib_ops = vec![
             Op::Closure {
                 size: 15,
@@ -965,6 +974,202 @@ impl Vm {
             Op::Cons,
             Op::Return(2),
             Op::DefineGlobal(self.gc.intern("map1")),
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::ReferFreePush(197),
+            Op::ReferFreePush(152),
+            Op::ReferFreePush(2),
+            Op::Closure {
+                size: 39,
+                arg_len: 3,
+                is_optional_arg: true,
+                num_free_vars: 3,
+            },
+            Op::ReferLocalBranchNotNull(2, 6),
+            Op::ReferLocalPush(0),
+            Op::ReferLocalPush(1),
+            Op::ReferGlobal(self.gc.intern("for-all-1")),
+            Op::TailCall(2, 3),
+            Op::Return(3),
+            Op::LetFrame(11),
+            Op::ReferLocalPush(0),
+            Op::ReferLocalPush(1),
+            Op::ReferLocalPush(2),
+            Op::ReferFreePush(0),
+            Op::ReferFreePush(2),
+            Op::ReferFreePush(1),
+            Op::Display(6),
+            Op::Frame(5),
+            Op::ReferFreePush(1),
+            Op::ReferLocalPush(1),
+            Op::ReferLocalPush(2),
+            Op::ReferFreeCall(0, 3),
+            Op::PushEnter(1),
+            Op::ReferLocal(0),
+            Op::Test(6),
+            Op::ReferFreePush(5),
+            Op::ReferLocalPush(0),
+            Op::ReferGlobal(self.gc.intern("for-all-n-quick")),
+            Op::TailCall(2, 6),
+            Op::LocalJmp(10),
+            Op::ConstantPush(sym0),
+            Op::ConstantPush(str0),
+            Op::Frame(4),
+            Op::ReferFreePush(4),
+            Op::ReferFreePush(3),
+            Op::ReferFreeCall(2, 2),
+            Op::Push,
+            Op::ReferGlobal(self.gc.intern("assertion-violation")),
+            Op::TailCall(3, 6),
+            Op::Leave(1),
+            Op::Return(3),
+            Op::DefineGlobal(self.gc.intern("for-all")),
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::ReferFreePush(48),
+            Op::ReferFreePush(89),
+            Op::Closure {
+                size: 68,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 2,
+            },
+            Op::ReferLocalBranchNotNull(1, 3),
+            Op::Constant(Object::True),
+            Op::Return(2),
+            Op::ReferLocal(1),
+            Op::PairP,
+            Op::Test(49),
+            Op::LetFrame(14),
+            Op::ReferLocalPush(0),
+            Op::ReferLocalPush(1),
+            Op::ReferFreePush(1),
+            Op::ReferFreePush(0),
+            Op::Display(4),
+            Op::ReferLocal(1),
+            Op::CarPush,
+            Op::ReferLocal(1),
+            Op::CdrPush,
+            Op::Enter(2),
+            Op::ReferLocalBranchNotNull(1, 5),
+            Op::ReferLocalPush(0),
+            Op::ReferFree(3),
+            Op::TailCall(1, 6),
+            Op::LocalJmp(31),
+            Op::ReferLocal(1),
+            Op::PairP,
+            Op::Test(12),
+            Op::Frame(3),
+            Op::ReferLocalPush(0),
+            Op::ReferFreeCall(3, 1),
+            Op::Test(24),
+            Op::ReferLocal(1),
+            Op::CarPush,
+            Op::ReferLocal(1),
+            Op::CdrPush,
+            Op::Shiftj(2, 2, 0),
+            Op::LocalJmp(-17),
+            Op::LocalJmp(17),
+            Op::Frame(3),
+            Op::ReferLocalPush(0),
+            Op::ReferFreeCall(3, 1),
+            Op::Test(13),
+            Op::ConstantPush(sym0),
+            Op::Frame(4),
+            Op::ConstantPush(str1),
+            Op::ReferLocalPush(1),
+            Op::ReferFreeCall(1, 2),
+            Op::PushFrame(4),
+            Op::ReferFreePush(3),
+            Op::ReferFreePush(2),
+            Op::ReferFreeCall(0, 2),
+            Op::Push,
+            Op::ReferGlobal(self.gc.intern("assertion-violation")),
+            Op::TailCall(3, 6),
+            Op::Leave(2),
+            Op::Return(2),
+            Op::ConstantPush(sym0),
+            Op::Frame(4),
+            Op::ConstantPush(str2),
+            Op::ReferLocalPush(1),
+            Op::ReferFreeCall(1, 2),
+            Op::PushFrame(4),
+            Op::ReferLocalPush(0),
+            Op::ReferLocalPush(1),
+            Op::ReferFreeCall(0, 2),
+            Op::Push,
+            Op::ReferGlobal(self.gc.intern("assertion-violation")),
+            Op::TailCall(3, 2),
+            Op::Return(2),
+            Op::DefineGlobal(self.gc.intern("for-all-1")),
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
+            Op::ReferFreePush(152),
+            Op::Closure {
+                size: 32,
+                arg_len: 2,
+                is_optional_arg: false,
+                num_free_vars: 1,
+            },
+            Op::ReferLocalBranchNotNull(1, 2),
+            Op::Return(2),
+            Op::LetFrame(8),
+            Op::ReferLocalPush(0),
+            Op::ReferFreePush(0),
+            Op::ReferLocalPush(1),
+            Op::Display(3),
+            Op::ReferLocal(1),
+            Op::CarPush,
+            Op::ReferLocal(1),
+            Op::CdrPush,
+            Op::Enter(2),
+            Op::ReferLocalBranchNotNull(1, 6),
+            Op::ReferFreePush(2),
+            Op::ReferLocalPush(0),
+            Op::ReferFree(1),
+            Op::TailCall(2, 6),
+            Op::LocalJmp(12),
+            Op::Frame(4),
+            Op::ReferFreePush(2),
+            Op::ReferLocalPush(0),
+            Op::ReferFreeCall(1, 2),
+            Op::Test(7),
+            Op::ReferLocal(1),
+            Op::CarPush,
+            Op::ReferLocal(1),
+            Op::CdrPush,
+            Op::Shiftj(2, 2, 0),
+            Op::LocalJmp(-16),
+            Op::Leave(2),
+            Op::Return(2),
+            Op::DefineGlobal(self.gc.intern("for-all-n-quick")),
+            Op::Nop,
+            Op::Nop,
+            Op::Nop,
             Op::Nop,
             Op::Nop,
             Op::Nop,

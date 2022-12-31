@@ -103,6 +103,14 @@ impl Object {
         }
     }
 
+    pub fn to_closure(self) -> GcRef<Closure> {
+        if let Self::Closure(c) = self {
+            c
+        } else {
+            panic!("Not a Object::Closure")
+        }
+    }
+
     // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
         match (self, other) {
@@ -584,7 +592,7 @@ impl Closure {
         }
     }
 
-    pub fn refer_free(&mut self, n: usize) -> Object {
+    pub fn refer_free(&self, n: usize) -> Object {
         self.free_vars[n]
     }
 }
