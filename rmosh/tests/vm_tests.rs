@@ -70,12 +70,14 @@ static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE
     + SIZE_OF_STRING * 3;
 
 fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
+    // Keep reference so that it won't be freed.
+    vm.expected = expected;
+
     let ret = vm.run(ops.as_ptr(), ops.len());
     // Remove reference to ret.
     vm.ac = Object::Unspecified;
     vm.mark_and_sweep();
-    assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff);
-    let e = Equal::new();
+    assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff); let e = Equal::new();
     if !e.is_equal(&mut vm.gc, &ret, &expected) {
         println!("ret={} expected={}", ret, expected);
         assert_eq!(ret, expected);
@@ -10206,7 +10208,7 @@ fn test134_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10235,7 +10237,7 @@ fn test135_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 6 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10267,7 +10269,7 @@ fn test136_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 5 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10296,12 +10298,13 @@ fn test137_optimized() {
         Op::Cons,
         Op::Halt,
     ];
-    let expected = list1;
+    vm.expected = list1;
+    let expected = vm.expected;
     test_ops_with_size(
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 5 + SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10323,11 +10326,12 @@ fn test138_optimized() {
         Op::Halt,
     ];
     let expected = list0;
+    vm.expected = expected;
     test_ops_with_size(
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3  + SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -11011,7 +11015,7 @@ fn test163_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 4 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -11083,7 +11087,7 @@ fn test166_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -11118,7 +11122,7 @@ fn test167_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0 + SIZE_OF_CLOSURE,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0 + SIZE_OF_CLOSURE,
     );
 }
 
@@ -13354,7 +13358,7 @@ fn test243_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 6 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 9 + SIZE_OF_SYMBOL * 6 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13930,7 +13934,7 @@ fn test27_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13974,7 +13978,7 @@ fn test271_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -14097,7 +14101,7 @@ fn test276_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -14762,7 +14766,7 @@ fn test306_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -16085,7 +16089,7 @@ fn test383_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -17008,7 +17012,7 @@ fn test77_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -17032,7 +17036,7 @@ fn test78_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -17342,7 +17346,7 @@ fn test92_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -17368,7 +17372,7 @@ fn test93_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -17397,7 +17401,7 @@ fn test94_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -17423,7 +17427,7 @@ fn test95_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -17448,7 +17452,7 @@ fn test96_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -17517,6 +17521,6 @@ fn test99_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }

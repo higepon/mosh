@@ -64,6 +64,8 @@ pub struct Vm {
     pub ac: Object,
     // display closure register.
     dc: Object,
+    // expected register to retain expected value for tests.
+    pub expected: Object,
     // stack pointer.
     sp: *mut Object,
     // frame pointer.
@@ -87,6 +89,7 @@ impl Vm {
             stack: [Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
+            expected: Object::Unspecified,
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
@@ -179,6 +182,7 @@ impl Vm {
         // Registers.
         self.gc.mark_object(self.ac);
         self.gc.mark_object(self.dc);
+        self.gc.mark_object(self.expected);        
     }
 
     pub fn run(&mut self, ops: *const Op, ops_len: usize) -> Object {
