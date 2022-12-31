@@ -10361,7 +10361,7 @@ fn test139_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 4 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10409,7 +10409,7 @@ fn test140_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10431,7 +10431,7 @@ fn test141_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10461,7 +10461,7 @@ fn test142_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 4 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10492,7 +10492,7 @@ fn test143_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 6 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10523,7 +10523,7 @@ fn test144_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 4 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10552,7 +10552,7 @@ fn test145_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 5 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10584,7 +10584,7 @@ fn test146_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 6 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10628,7 +10628,7 @@ fn test148_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10766,7 +10766,7 @@ fn test153_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -10807,7 +10807,7 @@ fn test154_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 4 + SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10833,7 +10833,7 @@ fn test155_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10889,7 +10889,7 @@ fn test157_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 4 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -11156,7 +11156,7 @@ fn test168_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -11244,7 +11244,7 @@ fn test171_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -11268,7 +11268,7 @@ fn test172_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -11499,7 +11499,7 @@ fn test179_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -11578,7 +11578,7 @@ fn test184_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -11613,7 +11613,7 @@ fn test185_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -11867,7 +11867,7 @@ fn test193_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 2,
     );
 }
 
@@ -12216,7 +12216,7 @@ fn test203_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 4 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12243,7 +12243,7 @@ fn test204_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 2,
     );
 }
 
@@ -12275,7 +12275,7 @@ fn test205_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 2,
     );
 }
 
@@ -12395,7 +12395,7 @@ fn test210_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12429,7 +12429,7 @@ fn test211_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 5 + SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12806,7 +12806,7 @@ fn test223_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12904,7 +12904,7 @@ fn test226_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -12935,7 +12935,7 @@ fn test227_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13002,7 +13002,7 @@ fn test229_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13051,7 +13051,7 @@ fn test230_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13074,7 +13074,7 @@ fn test232_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13103,7 +13103,7 @@ fn test233_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 4 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 5 + SIZE_OF_SYMBOL * 4 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13130,7 +13130,7 @@ fn test234_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 1,
     );
 }
 
@@ -13153,7 +13153,7 @@ fn test235_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13180,7 +13180,7 @@ fn test236_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13223,7 +13223,7 @@ fn test238_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 4 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 4 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13278,7 +13278,7 @@ fn test240_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 4 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 4 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13322,7 +13322,7 @@ fn test242_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -13978,7 +13978,7 @@ fn test271_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_PAIR * 2 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 4,
     );
 }
 
