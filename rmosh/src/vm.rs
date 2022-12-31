@@ -259,7 +259,7 @@ impl Vm {
                 }
                 Op::ReferLocalPush(n) => {
                     self.refer_local_op(n);
-                    self.push(self.ac);
+                    self.push_op();
                 }
                 Op::ReferLocalCall(n, argc) => {
                     self.refer_local_op(n);
@@ -278,28 +278,23 @@ impl Vm {
                     self.refer_global_op(symbol);
                     self.call(&mut pc, argc);
                 }
-                Op::ReferFreePush(n) => match self.dc {
-                    Object::Closure(mut closure) => {
-                        self.set_return_value(closure.refer_free(n));
-                        self.push(self.ac);
-                    }
-                    _ => {
-                        panic!("refer_free: display closure required but got {:?}", self.dc);
-                    }
-                },
+                Op::ReferFreePush(n) => {
+                    self.refer_free_op(n);
+                    self.push_op();
+                }
                 Op::CarPush => {
                     self.car_op();
-                    self.push(self.ac);
+                    self.push_op();
                 }
                 Op::ConstantPush(_) => {
                     panic!("not implemented");
                 }
                 Op::CdrPush => {
                     self.cdr_op();
-                    self.push(self.ac);
+                    self.push_op();
                 }
                 Op::PushFrame(skip_offset) => {
-                    self.push(self.ac);
+                    self.push_op();
                     let next_pc = self.jump(pc, skip_offset - 1);
                     self.push(Object::OpPointer(next_pc));
                     self.push(self.dc);
@@ -548,7 +543,7 @@ impl Vm {
                     self.set_return_value(c);
                 }
                 Op::Push => {
-                    self.push(self.ac);
+                    self.push_op();
                 }
                 Op::Cons => {
                     let car = self.pop();
@@ -671,14 +666,7 @@ impl Vm {
                     self.dc = display;
                     self.sp = self.dec(self.sp, num_free_vars);
                 }
-                Op::ReferFree(n) => match self.dc {
-                    Object::Closure(mut closure) => {
-                        self.set_return_value(closure.refer_free(n));
-                    }
-                    _ => {
-                        panic!("refer_free: display closure required but got {:?}", self.dc);
-                    }
-                },
+                Op::ReferFree(n) => self.refer_free_op(n),
                 Op::AssignFree(n) => match self.dc {
                     Object::Closure(mut closure) => match closure.refer_free(n) {
                         Object::Vox(mut vox) => {
@@ -780,6 +768,22 @@ impl Vm {
             pc = self.jump(pc, 1);
         }
         self.ac
+    }
+
+    fn refer_free_op(&mut self, n: usize) {
+        match self.dc {
+            Object::Closure(mut closure) => {
+                self.set_return_value(closure.refer_free(n));
+            }
+            _ => {
+                panic!("refer_free: display closure required but got {:?}", self.dc);
+            }
+        }
+    }
+
+    #[inline(always)]
+    fn push_op(&mut self) {
+        self.push(self.ac);
     }
 
     #[inline(always)]
