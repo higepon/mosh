@@ -212,7 +212,7 @@ impl Vm {
                     self.sp = self.dec(self.sp, n as isize);
                 }
                 Op::ReferLocalBranchNotLt(_, _) | Op::SimpleStructRef | Op::Vector(_) => todo!(),
-                
+
                 Op::BranchNotEqual(_) => todo!(),
                 Op::Cddr => {
                     panic!("not implemented");
@@ -240,7 +240,7 @@ impl Vm {
                 }
                 Op::ReferLocalPushConstantBranchNotGe(_, _, _) => {
                     panic!("not implemented");
-                }                
+                }
                 Op::MakeContinuation(_) => {
                     panic!("not implemented");
                 }
@@ -309,8 +309,9 @@ impl Vm {
                     self.car_op();
                     self.push_op();
                 }
-                Op::ConstantPush(_) => {
-                    panic!("not implemented");
+                Op::ConstantPush(c) => {
+                    self.constant_op(c);
+                    self.push_op();
                 }
                 Op::CdrPush => {
                     self.cdr_op();
@@ -553,7 +554,7 @@ impl Vm {
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
                 Op::Constant(c) => {
-                    self.set_return_value(c);
+                    self.constant_op(c);
                 }
                 Op::Push => {
                     self.push_op();
@@ -761,6 +762,11 @@ impl Vm {
         self.ac
     }
 
+    #[inline(always)]
+    fn constant_op(&mut self, c: Object) {
+        self.set_return_value(c);
+    }
+    #[inline(always)]
     fn branch_not_null_op(&mut self, pc: &mut *const Op, skip_offset: isize) {
         if self.ac.is_nil() {
             self.set_return_value(Object::False);
