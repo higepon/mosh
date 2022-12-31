@@ -3,7 +3,7 @@ use rmosh::{
     gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    vm::Vm,
+    vm::Vm, equal::Equal,
 };
 
 // Custom hand written tests.
@@ -74,7 +74,8 @@ fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap
     vm.ac = Object::Unspecified;
     vm.mark_and_sweep();
     assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff);
-    assert_eq!(ret, expected);
+    let e = Equal::new();
+    assert!(e.is_equal(&mut vm.gc, &ret, &expected));
 }
 
 fn test_ops_with_size_as_str(vm: &mut Vm, ops: Vec<Op>, expected: &str, expected_heap_diff: usize) {
