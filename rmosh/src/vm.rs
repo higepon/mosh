@@ -281,7 +281,7 @@ impl Vm {
                     self.fp = self.dec(self.sp, depth);
                     let mut i = display_count;
                     loop {
-                        if i == 0 {
+                        if i <= 0 {
                             break;
                         }
                         self.dc = self.dc.to_closure().prev;
