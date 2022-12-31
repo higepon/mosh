@@ -242,8 +242,11 @@ impl Vm {
                 Op::ReferLocalPushConstantBranchNotLe(_, _, _) => {
                     panic!("not implemented");
                 }
-                Op::ReferLocalPushConstantBranchNotGe(_, _, _) => {
-                    panic!("not implemented");
+                Op::ReferLocalPushConstantBranchNotGe(n, c, skip_offset) => {
+                    self.refer_local(n);
+                    self.push_op();
+                    self.constant_op(c);
+                    branch_number_op!(>=, self, pc, skip_offset);                    
                 }
                 Op::MakeContinuation(_) => {
                     panic!("not implemented");
