@@ -267,12 +267,7 @@ impl Vm {
                 }
                 Op::ReferLocalBranchNotNull(n, skip_offset) => {
                     self.refer_local_op(n);
-                    if self.ac.is_nil() {
-                        self.set_return_value(Object::False);
-                    } else {
-                        self.set_return_value(Object::True);
-                        pc = self.jump(pc, skip_offset - 1);
-                    }
+                    self.branch_not_null_op(&mut pc, skip_offset);
                 }
                 Op::ReferGlobalCall(symbol, argc) => {
                     self.refer_global_op(symbol);
@@ -453,12 +448,7 @@ impl Vm {
                     branch_number_op!(<, self, pc, skip_offset);
                 }
                 Op::BranchNotNull(skip_offset) => {
-                    if self.ac.is_nil() {
-                        self.set_return_value(Object::False);
-                    } else {
-                        self.set_return_value(Object::True);
-                        pc = self.jump(pc, skip_offset - 1);
-                    }
+                    self.branch_not_null_op(&mut pc, skip_offset);
                 }
                 Op::BranchNotEqv(skip_offset) => {
                     if self.pop().eqv(&self.ac) {
@@ -746,6 +736,15 @@ impl Vm {
             pc = self.jump(pc, 1);
         }
         self.ac
+    }
+
+    fn branch_not_null_op(&mut self, pc: &mut *const Op, skip_offset: isize) {
+        if self.ac.is_nil() {
+            self.set_return_value(Object::False);
+        } else {
+            self.set_return_value(Object::True);
+            *pc = self.jump(*pc, skip_offset - 1);
+        }
     }
 
 
