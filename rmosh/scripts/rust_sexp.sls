@@ -1,7 +1,8 @@
 ;; Generate Rust code to construct sexp* in Rust.
 (define-library (rust_sexp)
-  (export gen gen-code run-tests)
+  (export gen gen-code run-tests num-sym* num-str*)
   (import (scheme base))
+  (import (scheme case-lambda))
   (import (scheme write))
   (import (match))
   (import (only (rnrs arithmetic flonums) flnan? flonum?))
@@ -20,6 +21,12 @@
   (define pair* '())
   (define list* '())
   (define vec* '())
+
+  (define (num-sym*)
+    (length sym*))
+
+  (define (num-str*)
+    (length str*))    
 
   ;; Reset the stage.
   (define (reset)
@@ -146,41 +153,45 @@
         (error (format "sexp ~s didn't match" sexp))]
     ))
 
-  (define (gen-code port)
-    (for-each 
-      (lambda (sym) 
-        (match sym
-          [(val . var)
-            (format port "        let ~a = self.gc.symbol_intern(\"~a\");\n" var val)]))
-      (reverse sym*))
+  (define gen-code
+    (case-lambda
+      [(port)
+        (gen-code port "self")]
+      [(port self)
+        (for-each 
+          (lambda (sym) 
+            (match sym
+              [(val . var)
+                (format port "        let ~a = ~a.gc.symbol_intern(\"~a\");\n" var self val)]))
+          (reverse sym*))
 
-    (for-each 
-      (lambda (pair) 
-        (match pair
-          [(var . (first . second))
-            (format port "        let ~a = self.gc.cons(~a, ~a);\n" var first second)]))
-      (reverse pair*))      
+        (for-each 
+          (lambda (pair) 
+            (match pair
+              [(var . (first . second))
+                (format port "        let ~a = ~a.gc.cons(~a, ~a);\n" var self first second)]))
+          (reverse pair*))      
 
-    (for-each 
-      (lambda (list) 
-        (match list
-          [(var . elm*)
-            (format port "        let ~a = self.gc.listn(&[~a]);\n" var (string-join elm* ", "))]))
-      (reverse list*))
+        (for-each 
+          (lambda (list) 
+            (match list
+              [(var . elm*)
+                (format port "        let ~a = ~a.gc.listn(&[~a]);\n" var self (string-join elm* ", "))]))
+          (reverse list*))
 
-    (for-each 
-      (lambda (vec) 
-        (match vec
-          [(var . elm*)
-            (format port "        let ~a = self.gc.new_vector(&vec![~a]);\n" var (string-join elm* ", "))]))
-      (reverse vec*))  
+        (for-each 
+          (lambda (vec) 
+            (match vec
+              [(var . elm*)
+                (format port "        let ~a = ~a.gc.new_vector(&vec![~a]);\n" var self (string-join elm* ", "))]))
+          (reverse vec*))  
 
-    (for-each 
-      (lambda (str) 
-        (match str
-          [(val . var)
-            (format port "        let ~a = self.gc.new_string(~s);\n" var val)]))
-      (reverse str*)))    
+        (for-each 
+          (lambda (str) 
+            (match str
+              [(val . var)
+                (format port "        let ~a = ~a.gc.new_string(~s);\n" var self val)]))
+          (reverse str*))]))
 
   (define (run-tests)
     ;; Test Chars.

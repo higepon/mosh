@@ -103,6 +103,7 @@ fn test_vm_alloc_many_pairs() {
 
 // All ops in the following tests are generated in data/.
 
+
 #[test]
 fn test_call0() {
     let mut vm = Vm::new();
