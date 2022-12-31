@@ -55,6 +55,13 @@ impl Object {
         }
     }
 
+    pub fn is_number(&self) -> bool {
+        match self {
+            Object::Number(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_nil(&self) -> bool {
         match self {
             Object::Nil => true,

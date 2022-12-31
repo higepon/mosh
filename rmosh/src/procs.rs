@@ -2361,7 +2361,8 @@ fn is_flonum(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "fixnum?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_number())
 }
 fn is_bignum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "bignum?";
@@ -2374,12 +2375,12 @@ fn fixnum_width(_vm: &mut Vm, args: &[Object]) -> Object {
 fn least_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);    
-    Object::Number(isize::MIN)
+    Object::Number(-(2_isize.pow(62)))
 }
 fn greatest_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);    
-    Object::Number(isize::MAX)
+    Object::Number(2_isize.pow(62) - 1)
 }
 fn make_rectangular(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-rectangular";
