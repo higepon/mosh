@@ -213,7 +213,24 @@ impl Vm {
                 }
                 Op::ReferLocalBranchNotLt(_, _) => todo!(),
                 Op::SimpleStructRef => todo!(),
-                Op::Vector(_) => todo!(),
+                Op::Vector(n) => {
+                    let mut v = vec![Object::Unspecified; n];
+                    let mut arg = self.ac;
+                    if n > 0 {
+                        let mut i = n - 1;
+                        loop {
+                            if i == 0 {
+                                break;
+                            }
+                            v[i] = arg;
+                            arg = self.pop();
+                            i -= 1;
+                        }
+                        v[0] = arg;
+                    }
+                    let vec = self.gc.new_vector(&v);
+                    self.set_return_value(vec);
+                }
                 Op::BranchNotEqual(_) => todo!(),
                 Op::Cddr => {
                     panic!("not implemented");
@@ -247,7 +264,7 @@ impl Vm {
                     self.refer_local(n);
                     self.push_op();
                     self.constant_op(c);
-                    branch_number_op!(>=, self, pc, skip_offset);                    
+                    branch_number_op!(>=, self, pc, skip_offset);
                 }
                 Op::MakeContinuation(_) => {
                     panic!("not implemented");
@@ -759,8 +776,7 @@ impl Vm {
         self.ac
     }
 
-
-    #[inline(always)]    
+    #[inline(always)]
     fn number_sub_op(&mut self) {
         match (self.pop(), self.ac) {
             (Object::Number(a), Object::Number(b)) => {
