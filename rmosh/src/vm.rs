@@ -211,8 +211,9 @@ impl Vm {
                     self.set_return_value(list);
                     self.sp = self.dec(self.sp, n as isize);
                 }
-                Op::ReferLocalBranchNotLt(_, _) | Op::SimpleStructRef | Op::Vector(_) => todo!(),
-
+                Op::ReferLocalBranchNotLt(_, _) => todo!(),
+                Op::SimpleStructRef  => todo!(),
+                Op::Vector(_) => todo!(),
                 Op::BranchNotEqual(_) => todo!(),
                 Op::Cddr => {
                     panic!("not implemented");
@@ -230,8 +231,9 @@ impl Vm {
                 Op::BranchNotEq(_) => {
                     panic!("not implemented");
                 }
-                Op::PushConstant(_) => {
-                    panic!("not implemented");
+                Op::PushConstant(c) => {
+                    self.push_op();
+                    self.constant_op(c);
                 }
                 Op::NumberSubPush => {
                     panic!("not implemented");
