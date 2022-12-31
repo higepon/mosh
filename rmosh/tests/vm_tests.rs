@@ -11111,7 +11111,7 @@ fn test166_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_CLOSURE + SIZE_OF_STRING * 0,
     );
 }
 
