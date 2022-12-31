@@ -284,8 +284,10 @@ impl Vm {
                 Op::Caar => {
                     panic!("not implemented");
                 }
-                Op::ReferLocalPushConstant(_, _) => {
-                    panic!("not implemented");
+                Op::ReferLocalPushConstant(n, c) => {
+                    self.refer_local_op(n);
+                    self.push_op();
+                    self.constant_op(c);
                 }
                 Op::ReferLocalPush(n) => {
                     self.refer_local_op(n);
