@@ -9157,48 +9157,6 @@ fn and_optimized() {
     );
 }
 
-// (define (map1 f l) (if (null? l) l (cons (f (car l)) (map1 f (cdr l)))))
-#[test]
-fn base_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Closure {
-            size: 15,
-            arg_len: 2,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::ReferLocalBranchNotNull(1, 3),
-        Op::ReferLocal(1),
-        Op::Return(2),
-        Op::Frame(4),
-        Op::ReferLocal(1),
-        Op::CarPush,
-        Op::ReferLocalCall(0, 1),
-        Op::PushFrame(5),
-        Op::ReferLocalPush(0),
-        Op::ReferLocal(1),
-        Op::CdrPush,
-        Op::ReferGlobalCall(vm.gc.intern("map1"), 2),
-        Op::Cons,
-        Op::Return(2),
-        Op::DefineGlobal(vm.gc.intern("map1")),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::Nil;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // ((lambda () 3))
 #[test]
@@ -9245,26 +9203,6 @@ fn call2_optimized() {
     );
 }
 
-// (define a 3)
-#[test]
-fn define0_optimized() {
-    let mut vm = Vm::new();
-
-    let sym0 = vm.gc.symbol_intern("undef");
-
-    let ops = vec![
-        Op::Constant(Object::Number(3)),
-        Op::DefineGlobal(vm.gc.intern("a")),
-        Op::Halt,
-    ];
-    let expected = sym0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (if 1 2 3)
 #[test]
@@ -10782,7 +10720,7 @@ fn test150_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10805,7 +10743,7 @@ fn test151_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10829,7 +10767,7 @@ fn test152_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -10852,7 +10790,7 @@ fn test153_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
