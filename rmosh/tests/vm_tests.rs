@@ -75,7 +75,10 @@ fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap
     vm.mark_and_sweep();
     assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff);
     let e = Equal::new();
-    assert!(e.is_equal(&mut vm.gc, &ret, &expected));
+    if !e.is_equal(&mut vm.gc, &ret, &expected) {
+        println!("ret={} expected={}", ret, expected);
+        assert_eq!(ret, expected);
+    }
 }
 
 fn test_ops_with_size_as_str(vm: &mut Vm, ops: Vec<Op>, expected: &str, expected_heap_diff: usize) {
@@ -14232,86 +14235,7 @@ fn test27_optimized() {
     );
 }
 
-// (let ((x '(1 3 5 7 9))) (do ((x x (cdr x)) (sum 0 (+ sum (car x)))) ((null? x) sum)))
-#[test]
-fn test270_optimized() {
-    let mut vm = Vm::new();
 
-    let list0 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list1 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list2 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list3 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list4 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-
-    let ops = vec![
-        Op::Frame(23),
-        Op::Frame(15),
-        Op::Frame(7),
-        Op::ConstantPush(Object::Number(0)),
-        Op::ReferGlobalPush(vm.gc.intern("sum")),
-        Op::Constant(list0),
-        Op::Car,
-        Op::NumberAddPush,
-        Op::ReferGlobalCall(vm.gc.intern("sum"), 2),
-        Op::PushFrame(6),
-        Op::ConstantPush(list1),
-        Op::Constant(list2),
-        Op::CdrPush,
-        Op::Constant(list3),
-        Op::Call(2),
-        Op::Call(1),
-        Op::PushFrame(5),
-        Op::ReferGlobalPush(vm.gc.intern("sum")),
-        Op::Constant(list4),
-        Op::NullP,
-        Op::Call(1),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("do"), 2),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::Number(25);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (let ((vec (vector 0 '(2 2 2 2) "Anna"))) (vector-set! vec 1 '("Sue" "Sue")) vec)
 #[test]
@@ -14353,7 +14277,7 @@ fn test271_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 6,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -14985,136 +14909,7 @@ fn test30_optimized() {
     );
 }
 
-// (with-exception-handler (lambda (e) "error") (lambda () "no-error"))
-#[test]
-fn test300_optimized() {
-    let mut vm = Vm::new();
 
-    let str0 = vm.gc.new_string("no-error");
-    let str1 = vm.gc.new_string("error");
-    let str2 = vm.gc.new_string("no-error");
-
-    let ops = vec![
-        Op::Frame(10),
-        Op::Closure {
-            size: 3,
-            arg_len: 1,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::Constant(str1),
-        Op::Return(1),
-        Op::Push,
-        Op::Closure {
-            size: 3,
-            arg_len: 0,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::Constant(str2),
-        Op::Return(0),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("with-exception-handler"), 2),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = str0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 3,
-    );
-}
-
-// (guard (con ((string? con) "error-is-string") (else "error-is-not-string")) (raise "raise"))
-#[test]
-fn test301_optimized() {
-    let mut vm = Vm::new();
-
-    let str0 = vm.gc.new_string("error-is-string");
-    let str1 = vm.gc.new_string("error-is-string");
-    let str2 = vm.gc.new_string("error-is-not-string");
-    let str3 = vm.gc.new_string("raise");
-
-    let ops = vec![
-        Op::Frame(18),
-        Op::Frame(12),
-        Op::Frame(6),
-        Op::ConstantPush(str1),
-        Op::Frame(3),
-        Op::ReferGlobalPush(vm.gc.intern("con")),
-        Op::ReferFreeCall(31, 1),
-        Op::Call(1),
-        Op::PushFrame(3),
-        Op::ConstantPush(str2),
-        Op::ReferGlobalCall(vm.gc.intern("else"), 1),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("con"), 2),
-        Op::PushFrame(3),
-        Op::ConstantPush(str3),
-        Op::ReferGlobalCall(vm.gc.intern("raise"), 1),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("guard"), 2),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = str0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 4,
-    );
-}
-
-// (guard (con ((string? con) "error-is-string") (else "error-is-not-string")) 3)
-#[test]
-fn test302_optimized() {
-    let mut vm = Vm::new();
-
-    let str0 = vm.gc.new_string("error-is-string");
-    let str1 = vm.gc.new_string("error-is-not-string");
-
-    let ops = vec![
-        Op::Frame(16),
-        Op::Frame(12),
-        Op::Frame(6),
-        Op::ConstantPush(str0),
-        Op::Frame(3),
-        Op::ReferGlobalPush(vm.gc.intern("con")),
-        Op::ReferFreeCall(31, 1),
-        Op::Call(1),
-        Op::PushFrame(3),
-        Op::ConstantPush(str1),
-        Op::ReferGlobalCall(vm.gc.intern("else"), 1),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("con"), 2),
-        Op::PushConstant(Object::Number(3)),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("guard"), 2),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::Number(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 2,
-    );
-}
 
 // (apply (lambda (a b c) (+ a b c)) 1 2 '(3))
 #[test]
@@ -15296,27 +15091,7 @@ fn test307_optimized() {
     );
 }
 
-// (mod 23 10)
-#[test]
-fn test308_optimized() {
-    let mut vm = Vm::new();
 
-    let ops = vec![
-        Op::Frame(4),
-        Op::ConstantPush(Object::Number(23)),
-        Op::ConstantPush(Object::Number(10)),
-        Op::ReferGlobalCall(vm.gc.intern("mod"), 2),
-        Op::Halt,
-        Op::Nop,
-    ];
-    let expected = Object::Number(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (even? 2)
 #[test]
@@ -15508,115 +15283,7 @@ fn test314_optimized() {
     );
 }
 
-// (for-all (lambda (a b) (< a b)) '(1 2 3) '(2 3 4))
-#[test]
-fn test315_optimized() {
-    let mut vm = Vm::new();
 
-    let list0 = vm
-        .gc
-        .listn(&[Object::Number(1), Object::Number(2), Object::Number(3)]);
-    let list1 = vm
-        .gc
-        .listn(&[Object::Number(2), Object::Number(3), Object::Number(4)]);
-
-    let ops = vec![
-        Op::Frame(10),
-        Op::Closure {
-            size: 5,
-            arg_len: 2,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::ReferLocalPush(0),
-        Op::ReferLocal(1),
-        Op::NumberLt,
-        Op::Return(2),
-        Op::PushConstant(list0),
-        Op::PushConstant(list1),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("for-all"), 3),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (for-all (lambda (a b) (< a b)) '(1 2 4) '(2 3 4))
-#[test]
-fn test316_optimized() {
-    let mut vm = Vm::new();
-
-    let list0 = vm
-        .gc
-        .listn(&[Object::Number(1), Object::Number(2), Object::Number(4)]);
-    let list1 = vm
-        .gc
-        .listn(&[Object::Number(2), Object::Number(3), Object::Number(4)]);
-
-    let ops = vec![
-        Op::Frame(10),
-        Op::Closure {
-            size: 5,
-            arg_len: 2,
-            is_optional_arg: false,
-            num_free_vars: 0,
-        },
-        Op::ReferLocalPush(0),
-        Op::ReferLocal(1),
-        Op::NumberLt,
-        Op::Return(2),
-        Op::PushConstant(list0),
-        Op::PushConstant(list1),
-        Op::Push,
-        Op::ReferGlobalCall(vm.gc.intern("for-all"), 3),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::False;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (+ (/ 2) (/ 4) (/ 4))
-#[test]
-fn test317_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(1)),
-        Op::PushConstant(Object::Number(4)),
-        Op::NumberDiv,
-        Op::NumberAddPush,
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(4)),
-        Op::NumberDiv,
-        Op::NumberAdd,
-        Op::Halt,
-    ];
-    let expected = Object::Number(1);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (- (/ 1 2) (/ 1 4) (/ 1 4))
 #[test]
@@ -15720,125 +15387,7 @@ fn test320_optimized() {
     );
 }
 
-// (= (/ 3 2) (- 3 (/ 1 2) 1))
-#[test]
-fn test321_optimized() {
-    let mut vm = Vm::new();
 
-    let ops = vec![
-        Op::ConstantPush(Object::Number(3)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(3)),
-        Op::PushConstant(Object::Number(1)),
-        Op::PushConstant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::NumberSubPush,
-        Op::Constant(Object::Number(1)),
-        Op::NumberSub,
-        Op::NumberEqual,
-        Op::Halt,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (* (/ 3 2) 2)
-#[test]
-fn test322_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(3)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(2)),
-        Op::NumberMul,
-        Op::Halt,
-    ];
-    let expected = Object::Number(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (* 2 (/ 3 2))
-#[test]
-fn test323_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(2)),
-        Op::ConstantPush(Object::Number(3)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::NumberMul,
-        Op::Halt,
-    ];
-    let expected = Object::Number(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (* (/ 4 2) (/ 3 2))
-#[test]
-fn test324_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(4)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(3)),
-        Op::PushConstant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::NumberMul,
-        Op::Halt,
-    ];
-    let expected = Object::Number(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (/ (/ 2 2) (/ 1 2))
-#[test]
-fn test325_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(2)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(1)),
-        Op::PushConstant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::NumberDiv,
-        Op::Halt,
-    ];
-    let expected = Object::Number(2);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (/ (/ 4 2) 1)
 #[test]
@@ -15943,29 +15492,6 @@ fn test331_optimized() {
     );
 }
 
-// (> (/ 1 2) (/ 1 3))
-#[test]
-fn test332_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(1)),
-        Op::PushConstant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::NumberGt,
-        Op::Halt,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (<= (/ 1 2) 1)
 #[test]
@@ -16162,29 +15688,7 @@ fn test340_optimized() {
     );
 }
 
-// (<= (/ 1 2) (/ 1 3))
-#[test]
-fn test341_optimized() {
-    let mut vm = Vm::new();
 
-    let ops = vec![
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(1)),
-        Op::PushConstant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::NumberLe,
-        Op::Halt,
-    ];
-    let expected = Object::False;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (= (/ 2 2) 1)
 #[test]
@@ -16254,186 +15758,8 @@ fn test344_optimized() {
     );
 }
 
-// (>= (/ 1 2) (inexact (/ 1 3)))
-#[test]
-fn test345_optimized() {
-    let mut vm = Vm::new();
 
-    let ops = vec![
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushFrame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::NumberGe,
-        Op::Halt,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
-// (> (/ 3 2) (+ (inexact (/ 1 3)) (inexact (/ 1 3)) (inexact (/ 1 3))) (/ 99 100))
-#[test]
-fn test346_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(3)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushFrame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::PushFrame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::NumberAddPush,
-        Op::Frame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::NumberAdd,
-        Op::BranchNotGt(25),
-        Op::Frame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::PushFrame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::NumberAddPush,
-        Op::Frame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::NumberAddPush,
-        Op::ConstantPush(Object::Number(99)),
-        Op::Constant(Object::Number(100)),
-        Op::NumberDiv,
-        Op::NumberGt,
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (> 1 (/ (inexact 98) 100) (/ 97 100))
-#[test]
-fn test347_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::ConstantPush(Object::Number(1)),
-        Op::Frame(3),
-        Op::ConstantPush(Object::Number(98)),
-        Op::ReferFreeCall(300, 1),
-        Op::PushConstant(Object::Number(100)),
-        Op::NumberDiv,
-        Op::BranchNotGt(10),
-        Op::Frame(3),
-        Op::ConstantPush(Object::Number(98)),
-        Op::ReferFreeCall(300, 1),
-        Op::PushConstant(Object::Number(100)),
-        Op::NumberDiv,
-        Op::PushConstant(Object::Number(97)),
-        Op::PushConstant(Object::Number(100)),
-        Op::NumberDiv,
-        Op::NumberGt,
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (rational? 3)
-#[test]
-fn test348_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(3),
-        Op::ConstantPush(Object::Number(3)),
-        Op::ReferFreeCall(287, 1),
-        Op::Halt,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (rational? (/ 1 4))
-#[test]
-fn test349_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(4)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(287, 1),
-        Op::Halt,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (let ((a 3) (b 1)) a)
 #[test]
@@ -16450,69 +15776,8 @@ fn test35_optimized() {
     );
 }
 
-// (rational? (/ (/ 1 2) (+ (greatest-fixnum) 1)))
-#[test]
-fn test350_optimized() {
-    let mut vm = Vm::new();
 
-    let ops = vec![
-        Op::Frame(11),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(2)),
-        Op::NumberDiv,
-        Op::PushFrame(2),
-        Op::ReferFreeCall(293, 0),
-        Op::PushConstant(Object::Number(1)),
-        Op::NumberAdd,
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(287, 1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
-// (flonum? (/ (inexact (/ 1 3)) (+ (greatest-fixnum) 1)))
-#[test]
-fn test351_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(14),
-        Op::Frame(6),
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(300, 1),
-        Op::PushFrame(2),
-        Op::ReferFreeCall(293, 0),
-        Op::PushConstant(Object::Number(1)),
-        Op::NumberAdd,
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(288, 1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (= (/ (+ (greatest-fixnum) 1) 1) (+ (greatest-fixnum) 1))
 #[test]
@@ -16544,35 +15809,6 @@ fn test352_optimized() {
     );
 }
 
-// (rational? (/ (+ (greatest-fixnum) 1) (/ 1 3)))
-#[test]
-fn test353_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(11),
-        Op::Frame(2),
-        Op::ReferFreeCall(293, 0),
-        Op::PushConstant(Object::Number(1)),
-        Op::NumberAddPush,
-        Op::ConstantPush(Object::Number(1)),
-        Op::Constant(Object::Number(3)),
-        Op::NumberDiv,
-        Op::NumberDiv,
-        Op::Push,
-        Op::ReferFreeCall(287, 1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (flonum? (/ (+ (greatest-fixnum) 1) (inexact (/ 1 3))))
 #[test]
@@ -16775,55 +16011,7 @@ fn test360_optimized() {
     );
 }
 
-// (fixnum? (+ (greatest-fixnum) 1))
-#[test]
-fn test361_optimized() {
-    let mut vm = Vm::new();
 
-    let ops = vec![
-        Op::Frame(6),
-        Op::Frame(2),
-        Op::ReferFreeCall(293, 0),
-        Op::PushConstant(Object::Number(1)),
-        Op::NumberAddPush,
-        Op::ReferFreeCall(289, 1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::False;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
-
-// (fixnum? (- (least-fixnum) 1))
-#[test]
-fn test362_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![
-        Op::Frame(6),
-        Op::Frame(2),
-        Op::ReferFreeCall(292, 0),
-        Op::PushConstant(Object::Number(1)),
-        Op::NumberSubPush,
-        Op::ReferFreeCall(289, 1),
-        Op::Halt,
-        Op::Nop,
-        Op::Nop,
-    ];
-    let expected = Object::False;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (number? (+ (greatest-fixnum) 1))
 #[test]
