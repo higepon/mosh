@@ -287,21 +287,16 @@ impl Vm {
                         panic!("refer_free: display closure required but got {:?}", self.dc);
                     }
                 },
-                Op::CarPush => match self.ac {
-                    Object::Pair(pair) => {
-                        self.set_return_value(pair.car);
-                        self.push(self.ac);
-                    }
-                    obj => {
-                        self.arg_err("car", "pair", obj);
-                    }
-                },
+                Op::CarPush => {
+                    self.car_op();
+                    self.push(self.ac);
+                }
                 Op::ConstantPush(_) => {
                     panic!("not implemented");
                 }
                 Op::CdrPush => {
-                    self.push(self.ac);
                     self.cdr_op();
+                    self.push(self.ac);
                 }
                 Op::PushFrame(skip_offset) => {
                     self.push(self.ac);
@@ -512,14 +507,9 @@ impl Vm {
                 Op::NumberLt => {
                     number_op!(<, self);
                 }
-                Op::Car => match self.ac {
-                    Object::Pair(pair) => {
-                        self.set_return_value(pair.car);
-                    }
-                    obj => {
-                        self.arg_err("car", "pair", obj);
-                    }
-                },
+                Op::Car => {
+                    self.car_op();
+                }
                 Op::Cdr => {
                     self.cdr_op();
                 }
@@ -606,7 +596,7 @@ impl Vm {
                 }
                 Op::ReferGlobal(symbol) => {
                     self.refer_global_op(symbol);
-                },
+                }
                 Op::Values(n) => {
                     //  values stack layout
                     //    (value 'a 'b 'c 'd)
@@ -792,22 +782,34 @@ impl Vm {
         self.ac
     }
 
-    #[inline(always)]    
+    #[inline(always)]
+    fn car_op(&mut self) {
+        match self.ac {
+            Object::Pair(pair) => {
+                self.set_return_value(pair.car);
+            }
+            obj => {
+                self.arg_err("car", "pair", obj);
+            }
+        }
+    }
+
+    #[inline(always)]
     fn refer_local_op(&mut self, n: isize) {
         let obj = self.refer_local(n);
         self.set_return_value(obj);
     }
 
-    #[inline(always)]    
+    #[inline(always)]
     fn refer_global_op(&mut self, symbol: GcRef<Symbol>) {
         match self.globals.get(&symbol) {
-        Some(&value) => {
-            self.set_return_value(value);
+            Some(&value) => {
+                self.set_return_value(value);
+            }
+            None => {
+                panic!("identifier {:?} not found", symbol);
+            }
         }
-        None => {
-            panic!("identifier {:?} not found", symbol);
-
-        }}
     }
 
     #[inline(always)]
