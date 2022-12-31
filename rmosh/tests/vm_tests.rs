@@ -16812,21 +16812,6 @@ fn test68_optimized() {
     );
 }
 
-// a
-#[test]
-fn test69_optimized() {
-    let mut vm = Vm::new();
-
-    let ops = vec![Op::ReferGlobal(vm.gc.intern("a")), Op::Halt];
-    let expected = Object::Number(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
-    );
-}
-
 // ((lambda (a) (if 3 7 5)) 6)
 #[test]
 fn test7_optimized() {
