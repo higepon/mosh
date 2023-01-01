@@ -36,7 +36,7 @@ impl Fasl<'_> {
         match tag {
             OpTag::Constant => self.read_constant_op(gc),
             OpTag::Closure => self.read_closure_op(gc),
-            OpTag::ReferLocal => self.read_refer_local_op(gc),            
+            OpTag::ReferLocal => self.read_refer_local_op(gc),
             OpTag::ReferLocalBranchNotNull => self.read_refer_local_branch_not_null_op(gc),
         }
     }
@@ -77,7 +77,7 @@ impl Fasl<'_> {
     fn read_refer_local_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
         let n = self.read_sexp(gc)?;
         Ok(Op::ReferLocal(n.to_number()))
-    }    
+    }
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
@@ -315,5 +315,5 @@ pub mod tests {
         let mut fasl = Fasl { bytes };
         let expected = Op::ReferLocal(1);
         assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
-    }    
+    }
 }
