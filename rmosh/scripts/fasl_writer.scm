@@ -22,15 +22,20 @@
       (match c
         [(? fixnum? n)
           (put-u8 port TAG_FIXNUM)
-          (put-s64 port n)])]
-    [c
+          (put-s64 port n)]
+        [#t
+          (put-u8 port TAG_TRUE)]
+        [any (write 'hoge) (write any) (any)]
+      )]
+    [(c)
       (let-values ([(p get) (open-bytevector-output-port)])
-        (write-constant 3 p)
+        (write-constant c p)
         (get))]))
 
-
-  (display (write-constant 3))
+(display (write-constant 3))
+(display (write-constant #t))
 
 (test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-constant 3))
+(test-equal #vu8(1) (write-constant #t))
 
 (test-results)
