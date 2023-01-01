@@ -1,4 +1,3 @@
-use core::num;
 use std::io::{self, Read};
 
 use num_derive::FromPrimitive;
@@ -22,6 +21,7 @@ enum Tag {
 enum OpTag {
     Constant = 10,
     Closure = 11,
+    ReferLocalBranchNotNull = 12,
 }
 
 // S-expression serializer.
@@ -35,6 +35,7 @@ impl Fasl<'_> {
         match tag {
             OpTag::Constant => self.read_constant_op(gc),
             OpTag::Closure => self.read_closure_op(gc),
+            OpTag::ReferLocalBranchNotNull => self.read_refer_local_branch_not_null_op(gc),
         }
     }
 
@@ -51,6 +52,17 @@ impl Fasl<'_> {
                     is_optional_arg: is_optional,
                     num_free_vars: num_free_vars,
                 })
+            }
+            _ => Err(self.create_read_error("invalid closure")),
+        }
+    }
+
+    fn read_refer_local_branch_not_null_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
+        let argc = self.read_sexp(gc)?;
+        let offset = self.read_sexp(gc)?;
+        match (argc, offset) {
+            (Object::Number(argc), Object::Number(offset)) => {
+                Ok(Op::ReferLocalBranchNotNull(argc, offset))
             }
             _ => Err(self.create_read_error("invalid closure")),
         }
@@ -278,6 +290,15 @@ pub mod tests {
             num_free_vars: 10,
         };
 
+        assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
+    }
+
+    #[test]
+    fn test_refer_local_branch_not_null_op() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[12, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0];
+        let mut fasl = Fasl { bytes };
+        let expected = Op::ReferLocalBranchNotNull(2, 5);
         assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
     }
 }
