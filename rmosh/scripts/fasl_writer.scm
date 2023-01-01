@@ -144,7 +144,6 @@
 (test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-closure-op 34 2 #f 10))
 (test-equal #vu8(12 0 2 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0) (write-refer-local-branch-not-null-op 2 5))
 (test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-refer-local-op 1))
-(write (write-refer-local-op 1))
 
 (test-results)
 
