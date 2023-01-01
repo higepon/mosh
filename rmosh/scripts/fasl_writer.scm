@@ -167,7 +167,7 @@
      (let1 indent "            "
        (match insn*
           [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
-            (display (write-closure-op port (adjust-offset all-insn* idx) arg-len optional? num-free-vars))
+            (write-closure-op port (adjust-offset all-insn* idx) arg-len optional? num-free-vars)
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.
           [((? arg0-insn? insn) . more*)
@@ -197,8 +197,8 @@
             (rewrite-insn* all-insn* more* (+ idx 2) port)]
           ;; 2 args jump instructions.
           [((? jump2-insn? insn) m offset . more*)
-               (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
+            (write insn)
+            (write-refer-local-branch-not-null-op port m (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 3) port)]
           ;; CONSTANT family with 2 args.
           [((? const2-insn? insn) m v . more*)
