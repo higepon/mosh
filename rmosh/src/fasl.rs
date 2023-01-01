@@ -33,30 +33,32 @@ impl Fasl<'_> {
     pub fn read_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
         let tag = self.read_op_tag()?;
         match tag {
-            OpTag::Constant => {
-                let c = self.read_sexp(gc)?;
-                Ok(Op::Constant(c))
-            }
-            OpTag::Closure => {
-                let size = self.read_sexp(gc)?;
-                let arg_len = self.read_sexp(gc)?;
-                let is_optional = !self.read_sexp(gc)?.is_false();
-                let num_free_vars = self.read_sexp(gc)?;
-                match (size, arg_len, num_free_vars) {
-                    (
-                        Object::Number(size),
-                        Object::Number(arg_len),
-                        Object::Number(num_free_vars),
-                    ) => Ok(Op::Closure {
-                        size: size as usize,
-                        arg_len: arg_len,
-                        is_optional_arg: is_optional,
-                        num_free_vars: num_free_vars,
-                    }),
-                    _ => Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
-                }
-            }
+            OpTag::Constant => self.read_constant_op(gc),
+            OpTag::Closure => self.read_closure_op(gc),
         }
+    }
+
+    fn read_closure_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
+        let size = self.read_sexp(gc)?;
+        let arg_len = self.read_sexp(gc)?;
+        let is_optional = !self.read_sexp(gc)?.is_false();
+        let num_free_vars = self.read_sexp(gc)?;
+        match (size, arg_len, num_free_vars) {
+            (Object::Number(size), Object::Number(arg_len), Object::Number(num_free_vars)) => {
+                Ok(Op::Closure {
+                    size: size as usize,
+                    arg_len: arg_len,
+                    is_optional_arg: is_optional,
+                    num_free_vars: num_free_vars,
+                })
+            }
+            _ => Err(self.create_read_error("invalid closure")),
+        }
+    }
+
+    fn read_constant_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
+        let c = self.read_sexp(gc)?;
+        Ok(Op::Constant(c))
     }
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
@@ -90,7 +92,7 @@ impl Fasl<'_> {
             let n = u32::from_le_bytes(buf);
             match char::from_u32(n) {
                 Some(c) => chars.push(c),
-                None => return Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
+                None => return Err(self.create_read_error("invalid char")),
             }
         }
         Ok(gc.symbol_intern(&String::from_iter(chars)))
@@ -107,7 +109,7 @@ impl Fasl<'_> {
             let n = u32::from_le_bytes(buf);
             match char::from_u32(n) {
                 Some(c) => chars.push(c),
-                None => return Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
+                None => return Err(self.create_read_error("invalid char")),
             }
         }
         Ok(gc.new_string(&String::from_iter(chars)))
@@ -119,7 +121,7 @@ impl Fasl<'_> {
         let n = u32::from_le_bytes(buf);
         match char::from_u32(n) {
             Some(c) => Ok(Object::Char(c)),
-            None => Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
+            None => Err(self.create_read_error("invalid char")),
         }
     }
 
@@ -127,6 +129,10 @@ impl Fasl<'_> {
         let first = self.read_sexp(gc)?;
         let second = self.read_sexp(gc)?;
         Ok(gc.cons(first, second))
+    }
+
+    fn create_read_error(&self, reason: &str) -> io::Error {
+        io::Error::new(io::ErrorKind::Other, reason)
     }
 
     fn read_tag(&mut self) -> Result<Tag, io::Error> {
