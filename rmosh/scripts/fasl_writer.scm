@@ -81,7 +81,8 @@
                    (CONS . ,TAG_OP_CONS)
                    (CONSTANT_PUSH . ,TAG_OP_CONSTANT_PUSH)
                    (CONSTANT . ,TAG_OP_CONSTANT)                   
-                   (ENTER . ,TAG_OP_ENTER)                   
+                   (ENTER . ,TAG_OP_ENTER)  
+                   (REFER_LOCAL_BRANCH_NOT_NULL . ,TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL)                 
                    (NOP . ,TAG_OP_NOP)
                    (PUSH . ,TAG_OP_PUSH)
                    (PAIR_P . ,TAG_OP_PAIR_P)
@@ -160,48 +161,17 @@
         (write-constant-op p c)
         (get))]))
 
-(define write-arg0-op
-  (case-lambda
-    [(port tag)
-      (put-u8 port tag)]
-    [(tag c)
-      (let-values ([(p get) (open-bytevector-output-port)])
-        (write-arg0-op p tag)
-        (get))]))
+(define (write-op port tag . args)
+  (put-u8 port tag)
+  (for-each
+    (lambda (arg)
+      (write-sexp port arg))
+    args))
 
-(define write-arg1-op
-  (case-lambda
-    [(port tag c)
-      (put-u8 port tag)
-      (write-sexp port c)]
-    [(tag c)
-      (let-values ([(p get) (open-bytevector-output-port)])
-        (write-arg1-op p tag c)
-        (get))]))
-
-
-(define write-arg2-op
-  (case-lambda
-    [(port tag m n)
-      (put-u8 port tag)
-      (write-sexp port m)
-      (write-sexp port n)]
-    [(tag m n)
-      (let-values ([(p get) (open-bytevector-output-port)])
-        (write-arg2-op p tag m n)
-        (get))]))
-
-(define write-arg3-op
-  (case-lambda
-    [(port tag m n o)
-      (put-u8 port tag)
-      (write-sexp port m)
-      (write-sexp port n)      
-      (write-sexp port o)]
-    [(tag m n o)
-      (let-values ([(p get) (open-bytevector-output-port)])
-        (write-arg3-op p tag m n o)
-        (get))]))        
+(define (write-op->bv tag . args)
+  (let-values ([(port get) (open-bytevector-output-port)])
+    (apply write-op port tag args)
+    (get)))
 
 (define write-closure-op
   (case-lambda
@@ -239,7 +209,7 @@
 (test-equal #vu8(10 7 5 1 0 97 0 0 0 3) (write-constant-op '(a)))
 (test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-closure-op 34 2 #f 10))
 (test-equal #vu8(12 0 2 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0) (write-refer-local-branch-not-null-op 2 5))
-(test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-arg1-op TAG_OP_REFER_LOCAL 1))
+(test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-op->bv TAG_OP_REFER_LOCAL 1))
 
 (test-results)
 
@@ -279,39 +249,34 @@
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.
           [((? arg0-insn? insn) . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg0-op port tag)
+              (write-op port tag)
               (rewrite-insn* all-insn* more*  (+ idx 1) port))]
           ;; 1 arg jump instruction.
           [((? jump1-insn? insn) offset . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg1-op port tag (adjust-offset all-insn* idx))
+              (write-op port tag (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; CONSTANT family with 1 arg.
           [((? const1-insn? insn) v . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg1-op port tag v)
+              (write-op port tag v)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; GLOBAL family with 1 symbol argument.
           [((? sym1-insn? insn) (? symbol? n) . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg1-op port tag n)
+              (write-op port tag n)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; Other 1 arg instructions.
           [((? arg1-insn? insn) n . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg1-op port tag n)
+              (write-op port tag n)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; 2 args jump instructions.
           [((? jump2-insn? insn) m offset . more*)
-            (write insn)
-            (write-refer-local-branch-not-null-op port m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
+            (let1 tag (insn->tag insn)          
+              (write-op port tag m (adjust-offset all-insn* idx))
+              (rewrite-insn* all-insn* more* (+ idx 3) port))]
           ;; CONSTANT family with 2 args.
           [((? const2-insn? insn) m v . more*)
                       (error (format "insn*=~a\n" insn*))
@@ -319,15 +284,13 @@
               (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m var)
               (rewrite-insn* all-insn* more* (+ idx 3) port))]
           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg2-op port tag s n)
+              (write-op port tag s n)
               (rewrite-insn* all-insn* more* (+ idx 3) port))]
           ;; Other 2 args insturctions.
           [((? arg2-insn? insn) m n . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg2-op port tag m n)
+              (write-op port tag m n)
               (rewrite-insn* all-insn* more* (+ idx 3) port))]
           [((and (or 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) insn) m v offset . more*)
                       (error (format "insn*=~a\n" insn*))
@@ -338,15 +301,13 @@
           ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
           ;;   Because arg3-insn? include jump3-insn?
           [((? jump3-insn? insn) l m offset . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg3-op port tag l m (adjust-offset all-insn* idx))          
+              (write-op port tag l m (adjust-offset all-insn* idx))          
               (rewrite-insn* all-insn* more* (+ idx 4) port))]
           ;; Other 3 arg instructions.
           [((? arg3-insn? insn) l m n . more*)
-            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg3-op port tag l m n)            
+              (write-op port tag l m n)            
               (rewrite-insn* all-insn* more* (+ idx 4) port))]
           [() #f]
           [else (error "unknown insn" (car insn*) (cadr insn*))]))]))
