@@ -1705,7 +1705,7 @@
     (load-file match-library)
     (write (compile-file-with-macro (third args) #t))]
    ;;  compile a file
-   [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro-i"))
+   [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro-insn"))
     (load-file base-library)
     (load-file match-library)
     (write (compile-file-with-macro (third args) #f))]    
