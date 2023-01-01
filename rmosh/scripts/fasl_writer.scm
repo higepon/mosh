@@ -15,6 +15,7 @@
 (define TAG_CHAR   4)
 (define TAG_SYMBOL 5)
 (define TAG_STRING 6)
+(define TAG_PAIR   7)
 
 (define (put-s64 port n)
   (let1 bv (make-bytevector 8)
@@ -33,7 +34,7 @@
 
 (define write-constant
   (case-lambda
-    [(c port)
+    [(port c)
       (match c
         [(? char? c)
           (put-u8 port TAG_CHAR)
@@ -55,7 +56,11 @@
           (for-each
             (lambda (c)
               (put-u32 port (char->integer c)))
-            (string->list str))]              
+            (string->list str))] 
+        [(first . second)
+          (put-u8 port TAG_PAIR) 
+          (write-constant port first)       
+          (write-constant port second)]
         [#t
           (put-u8 port TAG_TRUE)]
         [#f
@@ -65,7 +70,7 @@
       )]
     [(c)
       (let-values ([(p get) (open-bytevector-output-port)])
-        (write-constant c p)
+        (write-constant p c)
         (get))]))
 
 (display (write-constant 3))
@@ -75,6 +80,7 @@
 (display (write-constant #\a))
 (display (write-constant 'hello))
 (display (write-constant "abc"))
+(display (write-constant '(a)))
 
 (test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-constant 3))
 (test-equal #vu8(1) (write-constant #t))
@@ -83,4 +89,5 @@
 (test-equal #vu8(4 97 0 0 0) (write-constant #\a))
 (test-equal #vu8(5 5 0 104 0 0 0 101 0 0 0 108 0 0 0 108 0 0 0 111 0 0 0) (write-constant 'hello))
 (test-equal #vu8(6 3 0 97 0 0 0 98 0 0 0 99 0 0 0) (write-constant "abc"))
+(test-equal #vu8(7 5 1 0 97 0 0 0 3) (write-constant '(a)))
 (test-results)
