@@ -1,3 +1,5 @@
+use std::io::{Read, self};
+
 use crate::{objects::Object, gc::Gc};
 
 // S-expression serializer.
@@ -8,8 +10,17 @@ pub struct Fasl<'a> {
 impl Fasl<'_> {
 
 
-    pub fn read_sexp(&self, gc: &mut Gc) -> Result<Object, &'static str> {
-        Ok(gc.new_string("s"))
+    pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0;1];
+        self.bytes.read_exact(&mut buf)?;
+        if buf[0] == 0 {
+            let mut buf = [0;8];
+            self.bytes.read_exact(&mut buf)?;
+            let n = isize::from_le_bytes(buf);
+            Ok(Object::Number(n))
+        } else {
+            Err(io::Error::new(io::ErrorKind::Other, "tag not found"))
+        }
     }
 }
 /// Tests.
@@ -38,7 +49,7 @@ pub mod tests {
     fn test_constant_number() {
         let mut gc = Box::new(Gc::new());
         let mut bytes: &[u8] = &[0, 3, 0, 0, 0, 0, 0, 0, 0];
-        let fasl  = Fasl {
+        let mut fasl  = Fasl {
             bytes,
         };
         let expected = Object::Number(3);
