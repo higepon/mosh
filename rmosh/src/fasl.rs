@@ -11,6 +11,7 @@ enum Tag {
     True = 1,
     False = 2,
     Nil = 3,
+    Char = 4,
 }
 
 // S-expression serializer.
@@ -22,6 +23,15 @@ impl Fasl<'_> {
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
+            Tag::Char => {
+                let mut buf = [0; 4];
+                self.bytes.read_exact(&mut buf)?;
+                let n = u32::from_le_bytes(buf);
+                match char::from_u32(n) {
+                    Some(c) => Ok(Object::Char(c)),
+                    None => Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
+                }
+            }
             Tag::Fixnum => {
                 let mut buf = [0; 8];
                 self.bytes.read_exact(&mut buf)?;
@@ -96,6 +106,15 @@ pub mod tests {
         let bytes: &[u8] = &[3];
         let mut fasl = Fasl { bytes };
         let expected = Object::Nil;
+        let obj = fasl.read_sexp(&mut gc).unwrap();
+        assert_equal!(gc, expected, obj);
+    }
+    #[test]
+    fn test_constant_char() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[4, 97, 0, 0, 0];
+        let mut fasl = Fasl { bytes };
+        let expected = Object::Char('a');
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
