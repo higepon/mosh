@@ -38,8 +38,6 @@ macro_rules! branch_number_op {
     };
 }
 
-
-
 #[macro_export]
 macro_rules! number_op {
     ($op:tt, $self:ident) => {
@@ -182,7 +180,7 @@ impl Vm {
         // Registers.
         self.gc.mark_object(self.ac);
         self.gc.mark_object(self.dc);
-        self.gc.mark_object(self.expected);        
+        self.gc.mark_object(self.expected);
     }
 
     pub fn run(&mut self, ops: *const Op, ops_len: usize) -> Object {

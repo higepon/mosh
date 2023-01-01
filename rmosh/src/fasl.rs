@@ -3,7 +3,7 @@ use std::io::{self, Read};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::{gc::Gc, objects::Object};
+use crate::{gc::Gc, objects::Object, op::Op};
 
 #[derive(FromPrimitive)]
 enum Tag {
@@ -17,12 +17,26 @@ enum Tag {
     Pair = 7,
 }
 
+#[derive(FromPrimitive)]
+enum OpTag {
+    Constant = 10,
+}
+
 // S-expression serializer.
 pub struct Fasl<'a> {
     bytes: &'a [u8],
 }
 
 impl Fasl<'_> {
+    pub fn read_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
+        let tag = self.read_op_tag()?;
+        match tag {
+            OpTag::Constant => {
+                let c = self.read_sexp(gc)?;
+                Ok(Op::Constant(c))
+            }
+        }
+    }
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
@@ -99,11 +113,17 @@ impl Fasl<'_> {
         self.bytes.read_exact(&mut buf)?;
         Ok(FromPrimitive::from_u8(buf[0]).expect("unknown tag"))
     }
+
+    fn read_op_tag(&mut self) -> Result<OpTag, io::Error> {
+        let mut buf = [0; 1];
+        self.bytes.read_exact(&mut buf)?;
+        Ok(FromPrimitive::from_u8(buf[0]).expect("unknown tag"))
+    }
 }
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use crate::{equal::Equal, gc::Gc, objects::Object};
+    use crate::{equal::Equal, gc::Gc, objects::Object, op::Op};
 
     use super::Fasl;
 
@@ -199,5 +219,20 @@ pub mod tests {
         let expected = gc.cons(sym, Object::Nil);
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
+    }
+
+    #[test]
+    fn test_constant_op() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[10, 7, 5, 1, 0, 97, 0, 0, 0, 3];
+        let mut fasl = Fasl { bytes };
+        let sym = gc.symbol_intern("a");
+        let expected = gc.cons(sym, Object::Nil);
+        match fasl.read_op(&mut gc).unwrap() {
+            Op::Constant(v) => {
+                assert_equal!(gc, expected, v);
+            }
+            _ => todo!(),
+        }
     }
 }

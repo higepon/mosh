@@ -77,7 +77,8 @@ fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap
     // Remove reference to ret.
     vm.ac = Object::Unspecified;
     vm.mark_and_sweep();
-    assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff); let e = Equal::new();
+    assert_eq!(vm.gc.bytes_allocated(), SIZE_OF_MIN_VM + expected_heap_diff);
+    let e = Equal::new();
     if !e.is_equal(&mut vm.gc, &ret, &expected) {
         println!("ret={} expected={}", ret, expected);
         assert_eq!(ret, expected);
@@ -10331,7 +10332,7 @@ fn test138_optimized() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_PAIR * 3  + SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
+        SIZE_OF_PAIR * 3 + SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 

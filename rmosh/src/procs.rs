@@ -1029,7 +1029,7 @@ fn string(vm: &mut Vm, args: &[Object]) -> Object {
                 chars.push(*c);
             }
             v => {
-                panic!("{}: char required but got {}", name, v)                
+                panic!("{}: char required but got {}", name, v)
             }
         }
     }
@@ -1221,11 +1221,9 @@ fn is_stringequal(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string=?";
     check_argc!(name, args, 2);
     match args {
-        [Object::String(s1), Object::String(s2)] => {
-            Object::make_bool(s1.string.eq(&s2.string))
-        }
+        [Object::String(s1), Object::String(s2)] => Object::make_bool(s1.string.eq(&s2.string)),
         _ => {
-            panic!("{}: string required but got {:?}", name, args);            
+            panic!("{}: string required but got {:?}", name, args);
         }
     }
 }
@@ -2023,7 +2021,7 @@ fn hashtable_copy(vm: &mut Vm, args: &[Object]) -> Object {
             if args.len() == 2 && !args[1].is_false() {
                 ret.is_mutable = true;
             } else {
-                ret.is_mutable = false;                
+                ret.is_mutable = false;
             }
             Object::EqHashtable(ret)
         }
@@ -2374,12 +2372,12 @@ fn fixnum_width(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn least_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "greatest-fixnum";
-    check_argc!(name, args, 0);    
+    check_argc!(name, args, 0);
     Object::Number(-(2_isize.pow(62)))
 }
 fn greatest_fixnum(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "greatest-fixnum";
-    check_argc!(name, args, 0);    
+    check_argc!(name, args, 0);
     Object::Number(2_isize.pow(62) - 1)
 }
 fn make_rectangular(_vm: &mut Vm, args: &[Object]) -> Object {
