@@ -22,6 +22,7 @@ enum OpTag {
     Constant = 10,
     Closure = 11,
     ReferLocalBranchNotNull = 12,
+    ReferLocal = 13,
 }
 
 // S-expression serializer.
@@ -35,6 +36,7 @@ impl Fasl<'_> {
         match tag {
             OpTag::Constant => self.read_constant_op(gc),
             OpTag::Closure => self.read_closure_op(gc),
+            OpTag::ReferLocal => self.read_refer_local_op(gc),            
             OpTag::ReferLocalBranchNotNull => self.read_refer_local_branch_not_null_op(gc),
         }
     }
@@ -72,6 +74,10 @@ impl Fasl<'_> {
         let c = self.read_sexp(gc)?;
         Ok(Op::Constant(c))
     }
+    fn read_refer_local_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
+        let n = self.read_sexp(gc)?;
+        Ok(Op::ReferLocal(n.to_number()))
+    }    
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
@@ -301,4 +307,13 @@ pub mod tests {
         let expected = Op::ReferLocalBranchNotNull(2, 5);
         assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
     }
+
+    #[test]
+    fn test_refer_local_op() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[13, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+        let mut fasl = Fasl { bytes };
+        let expected = Op::ReferLocal(1);
+        assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
+    }    
 }
