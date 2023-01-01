@@ -9,6 +9,8 @@ use crate::{gc::Gc, objects::Object};
 enum Tag {
     Fixnum = 0,
     True = 1,
+    False = 2,
+    Nil = 3,
 }
 
 // S-expression serializer.
@@ -26,9 +28,9 @@ impl Fasl<'_> {
                 let n = isize::from_le_bytes(buf);
                 Ok(Object::Number(n))
             }
-            Tag::True => {
-                Ok(Object::True)
-            }
+            Tag::True => Ok(Object::True),
+            Tag::False => Ok(Object::False),
+            Tag::Nil => Ok(Object::Nil),
         }
         //            Err(io::Error::new(io::ErrorKind::Other, "tag not found"))
     }
@@ -77,5 +79,24 @@ pub mod tests {
         let expected = Object::True;
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
-    }    
+    }
+
+    #[test]
+    fn test_constant_false() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[2];
+        let mut fasl = Fasl { bytes };
+        let expected = Object::False;
+        let obj = fasl.read_sexp(&mut gc).unwrap();
+        assert_equal!(gc, expected, obj);
+    }
+    #[test]
+    fn test_constant_nil() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[3];
+        let mut fasl = Fasl { bytes };
+        let expected = Object::Nil;
+        let obj = fasl.read_sexp(&mut gc).unwrap();
+        assert_equal!(gc, expected, obj);
+    }
 }
