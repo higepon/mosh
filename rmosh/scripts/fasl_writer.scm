@@ -29,7 +29,7 @@
 (define TAG_OP_CONSTANT 10)
 (define TAG_OP_CLOSURE  11)
 (define TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL 12)
-
+(define TAG_OP_REFER_LOCAL 13)
 
 (define (put-s64 port n)
   (let1 bv (make-bytevector 8)
@@ -97,6 +97,16 @@
         (write-constant-op p c)
         (get))]))
 
+(define write-refer-local-op
+  (case-lambda
+    [(port c)
+      (put-u8 port TAG_OP_REFER_LOCAL)
+      (write-sexp port c)]
+    [(c)
+      (let-values ([(p get) (open-bytevector-output-port)])
+        (write-refer-local-op p c)
+        (get))]))
+
 (define write-closure-op
   (case-lambda
     [(port size arg-len optional? num-free-vars)
@@ -110,7 +120,7 @@
         (write-closure-op p size arg-len optional? num-free-vars)
         (get))]))
 
-(define write-refer-local-branch-not-null-op 
+(define write-refer-local-branch-not-null-op
   (case-lambda
     [(port argc offset)
       (put-u8 port TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL)
@@ -133,6 +143,9 @@
 (test-equal #vu8(10 7 5 1 0 97 0 0 0 3) (write-constant-op '(a)))
 (test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-closure-op 34 2 #f 10))
 (test-equal #vu8(12 0 2 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0) (write-refer-local-branch-not-null-op 2 5))
+(test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-refer-local-op 1))
+(write (write-refer-local-op 1))
+
 (test-results)
 
 ;; Enable debug log.
