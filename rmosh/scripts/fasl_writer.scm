@@ -33,17 +33,61 @@
 (define TAG_OP_RETURN 14)
 (define TAG_OP_FRAME 15)
 (define TAG_OP_CAR_PUSH 16)
-(define TAG_REFER_LOCAL_CALL 17)
+(define TAG_OP_REFER_LOCAL_CALL 17)
 (define TAG_OP_PUSH_FRAME 18)
 (define TAG_OP_REFER_LOCAL_PUSH 19)
 (define TAG_OP_CDR_PUSH 20)
+(define TAG_OP_REFER_GLOBAL_CALL 21)
+(define TAG_OP_CONS 22)
+(define TAG_OP_DEFINE_GLOBAL 23)
+(define TAG_OP_NOP 24)
+(define TAG_OP_REFER_FREE_PUSH 25)
+(define TAG_OP_REFER_GLOBAL 26)
+(define TAG_OP_TAIL_CALL 27)
+(define TAG_OP_LET_FRAME 28)
+(define TAG_OP_DISPLAY 29)
+(define TAG_OP_REFER_FREE_CALL 30)
+(define TAG_OP_PUSH_ENTER 31)
+(define TAG_OP_TEST 32)
+(define TAG_OP_LOCAL_JMP 33)
+(define TAG_OP_CONSTANT_PUSH 34)
+(define TAG_OP_PUSH 35)
+(define TAG_OP_LEAVE 36)
+(define TAG_OP_PAIR_P 37)
+(define TAG_OP_ENTER 38)
+(define TAG_OP_REFER_FREE 39)
+(define TAG_OP_SHIFTJ 40)
+(define TAG_OP_HALT 41)
 
 (define (insn->tag insn)
   (cond
     [(assoc insn `((FRAME . ,TAG_OP_FRAME)
                    (PUSH_FRAME . ,TAG_OP_PUSH_FRAME)
                    (REFER_LOCAL_PUSH . ,TAG_OP_REFER_LOCAL_PUSH)
-                   (REFER_LOCAL_CALL . ,TAG_REFER_LOCAL_CALL)
+                   (REFER_LOCAL_CALL . ,TAG_OP_REFER_LOCAL_CALL)
+                   (REFER_GLOBAL_CALL . ,TAG_OP_REFER_GLOBAL_CALL)
+                   (REFER_FREE_CALL . ,TAG_OP_REFER_FREE_CALL)
+                   (REFER_FREE . ,TAG_OP_REFER_FREE)
+                   (DEFINE_GLOBAL . ,TAG_OP_DEFINE_GLOBAL)
+                   (REFER_GLOBAL . ,TAG_OP_REFER_GLOBAL)
+                   (LOCAL_JMP . ,TAG_OP_LOCAL_JMP)
+                   (CONS . ,TAG_OP_CONS)
+                   (TEST . ,TAG_OP_TEST)
+                   (HALT . ,TAG_OP_HALT)
+                   (LEAVE . ,TAG_OP_LEAVE)
+                   (SHIFTJ . ,TAG_OP_SHIFTJ)
+                   (DISPLAY . ,TAG_OP_DISPLAY)
+                   (PUSH_ENTER . ,TAG_OP_PUSH_ENTER)
+                   (CONS . ,TAG_OP_CONS)
+                   (CONSTANT_PUSH . ,TAG_OP_CONSTANT_PUSH)
+                   (CONSTANT . ,TAG_OP_CONSTANT)                   
+                   (ENTER . ,TAG_OP_ENTER)                   
+                   (NOP . ,TAG_OP_NOP)
+                   (PUSH . ,TAG_OP_PUSH)
+                   (PAIR_P . ,TAG_OP_PAIR_P)
+                   (LET_FRAME . ,TAG_OP_LET_FRAME)
+                   (REFER_FREE_PUSH . ,TAG_OP_REFER_FREE_PUSH)
+                   (TAIL_CALL . ,TAG_OP_TAIL_CALL)
                    (CAR_PUSH . ,TAG_OP_CAR_PUSH)
                    (CDR_PUSH . ,TAG_OP_CDR_PUSH)
                    (REFER_LOCAL . ,TAG_OP_REFER_LOCAL)
@@ -145,6 +189,18 @@
     [(tag m n)
       (let-values ([(p get) (open-bytevector-output-port)])
         (write-arg2-op p tag m n)
+        (get))]))
+
+(define write-arg3-op
+  (case-lambda
+    [(port tag m n o)
+      (put-u8 port tag)
+      (write-sexp port m)
+      (write-sexp port n)      
+      (write-sexp port o)]
+    [(tag m n o)
+      (let-values ([(p get) (open-bytevector-output-port)])
+        (write-arg3-op p tag m n o)
         (get))]))        
 
 (define write-closure-op
@@ -223,30 +279,31 @@
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.
           [((? arg0-insn? insn) . more*)
-            (write insn)          
+            (write insn)
             (let1 tag (insn->tag insn)
               (write-arg0-op port tag)
               (rewrite-insn* all-insn* more*  (+ idx 1) port))]
           ;; 1 arg jump instruction.
           [((? jump1-insn? insn) offset . more*)
-            (write insn)          
+            (write insn)
             (let1 tag (insn->tag insn)
-              (write-arg1-op port tag (adjust-offset all-insn* idx))          
+              (write-arg1-op port tag (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; CONSTANT family with 1 arg.
           [((? const1-insn? insn) v . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (let1 var (gen v)
-              (format port "~aOp::~a(~a),\n" indent (insn->string insn) var)
+            (write insn)
+            (let1 tag (insn->tag insn)
+              (write-arg1-op port tag v)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; GLOBAL family with 1 symbol argument.
           [((? sym1-insn? insn) (? symbol? n) . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(vm.gc.intern(\"~a\")),\n" indent (insn->string insn) n)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
+            (write insn)
+            (let1 tag (insn->tag insn)
+              (write-arg1-op port tag n)
+              (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; Other 1 arg instructions.
           [((? arg1-insn? insn) n . more*)
-            (write insn)          
+            (write insn)
             (let1 tag (insn->tag insn)
               (write-arg1-op port tag n)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
@@ -262,12 +319,13 @@
               (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m var)
               (rewrite-insn* all-insn* more* (+ idx 3) port))]
           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(vm.gc.intern(\"~a\"), ~a),\n" indent (insn->string insn) s n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
+            (write insn)
+            (let1 tag (insn->tag insn)
+              (write-arg2-op port tag s n)
+              (rewrite-insn* all-insn* more* (+ idx 3) port))]
           ;; Other 2 args insturctions.
           [((? arg2-insn? insn) m n . more*)
-            (write insn)          
+            (write insn)
             (let1 tag (insn->tag insn)
               (write-arg2-op port tag m n)
               (rewrite-insn* all-insn* more* (+ idx 3) port))]
@@ -280,14 +338,16 @@
           ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
           ;;   Because arg3-insn? include jump3-insn?
           [((? jump3-insn? insn) l m offset . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
+            (write insn)
+            (let1 tag (insn->tag insn)
+              (write-arg3-op port tag l m (adjust-offset all-insn* idx))          
+              (rewrite-insn* all-insn* more* (+ idx 4) port))]
           ;; Other 3 arg instructions.
           [((? arg3-insn? insn) l m n . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(~a, ~a, ~a),\n" indent (insn->string insn) l m n)
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
+            (write insn)
+            (let1 tag (insn->tag insn)
+              (write-arg3-op port tag l m n)            
+              (rewrite-insn* all-insn* more* (+ idx 4) port))]
           [() #f]
           [else (error "unknown insn" (car insn*) (cadr insn*))]))]))
 
