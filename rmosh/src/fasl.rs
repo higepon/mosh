@@ -24,7 +24,7 @@ impl Fasl<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use crate::{equal::Equal, gc::Gc, objects::Object, vm::Vm};
+    use crate::{equal::Equal, gc::Gc, objects::Object};
 
     use super::Fasl;
 
@@ -44,7 +44,7 @@ pub mod tests {
     #[test]
     fn test_constant_number() {
         let mut gc = Box::new(Gc::new());
-        let mut bytes: &[u8] = &[0, 3, 0, 0, 0, 0, 0, 0, 0];
+        let bytes: &[u8] = &[0, 3, 0, 0, 0, 0, 0, 0, 0];
         let mut fasl = Fasl { bytes };
         let expected = Object::Number(3);
         let obj = fasl.read_sexp(&mut gc).unwrap();
