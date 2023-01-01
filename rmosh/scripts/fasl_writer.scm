@@ -3,7 +3,7 @@
 (import (match))
 (import (mosh control))
 (import (mosh test))
-(import (only (rnrs) bytevector-s64-native-set! open-bytevector-output-port put-u8 put-bytevector))
+(import (only (rnrs) bytevector-s64-native-set! bytevector-u32-native-set! open-bytevector-output-port put-u8 put-bytevector))
 (import (scheme base))
 (import (scheme case-lambda))
 (import (scheme write))
@@ -12,16 +12,25 @@
 (define TAG_TRUE   1)
 (define TAG_FALSE  2)
 (define TAG_NIL    3)
+(define TAG_CHAR   4)
 
 (define (put-s64 port n)
   (let1 bv (make-bytevector 8)
      (bytevector-s64-native-set! bv 0 n)
      (put-bytevector port bv)))
 
+(define (put-u32 port n)
+  (let1 bv (make-bytevector 4)
+     (bytevector-u32-native-set! bv 0 n)
+     (put-bytevector port bv)))
+
 (define write-constant
   (case-lambda
     [(c port)
       (match c
+        [(? char? c)
+          (put-u8 port TAG_CHAR)
+          (put-u32 port (char->integer c))]      
         [(? fixnum? n)
           (put-u8 port TAG_FIXNUM)
           (put-s64 port n)]
@@ -41,9 +50,11 @@
 (display (write-constant #t))
 (display (write-constant #f))
 (display (write-constant '()))
+(display (write-constant #\a))
 
 (test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-constant 3))
 (test-equal #vu8(1) (write-constant #t))
 (test-equal #vu8(2) (write-constant #f))
 (test-equal #vu8(3) (write-constant '()))
+(test-equal #vu8(4 97 0 0 0) (write-constant #\a))
 (test-results)
