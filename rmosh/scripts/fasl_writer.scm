@@ -28,6 +28,7 @@
 
 (define TAG_OP_CONSTANT 10)
 (define TAG_OP_CLOSURE  11)
+(define TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL 12)
 
 
 (define (put-s64 port n)
@@ -109,6 +110,17 @@
         (write-closure-op p size arg-len optional? num-free-vars)
         (get))]))
 
+(define write-refer-local-branch-not-null-op 
+  (case-lambda
+    [(port argc offset)
+      (put-u8 port TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL)
+      (write-sexp port argc)
+      (write-sexp port offset)]
+    [(argc offset)
+      (let-values ([(port get) (open-bytevector-output-port)])
+        (write-refer-local-branch-not-null-op port argc offset)
+        (get))]))
+
 (test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-sexp 3))
 (test-equal #vu8(1) (write-sexp #t))
 (test-equal #vu8(2) (write-sexp #f))
@@ -120,6 +132,7 @@
 
 (test-equal #vu8(10 7 5 1 0 97 0 0 0 3) (write-constant-op '(a)))
 (test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-closure-op 34 2 #f 10))
+(test-equal #vu8(12 0 2 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0) (write-refer-local-branch-not-null-op 2 5))
 (test-results)
 
 ;; Enable debug log.
@@ -146,17 +159,15 @@
 (define rewrite-insn*
   (case-lambda
    [(all-insn* insn*)
-    (let-values ([(port get) (open-string-output-port)])
+    (let-values ([(port get) (open-bytevector-output-port)])
       (rewrite-insn* all-insn* insn* 0 port)
       (get))]
    [(all-insn* insn* idx port)
-     (log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
+     ;(log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
      (let1 indent "            "
        (match insn*
           [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
-            (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
-              indent (adjust-offset all-insn* idx) arg-len (if optional? "true" "false") num-free-vars)
+            (display (write-closure-op port (adjust-offset all-insn* idx) arg-len optional? num-free-vars))
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.
           [((? arg0-insn? insn) . more*)
@@ -186,6 +197,7 @@
             (rewrite-insn* all-insn* more* (+ idx 2) port)]
           ;; 2 args jump instructions.
           [((? jump2-insn? insn) m offset . more*)
+               (error (format "insn*=~a\n" insn*))
             (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m (adjust-offset all-insn* idx))
             (rewrite-insn* all-insn* more* (+ idx 3) port)]
           ;; CONSTANT family with 2 args.
