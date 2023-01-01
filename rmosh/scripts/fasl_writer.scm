@@ -31,10 +31,22 @@
 (define TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL 12)
 (define TAG_OP_REFER_LOCAL 13)
 (define TAG_OP_RETURN 14)
+(define TAG_OP_FRAME 15)
+(define TAG_OP_CAR_PUSH 16)
+(define TAG_REFER_LOCAL_CALL 17)
+(define TAG_OP_PUSH_FRAME 18)
+(define TAG_OP_REFER_LOCAL_PUSH 19)
+(define TAG_OP_CDR_PUSH 20)
 
-(define (arg1->tag insn)
+(define (insn->tag insn)
   (cond
-    [(assoc insn `((REFER_LOCAL . ,TAG_OP_REFER_LOCAL)
+    [(assoc insn `((FRAME . ,TAG_OP_FRAME)
+                   (PUSH_FRAME . ,TAG_OP_PUSH_FRAME)
+                   (REFER_LOCAL_PUSH . ,TAG_OP_REFER_LOCAL_PUSH)
+                   (REFER_LOCAL_CALL . ,TAG_REFER_LOCAL_CALL)
+                   (CAR_PUSH . ,TAG_OP_CAR_PUSH)
+                   (CDR_PUSH . ,TAG_OP_CDR_PUSH)
+                   (REFER_LOCAL . ,TAG_OP_REFER_LOCAL)
                    (RETURN . ,TAG_OP_RETURN))) => cdr]
     [else (error insn)]))
 
@@ -104,6 +116,15 @@
         (write-constant-op p c)
         (get))]))
 
+(define write-arg0-op
+  (case-lambda
+    [(port tag)
+      (put-u8 port tag)]
+    [(tag c)
+      (let-values ([(p get) (open-bytevector-output-port)])
+        (write-arg0-op p tag)
+        (get))]))
+
 (define write-arg1-op
   (case-lambda
     [(port tag c)
@@ -113,6 +134,18 @@
       (let-values ([(p get) (open-bytevector-output-port)])
         (write-arg1-op p tag c)
         (get))]))
+
+
+(define write-arg2-op
+  (case-lambda
+    [(port tag m n)
+      (put-u8 port tag)
+      (write-sexp port m)
+      (write-sexp port n)]
+    [(tag m n)
+      (let-values ([(p get) (open-bytevector-output-port)])
+        (write-arg2-op p tag m n)
+        (get))]))        
 
 (define write-closure-op
   (case-lambda
@@ -190,14 +223,16 @@
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.
           [((? arg0-insn? insn) . more*)
-            (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a,\n" indent (insn->string insn))
-            (rewrite-insn* all-insn* more*  (+ idx 1) port)]
+            (write insn)          
+            (let1 tag (insn->tag insn)
+              (write-arg0-op port tag)
+              (rewrite-insn* all-insn* more*  (+ idx 1) port))]
           ;; 1 arg jump instruction.
           [((? jump1-insn? insn) offset . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(~a),\n" indent (insn->string insn) (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
+            (write insn)          
+            (let1 tag (insn->tag insn)
+              (write-arg1-op port tag (adjust-offset all-insn* idx))          
+            (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; CONSTANT family with 1 arg.
           [((? const1-insn? insn) v . more*)
                       (error (format "insn*=~a\n" insn*))
@@ -212,7 +247,7 @@
           ;; Other 1 arg instructions.
           [((? arg1-insn? insn) n . more*)
             (write insn)          
-            (let1 tag (arg1->tag insn)
+            (let1 tag (insn->tag insn)
               (write-arg1-op port tag n)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; 2 args jump instructions.
@@ -232,9 +267,10 @@
             (rewrite-insn* all-insn* more* (+ idx 3) port)]
           ;; Other 2 args insturctions.
           [((? arg2-insn? insn) m n . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(~a, ~a),\n" indent (insn->string insn) m n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
+            (write insn)          
+            (let1 tag (insn->tag insn)
+              (write-arg2-op port tag m n)
+              (rewrite-insn* all-insn* more* (+ idx 3) port))]
           [((and (or 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) insn) m v offset . more*)
                       (error (format "insn*=~a\n" insn*))
             (let1 var (gen v)
@@ -276,7 +312,7 @@
 ~a
         let ops = vec![\n~a];\n" decl-str  insn-str))))
 
-;(main (command-line))
+(main (command-line))
 
 
 
