@@ -23,26 +23,29 @@ impl Fasl<'_> {
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
-            Tag::Char => {
-                let mut buf = [0; 4];
-                self.bytes.read_exact(&mut buf)?;
-                let n = u32::from_le_bytes(buf);
-                match char::from_u32(n) {
-                    Some(c) => Ok(Object::Char(c)),
-                    None => Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
-                }
-            }
-            Tag::Fixnum => {
-                let mut buf = [0; 8];
-                self.bytes.read_exact(&mut buf)?;
-                let n = isize::from_le_bytes(buf);
-                Ok(Object::Number(n))
-            }
+            Tag::Char => self.read_char(),
+            Tag::Fixnum => self.read_fixnum(),
             Tag::True => Ok(Object::True),
             Tag::False => Ok(Object::False),
             Tag::Nil => Ok(Object::Nil),
         }
-        //            Err(io::Error::new(io::ErrorKind::Other, "tag not found"))
+    }
+
+    fn read_fixnum(&mut self) -> Result<Object, io::Error> {
+        let mut buf = [0; 8];
+        self.bytes.read_exact(&mut buf)?;
+        let n = isize::from_le_bytes(buf);
+        Ok(Object::Number(n))
+    }
+
+    fn read_char(&mut self) -> Result<Object, io::Error> {
+        let mut buf = [0; 4];
+        self.bytes.read_exact(&mut buf)?;
+        let n = u32::from_le_bytes(buf);
+        match char::from_u32(n) {
+            Some(c) => Ok(Object::Char(c)),
+            None => Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
+        }
     }
 
     fn read_tag(&mut self) -> Result<Tag, io::Error> {
