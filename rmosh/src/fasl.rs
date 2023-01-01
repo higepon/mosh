@@ -1,3 +1,4 @@
+use core::num;
 use std::io::{self, Read};
 
 use num_derive::FromPrimitive;
@@ -20,6 +21,7 @@ enum Tag {
 #[derive(FromPrimitive)]
 enum OpTag {
     Constant = 10,
+    Closure = 11,
 }
 
 // S-expression serializer.
@@ -34,6 +36,25 @@ impl Fasl<'_> {
             OpTag::Constant => {
                 let c = self.read_sexp(gc)?;
                 Ok(Op::Constant(c))
+            }
+            OpTag::Closure => {
+                let size = self.read_sexp(gc)?;
+                let arg_len = self.read_sexp(gc)?;
+                let is_optional = !self.read_sexp(gc)?.is_false();
+                let num_free_vars = self.read_sexp(gc)?;
+                match (size, arg_len, num_free_vars) {
+                    (
+                        Object::Number(size),
+                        Object::Number(arg_len),
+                        Object::Number(num_free_vars),
+                    ) => Ok(Op::Closure {
+                        size: size as usize,
+                        arg_len: arg_len,
+                        is_optional_arg: is_optional,
+                        num_free_vars: num_free_vars,
+                    }),
+                    _ => Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
+                }
             }
         }
     }
@@ -234,5 +255,23 @@ pub mod tests {
             }
             _ => todo!(),
         }
+    }
+
+    #[test]
+    fn test_closure_op() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[
+            11, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 10, 0, 0, 0, 0, 0, 0,
+            0,
+        ];
+        let mut fasl = Fasl { bytes };
+        let expected = Op::Closure {
+            size: 34,
+            arg_len: 2,
+            is_optional_arg: false,
+            num_free_vars: 10,
+        };
+
+        assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
     }
 }
