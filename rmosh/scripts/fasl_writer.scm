@@ -30,6 +30,13 @@
 (define TAG_OP_CLOSURE  11)
 (define TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL 12)
 (define TAG_OP_REFER_LOCAL 13)
+(define TAG_OP_RETURN 14)
+
+(define (arg1->tag insn)
+  (cond
+    [(assoc insn `((REFER_LOCAL . ,TAG_OP_REFER_LOCAL)
+                   (RETURN . ,TAG_OP_RETURN))) => cdr]
+    [else (error insn)]))
 
 (define (put-s64 port n)
   (let1 bv (make-bytevector 8)
@@ -97,14 +104,14 @@
         (write-constant-op p c)
         (get))]))
 
-(define write-refer-local-op
+(define write-arg1-op
   (case-lambda
-    [(port c)
-      (put-u8 port TAG_OP_REFER_LOCAL)
+    [(port tag c)
+      (put-u8 port tag)
       (write-sexp port c)]
-    [(c)
+    [(tag c)
       (let-values ([(p get) (open-bytevector-output-port)])
-        (write-refer-local-op p c)
+        (write-arg1-op p tag c)
         (get))]))
 
 (define write-closure-op
@@ -143,7 +150,7 @@
 (test-equal #vu8(10 7 5 1 0 97 0 0 0 3) (write-constant-op '(a)))
 (test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-closure-op 34 2 #f 10))
 (test-equal #vu8(12 0 2 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0) (write-refer-local-branch-not-null-op 2 5))
-(test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-refer-local-op 1))
+(test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-arg1-op TAG_OP_REFER_LOCAL 1))
 
 (test-results)
 
@@ -204,9 +211,10 @@
             (rewrite-insn* all-insn* more* (+ idx 2) port)]
           ;; Other 1 arg instructions.
           [((? arg1-insn? insn) n . more*)
-                      (error (format "insn*=~a\n" insn*))
-            (format port "~aOp::~a(~a),\n" indent (insn->string insn) n)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
+            (write insn)          
+            (let1 tag (arg1->tag insn)
+              (write-arg1-op port tag n)
+              (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; 2 args jump instructions.
           [((? jump2-insn? insn) m offset . more*)
             (write insn)
