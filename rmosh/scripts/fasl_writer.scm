@@ -151,16 +151,6 @@
         (write-sexp p c)
         (get))]))
 
-(define write-constant-op
-  (case-lambda
-    [(port c)
-      (put-u8 port TAG_OP_CONSTANT)
-      (write-sexp port c)]
-    [(c)
-      (let-values ([(p get) (open-bytevector-output-port)])
-        (write-constant-op p c)
-        (get))]))
-
 (define (write-op port tag . args)
   (put-u8 port tag)
   (for-each
@@ -173,30 +163,6 @@
     (apply write-op port tag args)
     (get)))
 
-(define write-closure-op
-  (case-lambda
-    [(port size arg-len optional? num-free-vars)
-      (put-u8 port TAG_OP_CLOSURE)
-      (write-sexp port size)
-      (write-sexp port arg-len)
-      (write-sexp port optional?)
-      (write-sexp port num-free-vars)]
-    [(size arg-len optional? num-free-vars)
-      (let-values ([(p get) (open-bytevector-output-port)])
-        (write-closure-op p size arg-len optional? num-free-vars)
-        (get))]))
-
-(define write-refer-local-branch-not-null-op
-  (case-lambda
-    [(port argc offset)
-      (put-u8 port TAG_OP_REFER_LOCAL_BRANCH_NOT_NULL)
-      (write-sexp port argc)
-      (write-sexp port offset)]
-    [(argc offset)
-      (let-values ([(port get) (open-bytevector-output-port)])
-        (write-refer-local-branch-not-null-op port argc offset)
-        (get))]))
-
 (test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-sexp 3))
 (test-equal #vu8(1) (write-sexp #t))
 (test-equal #vu8(2) (write-sexp #f))
@@ -206,8 +172,8 @@
 (test-equal #vu8(6 3 0 97 0 0 0 98 0 0 0 99 0 0 0) (write-sexp "abc"))
 (test-equal #vu8(7 5 1 0 97 0 0 0 3) (write-sexp '(a)))
 
-(test-equal #vu8(10 7 5 1 0 97 0 0 0 3) (write-constant-op '(a)))
-(test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-closure-op 34 2 #f 10))
+(test-equal #vu8(10 7 5 1 0 97 0 0 0 3) (write-op->bv TAG_OP_CONSTANT '(a)))
+(test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-op->bv TAG_OP_CLOSURE 34 2 #f 10))
 (test-equal #vu8(12 0 2 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0) (write-refer-local-branch-not-null-op 2 5))
 (test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-op->bv TAG_OP_REFER_LOCAL 1))
 
@@ -245,7 +211,7 @@
      (let1 indent "            "
        (match insn*
           [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
-            (write-closure-op port (adjust-offset all-insn* idx) arg-len optional? num-free-vars)
+            (write-op port TAG_OP_CLOSURE (adjust-offset all-insn* idx) arg-len optional? num-free-vars)
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.
           [((? arg0-insn? insn) . more*)
