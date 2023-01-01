@@ -14,6 +14,7 @@ enum Tag {
     Char = 4,
     Symbol = 5,
     String = 6,
+    Pair = 7,
 }
 
 // S-expression serializer.
@@ -27,8 +28,9 @@ impl Fasl<'_> {
         match tag {
             Tag::Char => self.read_char(),
             Tag::Fixnum => self.read_fixnum(),
-            Tag::String => self.read_string(gc),            
+            Tag::String => self.read_string(gc),
             Tag::Symbol => self.read_symbol(gc),
+            Tag::Pair => self.read_pair(gc),
             Tag::True => Ok(Object::True),
             Tag::False => Ok(Object::False),
             Tag::Nil => Ok(Object::Nil),
@@ -74,7 +76,7 @@ impl Fasl<'_> {
             }
         }
         Ok(gc.new_string(&String::from_iter(chars)))
-    }    
+    }
 
     fn read_char(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 4];
@@ -84,6 +86,12 @@ impl Fasl<'_> {
             Some(c) => Ok(Object::Char(c)),
             None => Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
         }
+    }
+
+    fn read_pair(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let first = self.read_sexp(gc)?;
+        let second = self.read_sexp(gc)?;
+        Ok(gc.cons(first, second))
     }
 
     fn read_tag(&mut self) -> Result<Tag, io::Error> {
@@ -178,6 +186,17 @@ pub mod tests {
         let bytes: &[u8] = &[6, 3, 0, 97, 0, 0, 0, 98, 0, 0, 0, 99, 0, 0, 0];
         let mut fasl = Fasl { bytes };
         let expected = gc.new_string("abc");
+        let obj = fasl.read_sexp(&mut gc).unwrap();
+        assert_equal!(gc, expected, obj);
+    }
+
+    #[test]
+    fn test_constant_simple_pair() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[7, 5, 1, 0, 97, 0, 0, 0, 3];
+        let mut fasl = Fasl { bytes };
+        let sym = gc.symbol_intern("a");
+        let expected = gc.cons(sym, Object::Nil);
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
