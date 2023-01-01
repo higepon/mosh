@@ -17,6 +17,9 @@
 (define TAG_STRING 6)
 (define TAG_PAIR   7)
 
+(define TAG_OP_CONSTANT 10)
+
+
 (define (put-s64 port n)
   (let1 bv (make-bytevector 8)
      (bytevector-s64-native-set! bv 0 n)
@@ -32,7 +35,7 @@
      (bytevector-u16-native-set! bv 0 n)
      (put-bytevector port bv)))
 
-(define write-constant
+(define write-sexp
   (case-lambda
     [(port c)
       (match c
@@ -59,8 +62,8 @@
             (string->list str))] 
         [(first . second)
           (put-u8 port TAG_PAIR) 
-          (write-constant port first)       
-          (write-constant port second)]
+          (write-sexp port first)       
+          (write-sexp port second)]
         [#t
           (put-u8 port TAG_TRUE)]
         [#f
@@ -70,24 +73,24 @@
       )]
     [(c)
       (let-values ([(p get) (open-bytevector-output-port)])
-        (write-constant p c)
+        (write-sexp p c)
         (get))]))
 
-(display (write-constant 3))
-(display (write-constant #t))
-(display (write-constant #f))
-(display (write-constant '()))
-(display (write-constant #\a))
-(display (write-constant 'hello))
-(display (write-constant "abc"))
-(display (write-constant '(a)))
+(display (write-sexp 3))
+(display (write-sexp #t))
+(display (write-sexp #f))
+(display (write-sexp '()))
+(display (write-sexp #\a))
+(display (write-sexp 'hello))
+(display (write-sexp "abc"))
+(display (write-sexp '(a)))
 
-(test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-constant 3))
-(test-equal #vu8(1) (write-constant #t))
-(test-equal #vu8(2) (write-constant #f))
-(test-equal #vu8(3) (write-constant '()))
-(test-equal #vu8(4 97 0 0 0) (write-constant #\a))
-(test-equal #vu8(5 5 0 104 0 0 0 101 0 0 0 108 0 0 0 108 0 0 0 111 0 0 0) (write-constant 'hello))
-(test-equal #vu8(6 3 0 97 0 0 0 98 0 0 0 99 0 0 0) (write-constant "abc"))
-(test-equal #vu8(7 5 1 0 97 0 0 0 3) (write-constant '(a)))
+(test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-sexp 3))
+(test-equal #vu8(1) (write-sexp #t))
+(test-equal #vu8(2) (write-sexp #f))
+(test-equal #vu8(3) (write-sexp '()))
+(test-equal #vu8(4 97 0 0 0) (write-sexp #\a))
+(test-equal #vu8(5 5 0 104 0 0 0 101 0 0 0 108 0 0 0 108 0 0 0 111 0 0 0) (write-sexp 'hello))
+(test-equal #vu8(6 3 0 97 0 0 0 98 0 0 0 99 0 0 0) (write-sexp "abc"))
+(test-equal #vu8(7 5 1 0 97 0 0 0 3) (write-sexp '(a)))
 (test-results)
