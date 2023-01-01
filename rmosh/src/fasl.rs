@@ -13,6 +13,7 @@ enum Tag {
     Nil = 3,
     Char = 4,
     Symbol = 5,
+    String = 6,
 }
 
 // S-expression serializer.
@@ -26,6 +27,7 @@ impl Fasl<'_> {
         match tag {
             Tag::Char => self.read_char(),
             Tag::Fixnum => self.read_fixnum(),
+            Tag::String => self.read_string(gc),            
             Tag::Symbol => self.read_symbol(gc),
             Tag::True => Ok(Object::True),
             Tag::False => Ok(Object::False),
@@ -56,6 +58,23 @@ impl Fasl<'_> {
         }
         Ok(gc.symbol_intern(&String::from_iter(chars)))
     }
+
+    fn read_string(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf);
+        let mut chars = vec![];
+        for _ in 0..len {
+            let mut buf = [0; 4];
+            self.bytes.read_exact(&mut buf)?;
+            let n = u32::from_le_bytes(buf);
+            match char::from_u32(n) {
+                Some(c) => chars.push(c),
+                None => return Err(io::Error::new(io::ErrorKind::Other, "invalid char")),
+            }
+        }
+        Ok(gc.new_string(&String::from_iter(chars)))
+    }    
 
     fn read_char(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 4];
@@ -144,10 +163,22 @@ pub mod tests {
     #[test]
     fn test_constant_symbol() {
         let mut gc = Box::new(Gc::new());
-        let bytes: &[u8] = &[5, 5, 0, 104, 0, 0, 0, 101, 0, 0, 0, 108, 0, 0, 0, 108, 0, 0, 0, 111, 0, 0, 0];
+        let bytes: &[u8] = &[
+            5, 5, 0, 104, 0, 0, 0, 101, 0, 0, 0, 108, 0, 0, 0, 108, 0, 0, 0, 111, 0, 0, 0,
+        ];
         let mut fasl = Fasl { bytes };
         let expected = gc.symbol_intern("hello");
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
-    }    
+    }
+
+    #[test]
+    fn test_constant_string() {
+        let mut gc = Box::new(Gc::new());
+        let bytes: &[u8] = &[6, 3, 0, 97, 0, 0, 0, 98, 0, 0, 0, 99, 0, 0, 0];
+        let mut fasl = Fasl { bytes };
+        let expected = gc.new_string("abc");
+        let obj = fasl.read_sexp(&mut gc).unwrap();
+        assert_equal!(gc, expected, obj);
+    }
 }
