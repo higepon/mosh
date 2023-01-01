@@ -1,6 +1,14 @@
 use std::io::{self, Read};
 
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
 use crate::{gc::Gc, objects::Object};
+
+#[derive(FromPrimitive)]
+enum Tag {
+    Fixnum = 0,
+}
 
 // S-expression serializer.
 pub struct Fasl<'a> {
@@ -9,16 +17,22 @@ pub struct Fasl<'a> {
 
 impl Fasl<'_> {
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let tag = self.read_tag()?;
+        match tag {
+            Tag::Fixnum => {
+                let mut buf = [0; 8];
+                self.bytes.read_exact(&mut buf)?;
+                let n = isize::from_le_bytes(buf);
+                Ok(Object::Number(n))
+            }
+        }
+        //            Err(io::Error::new(io::ErrorKind::Other, "tag not found"))
+    }
+
+    fn read_tag(&mut self) -> Result<Tag, io::Error> {
         let mut buf = [0; 1];
         self.bytes.read_exact(&mut buf)?;
-        if buf[0] == 0 {
-            let mut buf = [0; 8];
-            self.bytes.read_exact(&mut buf)?;
-            let n = isize::from_le_bytes(buf);
-            Ok(Object::Number(n))
-        } else {
-            Err(io::Error::new(io::ErrorKind::Other, "tag not found"))
-        }
+        Ok(FromPrimitive::from_u8(buf[0]).expect("unknown tag"))
     }
 }
 /// Tests.

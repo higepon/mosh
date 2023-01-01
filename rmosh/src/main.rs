@@ -1,6 +1,7 @@
 use gc::GcRef;
 use objects::{Object, Symbol};
-
+#[macro_use]
+extern crate num_derive;
 use crate::op::Op;
 
 pub mod alloc;
@@ -11,7 +12,6 @@ pub mod objects;
 pub mod op;
 pub mod procs;
 pub mod vm;
-
 
 fn main() {
     println!(
