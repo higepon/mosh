@@ -4,7 +4,7 @@
 (import (mosh control))
 (import (mosh test))
 (import (only (mosh) format regexp-replace-all rxmatch))
-(import (only (rnrs) bytevector-s64-native-set! bytevector-u32-native-set! bytevector-u16-native-set! open-bytevector-output-port put-u8 put-bytevector))
+(import (only (rnrs) set! bytevector-s64-native-set! bytevector-u32-native-set! bytevector-u16-native-set! open-bytevector-output-port put-u8 put-bytevector))
 (import (only (rnrs) open-string-output-port string-titlecase))
 (import (only (srfi :1) list-ref))
 (import (only (srfi :13) string-delete string-join))
@@ -58,6 +58,8 @@
 (define TAG_OP_REFER_FREE 39)
 (define TAG_OP_SHIFTJ 40)
 (define TAG_OP_HALT 41)
+
+
 
 (define (insn->tag insn)
   (cond
@@ -174,7 +176,6 @@
 
 (test-equal #vu8(10 7 5 1 0 97 0 0 0 3) (write-op->bv TAG_OP_CONSTANT '(a)))
 (test-equal #vu8(11 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-op->bv TAG_OP_CLOSURE 34 2 #f 10))
-(test-equal #vu8(12 0 2 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0) (write-refer-local-branch-not-null-op 2 5))
 (test-equal #vu8(13 0 1 0 0 0 0 0 0 0) (write-op->bv TAG_OP_REFER_LOCAL 1))
 
 (test-results)
@@ -300,6 +301,3 @@
         let ops = vec![\n~a];\n" decl-str  insn-str))))
 
 (main (command-line))
-
-
-

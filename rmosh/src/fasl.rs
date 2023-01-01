@@ -15,14 +15,43 @@ enum Tag {
     Symbol = 5,
     String = 6,
     Pair = 7,
+
 }
 
 #[derive(FromPrimitive)]
 enum OpTag {
-    Constant = 10,
-    Closure = 11,
-    ReferLocalBranchNotNull = 12,
-    ReferLocal = 13,
+    Constant = 10, 
+    Closure = 11, 
+    ReferLocalBranchNotNull = 12, 
+    ReferLocal = 13, 
+    Return = 14, 
+    Frame = 15, 
+    CarPush = 16, 
+    ReferLocalCall = 17, 
+    PushFrame = 18, 
+    ReferLocalPush = 19, 
+    CdrPush = 20, 
+    ReferGlobalCall = 21, 
+    Cons = 22, 
+    DefineGlobal = 23, 
+    Nop = 24, 
+    ReferFreePush = 25, 
+    ReferGlobal = 26, 
+    TailCall = 27, 
+    LetFrame = 28, 
+    Display = 29, 
+    ReferFreeCall = 30, 
+    PushEnter = 31, 
+    Test = 32, 
+    LocalJmp = 33, 
+    ConstantPush = 34, 
+    Push = 35, 
+    Leave = 36, 
+    PairP = 37, 
+    Enter = 38, 
+    ReferFree = 39, 
+    Shiftj = 40, 
+    Halt = 41,     
 }
 
 // S-expression serializer.
