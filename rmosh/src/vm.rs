@@ -232,7 +232,16 @@ impl Vm {
                     self.sp = self.dec(self.sp, n as isize);
                 }
                 Op::ReferLocalBranchNotLt(_, _) => todo!(),
-                Op::SimpleStructRef => todo!(),
+                Op::SimpleStructRef => {
+                    match (self.pop(), self.ac) {
+                        (Object::SimpleStruct(s), Object::Number(idx)) => {
+                            return s.data[idx as usize];
+                        }
+                        (obj1, obj2) => {
+                            panic!("simple-struct-ref: simple-struct and idx required but got {} {}", obj1, obj2);
+                        }
+                    }
+                }
                 Op::Vector(n) => {
                     let mut v = vec![Object::Unspecified; n];
                     let mut arg = self.ac;
