@@ -78,7 +78,7 @@ pub struct Vm {
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
-    should_load_compiler: bool,
+    pub should_load_compiler: bool,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }

@@ -17525,3 +17525,27 @@ fn test99_optimized() {
         SIZE_OF_PAIR * 1 + SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
+
+#[test]
+fn test_compiler() {
+    let mut vm = Vm::new();
+    vm.should_load_compiler = true;
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(Object::Number(0)),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("zero?")),
+        Op::Call(1),
+        Op::Halt,
+    ];
+    let ret = vm.run(ops.as_ptr(), ops.len());
+    vm.expected = Object::True;
+    // Remove reference to ret.
+    vm.ac = Object::Unspecified;
+    let e = Equal::new();
+    if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+        println!("ret={} expected={}", ret, vm.expected);
+        assert_eq!(ret, vm.expected);
+    }
+}

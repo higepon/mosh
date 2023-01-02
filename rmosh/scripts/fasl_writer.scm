@@ -6,6 +6,7 @@
 (import (only (mosh) format regexp-replace-all rxmatch))
 (import (only (rnrs) set! bytevector-s64-native-set! bytevector-u32-native-set! bytevector-u16-native-set! open-bytevector-output-port put-u8 put-bytevector))
 (import (only (rnrs) open-string-output-port string-titlecase))
+(import (rnrs arithmetic flonums))
 (import (only (srfi :1) list-ref))
 (import (only (srfi :13) string-delete string-join))
 (import (rnrs arithmetic fixnums))
@@ -25,6 +26,7 @@
 (define TAG_SYMBOL 5)
 (define TAG_STRING 6)
 (define TAG_PAIR   7)
+(define TAG_VECTOR 9)
 
 (define TAG_OP_CONSTANT 10)
 (define TAG_OP_CLOSURE  11)
@@ -112,6 +114,12 @@
 (define TAG_OP_NOT 93)
 (define TAG_OP_NUMBER_SUB 94)
 (define TAG_OP_NUMBER_GE 95)
+(define TAG_OP_SIMPLE_STRUCT_REF 96)
+(define TAG_OP_SYMBOL_P 97)
+(define TAG_OP_VECTOR_P 98)
+(define TAG_OP_REFER_LOCAL_BRANCH_NOT_LT 99)
+(define TAG_OP_NULL_P 100)
+(define TAG_OP_VECTOR 101)
 
 (define (insn->tag insn)
   (cond
@@ -152,6 +160,7 @@
                    (HALT . ,TAG_OP_HALT)
                    (INDIRECT . ,TAG_OP_INDIRECT)                   
                    (LEAVE . ,TAG_OP_LEAVE)
+                   (REFER_LOCAL_BRANCH_NOT_LT . ,TAG_OP_REFER_LOCAL_BRANCH_NOT_LT)
                    (LET_FRAME . ,TAG_OP_LET_FRAME)
                    (LOCAL_CALL . ,TAG_OP_LOCAL_CALL)
                    (LOCAL_JMP . ,TAG_OP_LOCAL_JMP)
@@ -161,6 +170,7 @@
                    (NOP . ,TAG_OP_NOP)
                    (NOT . ,TAG_OP_NOT)
                    (NOT_TEST . ,TAG_OP_NOT_TEST)
+                   (NULL_P . ,TAG_OP_NULL_P)
                    (NUMBER_ADD . ,TAG_OP_NUMBER_ADD)
                    (NUMBER_ADD_PUSH . ,TAG_OP_NUMBER_ADD_PUSH)
                    (NUMBER_DIV . ,TAG_OP_NUMBER_DIV)
@@ -194,11 +204,15 @@
                    (SET_CAR . ,TAG_OP_SET_CAR)
                    (SET_CDR . ,TAG_OP_SET_CDR)
                    (SHIFTJ . ,TAG_OP_SHIFTJ)
+                   (SYMBOL_P . ,TAG_OP_SYMBOL_P)
+                   (SIMPLE_STRUCT_REF . ,TAG_OP_SIMPLE_STRUCT_REF)
                    (TAIL_CALL . ,TAG_OP_TAIL_CALL)
                    (TEST . ,TAG_OP_TEST)
                    (UNDEF . ,TAG_OP_UNDEF)
                    (VALUES . ,TAG_OP_VALUES)
+                   (VECTOR . ,TAG_OP_VECTOR)
                    (VECTOR_LENGTH . ,TAG_OP_VECTOR_LENGTH)
+                   (VECTOR_P . ,TAG_OP_VECTOR_P)
                    (VECTOR_REF . ,TAG_OP_VECTOR_REF)
                    (VECTOR_SET . ,TAG_OP_VECTOR_SET)
                    (FRAME . ,TAG_OP_FRAME)
@@ -255,6 +269,18 @@
           (put-u8 port TAG_FALSE)]
         [()
           (put-u8 port TAG_NIL)]
+        [(? vector? v)
+          (put-u8 port TAG_VECTOR)
+          (put-u16 port (vector-length v))
+          (for-each
+            (lambda (o)
+              (write-sexp port o))
+            (vector->list v))]
+        [(? flonum? f)
+          ;; TODO
+          (write-sexp port 0)]
+        [any
+          (error (format "unknown sexp = ~a" any))]
       )]
     [(c)
       (let-values ([(p get) (open-bytevector-output-port)])
