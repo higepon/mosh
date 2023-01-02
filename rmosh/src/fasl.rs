@@ -15,6 +15,7 @@ enum Tag {
     Symbol = 5,
     String = 6,
     Pair = 7,
+    Vector = 8,
 }
 
 #[derive(FromPrimitive)]
@@ -105,6 +106,12 @@ enum OpTag {
     Not = 93,
     NumberSub = 94,
     NumberGe = 95,
+    SimpleStructRef = 96,
+    SymbolP = 97,
+    VectorP = 98,
+    ReferLocalBranchNotLt = 99,
+    NullP = 100,
+    Vector = 101,
 }
 
 // S-expression serializer.
@@ -277,6 +284,14 @@ impl Fasl<'_> {
             OpTag::VectorLength => Ok(Op::VectorLength),
             OpTag::VectorRef => Ok(Op::VectorRef),
             OpTag::VectorSet => Ok(Op::VectorSet),
+            OpTag::SimpleStructRef => Ok(Op::SimpleStructRef),
+            OpTag::SymbolP => Ok(Op::SymbolP),
+            OpTag::VectorP => Ok(Op::VectorP),
+            OpTag::ReferLocalBranchNotLt => {
+                read_num2!(self, gc, ReferLocalBranchNotLt, usize, isize)
+            }
+            OpTag::NullP => Ok(Op::NullP),
+            OpTag::Vector => read_num1!(self, gc, Vector, usize),
         }
     }
 
@@ -306,6 +321,7 @@ impl Fasl<'_> {
             Tag::String => self.read_string(gc),
             Tag::Symbol => self.read_symbol(gc),
             Tag::Pair => self.read_pair(gc),
+            Tag::Vector => self.read_vector(gc),
             Tag::True => Ok(Object::True),
             Tag::False => Ok(Object::False),
             Tag::Nil => Ok(Object::Nil),
@@ -351,6 +367,17 @@ impl Fasl<'_> {
             }
         }
         Ok(gc.new_string(&String::from_iter(chars)))
+    }
+
+    fn read_vector(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf);
+        let mut objs = vec![];
+        for _ in 0..len {
+            objs.push(self.read_sexp(gc)?);
+        }
+        Ok(gc.new_vector(&objs))
     }
 
     fn read_char(&mut self) -> Result<Object, io::Error> {
