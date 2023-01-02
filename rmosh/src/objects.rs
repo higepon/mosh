@@ -102,6 +102,13 @@ impl Object {
             panic!("Not a Object::Number")
         }
     }
+    pub fn to_symbol(self) -> GcRef<Symbol> {
+        if let Self::Symbol(s) = self {
+            s
+        } else {
+            panic!("Not a Object::Symbol")
+        }
+    }    
     pub fn to_vox(self) -> GcRef<Vox> {
         if let Self::Vox(v) = self {
             v

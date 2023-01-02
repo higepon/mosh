@@ -1,6 +1,5 @@
 use gc::GcRef;
 use objects::{Object, Symbol};
-#[macro_use]
 extern crate num_derive;
 use crate::op::Op;
 

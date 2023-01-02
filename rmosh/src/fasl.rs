@@ -59,10 +59,10 @@ pub struct Fasl<'a> {
 }
 
 #[macro_export]
-macro_rules! read_num1 {
-    ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
-        let m = $self.read_sexp($gc)?;
-        Ok(Op::$op(m.to_number() as $size))
+macro_rules! read_sym1 {
+    ($self:ident, $gc:ident, $op:ident) => {{
+        let s = $self.read_sexp($gc)?;
+        Ok(Op::$op(s.to_symbol()))
     }};
 }
 
@@ -71,6 +71,14 @@ macro_rules! read_const1 {
     ($self:ident, $gc:ident, $op:ident) => {{
         let c = $self.read_sexp($gc)?;
         Ok(Op::$op(c))
+    }};
+}
+
+#[macro_export]
+macro_rules! read_num1 {
+    ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
+        let m = $self.read_sexp($gc)?;
+        Ok(Op::$op(m.to_number() as $size))
     }};
 }
 
@@ -100,7 +108,7 @@ impl Fasl<'_> {
             OpTag::Constant => read_const1!(self, gc, Constant),
             OpTag::Closure => self.read_closure_op(gc),
             OpTag::ReferLocal => read_num1!(self, gc, ReferLocal, isize),
-            OpTag::ReferLocalBranchNotNull => self.read_refer_local_branch_not_null_op(gc),
+            OpTag::ReferLocalBranchNotNull => read_num2!(self, gc, ReferLocalBranchNotNull, isize),
             OpTag::Return => read_num1!(self, gc, Return, isize),
             OpTag::Frame => read_num1!(self, gc, Frame, isize),
             OpTag::CarPush => Ok(Op::CarPush),
@@ -110,10 +118,10 @@ impl Fasl<'_> {
             OpTag::CdrPush => Ok(Op::CdrPush),
             OpTag::ReferGlobalCall => self.read_refer_global_call_op(gc),
             OpTag::Cons => Ok(Op::Cons),
-            OpTag::DefineGlobal => self.read_define_global_op(gc),
+            OpTag::DefineGlobal => read_sym1!(self, gc, DefineGlobal),
             OpTag::Nop => Ok(Op::Nop),
             OpTag::ReferFreePush => read_num1!(self, gc, ReferFreePush, usize),
-            OpTag::ReferGlobal => self.read_refer_global_op(gc),
+            OpTag::ReferGlobal => read_sym1!(self, gc, ReferGlobal),
             OpTag::TailCall => read_num2!(self, gc, TailCall, isize),
             OpTag::LetFrame => read_num1!(self, gc, LetFrame, isize),
             OpTag::Display => read_num1!(self, gc, Display, isize),
@@ -129,20 +137,6 @@ impl Fasl<'_> {
             OpTag::ReferFree => read_num1!(self, gc, ReferFree, usize),
             OpTag::Shiftj => read_num3!(self, gc, Shiftj),
             OpTag::Halt => Ok(Op::Halt),
-        }
-    }
-
-    fn read_define_global_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
-        match self.read_sexp(gc)? {
-            Object::Symbol(sym) => Ok(Op::DefineGlobal(sym)),
-            _ => Err(self.create_read_error("invalid sequence")),
-        }
-    }
-
-    fn read_refer_global_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
-        match self.read_sexp(gc)? {
-            Object::Symbol(sym) => Ok(Op::ReferGlobal(sym)),
-            _ => Err(self.create_read_error("invalid sequence")),
         }
     }
 
@@ -168,17 +162,6 @@ impl Fasl<'_> {
                     is_optional_arg: is_optional,
                     num_free_vars: num_free_vars,
                 })
-            }
-            _ => Err(self.create_read_error("invalid closure")),
-        }
-    }
-
-    fn read_refer_local_branch_not_null_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
-        let argc = self.read_sexp(gc)?;
-        let offset = self.read_sexp(gc)?;
-        match (argc, offset) {
-            (Object::Number(argc), Object::Number(offset)) => {
-                Ok(Op::ReferLocalBranchNotNull(argc, offset))
             }
             _ => Err(self.create_read_error("invalid closure")),
         }
