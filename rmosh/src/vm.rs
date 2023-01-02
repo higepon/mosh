@@ -5,12 +5,13 @@ use std::{
 };
 
 use crate::{
+    compiler,
     equal::Equal,
     fasl::Fasl,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
-    procs::{self, default_free_vars}, compiler,
+    procs::{self, default_free_vars},
 };
 
 const STACK_SIZE: usize = 256;
@@ -77,6 +78,7 @@ pub struct Vm {
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
+    should_load_compiler: bool,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }
@@ -95,6 +97,7 @@ impl Vm {
             lib_ops: vec![],
             num_values: 0,
             values: [Object::Unspecified; MAX_NUM_VALUES],
+            should_load_compiler: false,
         }
     }
 
@@ -189,8 +192,11 @@ impl Vm {
         self.initialize_free_vars(ops, ops_len);
 
         // Load the base library.
-        //let lib_ops = self.register_baselib();
-        let lib_ops = self.register_compiler();
+        let lib_ops = if self.should_load_compiler {
+            self.register_compiler()
+        } else {
+            self.register_baselib()
+        };
         self.run_ops(lib_ops);
 
         // Run the program.
@@ -1022,9 +1028,9 @@ impl Vm {
                     break;
                 }
             }
-        }    
-        self.lib_ops = ops;    
-        self.lib_ops.as_ptr()        
+        }
+        self.lib_ops = ops;
+        self.lib_ops.as_ptr()
     }
 
     pub fn register_baselib(&mut self) -> *const Op {
