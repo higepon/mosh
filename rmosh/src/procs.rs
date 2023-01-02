@@ -1940,7 +1940,27 @@ fn code_builder_put_insn_arg2_destructive(_vm: &mut Vm, args: &[Object]) -> Obje
 }
 fn length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "length";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if !Pair::is_list(args[0]) {
+        panic!("{}: list require bug got {}", name, args[0]);    
+    }
+    let mut len = 0;
+    let mut obj = args[0];
+    loop {
+        if obj.is_nil() {
+            break;
+        }
+        match obj {
+            Object::Pair(p) => {
+                obj = p.cdr;
+                len += 1;
+            }
+            _ => {
+                panic!("{}: list require bug got {}", name, args[0]); 
+            }
+        }
+    }
+    Object::Number(len)
 }
 fn list_to_vector(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list->vector";
