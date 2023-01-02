@@ -3603,7 +3603,7 @@ fn simple_struct_name(_vm: &mut Vm, args: &[Object]) -> Object {
 fn lookup_nongenerative_rtd(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "lookup-nongenerative-rtd";
     println!("{}({}) not implemented", name, args.len());
-    Object::Unspecified
+    Object::False
 }
 fn nongenerative_rtd_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "nongenerative-rtd-set!";
