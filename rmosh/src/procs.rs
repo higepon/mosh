@@ -3611,7 +3611,13 @@ fn simple_struct_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn simple_struct_name(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct-name";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::SimpleStruct(s) => s.name,
+        obj => {
+            panic!("{}: simple-struct required but got {}", name, obj)
+        }
+    }
 }
 fn lookup_nongenerative_rtd(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "lookup-nongenerative-rtd";

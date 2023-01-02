@@ -314,7 +314,7 @@ impl Display for Vector {
 #[derive(Debug)]
 pub struct SimpleStruct {
     pub header: GcHeader,
-    name: Object,
+    pub name: Object,
     pub data: Vec<Object>,
     len: usize,
 }
