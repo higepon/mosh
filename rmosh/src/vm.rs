@@ -72,7 +72,7 @@ pub struct Vm {
     globals: HashMap<GcRef<Symbol>, Object>,
     // We keep the lib_ops here so that the lib_ops live longer than every call of run.
     // If we kept lib_ops as local variable, it can/will be immediately freed after run(lib_ops).
-    lib_ops: Vec<Op>,
+    pub lib_ops: Vec<Op>,
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
@@ -1006,7 +1006,7 @@ impl Vm {
     }
     // Note we keep self.ac here, so that it can live after it returned by run().
 
-    fn register_baselib(&mut self) -> *const Op {
+    pub fn register_baselib(&mut self) -> *const Op {
         let sym0 = self.gc.symbol_intern("for-all");
         let str0 = self.gc.new_string("expected same length proper lists");
         let str1 = self

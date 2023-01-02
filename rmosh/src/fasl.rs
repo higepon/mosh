@@ -59,7 +59,7 @@ pub struct Fasl<'a> {
 }
 
 #[macro_export]
-macro_rules! read_arg1 {
+macro_rules! read_num1 {
     ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
         let m = $self.read_sexp($gc)?;
         Ok(Op::$op(m.to_number() as $size))
@@ -75,7 +75,7 @@ macro_rules! read_const1 {
 }
 
 #[macro_export]
-macro_rules! read_arg2 {
+macro_rules! read_num2 {
     ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
         let m = $self.read_sexp($gc)?;
         let n = $self.read_sexp($gc)?;
@@ -84,7 +84,7 @@ macro_rules! read_arg2 {
 }
 
 #[macro_export]
-macro_rules! read_arg3 {
+macro_rules! read_num3 {
     ($self:ident, $gc:ident, $op:ident) => {{
         let m = $self.read_sexp($gc)?;
         let n = $self.read_sexp($gc)?;
@@ -99,35 +99,35 @@ impl Fasl<'_> {
         match tag {
             OpTag::Constant => read_const1!(self, gc, Constant),
             OpTag::Closure => self.read_closure_op(gc),
-            OpTag::ReferLocal => self.read_refer_local_op(gc),
+            OpTag::ReferLocal => read_num1!(self, gc, ReferLocal, isize),
             OpTag::ReferLocalBranchNotNull => self.read_refer_local_branch_not_null_op(gc),
-            OpTag::Return => read_arg1!(self, gc, Return, isize),
-            OpTag::Frame => read_arg1!(self, gc, Frame, isize),
+            OpTag::Return => read_num1!(self, gc, Return, isize),
+            OpTag::Frame => read_num1!(self, gc, Frame, isize),
             OpTag::CarPush => Ok(Op::CarPush),
-            OpTag::ReferLocalCall => read_arg2!(self, gc, ReferLocalCall, isize),
-            OpTag::PushFrame => read_arg1!(self, gc, PushFrame, isize),
-            OpTag::ReferLocalPush => read_arg1!(self, gc, ReferLocalPush, isize),
+            OpTag::ReferLocalCall => read_num2!(self, gc, ReferLocalCall, isize),
+            OpTag::PushFrame => read_num1!(self, gc, PushFrame, isize),
+            OpTag::ReferLocalPush => read_num1!(self, gc, ReferLocalPush, isize),
             OpTag::CdrPush => Ok(Op::CdrPush),
             OpTag::ReferGlobalCall => self.read_refer_global_call_op(gc),
             OpTag::Cons => Ok(Op::Cons),
             OpTag::DefineGlobal => self.read_define_global_op(gc),
             OpTag::Nop => Ok(Op::Nop),
-            OpTag::ReferFreePush => read_arg1!(self, gc, ReferFreePush, usize),
+            OpTag::ReferFreePush => read_num1!(self, gc, ReferFreePush, usize),
             OpTag::ReferGlobal => self.read_refer_global_op(gc),
-            OpTag::TailCall => read_arg2!(self, gc, TailCall, isize),
-            OpTag::LetFrame => read_arg1!(self, gc, LetFrame, isize),
-            OpTag::Display => read_arg1!(self, gc, Display, isize),
-            OpTag::ReferFreeCall => read_arg2!(self, gc, ReferFreeCall, usize),
-            OpTag::PushEnter => read_arg1!(self, gc, PushEnter, isize),
-            OpTag::Test => read_arg1!(self, gc, Test, isize),
-            OpTag::LocalJmp => read_arg1!(self, gc, LocalJmp, isize),
+            OpTag::TailCall => read_num2!(self, gc, TailCall, isize),
+            OpTag::LetFrame => read_num1!(self, gc, LetFrame, isize),
+            OpTag::Display => read_num1!(self, gc, Display, isize),
+            OpTag::ReferFreeCall => read_num2!(self, gc, ReferFreeCall, usize),
+            OpTag::PushEnter => read_num1!(self, gc, PushEnter, isize),
+            OpTag::Test => read_num1!(self, gc, Test, isize),
+            OpTag::LocalJmp => read_num1!(self, gc, LocalJmp, isize),
             OpTag::ConstantPush => read_const1!(self, gc, ConstantPush),
             OpTag::Push => Ok(Op::Push),
-            OpTag::Leave => read_arg1!(self, gc, Leave, isize),
+            OpTag::Leave => read_num1!(self, gc, Leave, isize),
             OpTag::PairP => Ok(Op::PairP),
-            OpTag::Enter => read_arg1!(self, gc, Enter, isize),
-            OpTag::ReferFree => read_arg1!(self, gc, ReferFree, usize),
-            OpTag::Shiftj => read_arg3!(self, gc, Shiftj),
+            OpTag::Enter => read_num1!(self, gc, Enter, isize),
+            OpTag::ReferFree => read_num1!(self, gc, ReferFree, usize),
+            OpTag::Shiftj => read_num3!(self, gc, Shiftj),
             OpTag::Halt => Ok(Op::Halt),
         }
     }
@@ -184,14 +184,6 @@ impl Fasl<'_> {
         }
     }
 
-    fn read_constant_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
-        let c = self.read_sexp(gc)?;
-        Ok(Op::Constant(c))
-    }
-    fn read_refer_local_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
-        let n = self.read_sexp(gc)?;
-        Ok(Op::ReferLocal(n.to_number()))
-    }
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
@@ -282,7 +274,7 @@ impl Fasl<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use crate::{equal::Equal, gc::Gc, objects::Object, op::Op};
+    use crate::{equal::Equal, gc::Gc, objects::Object, op::Op, vm::Vm};
 
     use super::Fasl;
 
@@ -433,7 +425,7 @@ pub mod tests {
 
     #[test]
     fn test_baselib() {
-        let mut gc = Box::new(Gc::new());
+        let mut vm = Vm::new();
         let bytes: &[u8] = &[
             11, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 12, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 13, 0, 1, 0, 0, 0, 0, 0,
@@ -545,16 +537,22 @@ pub mod tests {
         let mut fasl = Fasl { bytes };
         let mut ops = vec![];
         loop {
-            match fasl.read_op(&mut gc) {
+            match fasl.read_op(&mut vm.gc) {
                 Ok(op) => {
-                    println!("op={:?}", op);
                     ops.push(op);
                 }
-                Err(e) => {
-                    println!("err={:?}", e);
+                Err(_) => {
                     break;
                 }
             }
         }
+        vm.register_baselib();
+        for i in 0..ops.len() {
+            if vm.lib_ops[i] != ops[i] {
+                println!("{:?} is not equal to {:?}", vm.lib_ops[i], ops[i]);
+            }
+        }
+
+        //assert_eq!(vm.lib_ops, ops);
     }
 }
