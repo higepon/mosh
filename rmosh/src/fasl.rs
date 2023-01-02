@@ -535,7 +535,6 @@ pub mod tests {
                 println!("{:?} is not equal to {:?}", vm.lib_ops[i], ops[i]);
             }
         }
-
-        //assert_eq!(vm.lib_ops, ops);
+        assert_eq!(vm.lib_ops.len(), ops.len());
     }
 }
