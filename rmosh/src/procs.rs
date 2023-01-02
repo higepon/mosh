@@ -2,7 +2,7 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{EqHashtable, InputPort, Object, Pair},
+    objects::{EqHashtable, InputPort, Object, Pair, SimpleStruct},
     vm::Vm,
 };
 
@@ -3581,12 +3581,25 @@ fn shared_errno(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_simple_struct(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct?";
-    println!("{}({}) not implemented", name, args.len());
-    return Object::False
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::SimpleStruct(_) => Object::True,
+        _ => Object::False,
+    }
 }
-fn make_simple_struct(_vm: &mut Vm, args: &[Object]) -> Object {
+fn make_simple_struct(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-simple-struct";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match args[1] {
+        Object::Number(len) => {
+            let mut s = vm.gc.alloc(SimpleStruct::new(args[0], len as usize));
+            s.initialize(args[2]);
+            Object::SimpleStruct(s)
+        }
+        obj => {
+            panic!("{}: number required but got {}", name, obj)
+        }
+    }
 }
 fn simple_struct_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct-ref";

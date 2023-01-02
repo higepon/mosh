@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, EqHashtable, Object, Pair, Procedure, SString, Symbol, Vector, Vox};
+use crate::objects::{Closure, EqHashtable, Object, Pair, Procedure, SString, Symbol, Vector, Vox, SimpleStruct};
 use crate::op::Op;
 use crate::vm::Vm;
 
@@ -79,6 +79,7 @@ pub enum ObjectType {
     InputPort,
     Pair,
     Procedure,
+    SimpleStruct,
     String,
     Symbol,
     Vector,
@@ -368,6 +369,9 @@ impl Gc {
             Object::Vector(vector) => {
                 self.mark_heap_object(vector);
             }
+            Object::SimpleStruct(s) => {
+                self.mark_heap_object(s);
+            }            
         }
     }
 
@@ -572,6 +576,12 @@ impl Gc {
                     self.mark_object(vector.data[i]);
                 }
             }
+            ObjectType::SimpleStruct => {
+                let s: &SimpleStruct = unsafe { mem::transmute(pointer.as_ref()) };
+                for i in 0..s.data.len() {
+                    self.mark_object(s.data[i]);
+                }
+            }            
             ObjectType::EqHashtable => {
                 let hashtable: &EqHashtable = unsafe { mem::transmute(pointer.as_ref()) };
 
@@ -605,7 +615,7 @@ impl Gc {
 
         let object_type = object_ptr.obj_type;
 
-        let hige: &GcHeader = object_ptr;
+        let header: &GcHeader = object_ptr;
 
         let free_size = match object_type {
             ObjectType::Symbol => 0,
@@ -613,31 +623,35 @@ impl Gc {
                 panic!("procedure should not be freed");
             }
             ObjectType::String => {
-                let sstring: &SString = unsafe { mem::transmute(hige) };
+                let sstring: &SString = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(sstring)
             }
             ObjectType::Closure => {
-                let closure: &Closure = unsafe { mem::transmute(hige) };
+                let closure: &Closure = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(closure)
             }
             ObjectType::InputPort => {
-                let port: &InputPort = unsafe { mem::transmute(hige) };
+                let port: &InputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
             ObjectType::Vox => {
-                let vox: &Vox = unsafe { mem::transmute(hige) };
+                let vox: &Vox = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(vox)
             }
             ObjectType::Pair => {
-                let pair: &Pair = unsafe { mem::transmute(hige) };
+                let pair: &Pair = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(pair)
             }
+            ObjectType::SimpleStruct => {
+                let s: &SimpleStruct = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(s)
+            }            
             ObjectType::Vector => {
-                let v: &Vector = unsafe { mem::transmute(hige) };
+                let v: &Vector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)
             }
             ObjectType::EqHashtable => {
-                let hashtable: &EqHashtable = unsafe { mem::transmute(hige) };
+                let hashtable: &EqHashtable = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(hashtable)
             }
         };

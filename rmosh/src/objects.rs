@@ -19,6 +19,7 @@ pub enum Object {
     Number(isize),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
+    SimpleStruct(GcRef<SimpleStruct>),
     String(GcRef<SString>),
     Symbol(GcRef<Symbol>),
     True,
@@ -100,6 +101,13 @@ impl Object {
             n
         } else {
             panic!("Not a Object::Number")
+        }
+    }
+    pub fn to_pair(self) -> GcRef<Pair> {
+        if let Self::Pair(p) = self {
+            p
+        } else {
+            panic!("Not a Object::Pair")
         }
     }
     pub fn to_symbol(self) -> GcRef<Symbol> {
@@ -198,6 +206,9 @@ impl Debug for Object {
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
             }
+            Object::SimpleStruct(s) => {
+                write!(f, "{}", unsafe { s.pointer.as_ref() })
+            }
         }
     }
 }
@@ -259,6 +270,9 @@ impl Display for Object {
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
             }
+            Object::SimpleStruct(s) => {
+                write!(f, "{}", unsafe { s.pointer.as_ref() })
+            }            
         }
     }
 }
@@ -293,6 +307,56 @@ impl Display for Vector {
             }
         }
         write!(f, "]")
+    }
+}
+
+/// SimpleStruct
+#[derive(Debug)]
+pub struct SimpleStruct {
+    pub header: GcHeader,
+    name: Object,
+    pub data: Vec<Object>,
+    len: usize,
+}
+
+impl SimpleStruct {
+    pub fn new(name: Object, len: usize) -> Self {
+        SimpleStruct {
+            header: GcHeader::new(ObjectType::SimpleStruct),
+            name: name,
+            data: vec![Object::Unspecified; len],
+            len: len,
+        }
+    }
+
+    pub fn initialize(&mut self, args: Object) {
+        let mut args = args;
+        for i in 0..self.len {
+            if args.is_nil() {
+                self.data[i] = Object::Unspecified;
+            } else {
+                let p = args.to_pair();
+                self.data[i] = p.car;
+                args = p.cdr;
+            }
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.len
+    }
+}
+
+impl Display for SimpleStruct {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#< simple-struct {} ", self.name)?;
+        for i in 0..self.data.len() {
+            write!(f, "{}", self.data[i])?;
+            if i != self.data.len() - 1 {
+                write!(f, ", ")?;
+            }
+        }
+        write!(f, ">")
     }
 }
 
