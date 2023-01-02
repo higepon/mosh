@@ -59,6 +59,15 @@ pub struct Fasl<'a> {
 }
 
 #[macro_export]
+macro_rules! read_sym_num {
+    ($self:ident, $gc:ident, $op:ident) => {{
+        let sym = $self.read_sexp($gc)?;
+        let m = $self.read_sexp($gc)?;
+        Ok(Op::$op(sym.to_symbol(), m.to_number()))
+    }};
+}
+
+#[macro_export]
 macro_rules! read_sym1 {
     ($self:ident, $gc:ident, $op:ident) => {{
         let s = $self.read_sexp($gc)?;
@@ -116,7 +125,7 @@ impl Fasl<'_> {
             OpTag::PushFrame => read_num1!(self, gc, PushFrame, isize),
             OpTag::ReferLocalPush => read_num1!(self, gc, ReferLocalPush, isize),
             OpTag::CdrPush => Ok(Op::CdrPush),
-            OpTag::ReferGlobalCall => self.read_refer_global_call_op(gc),
+            OpTag::ReferGlobalCall => read_sym_num!(self, gc, ReferGlobalCall),
             OpTag::Cons => Ok(Op::Cons),
             OpTag::DefineGlobal => read_sym1!(self, gc, DefineGlobal),
             OpTag::Nop => Ok(Op::Nop),
@@ -137,15 +146,6 @@ impl Fasl<'_> {
             OpTag::ReferFree => read_num1!(self, gc, ReferFree, usize),
             OpTag::Shiftj => read_num3!(self, gc, Shiftj),
             OpTag::Halt => Ok(Op::Halt),
-        }
-    }
-
-    fn read_refer_global_call_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
-        let sym = self.read_sexp(gc)?;
-        let m = self.read_sexp(gc)?;
-        match (sym, m) {
-            (Object::Symbol(sym), Object::Number(m)) => Ok(Op::ReferGlobalCall(sym, m)),
-            _ => Err(self.create_read_error("invalid sequence")),
         }
     }
 
