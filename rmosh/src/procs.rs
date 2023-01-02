@@ -1400,9 +1400,18 @@ fn is_boolean(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "boolean?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn symbol_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
+fn symbol_to_string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol->string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);    
+    match args[0] {
+        Object::Symbol(s) => {
+            vm.gc.new_string(&s.string)
+        }
+        obj => {
+            panic!("{}: symbol required but got {}", name, obj);
+        }
+    }
+
 }
 fn string_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-ref";
