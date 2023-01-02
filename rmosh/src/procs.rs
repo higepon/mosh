@@ -3581,7 +3581,8 @@ fn shared_errno(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_simple_struct(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct?";
-    panic!("{}({}) not implemented", name, args.len());
+    println!("{}({}) not implemented", name, args.len());
+    return Object::True
 }
 fn make_simple_struct(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-simple-struct";
