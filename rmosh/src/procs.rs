@@ -3613,10 +3613,10 @@ fn simple_struct_name(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "simple-struct-name";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn lookup_nongenerative_rtd(_vm: &mut Vm, args: &[Object]) -> Object {
+fn lookup_nongenerative_rtd(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "lookup-nongenerative-rtd";
-    println!("{}({}) not implemented", name, args.len());
-    Object::False
+    check_argc!(name, args, 1);
+    vm.lookup_rtd(args[0])
 }
 fn nongenerative_rtd_set_destructive(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "nongenerative-rtd-set!";

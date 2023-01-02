@@ -1423,4 +1423,11 @@ impl Vm {
     pub fn set_rtd(&mut self, key: Object, rtd: Object) {
         self.rtds.insert(key, rtd);
     }
+
+    pub fn lookup_rtd(&self, key: Object) -> Object {
+        match self.rtds.get(&key) {
+            Some(&value) => value,
+            _ => Object::False,
+        }
+    }
 }
