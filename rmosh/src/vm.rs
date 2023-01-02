@@ -898,7 +898,7 @@ impl Vm {
                 self.set_return_value(value);
             }
             None => {
-                panic!("identifier {:?} not found", symbol);
+                panic!("identifier {} not found", symbol.string);
             }
         }
     }
