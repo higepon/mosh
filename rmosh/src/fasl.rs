@@ -51,6 +51,60 @@ enum OpTag {
     ReferFree = 39,
     Shiftj = 40,
     Halt = 41,
+    Undef = 42,
+    Car = 43,
+    Cdr = 44,
+    Receive = 45,
+    NumberEqual = 46,
+    ReferLocalPushConstant = 47,
+    NumberGt = 48,
+    NumberLt = 49,
+    Box = 50,
+    Cdar = 51,
+    BranchNotNull = 52,
+    Indirect = 53,
+    LocalTailCall = 54,
+    LocalCall = 55,
+    AssignLocal = 56,
+    Caar = 57,
+    BranchNotNumberEqual = 58,
+    Append2 = 59,
+    ReferGlobalPush = 60,
+    BranchNotLt = 61,
+    NumberAddPush = 62,
+    Equal = 63,
+    Eqv = 64,
+    Eq = 65,
+    Values = 66,
+    BranchNotGe = 67,
+    BranchNotEqual = 68,
+    PushConstant = 69,
+    NumberSubPush = 70,
+    ReferLocalPushConstantBranchNotLe = 71,
+    BranchNotGt = 72,
+    BranchNotEq = 73,
+    NumberAdd = 74,
+    SetCar = 75,
+    SetCdr = 76,
+    Cddr = 77,
+    NumberMul = 78,
+    NumberDiv = 79,
+    MakeContinuation = 80,
+    Call = 81,
+    AssignGlobal = 82,
+    VectorLength = 83,
+    BranchNotEqv = 84,
+    VectorRef = 85,
+    Cadr = 86,
+    MakeVector = 87,
+    BranchNotLe = 88,
+    VectorSet = 89,
+    AssignFree = 90,
+    NotTest = 91,
+    ReadChar = 92,
+    Not = 93,
+    NumberSub = 94,
+    NumberGe = 95,
 }
 
 // S-expression serializer.
@@ -64,6 +118,26 @@ macro_rules! read_sym_num {
         let sym = $self.read_sexp($gc)?;
         let m = $self.read_sexp($gc)?;
         Ok(Op::$op(sym.to_symbol(), m.to_number()))
+    }};
+}
+
+#[macro_export]
+macro_rules! read_num_constant {
+    ($self:ident, $gc:ident, $op:ident) => {{
+        let n = $self.read_sexp($gc)?;
+        let c = $self.read_sexp($gc)?;
+        Ok(Op::$op(n.to_number(), c))
+    }};
+}
+
+
+#[macro_export]
+macro_rules! read_num_constant_num {
+    ($self:ident, $gc:ident, $op:ident) => {{
+        let n = $self.read_sexp($gc)?;
+        let c = $self.read_sexp($gc)?;
+        let o = $self.read_sexp($gc)?;
+        Ok(Op::$op(n.to_number(), c, o.to_number()))
     }};
 }
 
@@ -93,10 +167,10 @@ macro_rules! read_num1 {
 
 #[macro_export]
 macro_rules! read_num2 {
-    ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
+    ($self:ident, $gc:ident, $op:ident, $size:ident, $size2:ident) => {{
         let m = $self.read_sexp($gc)?;
         let n = $self.read_sexp($gc)?;
-        Ok(Op::$op(m.to_number() as $size, n.to_number()))
+        Ok(Op::$op(m.to_number() as $size, n.to_number() as $size2))
     }};
 }
 
@@ -114,38 +188,92 @@ impl Fasl<'_> {
     pub fn read_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
         let tag = self.read_op_tag()?;
         match tag {
-            OpTag::Constant => read_const1!(self, gc, Constant),
-            OpTag::Closure => self.read_closure_op(gc),
-            OpTag::ReferLocal => read_num1!(self, gc, ReferLocal, isize),
-            OpTag::ReferLocalBranchNotNull => read_num2!(self, gc, ReferLocalBranchNotNull, isize),
-            OpTag::Return => read_num1!(self, gc, Return, isize),
-            OpTag::Frame => read_num1!(self, gc, Frame, isize),
+            OpTag::Append2 => Ok(Op::Append2),
+            OpTag::AssignFree => read_num1!(self, gc, AssignFree, usize),
+            OpTag::AssignGlobal => read_sym1!(self, gc, AssignGlobal),
+            OpTag::AssignLocal => read_num1!(self, gc, AssignLocal, isize),
+            OpTag::Box => read_num1!(self, gc, Box, isize),
+            OpTag::BranchNotEq => read_num1!(self, gc, BranchNotEq, isize),
+            OpTag::BranchNotEqual => read_num1!(self, gc, BranchNotEqual, isize),
+            OpTag::BranchNotEqv => read_num1!(self, gc, BranchNotEqv, isize),
+            OpTag::BranchNotGe => read_num1!(self, gc, BranchNotGe, isize),
+            OpTag::BranchNotGt => read_num1!(self, gc, BranchNotGt, isize),
+            OpTag::BranchNotLe => read_num1!(self, gc, BranchNotLe, isize),
+            OpTag::BranchNotLt => read_num1!(self, gc, BranchNotLt, isize),
+            OpTag::BranchNotNull => read_num1!(self, gc, BranchNotNull, isize),
+            OpTag::BranchNotNumberEqual => read_num1!(self, gc, BranchNotNumberEqual, isize),
+            OpTag::Caar => Ok(Op::Caar),
+            OpTag::Cadr => Ok(Op::Cadr),
+            OpTag::Call => read_num1!(self, gc, Call, isize),
+            OpTag::Car => Ok(Op::Car),
             OpTag::CarPush => Ok(Op::CarPush),
-            OpTag::ReferLocalCall => read_num2!(self, gc, ReferLocalCall, isize),
-            OpTag::PushFrame => read_num1!(self, gc, PushFrame, isize),
-            OpTag::ReferLocalPush => read_num1!(self, gc, ReferLocalPush, isize),
+            OpTag::Cdar => Ok(Op::Cdar),
+            OpTag::Cddr => Ok(Op::Cddr),
+            OpTag::Cdr => Ok(Op::Cdr),
             OpTag::CdrPush => Ok(Op::CdrPush),
-            OpTag::ReferGlobalCall => read_sym_num!(self, gc, ReferGlobalCall),
+            OpTag::Closure => self.read_closure_op(gc),
             OpTag::Cons => Ok(Op::Cons),
+            OpTag::Constant => read_const1!(self, gc, Constant),
+            OpTag::ConstantPush => read_const1!(self, gc, ConstantPush),
             OpTag::DefineGlobal => read_sym1!(self, gc, DefineGlobal),
+            OpTag::Display => read_num1!(self, gc, Display, isize),
+            OpTag::Enter => read_num1!(self, gc, Enter, isize),
+            OpTag::Eq => Ok(Op::Eq),
+            OpTag::Equal => Ok(Op::Equal),
+            OpTag::Eqv => Ok(Op::Eqv),
+            OpTag::Frame => read_num1!(self, gc, Frame, isize),
+            OpTag::Halt => Ok(Op::Halt),
+            OpTag::Indirect => Ok(Op::Indirect),
+            OpTag::Leave => read_num1!(self, gc, Leave, isize),
+            OpTag::LetFrame => read_num1!(self, gc, LetFrame, isize),
+            OpTag::LocalCall => read_num1!(self, gc, LocalCall, isize),
+            OpTag::LocalJmp => read_num1!(self, gc, LocalJmp, isize),
+            OpTag::LocalTailCall => read_num2!(self, gc, LocalTailCall, isize, isize),
+            OpTag::MakeContinuation => read_num1!(self, gc, MakeContinuation, isize),
+            OpTag::MakeVector => Ok(Op::MakeVector),
             OpTag::Nop => Ok(Op::Nop),
+            OpTag::Not => Ok(Op::Not),
+            OpTag::NotTest => read_num1!(self, gc, NotTest, isize),
+            OpTag::NumberAdd => Ok(Op::NumberAdd),
+            OpTag::NumberAddPush => Ok(Op::NumberAddPush),
+            OpTag::NumberDiv => Ok(Op::NumberDiv),
+            OpTag::NumberEqual => Ok(Op::Equal),
+            OpTag::NumberGe => Ok(Op::NumberGe),
+            OpTag::NumberGt => Ok(Op::NumberGt),
+            OpTag::NumberLt => Ok(Op::NumberLt),
+            OpTag::NumberMul => Ok(Op::NumberMul),
+            OpTag::NumberSub => Ok(Op::NumberSub),
+            OpTag::NumberSubPush => Ok(Op::NumberSubPush),
+            OpTag::PairP => Ok(Op::PairP),
+            OpTag::Push => Ok(Op::Push),
+            OpTag::PushConstant => read_const1!(self, gc, PushConstant),
+            OpTag::PushEnter => read_num1!(self, gc, PushEnter, isize),
+            OpTag::PushFrame => read_num1!(self, gc, PushFrame, isize),
+            OpTag::ReadChar => Ok(Op::ReadChar),
+            OpTag::Receive => read_num2!(self, gc, Receive, usize, usize),
+            OpTag::ReferFree => read_num1!(self, gc, ReferFree, usize),
+            OpTag::ReferFreeCall => read_num2!(self, gc, ReferFreeCall, usize, isize),
             OpTag::ReferFreePush => read_num1!(self, gc, ReferFreePush, usize),
             OpTag::ReferGlobal => read_sym1!(self, gc, ReferGlobal),
-            OpTag::TailCall => read_num2!(self, gc, TailCall, isize),
-            OpTag::LetFrame => read_num1!(self, gc, LetFrame, isize),
-            OpTag::Display => read_num1!(self, gc, Display, isize),
-            OpTag::ReferFreeCall => read_num2!(self, gc, ReferFreeCall, usize),
-            OpTag::PushEnter => read_num1!(self, gc, PushEnter, isize),
-            OpTag::Test => read_num1!(self, gc, Test, isize),
-            OpTag::LocalJmp => read_num1!(self, gc, LocalJmp, isize),
-            OpTag::ConstantPush => read_const1!(self, gc, ConstantPush),
-            OpTag::Push => Ok(Op::Push),
-            OpTag::Leave => read_num1!(self, gc, Leave, isize),
-            OpTag::PairP => Ok(Op::PairP),
-            OpTag::Enter => read_num1!(self, gc, Enter, isize),
-            OpTag::ReferFree => read_num1!(self, gc, ReferFree, usize),
+            OpTag::ReferGlobalCall => read_sym_num!(self, gc, ReferGlobalCall),
+            OpTag::ReferGlobalPush => read_sym1!(self, gc, ReferGlobalPush),
+            OpTag::ReferLocal => read_num1!(self, gc, ReferLocal, isize),
+            OpTag::ReferLocalBranchNotNull => read_num2!(self, gc, ReferLocalBranchNotNull, isize, isize),
+            OpTag::ReferLocalCall => read_num2!(self, gc, ReferLocalCall, isize, isize),
+            OpTag::ReferLocalPush => read_num1!(self, gc, ReferLocalPush, isize),
+            OpTag::ReferLocalPushConstant => read_num_constant!(self, gc, ReferLocalPushConstant),
+            OpTag::ReferLocalPushConstantBranchNotLe => read_num_constant_num!(self, gc, ReferLocalPushConstantBranchNotLe),
+            OpTag::Return => read_num1!(self, gc, Return, isize),
+            OpTag::SetCar => Ok(Op::SetCar),
+            OpTag::SetCdr => Ok(Op::SetCdr),
             OpTag::Shiftj => read_num3!(self, gc, Shiftj),
-            OpTag::Halt => Ok(Op::Halt),
+            OpTag::TailCall => read_num2!(self, gc, TailCall, isize, isize),
+            OpTag::Test => read_num1!(self, gc, Test, isize),
+            OpTag::Undef => Ok(Op::Undef),
+            OpTag::Values => read_num1!(self, gc, Values, usize),
+            OpTag::VectorLength => Ok(Op::VectorLength),
+            OpTag::VectorRef => Ok(Op::VectorRef),
+            OpTag::VectorSet => Ok(Op::VectorSet),
         }
     }
 
