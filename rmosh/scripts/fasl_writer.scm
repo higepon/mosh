@@ -26,7 +26,7 @@
 (define TAG_SYMBOL 5)
 (define TAG_STRING 6)
 (define TAG_PAIR   7)
-(define TAG_VECTOR 9)
+(define TAG_VECTOR 8)
 
 (define TAG_OP_CONSTANT 10)
 (define TAG_OP_CLOSURE  11)
