@@ -1817,9 +1817,17 @@ fn read(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "read";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn vector_to_list(_vm: &mut Vm, args: &[Object]) -> Object {
+fn vector_to_list(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector->list";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);    
+    match args[0] {
+        Object::Vector(v) => {
+            vm.gc.listn(&v.data[..])
+        }
+       obj => {
+            panic!("{}: vector required but got {}", name, obj);
+        }
+    }
 }
 fn set_source_info_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-source-info!";
