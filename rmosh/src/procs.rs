@@ -3618,9 +3618,11 @@ fn lookup_nongenerative_rtd(_vm: &mut Vm, args: &[Object]) -> Object {
     println!("{}({}) not implemented", name, args.len());
     Object::False
 }
-fn nongenerative_rtd_set_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
+fn nongenerative_rtd_set_destructive(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "nongenerative-rtd-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    vm.set_rtd(args[0], args[1]);
+    Object::Unspecified
 }
 fn is_same_marksmul(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "same-marks*?";

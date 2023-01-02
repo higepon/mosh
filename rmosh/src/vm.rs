@@ -78,6 +78,7 @@ pub struct Vm {
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
+    pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
@@ -97,6 +98,7 @@ impl Vm {
             lib_ops: vec![],
             num_values: 0,
             values: [Object::Unspecified; MAX_NUM_VALUES],
+            rtds: HashMap::new(),
             should_load_compiler: false,
         }
     }
@@ -179,6 +181,12 @@ impl Vm {
         // Global variables.
         for &obj in self.globals.values() {
             self.gc.mark_object(obj);
+        }
+
+        // RTDs.
+        for (k, v) in self.rtds.iter() {
+            self.gc.mark_object(*k);
+            self.gc.mark_object(*v);
         }
 
         // Registers.
@@ -1410,5 +1418,9 @@ impl Vm {
             args = self.gc.cons(self.index(self.sp, i), args);
         }
         args
+    }
+
+    pub fn set_rtd(&mut self, key: Object, rtd: Object) {
+        self.rtds.insert(key, rtd);
     }
 }
