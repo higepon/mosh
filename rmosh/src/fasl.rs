@@ -673,7 +673,7 @@ pub mod tests {
         {
             let mut vm = Vm::new();
             let mut fasl = Fasl {
-                bytes: compiler::bin_compiler,
+                bytes: compiler::BIN_COMPILER,
             };
             let mut ops = vec![];
             loop {
