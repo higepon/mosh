@@ -108,7 +108,7 @@ impl Object {
         } else {
             panic!("Not a Object::Symbol")
         }
-    }    
+    }
     pub fn to_vox(self) -> GcRef<Vox> {
         if let Self::Vox(v) = self {
             v

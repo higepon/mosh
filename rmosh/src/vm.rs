@@ -6,10 +6,11 @@ use std::{
 
 use crate::{
     equal::Equal,
+    fasl::Fasl,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
-    procs::{self, default_free_vars}, fasl::Fasl,
+    procs::{self, default_free_vars},
 };
 
 const STACK_SIZE: usize = 256;
@@ -1129,7 +1130,6 @@ impl Vm {
         }
         self.lib_ops = ops;
         return self.lib_ops.as_ptr();
-
 
         let sym0 = self.gc.symbol_intern("for-all");
         let str0 = self.gc.new_string("expected same length proper lists");
