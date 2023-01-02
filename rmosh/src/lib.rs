@@ -1,4 +1,5 @@
 pub mod alloc;
+pub mod compiler;
 pub mod equal;
 pub mod fasl;
 pub mod gc;
