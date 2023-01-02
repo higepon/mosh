@@ -1402,16 +1402,13 @@ fn is_boolean(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn symbol_to_string(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol->string";
-    check_argc!(name, args, 1);    
+    check_argc!(name, args, 1);
     match args[0] {
-        Object::Symbol(s) => {
-            vm.gc.new_string(&s.string)
-        }
+        Object::Symbol(s) => vm.gc.new_string(&s.string),
         obj => {
             panic!("{}: symbol required but got {}", name, obj);
         }
     }
-
 }
 fn string_ref(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-ref";
@@ -1828,12 +1825,10 @@ fn read(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn vector_to_list(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "vector->list";
-    check_argc!(name, args, 1);    
+    check_argc!(name, args, 1);
     match args[0] {
-        Object::Vector(v) => {
-            vm.gc.listn(&v.data[..])
-        }
-       obj => {
+        Object::Vector(v) => vm.gc.listn(&v.data[..]),
+        obj => {
             panic!("{}: vector required but got {}", name, obj);
         }
     }
@@ -1951,7 +1946,7 @@ fn length(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "length";
     check_argc!(name, args, 1);
     if !Pair::is_list(args[0]) {
-        panic!("{}: list require bug got {}", name, args[0]);    
+        panic!("{}: list require bug got {}", name, args[0]);
     }
     let mut len = 0;
     let mut obj = args[0];
@@ -1965,7 +1960,7 @@ fn length(_vm: &mut Vm, args: &[Object]) -> Object {
                 len += 1;
             }
             _ => {
-                panic!("{}: list require bug got {}", name, args[0]); 
+                panic!("{}: list require bug got {}", name, args[0]);
             }
         }
     }
@@ -1999,9 +1994,18 @@ fn symbol_value(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol-value";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_symbol_value_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
+fn set_symbol_value_destructive(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-symbol-value!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args[0] {
+        Object::Symbol(sym) => {
+            vm.set_symbol_value(sym, args[1]);
+            Object::Unspecified
+        }
+        obj => {
+            panic!("{}: symbol required but got {}", name, obj)
+        }
+    }
 }
 fn make_hashtable(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-hashtable";

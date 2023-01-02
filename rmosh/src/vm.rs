@@ -624,10 +624,11 @@ impl Vm {
                     }
                 },
                 Op::DefineGlobal(symbol) => {
-                    self.globals.insert(symbol, self.ac);
+                    self.define_global_op(symbol);
                 }
                 Op::AssignGlobal(symbol) => {
-                    self.globals.insert(symbol, self.ac);
+                    // Same as define global op.
+                    self.define_global_op(symbol);
                 }
                 Op::ReferGlobal(symbol) => {
                     self.refer_global_op(symbol);
@@ -786,6 +787,14 @@ impl Vm {
             pc = self.jump(pc, 1);
         }
         self.ac
+    }
+
+    pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {
+        self.globals.insert(symbol, value);
+    }
+
+    fn define_global_op(&mut self, symbol: GcRef<Symbol>) {
+        self.globals.insert(symbol, self.ac);
     }
 
     #[inline(always)]
