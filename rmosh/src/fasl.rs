@@ -55,7 +55,7 @@ enum OpTag {
 
 // S-expression serializer.
 pub struct Fasl<'a> {
-    bytes: &'a [u8],
+    pub bytes: &'a [u8],
 }
 
 #[macro_export]
