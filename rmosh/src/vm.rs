@@ -337,8 +337,21 @@ impl Vm {
                 Op::LocalTailCall(_, _) => {
                     panic!("not implemented");
                 }
-                Op::LocalCall(_) => {
-                    panic!("not implemented");
+                Op::LocalCall(argc) => {
+                    // Locall is lighter than Call
+                    // We can omit checking closure type and arguments length.
+                    match self.ac {
+                        Object::Closure(c) => {
+                            self.dc = self.ac;
+                            // todo
+                            //self.cl = self.ac;
+                            pc = c.ops;
+                            self.fp = self.dec(self.sp, argc);
+                        }
+                        obj => {
+                            panic!("LocalCall: Bug {}", obj)
+                        }
+                    }
                 }
                 Op::Cdar => {
                     panic!("not implemented");
