@@ -148,7 +148,6 @@
                    (CDR . ,TAG_OP_CDR)
                    (CDR_PUSH . ,TAG_OP_CDR_PUSH)
                    (CONS . ,TAG_OP_CONS)
-                   (CONS . ,TAG_OP_CONS)
                    (CONSTANT . ,TAG_OP_CONSTANT)
                    (CONSTANT_PUSH . ,TAG_OP_CONSTANT_PUSH)
                    (DEFINE_GLOBAL . ,TAG_OP_DEFINE_GLOBAL)

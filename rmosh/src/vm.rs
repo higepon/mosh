@@ -1329,7 +1329,7 @@ impl Vm {
     #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
         println!("-----------------------------------------");
-        println!("{:?} executed", op);
+        println!("{} executed", op);
         println!("  ac={}", self.ac);
         println!("  dc={}", self.dc);
         println!("-----------------------------------------");

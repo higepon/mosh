@@ -243,7 +243,7 @@ impl Fasl<'_> {
             OpTag::NumberAdd => Ok(Op::NumberAdd),
             OpTag::NumberAddPush => Ok(Op::NumberAddPush),
             OpTag::NumberDiv => Ok(Op::NumberDiv),
-            OpTag::NumberEqual => Ok(Op::Equal),
+            OpTag::NumberEqual => Ok(Op::NumberEqual),
             OpTag::NumberGe => Ok(Op::NumberGe),
             OpTag::NumberGt => Ok(Op::NumberGt),
             OpTag::NumberLt => Ok(Op::NumberLt),
