@@ -17559,7 +17559,7 @@ fn test_compiler() {
         Op::Frame(5),
         Op::Constant(Object::Number(0)),
         Op::Push,
-        Op::ReferGlobal(vm.gc.intern("$asm")),
+        Op::ReferGlobal(vm.gc.intern("compile")),
         Op::Call(1),
         Op::Halt,
     ];
