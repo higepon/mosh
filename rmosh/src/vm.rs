@@ -279,8 +279,13 @@ impl Vm {
                     self.refer_global_op(symbol);
                     self.push_op();
                 }
-                Op::BranchNotEq(_) => {
-                    panic!("not implemented");
+                Op::BranchNotEq(skip_offset) => {
+                    let pred = self.pop().eq(&self.ac);
+                    self.set_return_value(Object::make_bool(pred));
+                    if !pred {
+                        // Branch and jump to else.
+                        pc = self.jump(pc, skip_offset - 1);
+                    }
                 }
                 Op::PushConstant(c) => {
                     self.push_op();
