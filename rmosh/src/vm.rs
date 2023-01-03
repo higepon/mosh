@@ -234,7 +234,7 @@ impl Vm {
                 Op::ReferLocalBranchNotLt(_, _) => todo!(),
                 Op::SimpleStructRef => match (self.pop(), self.ac) {
                     (Object::SimpleStruct(s), Object::Number(idx)) => {
-                        return s.data[idx as usize];
+                        self.set_return_value(s.data[idx as usize]);
                     }
                     (obj1, obj2) => {
                         panic!(

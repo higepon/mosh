@@ -17527,7 +17527,7 @@ fn test99_optimized() {
 }
 
 #[test]
-fn test_compiler() {
+fn test_zero() {
     let mut vm = Vm::new();
     vm.should_load_compiler = true;
 
@@ -17540,6 +17540,31 @@ fn test_compiler() {
         Op::Halt,
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());
+    vm.expected = Object::True;
+    // Remove reference to ret.
+    vm.ac = Object::Unspecified;
+    let e = Equal::new();
+    if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+        println!("ret={} expected={}", ret, vm.expected);
+        assert_eq!(ret, vm.expected);
+    }
+}
+
+#[test]
+fn test_compiler() {
+    let mut vm = Vm::new();
+    vm.should_load_compiler = true;
+
+    let ops = vec![
+        Op::Frame(5),
+        Op::Constant(Object::Number(0)),
+        Op::Push,
+        Op::ReferGlobal(vm.gc.intern("$asm")),
+        Op::Call(1),
+        Op::Halt,
+    ];
+    let ret = vm.run(ops.as_ptr(), ops.len());
+
     vm.expected = Object::True;
     // Remove reference to ret.
     vm.ac = Object::Unspecified;

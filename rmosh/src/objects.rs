@@ -272,7 +272,7 @@ impl Display for Object {
             }
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
-            }            
+            }
         }
     }
 }
