@@ -1709,7 +1709,8 @@ fn load(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn is_symbol(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "symbol?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_symbol())
 }
 fn is_charle(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "char<=?";
