@@ -288,7 +288,7 @@ impl Fasl<'_> {
             OpTag::SymbolP => Ok(Op::SymbolP),
             OpTag::VectorP => Ok(Op::VectorP),
             OpTag::ReferLocalBranchNotLt => {
-                read_num2!(self, gc, ReferLocalBranchNotLt, usize, isize)
+                read_num2!(self, gc, ReferLocalBranchNotLt, isize, isize)
             }
             OpTag::NullP => Ok(Op::NullP),
             OpTag::Vector => read_num1!(self, gc, Vector, usize),

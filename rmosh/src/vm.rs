@@ -231,7 +231,10 @@ impl Vm {
                     self.set_return_value(list);
                     self.sp = self.dec(self.sp, n as isize);
                 }
-                Op::ReferLocalBranchNotLt(_, _) => todo!(),
+                Op::ReferLocalBranchNotLt(n, skip_offset) => {
+                    self.refer_local_op(n);
+                    branch_number_op!(<, self, pc, skip_offset);
+                }
                 Op::SimpleStructRef => match (self.pop(), self.ac) {
                     (Object::SimpleStruct(s), Object::Number(idx)) => {
                         self.set_return_value(s.data[idx as usize]);

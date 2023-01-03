@@ -85,7 +85,7 @@ pub enum Op {
     ReferGlobalCall(GcRef<Symbol>, isize),
     ReferGlobalPush(GcRef<Symbol>),
     ReferLocal(isize),
-    ReferLocalBranchNotLt(usize, isize),
+    ReferLocalBranchNotLt(isize, isize),
     ReferLocalBranchNotNull(isize, isize),
     ReferLocalCall(isize, isize),
     ReferLocalPush(isize),
