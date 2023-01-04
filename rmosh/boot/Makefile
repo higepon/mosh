@@ -1,5 +1,6 @@
 all:
-	(cd .. && mosh --loadpath=scripts scripts/fasl_writer2.scm ../boot/baselib.scmc)  > 2.txt
+	# Convert baselib.scmc to fasl binary which should be pasted into compiler.rs.
+	(cd .. && mosh --loadpath=scripts scripts/fasl_writer.scm ../boot/baselib.scmc)  > 2.txt
 	//(cd .. && mosh --loadpath=scripts scripts/fasl_writer.scm boot/baselib.op) > 1.txt
 	//(cd ../../boot && gosh vm.scm compile-file-with-macro-insn ../rmosh/boot/base.scm > ../rmosh/boot/base.op)
 	//(cd ../../boot && gosh vm.scm compile-file-with-macro-insn ../boot/baselib.scm > ../rmosh/boot/baselib.op)	
