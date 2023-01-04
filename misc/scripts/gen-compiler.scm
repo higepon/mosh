@@ -55,6 +55,10 @@
     [() (error 'parse-body* (format #f "condition? ~a not found " feature))]
     [(('else . body) . more)
       (write-cond-expand body)]
+    [((('or (? symbol? target1) (? symbol? target2)) . body) . more)
+      (if (or (eq? target1 feature) (eq? target2 feature))
+        (write-cond-expand body)
+        (parse-body* more feature))]      
     [(((? symbol? target) . body) . more)
       (if (eq? target feature)
         (write-cond-expand body)
