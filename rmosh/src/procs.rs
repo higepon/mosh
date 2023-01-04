@@ -1277,7 +1277,22 @@ fn cadddr(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn caddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caddr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => return p   air3.car,
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cadr";

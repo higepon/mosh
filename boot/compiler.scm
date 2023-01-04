@@ -2466,11 +2466,11 @@
       (vector-set! dst i (vector-ref src i))))
 
   (define (set-array-length! array length)
-    (set! (caddr array) length)
+    (set-car! (cddr array) length)
     (when (>= length (vector-length (array-data array)))
       (let1 next-data (make-vector (* length 2))
         (vector-copy next-data (array-data array) length)
-        (set! (cadr array) next-data))))
+        (set-car! (cdr array) next-data))))
 
   (define (array-data array)
     (cadr array))
