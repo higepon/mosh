@@ -265,9 +265,19 @@ impl Vm {
                     self.set_return_value(vec);
                 }
                 Op::BranchNotEqual(_) => todo!(),
-                Op::Cddr => {
-                    panic!("not implemented");
-                }
+                Op::Cddr => match self.ac {
+                    Object::Pair(pair) => match pair.cdr {
+                        Object::Pair(pair) => {
+                            self.set_return_value(pair.cdr);
+                        }
+                        obj => {
+                            self.arg_err("cddr", "pair", obj);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("cddr", "pair", obj);
+                    }
+                },
                 Op::NotTest(_) => {
                     panic!("not implemented");
                 }

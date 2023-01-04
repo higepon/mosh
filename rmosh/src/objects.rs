@@ -377,6 +377,20 @@ impl Pair {
         }
     }
 
+    // Caller should check if obj is_list().
+    pub fn list_len(obj: Object) -> usize {
+        let mut obj = obj;
+        let mut len = 0;
+        loop {
+            if obj.is_nil() {
+                break;
+            }
+            obj = obj.to_pair().cdr;
+            len += 1;
+        }
+        len
+    }
+
     pub fn is_list(obj: Object) -> bool {
         let mut obj = obj;
         let mut seen = obj;

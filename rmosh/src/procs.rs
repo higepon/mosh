@@ -1280,7 +1280,7 @@ fn caddr(_vm: &mut Vm, args: &[Object]) -> Object {
     match args {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => return p   air3.car,
+                Object::Pair(pair3) => return pair3.car,
                 _ => {
                     panic!("{}: pair required but got {:?}", name, args);
                 }
@@ -1984,9 +1984,22 @@ fn length(_vm: &mut Vm, args: &[Object]) -> Object {
     }
     Object::Number(len)
 }
-fn list_to_vector(_vm: &mut Vm, args: &[Object]) -> Object {
+fn list_to_vector(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "list->vector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if !Pair::is_list(args[0]) {
+        panic!("{}: list require bug got {}", name, args[0]);
+    }
+    let mut v = vec![];
+    let mut obj = args[0];
+    loop {
+        if obj.is_nil() {
+            break;
+        }
+        v.push(obj);
+        obj = obj.to_pair().cdr;
+    }
+    vm.gc.new_vector(&v)
 }
 fn pass3_compile_refer(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pass3/compile-refer";
