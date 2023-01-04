@@ -1901,7 +1901,8 @@ fn pass4_fixup_labels(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn make_code_builder(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-code-builder";
-    panic!("{}({}) not implemented", name, args.len());
+    println!("{}({}) not implemented", name, args.len());
+    return Object::False;
 }
 fn code_builder_put_extra1_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-extra1!";
@@ -1937,6 +1938,7 @@ fn code_builder_put_insn_arg0_destructive(_vm: &mut Vm, args: &[Object]) -> Obje
 }
 fn code_builder_put_insn_arg1_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "code-builder-put-insn-arg1!";
+    println!("arg1={} {} {}", args[0], args[1], args[2]);
     panic!("{}({}) not implemented", name, args.len());
 }
 fn code_builder_put_insn_arg2_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
