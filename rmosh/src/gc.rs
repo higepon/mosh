@@ -14,7 +14,9 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
 use crate::alloc::GlobalAllocator;
-use crate::objects::{Closure, EqHashtable, Object, Pair, Procedure, SString, Symbol, Vector, Vox, SimpleStruct};
+use crate::objects::{
+    Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
+};
 use crate::op::Op;
 use crate::vm::Vm;
 
@@ -371,7 +373,7 @@ impl Gc {
             }
             Object::SimpleStruct(s) => {
                 self.mark_heap_object(s);
-            }            
+            }
         }
     }
 
@@ -581,7 +583,7 @@ impl Gc {
                 for i in 0..s.data.len() {
                     self.mark_object(s.data[i]);
                 }
-            }            
+            }
             ObjectType::EqHashtable => {
                 let hashtable: &EqHashtable = unsafe { mem::transmute(pointer.as_ref()) };
 
@@ -645,7 +647,7 @@ impl Gc {
             ObjectType::SimpleStruct => {
                 let s: &SimpleStruct = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(s)
-            }            
+            }
             ObjectType::Vector => {
                 let v: &Vector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)

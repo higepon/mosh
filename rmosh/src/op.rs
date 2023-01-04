@@ -119,11 +119,16 @@ impl Display for Op {
                 write!(f, "ReferGlobal({})", unsafe { sym.pointer.as_ref() })
             }
             Op::ReferGlobalCall(sym, n) => {
-                write!(f, "ReferGlobalCall({}, {})", unsafe { sym.pointer.as_ref() }, n)
-            }  
+                write!(
+                    f,
+                    "ReferGlobalCall({}, {})",
+                    unsafe { sym.pointer.as_ref() },
+                    n
+                )
+            }
             Op::ReferGlobalPush(sym) => {
                 write!(f, "ReferGlobalPush({}", unsafe { sym.pointer.as_ref() })
-            }                         
+            }
             _ => {
                 write!(f, "{:?}", self)
             }
