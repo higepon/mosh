@@ -1183,7 +1183,12 @@ fn integer_to_char(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn format(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "format";
-    panic!("{}({}) not implemented", name, args.len());
+    if args.len() == 2 {
+        println!("{} {}", args[0], args[1]);
+    } else if args.len() == 3 {
+        println!("{} {} {}", args[0], args[1], args[2]);    
+    }
+    Object::Unspecified
 }
 fn current_input_port(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "current-input-port";

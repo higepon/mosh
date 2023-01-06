@@ -16,6 +16,7 @@ enum Tag {
     String = 6,
     Pair = 7,
     Vector = 8,
+    CompilerInsn = 9,
 }
 
 #[derive(FromPrimitive)]
@@ -353,6 +354,7 @@ impl Fasl<'_> {
             Tag::True => Ok(Object::True),
             Tag::False => Ok(Object::False),
             Tag::Nil => Ok(Object::Nil),
+            Tag::CompilerInsn => self.read_fixnum(), // TODO
         }
     }
 

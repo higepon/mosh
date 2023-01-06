@@ -278,8 +278,15 @@ impl Vm {
                         self.arg_err("cddr", "pair", obj);
                     }
                 },
-                Op::NotTest(_) => {
-                    panic!("not implemented");
+                Op::NotTest(jump_offset) => {
+                    self.ac = if self.ac.is_false() {
+                        Object::True
+                    } else {
+                        Object::False
+                    };
+                    if self.ac.is_false() {
+                        pc = self.jump(pc, jump_offset - 1);
+                    }
                 }
                 Op::NumberAddPush => {
                     self.number_add_op();
