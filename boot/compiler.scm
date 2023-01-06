@@ -3354,6 +3354,16 @@
      (vector-set! ret (+ j 3) (vector-ref v (+ i 3)))
      (loop (+ i 4) (+ j 4))))
 
+(define-macro (pass4/fixup-labels-clollect6 insn)
+  `(begin
+     (vector-set! ret j ,insn)
+     (vector-set! ret (+ j 1) (vector-ref v (+ i 1)))
+     (vector-set! ret (+ j 2) (vector-ref v (+ i 2)))
+     (vector-set! ret (+ j 3) (vector-ref v (+ i 3)))
+     (vector-set! ret (+ j 4) (vector-ref v (+ i 4)))
+     (vector-set! ret (+ j 5) (vector-ref v (+ i 5)))
+     (vector-set! ret (+ j 6) (vector-ref v (+ i 6)))
+     (loop (+ i 7) (+ j 7))))
 
 (define-macro (pass4/fixup-labels-insn insn)
   `(let1 label (hashtable-ref labels(vector-ref code (+ i 1)) #f)
@@ -3385,7 +3395,6 @@
        (loop (+ i 4))]
       [else
        (loop (+ i 1))])))
-
 
 (cond-expand
  [vm?
@@ -3423,7 +3432,8 @@
     (define (collect-labels)
       (let* ([len (vector-length v)]
              [ret (make-vector len 'NOP)]
-             [labels (make-eq-hashtable)])
+             [labels (make-eq-hashtable)]
+             [insn-table (fetch-instructions)])
         (let loop ([i 0]
                    [j 0])
           (cond
@@ -3451,11 +3461,23 @@
                [(eq? insn 'REFER_LOCAL_BRANCH_NOT_NULL) (pass4/fixup-labels-clollect2 'REFER_LOCAL_BRANCH_NOT_NULL)]
                [(eq? insn 'FRAME)                 (pass4/fixup-labels-clollect 'FRAME)]
                [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-clollect 'PUSH_FRAME)]
-               [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect 'CLOSURE)]
+               [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect6 'CLOSURE)]
                [(and (vector? insn) (> (vector-length insn) 0) (tag? insn $LABEL))
                 (hashtable-set! labels insn j)
                 (loop (+ i 1) j)]  ;; save the location of label)
+               [(and (symbol? insn) (assq insn insn-table)) =>
+                 (lambda (arg)
+                   (let loop2 ([k 0])
+                     (cond
+                       [(= k (cdr arg))
+                        (vector-set! ret  (+ j k) (vector-ref v (+ i k)))
+                         (loop (+ i (cdr arg) 1) (+ j (cdr arg) 1))]
+                       [else
+                         (vector-set! ret (+ j k) (vector-ref v (+ i k)))
+                         (loop2 (+ k 1))])))
+               ]
                [else
+                (errorf "should not be here ~a" insn)
                 (vector-set! ret j insn)
                 (loop (+ i 1) (+ j 1))]))]))))
     (receive (code labels) (collect-labels)
