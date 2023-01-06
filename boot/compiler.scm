@@ -3397,11 +3397,12 @@
        (loop (+ i 1))])))
 
 (cond-expand
- [vm?
-  ;; moved to CompilerProcedures.cpp
-  ;; N.B. this procedure is still required by vm.scm
+ [(or vm? rmosh)
+  ; moved to CompilerProcedures.cpp
+  ; N.B. this procedure is still required by vm.scm
   (define (peephole-optimization v)
-    (let ([len (vector-length v)])
+    (let ([len (vector-length v)]
+          [insn-table (fetch-instructions)])
       (let loop ([i 0])
         (if (= i len)
             '()
@@ -3417,16 +3418,20 @@
                    [(eq? (vector-ref v destination-index) 'RETURN)
                     (vector-set! v i 'RETURN)
                     (vector-set! v (+ i 1) (vector-ref v (+ destination-index 1)))
-                    ]
-                    ))]
+                    ]))
+                (loop (+ i 2))]
                [(and (memq insn '(TEST BRANCH_NOT_GE BRANCH_NOT_GT BRANCH_NOT_LT BRANCH_NOT_LE BRANCH_NOT_NUMBER_EQUAL BRANCH_NOT_NULL))
                      (number? (vector-ref v (+ i 1))))
                 (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
                        [destination-index (+ i offset)])
                   (when (or (eq? (vector-ref v destination-index) 'TEST) (eq? (vector-ref v destination-index) 'LOCAL_JMP))
                     (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1)))))
-                    )])
-              (loop (+ i 1)))))))
+                    )
+                  (loop (+ i 2))]
+               [(and (symbol? insn) (assq insn insn-table)) =>
+                 (lambda (arg) (loop (+ i (cdr arg) 1)))]
+               [else
+                 (errorf "Should not be here ~a\n" insn)]))))))
 
   (define (pass4/fixup-labels v)
     (define (collect-labels)
