@@ -1723,7 +1723,6 @@ fn assq(_vm: &mut Vm, args: &[Object]) -> Object {
     if !alist.is_list() {
         panic!("{}: requires list but got {}", name, alist);
     }
-    println!("key={} alist={}", key, alist);
     loop {
         if alist.is_nil() {
             return Object::False;
