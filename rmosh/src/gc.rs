@@ -341,6 +341,7 @@ impl Gc {
             Object::InputPort(_) => {}
             Object::Nil => {}
             Object::Number(_) => {}
+            Object::Instruction(_) => {}            
             Object::StackPointer(_) => {}
             Object::OpPointer(op) => {
                 self.mark_op(unsafe { *op });
