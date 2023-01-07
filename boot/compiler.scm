@@ -5,6 +5,13 @@
 ;; 3. (length ...) may be slow, so call only when necessary.
 
 (cond-expand
+  [(or mosh vm-outer?)
+    (include "free-vars-decl.scm")]
+  [rmosh
+    (include "../rmosh/boot/free-vars-decl-rmosh.scm")]
+  [else #f])
+
+(cond-expand
  [gauche
   (use srfi-1)
   (use util.match)
@@ -57,15 +64,13 @@
  [vm-outer?
   (define dd (lambda a '()))
   (define pp (lambda a '()))
-  (include "free-vars-decl.scm")
   (define find10 find)
   (define syntax-error error)
   (define (command-line) *command-line-args*)]
-[mosh
+[(or mosh rmosh)
  (define df format)
  (define dd display)
  (define pp print)
- (include "free-vars-decl.scm")
  (define (make-list-with-src-slot lst) (if (pair? lst) (annotated-cons (car lst) (cdr lst)) lst))
  (define (command-line) *command-line-args*)
  (define (mosh-executable-name) %mosh-executable-name)
@@ -825,7 +830,7 @@
 ;;           (find-with-car object (cdr lst)))))
 
 (cond-expand
- [vm?
+ [(or vm? rmosh)
   ;; moved to CompilerProcedures.cpp
   ;; N.B. this procedure is still required by vm.scm
   (define (pass1/find-symbol-in-lvars symbol lvars)
@@ -2326,7 +2331,7 @@
 ;;     can-frees: candidates of free variables as $lvar structure.
 ;;
 (cond-expand
- [vm?
+ [(or vm? rmosh)
   ;; moved to freeproc.cpp
   ;; N.B. these procedures are still required by vm.scm
   (define (pass3/find-free iform locals can-frees)
@@ -2451,7 +2456,7 @@
      (make-enumeration
       '(no-create no-fail no-truncate))))
   ]
- [else
+ [else ;; rmosh here
   (define (make-array)
     (list 'array (make-vector 2) 0))
 
@@ -2466,11 +2471,11 @@
       (vector-set! dst i (vector-ref src i))))
 
   (define (set-array-length! array length)
-    (set! (caddr array) length)
+    (set-car! (cddr array) length)
     (when (>= length (vector-length (array-data array)))
       (let1 next-data (make-vector (* length 2))
         (vector-copy next-data (array-data array) length)
-        (set! (cadr array) next-data))))
+        (set-car! (cdr array) next-data))))
 
   (define (array-data array)
     (cadr array))
@@ -3241,7 +3246,7 @@
 
 ;; merge-insn for Mosh is written in CodeBuilder.cpp
 (cond-expand
- [mosh
+ [(or mosh rmosh)
   (define-macro (merge-insn sexp) sexp)]
  [else
   (define (merge-insn sexp)
@@ -3354,6 +3359,16 @@
      (vector-set! ret (+ j 3) (vector-ref v (+ i 3)))
      (loop (+ i 4) (+ j 4))))
 
+(define-macro (pass4/fixup-labels-clollect6 insn)
+  `(begin
+     (vector-set! ret j ,insn)
+     (vector-set! ret (+ j 1) (vector-ref v (+ i 1)))
+     (vector-set! ret (+ j 2) (vector-ref v (+ i 2)))
+     (vector-set! ret (+ j 3) (vector-ref v (+ i 3)))
+     (vector-set! ret (+ j 4) (vector-ref v (+ i 4)))
+     (vector-set! ret (+ j 5) (vector-ref v (+ i 5)))
+     (vector-set! ret (+ j 6) (vector-ref v (+ i 6)))
+     (loop (+ i 7) (+ j 7))))
 
 (define-macro (pass4/fixup-labels-insn insn)
   `(let1 label (hashtable-ref labels(vector-ref code (+ i 1)) #f)
@@ -3386,13 +3401,126 @@
       [else
        (loop (+ i 1))])))
 
+(cond-expand
+ [rmosh 
+(define (fetch-instructions)
+  '((0 . 3)
+(1 . 1)
+(2 . 1)
+(3 . 1)
+(4 . 1)
+(5 . 1)
+(6 . 1)
+(7 . 1)
+(8 . 1)
+(9 . 1)
+(10 . 0)
+(11 . 1)
+(12 . 0)
+(13 . 0)
+(14 . 1)
+(15 . 1)
+(16 . 1)
+(17 . 1)
+(18 . 0)
+(19 . 0)
+(20 . 0)
+(21 . 0)
+(22 . 0)
+(23 . 0)
+(24 . 6)
+(25 . 0)
+(26 . 1)
+(27 . 1)
+(28 . 1)
+(29 . 1)
+(30 . 0)
+(31 . 0)
+(32 . 0)
+(33 . 1)
+(34 . 0)
+(35 . 1)
+(36 . 1)
+(37 . 1)
+(38 . 1)
+(39 . 1)
+(40 . 0)
+(41 . 0)
+(42 . 0)
+(43 . 0)
+(44 . 0)
+(45 . 0)
+(46 . 0)
+(47 . 0)
+(48 . 0)
+(49 . 0)
+(50 . 0)
+(51 . 0)
+(52 . 0)
+(53 . 0)
+(54 . 0)
+(55 . 0)
+(56 . 1)
+(57 . 1)
+(58 . 1)
+(59 . 1)
+(60 . 1)
+(61 . 1)
+(62 . 0)
+(63 . 0)
+(64 . 2)
+(65 . 0)
+(66 . 1)
+(67 . 1)
+(68 . 2)
+(69 . 1)
+(70 . 0)
+(71 . 3)
+(72 . 0)
+(73 . 0)
+(74 . 0)
+(75 . 0)
+(76 . 0)
+(77 . 1)
+(78 . 0)
+(79 . 1)
+(80 . 0)
+(81 . 0)
+(82 . 1)
+(83 . 1)
+(84 . 0)
+(85 . 0)
+(86 . 3)
+(87 . 1)
+(88 . 2)
+(89 . 1)
+(90 . 1)
+(91 . 2)
+(92 . 3)
+(93 . 3)
+(94 . 3)
+(95 . 2)
+(96 . 2)
+(97 . 2)
+(98 . 1)
+(99 . 2)
+(100 . 1)
+(101 . 1)
+(102 . 0)
+(103 . 0)
+(104 . 2)
+(105 . 2)
+    ))
+ ]
+ [else #f])
 
 (cond-expand
- [vm?
-  ;; moved to CompilerProcedures.cpp
-  ;; N.B. this procedure is still required by vm.scm
+ [(or vm? rmosh)
+  ; moved to CompilerProcedures.cpp
+  ; N.B. this procedure is still required by vm.scm
   (define (peephole-optimization v)
-    (let ([len (vector-length v)])
+    (let ([len (vector-length v)]
+          [insn-table (fetch-instructions)])
       (let loop ([i 0])
         (if (= i len)
             '()
@@ -3408,22 +3536,27 @@
                    [(eq? (vector-ref v destination-index) 'RETURN)
                     (vector-set! v i 'RETURN)
                     (vector-set! v (+ i 1) (vector-ref v (+ destination-index 1)))
-                    ]
-                    ))]
+                    ]))
+                (loop (+ i 2))]
                [(and (memq insn '(TEST BRANCH_NOT_GE BRANCH_NOT_GT BRANCH_NOT_LT BRANCH_NOT_LE BRANCH_NOT_NUMBER_EQUAL BRANCH_NOT_NULL))
                      (number? (vector-ref v (+ i 1))))
                 (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
                        [destination-index (+ i offset)])
                   (when (or (eq? (vector-ref v destination-index) 'TEST) (eq? (vector-ref v destination-index) 'LOCAL_JMP))
                     (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1)))))
-                    )])
-              (loop (+ i 1)))))))
+                    )
+                  (loop (+ i 2))]
+               [(assq insn insn-table) =>
+                 (lambda (arg) (loop (+ i (cdr arg) 1)))]
+               [else
+                 (errorf "Should not be here ~a\n" insn)]))))))
 
   (define (pass4/fixup-labels v)
     (define (collect-labels)
       (let* ([len (vector-length v)]
              [ret (make-vector len 'NOP)]
-             [labels (make-eq-hashtable)])
+             [labels (make-eq-hashtable)]
+             [insn-table (fetch-instructions)])
         (let loop ([i 0]
                    [j 0])
           (cond
@@ -3451,11 +3584,25 @@
                [(eq? insn 'REFER_LOCAL_BRANCH_NOT_NULL) (pass4/fixup-labels-clollect2 'REFER_LOCAL_BRANCH_NOT_NULL)]
                [(eq? insn 'FRAME)                 (pass4/fixup-labels-clollect 'FRAME)]
                [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-clollect 'PUSH_FRAME)]
-               [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect 'CLOSURE)]
+               [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect6 'CLOSURE)]
                [(and (vector? insn) (> (vector-length insn) 0) (tag? insn $LABEL))
                 (hashtable-set! labels insn j)
                 (loop (+ i 1) j)]  ;; save the location of label)
+               ;; Get insn offset from the table.
+               ;; Note that insn can be either symbol or number (Rust or C++).
+               [(assq insn insn-table) =>
+                 (lambda (arg)
+                   (let loop2 ([k 0])
+                     (cond
+                       [(= k (cdr arg))
+                        (vector-set! ret  (+ j k) (vector-ref v (+ i k)))
+                         (loop (+ i (cdr arg) 1) (+ j (cdr arg) 1))]
+                       [else
+                         (vector-set! ret (+ j k) (vector-ref v (+ i k)))
+                         (loop2 (+ k 1))])))
+               ]
                [else
+                (errorf "should not be here ~a" insn)
                 (vector-set! ret j insn)
                 (loop (+ i 1) (+ j 1))]))]))))
     (receive (code labels) (collect-labels)
@@ -3560,7 +3707,7 @@
         (let1 port (open-string-input-port (second args))
           (write (compile (read port))))))
   (main (command-line))]
- [mosh
+ [(or mosh rmosh)
   #f]
  [else
   (define (main args)

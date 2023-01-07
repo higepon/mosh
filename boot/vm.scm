@@ -5,7 +5,7 @@
 (use gauche.sequence)
 (use file.util)
 (load "./baselib/match.scm")
-(set! debug-print-width 3000)
+(debug-print-width 3000)
 
 (define alist-cons acons)
 
@@ -1248,10 +1248,14 @@
                (evaluate obj)
                (loop (read))])))))
 
-(define (compile-string s)
+(define (compile-string s optimize?)
   (with-input-from-string s
     (lambda ()
-      (compile (read)))))
+      ((if optimize? compile compile-no-optimize) (read)))))
+
+
+(define (compile-file-string f optimize?)
+  (compile-string (file->string f) optimize?))
 
 ;; return compiled code as list. label is not fixed up yet.
 ;; (define (compile-partial sexp . lib)
@@ -1691,12 +1695,20 @@
     ]
    ;; compile string
    [(and (= (length args) 3) (string=? (second args) "compile"))
-    (print (compile-string (third args)))]
+    (print (compile-string (third args) #f))]
+   ;; compile string in a file
+   [(and (= (length args) 3) (string=? (second args) "compile-file"))
+    (write (compile-file-string (third args) #t))]    
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro"))
     (load-file base-library)
     (load-file match-library)
     (write (compile-file-with-macro (third args) #t))]
+   ;;  compile a file
+   [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro-insn"))
+    (load-file base-library)
+    (load-file match-library)
+    (write (compile-file-with-macro (third args) #f))]    
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-without-macro"))
     (load-file base-library)

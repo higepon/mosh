@@ -753,7 +753,7 @@ bool Equal::interleaveEqualP(Object x, Object y)
     return interleaveP(x, y, k0_);
 }
 
-//   (define (precheck/interleave-equal? x y)
+//   (define (Sslowp/interleave-equal? x y)
 //     (let ([k (pre? x y k0)])
 //       (and k (or (> k 0) (interleave? x y 0)))))
 bool Equal::precheckInterleaveEqualP(Object x, Object y)
