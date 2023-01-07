@@ -48,6 +48,7 @@ NumberScanner.cpp
 Scanner.cpp
 src/all-tests.scm
 compiler-vm-cpp.scm
+compiler-vm-rust.scm
 compiler-vm.scm
 compiler-with-library.h
 compiler-with-library.scm
@@ -61,7 +62,7 @@ cprocedures.cpp
 
 # mosh bootstrap
 boot/baselib.h
-boot/baselib.scm
+boot/baselib*.scm
 boot/free-vars-decl.scm
 boot/match.h
 boot/*.scmc
