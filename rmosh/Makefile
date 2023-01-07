@@ -2,6 +2,7 @@ TESTS = test_compiler #test63_optimized #test_test193_modified0 #test_vm_define 
 FEATURES = #--features debug_log_vm # --features debug_log_gc
 
 test:
+	make -C scripts test
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture
 	grep "not implemented" src/procs.rs | wc -l	
 	grep "Object {" src/procs.rs | wc -l

@@ -326,7 +326,6 @@
     (get)))
 
 (define (run-all-tests)
-  (run-tests)
   (test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-sexp 3))
   (test-equal #vu8(1) (write-sexp #t))
   (test-equal #vu8(2) (write-sexp #f))
