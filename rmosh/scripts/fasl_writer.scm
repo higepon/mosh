@@ -325,20 +325,21 @@
     (apply write-op port tag args)
     (get)))
 
-(test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-sexp 3))
-(test-equal #vu8(1) (write-sexp #t))
-(test-equal #vu8(2) (write-sexp #f))
-(test-equal #vu8(3) (write-sexp '()))
-(test-equal #vu8(4 97 0 0 0) (write-sexp #\a))
-(test-equal #vu8(5 5 0 104 0 0 0 101 0 0 0 108 0 0 0 108 0 0 0 111 0 0 0) (write-sexp 'hello))
-(test-equal #vu8(6 3 0 97 0 0 0 98 0 0 0 99 0 0 0) (write-sexp "abc"))
-(test-equal #vu8(7 5 1 0 97 0 0 0 3) (write-sexp '(a)))
+(define (run-all-tests)
+  (run-tests)
+  (test-equal #vu8(0 3 0 0 0 0 0 0 0) (write-sexp 3))
+  (test-equal #vu8(1) (write-sexp #t))
+  (test-equal #vu8(2) (write-sexp #f))
+  (test-equal #vu8(3) (write-sexp '()))
+  (test-equal #vu8(4 97 0 0 0) (write-sexp #\a))
+  (test-equal #vu8(5 5 0 104 0 0 0 101 0 0 0 108 0 0 0 108 0 0 0 111 0 0 0) (write-sexp 'hello))
+  (test-equal #vu8(6 3 0 97 0 0 0 98 0 0 0 99 0 0 0) (write-sexp "abc"))
+  (test-equal #vu8(7 5 1 0 97 0 0 0 3) (write-sexp '(a)))
 
-(test-equal #vu8(26 7 5 1 0 97 0 0 0 3) (write-op->bv CONSTANT '(a)))
-(test-equal #vu8(24 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-op->bv CLOSURE 34 2 #f 10))
-(test-equal #vu8(59 0 1 0 0 0 0 0 0 0) (write-op->bv REFER_LOCAL 1))
-
-(test-results)
+  (test-equal #vu8(26 7 5 1 0 97 0 0 0 3) (write-op->bv CONSTANT '(a)))
+  (test-equal #vu8(24 0 34 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 2 0 10 0 0 0 0 0 0 0) (write-op->bv CLOSURE 34 2 #f 10))
+  (test-equal #vu8(59 0 1 0 0 0 0 0 0 0) (write-op->bv REFER_LOCAL 1))
+  (test-results))
 
 ;; Enable debug log.
 (define debug? #f)
@@ -446,19 +447,23 @@
           (loop (read p) (cons sexp sexp*))])))))
 
 (define (main args)
-  (let-values ([(port get) (open-string-output-port)])
-    (let* ([op-file (cadr args)]
-           [sexp* (file->sexp* op-file)]
-           [insn* (vector->list (car sexp*))]
-           [u8* (rewrite-insn* insn* insn*)]
-           [decl-str (and (gen-code port) (get))])
-      (display "pub static BIN_COMPILER: &[u8] = &[\n")
-      (for-each-with-index
-        (lambda (i u8)
-          (format #t "~a," u8)
-          (if (and (not (zero? i)) (zero? (modulo i 50)))
-            (newline)))
-        u8*)
-      (display "];\n"))))
+  (match args
+    [(_ "tests")
+      (run-all-tests)]
+    [else
+      (let-values ([(port get) (open-string-output-port)])
+        (let* ([op-file (cadr args)]
+              [sexp* (file->sexp* op-file)]
+              [insn* (vector->list (car sexp*))]
+              [u8* (rewrite-insn* insn* insn*)]
+              [decl-str (and (gen-code port) (get))])
+          (display "pub static BIN_COMPILER: &[u8] = &[\n")
+          (for-each-with-index
+            (lambda (i u8)
+              (format #t "~a," u8)
+              (if (and (not (zero? i)) (zero? (modulo i 50)))
+                (newline)))
+            u8*)
+          (display "];\n")))]))
 
 (main (command-line))

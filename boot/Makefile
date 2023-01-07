@@ -38,6 +38,9 @@ runtimes/srfi-mosh/nmosh_image.cpp: always
 compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
 	mosh $(SCRIPTS_DIR)/gen-compiler.scm $< "mosh" > $@
 
+compiler-vm-rust.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
+	mosh $(SCRIPTS_DIR)/gen-compiler.scm $< "rmosh" > $@
+
 compiler-vm.scm: compiler.scm free-vars-decl.scm $(CORE_INCLUDE_LIBS)
 	mosh $(SCRIPTS_DIR)/gen-compiler.scm $< "vm?" > $@
 
@@ -58,11 +61,18 @@ match.scmc: baselib/match.scm compiler-vm.scm
 	gosh vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
-baselib.scmc: baselib.scm compiler-vm.scm
+baselib-rust.scmc: baselib-rust.scm compiler-vm.scm
 	gosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
+baselib.scmc: baselib.scm compiler-vm.scm
+	gosh vm.scm compile-file-with-macro $< > $@
+	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@	
+
 baselib.scm: baselib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
+	cat $^ > $@
+
+baselib-rust.scm: baselib/base.scm compiler-vm-rust.scm $(CORE_LIBS)
 	cat $^ > $@
 
 free-vars-decl.scm: free-vars.scm
