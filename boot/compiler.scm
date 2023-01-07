@@ -3541,7 +3541,7 @@
                     (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1)))))
                     )
                   (loop (+ i 2))]
-               [(and (symbol? insn) (assq insn insn-table)) =>
+               [(assq insn insn-table) =>
                  (lambda (arg) (loop (+ i (cdr arg) 1)))]
                [else
                  (errorf "Should not be here ~a\n" insn)]))))))
