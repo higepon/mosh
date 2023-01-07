@@ -9,7 +9,7 @@ use std::ptr::null;
 
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
-pub enum Op2 {
+pub enum Op {
     CompileError = 0,
     BranchNotLe = 1,
     BranchNotGe = 2,
@@ -118,7 +118,7 @@ pub enum Op2 {
     LocalTailCall = 105,
 }
 
-impl Display for Op2 {
+impl Display for Op {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -133,7 +133,7 @@ pub enum Object {
     EqHashtable(GcRef<EqHashtable>),
     False,
     InputPort(GcRef<InputPort>),
-    Instruction(Op2),
+    Instruction(Op),
     Nil,
     Number(isize),
     Pair(GcRef<Pair>),
@@ -222,7 +222,7 @@ impl Object {
             panic!("Not a Object::Number")
         }
     }
-    pub fn to_instruction(self) -> Op2 {
+    pub fn to_instruction(self) -> Op {
         if let Self::Instruction(p) = self {
             p
         } else {
