@@ -5,7 +5,7 @@
 (use gauche.sequence)
 (use file.util)
 (load "./baselib/match.scm")
-(set! debug-print-width 3000)
+(debug-print-width 3000)
 
 (define alist-cons acons)
 
