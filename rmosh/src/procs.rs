@@ -1404,7 +1404,29 @@ fn list(vm: &mut Vm, args: &[Object]) -> Object {
 
 fn memq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "memq";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let key = args[0];
+    let mut list = args[1];
+    if !list.is_list() {
+        panic!("{}: list required but got {}", name, list);
+    }
+
+    loop {
+        if list.is_nil() {
+            return Object::False;
+        }
+        match list {
+            Object::Pair(pair) => {
+                if pair.car == key {
+                    return list;
+                }
+                list = pair.cdr;
+            }
+            _ => {
+                panic!("{}: list required but got {}", name, list);
+            }
+        }
+    }
 }
 fn is_eq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eq?";
