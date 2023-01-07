@@ -1186,7 +1186,9 @@ fn format(_vm: &mut Vm, args: &[Object]) -> Object {
     if args.len() == 2 {
         println!("{} {}", args[0], args[1]);
     } else if args.len() == 3 {
-        println!("{} {} {}", args[0], args[1], args[2]);    
+        println!("{} {} {}", args[0], args[1], args[2]);
+    } else if args.len() == 4 {
+        println!("{} {} {} {}", args[0], args[1], args[2], args[3]);
     }
     Object::Unspecified
 }
@@ -1693,7 +1695,34 @@ pub fn apply(_vm: &mut Vm, _args: &[Object]) -> Object {
 }
 fn assq(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "assq";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let key = args[0];
+    let mut alist = args[1];
+    if !alist.is_list() {
+        panic!("{}: requires list but got {}", name, alist);
+    }
+    println!("key={} alist={}", key, alist);
+    loop {
+        if alist.is_nil() {
+            return Object::False;
+        }
+        match alist {
+            Object::Pair(pair) => match pair.car {
+                Object::Pair(pair2) => {
+                    if key == pair2.car {
+                        return pair.car;
+                    }
+                    alist = pair.cdr;
+                }
+                _ => {
+                    panic!("{}: alist required but got {}", name, pair.car);
+                }
+            },
+            _ => {
+                panic!("{}: alist required but got {}", name, alist);
+            }
+        }
+    }
 }
 fn assoc(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "assoc";
