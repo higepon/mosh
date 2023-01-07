@@ -5,6 +5,7 @@ use crate::vm::Vm;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
+use std::ptr::null;
 
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Hash, PartialEq)]
@@ -221,6 +222,13 @@ impl Object {
             panic!("Not a Object::Number")
         }
     }
+    pub fn to_instruction(self) -> Op2 {
+        if let Self::Instruction(p) = self {
+            p
+        } else {
+            panic!("Not a Object::Instruction")
+        }
+    }    
     pub fn to_pair(self) -> GcRef<Pair> {
         if let Self::Pair(p) = self {
             p
@@ -782,6 +790,7 @@ impl Display for Procedure {
 pub struct Closure {
     pub header: GcHeader,
     pub ops: *const Op,
+    pub ops2: *const Object,    
     pub ops_len: usize,
     pub argc: isize,
     pub is_optional_arg: bool,
@@ -800,6 +809,7 @@ impl Closure {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
             ops: ops,
+            ops2: null(),
             ops_len: ops_len,
             argc: argc,
             is_optional_arg: is_optional_arg,
@@ -807,6 +817,25 @@ impl Closure {
             prev: Object::Unspecified,
         }
     }
+
+    pub fn new2(
+        ops: *const Object,
+        ops_len: usize,
+        argc: isize,
+        is_optional_arg: bool,
+        free_vars: Vec<Object>,
+    ) -> Self {
+        Closure {
+            header: GcHeader::new(ObjectType::Closure),
+            ops: null(),
+            ops2: ops,
+            ops_len: ops_len,
+            argc: argc,
+            is_optional_arg: is_optional_arg,
+            free_vars: free_vars,
+            prev: Object::Unspecified,
+        }
+    }    
 
     pub fn refer_free(&self, n: usize) -> Object {
         self.free_vars[n]
