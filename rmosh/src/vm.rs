@@ -351,8 +351,13 @@ impl Vm {
                     self.push_op();
                     self.enter_op(n);
                 }
-                Op::LocalTailCall(_, _) => {
-                    panic!("not implemented");
+                Op::LocalTailCall(depth, diff) => {
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);                    
+                    let closure = self.ac.to_closure();                    
+                    let argc = depth;
+                    self.dc = self.ac;
+                    pc = closure.ops;
+                    self.fp = self.dec(self.sp, argc);
                 }
                 Op::LocalCall(argc) => {
                     // Locall is lighter than Call
