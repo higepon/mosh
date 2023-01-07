@@ -3,7 +3,7 @@ use std::io::{self, Read};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::{gc::Gc, objects::Object, op::Op};
+use crate::{gc::Gc, objects::Object, op::OpOld};
 
 #[derive(FromPrimitive)]
 enum Tag {
@@ -139,7 +139,7 @@ macro_rules! read_sym_num {
     ($self:ident, $gc:ident, $op:ident) => {{
         let sym = $self.read_sexp($gc)?;
         let m = $self.read_sexp($gc)?;
-        Ok(Op::$op(sym.to_symbol(), m.to_number()))
+        Ok(OpOld::$op(sym.to_symbol(), m.to_number()))
     }};
 }
 
@@ -148,7 +148,7 @@ macro_rules! read_num_constant {
     ($self:ident, $gc:ident, $op:ident) => {{
         let n = $self.read_sexp($gc)?;
         let c = $self.read_sexp($gc)?;
-        Ok(Op::$op(n.to_number(), c))
+        Ok(OpOld::$op(n.to_number(), c))
     }};
 }
 
@@ -158,7 +158,7 @@ macro_rules! read_num_constant_num {
         let n = $self.read_sexp($gc)?;
         let c = $self.read_sexp($gc)?;
         let o = $self.read_sexp($gc)?;
-        Ok(Op::$op(n.to_number(), c, o.to_number()))
+        Ok(OpOld::$op(n.to_number(), c, o.to_number()))
     }};
 }
 
@@ -166,7 +166,7 @@ macro_rules! read_num_constant_num {
 macro_rules! read_sym1 {
     ($self:ident, $gc:ident, $op:ident) => {{
         let s = $self.read_sexp($gc)?;
-        Ok(Op::$op(s.to_symbol()))
+        Ok(OpOld::$op(s.to_symbol()))
     }};
 }
 
@@ -174,7 +174,7 @@ macro_rules! read_sym1 {
 macro_rules! read_const1 {
     ($self:ident, $gc:ident, $op:ident) => {{
         let c = $self.read_sexp($gc)?;
-        Ok(Op::$op(c))
+        Ok(OpOld::$op(c))
     }};
 }
 
@@ -182,7 +182,7 @@ macro_rules! read_const1 {
 macro_rules! read_num1 {
     ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
         let m = $self.read_sexp($gc)?;
-        Ok(Op::$op(m.to_number() as $size))
+        Ok(OpOld::$op(m.to_number() as $size))
     }};
 }
 
@@ -191,7 +191,7 @@ macro_rules! read_num2 {
     ($self:ident, $gc:ident, $op:ident, $size:ident, $size2:ident) => {{
         let m = $self.read_sexp($gc)?;
         let n = $self.read_sexp($gc)?;
-        Ok(Op::$op(m.to_number() as $size, n.to_number() as $size2))
+        Ok(OpOld::$op(m.to_number() as $size, n.to_number() as $size2))
     }};
 }
 
@@ -201,15 +201,15 @@ macro_rules! read_num3 {
         let m = $self.read_sexp($gc)?;
         let n = $self.read_sexp($gc)?;
         let o = $self.read_sexp($gc)?;
-        Ok(Op::$op(m.to_number(), n.to_number(), o.to_number()))
+        Ok(OpOld::$op(m.to_number(), n.to_number(), o.to_number()))
     }};
 }
 
 impl Fasl<'_> {
-    pub fn read_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
+    pub fn read_op(&mut self, gc: &mut Gc) -> Result<OpOld, io::Error> {
         let tag = self.read_op_tag()?;
         match tag {
-            OpTag::Append2 => Ok(Op::Append2),
+            OpTag::Append2 => Ok(OpOld::Append2),
             OpTag::AssignFree => read_num1!(self, gc, AssignFree, usize),
             OpTag::AssignGlobal => read_sym1!(self, gc, AssignGlobal),
             OpTag::AssignLocal => read_num1!(self, gc, AssignLocal, isize),
@@ -223,54 +223,54 @@ impl Fasl<'_> {
             OpTag::BranchNotLt => read_num1!(self, gc, BranchNotLt, isize),
             OpTag::BranchNotNull => read_num1!(self, gc, BranchNotNull, isize),
             OpTag::BranchNotNumberEqual => read_num1!(self, gc, BranchNotNumberEqual, isize),
-            OpTag::Caar => Ok(Op::Caar),
-            OpTag::Cadr => Ok(Op::Cadr),
+            OpTag::Caar => Ok(OpOld::Caar),
+            OpTag::Cadr => Ok(OpOld::Cadr),
             OpTag::Call => read_num1!(self, gc, Call, isize),
-            OpTag::Car => Ok(Op::Car),
-            OpTag::CarPush => Ok(Op::CarPush),
-            OpTag::Cdar => Ok(Op::Cdar),
-            OpTag::Cddr => Ok(Op::Cddr),
-            OpTag::Cdr => Ok(Op::Cdr),
-            OpTag::CdrPush => Ok(Op::CdrPush),
+            OpTag::Car => Ok(OpOld::Car),
+            OpTag::CarPush => Ok(OpOld::CarPush),
+            OpTag::Cdar => Ok(OpOld::Cdar),
+            OpTag::Cddr => Ok(OpOld::Cddr),
+            OpTag::Cdr => Ok(OpOld::Cdr),
+            OpTag::CdrPush => Ok(OpOld::CdrPush),
             OpTag::Closure => self.read_closure_op(gc),
-            OpTag::Cons => Ok(Op::Cons),
+            OpTag::Cons => Ok(OpOld::Cons),
             OpTag::Constant => read_const1!(self, gc, Constant),
             OpTag::ConstantPush => read_const1!(self, gc, ConstantPush),
             OpTag::DefineGlobal => read_sym1!(self, gc, DefineGlobal),
             OpTag::Display => read_num1!(self, gc, Display, isize),
             OpTag::Enter => read_num1!(self, gc, Enter, isize),
-            OpTag::Eq => Ok(Op::Eq),
-            OpTag::Equal => Ok(Op::Equal),
-            OpTag::Eqv => Ok(Op::Eqv),
+            OpTag::Eq => Ok(OpOld::Eq),
+            OpTag::Equal => Ok(OpOld::Equal),
+            OpTag::Eqv => Ok(OpOld::Eqv),
             OpTag::Frame => read_num1!(self, gc, Frame, isize),
-            OpTag::Halt => Ok(Op::Halt),
-            OpTag::Indirect => Ok(Op::Indirect),
+            OpTag::Halt => Ok(OpOld::Halt),
+            OpTag::Indirect => Ok(OpOld::Indirect),
             OpTag::Leave => read_num1!(self, gc, Leave, isize),
             OpTag::LetFrame => read_num1!(self, gc, LetFrame, isize),
             OpTag::LocalCall => read_num1!(self, gc, LocalCall, isize),
             OpTag::LocalJmp => read_num1!(self, gc, LocalJmp, isize),
             OpTag::LocalTailCall => read_num2!(self, gc, LocalTailCall, isize, isize),
             OpTag::MakeContinuation => read_num1!(self, gc, MakeContinuation, isize),
-            OpTag::MakeVector => Ok(Op::MakeVector),
-            OpTag::Nop => Ok(Op::Nop),
-            OpTag::Not => Ok(Op::Not),
+            OpTag::MakeVector => Ok(OpOld::MakeVector),
+            OpTag::Nop => Ok(OpOld::Nop),
+            OpTag::Not => Ok(OpOld::Not),
             OpTag::NotTest => read_num1!(self, gc, NotTest, isize),
-            OpTag::NumberAdd => Ok(Op::NumberAdd),
-            OpTag::NumberAddPush => Ok(Op::NumberAddPush),
-            OpTag::NumberDiv => Ok(Op::NumberDiv),
-            OpTag::NumberEqual => Ok(Op::NumberEqual),
-            OpTag::NumberGe => Ok(Op::NumberGe),
-            OpTag::NumberGt => Ok(Op::NumberGt),
-            OpTag::NumberLt => Ok(Op::NumberLt),
-            OpTag::NumberMul => Ok(Op::NumberMul),
-            OpTag::NumberSub => Ok(Op::NumberSub),
-            OpTag::NumberSubPush => Ok(Op::NumberSubPush),
-            OpTag::PairP => Ok(Op::PairP),
-            OpTag::Push => Ok(Op::Push),
+            OpTag::NumberAdd => Ok(OpOld::NumberAdd),
+            OpTag::NumberAddPush => Ok(OpOld::NumberAddPush),
+            OpTag::NumberDiv => Ok(OpOld::NumberDiv),
+            OpTag::NumberEqual => Ok(OpOld::NumberEqual),
+            OpTag::NumberGe => Ok(OpOld::NumberGe),
+            OpTag::NumberGt => Ok(OpOld::NumberGt),
+            OpTag::NumberLt => Ok(OpOld::NumberLt),
+            OpTag::NumberMul => Ok(OpOld::NumberMul),
+            OpTag::NumberSub => Ok(OpOld::NumberSub),
+            OpTag::NumberSubPush => Ok(OpOld::NumberSubPush),
+            OpTag::PairP => Ok(OpOld::PairP),
+            OpTag::Push => Ok(OpOld::Push),
             OpTag::PushConstant => read_const1!(self, gc, PushConstant),
             OpTag::PushEnter => read_num1!(self, gc, PushEnter, isize),
             OpTag::PushFrame => read_num1!(self, gc, PushFrame, isize),
-            OpTag::ReadChar => Ok(Op::ReadChar),
+            OpTag::ReadChar => Ok(OpOld::ReadChar),
             OpTag::Receive => read_num2!(self, gc, Receive, usize, usize),
             OpTag::ReferFree => read_num1!(self, gc, ReferFree, usize),
             OpTag::ReferFreeCall => read_num2!(self, gc, ReferFreeCall, usize, isize),
@@ -289,23 +289,23 @@ impl Fasl<'_> {
                 read_num_constant_num!(self, gc, ReferLocalPushConstantBranchNotLe)
             }
             OpTag::Return => read_num1!(self, gc, Return, isize),
-            OpTag::SetCar => Ok(Op::SetCar),
-            OpTag::SetCdr => Ok(Op::SetCdr),
+            OpTag::SetCar => Ok(OpOld::SetCar),
+            OpTag::SetCdr => Ok(OpOld::SetCdr),
             OpTag::Shiftj => read_num3!(self, gc, Shiftj),
             OpTag::TailCall => read_num2!(self, gc, TailCall, isize, isize),
             OpTag::Test => read_num1!(self, gc, Test, isize),
-            OpTag::Undef => Ok(Op::Undef),
+            OpTag::Undef => Ok(OpOld::Undef),
             OpTag::Values => read_num1!(self, gc, Values, usize),
-            OpTag::VectorLength => Ok(Op::VectorLength),
-            OpTag::VectorRef => Ok(Op::VectorRef),
-            OpTag::VectorSet => Ok(Op::VectorSet),
-            OpTag::SimpleStructRef => Ok(Op::SimpleStructRef),
-            OpTag::SymbolP => Ok(Op::SymbolP),
-            OpTag::VectorP => Ok(Op::VectorP),
+            OpTag::VectorLength => Ok(OpOld::VectorLength),
+            OpTag::VectorRef => Ok(OpOld::VectorRef),
+            OpTag::VectorSet => Ok(OpOld::VectorSet),
+            OpTag::SimpleStructRef => Ok(OpOld::SimpleStructRef),
+            OpTag::SymbolP => Ok(OpOld::SymbolP),
+            OpTag::VectorP => Ok(OpOld::VectorP),
             OpTag::ReferLocalBranchNotLt => {
                 read_num2!(self, gc, ReferLocalBranchNotLt, isize, isize)
             }
-            OpTag::NullP => Ok(Op::NullP),
+            OpTag::NullP => Ok(OpOld::NullP),
             OpTag::Vector => read_num1!(self, gc, Vector, usize),
             OpTag::CompileError => todo!(),
             OpTag::Apply => todo!(),
@@ -324,14 +324,14 @@ impl Fasl<'_> {
         }
     }
 
-    fn read_closure_op(&mut self, gc: &mut Gc) -> Result<Op, io::Error> {
+    fn read_closure_op(&mut self, gc: &mut Gc) -> Result<OpOld, io::Error> {
         let size = self.read_sexp(gc)?;
         let arg_len = self.read_sexp(gc)?;
         let is_optional = !self.read_sexp(gc)?.is_false();
         let num_free_vars = self.read_sexp(gc)?;
         match (size, arg_len, num_free_vars) {
             (Object::Number(size), Object::Number(arg_len), Object::Number(num_free_vars)) => {
-                Ok(Op::Closure {
+                Ok(OpOld::Closure {
                     size: size as usize,
                     arg_len: arg_len,
                     is_optional_arg: is_optional,
@@ -445,7 +445,7 @@ impl Fasl<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use crate::{compiler, equal::Equal, gc::Gc, objects::Object, op::Op, vm::VmOld};
+    use crate::{compiler, equal::Equal, gc::Gc, objects::Object, op::OpOld, vm::VmOld};
 
     use super::Fasl;
 
@@ -551,7 +551,7 @@ pub mod tests {
         let sym = gc.symbol_intern("a");
         let expected = gc.cons(sym, Object::Nil);
         match fasl.read_op(&mut gc).unwrap() {
-            Op::Constant(v) => {
+            OpOld::Constant(v) => {
                 assert_equal!(gc, expected, v);
             }
             _ => todo!(),
@@ -566,7 +566,7 @@ pub mod tests {
             0,
         ];
         let mut fasl = Fasl { bytes };
-        let expected = Op::Closure {
+        let expected = OpOld::Closure {
             size: 34,
             arg_len: 2,
             is_optional_arg: false,
@@ -581,7 +581,7 @@ pub mod tests {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[95, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0];
         let mut fasl = Fasl { bytes };
-        let expected = Op::ReferLocalBranchNotNull(2, 5);
+        let expected = OpOld::ReferLocalBranchNotNull(2, 5);
         assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
     }
 
@@ -590,7 +590,7 @@ pub mod tests {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[59, 0, 1, 0, 0, 0, 0, 0, 0, 0];
         let mut fasl = Fasl { bytes };
-        let expected = Op::ReferLocal(1);
+        let expected = OpOld::ReferLocal(1);
         assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
     }
 

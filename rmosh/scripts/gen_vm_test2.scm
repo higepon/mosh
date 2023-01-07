@@ -56,7 +56,7 @@
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.  
           [((? arg0-insn? insn) . more*)
-            (format port "~aOp::~a,\n" indent (insn->string insn))
+            (format port "~aObject::Instruction(Op::~a),\n" indent (insn->string insn))
             (rewrite-insn* all-insn* more*  (+ idx 1) port)]            
           ;; 1 arg jump instruction.
           [((? jump1-insn? insn) offset . more*)

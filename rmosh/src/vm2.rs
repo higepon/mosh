@@ -10,7 +10,7 @@ use crate::{
     fasl::Fasl,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Op2, Pair, Symbol, Vox},
-    op::Op,
+    op::OpOld,
     procs::{self, default_free_vars},
 };
 
@@ -339,7 +339,7 @@ impl Vm {
         self.set_return_value(c);
     }
     #[inline(always)]
-    fn branch_not_null_op(&mut self, pc: &mut *const Op, skip_offset: isize) {
+    fn branch_not_null_op(&mut self, pc: &mut *const OpOld, skip_offset: isize) {
         if self.ac.is_nil() {
             self.set_return_value(Object::False);
         } else {
@@ -349,7 +349,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn frame_op(&mut self, pc: *const Op, skip_offset: isize) {
+    fn frame_op(&mut self, pc: *const OpOld, skip_offset: isize) {
         // Call frame in stack.
         // ======================
         //          pc*
@@ -424,7 +424,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn call_op(&mut self, pc: &mut *const Op, argc: isize) {
+    fn call_op(&mut self, pc: &mut *const OpOld, argc: isize) {
         match self.ac {
             Object::Closure(closure) => {
                 self.dc = self.ac;
@@ -818,7 +818,7 @@ impl Vm {
     }
 
     #[cfg(feature = "debug_log_vm")]
-    fn print_vm(&mut self, op: Op) {
+    fn print_vm(&mut self, op: OpOld) {
         println!("-----------------------------------------");
         println!("{} executed", op);
         println!("  ac={}", self.ac);
@@ -839,7 +839,7 @@ impl Vm {
         println!("-----------------------------------------<== sp")
     }
     #[cfg(not(feature = "debug_log_vm"))]
-    fn print_vm(&mut self, _: Op) {}
+    fn print_vm(&mut self, _: OpOld) {}
 
     #[inline(always)]
     fn set_return_value(&mut self, obj: Object) {
@@ -853,7 +853,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn jump(&self, pc: *const Op, offset: isize) -> *const Op {
+    fn jump(&self, pc: *const OpOld, offset: isize) -> *const OpOld {
         unsafe { pc.offset(offset) }
     }
 
@@ -871,7 +871,7 @@ impl Vm {
         panic!("{}: requires {} but got {}", who, expected, actual);
     }
 
-    fn return_n(&mut self, n: isize, pc: &mut *const Op) {
+    fn return_n(&mut self, n: isize, pc: &mut *const OpOld) {
         #[cfg(feature = "debug_log_vm")]
         println!("  return {}", n);
         let sp = self.dec(self.sp, n);

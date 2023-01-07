@@ -1,6 +1,6 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
-use crate::op::Op;
+use crate::op::OpOld;
 use crate::vm::VmOld;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
@@ -144,7 +144,7 @@ pub enum Object {
     True,
     Unspecified,
     StackPointer(*mut Object),
-    OpPointer(*const Op),
+    OpPointer(*const OpOld),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
@@ -789,7 +789,7 @@ impl Display for Procedure {
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
-    pub ops_old: *const Op,
+    pub ops_old: *const OpOld,
     pub ops: *const Object,    
     pub ops_len: usize,
     pub argc: isize,
@@ -800,7 +800,7 @@ pub struct Closure {
 
 impl Closure {
     pub fn new(
-        ops: *const Op,
+        ops: *const OpOld,
         ops_len: usize,
         argc: isize,
         is_optional_arg: bool,

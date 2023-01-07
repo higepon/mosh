@@ -17,7 +17,7 @@ use crate::alloc::GlobalAllocator;
 use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
-use crate::op::Op;
+use crate::op::OpOld;
 use crate::vm::VmOld;
 
 #[global_allocator]
@@ -424,125 +424,125 @@ impl Gc {
     }
 
     // Some Op contains GC-ed objects.
-    pub fn mark_op(&mut self, op: Op) {
+    pub fn mark_op(&mut self, op: OpOld) {
         match op {
-            Op::ReferLocalBranchNotLt(_, _) => {}
-            Op::SimpleStructRef => {}
-            Op::Vector(_) => {}
-            Op::BranchNotEqual(_) => {}
-            Op::Cddr => {}
-            Op::NotTest(_) => {}
-            Op::NumberAddPush => {}
-            Op::ReferGlobalPush(symbol) => {
+            OpOld::ReferLocalBranchNotLt(_, _) => {}
+            OpOld::SimpleStructRef => {}
+            OpOld::Vector(_) => {}
+            OpOld::BranchNotEqual(_) => {}
+            OpOld::Cddr => {}
+            OpOld::NotTest(_) => {}
+            OpOld::NumberAddPush => {}
+            OpOld::ReferGlobalPush(symbol) => {
                 self.mark_heap_object(symbol);
             }
-            Op::BranchNotEq(_) => {}
-            Op::PushConstant(v) => {
+            OpOld::BranchNotEq(_) => {}
+            OpOld::PushConstant(v) => {
                 self.mark_object(v);
             }
-            Op::NumberSubPush => {}
-            Op::ReferLocalPushConstantBranchNotLe(_, v, _) => {
+            OpOld::NumberSubPush => {}
+            OpOld::ReferLocalPushConstantBranchNotLe(_, v, _) => {
                 self.mark_object(v);
             }
-            Op::ReferLocalPushConstantBranchNotGe(_, v, _) => {
+            OpOld::ReferLocalPushConstantBranchNotGe(_, v, _) => {
                 self.mark_object(v);
             }
-            Op::MakeContinuation(_) => {}
-            Op::AssignGlobal(symbol) => {
+            OpOld::MakeContinuation(_) => {}
+            OpOld::AssignGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
-            Op::Constant(v) => {
+            OpOld::Constant(v) => {
                 self.mark_object(v);
             }
-            Op::ConstantPush(v) => {
+            OpOld::ConstantPush(v) => {
                 self.mark_object(v);
             }
-            Op::DefineGlobal(symbol) => {
+            OpOld::DefineGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
-            Op::ReferGlobal(symbol) => {
+            OpOld::ReferGlobal(symbol) => {
                 self.mark_heap_object(symbol);
             }
-            Op::ReferGlobalCall(symbol, _) => {
+            OpOld::ReferGlobalCall(symbol, _) => {
                 self.mark_heap_object(symbol);
             }
-            Op::ReferLocalPushConstant(_, v) => {
+            OpOld::ReferLocalPushConstant(_, v) => {
                 self.mark_object(v);
             }
-            Op::Append2 => {}
-            Op::AssignFree(_) => (),
-            Op::AssignLocal(_) => (),
-            Op::Box(_) => (),
-            Op::BranchNotEqv(_) => (),
-            Op::BranchNotGe(_) => (),
-            Op::BranchNotGt(_) => (),
-            Op::BranchNotLe(_) => (),
-            Op::BranchNotLt(_) => (),
-            Op::BranchNotNull(_) => (),
-            Op::BranchNotNumberEqual(_) => (),
-            Op::Caar => {}
-            Op::Cadr => (),
-            Op::Call(_) => (),
-            Op::Car => (),
-            Op::CarPush => (),
-            Op::Cdar => {}
-            Op::Cdr => (),
-            Op::CdrPush => (),
-            Op::Closure { .. } => (),
-            Op::Cons => (),
-            Op::Display(_) => (),
-            Op::Enter(_) => (),
-            Op::Eq => (),
-            Op::Equal => (),
-            Op::Eqv => (),
-            Op::Frame(_) => (),
-            Op::Halt => (),
-            Op::Indirect => (),
-            Op::Leave(_) => (),
-            Op::LetFrame(_) => (),
-            Op::List(_) => (),
-            Op::LocalCall(_) => {}
-            Op::LocalJmp(_) => (),
-            Op::LocalTailCall(_, _) => {}
-            Op::MakeVector => (),
-            Op::Nop => (),
-            Op::Not => (),
-            Op::NullP => (),
-            Op::NumberAdd => (),
-            Op::NumberDiv => (),
-            Op::NumberEqual => (),
-            Op::NumberGe => (),
-            Op::NumberGt => (),
-            Op::NumberLe => (),
-            Op::NumberLt => (),
-            Op::NumberMul => (),
-            Op::NumberSub => (),
-            Op::PairP => (),
-            Op::Push => (),
-            Op::PushEnter(_) => {}
-            Op::PushFrame(_) => (),
-            Op::ReadChar => (),
-            Op::Receive(_, _) => (),
-            Op::ReferFree(_) => (),
-            Op::ReferFreeCall(_, _) => {}
-            Op::ReferFreePush(_) => (),
-            Op::ReferLocal(_) => (),
-            Op::ReferLocalBranchNotNull(_, _) => (),
-            Op::ReferLocalCall(_, _) => (),
-            Op::ReferLocalPush(_) => (),
-            Op::Return(_) => (),
-            Op::SetCar => (),
-            Op::SetCdr => (),
-            Op::Shiftj(_, _, _) => {}
-            Op::SymbolP => (),
-            Op::TailCall(_, _) => (),
-            Op::Test(_) => (),
-            Op::Undef => (),
-            Op::Values(_) => (),
-            Op::VectorLength => (),
-            Op::VectorP => (),
-            Op::VectorRef => (),
-            Op::VectorSet => (),
+            OpOld::Append2 => {}
+            OpOld::AssignFree(_) => (),
+            OpOld::AssignLocal(_) => (),
+            OpOld::Box(_) => (),
+            OpOld::BranchNotEqv(_) => (),
+            OpOld::BranchNotGe(_) => (),
+            OpOld::BranchNotGt(_) => (),
+            OpOld::BranchNotLe(_) => (),
+            OpOld::BranchNotLt(_) => (),
+            OpOld::BranchNotNull(_) => (),
+            OpOld::BranchNotNumberEqual(_) => (),
+            OpOld::Caar => {}
+            OpOld::Cadr => (),
+            OpOld::Call(_) => (),
+            OpOld::Car => (),
+            OpOld::CarPush => (),
+            OpOld::Cdar => {}
+            OpOld::Cdr => (),
+            OpOld::CdrPush => (),
+            OpOld::Closure { .. } => (),
+            OpOld::Cons => (),
+            OpOld::Display(_) => (),
+            OpOld::Enter(_) => (),
+            OpOld::Eq => (),
+            OpOld::Equal => (),
+            OpOld::Eqv => (),
+            OpOld::Frame(_) => (),
+            OpOld::Halt => (),
+            OpOld::Indirect => (),
+            OpOld::Leave(_) => (),
+            OpOld::LetFrame(_) => (),
+            OpOld::List(_) => (),
+            OpOld::LocalCall(_) => {}
+            OpOld::LocalJmp(_) => (),
+            OpOld::LocalTailCall(_, _) => {}
+            OpOld::MakeVector => (),
+            OpOld::Nop => (),
+            OpOld::Not => (),
+            OpOld::NullP => (),
+            OpOld::NumberAdd => (),
+            OpOld::NumberDiv => (),
+            OpOld::NumberEqual => (),
+            OpOld::NumberGe => (),
+            OpOld::NumberGt => (),
+            OpOld::NumberLe => (),
+            OpOld::NumberLt => (),
+            OpOld::NumberMul => (),
+            OpOld::NumberSub => (),
+            OpOld::PairP => (),
+            OpOld::Push => (),
+            OpOld::PushEnter(_) => {}
+            OpOld::PushFrame(_) => (),
+            OpOld::ReadChar => (),
+            OpOld::Receive(_, _) => (),
+            OpOld::ReferFree(_) => (),
+            OpOld::ReferFreeCall(_, _) => {}
+            OpOld::ReferFreePush(_) => (),
+            OpOld::ReferLocal(_) => (),
+            OpOld::ReferLocalBranchNotNull(_, _) => (),
+            OpOld::ReferLocalCall(_, _) => (),
+            OpOld::ReferLocalPush(_) => (),
+            OpOld::Return(_) => (),
+            OpOld::SetCar => (),
+            OpOld::SetCdr => (),
+            OpOld::Shiftj(_, _, _) => {}
+            OpOld::SymbolP => (),
+            OpOld::TailCall(_, _) => (),
+            OpOld::Test(_) => (),
+            OpOld::Undef => (),
+            OpOld::Values(_) => (),
+            OpOld::VectorLength => (),
+            OpOld::VectorP => (),
+            OpOld::VectorRef => (),
+            OpOld::VectorSet => (),
         }
     }
 

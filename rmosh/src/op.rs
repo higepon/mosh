@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum Op {
+pub enum OpOld {
     NumberAdd,
     Append2,
     AssignFree(usize),
@@ -109,16 +109,16 @@ pub enum Op {
     VectorSet,
 }
 
-impl Display for Op {
+impl Display for OpOld {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Op::DefineGlobal(sym) => {
+            OpOld::DefineGlobal(sym) => {
                 write!(f, "DefineGlobal({})", unsafe { sym.pointer.as_ref() })
             }
-            Op::ReferGlobal(sym) => {
+            OpOld::ReferGlobal(sym) => {
                 write!(f, "ReferGlobal({})", unsafe { sym.pointer.as_ref() })
             }
-            Op::ReferGlobalCall(sym, n) => {
+            OpOld::ReferGlobalCall(sym, n) => {
                 write!(
                     f,
                     "ReferGlobalCall({}, {})",
@@ -126,7 +126,7 @@ impl Display for Op {
                     n
                 )
             }
-            Op::ReferGlobalPush(sym) => {
+            OpOld::ReferGlobalPush(sym) => {
                 write!(f, "ReferGlobalPush({}", unsafe { sym.pointer.as_ref() })
             }
             _ => {
@@ -145,17 +145,17 @@ pub mod tests {
     use crate::gc::Gc;
 
     struct TestVm<'a> {
-        ops: &'a [Op],
-        pc: *const Op,
+        ops: &'a [OpOld],
+        pc: *const OpOld,
     }
 
     impl<'a> TestVm<'a> {
-        fn run(&mut self, ops: &'a [Op]) -> Object {
+        fn run(&mut self, ops: &'a [OpOld]) -> Object {
             self.ops = ops;
             let mut val = Object::Unspecified;
             for i in 0..ops.len() {
                 match ops[i] {
-                    Op::Constant(n) => {
+                    OpOld::Constant(n) => {
                         val = n;
                     }
                     _ => {
@@ -166,13 +166,13 @@ pub mod tests {
             val
         }
 
-        fn run_pc(&mut self, start_pc: *const Op, len: usize) -> Object {
+        fn run_pc(&mut self, start_pc: *const OpOld, len: usize) -> Object {
             self.pc = start_pc;
             let mut val = Object::Unspecified;
             let mut pc = start_pc;
             for _ in 0..len {
                 match unsafe { *pc } {
-                    Op::Constant(n) => {
+                    OpOld::Constant(n) => {
                         val = n;
                     }
                     op => {
@@ -185,7 +185,7 @@ pub mod tests {
         }
     }
 
-    fn print_slice_refs(s1: &[Op], s2: &[Op], s3: &[Op]) {
+    fn print_slice_refs(s1: &[OpOld], s2: &[OpOld], s3: &[OpOld]) {
         println!("{:?} {:?} {:?}", s1, s2, s3);
     }
 
@@ -198,16 +198,16 @@ pub mod tests {
             ops: &[],
         };
         let array_ops = [
-            Op::Constant(Object::Number(1)),
-            Op::Constant(Object::Number(2)),
-            Op::Constant(Object::Number(3)),
-            Op::Constant(Object::Number(4)),
+            OpOld::Constant(Object::Number(1)),
+            OpOld::Constant(Object::Number(2)),
+            OpOld::Constant(Object::Number(3)),
+            OpOld::Constant(Object::Number(4)),
         ];
 
         // Have 1 pointer.
-        let pc: *const Op = &array_ops[1] as *const Op;
+        let pc: *const OpOld = &array_ops[1] as *const OpOld;
         match unsafe { *pc } {
-            Op::Constant(c) => {
+            OpOld::Constant(c) => {
                 assert_eq!(c, Object::Number(2));
             }
             _ => {
@@ -215,9 +215,9 @@ pub mod tests {
             }
         }
         // Have one more pointer.
-        let pc2: *const Op = &array_ops[2] as *const Op;
+        let pc2: *const OpOld = &array_ops[2] as *const OpOld;
         match unsafe { (*pc, *pc2) } {
-            (Op::Constant(c), Op::Constant(d)) => {
+            (OpOld::Constant(c), OpOld::Constant(d)) => {
                 assert_eq!(c, Object::Number(2));
                 assert_eq!(d, Object::Number(3));
             }
@@ -249,29 +249,29 @@ pub mod tests {
             ops: &[],
         };
         let vec_ops = vec![
-            Op::Constant(Object::Number(1)),
-            Op::Constant(Object::Number(2)),
-            Op::Constant(Object::Number(3)),
-            Op::Constant(Object::Number(4)),
+            OpOld::Constant(Object::Number(1)),
+            OpOld::Constant(Object::Number(2)),
+            OpOld::Constant(Object::Number(3)),
+            OpOld::Constant(Object::Number(4)),
         ];
 
         // Hold one slice ref.
-        let slice_ref: &[Op] = &vec_ops[1..3];
+        let slice_ref: &[OpOld] = &vec_ops[1..3];
         assert_eq!(slice_ref.len(), 2);
-        assert_eq!(slice_ref[0], Op::Constant(Object::Number(2)));
+        assert_eq!(slice_ref[0], OpOld::Constant(Object::Number(2)));
 
         // Still can access original vec.
         assert_eq!(vec_ops.len(), 4);
 
         // Have different slice.
-        let slice_ref2: &[Op] = &vec_ops[2..3];
+        let slice_ref2: &[OpOld] = &vec_ops[2..3];
         assert_eq!(slice_ref2.len(), 1);
-        assert_eq!(slice_ref2[0], Op::Constant(Object::Number(3)));
+        assert_eq!(slice_ref2[0], OpOld::Constant(Object::Number(3)));
 
         // Have sub slice_ref.
-        let sub_slice_ref: &[Op] = &slice_ref[1..2];
+        let sub_slice_ref: &[OpOld] = &slice_ref[1..2];
         assert_eq!(sub_slice_ref.len(), 1);
-        assert_eq!(sub_slice_ref[0], Op::Constant(Object::Number(3)));
+        assert_eq!(sub_slice_ref[0], OpOld::Constant(Object::Number(3)));
 
         // Can pass refs to function.
         print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
@@ -295,29 +295,29 @@ pub mod tests {
         };
         let mut gc = Gc::new();
         let array_ops = [
-            Op::Constant(Object::Number(1)),
-            Op::Constant(Object::Number(2)),
-            Op::Constant(Object::Number(3)),
-            Op::Constant(Object::Number(4)),
+            OpOld::Constant(Object::Number(1)),
+            OpOld::Constant(Object::Number(2)),
+            OpOld::Constant(Object::Number(3)),
+            OpOld::Constant(Object::Number(4)),
         ];
 
         // Hold one slice ref.
-        let slice_ref: &[Op] = &array_ops[1..3];
+        let slice_ref: &[OpOld] = &array_ops[1..3];
         assert_eq!(slice_ref.len(), 2);
-        assert_eq!(slice_ref[0], Op::Constant(Object::Number(2)));
+        assert_eq!(slice_ref[0], OpOld::Constant(Object::Number(2)));
 
         // Still can access original array.
         assert_eq!(array_ops.len(), 4);
 
         // Have different slice.
-        let slice_ref2: &[Op] = &array_ops[2..3];
+        let slice_ref2: &[OpOld] = &array_ops[2..3];
         assert_eq!(slice_ref2.len(), 1);
-        assert_eq!(slice_ref2[0], Op::Constant(Object::Number(3)));
+        assert_eq!(slice_ref2[0], OpOld::Constant(Object::Number(3)));
 
         // Have sub slice_ref.
-        let sub_slice_ref: &[Op] = &slice_ref[1..2];
+        let sub_slice_ref: &[OpOld] = &slice_ref[1..2];
         assert_eq!(sub_slice_ref.len(), 1);
-        assert_eq!(sub_slice_ref[0], Op::Constant(Object::Number(3)));
+        assert_eq!(sub_slice_ref[0], OpOld::Constant(Object::Number(3)));
 
         // Can pass refs to function.
         print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
