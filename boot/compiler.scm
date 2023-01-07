@@ -61,7 +61,7 @@
   (define find10 find)
   (define syntax-error error)
   (define (command-line) *command-line-args*)]
-[mosh
+[(or mosh rmosh)
  (define df format)
  (define dd display)
  (define pp print)
@@ -825,7 +825,7 @@
 ;;           (find-with-car object (cdr lst)))))
 
 (cond-expand
- [vm?
+ [(or vm? rmosh)
   ;; moved to CompilerProcedures.cpp
   ;; N.B. this procedure is still required by vm.scm
   (define (pass1/find-symbol-in-lvars symbol lvars)
@@ -2326,7 +2326,7 @@
 ;;     can-frees: candidates of free variables as $lvar structure.
 ;;
 (cond-expand
- [vm?
+ [(or vm? rmosh)
   ;; moved to freeproc.cpp
   ;; N.B. these procedures are still required by vm.scm
   (define (pass3/find-free iform locals can-frees)
@@ -2451,7 +2451,7 @@
      (make-enumeration
       '(no-create no-fail no-truncate))))
   ]
- [else
+ [else ;; rmosh here
   (define (make-array)
     (list 'array (make-vector 2) 0))
 
@@ -3241,7 +3241,7 @@
 
 ;; merge-insn for Mosh is written in CodeBuilder.cpp
 (cond-expand
- [mosh
+ [(or mosh rmosh)
   (define-macro (merge-insn sexp) sexp)]
  [else
   (define (merge-insn sexp)
@@ -3702,7 +3702,7 @@
         (let1 port (open-string-input-port (second args))
           (write (compile (read port))))))
   (main (command-line))]
- [mosh
+ [(or mosh rmosh)
   #f]
  [else
   (define (main args)
