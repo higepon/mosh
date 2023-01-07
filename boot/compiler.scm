@@ -5,6 +5,13 @@
 ;; 3. (length ...) may be slow, so call only when necessary.
 
 (cond-expand
+  [(or mosh vm-outer?)
+    (include "free-vars-decl.scm")]
+  [rmosh
+    (include "../rmosh/boot/free-vars-decl-rmosh.scm")]
+  [else #f])
+
+(cond-expand
  [gauche
   (use srfi-1)
   (use util.match)
@@ -57,7 +64,6 @@
  [vm-outer?
   (define dd (lambda a '()))
   (define pp (lambda a '()))
-  (include "free-vars-decl.scm")
   (define find10 find)
   (define syntax-error error)
   (define (command-line) *command-line-args*)]
@@ -65,7 +71,6 @@
  (define df format)
  (define dd display)
  (define pp print)
- (include "free-vars-decl.scm")
  (define (make-list-with-src-slot lst) (if (pair? lst) (annotated-cons (car lst) (cdr lst)) lst))
  (define (command-line) *command-line-args*)
  (define (mosh-executable-name) %mosh-executable-name)
