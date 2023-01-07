@@ -182,6 +182,7 @@ impl Vm {
         self.fp = self.sp;
 
         let mut pc: *const Object = ops;
+        loop {
         let op: Op = unsafe { *pc }.to_instruction();
         match op {
             Op::CompileError => todo!(),
@@ -210,7 +211,11 @@ impl Vm {
             Op::Cdr => todo!(),
             Op::Closure => todo!(),
             Op::Cons => todo!(),
-            Op::Constant => todo!(),
+            Op::Constant => {
+                let v = self.operand(&mut pc);
+                println!("v={}", v);
+                self.set_return_value(v);
+            }
             Op::DefineGlobal => todo!(),
             Op::Display => todo!(),
             Op::Enter => todo!(),
@@ -262,7 +267,9 @@ impl Vm {
             Op::VectorRef => todo!(),
             Op::VectorSet => todo!(),
             Op::PushEnter => todo!(),
-            Op::Halt => todo!(),
+            Op::Halt => {
+                break;
+            }
             Op::ConstantPush => todo!(),
             Op::NumberSubPush => todo!(),
             Op::NumberAddPush => todo!(),
@@ -292,8 +299,8 @@ impl Vm {
             Op::LocalTailCall => todo!(),
         }
         //self.print_vm(op);
-        //pc = self.jump(pc, 1);
-
+        pc = self.jump(pc, 1);
+    }
         self.ac
     }
 
@@ -316,6 +323,7 @@ impl Vm {
             }
         }
     }
+
 
     #[inline(always)]
     fn number_add_op(&mut self) {
@@ -344,7 +352,7 @@ impl Vm {
             self.set_return_value(Object::False);
         } else {
             self.set_return_value(Object::True);
-            *pc = self.jump(*pc, skip_offset - 1);
+            *pc = self.jump_old(*pc, skip_offset - 1);
         }
     }
 
@@ -362,7 +370,7 @@ impl Vm {
         // ======== sp ==========
         //
         // where pc* = pc + skip_offset -1
-        let next_pc = self.jump(pc, skip_offset - 1);
+        let next_pc = self.jump_old(pc, skip_offset - 1);
         self.push(Object::OpPointer(next_pc));
         self.push(self.dc);
         // TODO: This should be cl register.
@@ -853,9 +861,21 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn jump(&self, pc: *const OpOld, offset: isize) -> *const OpOld {
+    fn jump(&self, pc: *const Object, offset: isize) -> *const Object {
         unsafe { pc.offset(offset) }
     }
+    
+    #[inline(always)]
+    fn jump_old(&self, pc: *const OpOld, offset: isize) -> *const OpOld {
+        unsafe { pc.offset(offset) }
+    }
+
+    #[inline(always)]
+    fn operand(&mut self, pc: &mut *const Object) -> Object {
+        let next_pc = self.jump(*pc, 1);
+        *pc = next_pc;
+        unsafe {*next_pc}
+    }    
 
     #[inline(always)]
     fn inc(&self, pointer: *mut Object, offset: isize) -> *mut Object {

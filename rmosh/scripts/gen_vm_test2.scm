@@ -65,7 +65,7 @@
           ;; CONSTANT family with 1 arg.
           [((? const1-insn? insn) v . more*)
             (let1 var (gen v)
-              (format port "~aObject::Instruction(Op2::~a),\n" indent (insn->string insn))            
+              (format port "~aObject::Instruction(Op::~a),\n" indent (insn->string insn))            
               (format port "~a~a,\n" indent var)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; GLOBAL family with 1 symbol argument.
