@@ -56,7 +56,7 @@ macro_rules! number_op {
     };
 }
 
-pub struct Vm {
+pub struct VmOld {
     pub gc: Box<Gc>,
     // The stack.
     stack: [Object; STACK_SIZE],
@@ -84,7 +84,7 @@ pub struct Vm {
     // Otherwise they can cause memory leak or double free.
 }
 
-impl Vm {
+impl VmOld {
     pub fn new() -> Self {
         Self {
             gc: Box::new(Gc::new()),
@@ -356,7 +356,7 @@ impl Vm {
                     let closure = self.ac.to_closure();                    
                     let argc = depth;
                     self.dc = self.ac;
-                    pc = closure.ops;
+                    pc = closure.ops_old;
                     self.fp = self.dec(self.sp, argc);
                 }
                 Op::LocalCall(argc) => {
@@ -367,7 +367,7 @@ impl Vm {
                             self.dc = self.ac;
                             // todo
                             //self.cl = self.ac;
-                            pc = c.ops;
+                            pc = c.ops_old;
                             self.fp = self.dec(self.sp, argc);
                         }
                         obj => {
@@ -983,7 +983,7 @@ impl Vm {
                 self.dc = self.ac;
                 // TODO:
                 // self.cl = self.ac;
-                *pc = closure.ops;
+                *pc = closure.ops_old;
                 if closure.is_optional_arg {
                     let extra_len = argc - closure.argc;
                     if -1 == extra_len {
@@ -1079,7 +1079,7 @@ impl Vm {
     fn reset_roots(&mut self) {
         // Clean up display closure so that Objects in ops can be freed.
         let mut closure = self.dc.to_closure();
-        closure.ops = null();
+        closure.ops_old = null();
         closure.ops_len = 0;
     }
     // Note we keep self.ac here, so that it can live after it returned by run().

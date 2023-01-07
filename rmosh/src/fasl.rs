@@ -445,7 +445,7 @@ impl Fasl<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use crate::{compiler, equal::Equal, gc::Gc, objects::Object, op::Op, vm::Vm};
+    use crate::{compiler, equal::Equal, gc::Gc, objects::Object, op::Op, vm::VmOld};
 
     use super::Fasl;
 
@@ -596,7 +596,7 @@ pub mod tests {
 
     #[test]
     fn test_baselib() {
-        let mut vm = Vm::new();
+        let mut vm = VmOld::new();
         let bytes: &[u8] = &[
             24, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 95, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 59, 0, 1, 0, 0, 0, 0, 0,
@@ -728,7 +728,7 @@ pub mod tests {
     #[test]
     fn test_compiler() {
         {
-            let mut vm = Vm::new();
+            let mut vm = VmOld::new();
             let mut fasl = Fasl {
                 bytes: compiler::BIN_COMPILER,
             };

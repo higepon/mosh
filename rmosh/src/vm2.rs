@@ -17,7 +17,7 @@ use crate::{
 const STACK_SIZE: usize = 256;
 const MAX_NUM_VALUES: usize = 256;
 
-pub struct Vm2 {
+pub struct Vm {
     pub gc: Box<Gc>,
     // The stack.
     stack: [Object; STACK_SIZE],
@@ -45,7 +45,7 @@ pub struct Vm2 {
     // Otherwise they can cause memory leak or double free.
 }
 
-impl Vm2 {
+impl Vm {
     pub fn new() -> Self {
         Self {
             gc: Box::new(Gc::new()),
@@ -430,7 +430,7 @@ impl Vm2 {
                 self.dc = self.ac;
                 // TODO:
                 // self.cl = self.ac;
-                *pc = closure.ops;
+                *pc = closure.ops_old;
                 if closure.is_optional_arg {
                     let extra_len = argc - closure.argc;
                     if -1 == extra_len {
@@ -527,7 +527,7 @@ impl Vm2 {
     fn reset_roots(&mut self) {
         // Clean up display closure so that Objects in ops can be freed.
         let mut closure = self.dc.to_closure();
-        closure.ops = null();
+        closure.ops_old = null();
         closure.ops_len = 0;
     }
     // Note we keep self.ac here, so that it can live after it returned by run().

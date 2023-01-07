@@ -1,7 +1,7 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
-use crate::vm::Vm;
+use crate::vm::VmOld;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
@@ -759,12 +759,12 @@ impl Display for Symbol {
 /// Procedures written in Rust.
 pub struct Procedure {
     pub header: GcHeader,
-    pub func: fn(&mut Vm, &[Object]) -> Object,
+    pub func: fn(&mut VmOld, &[Object]) -> Object,
     pub name: String,
 }
 
 impl Procedure {
-    pub fn new(func: fn(&mut Vm, &[Object]) -> Object, name: String) -> Self {
+    pub fn new(func: fn(&mut VmOld, &[Object]) -> Object, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
@@ -789,8 +789,8 @@ impl Display for Procedure {
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
-    pub ops: *const Op,
-    pub ops2: *const Object,    
+    pub ops_old: *const Op,
+    pub ops: *const Object,    
     pub ops_len: usize,
     pub argc: isize,
     pub is_optional_arg: bool,
@@ -808,8 +808,8 @@ impl Closure {
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
-            ops: ops,
-            ops2: null(),
+            ops_old: ops,
+            ops: null(),
             ops_len: ops_len,
             argc: argc,
             is_optional_arg: is_optional_arg,
@@ -827,8 +827,8 @@ impl Closure {
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
-            ops: null(),
-            ops2: ops,
+            ops_old: null(),
+            ops,
             ops_len: ops_len,
             argc: argc,
             is_optional_arg: is_optional_arg,
@@ -955,7 +955,7 @@ pub mod tests {
     use regex::Regex;
 
     // Helpers.
-    fn procedure1(_vm: &mut Vm, args: &[Object]) -> Object {
+    fn procedure1(_vm: &mut VmOld, args: &[Object]) -> Object {
         assert_eq!(args.len(), 1);
         args[0]
     }
@@ -989,7 +989,7 @@ pub mod tests {
 
     #[test]
     fn test_procedure() {
-        let mut vm = Vm::new();
+        let mut vm = VmOld::new();
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
         let stack = [Object::Number(1), Object::Number(2)];
         match (p.func)(&mut vm, &stack[0..1]) {

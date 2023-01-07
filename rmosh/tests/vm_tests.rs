@@ -4,7 +4,7 @@ use rmosh::{
     gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    vm::Vm,
+    vm::VmOld,
 };
 
 // Custom hand written tests.
@@ -18,7 +18,7 @@ fn test_symbol_intern() {
 
 #[test]
 fn test_vm_define() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = [
         Op::Constant(Object::Number(9)),
         Op::DefineGlobal(vm.gc.intern("a")),
@@ -69,7 +69,7 @@ static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE
     + SIZE_OF_SYMBOL * 5
     + SIZE_OF_STRING * 3;
 
-fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
+fn test_ops_with_size(vm: &mut VmOld, ops: Vec<Op>, expected: Object, expected_heap_diff: usize) {
     // Keep reference so that it won't be freed.
     vm.expected = expected;
 
@@ -85,7 +85,7 @@ fn test_ops_with_size(vm: &mut Vm, ops: Vec<Op>, expected: Object, expected_heap
     }
 }
 
-fn test_ops_with_size_as_str(vm: &mut Vm, ops: Vec<Op>, expected: &str, expected_heap_diff: usize) {
+fn test_ops_with_size_as_str(vm: &mut VmOld, ops: Vec<Op>, expected: &str, expected_heap_diff: usize) {
     let ret = vm.run(ops.as_ptr(), ops.len());
     vm.ac = Object::Unspecified;
     vm.mark_and_sweep();
@@ -95,7 +95,7 @@ fn test_ops_with_size_as_str(vm: &mut Vm, ops: Vec<Op>, expected: &str, expected
 
 #[test]
 fn test_vm_alloc_many_pairs() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let mut ops = vec![];
 
     for _ in 0..100 {
@@ -116,7 +116,7 @@ fn test_vm_alloc_many_pairs() {
 
 #[test]
 fn test_call0() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Closure {
@@ -137,7 +137,7 @@ fn test_call0() {
 
 #[test]
 fn test_call1() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(10),
         Op::Constant(Object::Number(1)),
@@ -163,7 +163,7 @@ fn test_call1() {
 
 #[test]
 fn test_call2() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(12),
         Op::Constant(Object::Number(1)),
@@ -191,7 +191,7 @@ fn test_call2() {
 
 #[test]
 fn test_if0() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Test(3),
@@ -206,7 +206,7 @@ fn test_if0() {
 }
 #[test]
 fn test_if1() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Test(3),
@@ -222,7 +222,7 @@ fn test_if1() {
 
 #[test]
 fn test_let0() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(Object::Number(0)),
@@ -237,7 +237,7 @@ fn test_let0() {
 
 #[test]
 fn test_let1() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(1)),
@@ -257,7 +257,7 @@ fn test_let1() {
 
 #[test]
 fn test_nested_let0() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(1)),
@@ -283,7 +283,7 @@ fn test_nested_let0() {
 
 #[test]
 fn test_nested_let1() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(5),
         Op::Constant(Object::Number(1)),
@@ -322,14 +322,14 @@ fn test_nested_let1() {
 
 #[test]
 fn test_and() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::True), Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::True, 0);
 }
 
 #[test]
 fn test_if2() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Test(3),
@@ -345,35 +345,35 @@ fn test_if2() {
 
 #[test]
 fn test_test0() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::True), Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::True, 0);
 }
 
 #[test]
 fn test_test2() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::True), Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::True, 0);
 }
 
 #[test]
 fn test_test3() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::Number(3), 0);
 }
 
 #[test]
 fn test_test4() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
 }
 
 #[test]
 fn test_test5() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Test(3),
@@ -389,7 +389,7 @@ fn test_test5() {
 
 #[test]
 fn test_test6() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Constant(Object::Number(4)),
@@ -412,7 +412,7 @@ fn test_test6() {
 
 #[test]
 fn test_test7() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(6)),
@@ -441,7 +441,7 @@ fn test_test7() {
 
 #[test]
 fn test_test8() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Closure {
@@ -462,7 +462,7 @@ fn test_test8() {
 
 #[test]
 fn test_test9() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Constant(Object::Number(101)),
@@ -485,7 +485,7 @@ fn test_test9() {
 
 #[test]
 fn test_test10() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(9),
         Op::Frame(7),
@@ -517,7 +517,7 @@ fn test_test10() {
 
 #[test]
 fn test_test11() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(101)),
@@ -551,7 +551,7 @@ fn test_test11() {
 
 #[test]
 fn test_test12() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(103)),
@@ -585,7 +585,7 @@ fn test_test12() {
 
 #[test]
 fn test_test13() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Frame(11),
@@ -621,7 +621,7 @@ fn test_test13() {
 
 #[test]
 fn test_test14() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(2)),
@@ -648,7 +648,7 @@ fn test_test14() {
 
 #[test]
 fn test_test15() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(14),
         Op::Constant(Object::Nil),
@@ -684,7 +684,7 @@ fn test_test15() {
 
 #[test]
 fn test_test16() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(24),
         Op::Closure {
@@ -742,7 +742,7 @@ fn test_test16() {
 
 #[test]
 fn test_test17() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Closure {
@@ -765,7 +765,7 @@ fn test_test17() {
 
 #[test]
 fn test_test18() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(Object::Number(3)),
@@ -780,7 +780,7 @@ fn test_test18() {
 
 #[test]
 fn test_test19() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(Object::Symbol(vm.gc.intern("a"))),
@@ -795,7 +795,7 @@ fn test_test19() {
 
 #[test]
 fn test_test20() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(Object::Symbol(vm.gc.intern("a"))),
@@ -810,14 +810,14 @@ fn test_test20() {
 
 #[test]
 fn test_test21() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::Number(4), 0);
 }
 
 #[test]
 fn test_test22() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(4)),
         Op::Push,
@@ -830,7 +830,7 @@ fn test_test22() {
 
 #[test]
 fn test_test23() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(4)),
         Op::Push,
@@ -846,7 +846,7 @@ fn test_test23() {
 
 #[test]
 fn test_test24() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -865,7 +865,7 @@ fn test_test24() {
 
 #[test]
 fn test_test25() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(10)),
         Op::Push,
@@ -878,7 +878,7 @@ fn test_test25() {
 
 #[test]
 fn test_test26() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(10)),
         Op::Push,
@@ -894,7 +894,7 @@ fn test_test26() {
 
 #[test]
 fn test_test27_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Symbol(vm.gc.intern("a"))),
         Op::Push,
@@ -924,7 +924,7 @@ fn test_test27_modified() {
 
 #[test]
 fn test_test28() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(2)),
         Op::Push,
@@ -938,7 +938,7 @@ fn test_test28() {
 
 #[test]
 fn test_test29() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(2)),
         Op::Push,
@@ -952,7 +952,7 @@ fn test_test29() {
 
 #[test]
 fn test_test30() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(2)),
         Op::Push,
@@ -969,7 +969,7 @@ fn test_test30() {
 
 #[test]
 fn test_test31() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Push,
@@ -982,7 +982,7 @@ fn test_test31() {
 
 #[test]
 fn test_test32() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Push,
@@ -995,7 +995,7 @@ fn test_test32() {
 
 #[test]
 fn test_test33() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(Object::Number(3)),
@@ -1010,7 +1010,7 @@ fn test_test33() {
 
 #[test]
 fn test_test34() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1027,7 +1027,7 @@ fn test_test34() {
 
 #[test]
 fn test_test35() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1044,7 +1044,7 @@ fn test_test35() {
 
 #[test]
 fn test_test36() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1062,7 +1062,7 @@ fn test_test36() {
 
 #[test]
 fn test_test37() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(Object::Number(3)),
@@ -1077,7 +1077,7 @@ fn test_test37() {
 
 #[test]
 fn test_test38() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1097,7 +1097,7 @@ fn test_test38() {
 
 #[test]
 fn test_test39() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1120,7 +1120,7 @@ fn test_test39() {
 
 #[test]
 fn test_test40() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(3)),
@@ -1146,7 +1146,7 @@ fn test_test40() {
 
 #[test]
 fn test_test41() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(5),
         Op::Constant(Object::Number(3)),
@@ -1185,7 +1185,7 @@ fn test_test41() {
 
 #[test]
 fn test_test42() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(5),
         Op::Constant(Object::Number(3)),
@@ -1218,7 +1218,7 @@ fn test_test42() {
 
 #[test]
 fn test_test43() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(6),
         Op::Constant(Object::Number(3)),
@@ -1254,7 +1254,7 @@ fn test_test43() {
 
 #[test]
 fn test_test44() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1274,7 +1274,7 @@ fn test_test44() {
 
 #[test]
 fn test_test45() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(3)),
@@ -1300,7 +1300,7 @@ fn test_test45() {
 
 #[test]
 fn test_test46() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1327,7 +1327,7 @@ fn test_test46() {
 
 #[test]
 fn test_test47() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(2)),
@@ -1344,7 +1344,7 @@ fn test_test47() {
 
 #[test]
 fn test_test48() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1380,7 +1380,7 @@ fn test_test48() {
 
 #[test]
 fn test_test49() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(3)),
@@ -1416,7 +1416,7 @@ fn test_test49() {
 
 #[test]
 fn test_test50() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(0)),
@@ -1435,7 +1435,7 @@ fn test_test50() {
 
 #[test]
 fn test_test51() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(5),
         Op::Constant(Object::Number(1)),
@@ -1476,7 +1476,7 @@ fn test_test51() {
 
 #[test]
 fn test_test52() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(Object::Number(3)),
@@ -1491,7 +1491,7 @@ fn test_test52() {
 
 #[test]
 fn test_test53() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(3)),
@@ -1511,7 +1511,7 @@ fn test_test53() {
 
 #[test]
 fn test_test54() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(3)),
@@ -1534,7 +1534,7 @@ fn test_test54() {
 
 #[test]
 fn test_test55() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(3)),
@@ -1584,7 +1584,7 @@ fn test_test55() {
 
 #[test]
 fn test_test56() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(0)),
@@ -1622,7 +1622,7 @@ fn test_test56() {
 
 #[test]
 fn test_test57() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(0)),
@@ -1652,7 +1652,7 @@ fn test_test57() {
 
 #[test]
 fn test_test58() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(0)),
@@ -1694,7 +1694,7 @@ fn test_test58() {
 
 #[test]
 fn test_test59() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(0)),
@@ -1736,7 +1736,7 @@ fn test_test59() {
 
 #[test]
 fn test_test60() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(100)),
@@ -1781,7 +1781,7 @@ fn test_test60() {
 // (letrec ((a 1) (b (lambda () a))) (b)) => 1
 #[test]
 fn test_test61() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(0),
         Op::Undef,
@@ -1820,7 +1820,7 @@ fn test_test61() {
 // (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0)) => 10
 #[test]
 fn test_test62() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Undef,
@@ -1870,7 +1870,7 @@ fn test_test62() {
 // (let ((a '())) (let ((G68 (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (set! a G68) (a 0))) => 1000
 #[test]
 fn test_test63() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Nil),
@@ -1930,7 +1930,7 @@ fn test_test63() {
 // (letrec ((a (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (a 0)) => 1000
 #[test]
 fn test_test64() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Undef,
@@ -1980,7 +1980,7 @@ fn test_test64() {
 // ((lambda (a) (set! a 1000) a) '()) => 1000
 #[test]
 fn test_test65() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Nil),
@@ -2008,7 +2008,7 @@ fn test_test65() {
 // ((lambda (a) (set! a (lambda (i) (if (= i 20) i (a (+ i 1))))) (a 0)) '()) => 20
 #[test]
 fn test_test66() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(31),
         Op::Constant(Object::Nil),
@@ -2064,7 +2064,7 @@ fn test_test66() {
 // (define a 3) => 3
 #[test]
 fn test_test68() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::DefineGlobal(vm.gc.intern("a")),
@@ -2075,7 +2075,7 @@ fn test_test68() {
 // (= 3 4) => #f
 #[test]
 fn test_test70() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Push,
@@ -2089,7 +2089,7 @@ fn test_test70() {
 // (= 3 3 3) => #t
 #[test]
 fn test_test71() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Push,
@@ -2108,7 +2108,7 @@ fn test_test71() {
 // (= 3 4 5) => #f
 #[test]
 fn test_test72() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Push,
@@ -2127,7 +2127,7 @@ fn test_test72() {
 // (((lambda (a) (lambda () a)) 101)) => 101
 #[test]
 fn test_test73() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Frame(11),
@@ -2164,7 +2164,7 @@ fn test_test73() {
 // (((lambda (a) (lambda (b) (+ a b))) 101) 1) => 102
 #[test]
 fn test_test74() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(18),
         Op::Constant(Object::Number(1)),
@@ -2206,7 +2206,7 @@ fn test_test74() {
 // (null? '()) => #t
 #[test]
 fn test_test75() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Nil), Op::NullP, Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::True, 0);
 }
@@ -2214,7 +2214,7 @@ fn test_test75() {
 // (null? 3) => #f
 #[test]
 fn test_test76() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(3)), Op::NullP, Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::False, 0);
 }
@@ -2222,7 +2222,7 @@ fn test_test76() {
 // (cons 1 2) => (1 . 2)
 #[test]
 fn test_test77_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -2250,7 +2250,7 @@ fn test_test77_modified() {
 // (cons 1 (cons 2 '())) => (1 2)
 #[test]
 fn test_test78() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -2283,7 +2283,7 @@ fn test_test78() {
 // (begin 1 2 3) => 3
 #[test]
 fn test_test79() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Constant(Object::Number(2)),
@@ -2296,7 +2296,7 @@ fn test_test79() {
 // ((lambda () (set! a 4) a)) => 4
 #[test]
 fn test_test80() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Closure {
@@ -2320,7 +2320,7 @@ fn test_test80() {
 // ((lambda () ((lambda () 3)))) => 3
 #[test]
 fn test_test81() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(8),
         Op::Closure {
@@ -2351,7 +2351,7 @@ fn test_test81() {
 // ((lambda () ((lambda (x) x) 3))) => 3
 #[test]
 fn test_test82() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(10),
         Op::Closure {
@@ -2384,7 +2384,7 @@ fn test_test82() {
 // ((lambda (y) ((lambda (x) x) 3)) 4) => 3
 #[test]
 fn test_test83() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(12),
         Op::Constant(Object::Number(4)),
@@ -2419,7 +2419,7 @@ fn test_test83() {
 // ((lambda () (let1 a 1 ((lambda () 3))))) => 3
 #[test]
 fn test_test84() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Closure {
@@ -2455,7 +2455,7 @@ fn test_test84() {
 // ((lambda () (let1 b 2 (let1 a 1 ((lambda () 3)))))) => 3
 #[test]
 fn test_test85() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(18),
         Op::Closure {
@@ -2496,7 +2496,7 @@ fn test_test85() {
 // ((lambda () (if 3 ((lambda () 3))))) => 3
 #[test]
 fn test_test86() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(12),
         Op::Closure {
@@ -2533,7 +2533,7 @@ fn test_test86() {
 // ((lambda () (if ((lambda () 3)) 4 5))) => 4
 #[test]
 fn test_test87() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Closure {
@@ -2572,7 +2572,7 @@ fn test_test87() {
 // (let loop ((i 0)) (if (= i 10) i (let1 a 1 (let1 b 0 (loop (+ i a b)))))) => 10
 #[test]
 fn test_test88() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Undef,
@@ -2647,7 +2647,7 @@ fn test_test88() {
 // (let loop ((i 0)) (if (= i 10) i (let1 a 1 (let1 b 0 (loop (+ i a b)))))) => 10
 #[test]
 fn test_test89() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Undef,
@@ -2722,7 +2722,7 @@ fn test_test89() {
 // ((lambda () (define d (lambda (x y z) (+ x y z))) (d 1 2 3))) => 6
 #[test]
 fn test_test90() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(29),
         Op::Closure {
@@ -2774,7 +2774,7 @@ fn test_test90() {
 // ((lambda () (define b (lambda () 3)) (b))) => 3
 #[test]
 fn test_test91() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(17),
         Op::Closure {
@@ -2814,7 +2814,7 @@ fn test_test91() {
 // ((lambda a a) 1 2 3) => (1 2 3)
 #[test]
 fn test_test92() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(1)),
@@ -2842,7 +2842,7 @@ fn test_test92() {
 // ((lambda (a . b) b) 1 2 3) => (2 3)
 #[test]
 fn test_test93() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(1)),
@@ -2870,7 +2870,7 @@ fn test_test93() {
 // ((lambda (a . b) b) 1 2 3 4) => (2 3 4)
 #[test]
 fn test_test94() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Constant(Object::Number(1)),
@@ -2900,7 +2900,7 @@ fn test_test94() {
 // ((lambda (a b . c) c) 1 2 3 4) => (3 4)
 #[test]
 fn test_test95() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Constant(Object::Number(1)),
@@ -2930,7 +2930,7 @@ fn test_test95() {
 // ((lambda (a b c . d) d) 1 2 3 4) => (4)
 #[test]
 fn test_test96() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Constant(Object::Number(1)),
@@ -2960,7 +2960,7 @@ fn test_test96() {
 // ((lambda (a b c . d) d) 1 2 3) => ()
 #[test]
 fn test_test97() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(1)),
@@ -2988,7 +2988,7 @@ fn test_test97() {
 // ((lambda a a)) => ()
 #[test]
 fn test_test98() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Closure {
@@ -3010,7 +3010,7 @@ fn test_test98() {
 // ((lambda a a) 1) => (1)
 #[test]
 fn test_test99() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Constant(Object::Number(1)),
@@ -3034,7 +3034,7 @@ fn test_test99() {
 // (when #t 1 2 34) => 34
 #[test]
 fn test_test100() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::True),
         Op::Test(5),
@@ -3053,7 +3053,7 @@ fn test_test100() {
 // (not 3) => #f
 #[test]
 fn test_test101() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(3)), Op::Not, Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::False, 0);
 }
@@ -3061,7 +3061,7 @@ fn test_test101() {
 // (unless #f 1 2 48) => 48
 #[test]
 fn test_test102() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Test(3),
@@ -3080,7 +3080,7 @@ fn test_test102() {
 // (and 3 4 5) => 5
 #[test]
 fn test_test103() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Test(4),
@@ -3097,7 +3097,7 @@ fn test_test103() {
 // (let1 a 0 (and (set! a (+ a 1))) a) => 1
 #[test]
 fn test_test104() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(0)),
@@ -3121,7 +3121,7 @@ fn test_test104() {
 // (let1 a 0 (or (set! a (+ a 1))) a) => 1
 #[test]
 fn test_test105() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(0)),
@@ -3145,7 +3145,7 @@ fn test_test105() {
 // (and 3 #f 5) => #f
 #[test]
 fn test_test106() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Test(4),
@@ -3162,7 +3162,7 @@ fn test_test106() {
 // (or 3 4 5) => 3
 #[test]
 fn test_test107() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Test(2),
@@ -3183,7 +3183,7 @@ fn test_test107() {
 // (or #f #f #f) => #f
 #[test]
 fn test_test108() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Test(2),
@@ -3201,7 +3201,7 @@ fn test_test108() {
 // (> 4 3) => #t
 #[test]
 fn test_test109() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(4)),
         Op::Push,
@@ -3215,7 +3215,7 @@ fn test_test109() {
 // (> 4 3 2) => #t
 #[test]
 fn test_test110() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(4)),
         Op::Push,
@@ -3234,7 +3234,7 @@ fn test_test110() {
 // (> 4 3 1 2) => #f
 #[test]
 fn test_test111() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(4)),
         Op::Push,
@@ -3258,7 +3258,7 @@ fn test_test111() {
 // (>= 3 3 3) => #t
 #[test]
 fn test_test112() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Push,
@@ -3277,7 +3277,7 @@ fn test_test112() {
 // (>= 4 3 3) => #t
 #[test]
 fn test_test113() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(4)),
         Op::Push,
@@ -3296,7 +3296,7 @@ fn test_test113() {
 // (>= 4 3) => #t
 #[test]
 fn test_test114() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(4)),
         Op::Push,
@@ -3310,7 +3310,7 @@ fn test_test114() {
 // (< 1 2) => #t
 #[test]
 fn test_test115() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3324,7 +3324,7 @@ fn test_test115() {
 // (< 1 2 3) => #t
 #[test]
 fn test_test116() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3343,7 +3343,7 @@ fn test_test116() {
 // (< 1 5 3) => #f
 #[test]
 fn test_test117() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3362,7 +3362,7 @@ fn test_test117() {
 // (<= 1 2) => #t
 #[test]
 fn test_test118() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3376,7 +3376,7 @@ fn test_test118() {
 // (<= 1 2 3) => #t
 #[test]
 fn test_test119() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3395,7 +3395,7 @@ fn test_test119() {
 // (<= 1 3 3) => #t
 #[test]
 fn test_test120() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3414,7 +3414,7 @@ fn test_test120() {
 // (<= 1 5 3) => #f
 #[test]
 fn test_test121() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3433,7 +3433,7 @@ fn test_test121() {
 // (eq? #t #t) => #t
 #[test]
 fn test_test122() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::True),
         Op::Push,
@@ -3447,7 +3447,7 @@ fn test_test122() {
 // (eq? #t #f) => #f
 #[test]
 fn test_test123() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::True),
         Op::Push,
@@ -3461,7 +3461,7 @@ fn test_test123() {
 // (eq? 'a 'a) => #t
 #[test]
 fn test_test124() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Symbol(vm.gc.intern("a"))),
         Op::Push,
@@ -3475,7 +3475,7 @@ fn test_test124() {
 // (eq? 'a 'b) => #f
 #[test]
 fn test_test125() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Symbol(vm.gc.intern("a"))),
         Op::Push,
@@ -3489,7 +3489,7 @@ fn test_test125() {
 // (pair? (cons 1 2)) => #t
 #[test]
 fn test_test126() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -3504,7 +3504,7 @@ fn test_test126() {
 // (pair? 3) => #f
 #[test]
 fn test_test127() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(3)), Op::PairP, Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::False, 0);
 }
@@ -3512,7 +3512,7 @@ fn test_test127() {
 // (symbol? 'a) => #t
 #[test]
 fn test_test128() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Symbol(vm.gc.intern("a"))),
         Op::SymbolP,
@@ -3524,7 +3524,7 @@ fn test_test128() {
 // (symbol? 3) => #f
 #[test]
 fn test_test129() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(3)), Op::SymbolP, Op::Halt];
     test_ops_with_size(&mut vm, ops, Object::False, 0);
 }
@@ -3532,7 +3532,7 @@ fn test_test129() {
 // (cond (#f 1) (#t 3)) => 3
 #[test]
 fn test_test130() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Test(3),
@@ -3555,7 +3555,7 @@ fn test_test130() {
 // (cond (#f 1) (#f 2) (else 3)) => 3
 #[test]
 fn test_test131() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Test(3),
@@ -3578,7 +3578,7 @@ fn test_test131() {
 // (cond (#t 3) (#f 2) (else 1)) => 3
 #[test]
 fn test_test132() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::True),
         Op::Test(3),
@@ -3601,7 +3601,7 @@ fn test_test132() {
 // (cond ((cons 1 2) => car) (#f 2) (else 3)) => 1
 #[test]
 fn test_test133() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::ReferFree(3),
@@ -3640,7 +3640,7 @@ fn test_test133() {
 // (let ((a 0)) `(,a 4 5)) => (0 4 5)
 #[test]
 fn test_test134() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(0)),
@@ -3659,7 +3659,7 @@ fn test_test134() {
 // (let ((a '(1 2 3))) `(,a 4 5)) => ((1 2 3) 4 5)
 #[test]
 fn test_test135() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(
@@ -3681,7 +3681,7 @@ fn test_test135() {
 // (let ((a '(1 2 3))) `(,@a 4 5)) => (1 2 3 4 5)
 #[test]
 fn test_test136() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(
@@ -3703,7 +3703,7 @@ fn test_test136() {
 // (let ((name 'a)) `(list ,name ',name)) => (list a 'a)
 #[test]
 fn test_test137() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(6),
         Op::Constant(Object::Symbol(vm.gc.intern("a"))),
@@ -3734,7 +3734,7 @@ fn test_test137() {
 // `(list ,(+ 1 2) 4) => (list 3 4)
 #[test]
 fn test_test138() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Symbol(vm.gc.intern("list"))),
         Op::Push,
@@ -3754,7 +3754,7 @@ fn test_test138() {
 // (let ((a '(1 2 3))) `(1 . ,a)) => (1 1 2 3)
 #[test]
 fn test_test139() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(
@@ -3776,7 +3776,7 @@ fn test_test139() {
 // (let ((a '(1 2 3))) `,a) => (1 2 3)
 #[test]
 fn test_test140() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(
@@ -3795,7 +3795,7 @@ fn test_test140() {
 // (let ((a '(1 2 3))) `(,@a)) => (1 2 3)
 #[test]
 fn test_test141() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(
@@ -3814,7 +3814,7 @@ fn test_test141() {
 // (let ((a '(1 2 3))) `(0 ,@a)) => (0 1 2 3)
 #[test]
 fn test_test142() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(
@@ -3836,7 +3836,7 @@ fn test_test142() {
 // (let ((a '(1 2 3))) `(0 ,a 4)) => (0 (1 2 3) 4)
 #[test]
 fn test_test143() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(
@@ -3861,7 +3861,7 @@ fn test_test143() {
 // (let ((a '(1 2 3))) `(,@a 4)) => (1 2 3 4)
 #[test]
 fn test_test144() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(
@@ -3883,7 +3883,7 @@ fn test_test144() {
 // (let ((a '(1 2 3))) `((,@a) 4)) => ((1 2 3) 4)
 #[test]
 fn test_test145() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(
@@ -3905,7 +3905,7 @@ fn test_test145() {
 // (let ((a '(1 2 3))) `((,a) 4)) => (((1 2 3)) 4)
 #[test]
 fn test_test146() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(
@@ -3930,7 +3930,7 @@ fn test_test146() {
 // `b => b
 #[test]
 fn test_test147_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Symbol(vm.gc.intern("b"))), Op::Halt];
     let obj = vm.gc.symbol_intern("b");
     test_ops_with_size(&mut vm, ops, obj, SIZE_OF_SYMBOL);
@@ -3939,7 +3939,7 @@ fn test_test147_modified() {
 // (list 1 2 3) => (1 2 3)
 #[test]
 fn test_test148() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(9),
         Op::Constant(Object::Number(1)),
@@ -3959,7 +3959,7 @@ fn test_test148() {
 // (aif (+ 1 2) it #f) => 3
 #[test]
 fn test_test149() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(Object::Number(1)),
@@ -3981,7 +3981,7 @@ fn test_test149() {
 // (string-length abc) => 3
 #[test]
 fn test_test150() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(vm.gc.new_string("abc")),
@@ -3997,7 +3997,7 @@ fn test_test150() {
 // (string-length あいう) => 3
 #[test]
 fn test_test151() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(vm.gc.new_string("あいう")),
@@ -4013,7 +4013,7 @@ fn test_test151() {
 // (string->symbol abc) => abc
 #[test]
 fn test_test152_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(vm.gc.new_string("abc")),
@@ -4030,7 +4030,7 @@ fn test_test152_modified() {
 // (number->string 123) => 123
 #[test]
 fn test_test153() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(Object::Number(123)),
@@ -4046,7 +4046,7 @@ fn test_test153() {
 // (begin (define (proc1 . a) a) (proc1 1 2 3 4)) => (1 2 3 4)
 #[test]
 fn test_test154_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 3,
@@ -4079,7 +4079,7 @@ fn test_test154_modified() {
 // ((lambda (a . b) b) 1 2 3) => (2 3)
 #[test]
 fn test_test155() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(11),
         Op::Constant(Object::Number(1)),
@@ -4107,7 +4107,7 @@ fn test_test155() {
 // ((lambda (a . b) a) 1 2 3 4 5) => 1
 #[test]
 fn test_test156() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(15),
         Op::Constant(Object::Number(1)),
@@ -4140,7 +4140,7 @@ fn test_test156() {
 // ((lambda (a . b) b) 1 2 3 4 5) => (2 3 4 5)
 #[test]
 fn test_test157() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(15),
         Op::Constant(Object::Number(1)),
@@ -4172,7 +4172,7 @@ fn test_test157() {
 // ((lambda (a b c d . e) e) 1 2 3 4) => ()
 #[test]
 fn test_test158() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Constant(Object::Number(1)),
@@ -4203,7 +4203,7 @@ fn test_test158() {
 // ((lambda (a b c d . e) a) 1 2 3 4) => 1
 #[test]
 fn test_test159() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Constant(Object::Number(1)),
@@ -4234,7 +4234,7 @@ fn test_test159() {
 // ((lambda (a b c d . e) b) 1 2 3 4) => 2
 #[test]
 fn test_test160() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Constant(Object::Number(1)),
@@ -4265,7 +4265,7 @@ fn test_test160() {
 // ((lambda (a b c d . e) c) 1 2 3 4) => 3
 #[test]
 fn test_test161() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Constant(Object::Number(1)),
@@ -4296,7 +4296,7 @@ fn test_test161() {
 // (append '(1 2) '(3 4)) => (1 2 3 4)
 #[test]
 fn test_test163() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
         Op::Push,
@@ -4310,7 +4310,7 @@ fn test_test163() {
 // (append) => ()
 #[test]
 fn test_test164() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Nil), Op::Halt];
     let expected = Object::Nil;
     test_ops_with_size(&mut vm, ops, expected, 0);
@@ -4319,7 +4319,7 @@ fn test_test164() {
 // (begin (define x 3) x) => 3
 #[test]
 fn test_test165_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::DefineGlobal(vm.gc.intern("x")),
@@ -4333,7 +4333,7 @@ fn test_test165_modified() {
 // (begin (define (hoge . a) a) (hoge 1 2 3)) => (1 2 3)
 #[test]
 fn test_test166() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 3,
@@ -4364,7 +4364,7 @@ fn test_test166() {
 // (begin (define (hige a . b) b) (hige 1 2 3)) => (2 3)
 #[test]
 fn test_test167() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 3,
@@ -4395,7 +4395,7 @@ fn test_test167() {
 // (apply (lambda a a) '(3 2)) => (3 2)
 #[test]
 fn test_test168() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(9),
         Op::Closure {
@@ -4421,7 +4421,7 @@ fn test_test168() {
 // (let ((a 3)) 3 2 1) => 1
 #[test]
 fn test_test170() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(Object::Number(3)),
@@ -4440,7 +4440,7 @@ fn test_test170() {
 // (make-string 3) =>
 #[test]
 fn test_test171() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(Object::Number(3)),
@@ -4456,7 +4456,7 @@ fn test_test171() {
 // (make-string 3 #\c) => "ccc"
 #[test]
 fn test_test172() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Constant(Object::Number(3)),
@@ -4474,7 +4474,7 @@ fn test_test172() {
 // (apply car '((3))) => 3
 #[test]
 fn test_test173_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let list = vm.gc.list1(Object::Number(3));
     let ops = vec![
         Op::Frame(7),
@@ -4494,7 +4494,7 @@ fn test_test173_modified() {
 // (apply (lambda (a) a) '(3)) => 3
 #[test]
 fn test_test174() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(9),
         Op::Closure {
@@ -4521,7 +4521,7 @@ fn test_test174() {
 // (apply (lambda (a b) (+ a b)) '(5 2)) => 7
 #[test]
 fn test_test175() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(12),
         Op::Closure {
@@ -4551,7 +4551,7 @@ fn test_test175() {
 // (apply (lambda (a b c) (+ a b c)) '(5 2 1)) => 8
 #[test]
 fn test_test176() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(15),
         Op::Closure {
@@ -4587,7 +4587,7 @@ fn test_test176() {
 // (apply (lambda (a) (car a)) '((3))) => 3
 #[test]
 fn test_test177_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let list = vm.gc.list1(Object::Number(3));
     let ops = vec![
         Op::Frame(10),
@@ -4616,7 +4616,7 @@ fn test_test177_modified() {
 // (apply (lambda (a . b) (+ a (car b))) '(1 2)) => 3
 #[test]
 fn test_test178() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(13),
         Op::Closure {
@@ -4647,7 +4647,7 @@ fn test_test178() {
 // (string-append "12" "345" "6") => "123456"
 #[test]
 fn test_test179() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(9),
         Op::Constant(vm.gc.new_string("12")),
@@ -4667,7 +4667,7 @@ fn test_test179() {
 // (string? "hige") => #t
 #[test]
 fn test_test181() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(vm.gc.new_string("hige")),
@@ -4684,7 +4684,7 @@ fn test_test181() {
 // ((lambda () (define p (cons 1 2)) (set-cdr! p 3) p)) => (1 . 3)
 #[test]
 fn test_test184() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(22),
         Op::Closure {
@@ -4723,7 +4723,7 @@ fn test_test184() {
 // ((lambda () (define q (cons 1 2)) (set-car! q 3) q)) => (3 . 2)
 #[test]
 fn test_test185() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(22),
         Op::Closure {
@@ -4762,7 +4762,7 @@ fn test_test185() {
 // (begin #f #t) => #t
 #[test]
 fn test_test186() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::False),
         Op::Constant(Object::True),
@@ -4775,7 +4775,7 @@ fn test_test186() {
 // (vector-length (make-vector 3)) => 3
 #[test]
 fn test_test187() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(3)),
         Op::Push,
@@ -4791,7 +4791,7 @@ fn test_test187() {
 // (let loop ((i 0)) (if (= i 100) (+ i 1) (loop (+ i 1)))) => 101
 #[test]
 fn test_test188() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Undef,
@@ -4845,7 +4845,7 @@ fn test_test188() {
 // (let ((a 0)) (cond (#t (set! a (+ a 1)) (set! a (+ a 1)) a))) => 2
 #[test]
 fn test_test189() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Number(0)),
@@ -4882,7 +4882,7 @@ fn test_test189() {
 // (char? #\あ) => #t
 #[test]
 fn test_test190() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(Object::Char('あ')),
@@ -4899,7 +4899,7 @@ fn test_test190() {
 // (eq? (list 'a) (list 'a)) => #f
 #[test]
 fn test_test191() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(vm.gc.symbol_intern("a")),
@@ -4924,7 +4924,7 @@ fn test_test191() {
 // (let ((x (list 'a))) (eq? x x)) => #t
 #[test]
 fn test_test192() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::ReferFree(89),
@@ -4952,7 +4952,7 @@ fn test_test192() {
 // (map1 (lambda (x) 2) '(1)) => (2)
 #[test]
 fn test_test193_modified0() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(9),
         // size was originally 3
@@ -4980,7 +4980,7 @@ fn test_test193_modified0() {
 // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF")) => ("ABC123" "DEF123")
 #[test]
 fn test_test193_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let abc = vm.gc.new_string("ABC");
     let def = vm.gc.new_string("DEF");
     let ops = vec![
@@ -5015,7 +5015,7 @@ fn test_test193_modified() {
 // (let1 a '() (let1 G68 (lambda (i) (if (>= i 10000) i (a (+ i 1)))) (set! a G68) (a 0))) => 10000
 #[test]
 fn test_test194() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(3),
         Op::Constant(Object::Nil),
@@ -5076,7 +5076,7 @@ fn test_test194() {
 // (let ((p (open-string-input-port "12345"))) (read-char p) (read-char p)) => #\2
 #[test]
 fn test_test195() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(35),
@@ -5104,7 +5104,7 @@ fn test_test195() {
 // (eof-object? (let ((p (open-string-input-port "1"))) (read-char p) (read-char p))) => #t
 #[test]
 fn test_test196() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(20),
         Op::LetFrame(2),
@@ -5137,7 +5137,7 @@ fn test_test196() {
 // (begin (let ((xxx 'a)) (case xxx ((b) 'b) ((a) 'a)))) => a
 #[test]
 fn test_test197_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(4),
         Op::Constant(vm.gc.symbol_intern("a")),
@@ -5175,7 +5175,7 @@ fn test_test197_modified() {
 // (begin (let ((xxy 'a)) (case xxy ((b) 'b) ((c) 'c) (else 3)))) => 3
 #[test]
 fn test_test198_mofidified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(4),
         Op::Constant(vm.gc.symbol_intern("a")),
@@ -5213,7 +5213,7 @@ fn test_test198_mofidified() {
 // (* 2 3 4) => 24
 #[test]
 fn test_test200() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(2)),
         Op::Push,
@@ -5231,7 +5231,7 @@ fn test_test200() {
 // (string->number "123") => 123
 #[test]
 fn test_test201() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(vm.gc.new_string("123")),
@@ -5248,7 +5248,7 @@ fn test_test201() {
 // (let ((p (open-string-input-port "123 456"))) (read-char p)) => #\1
 #[test]
 fn test_test202() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(35),
@@ -5274,7 +5274,7 @@ fn test_test202() {
 // (reverse '(1 2 3 4)) => (4 3 2 1)
 #[test]
 fn test_test203_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(vm.gc.list4(
@@ -5295,7 +5295,7 @@ fn test_test203_modified() {
 // (string-split "wiki&cmd" #\&) => ("wiki" "cmd")
 #[test]
 fn test_test204() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Constant(vm.gc.new_string("wiki&cmd")),
@@ -5313,7 +5313,7 @@ fn test_test204() {
 // (begin (define str1 (make-string 3 #\c)) (string-set! str1 1 #\b) str1) => "cbc"
 #[test]
 fn test_test205() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(7),
         Op::Constant(Object::Number(3)),
@@ -5344,7 +5344,7 @@ fn test_test205() {
 // (let* ((a 0) (b (lambda (x y) a))) (b (begin (set! a 1)) (begin (set! a 2)))) => 2
 #[test]
 fn test_test206() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(4),
         Op::Constant(Object::Number(0)),
@@ -5392,7 +5392,7 @@ fn test_test206() {
 // #\a => #\a
 #[test]
 fn test_test207() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Char('a')), Op::Halt];
     let expected = Object::Char('a');
     test_ops_with_size(&mut vm, ops, expected, 0);
@@ -5401,7 +5401,7 @@ fn test_test207() {
 // (eof-object? 3) => #f
 #[test]
 fn test_test208() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Frame(5),
         Op::Constant(Object::Number(3)),
@@ -5418,7 +5418,7 @@ fn test_test208() {
 // 102 => 102
 #[test]
 fn test_test209() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![Op::Constant(Object::Number(102)), Op::Halt];
     let expected = Object::Number(102);
     test_ops_with_size(&mut vm, ops, expected, 0);
@@ -5427,7 +5427,7 @@ fn test_test209() {
 // `(list ,(+ 1 2) 4) => (list 3 4)
 #[test]
 fn test_test210() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(vm.gc.symbol_intern("list")),
         Op::Push,
@@ -5447,7 +5447,7 @@ fn test_test210() {
 // (let ((name 'a)) `(list ,name ',name)) => (list a 'a)
 #[test]
 fn test_test211() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(6),
         Op::Constant(vm.gc.symbol_intern("a")),
@@ -5478,7 +5478,7 @@ fn test_test211() {
 // `(a ,(+ 1 2) ,@(map abs '(4 -5 6)) b) => (a 3 4 5 6 b)
 #[test]
 fn test_test212_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("b");
     let ops = vec![
         Op::Constant(vm.gc.symbol_intern("a")),
@@ -5512,7 +5512,7 @@ fn test_test212_modified() {
 // (vector? #(3)) => #t
 #[test]
 fn test_test213() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(vm.gc.new_vector(&vec![Object::Number(3)])),
         Op::VectorP,
@@ -5525,7 +5525,7 @@ fn test_test213() {
 // (begin (define (proc-01) 3) (proc-01)) => 3
 #[test]
 fn test_test214() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 3,
@@ -5550,7 +5550,7 @@ fn test_test214() {
 // (begin (define (add3 a b) (+ a b)) (add3 1 2)) => 3
 #[test]
 fn test_test215() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 6,
@@ -5582,7 +5582,7 @@ fn test_test215() {
 // (begin (define add2 (lambda (a b) (+ a b))) (add2 1 2)) => 3
 #[test]
 fn test_test216() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 6,
@@ -5614,7 +5614,7 @@ fn test_test216() {
 // (begin (define z (make-vector 2)) (vector-set! z 0 1) (vector-set! z 1 2) (make-vector 3) (null? 3) (vector-set! z 1 3) (vector-ref z 1)) => 3
 #[test]
 fn test_test217() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(2)),
         Op::Push,
@@ -5658,7 +5658,7 @@ fn test_test217() {
 // (begin (define (proc-2) (define (rec) 3) (rec)) (proc-2)) => 3
 #[test]
 fn test_test218() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 15,
@@ -5701,7 +5701,7 @@ fn test_test218() {
 // (begin (define (func2) (define val 4) val) (func2)) => 4
 #[test]
 fn test_test219() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Closure {
             size: 12,
@@ -5735,7 +5735,7 @@ fn test_test219() {
 // (if (values 1 2 3) #t #f) => #t
 #[test]
 fn test_test220() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(Object::Number(1)),
         Op::Push,
@@ -5755,7 +5755,7 @@ fn test_test220() {
 // (call-with-values (lambda () (values 4 5)) (lambda (a b) b)) => 5
 #[test]
 fn test_test221() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(152),
@@ -5804,7 +5804,7 @@ fn test_test221() {
 // (call-with-values (lambda () (values 1 2 3)) (lambda (a b c) (+ a b c))) => 6
 #[test]
 fn test_test222() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(152),
@@ -5861,7 +5861,7 @@ fn test_test222() {
 // (call-with-values (lambda () (values 1 2 3)) list) => (1 2 3)
 #[test]
 fn test_test223() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(89),
@@ -5905,7 +5905,7 @@ fn test_test223() {
 // (call-with-values (lambda () 1) (lambda (x) (+ x 1234))) => 1235
 #[test]
 fn test_test224() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(152),
@@ -5954,7 +5954,7 @@ fn test_test224() {
 // (receive (a b c) (values 1 2 3) (+ a b c)) => 6
 #[test]
 fn test_test225() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(4),
         Op::Constant(Object::Number(1)),
@@ -5982,7 +5982,7 @@ fn test_test225() {
 // (receive z (values 'x 'y) z) => (x y)
 #[test]
 fn test_test226() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(1),
         Op::Constant(vm.gc.symbol_intern("x")),
@@ -6001,7 +6001,7 @@ fn test_test226() {
 // (receive (a . b) (values 'x 'y 'z) b) => (y z)
 #[test]
 fn test_test227() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(vm.gc.symbol_intern("x")),
@@ -6022,7 +6022,7 @@ fn test_test227() {
 // (receive (a . b) (values 'x 'y 'z) a) => x
 #[test]
 fn test_test228() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::Constant(vm.gc.symbol_intern("x")),
@@ -6044,7 +6044,7 @@ fn test_test228() {
 // (receive x (apply values '(1 2 3)) x) => (1 2 3)
 #[test]
 fn test_test229() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(110),
@@ -6075,7 +6075,7 @@ fn test_test229() {
 // (call-with-values (lambda () (values 1 2)) cons) => (1 . 2)
 #[test]
 fn test_test230() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::LetFrame(2),
         Op::ReferFree(1),
@@ -6117,7 +6117,7 @@ fn test_test230() {
 // (cons 'a '()) => (a)
 #[test]
 fn test_test232() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(vm.gc.symbol_intern("a")),
         Op::Push,
@@ -6131,7 +6131,7 @@ fn test_test232() {
 // (cons '(a) '(b c d)) => ((a) b c d)
 #[test]
 fn test_test233_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
     let b = vm.gc.symbol_intern("b");
     let c = vm.gc.symbol_intern("c");
@@ -6149,7 +6149,7 @@ fn test_test233_modified() {
 // (cons "a" '(b c)) => ("a" b c)
 #[test]
 fn test_test234_modified() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("b");
     let c = vm.gc.symbol_intern("c");
     let ops = vec![
@@ -6165,7 +6165,7 @@ fn test_test234_modified() {
 // (cons 'a 3) => (a . 3)
 #[test]
 fn test_test235() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let ops = vec![
         Op::Constant(vm.gc.symbol_intern("a")),
         Op::Push,
@@ -6179,7 +6179,7 @@ fn test_test235() {
 // (cons '(a b) 'c) => ((a b) . c)
 #[test]
 fn test_test236() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let c = vm.gc.symbol_intern("c");
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
@@ -6197,7 +6197,7 @@ fn test_test236() {
 // (car '(a b c)) => a
 #[test]
 fn test_test237() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let c = vm.gc.symbol_intern("c");
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
@@ -6210,7 +6210,7 @@ fn test_test237() {
 // (car '((a) b c d)) => (a)
 #[test]
 fn test_test238() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let d = vm.gc.symbol_intern("d");
     let c = vm.gc.symbol_intern("c");
     let b = vm.gc.symbol_intern("b");
@@ -6223,7 +6223,7 @@ fn test_test238() {
 // (car '(1 . 2)) => 1
 #[test]
 fn test_test239() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.cons(Object::Number(1), Object::Number(2))),
@@ -6237,7 +6237,7 @@ fn test_test239() {
 // (cdr '((a) b c d)) => (b c d)
 #[test]
 fn test_test240() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let d = vm.gc.symbol_intern("d");
     let c = vm.gc.symbol_intern("c");
     let b = vm.gc.symbol_intern("b");
@@ -6250,7 +6250,7 @@ fn test_test240() {
 // (cdr '(1 . 2)) => 2
 #[test]
 fn test_test241() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.cons(Object::Number(1), Object::Number(2))),
@@ -6264,7 +6264,7 @@ fn test_test241() {
 // (reverse '(a b c)) => (c b a)
 #[test]
 fn test_test242() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let c = vm.gc.symbol_intern("c");
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
@@ -6284,7 +6284,7 @@ fn test_test242() {
 // (equal? 'a 'a) => #t
 #[test]
 fn test_test244() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![
@@ -6301,7 +6301,7 @@ fn test_test244() {
 // (equal? '(a) '(a)) => #t
 #[test]
 fn test_test245() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![
@@ -6318,7 +6318,7 @@ fn test_test245() {
 // (equal? "abc" "abc") => #t
 #[test]
 fn test_test247() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.new_string("abc")),
@@ -6334,7 +6334,7 @@ fn test_test247() {
 // (equal? 2 2) => #t
 #[test]
 fn test_test248() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(2)),
@@ -6350,7 +6350,7 @@ fn test_test248() {
 // (equal? (make-vector 5 'a) (make-vector 5 'a)) => #t
 #[test]
 fn test_test249() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![
@@ -6373,7 +6373,7 @@ fn test_test249() {
 // (eq? 'a 'a) => #t
 #[test]
 fn test_test250() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![Op::Constant(a), Op::Push, Op::Constant(a), Op::Eq, Op::Halt];
@@ -6384,7 +6384,7 @@ fn test_test250() {
 // (eq? '(a) '(a)) => #f
 #[test]
 fn test_test251() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![
@@ -6401,7 +6401,7 @@ fn test_test251() {
 // (eq? (list 'a) (list 'a)) => #f
 #[test]
 fn test_test252() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![
@@ -6428,7 +6428,7 @@ fn test_test252() {
 // (eq? "a" "a") => #f
 #[test]
 fn test_test253() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.new_string("a")),
@@ -6444,7 +6444,7 @@ fn test_test253() {
 // (eq? "" "") => #f
 #[test]
 fn test_test254() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.new_string("")),
@@ -6460,7 +6460,7 @@ fn test_test254() {
 // (eq? '() '()) => #t
 #[test]
 fn test_test255() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Nil),
@@ -6476,7 +6476,7 @@ fn test_test255() {
 // (eq? 2 2) => #t
 #[test]
 fn test_test256() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(2)),
@@ -6492,7 +6492,7 @@ fn test_test256() {
 // (eq? #\A #\A) => #t
 #[test]
 fn test_test257() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Char('A')),
@@ -6508,7 +6508,7 @@ fn test_test257() {
 // (eq? car car) => #t
 #[test]
 fn test_test258() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ReferFree(3),
@@ -6524,7 +6524,7 @@ fn test_test258() {
 // (let ((n (+ 2 3))) (eq? n n)) => #t
 #[test]
 fn test_test259() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -6548,7 +6548,7 @@ fn test_test259() {
 // (let ((x '(a))) (eq? x x)) => #t
 #[test]
 fn test_test260() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![
@@ -6570,7 +6570,7 @@ fn test_test260() {
 // (let ((x '#())) (eq? x x)) => #t
 #[test]
 fn test_test261() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -6591,7 +6591,7 @@ fn test_test261() {
 // (let ((p (lambda (x) x))) (eq? p p)) => #t
 #[test]
 fn test_test262() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -6620,7 +6620,7 @@ fn test_test262() {
 // (- 3 4) => -1
 #[test]
 fn test_test263() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -6636,7 +6636,7 @@ fn test_test263() {
 // (- 3 4 5) => -6
 #[test]
 fn test_test264() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -6655,7 +6655,7 @@ fn test_test264() {
 // (- 3) => -3
 #[test]
 fn test_test265() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(-3)), Op::Halt];
     let expected = Object::Number(-3);
@@ -6665,7 +6665,7 @@ fn test_test265() {
 // (cond ((> 3 2) 'greater) ((< 3 2) 'less)) => greater
 #[test]
 fn test_test266() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("less");
     let a = vm.gc.symbol_intern("greater");
 
@@ -6696,7 +6696,7 @@ fn test_test266() {
 // (cond ((> 3 3) 'greater) ((< 3 3) 'less) (else 'equal)) => equal
 #[test]
 fn test_test267() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let c = vm.gc.symbol_intern("equal");
     let b = vm.gc.symbol_intern("less");
     let a = vm.gc.symbol_intern("greater");
@@ -6728,7 +6728,7 @@ fn test_test267() {
 // (cond ('(1 2 3) => cadr) (else #f)) => 2
 #[test]
 fn test_test268() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -6760,7 +6760,7 @@ fn test_test268() {
 // (cons 'a 'b) => (a . b)
 #[test]
 fn test_test27() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
 
@@ -6777,7 +6777,7 @@ fn test_test27() {
 // (or (= 2 2) (> 2 1)) => #t
 #[test]
 fn test_test273() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(2)),
@@ -6800,7 +6800,7 @@ fn test_test273() {
 // (or (= 2 2) (< 2 1)) => #t
 #[test]
 fn test_test274() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(2)),
@@ -6823,7 +6823,7 @@ fn test_test274() {
 // (or #f #f #f) => #f
 #[test]
 fn test_test275() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -6843,7 +6843,7 @@ fn test_test275() {
 // (or '(b c) (/ 3 0)) => (b c)
 #[test]
 fn test_test276() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("c");
     let a = vm.gc.symbol_intern("b");
 
@@ -6865,7 +6865,7 @@ fn test_test276() {
 // (not #t) => #f
 #[test]
 fn test_test277() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::True), Op::Not, Op::Halt];
     let expected = Object::False;
@@ -6875,7 +6875,7 @@ fn test_test277() {
 // (not 3) => #f
 #[test]
 fn test_test278() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Not, Op::Halt];
     let expected = Object::False;
@@ -6885,7 +6885,7 @@ fn test_test278() {
 // (not (list 3)) => #f
 #[test]
 fn test_test279() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -6904,7 +6904,7 @@ fn test_test279() {
 // (not #f) => #t
 #[test]
 fn test_test280() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::False), Op::Not, Op::Halt];
     let expected = Object::True;
@@ -6914,7 +6914,7 @@ fn test_test280() {
 // (not '()) => #f
 #[test]
 fn test_test281() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Nil), Op::Not, Op::Halt];
     let expected = Object::False;
@@ -6924,7 +6924,7 @@ fn test_test281() {
 // (not (list)) => #f
 #[test]
 fn test_test282() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -6941,7 +6941,7 @@ fn test_test282() {
 // (not 'nil) => #f
 #[test]
 fn test_test283() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("nil");
 
     let ops = vec![Op::Constant(a), Op::Not, Op::Halt];
@@ -6952,7 +6952,7 @@ fn test_test283() {
 // (let ((x 2) (y 3)) (* x y)) => 6
 #[test]
 fn test_test284() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -6975,7 +6975,7 @@ fn test_test284() {
 // (let ((x 2) (y 3)) (let ((x 7) (z (+ x y))) (* z x))) => 35
 #[test]
 fn test_test285() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(6),
@@ -7008,7 +7008,7 @@ fn test_test285() {
 // (let ((x 2) (y 3)) (let* ((x 7) (z (+ x y))) (* z x))) => 70
 #[test]
 fn test_test286() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(6),
@@ -7054,7 +7054,7 @@ fn test_test286() {
 // (eqv? 'a 'a) => #t
 #[test]
 fn test_test287() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("a");
 
     let ops = vec![
@@ -7071,7 +7071,7 @@ fn test_test287() {
 // (eqv? 'a 'b) => #f
 #[test]
 fn test_test288() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
 
@@ -7089,7 +7089,7 @@ fn test_test288() {
 // (eqv? 2 2) => #t
 #[test]
 fn test_test289() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(2)),
@@ -7105,7 +7105,7 @@ fn test_test289() {
 // (eqv? '() '()) => #t
 #[test]
 fn test_test290() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Nil),
@@ -7121,7 +7121,7 @@ fn test_test290() {
 // (eqv? 100000000 100000000) => #t
 #[test]
 fn test_test291() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(100000000)),
@@ -7137,7 +7137,7 @@ fn test_test291() {
 // (eqv? (cons 1 2) (cons 1 2)) => #f
 #[test]
 fn test_test292() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7159,7 +7159,7 @@ fn test_test292() {
 // (eqv? (lambda () 1) (lambda () 2)) => #f
 #[test]
 fn test_test293() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Closure {
@@ -7191,7 +7191,7 @@ fn test_test293() {
 // (eqv? 123456789101112 123456789101112) => #t
 #[test]
 fn test_test294() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(123456789101112)),
@@ -7207,7 +7207,7 @@ fn test_test294() {
 // (eqv? #f 'nil) => #f
 #[test]
 fn test_test295() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("nil");
 
     let ops = vec![
@@ -7224,7 +7224,7 @@ fn test_test295() {
 // (digit->integer #\3 10) => 3
 #[test]
 fn test_test297() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -7244,7 +7244,7 @@ fn test_test297() {
 // (+) => 0
 #[test]
 fn test_test298() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(0)), Op::Halt];
     let expected = Object::Number(0);
@@ -7254,7 +7254,7 @@ fn test_test298() {
 // (*) => 1
 #[test]
 fn test_test299() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -7264,7 +7264,7 @@ fn test_test299() {
 // (apply (lambda (a b c) (+ a b c)) 1 2 '(3)) => 6
 #[test]
 fn test_test303() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(19),
@@ -7302,7 +7302,7 @@ fn test_test303() {
 // (apply (lambda (a b c) (+ a b c)) '(1 2 3)) => 6
 #[test]
 fn test_test304() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(15),
@@ -7339,7 +7339,7 @@ fn test_test304() {
 // (apply (lambda (a b c) (+ a b c)) 1 '(2 3)) => 6
 #[test]
 fn test_test305() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(17),
@@ -7375,7 +7375,7 @@ fn test_test305() {
 // (apply (lambda (x y) (apply y '((3 2)))) `(,car ,cdr)) => (2)
 #[test]
 fn test_test306() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let list = vm.gc.list2(Object::Number(3), Object::Number(2));
     let ops = vec![
         Op::Frame(22),
@@ -7415,7 +7415,7 @@ fn test_test306() {
 // (/ 6 2) => 3
 #[test]
 fn test_test307() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(6)),
@@ -7431,7 +7431,7 @@ fn test_test307() {
 // (even? 2) => #t
 #[test]
 fn test_test309() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -7449,7 +7449,7 @@ fn test_test309() {
 // (even? 3) => #f
 #[test]
 fn test_test310() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -7467,7 +7467,7 @@ fn test_test310() {
 // (for-all even? '(2 4 14)) => #t
 #[test]
 fn test_test313() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -7490,7 +7490,7 @@ fn test_test313() {
 // (for-all (lambda (n) (and (even? n) n)) '(2 4 14)) => 14
 #[test]
 fn test_test314() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(17),
@@ -7531,7 +7531,7 @@ fn test_test314() {
 // (- (/ 1 2) (/ 1 4) (/ 1 4)) => 0
 #[test]
 fn test_test318() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7559,7 +7559,7 @@ fn test_test318() {
 // (= (/ 3 2) (+ (/ 1 2) 1)) => #t
 #[test]
 fn test_test319() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -7584,7 +7584,7 @@ fn test_test319() {
 // (= (/ 5 2) (+ 1 (/ 1 2) 1)) => #t
 #[test]
 fn test_test320() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(5)),
@@ -7612,7 +7612,7 @@ fn test_test320() {
 // (/ (/ 4 2) 1) => 2
 #[test]
 fn test_test326() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(4)),
@@ -7631,7 +7631,7 @@ fn test_test326() {
 // (> 1 (/ 1 2)) => #t
 #[test]
 fn test_test329() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7650,7 +7650,7 @@ fn test_test329() {
 // (> (/ 1 2) 1) => #f
 #[test]
 fn test_test330() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7669,7 +7669,7 @@ fn test_test330() {
 // (> 1 (/ 1 2)) => #t
 #[test]
 fn test_test331() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7688,7 +7688,7 @@ fn test_test331() {
 // (<= (/ 1 2) 1) => #t
 #[test]
 fn test_test333() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7707,7 +7707,7 @@ fn test_test333() {
 // (>= 1 (/ 1 2)) => #t
 #[test]
 fn test_test334() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7726,7 +7726,7 @@ fn test_test334() {
 // (>= (/ 1 2) (/ 1 3)) => #t
 #[test]
 fn test_test335() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7748,7 +7748,7 @@ fn test_test335() {
 // (< (/ 1 2) 1) => #t
 #[test]
 fn test_test336() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7767,7 +7767,7 @@ fn test_test336() {
 // (< 1 (/ 1 2)) => #f
 #[test]
 fn test_test337() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7786,7 +7786,7 @@ fn test_test337() {
 // (< (/ 1 2) (/ 1 3)) => #f
 #[test]
 fn test_test338() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7808,7 +7808,7 @@ fn test_test338() {
 // (<= (/ 1 2) 1) => #t
 #[test]
 fn test_test339() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7827,7 +7827,7 @@ fn test_test339() {
 // (<= 1 (/ 1 2)) => #f
 #[test]
 fn test_test340() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7846,7 +7846,7 @@ fn test_test340() {
 // (= (/ 2 2) 1) => #t
 #[test]
 fn test_test342() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(2)),
@@ -7865,7 +7865,7 @@ fn test_test342() {
 // (/ 3) => 1/3
 #[test]
 fn test_test358() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -7881,7 +7881,7 @@ fn test_test358() {
 // (number? 3) => #t
 #[test]
 fn test_test369() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -7899,7 +7899,7 @@ fn test_test369() {
 // (div 123 10) => 12
 #[test]
 fn test_test375() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -7919,7 +7919,7 @@ fn test_test375() {
 // (div 123 -10) => -12
 #[test]
 fn test_test376() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -7939,7 +7939,7 @@ fn test_test376() {
 // (div -123 10) => -13
 #[test]
 fn test_test377() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -7959,7 +7959,7 @@ fn test_test377() {
 // (div -123 -10) => 13
 #[test]
 fn test_test378() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -7979,7 +7979,7 @@ fn test_test378() {
 // (string-ref "abc" 2) => #\c
 #[test]
 fn test_test379() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -7999,7 +7999,7 @@ fn test_test379() {
 // (list? '(a b c)) => #t
 #[test]
 fn test_test380() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let c = vm.gc.symbol_intern("c");
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
@@ -8020,7 +8020,7 @@ fn test_test380() {
 // (list? '()) => #t
 #[test]
 fn test_test381() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -8038,7 +8038,7 @@ fn test_test381() {
 // (list? '(a . b)) => #f
 #[test]
 fn test_test382() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
 
@@ -8058,7 +8058,7 @@ fn test_test382() {
 // "abc" => "abc"
 #[test]
 fn test_test383() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(vm.gc.new_string("abc")), Op::Halt];
     test_ops_with_size_as_str(&mut vm, ops, "\"abc\"", SIZE_OF_SYMBOL * 0);
@@ -8067,7 +8067,7 @@ fn test_test383() {
 // (procedure? car) => #t
 #[test]
 fn test_test395() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -8085,7 +8085,7 @@ fn test_test395() {
 // (procedure? 'car) => #f
 #[test]
 fn test_test396() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let a = vm.gc.symbol_intern("car");
 
     let ops = vec![
@@ -8104,7 +8104,7 @@ fn test_test396() {
 // (procedure? (lambda (x) (* x x))) => #t
 #[test]
 fn test_test397() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(10),
@@ -8133,7 +8133,7 @@ fn test_test397() {
 // (char>=? #\b #\a) => #t
 #[test]
 fn test_test399() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8153,7 +8153,7 @@ fn test_test399() {
 // (char>=? #\c #\b #\a) => #t
 #[test]
 fn test_test400() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(9),
@@ -8175,7 +8175,7 @@ fn test_test400() {
 // (char>=? #\b #\b) => #t
 #[test]
 fn test_test401() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8195,7 +8195,7 @@ fn test_test401() {
 // (char>=? #\b #\c) => #f
 #[test]
 fn test_test402() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8215,7 +8215,7 @@ fn test_test402() {
 // (char>? #\b #\a) => #t
 #[test]
 fn test_test403() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8235,7 +8235,7 @@ fn test_test403() {
 // (char>? #\b #\b) => #f
 #[test]
 fn test_test404() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8255,7 +8255,7 @@ fn test_test404() {
 // (char>? #\b #\c) => #f
 #[test]
 fn test_test405() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8275,7 +8275,7 @@ fn test_test405() {
 // (char<=? #\a #\b) => #t
 #[test]
 fn test_test406() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8295,7 +8295,7 @@ fn test_test406() {
 // (char<=? #\b #\b) => #t
 #[test]
 fn test_test407() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8315,7 +8315,7 @@ fn test_test407() {
 // (char<=? #\c #\b) => #f
 #[test]
 fn test_test408() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8335,7 +8335,7 @@ fn test_test408() {
 // (char<? #\a #\b) => #t
 #[test]
 fn test_test409() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8355,7 +8355,7 @@ fn test_test409() {
 // (char<? #\b #\b) => #f
 #[test]
 fn test_test410() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8375,7 +8375,7 @@ fn test_test410() {
 // (char<? #\c #\b) => #f
 #[test]
 fn test_test411() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8395,7 +8395,7 @@ fn test_test411() {
 // (cons* 1 2 3 4) => (1 2 3 . 4)
 #[test]
 fn test_test412() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(11),
@@ -8418,7 +8418,7 @@ fn test_test412() {
 // (cons* 1) => 1
 #[test]
 fn test_test413() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -8436,7 +8436,7 @@ fn test_test413() {
 // (append 1) => 1
 #[test]
 fn test_test414() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -8446,7 +8446,7 @@ fn test_test414() {
 // (append '(1) 2) => (1 . 2)
 #[test]
 fn test_test415() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.cons(Object::Number(1), Object::Nil)),
@@ -8461,7 +8461,7 @@ fn test_test415() {
 // (append '(1 2) 3) => (1 2 . 3)
 #[test]
 fn test_test416() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
@@ -8476,7 +8476,7 @@ fn test_test416() {
 // (append '(1 2) '(3)) => (1 2 3)
 #[test]
 fn test_test417() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
@@ -8491,7 +8491,7 @@ fn test_test417() {
 // (append '(1 2) '(3) 4) => (1 2 3 . 4)
 #[test]
 fn test_test418() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
@@ -8509,7 +8509,7 @@ fn test_test418() {
 // (append '(1 2) '(3) 4) => (1 2 3 . 4)
 #[test]
 fn test_test419() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.list2(Object::Number(1), Object::Number(2))),
@@ -8527,7 +8527,7 @@ fn test_test419() {
 // (append '() 1) => 1
 #[test]
 fn test_test420() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Nil),
@@ -8543,7 +8543,7 @@ fn test_test420() {
 // (append '(1) '()) => (1)
 #[test]
 fn test_test421() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(vm.gc.cons(Object::Number(1), Object::Nil)),
@@ -8558,7 +8558,7 @@ fn test_test421() {
 // (append! 1) => 1
 #[test]
 fn test_test422() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -8576,7 +8576,7 @@ fn test_test422() {
 // (append! '(1) 2) => (1 . 2)
 #[test]
 fn test_test423() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8595,7 +8595,7 @@ fn test_test423() {
 // (append! '(1 2) 3) => (1 2 . 3)
 #[test]
 fn test_test424() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8614,7 +8614,7 @@ fn test_test424() {
 // (append! '(1 2) '(3)) => (1 2 3)
 #[test]
 fn test_test425() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8633,7 +8633,7 @@ fn test_test425() {
 // (append! '(1 2) '(3) 4) => (1 2 3 . 4)
 #[test]
 fn test_test426() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(9),
@@ -8654,7 +8654,7 @@ fn test_test426() {
 // (append! '(1 2) '(3) 4) => (1 2 3 . 4)
 #[test]
 fn test_test427() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(9),
@@ -8675,7 +8675,7 @@ fn test_test427() {
 // (append! '() 1) => 1
 #[test]
 fn test_test428() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8695,7 +8695,7 @@ fn test_test428() {
 // (append! '(1) '()) => (1)
 #[test]
 fn test_test429() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8714,7 +8714,7 @@ fn test_test429() {
 // (string #\1 #\2 #\3) => "123"
 #[test]
 fn test_test430() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(9),
@@ -8735,7 +8735,7 @@ fn test_test430() {
 // (hashtable? (make-eq-hashtable)) => #t
 #[test]
 fn test_test435() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(7),
@@ -8756,7 +8756,7 @@ fn test_test435() {
 // (hashtable? '(a . b)) => #f
 #[test]
 fn test_test436() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     let b = vm.gc.symbol_intern("b");
     let a = vm.gc.symbol_intern("a");
 
@@ -8776,7 +8776,7 @@ fn test_test436() {
 // (let1 ht (make-eq-hashtable) (hashtable-set! ht "my" "apple") (hashtable-set! ht "my" "apple") (hashtable-size ht)) => 2
 #[test]
 fn test_test438() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(8),
@@ -8829,7 +8829,7 @@ fn test_test438() {
 // (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-delete! ht 1) (hashtable-ref ht 1 #f)) => #f
 #[test]
 fn test_test439() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(9),
@@ -8886,7 +8886,7 @@ fn test_test439() {
 // (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-contains? ht 2)) => #f
 #[test]
 fn test_test441() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(6),
@@ -8931,7 +8931,7 @@ fn test_test441() {
 // (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (hashtable-contains? ht 1)) => #t
 #[test]
 fn test_test442() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(6),
@@ -8976,7 +8976,7 @@ fn test_test442() {
 // (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (let1 ht-copy (hashtable-copy ht) (and (string=? (hashtable-ref ht-copy 1) "one") (not (hashtable-mutable? ht-copy))))) => #t
 #[test]
 fn test_test446() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(11),
@@ -9062,7 +9062,7 @@ fn test_test446() {
 // (let1 ht (make-eq-hashtable) (hashtable-set! ht 1 "one") (let1 ht-copy (hashtable-copy ht #t) (and (string=? (hashtable-ref ht-copy 1) "one") (hashtable-mutable? ht-copy)))) => #t
 #[test]
 fn test_test447() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(12),
@@ -9149,7 +9149,7 @@ fn test_test447() {
 // (and)
 #[test]
 fn and_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::True), Op::Halt];
     let expected = Object::True;
@@ -9164,7 +9164,7 @@ fn and_optimized() {
 // ((lambda () 3))
 #[test]
 fn call0_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -9179,7 +9179,7 @@ fn call0_optimized() {
 // ((lambda (a) (+ a a)) 1)
 #[test]
 fn call1_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(2)), Op::Halt];
     let expected = Object::Number(2);
@@ -9194,7 +9194,7 @@ fn call1_optimized() {
 // ((lambda (a b) (+ a b)) 1 2)
 #[test]
 fn call2_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -9209,7 +9209,7 @@ fn call2_optimized() {
 // (if 1 2 3)
 #[test]
 fn if0_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -9228,7 +9228,7 @@ fn if0_optimized() {
 // (if #f 2 3)
 #[test]
 fn if1_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -9247,7 +9247,7 @@ fn if1_optimized() {
 // (if #f #f #t)
 #[test]
 fn if2_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -9266,7 +9266,7 @@ fn if2_optimized() {
 // (let ((x 0)) x)
 #[test]
 fn let0_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(0)), Op::Halt];
     let expected = Object::Number(0);
@@ -9281,7 +9281,7 @@ fn let0_optimized() {
 // (let ((x 1) (y 2)) (+ x y))
 #[test]
 fn let1_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -9296,7 +9296,7 @@ fn let1_optimized() {
 // (let ((x 1)) (let ((y 2)) (+ x y)))
 #[test]
 fn nested_let0_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -9311,7 +9311,7 @@ fn nested_let0_optimized() {
 // (let ((x 1)) (let ((y 2)) (let ((z 3)) (+ x y z))))
 #[test]
 fn nested_let1_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(6)), Op::Halt];
     let expected = Object::Number(6);
@@ -9326,7 +9326,7 @@ fn nested_let1_optimized() {
 // #t
 #[test]
 fn test0_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::True), Op::Halt];
     let expected = Object::True;
@@ -9341,7 +9341,7 @@ fn test0_optimized() {
 // (((lambda () (lambda () 102))))
 #[test]
 fn test10_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -9370,7 +9370,7 @@ fn test10_optimized() {
 // (when #t 1 2 34)
 #[test]
 fn test100_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::True),
@@ -9391,7 +9391,7 @@ fn test100_optimized() {
 // (not 3)
 #[test]
 fn test101_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Not, Op::Halt];
     let expected = Object::False;
@@ -9406,7 +9406,7 @@ fn test101_optimized() {
 // (unless #f 1 2 48)
 #[test]
 fn test102_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -9432,7 +9432,7 @@ fn test102_optimized() {
 // (and 3 4 5)
 #[test]
 fn test103_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -9452,7 +9452,7 @@ fn test103_optimized() {
 // (let1 a 0 (and (set! a (+ a 1))) a)
 #[test]
 fn test104_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -9481,7 +9481,7 @@ fn test104_optimized() {
 // (let1 a 0 (or (set! a (+ a 1))) a)
 #[test]
 fn test105_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -9510,7 +9510,7 @@ fn test105_optimized() {
 // (and 3 #f 5)
 #[test]
 fn test106_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -9529,7 +9529,7 @@ fn test106_optimized() {
 // (or 3 4 5)
 #[test]
 fn test107_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -9544,7 +9544,7 @@ fn test107_optimized() {
 // (or #f #f #f)
 #[test]
 fn test108_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -9564,7 +9564,7 @@ fn test108_optimized() {
 // (> 4 3)
 #[test]
 fn test109_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(4)),
@@ -9584,7 +9584,7 @@ fn test109_optimized() {
 // (((lambda () (lambda (a) 102))) 101)
 #[test]
 fn test11_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(6),
@@ -9614,7 +9614,7 @@ fn test11_optimized() {
 // (> 4 3 2)
 #[test]
 fn test110_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(4)),
@@ -9638,7 +9638,7 @@ fn test110_optimized() {
 // (> 4 3 1 2)
 #[test]
 fn test111_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(4)),
@@ -9666,7 +9666,7 @@ fn test111_optimized() {
 // (>= 3 3 3)
 #[test]
 fn test112_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -9690,7 +9690,7 @@ fn test112_optimized() {
 // (>= 4 3 3)
 #[test]
 fn test113_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(4)),
@@ -9714,7 +9714,7 @@ fn test113_optimized() {
 // (>= 4 3)
 #[test]
 fn test114_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(4)),
@@ -9734,7 +9734,7 @@ fn test114_optimized() {
 // (< 1 2)
 #[test]
 fn test115_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -9754,7 +9754,7 @@ fn test115_optimized() {
 // (< 1 2 3)
 #[test]
 fn test116_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -9778,7 +9778,7 @@ fn test116_optimized() {
 // (< 1 5 3)
 #[test]
 fn test117_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -9802,7 +9802,7 @@ fn test117_optimized() {
 // (<= 1 2)
 #[test]
 fn test118_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -9822,7 +9822,7 @@ fn test118_optimized() {
 // (<= 1 2 3)
 #[test]
 fn test119_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -9846,7 +9846,7 @@ fn test119_optimized() {
 // (((lambda () (lambda (a) a))) 103)
 #[test]
 fn test12_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(6),
@@ -9876,7 +9876,7 @@ fn test12_optimized() {
 // (<= 1 3 3)
 #[test]
 fn test120_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -9900,7 +9900,7 @@ fn test120_optimized() {
 // (<= 1 5 3)
 #[test]
 fn test121_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -9924,7 +9924,7 @@ fn test121_optimized() {
 // (eq? #t #t)
 #[test]
 fn test122_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::True),
@@ -9944,7 +9944,7 @@ fn test122_optimized() {
 // (eq? #t #f)
 #[test]
 fn test123_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::True),
@@ -9964,7 +9964,7 @@ fn test123_optimized() {
 // (eq? 'a 'a)
 #[test]
 fn test124_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -9981,7 +9981,7 @@ fn test124_optimized() {
 // (eq? 'a 'b)
 #[test]
 fn test125_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -9999,7 +9999,7 @@ fn test125_optimized() {
 // (pair? (cons 1 2))
 #[test]
 fn test126_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -10020,7 +10020,7 @@ fn test126_optimized() {
 // (pair? 3)
 #[test]
 fn test127_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::PairP, Op::Halt];
     let expected = Object::False;
@@ -10035,7 +10035,7 @@ fn test127_optimized() {
 // (symbol? 'a)
 #[test]
 fn test128_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -10052,7 +10052,7 @@ fn test128_optimized() {
 // (symbol? 3)
 #[test]
 fn test129_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::SymbolP, Op::Halt];
     let expected = Object::False;
@@ -10067,7 +10067,7 @@ fn test129_optimized() {
 // (((lambda (a) (lambda () a)) 10))
 #[test]
 fn test13_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -10096,7 +10096,7 @@ fn test13_optimized() {
 // (cond (#f 1) (#t 3))
 #[test]
 fn test130_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -10116,7 +10116,7 @@ fn test130_optimized() {
 // (cond (#f 1) (#f 2) (else 3))
 #[test]
 fn test131_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -10136,7 +10136,7 @@ fn test131_optimized() {
 // (cond (#t 3) (#f 2) (else 1))
 #[test]
 fn test132_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::True),
@@ -10155,7 +10155,7 @@ fn test132_optimized() {
 // (cond ((cons 1 2) => car) (#f 2) (else 3))
 #[test]
 fn test133_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -10191,7 +10191,7 @@ fn test133_optimized() {
 // (let ((a 0)) `(,a 4 5))
 #[test]
 fn test134_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10216,7 +10216,7 @@ fn test134_optimized() {
 // (let ((a '(1 2 3))) `(,a 4 5))
 #[test]
 fn test135_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10245,7 +10245,7 @@ fn test135_optimized() {
 // (let ((a '(1 2 3))) `(,@a 4 5))
 #[test]
 fn test136_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(1),
@@ -10277,7 +10277,7 @@ fn test136_optimized() {
 // (let ((name 'a)) `(list ,name ',name))
 #[test]
 fn test137_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("list");
     let sym1 = vm.gc.symbol_intern("a");
@@ -10312,7 +10312,7 @@ fn test137_optimized() {
 // `(list ,(+ 1 2) 4)
 #[test]
 fn test138_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("list");
     let list0 = vm.gc.listn(&[sym0, Object::Number(3), Object::Number(4)]);
@@ -10339,7 +10339,7 @@ fn test138_optimized() {
 // (let ((a '(1 2 3))) `(1 . ,a))
 #[test]
 fn test139_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(1),
@@ -10369,7 +10369,7 @@ fn test139_optimized() {
 // ((lambda (a) (set! a 12) a) 2)
 #[test]
 fn test14_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -10395,7 +10395,7 @@ fn test14_optimized() {
 // (let ((a '(1 2 3))) `,a)
 #[test]
 fn test140_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10417,7 +10417,7 @@ fn test140_optimized() {
 // (let ((a '(1 2 3))) `(,@a))
 #[test]
 fn test141_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10439,7 +10439,7 @@ fn test141_optimized() {
 // (let ((a '(1 2 3))) `(0 ,@a))
 #[test]
 fn test142_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(0),
@@ -10469,7 +10469,7 @@ fn test142_optimized() {
 // (let ((a '(1 2 3))) `(0 ,a 4))
 #[test]
 fn test143_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10500,7 +10500,7 @@ fn test143_optimized() {
 // (let ((a '(1 2 3))) `(,@a 4))
 #[test]
 fn test144_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(1),
@@ -10531,7 +10531,7 @@ fn test144_optimized() {
 // (let ((a '(1 2 3))) `((,@a) 4))
 #[test]
 fn test145_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10560,7 +10560,7 @@ fn test145_optimized() {
 // (let ((a '(1 2 3))) `((,a) 4))
 #[test]
 fn test146_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10592,7 +10592,7 @@ fn test146_optimized() {
 // `b
 #[test]
 fn test147_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("b");
 
@@ -10609,7 +10609,7 @@ fn test147_optimized() {
 // (list 1 2 3)
 #[test]
 fn test148_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -10636,7 +10636,7 @@ fn test148_optimized() {
 // (aif (+ 1 2) it #f)
 #[test]
 fn test149_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -10657,7 +10657,7 @@ fn test149_optimized() {
 // ((lambda (a) ((lambda () (set! a 101)))) '())
 #[test]
 fn test15_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -10681,7 +10681,7 @@ fn test15_optimized() {
 // (string-length "abc")
 #[test]
 fn test150_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("abc");
 
@@ -10704,7 +10704,7 @@ fn test150_optimized() {
 // (string-length "あいう")
 #[test]
 fn test151_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("あいう");
 
@@ -10727,7 +10727,7 @@ fn test151_optimized() {
 // (string->symbol "abc")
 #[test]
 fn test152_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("abc");
     let str0 = vm.gc.new_string("abc");
@@ -10751,7 +10751,7 @@ fn test152_optimized() {
 // (number->string 123)
 #[test]
 fn test153_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("123");
 
@@ -10774,7 +10774,7 @@ fn test153_optimized() {
 // (begin (define (proc1 . a) a) (proc1 1 2 3 4))
 #[test]
 fn test154_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(1),
@@ -10815,7 +10815,7 @@ fn test154_optimized() {
 // ((lambda (a . b) b) 1 2 3)
 #[test]
 fn test155_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(2), Object::Number(3)]);
 
@@ -10841,7 +10841,7 @@ fn test155_optimized() {
 // ((lambda (a . b) a) 1 2 3 4 5)
 #[test]
 fn test156_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -10864,7 +10864,7 @@ fn test156_optimized() {
 // ((lambda (a . b) b) 1 2 3 4 5)
 #[test]
 fn test157_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(2),
@@ -10897,7 +10897,7 @@ fn test157_optimized() {
 // ((lambda (a b c d . e) e) 1 2 3 4)
 #[test]
 fn test158_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -10919,7 +10919,7 @@ fn test158_optimized() {
 // ((lambda (a b c d . e) a) 1 2 3 4)
 #[test]
 fn test159_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::List(0), Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -10934,7 +10934,7 @@ fn test159_optimized() {
 // ((lambda (g) ((lambda (f) (f 2)) (lambda (a) (g a)))) (lambda (x) x))
 #[test]
 fn test16_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(2)), Op::Halt];
     let expected = Object::Number(2);
@@ -10949,7 +10949,7 @@ fn test16_optimized() {
 // ((lambda (a b c d . e) b) 1 2 3 4)
 #[test]
 fn test160_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::List(0), Op::Constant(Object::Number(2)), Op::Halt];
     let expected = Object::Number(2);
@@ -10964,7 +10964,7 @@ fn test160_optimized() {
 // ((lambda (a b c d . e) c) 1 2 3 4)
 #[test]
 fn test161_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::List(0), Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -10979,7 +10979,7 @@ fn test161_optimized() {
 // ((lambda (a b c d . e) d) 1 2 3 4)
 #[test]
 fn test162_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::List(0), Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -10994,7 +10994,7 @@ fn test162_optimized() {
 // (append '(1 2) '(3 4))
 #[test]
 fn test163_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(1),
@@ -11023,7 +11023,7 @@ fn test163_optimized() {
 // (append)
 #[test]
 fn test164_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Nil), Op::Halt];
     let expected = Object::Nil;
@@ -11038,7 +11038,7 @@ fn test164_optimized() {
 // (begin (define x 3) x)
 #[test]
 fn test165_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -11058,7 +11058,7 @@ fn test165_optimized() {
 // (begin (define (hoge . a) a) (hoge 1 2 3))
 #[test]
 fn test166_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -11095,7 +11095,7 @@ fn test166_optimized() {
 // (begin (define (hige a . b) b) (hige 1 2 3))
 #[test]
 fn test167_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(2), Object::Number(3)]);
 
@@ -11130,7 +11130,7 @@ fn test167_optimized() {
 // (apply (lambda a a) '(3 2))
 #[test]
 fn test168_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(3), Object::Number(2)]);
     let list1 = vm.gc.listn(&[Object::Number(3), Object::Number(2)]);
@@ -11164,7 +11164,7 @@ fn test168_optimized() {
 // (equal? '(1 2 (3)) '(1 2 (3)))
 #[test]
 fn test169_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(3)]);
     let list1 = vm.gc.listn(&[Object::Number(1), Object::Number(2), list0]);
@@ -11189,7 +11189,7 @@ fn test169_optimized() {
 // ((lambda () 3 4 5))
 #[test]
 fn test17_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -11209,7 +11209,7 @@ fn test17_optimized() {
 // (let ((a 3)) 3 2 1)
 #[test]
 fn test170_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -11229,7 +11229,7 @@ fn test170_optimized() {
 // (make-string 3)
 #[test]
 fn test171_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("   ");
 
@@ -11252,7 +11252,7 @@ fn test171_optimized() {
 // (make-string 3 #\c)
 #[test]
 fn test172_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("ccc");
 
@@ -11276,7 +11276,7 @@ fn test172_optimized() {
 // (apply car '((3)))
 #[test]
 fn test173_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(3)]);
     let list1 = vm.gc.listn(&[list0]);
@@ -11301,7 +11301,7 @@ fn test173_optimized() {
 // (apply (lambda (a) a) '(3))
 #[test]
 fn test174_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(3)]);
 
@@ -11334,7 +11334,7 @@ fn test174_optimized() {
 // (apply (lambda (a b) (+ a b)) '(5 2))
 #[test]
 fn test175_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(5), Object::Number(2)]);
 
@@ -11369,7 +11369,7 @@ fn test175_optimized() {
 // (apply (lambda (a b c) (+ a b c)) '(5 2 1))
 #[test]
 fn test176_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -11408,7 +11408,7 @@ fn test176_optimized() {
 // (apply (lambda (a) (car a)) '((3)))
 #[test]
 fn test177_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(3)]);
     let list1 = vm.gc.listn(&[list0]);
@@ -11443,7 +11443,7 @@ fn test177_optimized() {
 // (apply (lambda (a . b) (+ a (car b))) '(1 2))
 #[test]
 fn test178_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(1), Object::Number(2)]);
 
@@ -11479,7 +11479,7 @@ fn test178_optimized() {
 // (string-append "12" "345" "6")
 #[test]
 fn test179_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("123456");
     let str1 = vm.gc.new_string("12");
@@ -11507,7 +11507,7 @@ fn test179_optimized() {
 // (number? 3)
 #[test]
 fn test18_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -11528,7 +11528,7 @@ fn test18_optimized() {
 // (string? "hige")
 #[test]
 fn test181_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("hige");
 
@@ -11551,7 +11551,7 @@ fn test181_optimized() {
 // ((lambda () (define p (cons 1 2)) (set-cdr! p 3) p))
 #[test]
 fn test184_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let pair0 = vm.gc.cons(Object::Number(1), Object::Number(3));
 
@@ -11586,7 +11586,7 @@ fn test184_optimized() {
 // ((lambda () (define q (cons 1 2)) (set-car! q 3) q))
 #[test]
 fn test185_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let pair0 = vm.gc.cons(Object::Number(3), Object::Number(2));
 
@@ -11621,7 +11621,7 @@ fn test185_optimized() {
 // (begin #f #t)
 #[test]
 fn test186_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -11640,7 +11640,7 @@ fn test186_optimized() {
 // (vector-length (make-vector 3))
 #[test]
 fn test187_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -11661,7 +11661,7 @@ fn test187_optimized() {
 // (let loop ((i 0)) (if (= i 100) (+ i 1) (loop (+ i 1))))
 #[test]
 fn test188_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(5),
@@ -11694,7 +11694,7 @@ fn test188_optimized() {
 // (let ((a 0)) (cond (#t (set! a (+ a 1)) (set! a (+ a 1)) a)))
 #[test]
 fn test189_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -11729,7 +11729,7 @@ fn test189_optimized() {
 // (number? 'a)
 #[test]
 fn test19_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -11752,7 +11752,7 @@ fn test19_optimized() {
 // (char? #\あ)
 #[test]
 fn test190_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -11773,7 +11773,7 @@ fn test190_optimized() {
 // (eq? (list 'a) (list 'a))
 #[test]
 fn test191_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -11801,7 +11801,7 @@ fn test191_optimized() {
 // (let ((x (list 'a))) (eq? x x))
 #[test]
 fn test192_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -11832,7 +11832,7 @@ fn test192_optimized() {
 // (map1 (lambda (s) (string-append s "123")) '("ABC" "DEF"))
 #[test]
 fn test193_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("ABC123");
     let str1 = vm.gc.new_string("DEF123");
@@ -11875,7 +11875,7 @@ fn test193_optimized() {
 // (let1 a '() (let1 G68 (lambda (i) (if (>= i 10000) i (a (+ i 1)))) (set! a G68) (a 0)))
 #[test]
 fn test194_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -11930,7 +11930,7 @@ fn test194_optimized() {
 // (let ((p (open-string-input-port "12345"))) (read-char p) (read-char p))
 #[test]
 fn test195_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("12345");
 
@@ -11962,7 +11962,7 @@ fn test195_optimized() {
 // (eof-object? (let ((p (open-string-input-port "1"))) (read-char p) (read-char p)))
 #[test]
 fn test196_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("1");
 
@@ -11998,7 +11998,7 @@ fn test196_optimized() {
 // (begin (let ((xxx 'a)) (case xxx ((b) 'b) ((a) 'a))))
 #[test]
 fn test197_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -12033,7 +12033,7 @@ fn test197_optimized() {
 // (begin (let ((xxy 'a)) (case xxy ((b) 'b) ((c) 'c) (else 3))))
 #[test]
 fn test198_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("b");
     let sym1 = vm.gc.symbol_intern("a");
@@ -12069,7 +12069,7 @@ fn test198_optimized() {
 // (* 2 3)
 #[test]
 fn test199_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(6)), Op::Halt];
     let expected = Object::Number(6);
@@ -12084,7 +12084,7 @@ fn test199_optimized() {
 // (and)
 #[test]
 fn test2_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::True), Op::Halt];
     let expected = Object::True;
@@ -12099,7 +12099,7 @@ fn test2_optimized() {
 // (number? 'a)
 #[test]
 fn test20_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -12122,7 +12122,7 @@ fn test20_optimized() {
 // (* 2 3 4)
 #[test]
 fn test200_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(24)), Op::Halt];
     let expected = Object::Number(24);
@@ -12137,7 +12137,7 @@ fn test200_optimized() {
 // (string->number "123")
 #[test]
 fn test201_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("123");
 
@@ -12160,7 +12160,7 @@ fn test201_optimized() {
 // (let ((p (open-string-input-port "123 456"))) (read-char p))
 #[test]
 fn test202_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("123 456");
 
@@ -12190,7 +12190,7 @@ fn test202_optimized() {
 // (reverse '(1 2 3 4))
 #[test]
 fn test203_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(4),
@@ -12224,7 +12224,7 @@ fn test203_optimized() {
 // (string-split "wiki&cmd" #\&)
 #[test]
 fn test204_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("wiki");
     let str1 = vm.gc.new_string("cmd");
@@ -12251,7 +12251,7 @@ fn test204_optimized() {
 // (begin (define str1 (make-string 3 #\c)) (string-set! str1 1 #\b) str1)
 #[test]
 fn test205_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("cbc");
 
@@ -12283,7 +12283,7 @@ fn test205_optimized() {
 // (let* ((a 0) (b (lambda (x y) a))) (b (begin (set! a 1)) (begin (set! a 2))))
 #[test]
 fn test206_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -12311,7 +12311,7 @@ fn test206_optimized() {
 // #\a
 #[test]
 fn test207_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Char('a')), Op::Halt];
     let expected = Object::Char('a');
@@ -12326,7 +12326,7 @@ fn test207_optimized() {
 // (eof-object? 3)
 #[test]
 fn test208_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -12347,7 +12347,7 @@ fn test208_optimized() {
 // 102
 #[test]
 fn test209_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(102)), Op::Halt];
     let expected = Object::Number(102);
@@ -12362,7 +12362,7 @@ fn test209_optimized() {
 // (+ 4)
 #[test]
 fn test21_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -12377,7 +12377,7 @@ fn test21_optimized() {
 // `(list ,(+ 1 2) 4)
 #[test]
 fn test210_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("list");
     let list0 = vm.gc.listn(&[sym0, Object::Number(3), Object::Number(4)]);
@@ -12403,7 +12403,7 @@ fn test210_optimized() {
 // (let ((name 'a)) `(list ,name ',name))
 #[test]
 fn test211_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("list");
     let sym1 = vm.gc.symbol_intern("a");
@@ -12437,7 +12437,7 @@ fn test211_optimized() {
 // (vector? #(3))
 #[test]
 fn test213_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let vec0 = vm.gc.new_vector(&vec![Object::Number(3)]);
 
@@ -12454,7 +12454,7 @@ fn test213_optimized() {
 // (begin (define (proc-01) 3) (proc-01))
 #[test]
 fn test214_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Closure {
@@ -12484,7 +12484,7 @@ fn test214_optimized() {
 // (begin (define (add3 a b) (+ a b)) (add3 1 2))
 #[test]
 fn test215_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Closure {
@@ -12518,7 +12518,7 @@ fn test215_optimized() {
 // (begin (define add2 (lambda (a b) (+ a b))) (add2 1 2))
 #[test]
 fn test216_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Closure {
@@ -12552,7 +12552,7 @@ fn test216_optimized() {
 // (begin (define z (make-vector 2)) (vector-set! z 0 1) (vector-set! z 1 2) (make-vector 3) (null? 3) (vector-set! z 1 3) (vector-ref z 1))
 #[test]
 fn test217_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -12593,7 +12593,7 @@ fn test217_optimized() {
 // (begin (define (proc-2) (define (rec) 3) (rec)) (proc-2))
 #[test]
 fn test218_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Closure {
@@ -12623,7 +12623,7 @@ fn test218_optimized() {
 // (begin (define (func2) (define val 4) val) (func2))
 #[test]
 fn test219_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Closure {
@@ -12653,7 +12653,7 @@ fn test219_optimized() {
 // (+ 4 3)
 #[test]
 fn test22_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(7)), Op::Halt];
     let expected = Object::Number(7);
@@ -12668,7 +12668,7 @@ fn test22_optimized() {
 // (if (values 1 2 3) #t #f)
 #[test]
 fn test220_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -12692,7 +12692,7 @@ fn test220_optimized() {
 // (call-with-values (lambda () (values 4 5)) (lambda (a b) b))
 #[test]
 fn test221_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -12732,7 +12732,7 @@ fn test221_optimized() {
 // (call-with-values (lambda () (values 1 2 3)) (lambda (a b c) (+ a b c)))
 #[test]
 fn test222_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(4),
@@ -12777,7 +12777,7 @@ fn test222_optimized() {
 // (call-with-values (lambda () (values 1 2 3)) list)
 #[test]
 fn test223_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -12814,7 +12814,7 @@ fn test223_optimized() {
 // (call-with-values (lambda () 1) (lambda (x) (+ x 1234)))
 #[test]
 fn test224_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -12853,7 +12853,7 @@ fn test224_optimized() {
 // (receive (a b c) (values 1 2 3) (+ a b c))
 #[test]
 fn test225_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(4),
@@ -12883,7 +12883,7 @@ fn test225_optimized() {
 // (receive z (values 'x 'y) z)
 #[test]
 fn test226_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("x");
     let sym1 = vm.gc.symbol_intern("y");
@@ -12912,7 +12912,7 @@ fn test226_optimized() {
 // (receive (a . b) (values 'x 'y 'z) b)
 #[test]
 fn test227_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("y");
     let sym1 = vm.gc.symbol_intern("z");
@@ -12943,7 +12943,7 @@ fn test227_optimized() {
 // (receive (a . b) (values 'x 'y 'z) a)
 #[test]
 fn test228_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("x");
     let sym1 = vm.gc.symbol_intern("y");
@@ -12973,7 +12973,7 @@ fn test228_optimized() {
 // (receive x (apply values '(1 2 3)) x)
 #[test]
 fn test229_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -13010,7 +13010,7 @@ fn test229_optimized() {
 // (+ 4 3 10)
 #[test]
 fn test23_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(17)), Op::Halt];
     let expected = Object::Number(17);
@@ -13025,7 +13025,7 @@ fn test23_optimized() {
 // (call-with-values (lambda () (values 1 2)) cons)
 #[test]
 fn test230_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let pair0 = vm.gc.cons(Object::Number(1), Object::Number(2));
 
@@ -13059,7 +13059,7 @@ fn test230_optimized() {
 // (cons 'a '())
 #[test]
 fn test232_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let list0 = vm.gc.listn(&[sym0]);
@@ -13082,7 +13082,7 @@ fn test232_optimized() {
 // (cons '(a) '(b c d))
 #[test]
 fn test233_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -13111,7 +13111,7 @@ fn test233_optimized() {
 // (cons "a" '(b c))
 #[test]
 fn test234_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("b");
     let sym1 = vm.gc.symbol_intern("c");
@@ -13138,7 +13138,7 @@ fn test234_optimized() {
 // (cons 'a 3)
 #[test]
 fn test235_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let pair0 = vm.gc.cons(sym0, Object::Number(3));
@@ -13161,7 +13161,7 @@ fn test235_optimized() {
 // (cons '(a b) 'c)
 #[test]
 fn test236_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -13188,7 +13188,7 @@ fn test236_optimized() {
 // (car '(a b c))
 #[test]
 fn test237_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -13208,7 +13208,7 @@ fn test237_optimized() {
 // (car '((a) b c d))
 #[test]
 fn test238_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -13231,7 +13231,7 @@ fn test238_optimized() {
 // (car '(1 . 2))
 #[test]
 fn test239_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let pair0 = vm.gc.cons(Object::Number(1), Object::Number(2));
 
@@ -13248,7 +13248,7 @@ fn test239_optimized() {
 // (+ 1 1 1 1)
 #[test]
 fn test24_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -13263,7 +13263,7 @@ fn test24_optimized() {
 // (cdr '((a) b c d))
 #[test]
 fn test240_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("b");
     let sym1 = vm.gc.symbol_intern("c");
@@ -13286,7 +13286,7 @@ fn test240_optimized() {
 // (cdr '(1 . 2))
 #[test]
 fn test241_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let pair0 = vm.gc.cons(Object::Number(1), Object::Number(2));
 
@@ -13303,7 +13303,7 @@ fn test241_optimized() {
 // (reverse '(a b c))
 #[test]
 fn test242_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("c");
     let sym1 = vm.gc.symbol_intern("b");
@@ -13330,7 +13330,7 @@ fn test242_optimized() {
 // (reverse '(a (b c) d (e (f))))
 #[test]
 fn test243_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("e");
     let sym1 = vm.gc.symbol_intern("f");
@@ -13366,7 +13366,7 @@ fn test243_optimized() {
 // (equal? 'a 'a)
 #[test]
 fn test244_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -13388,7 +13388,7 @@ fn test244_optimized() {
 // (equal? '(a) '(a))
 #[test]
 fn test245_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let list0 = vm.gc.listn(&[sym0]);
@@ -13412,7 +13412,7 @@ fn test245_optimized() {
 // (equal? '(a (b) c) '(a (b) c))
 #[test]
 fn test246_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -13440,7 +13440,7 @@ fn test246_optimized() {
 // (equal? "abc" "abc")
 #[test]
 fn test247_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("abc");
     let str1 = vm.gc.new_string("abc");
@@ -13463,7 +13463,7 @@ fn test247_optimized() {
 // (equal? 2 2)
 #[test]
 fn test248_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -13483,7 +13483,7 @@ fn test248_optimized() {
 // (equal? (make-vector 5 'a) (make-vector 5 'a))
 #[test]
 fn test249_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -13509,7 +13509,7 @@ fn test249_optimized() {
 // (- 10 5)
 #[test]
 fn test25_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(5)), Op::Halt];
     let expected = Object::Number(5);
@@ -13524,7 +13524,7 @@ fn test25_optimized() {
 // (eq? 'a 'a)
 #[test]
 fn test250_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -13541,7 +13541,7 @@ fn test250_optimized() {
 // (eq? '(a) '(a))
 #[test]
 fn test251_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let list0 = vm.gc.listn(&[sym0]);
@@ -13565,7 +13565,7 @@ fn test251_optimized() {
 // (eq? (list 'a) (list 'a))
 #[test]
 fn test252_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -13593,7 +13593,7 @@ fn test252_optimized() {
 // (eq? "a" "a")
 #[test]
 fn test253_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("a");
     let str1 = vm.gc.new_string("a");
@@ -13611,7 +13611,7 @@ fn test253_optimized() {
 // (eq? "" "")
 #[test]
 fn test254_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("");
     let str1 = vm.gc.new_string("");
@@ -13629,7 +13629,7 @@ fn test254_optimized() {
 // (eq? '() '())
 #[test]
 fn test255_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Nil),
@@ -13649,7 +13649,7 @@ fn test255_optimized() {
 // (eq? 2 2)
 #[test]
 fn test256_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -13669,7 +13669,7 @@ fn test256_optimized() {
 // (eq? #\A #\A)
 #[test]
 fn test257_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Char('A')),
@@ -13689,7 +13689,7 @@ fn test257_optimized() {
 // (eq? car car)
 #[test]
 fn test258_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::ReferFreePush(3), Op::ReferFree(3), Op::Eq, Op::Halt];
     let expected = Object::True;
@@ -13704,7 +13704,7 @@ fn test258_optimized() {
 // (let ((n (+ 2 3))) (eq? n n))
 #[test]
 fn test259_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(5)),
@@ -13724,7 +13724,7 @@ fn test259_optimized() {
 // (- 10 5 2)
 #[test]
 fn test26_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -13739,7 +13739,7 @@ fn test26_optimized() {
 // (let ((p (lambda (x) x))) (eq? p p))
 #[test]
 fn test262_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -13771,7 +13771,7 @@ fn test262_optimized() {
 // (- 3 4)
 #[test]
 fn test263_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(-1)), Op::Halt];
     let expected = Object::Number(-1);
@@ -13786,7 +13786,7 @@ fn test263_optimized() {
 // (- 3 4 5)
 #[test]
 fn test264_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(-6)), Op::Halt];
     let expected = Object::Number(-6);
@@ -13801,7 +13801,7 @@ fn test264_optimized() {
 // (- 3)
 #[test]
 fn test265_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(-3)), Op::Halt];
     let expected = Object::Number(-3);
@@ -13816,7 +13816,7 @@ fn test265_optimized() {
 // (cond ((> 3 2) 'greater) ((< 3 2) 'less))
 #[test]
 fn test266_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("greater");
     let sym1 = vm.gc.symbol_intern("less");
@@ -13851,7 +13851,7 @@ fn test266_optimized() {
 // (cond ((> 3 3) 'greater) ((< 3 3) 'less) (else 'equal))
 #[test]
 fn test267_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("equal");
     let sym1 = vm.gc.symbol_intern("greater");
@@ -13887,7 +13887,7 @@ fn test267_optimized() {
 // (cond ('(1 2 3) => cadr) (else #f))
 #[test]
 fn test268_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -13918,7 +13918,7 @@ fn test268_optimized() {
 // (cons 'a 'b)
 #[test]
 fn test27_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -13942,7 +13942,7 @@ fn test27_optimized() {
 // (let ((vec (vector 0 '(2 2 2 2) "Anna"))) (vector-set! vec 1 '("Sue" "Sue")) vec)
 #[test]
 fn test271_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("Sue");
     let str1 = vm.gc.new_string("Sue");
@@ -13986,7 +13986,7 @@ fn test271_optimized() {
 // (vector-ref '#(1 1 2 3 5 8 13 21) 5)
 #[test]
 fn test272_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let vec0 = vm.gc.new_vector(&vec![
         Object::Number(1),
@@ -14017,7 +14017,7 @@ fn test272_optimized() {
 // (or (= 2 2) (> 2 1))
 #[test]
 fn test273_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -14043,7 +14043,7 @@ fn test273_optimized() {
 // (or (= 2 2) (< 2 1))
 #[test]
 fn test274_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -14069,7 +14069,7 @@ fn test274_optimized() {
 // (or #f #f #f)
 #[test]
 fn test275_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -14089,7 +14089,7 @@ fn test275_optimized() {
 // (or '(b c) (/ 3 0))
 #[test]
 fn test276_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("b");
     let sym1 = vm.gc.symbol_intern("c");
@@ -14109,7 +14109,7 @@ fn test276_optimized() {
 // (not #t)
 #[test]
 fn test277_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::True), Op::Not, Op::Halt];
     let expected = Object::False;
@@ -14124,7 +14124,7 @@ fn test277_optimized() {
 // (not 3)
 #[test]
 fn test278_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Not, Op::Halt];
     let expected = Object::False;
@@ -14139,7 +14139,7 @@ fn test278_optimized() {
 // (not (list 3))
 #[test]
 fn test279_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -14161,7 +14161,7 @@ fn test279_optimized() {
 // (car (cons 2 3))
 #[test]
 fn test28_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -14182,7 +14182,7 @@ fn test28_optimized() {
 // (not #f)
 #[test]
 fn test280_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::False), Op::Not, Op::Halt];
     let expected = Object::True;
@@ -14197,7 +14197,7 @@ fn test280_optimized() {
 // (not '())
 #[test]
 fn test281_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Nil), Op::Not, Op::Halt];
     let expected = Object::False;
@@ -14212,7 +14212,7 @@ fn test281_optimized() {
 // (not (list))
 #[test]
 fn test282_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(2),
@@ -14233,7 +14233,7 @@ fn test282_optimized() {
 // (not 'nil)
 #[test]
 fn test283_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("nil");
 
@@ -14250,7 +14250,7 @@ fn test283_optimized() {
 // (let ((x 2) (y 3)) (* x y))
 #[test]
 fn test284_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(6)), Op::Halt];
     let expected = Object::Number(6);
@@ -14265,7 +14265,7 @@ fn test284_optimized() {
 // (let ((x 2) (y 3)) (let ((x 7) (z (+ x y))) (* z x)))
 #[test]
 fn test285_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(35)), Op::Halt];
     let expected = Object::Number(35);
@@ -14280,7 +14280,7 @@ fn test285_optimized() {
 // (let ((x 2) (y 3)) (let* ((x 7) (z (+ x y))) (* z x)))
 #[test]
 fn test286_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(70)), Op::Halt];
     let expected = Object::Number(70);
@@ -14295,7 +14295,7 @@ fn test286_optimized() {
 // (eqv? 'a 'a)
 #[test]
 fn test287_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
 
@@ -14317,7 +14317,7 @@ fn test287_optimized() {
 // (eqv? 'a 'b)
 #[test]
 fn test288_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -14340,7 +14340,7 @@ fn test288_optimized() {
 // (eqv? 2 2)
 #[test]
 fn test289_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -14360,7 +14360,7 @@ fn test289_optimized() {
 // (cdr (cons 2 3))
 #[test]
 fn test29_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -14381,7 +14381,7 @@ fn test29_optimized() {
 // (eqv? '() '())
 #[test]
 fn test290_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Nil),
@@ -14401,7 +14401,7 @@ fn test290_optimized() {
 // (eqv? 100000000 100000000)
 #[test]
 fn test291_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(100000000)),
@@ -14421,7 +14421,7 @@ fn test291_optimized() {
 // (eqv? (cons 1 2) (cons 1 2))
 #[test]
 fn test292_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -14445,7 +14445,7 @@ fn test292_optimized() {
 // (eqv? (lambda () 1) (lambda () 2))
 #[test]
 fn test293_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Closure {
@@ -14482,7 +14482,7 @@ fn test293_optimized() {
 // (eqv? 123456789101112 123456789101112)
 #[test]
 fn test294_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(123456789101112)),
@@ -14502,7 +14502,7 @@ fn test294_optimized() {
 // (eqv? #f 'nil)
 #[test]
 fn test295_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("nil");
 
@@ -14524,7 +14524,7 @@ fn test295_optimized() {
 // (digit->integer #\3 10)
 #[test]
 fn test297_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(4),
@@ -14546,7 +14546,7 @@ fn test297_optimized() {
 // (+)
 #[test]
 fn test298_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(0)), Op::Halt];
     let expected = Object::Number(0);
@@ -14561,7 +14561,7 @@ fn test298_optimized() {
 // (*)
 #[test]
 fn test299_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -14576,7 +14576,7 @@ fn test299_optimized() {
 // 3
 #[test]
 fn test3_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -14591,7 +14591,7 @@ fn test3_optimized() {
 // (cadr (cons 2 (cons 3 '())))
 #[test]
 fn test30_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -14614,7 +14614,7 @@ fn test30_optimized() {
 // (apply (lambda (a b c) (+ a b c)) 1 2 '(3))
 #[test]
 fn test303_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(3)]);
 
@@ -14653,7 +14653,7 @@ fn test303_optimized() {
 // (apply (lambda (a b c) (+ a b c)) '(1 2 3))
 #[test]
 fn test304_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -14692,7 +14692,7 @@ fn test304_optimized() {
 // (apply (lambda (a b c) (+ a b c)) 1 '(2 3))
 #[test]
 fn test305_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(2), Object::Number(3)]);
 
@@ -14730,7 +14730,7 @@ fn test305_optimized() {
 // (apply (lambda (x y) (apply y '((3 2)))) `(,car ,cdr))
 #[test]
 fn test306_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(2)]);
     let list1 = vm.gc.listn(&[Object::Number(3), Object::Number(2)]);
@@ -14774,7 +14774,7 @@ fn test306_optimized() {
 // (/ 6 2)
 #[test]
 fn test307_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(6)),
@@ -14794,7 +14794,7 @@ fn test307_optimized() {
 // (even? 2)
 #[test]
 fn test309_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -14815,7 +14815,7 @@ fn test309_optimized() {
 // (= 3 3)
 #[test]
 fn test31_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -14835,7 +14835,7 @@ fn test31_optimized() {
 // (even? 3)
 #[test]
 fn test310_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -14856,7 +14856,7 @@ fn test310_optimized() {
 // (for-all even? '(3 1 4 1 5 9))
 #[test]
 fn test311_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[
         Object::Number(3),
@@ -14887,7 +14887,7 @@ fn test311_optimized() {
 // (for-all even? '(3 1 4 1 5 9 . 2))
 #[test]
 fn test312_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let pair0 = vm.gc.cons(Object::Number(9), Object::Number(2));
     let pair1 = vm.gc.cons(Object::Number(5), pair0);
@@ -14916,7 +14916,7 @@ fn test312_optimized() {
 // (for-all even? '(2 4 14))
 #[test]
 fn test313_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -14942,7 +14942,7 @@ fn test313_optimized() {
 // (for-all (lambda (n) (and (even? n) n)) '(2 4 14))
 #[test]
 fn test314_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -14984,7 +14984,7 @@ fn test314_optimized() {
 // (- (/ 1 2) (/ 1 4) (/ 1 4))
 #[test]
 fn test318_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15012,7 +15012,7 @@ fn test318_optimized() {
 // (= (/ 3 2) (+ (/ 1 2) 1))
 #[test]
 fn test319_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -15038,7 +15038,7 @@ fn test319_optimized() {
 // (= 3 4)
 #[test]
 fn test32_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -15058,7 +15058,7 @@ fn test32_optimized() {
 // (= (/ 5 2) (+ 1 (/ 1 2) 1))
 #[test]
 fn test320_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(5)),
@@ -15086,7 +15086,7 @@ fn test320_optimized() {
 // (/ (/ 4 2) 1)
 #[test]
 fn test326_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(4)),
@@ -15108,7 +15108,7 @@ fn test326_optimized() {
 // (> 1 (/ 1 2))
 #[test]
 fn test329_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15130,7 +15130,7 @@ fn test329_optimized() {
 // (let ((a 3)) a)
 #[test]
 fn test33_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -15145,7 +15145,7 @@ fn test33_optimized() {
 // (> (/ 1 2) 1)
 #[test]
 fn test330_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15167,7 +15167,7 @@ fn test330_optimized() {
 // (> 1 (/ 1 2))
 #[test]
 fn test331_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15189,7 +15189,7 @@ fn test331_optimized() {
 // (<= (/ 1 2) 1)
 #[test]
 fn test333_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15211,7 +15211,7 @@ fn test333_optimized() {
 // (>= 1 (/ 1 2))
 #[test]
 fn test334_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15233,7 +15233,7 @@ fn test334_optimized() {
 // (>= (/ 1 2) (/ 1 3))
 #[test]
 fn test335_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15257,7 +15257,7 @@ fn test335_optimized() {
 // (< (/ 1 2) 1)
 #[test]
 fn test336_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15279,7 +15279,7 @@ fn test336_optimized() {
 // (< 1 (/ 1 2))
 #[test]
 fn test337_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15301,7 +15301,7 @@ fn test337_optimized() {
 // (< (/ 1 2) (/ 1 3))
 #[test]
 fn test338_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15325,7 +15325,7 @@ fn test338_optimized() {
 // (<= (/ 1 2) 1)
 #[test]
 fn test339_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15347,7 +15347,7 @@ fn test339_optimized() {
 // (let ((a 3) (b 1)) b)
 #[test]
 fn test34_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -15362,7 +15362,7 @@ fn test34_optimized() {
 // (<= 1 (/ 1 2))
 #[test]
 fn test340_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15384,7 +15384,7 @@ fn test340_optimized() {
 // (= (/ 2 2) 1)
 #[test]
 fn test342_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(2)),
@@ -15406,7 +15406,7 @@ fn test342_optimized() {
 // (= 1 (/ 2 2))
 #[test]
 fn test343_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15428,7 +15428,7 @@ fn test343_optimized() {
 // (= (/ 1 2) (/ 2 4))
 #[test]
 fn test344_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15452,7 +15452,7 @@ fn test344_optimized() {
 // (let ((a 3) (b 1)) a)
 #[test]
 fn test35_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -15467,7 +15467,7 @@ fn test35_optimized() {
 // (= (/ (+ (greatest-fixnum) 1) 1) (+ (greatest-fixnum) 1))
 #[test]
 fn test352_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(2),
@@ -15497,7 +15497,7 @@ fn test352_optimized() {
 // (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1))
 #[test]
 fn test355_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(2),
@@ -15525,7 +15525,7 @@ fn test355_optimized() {
 // (fixnum? (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1)))
 #[test]
 fn test356_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(12),
@@ -15557,7 +15557,7 @@ fn test356_optimized() {
 // (/ 2)
 #[test]
 fn test357_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15577,7 +15577,7 @@ fn test357_optimized() {
 // (/ 3)
 #[test]
 fn test358_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(1)),
@@ -15597,7 +15597,7 @@ fn test358_optimized() {
 // (fixnum? (least-fixnum))
 #[test]
 fn test359_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -15621,7 +15621,7 @@ fn test359_optimized() {
 // (let ((a 3) (b 1)) a b)
 #[test]
 fn test36_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -15640,7 +15640,7 @@ fn test36_optimized() {
 // (fixnum? (greatest-fixnum))
 #[test]
 fn test360_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -15664,7 +15664,7 @@ fn test360_optimized() {
 // (number? (+ (greatest-fixnum) 1))
 #[test]
 fn test363_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(6),
@@ -15689,7 +15689,7 @@ fn test363_optimized() {
 // (number? (- (least-fixnum) 1))
 #[test]
 fn test364_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(6),
@@ -15714,7 +15714,7 @@ fn test364_optimized() {
 // (> (+ (greatest-fixnum) 1) (greatest-fixnum))
 #[test]
 fn test365_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(2),
@@ -15740,7 +15740,7 @@ fn test365_optimized() {
 // (< (- (least-fixnum) 1) (least-fixnum))
 #[test]
 fn test366_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(2),
@@ -15766,7 +15766,7 @@ fn test366_optimized() {
 // (fixnum? (- (+ (greatest-fixnum) 1) 1))
 #[test]
 fn test367_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(8),
@@ -15793,7 +15793,7 @@ fn test367_optimized() {
 // (fixnum? (+ (- (least-fixnum) 1) 1))
 #[test]
 fn test368_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(8),
@@ -15820,7 +15820,7 @@ fn test368_optimized() {
 // (number? 3)
 #[test]
 fn test369_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -15841,7 +15841,7 @@ fn test369_optimized() {
 // (let1 a 3 a)
 #[test]
 fn test37_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -15856,7 +15856,7 @@ fn test37_optimized() {
 // (number? (/ 1 4))
 #[test]
 fn test370_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(6),
@@ -15880,7 +15880,7 @@ fn test370_optimized() {
 // (div 123 10)
 #[test]
 fn test375_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(4),
@@ -15902,7 +15902,7 @@ fn test375_optimized() {
 // (div 123 -10)
 #[test]
 fn test376_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(4),
@@ -15924,7 +15924,7 @@ fn test376_optimized() {
 // (div -123 10)
 #[test]
 fn test377_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(4),
@@ -15946,7 +15946,7 @@ fn test377_optimized() {
 // (div -123 -10)
 #[test]
 fn test378_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(4),
@@ -15968,7 +15968,7 @@ fn test378_optimized() {
 // (string-ref "abc" 2)
 #[test]
 fn test379_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("abc");
 
@@ -15992,7 +15992,7 @@ fn test379_optimized() {
 // (let1 a 3 (let1 b 4 b))
 #[test]
 fn test38_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -16007,7 +16007,7 @@ fn test38_optimized() {
 // (list? '(a b c))
 #[test]
 fn test380_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -16033,7 +16033,7 @@ fn test380_optimized() {
 // (list? '())
 #[test]
 fn test381_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(3),
@@ -16054,7 +16054,7 @@ fn test381_optimized() {
 // (list? '(a . b))
 #[test]
 fn test382_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let sym0 = vm.gc.symbol_intern("a");
     let sym1 = vm.gc.symbol_intern("b");
@@ -16079,7 +16079,7 @@ fn test382_optimized() {
 // "abc"
 #[test]
 fn test383_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let str0 = vm.gc.new_string("abc");
     let str1 = vm.gc.new_string("abc");
@@ -16097,7 +16097,7 @@ fn test383_optimized() {
 // (let1 a 3 (let1 b 4 a))
 #[test]
 fn test39_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -16112,7 +16112,7 @@ fn test39_optimized() {
 // 4
 #[test]
 fn test4_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -16127,7 +16127,7 @@ fn test4_optimized() {
 // (let1 a 3 (let1 b 4 (+ a b)))
 #[test]
 fn test40_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(7)), Op::Halt];
     let expected = Object::Number(7);
@@ -16142,7 +16142,7 @@ fn test40_optimized() {
 // (let1 a 3 (let1 b 4 (let1 c 5 (+ a b c))))
 #[test]
 fn test41_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(12)), Op::Halt];
     let expected = Object::Number(12);
@@ -16157,7 +16157,7 @@ fn test41_optimized() {
 // (let ((a 3) (b 4)) (let1 c 5 (+ a b c)))
 #[test]
 fn test42_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(12)), Op::Halt];
     let expected = Object::Number(12);
@@ -16172,7 +16172,7 @@ fn test42_optimized() {
 // (let ((a 3) (b 4)) (+ (let1 c 5 (+ a b c)) 1))
 #[test]
 fn test43_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(13)), Op::Halt];
     let expected = Object::Number(13);
@@ -16187,7 +16187,7 @@ fn test43_optimized() {
 // (let1 a 3 (let1 a 4 a))
 #[test]
 fn test44_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -16202,7 +16202,7 @@ fn test44_optimized() {
 // (let1 a 3 (set! a (+ a 1)) (+ a 1))
 #[test]
 fn test45_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -16233,7 +16233,7 @@ fn test45_optimized() {
 // (let1 a 3 (let1 b 4 (set! b a) b))
 #[test]
 fn test46_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -16259,7 +16259,7 @@ fn test46_optimized() {
 // (let ((a 2) (b 3)) a)
 #[test]
 fn test47_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(2)), Op::Halt];
     let expected = Object::Number(2);
@@ -16274,7 +16274,7 @@ fn test47_optimized() {
 // (let1 a 3 (let1 b (lambda () a) (b)))
 #[test]
 fn test48_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -16289,7 +16289,7 @@ fn test48_optimized() {
 // (let ((a 3)) (let ((b (lambda () a))) (b)))
 #[test]
 fn test49_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -16304,7 +16304,7 @@ fn test49_optimized() {
 // (if #f #f #t)
 #[test]
 fn test5_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -16323,7 +16323,7 @@ fn test5_optimized() {
 // (let ((a 0) (b 1) (c 2)) c)
 #[test]
 fn test50_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(2)), Op::Halt];
     let expected = Object::Number(2);
@@ -16338,7 +16338,7 @@ fn test50_optimized() {
 // (let1 a 1 (let1 b 2 (let1 c a (+ a b c))))
 #[test]
 fn test51_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -16353,7 +16353,7 @@ fn test51_optimized() {
 // (let ((a 3)) a)
 #[test]
 fn test52_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -16368,7 +16368,7 @@ fn test52_optimized() {
 // (let ((a 3) (b 4)) (+ a b))
 #[test]
 fn test53_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(7)), Op::Halt];
     let expected = Object::Number(7);
@@ -16383,7 +16383,7 @@ fn test53_optimized() {
 // (let* ((a 3) (b (+ a 1))) b)
 #[test]
 fn test54_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(4)), Op::Halt];
     let expected = Object::Number(4);
@@ -16398,7 +16398,7 @@ fn test54_optimized() {
 // (let1 a 3 (let1 b 4 (let1 c (lambda () b) (set! a c))) (a))
 #[test]
 fn test55_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -16441,7 +16441,7 @@ fn test55_optimized() {
 // (let ((a 0) (b 1)) (let ((c (lambda () b))) (c)))
 #[test]
 fn test56_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -16456,7 +16456,7 @@ fn test56_optimized() {
 // (let ((a 0) (b 1)) ((lambda () b)))
 #[test]
 fn test57_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -16471,7 +16471,7 @@ fn test57_optimized() {
 // (let ((a 0) (b 1)) (let ((c (lambda () (set! b 3) b))) (c)))
 #[test]
 fn test58_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -16497,7 +16497,7 @@ fn test58_optimized() {
 // (let ((a 0) (b 1)) (let1 c (lambda () (set! b 3) b) (c)))
 #[test]
 fn test59_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -16523,7 +16523,7 @@ fn test59_optimized() {
 // ((lambda (a) 3) 4)
 #[test]
 fn test6_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -16538,7 +16538,7 @@ fn test6_optimized() {
 // (let1 a 100 (let1 c (let1 d (lambda () a) d) (c)))
 #[test]
 fn test60_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -16574,7 +16574,7 @@ fn test60_optimized() {
 // (letrec ((a 1) (b (lambda () a))) (b))
 #[test]
 fn test61_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(1)), Op::Halt];
     let expected = Object::Number(1);
@@ -16589,7 +16589,7 @@ fn test61_optimized() {
 // (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0))
 #[test]
 fn test62_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(4),
@@ -16621,7 +16621,7 @@ fn test62_optimized() {
 // (let ((a '())) (let ((G68 (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (set! a G68) (a 0)))
 #[test]
 fn test63_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(3),
@@ -16676,7 +16676,7 @@ fn test63_optimized() {
 // (letrec ((a (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (a 0))
 #[test]
 fn test64_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(4),
@@ -16707,7 +16707,7 @@ fn test64_optimized() {
 // ((lambda (a) (set! a 1000) a) '())
 #[test]
 fn test65_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -16733,7 +16733,7 @@ fn test65_optimized() {
 // ((lambda (a) (set! a (lambda (i) (if (= i 20) i (a (+ i 1))))) (a 0)) '())
 #[test]
 fn test66_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(2),
@@ -16782,7 +16782,7 @@ fn test66_optimized() {
 // (or #f 3 4)
 #[test]
 fn test67_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::False),
@@ -16801,7 +16801,7 @@ fn test67_optimized() {
 // (define a 3)
 #[test]
 fn test68_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -16820,7 +16820,7 @@ fn test68_optimized() {
 // ((lambda (a) (if 3 7 5)) 6)
 #[test]
 fn test7_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -16839,7 +16839,7 @@ fn test7_optimized() {
 // (= 3 4)
 #[test]
 fn test70_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -16859,7 +16859,7 @@ fn test70_optimized() {
 // (= 3 3 3)
 #[test]
 fn test71_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -16883,7 +16883,7 @@ fn test71_optimized() {
 // (= 3 4 5)
 #[test]
 fn test72_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::ConstantPush(Object::Number(3)),
@@ -16907,7 +16907,7 @@ fn test72_optimized() {
 // (((lambda (a) (lambda () a)) 101))
 #[test]
 fn test73_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(5),
@@ -16936,7 +16936,7 @@ fn test73_optimized() {
 // (((lambda (a) (lambda (b) (+ a b))) 101) 1)
 #[test]
 fn test74_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Frame(8),
@@ -16968,7 +16968,7 @@ fn test74_optimized() {
 // (null? '())
 #[test]
 fn test75_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Nil), Op::NullP, Op::Halt];
     let expected = Object::True;
@@ -16983,7 +16983,7 @@ fn test75_optimized() {
 // (null? 3)
 #[test]
 fn test76_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::NullP, Op::Halt];
     let expected = Object::False;
@@ -16998,7 +16998,7 @@ fn test76_optimized() {
 // (cons 1 2)
 #[test]
 fn test77_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let pair0 = vm.gc.cons(Object::Number(1), Object::Number(2));
 
@@ -17020,7 +17020,7 @@ fn test77_optimized() {
 // (cons 1 (cons 2 '()))
 #[test]
 fn test78_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(1), Object::Number(2)]);
 
@@ -17044,7 +17044,7 @@ fn test78_optimized() {
 // (begin 1 2 3)
 #[test]
 fn test79_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(1)),
@@ -17064,7 +17064,7 @@ fn test79_optimized() {
 // ((lambda () 3))
 #[test]
 fn test8_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -17079,7 +17079,7 @@ fn test8_optimized() {
 // ((lambda () (set! a 4) a))
 #[test]
 fn test80_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(4)),
@@ -17099,7 +17099,7 @@ fn test80_optimized() {
 // ((lambda () ((lambda () 3))))
 #[test]
 fn test81_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -17114,7 +17114,7 @@ fn test81_optimized() {
 // ((lambda () ((lambda (x) x) 3)))
 #[test]
 fn test82_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -17129,7 +17129,7 @@ fn test82_optimized() {
 // ((lambda (y) ((lambda (x) x) 3)) 4)
 #[test]
 fn test83_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -17144,7 +17144,7 @@ fn test83_optimized() {
 // ((lambda () (let1 a 1 ((lambda () 3)))))
 #[test]
 fn test84_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -17159,7 +17159,7 @@ fn test84_optimized() {
 // ((lambda () (let1 b 2 (let1 a 1 ((lambda () 3))))))
 #[test]
 fn test85_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -17174,7 +17174,7 @@ fn test85_optimized() {
 // ((lambda () (if 3 ((lambda () 3)))))
 #[test]
 fn test86_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -17193,7 +17193,7 @@ fn test86_optimized() {
 // ((lambda () (if ((lambda () 3)) 4 5)))
 #[test]
 fn test87_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::Constant(Object::Number(3)),
@@ -17212,7 +17212,7 @@ fn test87_optimized() {
 // (let loop ((i 0)) (if (= i 10) i (let1 a 1 (let1 b 0 (loop (+ i a b))))))
 #[test]
 fn test88_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(5),
@@ -17246,7 +17246,7 @@ fn test88_optimized() {
 // (let loop ((i 0)) (if (= i 10) i (let1 a 1 (let1 b 0 (loop (+ i a b))))))
 #[test]
 fn test89_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(5),
@@ -17280,7 +17280,7 @@ fn test89_optimized() {
 // ((lambda (a) a) 101)
 #[test]
 fn test9_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(101)), Op::Halt];
     let expected = Object::Number(101);
@@ -17295,7 +17295,7 @@ fn test9_optimized() {
 // ((lambda () (define d (lambda (x y z) (+ x y z))) (d 1 2 3)))
 #[test]
 fn test90_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(6)), Op::Halt];
     let expected = Object::Number(6);
@@ -17310,7 +17310,7 @@ fn test90_optimized() {
 // ((lambda () (define b (lambda () 3)) (b)))
 #[test]
 fn test91_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![Op::Constant(Object::Number(3)), Op::Halt];
     let expected = Object::Number(3);
@@ -17325,7 +17325,7 @@ fn test91_optimized() {
 // ((lambda a a) 1 2 3)
 #[test]
 fn test92_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -17354,7 +17354,7 @@ fn test92_optimized() {
 // ((lambda (a . b) b) 1 2 3)
 #[test]
 fn test93_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(2), Object::Number(3)]);
 
@@ -17380,7 +17380,7 @@ fn test93_optimized() {
 // ((lambda (a . b) b) 1 2 3 4)
 #[test]
 fn test94_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm
         .gc
@@ -17409,7 +17409,7 @@ fn test94_optimized() {
 // ((lambda (a b . c) c) 1 2 3 4)
 #[test]
 fn test95_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(3), Object::Number(4)]);
 
@@ -17435,7 +17435,7 @@ fn test95_optimized() {
 // ((lambda (a b c . d) d) 1 2 3 4)
 #[test]
 fn test96_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(4)]);
 
@@ -17460,7 +17460,7 @@ fn test96_optimized() {
 // ((lambda (a b c . d) d) 1 2 3)
 #[test]
 fn test97_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -17482,7 +17482,7 @@ fn test97_optimized() {
 // ((lambda a a))
 #[test]
 fn test98_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let ops = vec![
         Op::LetFrame(1),
@@ -17504,7 +17504,7 @@ fn test98_optimized() {
 // ((lambda a a) 1)
 #[test]
 fn test99_optimized() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
 
     let list0 = vm.gc.listn(&[Object::Number(1)]);
 
@@ -17528,7 +17528,7 @@ fn test99_optimized() {
 
 #[test]
 fn test_zero() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     vm.should_load_compiler = true;
 
     let ops = vec![
@@ -17552,7 +17552,7 @@ fn test_zero() {
 
 #[test]
 fn test_compiler() {
-    let mut vm = Vm::new();
+    let mut vm = VmOld::new();
     vm.should_load_compiler = true;
 
     let ops = vec![
