@@ -2001,7 +2001,7 @@ fn list_to_vector(vm: &mut Vm, args: &[Object]) -> Object {
         if obj.is_nil() {
             break;
         }
-        v.push(obj);
+        v.push(obj.to_pair().car);
         obj = obj.to_pair().cdr;
     }
     vm.gc.new_vector(&v)
