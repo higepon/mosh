@@ -225,7 +225,21 @@ impl Vm {
                     let symbol = self.symbol_operand(&mut pc);
                     self.define_global_op(symbol)
                 }
-                Op::Display => todo!(),
+                Op::Display => {
+                    let num_free_vars = self.isize_operand(&mut pc);
+                    let mut free_vars = vec![];
+                    let start = self.dec(self.sp, 1);
+                    for i in 0..num_free_vars {
+                        let var = unsafe { *start.offset(-i) };
+                        free_vars.push(var);
+                    }
+                    let mut display = self.alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
+                    display.prev = self.dc;
+
+                    let display = Object::Closure(display);
+                    self.dc = display;
+                    self.sp = self.dec(self.sp, num_free_vars);
+                },
                 Op::Enter => {
                     let n = self.isize_operand(&mut pc);
                     self.enter_op(n)
@@ -283,7 +297,10 @@ impl Vm {
                 Op::Read => todo!(),
                 Op::ReadChar => todo!(),
                 Op::Reduce => todo!(),
-                Op::ReferFree => todo!(),
+                Op::ReferFree => {
+                    let n = self.usize_operand(&mut pc);
+                    self.refer_free_op(n);
+                }
                 Op::ReferGlobal => todo!(),
                 Op::ReferLocal => {
                     let n = self.isize_operand(&mut pc);
