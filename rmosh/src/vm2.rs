@@ -221,7 +221,10 @@ impl Vm {
                 Op::Constant => {
                     self.constant_op(&mut pc);
                 }
-                Op::DefineGlobal => todo!(),
+                Op::DefineGlobal => {
+                    let symbol = self.symbol_operand(&mut pc);
+                    self.define_global_op(symbol)
+                },
                 Op::Display => todo!(),
                 Op::Enter => todo!(),
                 Op::Eq => todo!(),
@@ -234,7 +237,10 @@ impl Vm {
                 Op::Leave => todo!(),
                 Op::LetFrame => todo!(),
                 Op::List => todo!(),
-                Op::LocalJmp => todo!(),
+                Op::LocalJmp => {
+                    let jump_offset = self.isize_operand(&mut pc);                    
+                    pc = self.jump(pc, jump_offset - 1);                    
+                }
                 Op::MakeContinuation => todo!(),
                 Op::MakeVector => todo!(),
                 Op::Nop => todo!(),
@@ -270,7 +276,12 @@ impl Vm {
                 Op::SetCdr => todo!(),
                 Op::Shift => todo!(),
                 Op::SymbolP => todo!(),
-                Op::Test => todo!(),
+                Op::Test => {
+                    let jump_offset = self.isize_operand(&mut pc);
+                    if self.ac.is_false() {
+                        pc = self.jump(pc, jump_offset - 1);
+                    }                    
+                }
                 Op::Values => todo!(),
                 Op::Receive => todo!(),
                 Op::UnfixedJump => todo!(),
@@ -353,6 +364,11 @@ impl Vm {
     #[inline(always)]        
     fn isize_operand(&mut self, pc: &mut *const Object) -> isize {
         self.operand(pc).to_number()
+    }
+
+    #[inline(always)]        
+    fn symbol_operand(&mut self, pc: &mut *const Object) -> GcRef<Symbol> {
+        self.operand(pc).to_symbol()
     }
 
 
