@@ -243,7 +243,15 @@ impl Vm {
                     branch_number_cmp_op!(==, self, pc);                    
                 }
                 Op::BranchNotEq => todo!(),
-                Op::BranchNotEqv => todo!(),
+                Op::BranchNotEqv => {
+                    let skip_offset = self.isize_operand(&mut pc);
+                    if self.pop().eqv(&self.ac) {
+                        self.set_return_value(Object::True);
+                    } else {
+                        pc = self.jump(pc, skip_offset - 1);
+                        self.set_return_value(Object::False);
+                    }                    
+                }
                 Op::BranchNotEqual => todo!(),
                 Op::Append2 => todo!(),
                 Op::Call => {

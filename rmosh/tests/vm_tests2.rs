@@ -900,34 +900,98 @@ fn test110() {
     );
 }
 
+// (= 3 3 3)
+#[test]
+fn test71() {
+    let mut vm = Vm::new();
 
+    let ops = vec![
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::BranchNotNumberEqual),
+        Object::Number(7),
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::NumberEqual),
+        Object::Instruction(Op::Halt),
+        Object::Instruction(Op::Nop),
+    ];
+    let expected = Object::True;
+    test_ops_with_size(
+        &mut vm,
+        ops,
+        expected,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+    );
+}
 
-    // (= 3 3 3)
-    #[test]
-    fn test71() {
-        let mut vm = Vm::new();
+// (begin (let ((xxx 'a)) (case xxx ((b) 'b) ((a) 'a))))
+#[test]
+fn test197() {
+    let mut vm = Vm::new();
 
+    let sym0 = vm.gc.symbol_intern("a");
+    let sym1 = vm.gc.symbol_intern("b");
 
-        let ops = vec![
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::Push),
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::BranchNotNumberEqual),
-            Object::Number(7),
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::Push),
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::NumberEqual),
-            Object::Instruction(Op::Halt),
-            Object::Instruction(Op::Nop),
-
-        ];
-        let expected = Object::True;
-        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0);
-    }
-
-        
+    let ops = vec![
+        Object::Instruction(Op::LetFrame),
+        Object::Number(4),
+        Object::Instruction(Op::Constant),
+        sym0,
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Enter),
+        Object::Number(1),
+        Object::Instruction(Op::LetFrame),
+        Object::Number(3),
+        Object::Instruction(Op::ReferLocal),
+        Object::Number(0),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Enter),
+        Object::Number(1),
+        Object::Instruction(Op::Constant),
+        sym1,
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::ReferLocal),
+        Object::Number(0),
+        Object::Instruction(Op::BranchNotEqv),
+        Object::Number(5),
+        Object::Instruction(Op::Constant),
+        sym1,
+        Object::Instruction(Op::LocalJmp),
+        Object::Number(13),
+        Object::Instruction(Op::Constant),
+        sym0,
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::ReferLocal),
+        Object::Number(0),
+        Object::Instruction(Op::BranchNotEqv),
+        Object::Number(5),
+        Object::Instruction(Op::Constant),
+        sym0,
+        Object::Instruction(Op::LocalJmp),
+        Object::Number(2),
+        Object::Instruction(Op::Undef),
+        Object::Instruction(Op::Leave),
+        Object::Number(1),
+        Object::Instruction(Op::Leave),
+        Object::Number(1),
+        Object::Instruction(Op::Halt),
+        Object::Instruction(Op::Nop),
+        Object::Instruction(Op::Nop),
+        Object::Instruction(Op::Nop),
+        Object::Instruction(Op::Nop),
+    ];
+    let expected = sym0;
+    test_ops_with_size(
+        &mut vm,
+        ops,
+        expected,
+        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+    );
+}
