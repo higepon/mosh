@@ -995,3 +995,110 @@ fn test197() {
         SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
+
+
+    // (let ((a '(1 2 3))) `(,@a 4))
+    #[test]
+    fn test144() {
+        let mut vm = Vm::new();
+
+        let list0 = vm.gc.listn(&[Object::Number(1), Object::Number(2), Object::Number(3), Object::Number(4)]);
+        let list1 = vm.gc.listn(&[Object::Number(1), Object::Number(2), Object::Number(3)]);
+        let list2 = vm.gc.listn(&[Object::Number(4)]);
+
+        let ops = vec![
+            Object::Instruction(Op::LetFrame),
+            Object::Number(2),
+            Object::Instruction(Op::Constant),
+            list1,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Enter),
+            Object::Number(1),
+            Object::Instruction(Op::ReferLocal),
+            Object::Number(0),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            list2,
+            Object::Instruction(Op::Append2),
+            Object::Instruction(Op::Leave),
+            Object::Number(1),
+            Object::Instruction(Op::Halt),
+
+        ];
+        let expected = list0;
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0);
+    }
+
+
+    // (let ((a 0) (b 1)) (let ((c (lambda () (set! b 3) b))) (c)))
+    #[test]
+    fn test58() {
+        let mut vm = Vm::new();
+
+        let sym0 = vm.gc.symbol_intern("lambda");
+        let str0 = vm.gc.new_string("(input string port)");
+        let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+        let list1 = vm.gc.listn(&[list0, sym0]);
+
+        let ops = vec![
+            Object::Instruction(Op::LetFrame),
+            Object::Number(3),
+            Object::Instruction(Op::Constant),
+            Object::Number(0),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            Object::Number(1),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Box),
+            Object::Number(0),
+            Object::Instruction(Op::Enter),
+            Object::Number(2),
+            Object::Instruction(Op::LetFrame),
+            Object::Number(1),
+            Object::Instruction(Op::ReferLocal),
+            Object::Number(1),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Display),
+            Object::Number(1),
+            Object::Instruction(Op::ReferLocal),
+            Object::Number(1),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Closure),
+            Object::Number(15),
+            Object::Number(0),
+            Object::False,
+            Object::Number(1),
+            Object::Number(4),
+            list1,
+            Object::Instruction(Op::Constant),
+            Object::Number(3),
+            Object::Instruction(Op::AssignFree),
+            Object::Number(0),
+            Object::Instruction(Op::ReferFree),
+            Object::Number(0),
+            Object::Instruction(Op::Indirect),
+            Object::Instruction(Op::Return),
+            Object::Number(0),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Enter),
+            Object::Number(1),
+            Object::Instruction(Op::Frame),
+            Object::Number(5),
+            Object::Instruction(Op::ReferLocal),
+            Object::Number(0),
+            Object::Instruction(Op::Call),
+            Object::Number(0),
+            Object::Instruction(Op::Leave),
+            Object::Number(1),
+            Object::Instruction(Op::Leave),
+            Object::Number(2),
+            Object::Instruction(Op::Halt),
+            Object::Instruction(Op::Nop),
+            Object::Instruction(Op::Nop),
+
+        ];
+        let expected = Object::Number(3);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1);
+    }
+
+                

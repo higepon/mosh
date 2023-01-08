@@ -236,11 +236,11 @@ impl Vm {
                     branch_number_cmp_op!(<, self, pc);
                 }
                 Op::BranchNotGt => {
-                    branch_number_cmp_op!(>, self, pc);                    
+                    branch_number_cmp_op!(>, self, pc);
                 }
                 Op::BranchNotNull => todo!(),
                 Op::BranchNotNumberEqual => {
-                    branch_number_cmp_op!(==, self, pc);                    
+                    branch_number_cmp_op!(==, self, pc);
                 }
                 Op::BranchNotEq => todo!(),
                 Op::BranchNotEqv => {
@@ -250,10 +250,18 @@ impl Vm {
                     } else {
                         pc = self.jump(pc, skip_offset - 1);
                         self.set_return_value(Object::False);
-                    }                    
+                    }
                 }
                 Op::BranchNotEqual => todo!(),
-                Op::Append2 => todo!(),
+                Op::Append2 => {
+                    let head = self.pop();
+                    if Pair::is_list(head) {
+                        let p = self.gc.append2(head, self.ac);
+                        self.set_return_value(p);
+                    } else {
+                        self.arg_err("append", "pair", head);
+                    }
+                }
                 Op::Call => {
                     let argc = self.operand(&mut pc).to_number();
                     self.call_op(&mut pc, argc);
@@ -262,10 +270,25 @@ impl Vm {
                 Op::Push => {
                     self.push_op();
                 }
-                Op::AssignFree => todo!(),
+                Op::AssignFree => {
+                    let n = self.usize_operand(&mut pc);
+                    let closure = self.dc.to_closure();
+                    match closure.refer_free(n) {
+                        Object::Vox(mut vox) => {
+                            vox.value = self.ac;
+                        }
+                        _ => {
+                            panic!("assign_free: vox not found")
+                        }
+                    }
+                }
                 Op::AssignGlobal => todo!(),
                 Op::AssignLocal => todo!(),
-                Op::Box => todo!(),
+                Op::Box => {
+                    let n = self.isize_operand(&mut pc);
+                    let vox = self.alloc(Vox::new(self.index(self.sp, n)));
+                    self.index_set(self.sp, n, Object::Vox(vox));
+                }
                 Op::Caar => todo!(),
                 Op::Cadr => todo!(),
                 Op::Car => todo!(),
@@ -308,7 +331,14 @@ impl Vm {
                 Op::Frame => {
                     self.frame_op(&mut pc);
                 }
-                Op::Indirect => todo!(),
+                Op::Indirect => match self.ac {
+                    Object::Vox(vox) => {
+                        self.set_return_value(vox.value);
+                    }
+                    obj => {
+                        self.arg_err("indirect", "vox", obj);
+                    }
+                },
                 Op::Leave => {
                     let n = self.isize_operand(&mut pc);
                     let sp = self.dec(self.sp, n);
@@ -344,13 +374,13 @@ impl Vm {
                     self.number_add_op();
                 }
                 Op::NumberEqual => {
-                    number_cmp_op!(==, self);                    
+                    number_cmp_op!(==, self);
                 }
                 Op::NumberGe => {
                     number_cmp_op!(>=, self);
                 }
                 Op::NumberGt => {
-                    number_cmp_op!(>, self);                    
+                    number_cmp_op!(>, self);
                 }
                 Op::NumberLe => {
                     number_cmp_op!(<=, self);
