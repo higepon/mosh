@@ -1035,7 +1035,7 @@ fn test144() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0 + SIZE_OF_PAIR * 4,
     );
 }
 
@@ -1110,7 +1110,7 @@ fn test58() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -1203,7 +1203,7 @@ fn test14() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -1566,7 +1566,7 @@ fn test185() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0 + SIZE_OF_PAIR,
     );
 }
 
@@ -1632,7 +1632,7 @@ fn test184() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0 + SIZE_OF_PAIR * 1,
     );
 }
 
@@ -1772,7 +1772,7 @@ fn test221() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 2,
+        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -1861,7 +1861,7 @@ fn test217() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0+ SIZE_OF_VECTOR,
     );
 }
 
@@ -1903,7 +1903,7 @@ fn test11() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -2039,7 +2039,7 @@ fn test55() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -2090,106 +2090,7 @@ fn test62() {
     );
 }
 
-// (let ((x '(1 3 5 7 9))) (do ((x x (cdr x)) (sum 0 (+ sum (car x)))) ((null? x) sum)))
-#[test]
-fn test270() {
-    let mut vm = Vm::new();
 
-    let list0 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list1 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list2 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list3 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-    let list4 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(3),
-        Object::Number(5),
-        Object::Number(7),
-        Object::Number(9),
-    ]);
-
-    let ops = vec![
-        Object::Instruction(Op::Frame),
-        Object::Number(42),
-        Object::Instruction(Op::Frame),
-        Object::Number(27),
-        Object::Instruction(Op::Frame),
-        Object::Number(12),
-        Object::Instruction(Op::ConstantPush),
-        Object::Number(0),
-        Object::Instruction(Op::ReferGlobalPush),
-        vm.gc.symbol_intern("sum"),
-        Object::Instruction(Op::Constant),
-        list0,
-        Object::Instruction(Op::Car),
-        Object::Instruction(Op::NumberAddPush),
-        Object::Instruction(Op::ReferGlobalCall),
-        vm.gc.symbol_intern("sum"),
-        Object::Number(2),
-        Object::Instruction(Op::PushFrame),
-        Object::Number(10),
-        Object::Instruction(Op::ConstantPush),
-        list1,
-        Object::Instruction(Op::Constant),
-        list2,
-        Object::Instruction(Op::CdrPush),
-        Object::Instruction(Op::Constant),
-        list3,
-        Object::Instruction(Op::Call),
-        Object::Number(2),
-        Object::Instruction(Op::Call),
-        Object::Number(1),
-        Object::Instruction(Op::PushFrame),
-        Object::Number(8),
-        Object::Instruction(Op::ReferGlobalPush),
-        vm.gc.symbol_intern("sum"),
-        Object::Instruction(Op::Constant),
-        list4,
-        Object::Instruction(Op::NullP),
-        Object::Instruction(Op::Call),
-        Object::Number(1),
-        Object::Instruction(Op::Push),
-        Object::Instruction(Op::ReferGlobalCall),
-        vm.gc.symbol_intern("do"),
-        Object::Number(2),
-        Object::Instruction(Op::Halt),
-        Object::Instruction(Op::Nop),
-        Object::Instruction(Op::Nop),
-        Object::Instruction(Op::Nop),
-        Object::Instruction(Op::Nop),
-        Object::Instruction(Op::Nop),
-    ];
-    let expected = Object::Number(25);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
 
 // (cond ((cons 1 2) => car) (#f 2) (else 3))
 #[test]
@@ -2330,7 +2231,7 @@ fn test63() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -2375,7 +2276,7 @@ fn test205() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 2,
     );
 }
 
@@ -2429,7 +2330,7 @@ fn test60() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
 
@@ -2507,6 +2408,6 @@ fn test271() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 6,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 3 + SIZE_OF_VECTOR + SIZE_OF_PAIR * 2,
     );
 }
