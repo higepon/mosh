@@ -2456,52 +2456,57 @@ fn test187_2() {
     );
 }
 
+// (let ((vec (vector 0 '(2 2 2 2) "Anna"))) (vector-set! vec 1 '("Sue" "Sue")) vec)
+#[test]
+fn test271() {
+    let mut vm = Vm::new();
 
+    let str0 = vm.gc.new_string("Sue");
+    let str1 = vm.gc.new_string("Sue");
+    let str2 = vm.gc.new_string("Anna");
+    let str3 = vm.gc.new_string("Anna");
+    let str4 = vm.gc.new_string("Sue");
+    let str5 = vm.gc.new_string("Sue");
+    let list0 = vm.gc.listn(&[str0, str1]);
+    let list1 = vm.gc.listn(&[
+        Object::Number(2),
+        Object::Number(2),
+        Object::Number(2),
+        Object::Number(2),
+    ]);
+    let list2 = vm.gc.listn(&[str4, str5]);
+    let vec0 = vm.gc.new_vector(&vec![Object::Number(0), list0, str2]);
 
-    // (let ((vec (vector 0 '(2 2 2 2) "Anna"))) (vector-set! vec 1 '("Sue" "Sue")) vec)
-    #[test]
-    fn test271() {
-        let mut vm = Vm::new();
-
-        let str0 = vm.gc.new_string("Sue");
-        let str1 = vm.gc.new_string("Sue");
-        let str2 = vm.gc.new_string("Anna");
-        let str3 = vm.gc.new_string("Anna");
-        let str4 = vm.gc.new_string("Sue");
-        let str5 = vm.gc.new_string("Sue");
-        let list0 = vm.gc.listn(&[str0, str1]);
-        let list1 = vm.gc.listn(&[Object::Number(2), Object::Number(2), Object::Number(2), Object::Number(2)]);
-        let list2 = vm.gc.listn(&[str4, str5]);
-        let vec0 = vm.gc.new_vector(&vec![Object::Number(0), list0, str2]);
-
-        let ops = vec![
-            Object::Instruction(Op::LetFrame),
-            Object::Number(5),
-            Object::Instruction(Op::ConstantPush),
-            Object::Number(0),
-            Object::Instruction(Op::ConstantPush),
-            list1,
-            Object::Instruction(Op::Constant),
-            str3,
-            Object::Instruction(Op::Vector),
-            Object::Number(3),
-            Object::Instruction(Op::PushEnter),
-            Object::Number(1),
-            Object::Instruction(Op::ReferLocalPushConstant),
-            Object::Number(0),
-            Object::Number(1),
-            Object::Instruction(Op::PushConstant),
-            list2,
-            Object::Instruction(Op::VectorSet),
-            Object::Instruction(Op::ReferLocal),
-            Object::Number(0),
-            Object::Instruction(Op::Leave),
-            Object::Number(1),
-            Object::Instruction(Op::Halt),
-
-        ];
-        let expected = vec0;
-        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 6);
-    }
-
-        
+    let ops = vec![
+        Object::Instruction(Op::LetFrame),
+        Object::Number(5),
+        Object::Instruction(Op::ConstantPush),
+        Object::Number(0),
+        Object::Instruction(Op::ConstantPush),
+        list1,
+        Object::Instruction(Op::Constant),
+        str3,
+        Object::Instruction(Op::Vector),
+        Object::Number(3),
+        Object::Instruction(Op::PushEnter),
+        Object::Number(1),
+        Object::Instruction(Op::ReferLocalPushConstant),
+        Object::Number(0),
+        Object::Number(1),
+        Object::Instruction(Op::PushConstant),
+        list2,
+        Object::Instruction(Op::VectorSet),
+        Object::Instruction(Op::ReferLocal),
+        Object::Number(0),
+        Object::Instruction(Op::Leave),
+        Object::Number(1),
+        Object::Instruction(Op::Halt),
+    ];
+    let expected = vec0;
+    test_ops_with_size(
+        &mut vm,
+        ops,
+        expected,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 6,
+    );
+}

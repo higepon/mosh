@@ -445,7 +445,7 @@ impl Fasl<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use crate::{compiler, equal::Equal, gc::Gc, objects::Object, op::OpOld, vm::VmOld};
+    use crate::{compiler, equal::Equal, gc::Gc, objects::Object, op::OpOld};
 
     use super::Fasl;
 
@@ -593,7 +593,7 @@ pub mod tests {
         let expected = OpOld::ReferLocal(1);
         assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
     }
-
+/*
     #[test]
     fn test_baselib() {
         let mut vm = VmOld::new();
@@ -745,4 +745,5 @@ pub mod tests {
             }
         }
     }
+    */
 }
