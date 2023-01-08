@@ -227,12 +227,14 @@ impl Vm {
             match op {
                 Op::CompileError => todo!(),
                 Op::BranchNotLe => {
-                    branch_number_cmp_op!(<=, self, pc);                    
-                },
-                Op::BranchNotGe => {
-                    branch_number_cmp_op!(>=, self, pc);                         
+                    branch_number_cmp_op!(<=, self, pc);
                 }
-                Op::BranchNotLt => todo!(),
+                Op::BranchNotGe => {
+                    branch_number_cmp_op!(>=, self, pc);
+                }
+                Op::BranchNotLt => {
+                    branch_number_cmp_op!(<, self, pc);                    
+                }
                 Op::BranchNotGt => todo!(),
                 Op::BranchNotNull => todo!(),
                 Op::BranchNotNumberEqual => todo!(),
@@ -283,7 +285,7 @@ impl Vm {
                     let display = Object::Closure(display);
                     self.dc = display;
                     self.sp = self.dec(self.sp, num_free_vars);
-                },
+                }
                 Op::Enter => {
                     let n = self.isize_operand(&mut pc);
                     self.enter_op(n)
@@ -296,7 +298,7 @@ impl Vm {
                 }
                 Op::Indirect => todo!(),
                 Op::Leave => {
-                    let n = self.isize_operand(&mut pc);                    
+                    let n = self.isize_operand(&mut pc);
                     let sp = self.dec(self.sp, n);
 
                     match self.index(sp, 0) {
@@ -308,7 +310,7 @@ impl Vm {
                         }
                     }
                     self.dc = self.index(sp, 1);
-                    self.sp = self.dec(sp, 2);                    
+                    self.sp = self.dec(sp, 2);
                 }
                 Op::LetFrame => {
                     let _unused = self.operand(&mut pc);
@@ -331,13 +333,15 @@ impl Vm {
                 }
                 Op::NumberEqual => todo!(),
                 Op::NumberGe => {
-                    number_cmp_op!(>=, self);                    
+                    number_cmp_op!(>=, self);
                 }
                 Op::NumberGt => todo!(),
                 Op::NumberLe => {
                     number_cmp_op!(<=, self);
                 }
-                Op::NumberLt => todo!(),
+                Op::NumberLt => {
+                    number_cmp_op!(<, self);
+                }
                 Op::NumberMul => todo!(),
                 Op::NumberDiv => todo!(),
                 Op::NumberSub => todo!(),

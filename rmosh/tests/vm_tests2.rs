@@ -807,34 +807,64 @@ fn test119() {
     );
 }
 
+// (>= 3 3 3)
+#[test]
+fn test112() {
+    let mut vm = Vm::new();
 
+    let ops = vec![
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::BranchNotGe),
+        Object::Number(7),
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::NumberGe),
+        Object::Instruction(Op::Halt),
+        Object::Instruction(Op::Nop),
+    ];
+    let expected = Object::True;
+    test_ops_with_size(
+        &mut vm,
+        ops,
+        expected,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+    );
+}
 
-    // (>= 3 3 3)
-    #[test]
-    fn test112() {
-        let mut vm = Vm::new();
+// (< 1 5 3)
+#[test]
+fn test117() {
+    let mut vm = Vm::new();
 
-
-        let ops = vec![
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::Push),
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::BranchNotGe),
-            Object::Number(7),
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::Push),
-            Object::Instruction(Op::Constant),
-            Object::Number(3),
-            Object::Instruction(Op::NumberGe),
-            Object::Instruction(Op::Halt),
-            Object::Instruction(Op::Nop),
-
-        ];
-        let expected = Object::True;
-        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0);
-    }
-
-        
+    let ops = vec![
+        Object::Instruction(Op::Constant),
+        Object::Number(1),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Constant),
+        Object::Number(5),
+        Object::Instruction(Op::BranchNotLt),
+        Object::Number(7),
+        Object::Instruction(Op::Constant),
+        Object::Number(5),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::NumberLt),
+        Object::Instruction(Op::Halt),
+        Object::Instruction(Op::Nop),
+    ];
+    let expected = Object::False;
+    test_ops_with_size(
+        &mut vm,
+        ops,
+        expected,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+    );
+}
