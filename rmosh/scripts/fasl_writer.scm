@@ -261,9 +261,12 @@
   (case-lambda
     [(port c)
       (match c
+        [('*insn* (? number? op))
+          (put-u8 port TAG_COMPILER_INSN)
+          (put-u8 port op)]      
         [('*compiler-insn* (? number? op))
           (put-u8 port TAG_COMPILER_INSN)
-          (put-s64 port op)]
+          (put-u8 port op)]
         [(? char? c)
           (put-u8 port TAG_CHAR)
           (put-u32 port (char->integer c))]
@@ -376,64 +379,7 @@
              [u8* (bytevector->u8-list u8*)])
         u8*))]
    [(all-insn* insn* idx port)
-     ;(log "insn*=~a idx=~a~n" (if (null? insn*) 'done (car insn*)) (if (null? insn*) 'done (list-ref all-insn* idx)))
-     (let1 indent "            "
-       (match insn*
-          ;; Closure
-          [(('*insn* 24) size arg-len optional? num-free-vars _stack-size _src . more*)
-            (write-op port CLOSURE (adjust-offset all-insn* idx) arg-len optional? num-free-vars)
-            (rewrite-insn* all-insn* more* (+ idx 7) port)]
-          ;; 0 arg instructions.
-          [(('*insn* (? arg0-insn? tag)) . more*)
-            (write-op port tag)
-            (rewrite-insn* all-insn* more*  (+ idx 1) port)]
-          ;; 1 arg jump instruction.
-          [(('*insn* (? jump1-insn? tag)) offset . more*)
-            (write-op port tag (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
-          ;; CONSTANT family with 1 arg.
-          [(('*insn* (? const1-insn? tag)) v . more*)
-            (write-op port tag v)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
-          ;; GLOBAL family with 1 symbol argument.
-          [(('*insn* (? sym1-insn? tag)) (? symbol? n) . more*)
-            (write-op port tag n)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
-          ;; Other 1 arg instructions.
-          [(('*insn* (? arg1-insn? tag)) n . more*)
-            (write-op port tag n)
-            (rewrite-insn* all-insn* more* (+ idx 2) port)]
-          ;; 2 args jump instructions.
-          [(('*insn* (? jump2-insn? tag)) m offset . more*)
-            (write-op port tag m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
-          ;; CONSTANT family with 2 args.
-          [(('*insn* (? const2-insn? tag)) m v . more*)
-            (write-op port tag m v)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
-          [(('*insn* 88) (? symbol? s) n . more*)
-            (write-op port REFER_GLOBAL_CALL s n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
-          ;; Other 2 args insturctions.
-          [(('*insn* (? arg2-insn? tag)) m n . more*)
-            (write-op port tag m n)
-            (rewrite-insn* all-insn* more* (+ idx 3) port)]
-          ;; REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE
-          [(('*insn* 92) m v offset . more*)
-            (write-op port REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE m v (adjust-offset all-insn* idx))          
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
-          ;; 3 arg jump instructions.
-          ;;   Note that jump3-insn? should be evaluate first before arg3-insn.
-          ;;   Because arg3-insn? include jump3-insn?
-          [(('*insn* (? jump3-insn? tag)) l m offset . more*)
-            (write-op port tag l m (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
-          ;; Other 3 arg instructions.
-          [(('*insn* (? arg3-insn? tag)) l m n . more*)
-            (write-op port tag l m n)
-            (rewrite-insn* all-insn* more* (+ idx 4) port)]
-          [() #f]
-          [else (error "unknown insn" (car insn*) (cadr insn*))]))]))
+     (for-each (lambda (sexp) (write-sexp port sexp)) insn*)]))
 
 (define (file->sexp* file)
   (call-with-input-file file

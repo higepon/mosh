@@ -201,14 +201,16 @@ impl Vm {
         self.initialize_free_vars(ops, ops_len);
 
         // Load the base library.
-        /*
-                let lib_ops = if self.should_load_compiler {
-                    self.register_compiler()
-                } else {
-                    self.register_baselib()
-                };
-                self.run_ops(lib_ops);
-        */
+
+        let lib_ops = if self.should_load_compiler {
+            self.register_compiler()
+        } else {
+            self.lib_ops = vec![Object::Instruction(Op::Halt)];
+            self.lib_ops.as_ptr()
+            //self.register_baselib()
+        };
+        self.run_ops(lib_ops);
+
         // Run the program.
         let ret = self.run_ops(ops);
 
@@ -216,6 +218,16 @@ impl Vm {
         self.reset_roots();
         ret
     }
+
+    pub fn register_compiler(&mut self) -> *const Object {
+        let mut fasl = Fasl {
+            bytes: compiler::BIN_COMPILER,
+        };
+        let ops = fasl.read_all_sexp(&mut self.gc);
+        self.lib_ops = ops;
+        self.lib_ops.as_ptr()
+    }
+
 
     fn run_ops(&mut self, ops: *const Object) -> Object {
         self.sp = self.stack.as_mut_ptr();
@@ -788,7 +800,7 @@ impl Vm {
                         v[0] = arg;
                     }
                     let vec = self.gc.new_vector(&v);
-                    self.set_return_value(vec);                    
+                    self.set_return_value(vec);
                 }
                 Op::SimpleStructRef => todo!(),
                 Op::DynamicWinders => todo!(),

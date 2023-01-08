@@ -342,6 +342,21 @@ impl Fasl<'_> {
         }
     }
 
+    pub fn read_all_sexp(&mut self, gc: &mut Gc) -> Vec<Object> {
+        let mut objects = vec![];
+        loop {
+            match self.read_sexp(gc) {
+                Ok(sexp) => {
+                    objects.push(sexp);
+                }
+                Err(_) => {
+                    break;
+                }
+            }
+        }
+        objects
+    }
+
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
@@ -354,9 +369,16 @@ impl Fasl<'_> {
             Tag::True => Ok(Object::True),
             Tag::False => Ok(Object::False),
             Tag::Nil => Ok(Object::Nil),
-            Tag::CompilerInsn => self.read_fixnum(), // TODO
+            Tag::CompilerInsn => self.read_compiler_insn(),
         }
     }
+
+    fn read_compiler_insn(&mut self) -> Result<Object, io::Error> {
+        let mut buf = [0; 1];
+        self.bytes.read_exact(&mut buf)?;
+        let n = u8::from_le_bytes(buf);
+        Ok(Object::Instruction(FromPrimitive::from_u8(buf[0]).expect("unknown Op")))
+    }    
 
     fn read_fixnum(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 8];
@@ -593,7 +615,7 @@ pub mod tests {
         let expected = OpOld::ReferLocal(1);
         assert_eq!(expected, fasl.read_op(&mut gc).unwrap());
     }
-/*
+    /*
     #[test]
     fn test_baselib() {
         let mut vm = VmOld::new();

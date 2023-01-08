@@ -6,9 +6,11 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
 use std::ptr::null;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, FromPrimitive, Hash, PartialEq)]
 pub enum Op {
     CompileError = 0,
     BranchNotLe = 1,
