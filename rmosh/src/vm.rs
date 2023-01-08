@@ -18,7 +18,7 @@ const STACK_SIZE: usize = 256;
 const MAX_NUM_VALUES: usize = 256;
 
 #[macro_export]
-macro_rules! branch_number_op {
+macro_rules! branch_number_op_old {
     ($op:tt, $self:ident, $pc:ident, $skip_offset:ident) => {
         {
             match ($self.pop(), $self.ac) {
@@ -41,7 +41,7 @@ macro_rules! branch_number_op {
 }
 
 #[macro_export]
-macro_rules! number_op {
+macro_rules! number_op_old {
     ($op:tt, $self:ident) => {
         {
             match ($self.pop(), $self.ac) {
@@ -233,7 +233,7 @@ impl VmOld {
                 }
                 OpOld::ReferLocalBranchNotLt(n, skip_offset) => {
                     self.refer_local_op(n);
-                    branch_number_op!(<, self, pc, skip_offset);
+                    branch_number_op_old!(<, self, pc, skip_offset);
                 }
                 OpOld::SimpleStructRef => match (self.pop(), self.ac) {
                     (Object::SimpleStruct(s), Object::Number(idx)) => {
@@ -319,7 +319,7 @@ impl VmOld {
                     self.refer_local_op(n);
                     self.push_op();
                     self.constant_op(c);
-                    branch_number_op!(>=, self, pc, skip_offset);
+                    branch_number_op_old!(>=, self, pc, skip_offset);
                 }
                 OpOld::MakeContinuation(_) => {
                     panic!("not implemented");
@@ -563,19 +563,19 @@ impl VmOld {
                 OpOld::NullP => self.set_return_value(Object::make_bool(self.ac.is_nil())),
                 OpOld::SymbolP => self.set_return_value(Object::make_bool(self.ac.is_symbol())),
                 OpOld::BranchNotNumberEqual(skip_offset) => {
-                    branch_number_op!(==, self, pc, skip_offset);
+                    branch_number_op_old!(==, self, pc, skip_offset);
                 }
                 OpOld::BranchNotGe(skip_offset) => {
-                    branch_number_op!(>=, self, pc, skip_offset);
+                    branch_number_op_old!(>=, self, pc, skip_offset);
                 }
                 OpOld::BranchNotGt(skip_offset) => {
-                    branch_number_op!(>, self, pc, skip_offset);
+                    branch_number_op_old!(>, self, pc, skip_offset);
                 }
                 OpOld::BranchNotLe(skip_offset) => {
-                    branch_number_op!(<=, self, pc, skip_offset);
+                    branch_number_op_old!(<=, self, pc, skip_offset);
                 }
                 OpOld::BranchNotLt(skip_offset) => {
-                    branch_number_op!(<, self, pc, skip_offset);
+                    branch_number_op_old!(<, self, pc, skip_offset);
                 }
                 OpOld::BranchNotNull(skip_offset) => {
                     self.branch_not_null_op(&mut pc, skip_offset);
@@ -603,19 +603,19 @@ impl VmOld {
                     self.set_return_value(Object::make_bool(ret));
                 }
                 OpOld::NumberEqual => {
-                    number_op!(==, self);
+                    number_op_old!(==, self);
                 }
                 OpOld::NumberGe => {
-                    number_op!(>=, self);
+                    number_op_old!(>=, self);
                 }
                 OpOld::NumberGt => {
-                    number_op!(>, self);
+                    number_op_old!(>, self);
                 }
                 OpOld::NumberLe => {
-                    number_op!(<=, self);
+                    number_op_old!(<=, self);
                 }
                 OpOld::NumberLt => {
-                    number_op!(<, self);
+                    number_op_old!(<, self);
                 }
                 OpOld::Car => {
                     self.car_op();

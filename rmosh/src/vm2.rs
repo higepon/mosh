@@ -17,6 +17,46 @@ use crate::{
 const STACK_SIZE: usize = 256;
 const MAX_NUM_VALUES: usize = 256;
 
+#[macro_export]
+macro_rules! branch_number_cmp_op {
+    ($op:tt, $self:ident, $pc:ident) => {
+        {
+            let skip_offset = $self.isize_operand(&mut $pc);
+            match ($self.pop(), $self.ac) {
+                (Object::Number(lhs), Object::Number(rhs)) => {
+                    let op_result = lhs $op rhs;
+                    $self.set_return_value(Object::make_bool(op_result));
+                    if op_result {
+                        // go to then.
+                    } else {
+                        // Branch and jump to else.
+                        $pc = $self.jump($pc, skip_offset - 1);
+                    }
+                }
+                obj => {
+                    panic!("{}: numbers requierd but got {:?}",  stringify!($op), obj);
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! number_cmp_op {
+    ($op:tt, $self:ident) => {
+        {
+            match ($self.pop(), $self.ac) {
+                (Object::Number(l), Object::Number(r)) => {
+                    $self.set_return_value(Object::make_bool(l $op r))
+                }
+                obj => {
+                    panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
+                }
+            }
+        }
+    };
+}
+
 pub struct Vm {
     pub gc: Box<Gc>,
     // The stack.
@@ -186,7 +226,9 @@ impl Vm {
             let op: Op = unsafe { *pc }.to_instruction();
             match op {
                 Op::CompileError => todo!(),
-                Op::BranchNotLe => todo!(),
+                Op::BranchNotLe => {
+                    branch_number_cmp_op!(<=, self, pc);                    
+                },
                 Op::BranchNotGe => todo!(),
                 Op::BranchNotLt => todo!(),
                 Op::BranchNotGt => todo!(),
@@ -288,7 +330,9 @@ impl Vm {
                 Op::NumberEqual => todo!(),
                 Op::NumberGe => todo!(),
                 Op::NumberGt => todo!(),
-                Op::NumberLe => todo!(),
+                Op::NumberLe => {
+                    number_cmp_op!(<=, self);
+                }
                 Op::NumberLt => todo!(),
                 Op::NumberMul => todo!(),
                 Op::NumberDiv => todo!(),
