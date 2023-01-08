@@ -1,7 +1,7 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::OpOld;
-use crate::vm::VmOld;
+use crate::vm2::Vm;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
@@ -775,12 +775,12 @@ impl Display for Symbol {
 /// Procedures written in Rust.
 pub struct Procedure {
     pub header: GcHeader,
-    pub func: fn(&mut VmOld, &[Object]) -> Object,
+    pub func: fn(&mut Vm, &[Object]) -> Object,
     pub name: String,
 }
 
 impl Procedure {
-    pub fn new(func: fn(&mut VmOld, &[Object]) -> Object, name: String) -> Self {
+    pub fn new(func: fn(&mut Vm, &[Object]) -> Object, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
@@ -971,7 +971,7 @@ pub mod tests {
     use regex::Regex;
 
     // Helpers.
-    fn procedure1(_vm: &mut VmOld, args: &[Object]) -> Object {
+    fn procedure1(_vm: &mut Vm, args: &[Object]) -> Object {
         assert_eq!(args.len(), 1);
         args[0]
     }
@@ -1005,7 +1005,7 @@ pub mod tests {
 
     #[test]
     fn test_procedure() {
-        let mut vm = VmOld::new();
+        let mut vm = Vm::new();
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
         let stack = [Object::Number(1), Object::Number(2)];
         match (p.func)(&mut vm, &stack[0..1]) {

@@ -18,7 +18,8 @@ use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 use crate::op::OpOld;
-use crate::vm::VmOld;
+use crate::vm2::Vm;
+
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
@@ -211,7 +212,7 @@ impl Gc {
         Object::Symbol(symbol)
     }
 
-    pub fn new_procedure(&mut self, func: fn(&mut VmOld, &[Object]) -> Object, name: &str) -> Object {
+    pub fn new_procedure(&mut self, func: fn(&mut Vm, &[Object]) -> Object, name: &str) -> Object {
         Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
     }
 

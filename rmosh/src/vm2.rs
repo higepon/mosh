@@ -320,7 +320,9 @@ impl Vm {
                 }
                 Op::Cdar => todo!(),
                 Op::Cddr => todo!(),
-                Op::Cdr => todo!(),
+                Op::Cdr => {
+                    self.cdr_op();
+                }
                 Op::Closure => {
                     self.closure_op(&mut pc);
                 }
@@ -328,7 +330,7 @@ impl Vm {
                     let car = self.pop();
                     let cdr = self.ac;
                     let pair = self.gc.cons(car, cdr);
-                    self.set_return_value(pair);                    
+                    self.set_return_value(pair);
                 }
                 Op::Constant => {
                     self.constant_op(&mut pc);
@@ -356,9 +358,20 @@ impl Vm {
                     let n = self.isize_operand(&mut pc);
                     self.enter_op(n)
                 }
-                Op::Eq => todo!(),
-                Op::Eqv => todo!(),
-                Op::Equal => todo!(),
+                Op::Eq => {
+                    let ret = self.pop().eq(&self.ac);
+                    self.set_return_value(Object::make_bool(ret));
+                }
+                Op::Eqv => {
+                    let ret = self.pop().eqv(&self.ac);
+                    self.set_return_value(Object::make_bool(ret));
+                }
+                Op::Equal => {
+                    let e = Equal::new();
+                    let val = self.pop();
+                    let ret = e.is_equal(&mut self.gc, &val, &self.ac);
+                    self.set_return_value(Object::make_bool(ret));
+                }
                 Op::Frame => {
                     self.frame_op(&mut pc);
                 }
@@ -397,10 +410,23 @@ impl Vm {
                     pc = self.jump(pc, jump_offset - 1);
                 }
                 Op::MakeContinuation => todo!(),
-                Op::MakeVector => todo!(),
-                Op::Nop => todo!(),
-                Op::Not => todo!(),
-                Op::NullP => todo!(),
+                Op::MakeVector => match self.pop() {
+                    Object::Number(size) => {
+                        let v = vec![self.ac; size as usize];
+                        let v = self.gc.new_vector(&v);
+                        self.set_return_value(v);
+                    }
+                    obj => {
+                        self.arg_err("make-vector", "numbers", obj);
+                    }
+                },
+                Op::Nop => {}
+                Op::Not => {
+                    self.set_return_value(Object::make_bool(self.ac.is_false()));
+                }
+                Op::NullP => {
+                    self.set_return_value(Object::make_bool(self.ac.is_nil()));
+                }
                 Op::NumberAdd => {
                     self.number_add_op();
                 }
@@ -419,12 +445,40 @@ impl Vm {
                 Op::NumberLt => {
                     number_cmp_op!(<, self);
                 }
-                Op::NumberMul => todo!(),
-                Op::NumberDiv => todo!(),
-                Op::NumberSub => todo!(),
+                Op::NumberMul => match (self.pop(), self.ac) {
+                    (Object::Number(a), Object::Number(b)) => {
+                        self.set_return_value(Object::Number(a * b));
+                    }
+                    (a, b) => {
+                        panic!("+: numbers required but got {:?} {:?}", a, b);
+                    }
+                },
+                Op::NumberDiv => match (self.pop(), self.ac) {
+                    (Object::Number(a), Object::Number(b)) => {
+                        self.set_return_value(Object::Number(a / b));
+                    }
+                    (a, b) => {
+                        panic!("/: numbers required but got {:?} {:?}", a, b);
+                    }
+                },
+                Op::NumberSub => {
+                    self.number_sub_op();
+                }
                 Op::PairP => todo!(),
                 Op::Read => todo!(),
-                Op::ReadChar => todo!(),
+                Op::ReadChar => match self.ac {
+                    Object::InputPort(mut port) => match port.read_char() {
+                        Some(c) => {
+                            self.set_return_value(Object::Char(c));
+                        }
+                        None => {
+                            self.set_return_value(Object::Eof);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("read-char", "text-input-port", obj);
+                    }
+                },
                 Op::Reduce => todo!(),
                 Op::ReferFree => {
                     let n = self.usize_operand(&mut pc);
@@ -443,56 +497,308 @@ impl Vm {
                     let n = self.operand(&mut pc).to_number();
                     self.return_n(n, &mut pc);
                 }
-                Op::SetCar => todo!(),
-                Op::SetCdr => todo!(),
+                Op::SetCar => match self.pop() {
+                    Object::Pair(mut pair) => {
+                        pair.car = self.ac;
+                        self.set_return_value(Object::Unspecified);
+                    }
+                    obj => {
+                        self.arg_err("set-car!", "pair", obj);
+                    }
+                },
+                Op::SetCdr => match self.pop() {
+                    Object::Pair(mut pair) => {
+                        pair.cdr = self.ac;
+                        self.set_return_value(Object::Unspecified);
+                    }
+                    obj => {
+                        self.arg_err("set-cdr!", "pair", obj);
+                    }
+                },
                 Op::Shift => todo!(),
-                Op::SymbolP => todo!(),
+                Op::SymbolP => {
+                    self.set_return_value(Object::make_bool(self.ac.is_symbol()));
+                }
                 Op::Test => {
                     let jump_offset = self.isize_operand(&mut pc);
                     if self.ac.is_false() {
                         pc = self.jump(pc, jump_offset - 1);
                     }
                 }
-                Op::Values => todo!(),
-                Op::Receive => todo!(),
+                Op::Values => {
+                    //  values stack layout
+                    //    (value 'a 'b 'c 'd)
+                    //    ==>
+                    //    =====
+                    //      a
+                    //    =====
+                    //      b
+                    //    =====
+                    //      c    [ac_] = d
+                    //    =====
+                    //  values are stored in [valuez vector] and [a-reg] like following.
+                    //  #(b c d)
+                    //  [ac_] = a
+                    let n = self.usize_operand(&mut pc);
+
+                    if n > MAX_NUM_VALUES + 1 {
+                        panic!("values too many values {}", n);
+                    } else {
+                        self.num_values = n;
+
+                        for i in (1..n).rev() {
+                            self.values[i - 1] = self.ac;
+                            self.ac = self.index(self.sp, (n - i - 1) as isize);
+                        }
+
+                        if n > 1 {
+                            self.sp = self.dec(self.sp, self.num_values as isize - 1);
+                        } else {
+                            // there's no need to push
+                        }
+                    }
+                    if n == 0 {
+                        self.ac = Object::Unspecified;
+                    }
+                }
+                Op::Receive => {
+                    let num_req_args = self.usize_operand(&mut pc);
+                    let num_opt_args = self.usize_operand(&mut pc);
+                    if self.num_values < num_req_args {
+                        panic!(
+                            "receive: received fewer valeus than expected {} {}",
+                            num_req_args, self.num_values
+                        );
+                    } else if num_opt_args == 0 && self.num_values > num_req_args {
+                        panic!(
+                            "receive: received more values than expected {} {}",
+                            num_req_args, self.num_values
+                        );
+                    }
+                    // (receive (a b c) ...)
+                    if num_opt_args == 0 {
+                        if num_req_args > 0 {
+                            self.push(self.ac);
+                        }
+                        for i in 0..num_req_args - 1 {
+                            self.push(self.values[i]);
+                        }
+                    // (receive a ...)
+                    } else if num_req_args == 0 {
+                        let mut ret = if self.num_values == 0 {
+                            Object::Nil
+                        } else {
+                            self.gc.list1(self.ac)
+                        };
+                        for i in 0..self.num_values - 1 {
+                            ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                        }
+                        self.push(ret);
+                    // (receive (a b . c) ...)
+                    } else {
+                        let mut ret = Object::Nil;
+                        self.push(self.ac);
+                        for i in 0..self.num_values - 1 {
+                            if i < num_req_args - 1 {
+                                self.push(self.values[i]);
+                            } else {
+                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                            }
+                        }
+                        self.push(ret);
+                    }
+                }
                 Op::UnfixedJump => todo!(),
                 Op::Stop => todo!(),
-                Op::Shiftj => todo!(),
-                Op::Undef => todo!(),
-                Op::VectorLength => todo!(),
-                Op::VectorP => todo!(),
-                Op::VectorRef => todo!(),
-                Op::VectorSet => todo!(),
-                Op::PushEnter => todo!(),
+                Op::Shiftj => {
+                    let depth = self.isize_operand(&mut pc);
+                    let diff = self.isize_operand(&mut pc);
+                    let display_count = self.isize_operand(&mut pc);
+
+                    // SHIFT for embedded jump which appears in named let optimization.
+                    //   Two things happens.
+                    //   1. SHIFT the stack (same as SHIFT operation)
+                    //   2. Restore fp and c registers.
+                    //      This is necessary for jump which is across let or closure boundary.
+                    //      new-fp => new-sp - arg-length
+                    //
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
+                    self.fp = self.dec(self.sp, depth);
+                    let mut i = display_count;
+                    loop {
+                        if i <= 0 {
+                            break;
+                        }
+                        self.dc = self.dc.to_closure().prev;
+                        i -= 1;
+                    }
+                }
+                Op::Undef => {
+                    self.set_return_value(Object::Unspecified);
+                }
+                Op::VectorLength => match self.ac {
+                    Object::Vector(v) => {
+                        self.set_return_value(Object::Number(v.len() as isize));
+                    }
+                    obj => {
+                        self.arg_err("vector-length", "vector", obj);
+                    }
+                },
+                Op::VectorP => match self.ac {
+                    Object::Vector(_) => {
+                        self.set_return_value(Object::True);
+                    }
+                    _ => {
+                        self.set_return_value(Object::False);
+                    }
+                },
+                Op::VectorRef => match (self.pop(), self.ac) {
+                    (Object::Vector(v), Object::Number(idx)) => {
+                        let idx = idx as usize;
+                        if idx < v.data.len() {
+                            self.set_return_value(v.data[idx]);
+                        } else {
+                            self.arg_err("vector-ref", "valid idx to vector", self.ac);
+                        }
+                    }
+                    (a, b) => {
+                        panic!(
+                            "vecto-ref: vector and number required but got {:?} {:?}",
+                            a, b
+                        );
+                    }
+                },
+                Op::VectorSet => {
+                    let n = self.pop();
+                    let obj = self.pop();
+                    match (obj, n) {
+                        (Object::Vector(mut v), Object::Number(idx)) => {
+                            let idx = idx as usize;
+                            if idx < v.data.len() {
+                                v.data[idx] = self.ac;
+                            } else {
+                                self.arg_err("vector-set", "valid idx to vector", obj);
+                            }
+                        }
+                        (a, b) => {
+                            panic!(
+                                "vecto-set: vector and number required but got {:?} {:?}",
+                                a, b
+                            );
+                        }
+                    }
+                }
+                Op::PushEnter => {
+                    self.push_op();
+                    let n = self.isize_operand(&mut pc);
+                    self.enter_op(n);
+                }
                 Op::Halt => {
                     break;
                 }
-                Op::ConstantPush => todo!(),
-                Op::NumberSubPush => todo!(),
-                Op::NumberAddPush => todo!(),
-                Op::PushConstant => todo!(),
-                Op::PushFrame => todo!(),
+                Op::ConstantPush => {
+                    self.constant_op(&mut pc);
+                    self.push_op();
+                }
+                Op::NumberSubPush => {
+                    self.number_sub_op();
+                    self.push_op();
+                }
+                Op::NumberAddPush => {
+                    self.number_add_op();
+                    self.push_op();
+                }
+                Op::PushConstant => {
+                    self.push_op();
+                    self.constant_op(&mut pc);
+                }
+                Op::PushFrame => {
+                    self.push_op();
+                    self.frame_op(&mut pc);
+                }
                 Op::CarPush => todo!(),
                 Op::CdrPush => todo!(),
                 Op::ShiftCall => todo!(),
                 Op::NotTest => todo!(),
-                Op::ReferGlobalCall => todo!(),
-                Op::ReferFreePush => todo!(),
-                Op::ReferLocalPush => todo!(),
-                Op::ReferLocalPushConstant => todo!(),
+                Op::ReferGlobalCall => {
+                    let symbol = self.symbol_operand(&mut pc);
+                    let argc = self.isize_operand(&mut pc);
+                    self.refer_global_op(symbol);
+                    self.call_op(&mut pc, argc);
+                }
+                Op::ReferFreePush => {
+                    let n = self.usize_operand(&mut pc);
+                    self.refer_free_op(n);
+                    self.push_op();
+                }
+                Op::ReferLocalPush => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    self.push_op();
+                }
+                Op::ReferLocalPushConstant => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    self.push_op();
+                    self.constant_op(&mut pc);
+                }
                 Op::ReferLocalPushConstantBranchNotLe => todo!(),
-                Op::ReferLocalPushConstantBranchNotGe => todo!(),
+                Op::ReferLocalPushConstantBranchNotGe => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    self.push_op();
+                    self.constant_op(&mut pc);
+                    branch_number_cmp_op!(>=, self, pc);
+                }
                 Op::ReferLocalPushConstantBranchNotNumberEqual => todo!(),
                 Op::ReferLocalBranchNotNull => todo!(),
                 Op::ReferLocalBranchNotLt => todo!(),
-                Op::ReferFreeCall => todo!(),
-                Op::ReferGlobalPush => todo!(),
-                Op::ReferLocalCall => todo!(),
+                Op::ReferFreeCall => {
+                    let n = self.usize_operand(&mut pc);
+                    let argc = self.isize_operand(&mut pc);
+                    self.refer_free_op(n);
+                    self.call_op(&mut pc, argc);
+                }
+                Op::ReferGlobalPush => {
+                    let symbol = self.symbol_operand(&mut pc);
+                    self.refer_global_op(symbol);
+                    self.push_op();
+                }
+                Op::ReferLocalCall => {
+                    let n = self.isize_operand(&mut pc);
+                    let argc = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    self.call_op(&mut pc, argc);
+                }
                 Op::LocalCall => todo!(),
-                Op::Vector => todo!(),
+                Op::Vector => {
+                    let n = self.usize_operand(&mut pc);
+                    let mut v = vec![Object::Unspecified; n];
+                    let mut arg = self.ac;
+                    if n > 0 {
+                        let mut i = n - 1;
+                        loop {
+                            if i == 0 {
+                                break;
+                            }
+                            v[i] = arg;
+                            arg = self.pop();
+                            i -= 1;
+                        }
+                        v[0] = arg;
+                    }
+                    let vec = self.gc.new_vector(&v);
+                    self.set_return_value(vec);                    
+                }
                 Op::SimpleStructRef => todo!(),
                 Op::DynamicWinders => todo!(),
-                Op::TailCall => todo!(),
+                Op::TailCall => {
+                    let depth = self.isize_operand(&mut pc);
+                    let diff = self.isize_operand(&mut pc);
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
+                    let argc = depth;
+                    self.call_op(&mut pc, argc);
+                }
                 Op::LocalTailCall => todo!(),
             }
             self.print_vm(op);
@@ -787,9 +1093,9 @@ impl Vm {
                 } else {
                     // TODO: Take care of cl.
                     // self.cl = self.ac
-                    panic!("procedure invocation");
-                    // self.ac = (procedure.func)(self, args);
-                    // self.return_n(argc, pc);
+
+                    self.ac = (procedure.func)(self, args);
+                    self.return_n(argc, pc);
                 }
             }
             _ => {

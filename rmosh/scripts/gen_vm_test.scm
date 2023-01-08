@@ -93,7 +93,7 @@
             (rewrite-insn* all-insn* more* (+ idx 3) port)]
           [((and (or 'REFER_GLOBAL_CALL) insn) (? symbol? s) n . more*)
             (format port "~aObject::Instruction(Op::~a),\n" indent (insn->string insn))
-            (format port "~a(vm.gc.symbol_intern(\"~a\"),\n" indent (insn->string insn) s)
+            (format port "~avm.gc.symbol_intern(\"~a\"),\n" indent s)
             (format port "~a~a,\n" indent (gen n))
             (rewrite-insn* all-insn* more* (+ idx 3) port)]
           ;; Other 2 args insturctions.

@@ -1066,8 +1066,8 @@ impl VmOld {
                 } else {
                     // TODO: Take care of cl.
                     // self.cl = self.ac
-                    self.ac = (procedure.func)(self, args);
-                    self.return_n(argc, pc);
+                   // self.ac = (procedure.func)(self, args);
+                   // self.return_n(argc, pc);
                 }
             }
             _ => {
