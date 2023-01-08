@@ -197,8 +197,8 @@ impl Vm {
                 Op::BranchNotEqual => todo!(),
                 Op::Append2 => todo!(),
                 Op::Call => {
-                  let argc = self.operand(&mut pc).to_number();
-                  self.call_op(&mut pc, argc);
+                    let argc = self.operand(&mut pc).to_number();
+                    self.call_op(&mut pc, argc);
                 }
                 Op::Apply => todo!(),
                 Op::Push => {
@@ -215,8 +215,8 @@ impl Vm {
                 Op::Cddr => todo!(),
                 Op::Cdr => todo!(),
                 Op::Closure => {
-                    self.closure_op(&mut pc);  
-                },
+                    self.closure_op(&mut pc);
+                }
                 Op::Cons => todo!(),
                 Op::Constant => {
                     self.constant_op(&mut pc);
@@ -224,9 +224,12 @@ impl Vm {
                 Op::DefineGlobal => {
                     let symbol = self.symbol_operand(&mut pc);
                     self.define_global_op(symbol)
-                },
+                }
                 Op::Display => todo!(),
-                Op::Enter => todo!(),
+                Op::Enter => {
+                    let n = self.isize_operand(&mut pc);
+                    self.enter_op(n)
+                }
                 Op::Eq => todo!(),
                 Op::Eqv => todo!(),
                 Op::Equal => todo!(),
@@ -234,12 +237,31 @@ impl Vm {
                     self.frame_op(&mut pc);
                 }
                 Op::Indirect => todo!(),
-                Op::Leave => todo!(),
-                Op::LetFrame => todo!(),
+                Op::Leave => {
+                    let n = self.isize_operand(&mut pc);                    
+                    let sp = self.dec(self.sp, n);
+
+                    match self.index(sp, 0) {
+                        Object::ObjectPointer(fp) => {
+                            self.fp = fp;
+                        }
+                        obj => {
+                            panic!("leave: fp expected but got {:?}", obj);
+                        }
+                    }
+                    self.dc = self.index(sp, 1);
+                    self.sp = self.dec(sp, 2);                    
+                }
+                Op::LetFrame => {
+                    let _unused = self.operand(&mut pc);
+                    // TODO: expand stack.
+                    self.push(self.dc);
+                    self.push(Object::ObjectPointer(self.fp));
+                }
                 Op::List => todo!(),
                 Op::LocalJmp => {
-                    let jump_offset = self.isize_operand(&mut pc);                    
-                    pc = self.jump(pc, jump_offset - 1);                    
+                    let jump_offset = self.isize_operand(&mut pc);
+                    pc = self.jump(pc, jump_offset - 1);
                 }
                 Op::MakeContinuation => todo!(),
                 Op::MakeVector => todo!(),
@@ -280,7 +302,7 @@ impl Vm {
                     let jump_offset = self.isize_operand(&mut pc);
                     if self.ac.is_false() {
                         pc = self.jump(pc, jump_offset - 1);
-                    }                    
+                    }
                 }
                 Op::Values => todo!(),
                 Op::Receive => todo!(),
@@ -330,7 +352,7 @@ impl Vm {
         self.ac
     }
 
-    #[inline(always)] 
+    #[inline(always)]
     fn closure_op(&mut self, pc: &mut *const Object) {
         let size = self.usize_operand(pc);
         let arg_len = self.isize_operand(pc);
@@ -356,23 +378,22 @@ impl Vm {
         *pc = self.jump(*pc, size as isize - 6);
     }
 
-    #[inline(always)] 
+    #[inline(always)]
     fn bool_operand(&mut self, pc: &mut *const Object) -> bool {
         self.operand(pc).to_bool()
     }
 
-    #[inline(always)]        
+    #[inline(always)]
     fn isize_operand(&mut self, pc: &mut *const Object) -> isize {
         self.operand(pc).to_number()
     }
 
-    #[inline(always)]        
+    #[inline(always)]
     fn symbol_operand(&mut self, pc: &mut *const Object) -> GcRef<Symbol> {
         self.operand(pc).to_symbol()
     }
 
-
-    #[inline(always)]      
+    #[inline(always)]
     fn usize_operand(&mut self, pc: &mut *const Object) -> usize {
         self.operand(pc).to_number() as usize
     }
@@ -380,8 +401,8 @@ impl Vm {
     #[inline(always)]
     fn push_op(&mut self) {
         self.push(self.ac);
-    }    
-    #[inline(always)]    
+    }
+    #[inline(always)]
     fn frame_op(&mut self, pc: &mut *const Object) {
         // Call frame in stack.
         // ======================
@@ -484,7 +505,6 @@ impl Vm {
         let val = self.dc.to_closure().refer_free(n);
         self.set_return_value(val);
     }
-
 
     #[inline(always)]
     fn car_op(&mut self) {
@@ -1012,7 +1032,7 @@ impl Vm {
             }
         }
         self.sp = self.dec(sp, 4);
-    }    
+    }
 
     fn return_n_old(&mut self, n: isize, pc: &mut *const OpOld) {
         #[cfg(feature = "debug_log_vm")]
