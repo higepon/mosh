@@ -50,13 +50,13 @@
      (let1 indent "            "
        (match insn*
   
-          [('CLOSURE size arg-len optional? num-free-vars _stack-size _src . more*)
+          [('CLOSURE size arg-len optional? num-free-vars stack-size src . more*)
             (format port "~aOp::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
               indent (adjust-offset all-insn* idx) arg-len (if optional? "true" "false") num-free-vars)
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.  
           [((? arg0-insn? insn) . more*)
-            (format port "~aOp::~a,\n" indent (insn->string insn))
+            (format port "~aObject::Instruction(Op::~a),\n" indent (insn->string insn))
             (rewrite-insn* all-insn* more*  (+ idx 1) port)]            
           ;; 1 arg jump instruction.
           [((? jump1-insn? insn) offset . more*)
@@ -65,7 +65,8 @@
           ;; CONSTANT family with 1 arg.
           [((? const1-insn? insn) v . more*)
             (let1 var (gen v)
-              (format port "~aOp::~a(~a),\n" indent (insn->string insn) var)
+              (format port "~aObject::Instruction(Op::~a),\n" indent (insn->string insn))            
+              (format port "~a~a,\n" indent var)
               (rewrite-insn* all-insn* more* (+ idx 2) port))]
           ;; GLOBAL family with 1 symbol argument.
           [((? sym1-insn? insn) (? symbol? n) . more*)
@@ -123,7 +124,7 @@
 "
     // ~s
     #[test]
-    fn ~a_optimized() {
+    fn ~a() {
         let mut vm = Vm::new();
 " scheme-expr name))
 
@@ -142,7 +143,8 @@
       (format #t "
 ~a
 ~a        
-        let ops = vec![\n~a];
+        let ops = vec![\n~a
+        ];
         let expected = ~a;
         test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * ~a + SIZE_OF_STRING * ~a);
     }\n        

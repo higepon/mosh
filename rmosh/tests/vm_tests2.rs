@@ -53,21 +53,22 @@ fn test_ops_with_size(vm: &mut Vm, ops: Vec<Object>, expected: Object, expected_
     }
 }
 
-// (and)
-#[test]
-fn and_optimized() {
-    let mut vm = Vm::new();
 
-    let ops = vec![
-        Object::Instruction(Op::Constant),
-        Object::True,
-        Object::Instruction(Op::Halt),
-    ];
-    let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
-    );
-}
+
+    // (and)
+    #[test]
+    fn and() {
+        let mut vm = Vm::new();
+
+        
+        let ops = vec![
+            Object::Instruction(Op::Constant),
+            Object::True,
+            Object::Instruction(Op::Halt),
+
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0);
+    }
+        
+        
