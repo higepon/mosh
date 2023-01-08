@@ -233,9 +233,11 @@ impl Vm {
                     branch_number_cmp_op!(>=, self, pc);
                 }
                 Op::BranchNotLt => {
-                    branch_number_cmp_op!(<, self, pc);                    
+                    branch_number_cmp_op!(<, self, pc);
                 }
-                Op::BranchNotGt => todo!(),
+                Op::BranchNotGt => {
+                    branch_number_cmp_op!(>, self, pc);                    
+                }
                 Op::BranchNotNull => todo!(),
                 Op::BranchNotNumberEqual => todo!(),
                 Op::BranchNotEq => todo!(),
@@ -335,7 +337,9 @@ impl Vm {
                 Op::NumberGe => {
                     number_cmp_op!(>=, self);
                 }
-                Op::NumberGt => todo!(),
+                Op::NumberGt => {
+                    number_cmp_op!(>, self);                    
+                }
                 Op::NumberLe => {
                     number_cmp_op!(<=, self);
                 }
