@@ -201,7 +201,9 @@ impl Vm {
                   self.call_op(&mut pc, argc);
                 }
                 Op::Apply => todo!(),
-                Op::Push => todo!(),
+                Op::Push => {
+                    self.push_op();
+                }
                 Op::AssignFree => todo!(),
                 Op::AssignGlobal => todo!(),
                 Op::AssignLocal => todo!(),
@@ -238,7 +240,9 @@ impl Vm {
                 Op::Nop => todo!(),
                 Op::Not => todo!(),
                 Op::NullP => todo!(),
-                Op::NumberAdd => todo!(),
+                Op::NumberAdd => {
+                    self.number_add_op();
+                }
                 Op::NumberEqual => todo!(),
                 Op::NumberGe => todo!(),
                 Op::NumberGt => todo!(),
@@ -253,7 +257,10 @@ impl Vm {
                 Op::Reduce => todo!(),
                 Op::ReferFree => todo!(),
                 Op::ReferGlobal => todo!(),
-                Op::ReferLocal => todo!(),
+                Op::ReferLocal => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n)
+                }
                 Op::RestoreContinuation => todo!(),
                 Op::Return => {
                     let n = self.operand(&mut pc).to_number();
@@ -354,6 +361,10 @@ impl Vm {
         self.operand(pc).to_number() as usize
     }
 
+    #[inline(always)]
+    fn push_op(&mut self) {
+        self.push(self.ac);
+    }    
     #[inline(always)]    
     fn frame_op(&mut self, pc: &mut *const Object) {
         // Call frame in stack.
@@ -458,10 +469,6 @@ impl Vm {
         self.set_return_value(val);
     }
 
-    #[inline(always)]
-    fn push_op(&mut self) {
-        self.push(self.ac);
-    }
 
     #[inline(always)]
     fn car_op(&mut self) {

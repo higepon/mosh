@@ -154,6 +154,6 @@ fn call1() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 1,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 1,
     );
 }
