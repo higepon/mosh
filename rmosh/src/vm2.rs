@@ -282,7 +282,11 @@ impl Vm {
                         }
                     }
                 }
-                Op::AssignGlobal => todo!(),
+                Op::AssignGlobal => {
+                    let symbol = self.symbol_operand(&mut pc);
+                    // Same as define global op.
+                    self.define_global_op(symbol);                    
+                }
                 Op::AssignLocal => todo!(),
                 Op::Box => {
                     let n = self.isize_operand(&mut pc);
@@ -399,7 +403,10 @@ impl Vm {
                     let n = self.usize_operand(&mut pc);
                     self.refer_free_op(n);
                 }
-                Op::ReferGlobal => todo!(),
+                Op::ReferGlobal => {
+                    let symbol = self.symbol_operand(&mut pc);
+                    self.refer_global_op(symbol);                    
+                }
                 Op::ReferLocal => {
                     let n = self.isize_operand(&mut pc);
                     self.refer_local_op(n)
