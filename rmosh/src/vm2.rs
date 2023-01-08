@@ -229,7 +229,9 @@ impl Vm {
                 Op::BranchNotLe => {
                     branch_number_cmp_op!(<=, self, pc);                    
                 },
-                Op::BranchNotGe => todo!(),
+                Op::BranchNotGe => {
+                    branch_number_cmp_op!(>=, self, pc);                         
+                }
                 Op::BranchNotLt => todo!(),
                 Op::BranchNotGt => todo!(),
                 Op::BranchNotNull => todo!(),
@@ -328,7 +330,9 @@ impl Vm {
                     self.number_add_op();
                 }
                 Op::NumberEqual => todo!(),
-                Op::NumberGe => todo!(),
+                Op::NumberGe => {
+                    number_cmp_op!(>=, self);                    
+                }
                 Op::NumberGt => todo!(),
                 Op::NumberLe => {
                     number_cmp_op!(<=, self);
