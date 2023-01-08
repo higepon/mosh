@@ -239,7 +239,9 @@ impl Vm {
                     branch_number_cmp_op!(>, self, pc);                    
                 }
                 Op::BranchNotNull => todo!(),
-                Op::BranchNotNumberEqual => todo!(),
+                Op::BranchNotNumberEqual => {
+                    branch_number_cmp_op!(==, self, pc);                    
+                }
                 Op::BranchNotEq => todo!(),
                 Op::BranchNotEqv => todo!(),
                 Op::BranchNotEqual => todo!(),
@@ -333,7 +335,9 @@ impl Vm {
                 Op::NumberAdd => {
                     self.number_add_op();
                 }
-                Op::NumberEqual => todo!(),
+                Op::NumberEqual => {
+                    number_cmp_op!(==, self);                    
+                }
                 Op::NumberGe => {
                     number_cmp_op!(>=, self);
                 }

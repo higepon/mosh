@@ -899,3 +899,35 @@ fn test110() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
+
+
+
+    // (= 3 3 3)
+    #[test]
+    fn test71() {
+        let mut vm = Vm::new();
+
+
+        let ops = vec![
+            Object::Instruction(Op::Constant),
+            Object::Number(3),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            Object::Number(3),
+            Object::Instruction(Op::BranchNotNumberEqual),
+            Object::Number(7),
+            Object::Instruction(Op::Constant),
+            Object::Number(3),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            Object::Number(3),
+            Object::Instruction(Op::NumberEqual),
+            Object::Instruction(Op::Halt),
+            Object::Instruction(Op::Nop),
+
+        ];
+        let expected = Object::True;
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0);
+    }
+
+        
