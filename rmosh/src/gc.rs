@@ -342,7 +342,8 @@ impl Gc {
             Object::Nil => {}
             Object::Number(_) => {}
             Object::Instruction(_) => {}            
-            Object::StackPointer(_) => {}
+            Object::ObjectPointer(_) => {}
+            Object::ProgramCounter(_) => {}            
             Object::OpPointer(op) => {
                 self.mark_op(unsafe { *op });
             }
@@ -556,8 +557,8 @@ impl Gc {
                     self.mark_object(obj);
                 }
                 for i in 0..closure.ops_len {
-                    let op = unsafe { *closure.ops_old.offset(i as isize) };
-                    self.mark_op(op);
+                    let op = unsafe { *closure.ops.offset(i as isize) };
+                    self.mark_object(op);
                 }
 
                 if !closure.prev.is_unspecified() {

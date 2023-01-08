@@ -735,7 +735,7 @@ impl VmOld {
                 OpOld::LetFrame(_) => {
                     // TODO: expand stack.
                     self.push(self.dc);
-                    self.push(Object::StackPointer(self.fp));
+                    self.push(Object::ObjectPointer(self.fp));
                 }
                 OpOld::ReferLocal(n) => {
                     self.refer_local_op(n);
@@ -744,7 +744,7 @@ impl VmOld {
                     let sp = self.dec(self.sp, n);
 
                     match self.index(sp, 0) {
-                        Object::StackPointer(fp) => {
+                        Object::ObjectPointer(fp) => {
                             self.fp = fp;
                         }
                         obj => {
@@ -920,7 +920,7 @@ impl VmOld {
         self.push(self.dc);
         // TODO: This should be cl register.
         self.push(self.dc);
-        self.push(Object::StackPointer(self.fp));
+        self.push(Object::ObjectPointer(self.fp));
     }
 
     #[inline(always)]
@@ -1428,7 +1428,7 @@ impl VmOld {
         println!("  return {}", n);
         let sp = self.dec(self.sp, n);
         match self.index(sp, 0) {
-            Object::StackPointer(fp) => {
+            Object::ObjectPointer(fp) => {
                 self.fp = fp;
             }
             obj => {

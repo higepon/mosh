@@ -143,7 +143,8 @@ pub enum Object {
     Symbol(GcRef<Symbol>),
     True,
     Unspecified,
-    StackPointer(*mut Object),
+    ObjectPointer(*mut Object),
+    ProgramCounter(*const Object),
     OpPointer(*const OpOld),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
@@ -215,6 +216,15 @@ impl Object {
         self == other
     }
 
+    pub fn to_bool(self) -> bool {
+        match self {
+            Object::True => true,
+            Object::False => false,
+            _ => {
+                panic!("Not a bool object")
+            }
+        }
+    }
     pub fn to_number(self) -> isize {
         if let Self::Number(n) = self {
             n
@@ -228,7 +238,7 @@ impl Object {
         } else {
             panic!("Not a Object::Instruction")
         }
-    }    
+    }
     pub fn to_pair(self) -> GcRef<Pair> {
         if let Self::Pair(p) = self {
             p
@@ -320,8 +330,11 @@ impl Debug for Object {
             Object::False => {
                 write!(f, "#f")
             }
-            Object::StackPointer(v) => {
+            Object::ObjectPointer(v) => {
                 write!(f, "#<stack pointer {:?}>", v)
+            }
+            Object::ProgramCounter(v) => {
+                write!(f, "#<program counter {:?}>", v)
             }
             Object::Unspecified => {
                 write!(f, "#<unspecified>")
@@ -387,8 +400,11 @@ impl Display for Object {
             Object::False => {
                 write!(f, "#f")
             }
-            Object::StackPointer(v) => {
+            Object::ObjectPointer(v) => {
                 write!(f, "#<stack pointer {:?}>", v)
+            }
+            Object::ProgramCounter(v) => {
+                write!(f, "#<program counter {:?}>", v)
             }
             Object::Unspecified => {
                 write!(f, "#<unspecified>")
@@ -790,7 +806,7 @@ impl Display for Procedure {
 pub struct Closure {
     pub header: GcHeader,
     pub ops_old: *const OpOld,
-    pub ops: *const Object,    
+    pub ops: *const Object,
     pub ops_len: usize,
     pub argc: isize,
     pub is_optional_arg: bool,
@@ -835,7 +851,7 @@ impl Closure {
             free_vars: free_vars,
             prev: Object::Unspecified,
         }
-    }    
+    }
 
     pub fn refer_free(&self, n: usize) -> Object {
         self.free_vars[n]
@@ -1040,7 +1056,7 @@ pub mod tests {
     fn test_stack_pointer_to_string() {
         let obj = Object::Number(10);
         let pointer: *mut Object = &obj as *const Object as *mut Object;
-        let stack_pointer = Object::StackPointer(pointer);
+        let stack_pointer = Object::ObjectPointer(pointer);
         let re = Regex::new(r"^#<stack pointer\s[^>]+>$").unwrap();
         assert!(re.is_match(&stack_pointer.to_string()));
     }

@@ -183,125 +183,179 @@ impl Vm {
 
         let mut pc: *const Object = ops;
         loop {
-        let op: Op = unsafe { *pc }.to_instruction();
-        match op {
-            Op::CompileError => todo!(),
-            Op::BranchNotLe => todo!(),
-            Op::BranchNotGe => todo!(),
-            Op::BranchNotLt => todo!(),
-            Op::BranchNotGt => todo!(),
-            Op::BranchNotNull => todo!(),
-            Op::BranchNotNumberEqual => todo!(),
-            Op::BranchNotEq => todo!(),
-            Op::BranchNotEqv => todo!(),
-            Op::BranchNotEqual => todo!(),
-            Op::Append2 => todo!(),
-            Op::Call => todo!(),
-            Op::Apply => todo!(),
-            Op::Push => todo!(),
-            Op::AssignFree => todo!(),
-            Op::AssignGlobal => todo!(),
-            Op::AssignLocal => todo!(),
-            Op::Box => todo!(),
-            Op::Caar => todo!(),
-            Op::Cadr => todo!(),
-            Op::Car => todo!(),
-            Op::Cdar => todo!(),
-            Op::Cddr => todo!(),
-            Op::Cdr => todo!(),
-            Op::Closure => todo!(),
-            Op::Cons => todo!(),
-            Op::Constant => {
-                let v = self.operand(&mut pc);
-                println!("v={}", v);
-                self.set_return_value(v);
+            let op: Op = unsafe { *pc }.to_instruction();
+            match op {
+                Op::CompileError => todo!(),
+                Op::BranchNotLe => todo!(),
+                Op::BranchNotGe => todo!(),
+                Op::BranchNotLt => todo!(),
+                Op::BranchNotGt => todo!(),
+                Op::BranchNotNull => todo!(),
+                Op::BranchNotNumberEqual => todo!(),
+                Op::BranchNotEq => todo!(),
+                Op::BranchNotEqv => todo!(),
+                Op::BranchNotEqual => todo!(),
+                Op::Append2 => todo!(),
+                Op::Call => {
+                  let argc = self.operand(&mut pc).to_number();
+                  self.call_op(&mut pc, argc);
+                }
+                Op::Apply => todo!(),
+                Op::Push => todo!(),
+                Op::AssignFree => todo!(),
+                Op::AssignGlobal => todo!(),
+                Op::AssignLocal => todo!(),
+                Op::Box => todo!(),
+                Op::Caar => todo!(),
+                Op::Cadr => todo!(),
+                Op::Car => todo!(),
+                Op::Cdar => todo!(),
+                Op::Cddr => todo!(),
+                Op::Cdr => todo!(),
+                Op::Closure => {
+                    let size = self.operand(&mut pc).to_number() as usize;
+                    let arg_len = self.operand(&mut pc).to_number();
+                    let is_optional_arg = self.operand(&mut pc).to_bool();
+                    let num_free_vars = self.operand(&mut pc).to_number();
+                    let _max_stack = self.operand(&mut pc);
+                    let _src_info = self.operand(&mut pc);
+
+                    let mut free_vars = vec![];
+                    let start = self.dec(self.sp, 1);
+                    for i in 0..num_free_vars {
+                        let var = unsafe { *start.offset(-i) };
+                        free_vars.push(var);
+                    }
+                    let c = self.alloc(Closure::new2(
+                        pc,
+                        size - 1,
+                        arg_len,
+                        is_optional_arg,
+                        free_vars,
+                    ));
+                    self.set_return_value(Object::Closure(c));
+                    self.sp = self.dec(self.sp, num_free_vars);
+                    pc = self.jump(pc, size as isize - 6);  
+                },
+                Op::Cons => todo!(),
+                Op::Constant => {
+                    self.constant_op(&mut pc);
+                }
+                Op::DefineGlobal => todo!(),
+                Op::Display => todo!(),
+                Op::Enter => todo!(),
+                Op::Eq => todo!(),
+                Op::Eqv => todo!(),
+                Op::Equal => todo!(),
+                Op::Frame => {
+                    // Call frame in stack.
+                    // ======================
+                    //          pc*
+                    // ======================
+                    //          dc
+                    // ======================
+                    //          cl
+                    // ======================
+                    //          fp
+                    // ======== sp ==========
+                    //
+                    // where pc* = pc + skip_offset -1
+                    let skip_offset = self.operand(&mut pc).to_number();
+                    let next_pc = self.jump(pc, skip_offset - 1);
+                    self.push(Object::ProgramCounter(next_pc));
+                    self.push(self.dc);
+                    // TODO: This should be cl register.
+                    self.push(self.dc);
+                    self.push(Object::ObjectPointer(self.fp));
+                }
+                Op::Indirect => todo!(),
+                Op::Leave => todo!(),
+                Op::LetFrame => todo!(),
+                Op::List => todo!(),
+                Op::LocalJmp => todo!(),
+                Op::MakeContinuation => todo!(),
+                Op::MakeVector => todo!(),
+                Op::Nop => todo!(),
+                Op::Not => todo!(),
+                Op::NullP => todo!(),
+                Op::NumberAdd => todo!(),
+                Op::NumberEqual => todo!(),
+                Op::NumberGe => todo!(),
+                Op::NumberGt => todo!(),
+                Op::NumberLe => todo!(),
+                Op::NumberLt => todo!(),
+                Op::NumberMul => todo!(),
+                Op::NumberDiv => todo!(),
+                Op::NumberSub => todo!(),
+                Op::PairP => todo!(),
+                Op::Read => todo!(),
+                Op::ReadChar => todo!(),
+                Op::Reduce => todo!(),
+                Op::ReferFree => todo!(),
+                Op::ReferGlobal => todo!(),
+                Op::ReferLocal => todo!(),
+                Op::RestoreContinuation => todo!(),
+                Op::Return => {
+                    let n = self.operand(&mut pc).to_number();
+                    self.return_n(n, &mut pc);
+                }
+                Op::SetCar => todo!(),
+                Op::SetCdr => todo!(),
+                Op::Shift => todo!(),
+                Op::SymbolP => todo!(),
+                Op::Test => todo!(),
+                Op::Values => todo!(),
+                Op::Receive => todo!(),
+                Op::UnfixedJump => todo!(),
+                Op::Stop => todo!(),
+                Op::Shiftj => todo!(),
+                Op::Undef => todo!(),
+                Op::VectorLength => todo!(),
+                Op::VectorP => todo!(),
+                Op::VectorRef => todo!(),
+                Op::VectorSet => todo!(),
+                Op::PushEnter => todo!(),
+                Op::Halt => {
+                    break;
+                }
+                Op::ConstantPush => todo!(),
+                Op::NumberSubPush => todo!(),
+                Op::NumberAddPush => todo!(),
+                Op::PushConstant => todo!(),
+                Op::PushFrame => todo!(),
+                Op::CarPush => todo!(),
+                Op::CdrPush => todo!(),
+                Op::ShiftCall => todo!(),
+                Op::NotTest => todo!(),
+                Op::ReferGlobalCall => todo!(),
+                Op::ReferFreePush => todo!(),
+                Op::ReferLocalPush => todo!(),
+                Op::ReferLocalPushConstant => todo!(),
+                Op::ReferLocalPushConstantBranchNotLe => todo!(),
+                Op::ReferLocalPushConstantBranchNotGe => todo!(),
+                Op::ReferLocalPushConstantBranchNotNumberEqual => todo!(),
+                Op::ReferLocalBranchNotNull => todo!(),
+                Op::ReferLocalBranchNotLt => todo!(),
+                Op::ReferFreeCall => todo!(),
+                Op::ReferGlobalPush => todo!(),
+                Op::ReferLocalCall => todo!(),
+                Op::LocalCall => todo!(),
+                Op::Vector => todo!(),
+                Op::SimpleStructRef => todo!(),
+                Op::DynamicWinders => todo!(),
+                Op::TailCall => todo!(),
+                Op::LocalTailCall => todo!(),
             }
-            Op::DefineGlobal => todo!(),
-            Op::Display => todo!(),
-            Op::Enter => todo!(),
-            Op::Eq => todo!(),
-            Op::Eqv => todo!(),
-            Op::Equal => todo!(),
-            Op::Frame => todo!(),
-            Op::Indirect => todo!(),
-            Op::Leave => todo!(),
-            Op::LetFrame => todo!(),
-            Op::List => todo!(),
-            Op::LocalJmp => todo!(),
-            Op::MakeContinuation => todo!(),
-            Op::MakeVector => todo!(),
-            Op::Nop => todo!(),
-            Op::Not => todo!(),
-            Op::NullP => todo!(),
-            Op::NumberAdd => todo!(),
-            Op::NumberEqual => todo!(),
-            Op::NumberGe => todo!(),
-            Op::NumberGt => todo!(),
-            Op::NumberLe => todo!(),
-            Op::NumberLt => todo!(),
-            Op::NumberMul => todo!(),
-            Op::NumberDiv => todo!(),
-            Op::NumberSub => todo!(),
-            Op::PairP => todo!(),
-            Op::Read => todo!(),
-            Op::ReadChar => todo!(),
-            Op::Reduce => todo!(),
-            Op::ReferFree => todo!(),
-            Op::ReferGlobal => todo!(),
-            Op::ReferLocal => todo!(),
-            Op::RestoreContinuation => todo!(),
-            Op::Return => todo!(),
-            Op::SetCar => todo!(),
-            Op::SetCdr => todo!(),
-            Op::Shift => todo!(),
-            Op::SymbolP => todo!(),
-            Op::Test => todo!(),
-            Op::Values => todo!(),
-            Op::Receive => todo!(),
-            Op::UnfixedJump => todo!(),
-            Op::Stop => todo!(),
-            Op::Shiftj => todo!(),
-            Op::Undef => todo!(),
-            Op::VectorLength => todo!(),
-            Op::VectorP => todo!(),
-            Op::VectorRef => todo!(),
-            Op::VectorSet => todo!(),
-            Op::PushEnter => todo!(),
-            Op::Halt => {
-                break;
-            }
-            Op::ConstantPush => todo!(),
-            Op::NumberSubPush => todo!(),
-            Op::NumberAddPush => todo!(),
-            Op::PushConstant => todo!(),
-            Op::PushFrame => todo!(),
-            Op::CarPush => todo!(),
-            Op::CdrPush => todo!(),
-            Op::ShiftCall => todo!(),
-            Op::NotTest => todo!(),
-            Op::ReferGlobalCall => todo!(),
-            Op::ReferFreePush => todo!(),
-            Op::ReferLocalPush => todo!(),
-            Op::ReferLocalPushConstant => todo!(),
-            Op::ReferLocalPushConstantBranchNotLe => todo!(),
-            Op::ReferLocalPushConstantBranchNotGe => todo!(),
-            Op::ReferLocalPushConstantBranchNotNumberEqual => todo!(),
-            Op::ReferLocalBranchNotNull => todo!(),
-            Op::ReferLocalBranchNotLt => todo!(),
-            Op::ReferFreeCall => todo!(),
-            Op::ReferGlobalPush => todo!(),
-            Op::ReferLocalCall => todo!(),
-            Op::LocalCall => todo!(),
-            Op::Vector => todo!(),
-            Op::SimpleStructRef => todo!(),
-            Op::DynamicWinders => todo!(),
-            Op::TailCall => todo!(),
-            Op::LocalTailCall => todo!(),
+            self.print_vm(op);
+            pc = self.jump(pc, 1);
         }
-        //self.print_vm(op);
-        pc = self.jump(pc, 1);
-    }
         self.ac
+    }
+
+    #[inline(always)]
+    fn constant_op(&mut self, pc: &mut *const Object) {
+        let v = self.operand(pc);
+        self.set_return_value(v);
     }
 
     pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {
@@ -324,7 +378,6 @@ impl Vm {
         }
     }
 
-
     #[inline(always)]
     fn number_add_op(&mut self) {
         match (self.pop(), self.ac) {
@@ -342,10 +395,6 @@ impl Vm {
         self.fp = self.dec(self.sp, n);
     }
 
-    #[inline(always)]
-    fn constant_op(&mut self, c: Object) {
-        self.set_return_value(c);
-    }
     #[inline(always)]
     fn branch_not_null_op(&mut self, pc: &mut *const OpOld, skip_offset: isize) {
         if self.ac.is_nil() {
@@ -375,7 +424,7 @@ impl Vm {
         self.push(self.dc);
         // TODO: This should be cl register.
         self.push(self.dc);
-        self.push(Object::StackPointer(self.fp));
+        self.push(Object::ObjectPointer(self.fp));
     }
 
     #[inline(always)]
@@ -432,13 +481,13 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn call_op(&mut self, pc: &mut *const OpOld, argc: isize) {
+    fn call_op(&mut self, pc: &mut *const Object, argc: isize) {
         match self.ac {
             Object::Closure(closure) => {
                 self.dc = self.ac;
                 // TODO:
                 // self.cl = self.ac;
-                *pc = closure.ops_old;
+                *pc = closure.ops;
                 if closure.is_optional_arg {
                     let extra_len = argc - closure.argc;
                     if -1 == extra_len {
@@ -522,8 +571,8 @@ impl Vm {
                     // TODO: Take care of cl.
                     // self.cl = self.ac
                     panic!("procedure invocation");
-                   // self.ac = (procedure.func)(self, args);
-                   // self.return_n(argc, pc);
+                    // self.ac = (procedure.func)(self, args);
+                    // self.return_n(argc, pc);
                 }
             }
             _ => {
@@ -539,265 +588,265 @@ impl Vm {
         closure.ops_len = 0;
     }
     // Note we keep self.ac here, so that it can live after it returned by run().
-/*
-    pub fn register_compiler(&mut self) -> *const Op {
-        let mut fasl = Fasl {
-            bytes: compiler::BIN_COMPILER,
-        };
-        let mut ops = vec![];
-        loop {
-            match fasl.read_op(&mut self.gc) {
-                Ok(op) => {
-                    ops.push(op);
-                }
-                Err(_) => {
-                    break;
+    /*
+        pub fn register_compiler(&mut self) -> *const Op {
+            let mut fasl = Fasl {
+                bytes: compiler::BIN_COMPILER,
+            };
+            let mut ops = vec![];
+            loop {
+                match fasl.read_op(&mut self.gc) {
+                    Ok(op) => {
+                        ops.push(op);
+                    }
+                    Err(_) => {
+                        break;
+                    }
                 }
             }
+            self.lib_ops = ops;
+            self.lib_ops.as_ptr()
         }
-        self.lib_ops = ops;
-        self.lib_ops.as_ptr()
-    }
 
-    pub fn register_baselib(&mut self) -> *const Op {
-        let sym0 = self.gc.symbol_intern("for-all");
-        let str0 = self.gc.new_string("expected same length proper lists");
-        let str1 = self
-            .gc
-            .new_string("traversal reached to non-pair element ~s");
-        let str2 = self
-            .gc
-            .new_string("expected chain of pairs, but got ~r, as argument 2");
+        pub fn register_baselib(&mut self) -> *const Op {
+            let sym0 = self.gc.symbol_intern("for-all");
+            let str0 = self.gc.new_string("expected same length proper lists");
+            let str1 = self
+                .gc
+                .new_string("traversal reached to non-pair element ~s");
+            let str2 = self
+                .gc
+                .new_string("expected chain of pairs, but got ~r, as argument 2");
 
-        self.lib_ops = vec![
-            Op::Closure {
-                size: 15,
-                arg_len: 2,
-                is_optional_arg: false,
-                num_free_vars: 0,
-            },
-            Op::ReferLocalBranchNotNull(1, 3),
-            Op::ReferLocal(1),
-            Op::Return(2),
-            Op::Frame(4),
-            Op::ReferLocal(1),
-            Op::CarPush,
-            Op::ReferLocalCall(0, 1),
-            Op::PushFrame(5),
-            Op::ReferLocalPush(0),
-            Op::ReferLocal(1),
-            Op::CdrPush,
-            Op::ReferGlobalCall(self.gc.intern("map1"), 2),
-            Op::Cons,
-            Op::Return(2),
-            Op::DefineGlobal(self.gc.intern("map1")),
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::ReferFreePush(197),
-            Op::ReferFreePush(152),
-            Op::ReferFreePush(2),
-            Op::Closure {
-                size: 39,
-                arg_len: 3,
-                is_optional_arg: true,
-                num_free_vars: 3,
-            },
-            Op::ReferLocalBranchNotNull(2, 6),
-            Op::ReferLocalPush(0),
-            Op::ReferLocalPush(1),
-            Op::ReferGlobal(self.gc.intern("for-all-1")),
-            Op::TailCall(2, 3),
-            Op::Return(3),
-            Op::LetFrame(11),
-            Op::ReferLocalPush(0),
-            Op::ReferLocalPush(1),
-            Op::ReferLocalPush(2),
-            Op::ReferFreePush(0),
-            Op::ReferFreePush(2),
-            Op::ReferFreePush(1),
-            Op::Display(6),
-            Op::Frame(5),
-            Op::ReferFreePush(1),
-            Op::ReferLocalPush(1),
-            Op::ReferLocalPush(2),
-            Op::ReferFreeCall(0, 3),
-            Op::PushEnter(1),
-            Op::ReferLocal(0),
-            Op::Test(6),
-            Op::ReferFreePush(5),
-            Op::ReferLocalPush(0),
-            Op::ReferGlobal(self.gc.intern("for-all-n-quick")),
-            Op::TailCall(2, 6),
-            Op::LocalJmp(10),
-            Op::ConstantPush(sym0),
-            Op::ConstantPush(str0),
-            Op::Frame(4),
-            Op::ReferFreePush(4),
-            Op::ReferFreePush(3),
-            Op::ReferFreeCall(2, 2),
-            Op::Push,
-            Op::ReferGlobal(self.gc.intern("assertion-violation")),
-            Op::TailCall(3, 6),
-            Op::Leave(1),
-            Op::Return(3),
-            Op::DefineGlobal(self.gc.intern("for-all")),
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::ReferFreePush(48),
-            Op::ReferFreePush(89),
-            Op::Closure {
-                size: 68,
-                arg_len: 2,
-                is_optional_arg: false,
-                num_free_vars: 2,
-            },
-            Op::ReferLocalBranchNotNull(1, 3),
-            Op::Constant(Object::True),
-            Op::Return(2),
-            Op::ReferLocal(1),
-            Op::PairP,
-            Op::Test(49),
-            Op::LetFrame(14),
-            Op::ReferLocalPush(0),
-            Op::ReferLocalPush(1),
-            Op::ReferFreePush(1),
-            Op::ReferFreePush(0),
-            Op::Display(4),
-            Op::ReferLocal(1),
-            Op::CarPush,
-            Op::ReferLocal(1),
-            Op::CdrPush,
-            Op::Enter(2),
-            Op::ReferLocalBranchNotNull(1, 5),
-            Op::ReferLocalPush(0),
-            Op::ReferFree(3),
-            Op::TailCall(1, 6),
-            Op::LocalJmp(31),
-            Op::ReferLocal(1),
-            Op::PairP,
-            Op::Test(12),
-            Op::Frame(3),
-            Op::ReferLocalPush(0),
-            Op::ReferFreeCall(3, 1),
-            Op::Test(24),
-            Op::ReferLocal(1),
-            Op::CarPush,
-            Op::ReferLocal(1),
-            Op::CdrPush,
-            Op::Shiftj(2, 2, 0),
-            Op::LocalJmp(-17),
-            Op::LocalJmp(17),
-            Op::Frame(3),
-            Op::ReferLocalPush(0),
-            Op::ReferFreeCall(3, 1),
-            Op::Test(13),
-            Op::ConstantPush(sym0),
-            Op::Frame(4),
-            Op::ConstantPush(str1),
-            Op::ReferLocalPush(1),
-            Op::ReferFreeCall(1, 2),
-            Op::PushFrame(4),
-            Op::ReferFreePush(3),
-            Op::ReferFreePush(2),
-            Op::ReferFreeCall(0, 2),
-            Op::Push,
-            Op::ReferGlobal(self.gc.intern("assertion-violation")),
-            Op::TailCall(3, 6),
-            Op::Leave(2),
-            Op::Return(2),
-            Op::ConstantPush(sym0),
-            Op::Frame(4),
-            Op::ConstantPush(str2),
-            Op::ReferLocalPush(1),
-            Op::ReferFreeCall(1, 2),
-            Op::PushFrame(4),
-            Op::ReferLocalPush(0),
-            Op::ReferLocalPush(1),
-            Op::ReferFreeCall(0, 2),
-            Op::Push,
-            Op::ReferGlobal(self.gc.intern("assertion-violation")),
-            Op::TailCall(3, 2),
-            Op::Return(2),
-            Op::DefineGlobal(self.gc.intern("for-all-1")),
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::ReferFreePush(152),
-            Op::Closure {
-                size: 32,
-                arg_len: 2,
-                is_optional_arg: false,
-                num_free_vars: 1,
-            },
-            Op::ReferLocalBranchNotNull(1, 2),
-            Op::Return(2),
-            Op::LetFrame(8),
-            Op::ReferLocalPush(0),
-            Op::ReferFreePush(0),
-            Op::ReferLocalPush(1),
-            Op::Display(3),
-            Op::ReferLocal(1),
-            Op::CarPush,
-            Op::ReferLocal(1),
-            Op::CdrPush,
-            Op::Enter(2),
-            Op::ReferLocalBranchNotNull(1, 6),
-            Op::ReferFreePush(2),
-            Op::ReferLocalPush(0),
-            Op::ReferFree(1),
-            Op::TailCall(2, 6),
-            Op::LocalJmp(12),
-            Op::Frame(4),
-            Op::ReferFreePush(2),
-            Op::ReferLocalPush(0),
-            Op::ReferFreeCall(1, 2),
-            Op::Test(7),
-            Op::ReferLocal(1),
-            Op::CarPush,
-            Op::ReferLocal(1),
-            Op::CdrPush,
-            Op::Shiftj(2, 2, 0),
-            Op::LocalJmp(-16),
-            Op::Leave(2),
-            Op::Return(2),
-            Op::DefineGlobal(self.gc.intern("for-all-n-quick")),
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Nop,
-            Op::Halt,
-        ];
+            self.lib_ops = vec![
+                Op::Closure {
+                    size: 15,
+                    arg_len: 2,
+                    is_optional_arg: false,
+                    num_free_vars: 0,
+                },
+                Op::ReferLocalBranchNotNull(1, 3),
+                Op::ReferLocal(1),
+                Op::Return(2),
+                Op::Frame(4),
+                Op::ReferLocal(1),
+                Op::CarPush,
+                Op::ReferLocalCall(0, 1),
+                Op::PushFrame(5),
+                Op::ReferLocalPush(0),
+                Op::ReferLocal(1),
+                Op::CdrPush,
+                Op::ReferGlobalCall(self.gc.intern("map1"), 2),
+                Op::Cons,
+                Op::Return(2),
+                Op::DefineGlobal(self.gc.intern("map1")),
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::ReferFreePush(197),
+                Op::ReferFreePush(152),
+                Op::ReferFreePush(2),
+                Op::Closure {
+                    size: 39,
+                    arg_len: 3,
+                    is_optional_arg: true,
+                    num_free_vars: 3,
+                },
+                Op::ReferLocalBranchNotNull(2, 6),
+                Op::ReferLocalPush(0),
+                Op::ReferLocalPush(1),
+                Op::ReferGlobal(self.gc.intern("for-all-1")),
+                Op::TailCall(2, 3),
+                Op::Return(3),
+                Op::LetFrame(11),
+                Op::ReferLocalPush(0),
+                Op::ReferLocalPush(1),
+                Op::ReferLocalPush(2),
+                Op::ReferFreePush(0),
+                Op::ReferFreePush(2),
+                Op::ReferFreePush(1),
+                Op::Display(6),
+                Op::Frame(5),
+                Op::ReferFreePush(1),
+                Op::ReferLocalPush(1),
+                Op::ReferLocalPush(2),
+                Op::ReferFreeCall(0, 3),
+                Op::PushEnter(1),
+                Op::ReferLocal(0),
+                Op::Test(6),
+                Op::ReferFreePush(5),
+                Op::ReferLocalPush(0),
+                Op::ReferGlobal(self.gc.intern("for-all-n-quick")),
+                Op::TailCall(2, 6),
+                Op::LocalJmp(10),
+                Op::ConstantPush(sym0),
+                Op::ConstantPush(str0),
+                Op::Frame(4),
+                Op::ReferFreePush(4),
+                Op::ReferFreePush(3),
+                Op::ReferFreeCall(2, 2),
+                Op::Push,
+                Op::ReferGlobal(self.gc.intern("assertion-violation")),
+                Op::TailCall(3, 6),
+                Op::Leave(1),
+                Op::Return(3),
+                Op::DefineGlobal(self.gc.intern("for-all")),
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::ReferFreePush(48),
+                Op::ReferFreePush(89),
+                Op::Closure {
+                    size: 68,
+                    arg_len: 2,
+                    is_optional_arg: false,
+                    num_free_vars: 2,
+                },
+                Op::ReferLocalBranchNotNull(1, 3),
+                Op::Constant(Object::True),
+                Op::Return(2),
+                Op::ReferLocal(1),
+                Op::PairP,
+                Op::Test(49),
+                Op::LetFrame(14),
+                Op::ReferLocalPush(0),
+                Op::ReferLocalPush(1),
+                Op::ReferFreePush(1),
+                Op::ReferFreePush(0),
+                Op::Display(4),
+                Op::ReferLocal(1),
+                Op::CarPush,
+                Op::ReferLocal(1),
+                Op::CdrPush,
+                Op::Enter(2),
+                Op::ReferLocalBranchNotNull(1, 5),
+                Op::ReferLocalPush(0),
+                Op::ReferFree(3),
+                Op::TailCall(1, 6),
+                Op::LocalJmp(31),
+                Op::ReferLocal(1),
+                Op::PairP,
+                Op::Test(12),
+                Op::Frame(3),
+                Op::ReferLocalPush(0),
+                Op::ReferFreeCall(3, 1),
+                Op::Test(24),
+                Op::ReferLocal(1),
+                Op::CarPush,
+                Op::ReferLocal(1),
+                Op::CdrPush,
+                Op::Shiftj(2, 2, 0),
+                Op::LocalJmp(-17),
+                Op::LocalJmp(17),
+                Op::Frame(3),
+                Op::ReferLocalPush(0),
+                Op::ReferFreeCall(3, 1),
+                Op::Test(13),
+                Op::ConstantPush(sym0),
+                Op::Frame(4),
+                Op::ConstantPush(str1),
+                Op::ReferLocalPush(1),
+                Op::ReferFreeCall(1, 2),
+                Op::PushFrame(4),
+                Op::ReferFreePush(3),
+                Op::ReferFreePush(2),
+                Op::ReferFreeCall(0, 2),
+                Op::Push,
+                Op::ReferGlobal(self.gc.intern("assertion-violation")),
+                Op::TailCall(3, 6),
+                Op::Leave(2),
+                Op::Return(2),
+                Op::ConstantPush(sym0),
+                Op::Frame(4),
+                Op::ConstantPush(str2),
+                Op::ReferLocalPush(1),
+                Op::ReferFreeCall(1, 2),
+                Op::PushFrame(4),
+                Op::ReferLocalPush(0),
+                Op::ReferLocalPush(1),
+                Op::ReferFreeCall(0, 2),
+                Op::Push,
+                Op::ReferGlobal(self.gc.intern("assertion-violation")),
+                Op::TailCall(3, 2),
+                Op::Return(2),
+                Op::DefineGlobal(self.gc.intern("for-all-1")),
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::ReferFreePush(152),
+                Op::Closure {
+                    size: 32,
+                    arg_len: 2,
+                    is_optional_arg: false,
+                    num_free_vars: 1,
+                },
+                Op::ReferLocalBranchNotNull(1, 2),
+                Op::Return(2),
+                Op::LetFrame(8),
+                Op::ReferLocalPush(0),
+                Op::ReferFreePush(0),
+                Op::ReferLocalPush(1),
+                Op::Display(3),
+                Op::ReferLocal(1),
+                Op::CarPush,
+                Op::ReferLocal(1),
+                Op::CdrPush,
+                Op::Enter(2),
+                Op::ReferLocalBranchNotNull(1, 6),
+                Op::ReferFreePush(2),
+                Op::ReferLocalPush(0),
+                Op::ReferFree(1),
+                Op::TailCall(2, 6),
+                Op::LocalJmp(12),
+                Op::Frame(4),
+                Op::ReferFreePush(2),
+                Op::ReferLocalPush(0),
+                Op::ReferFreeCall(1, 2),
+                Op::Test(7),
+                Op::ReferLocal(1),
+                Op::CarPush,
+                Op::ReferLocal(1),
+                Op::CdrPush,
+                Op::Shiftj(2, 2, 0),
+                Op::LocalJmp(-16),
+                Op::Leave(2),
+                Op::Return(2),
+                Op::DefineGlobal(self.gc.intern("for-all-n-quick")),
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Nop,
+                Op::Halt,
+            ];
 
-        self.lib_ops.as_ptr()
-    }
-*/
+            self.lib_ops.as_ptr()
+        }
+    */
     // Helpers.
     fn pop(&mut self) -> Object {
         unsafe {
@@ -826,7 +875,7 @@ impl Vm {
     }
 
     #[cfg(feature = "debug_log_vm")]
-    fn print_vm(&mut self, op: OpOld) {
+    fn print_vm(&mut self, op: Op) {
         println!("-----------------------------------------");
         println!("{} executed", op);
         println!("  ac={}", self.ac);
@@ -847,7 +896,7 @@ impl Vm {
         println!("-----------------------------------------<== sp")
     }
     #[cfg(not(feature = "debug_log_vm"))]
-    fn print_vm(&mut self, _: OpOld) {}
+    fn print_vm(&mut self, _: Op) {}
 
     #[inline(always)]
     fn set_return_value(&mut self, obj: Object) {
@@ -864,7 +913,7 @@ impl Vm {
     fn jump(&self, pc: *const Object, offset: isize) -> *const Object {
         unsafe { pc.offset(offset) }
     }
-    
+
     #[inline(always)]
     fn jump_old(&self, pc: *const OpOld, offset: isize) -> *const OpOld {
         unsafe { pc.offset(offset) }
@@ -874,8 +923,8 @@ impl Vm {
     fn operand(&mut self, pc: &mut *const Object) -> Object {
         let next_pc = self.jump(*pc, 1);
         *pc = next_pc;
-        unsafe {*next_pc}
-    }    
+        unsafe { *next_pc }
+    }
 
     #[inline(always)]
     fn inc(&self, pointer: *mut Object, offset: isize) -> *mut Object {
@@ -891,12 +940,38 @@ impl Vm {
         panic!("{}: requires {} but got {}", who, expected, actual);
     }
 
-    fn return_n(&mut self, n: isize, pc: &mut *const OpOld) {
+    fn return_n(&mut self, n: isize, pc: &mut *const Object) {
         #[cfg(feature = "debug_log_vm")]
         println!("  return {}", n);
         let sp = self.dec(self.sp, n);
         match self.index(sp, 0) {
-            Object::StackPointer(fp) => {
+            Object::ObjectPointer(fp) => {
+                self.fp = fp;
+            }
+            obj => {
+                panic!("not fp pointer but {}", obj)
+            }
+        }
+        // TODO: Take care of cl register.
+        // self.cl = index(sp, 1);
+        self.dc = self.index(sp, 2);
+        match self.index(sp, 3) {
+            Object::ProgramCounter(next_pc) => {
+                *pc = next_pc;
+            }
+            _ => {
+                panic!("not a pc");
+            }
+        }
+        self.sp = self.dec(sp, 4);
+    }    
+
+    fn return_n_old(&mut self, n: isize, pc: &mut *const OpOld) {
+        #[cfg(feature = "debug_log_vm")]
+        println!("  return {}", n);
+        let sp = self.dec(self.sp, n);
+        match self.index(sp, 0) {
+            Object::ObjectPointer(fp) => {
                 self.fp = fp;
             }
             obj => {

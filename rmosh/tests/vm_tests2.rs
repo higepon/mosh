@@ -53,22 +53,60 @@ fn test_ops_with_size(vm: &mut Vm, ops: Vec<Object>, expected: Object, expected_
     }
 }
 
+// (and)
+#[test]
+fn and() {
+    let mut vm = Vm::new();
 
+    let ops = vec![
+        Object::Instruction(Op::Constant),
+        Object::True,
+        Object::Instruction(Op::Halt),
+    ];
+    let expected = Object::True;
+    test_ops_with_size(
+        &mut vm,
+        ops,
+        expected,
+        SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
+    );
+}
 
-    // (and)
-    #[test]
-    fn and() {
-        let mut vm = Vm::new();
+// ((lambda () 3))
+#[test]
+fn call0() {
+    let mut vm = Vm::new();
 
-        
-        let ops = vec![
-            Object::Instruction(Op::Constant),
-            Object::True,
-            Object::Instruction(Op::Halt),
+    let sym0 = vm.gc.symbol_intern("lambda");
+    let str0 = vm.gc.new_string("(input string port)");
+    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list1 = vm.gc.listn(&[list0, sym0]);
 
-        ];
-        let expected = Object::True;
-        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0);
-    }
-        
-        
+    let ops = vec![
+        Object::Instruction(Op::Frame),
+        Object::Number(14),
+        Object::Instruction(Op::Closure),
+        Object::Number(10),
+        Object::Number(0),
+        Object::False,
+        Object::Number(0),
+        Object::Number(4),
+        list1,
+        Object::Instruction(Op::Constant),
+        Object::Number(3),
+        Object::Instruction(Op::Return),
+        Object::Number(0),
+        Object::Instruction(Op::Call),
+        Object::Number(0),
+        Object::Instruction(Op::Halt),
+        Object::Instruction(Op::Nop),
+        Object::Instruction(Op::Nop),
+    ];
+    let expected = Object::Number(3);
+    test_ops_with_size(
+        &mut vm,
+        ops,
+        expected,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
+    );
+}

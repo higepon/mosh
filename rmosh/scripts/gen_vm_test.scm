@@ -1,8 +1,3 @@
-;; Convert Mosh style op into Rmosh style op.
-;; Input: Instructions as Scheme vector.
-;;   Example: (CLOSURE 10 0 #f 0 4 (((input string port) 2) a) CONSTANT 3 RETURN 0 DEFINE_GLOBAL a HALT NOP)
-;;   Get the instructions by running `gosh vm.scm "compile-file" file-name`.
-
 (import (scheme base))
 (import (scheme file))
 (import (scheme read))
@@ -51,8 +46,13 @@
        (match insn*
   
           [('CLOSURE size arg-len optional? num-free-vars stack-size src . more*)
-            (format port "~aOp::Closure {size: ~a, arg_len: ~a, is_optional_arg: ~a, num_free_vars: ~a},\n"
-              indent (adjust-offset all-insn* idx) arg-len (if optional? "true" "false") num-free-vars)
+            (format port "~aObject::Instruction(Op::Closure),\n" indent)
+            (format port "~a~a,\n" indent (gen size))
+            (format port "~a~a,\n" indent (gen arg-len))
+            (format port "~a~a,\n" indent (gen optional?))
+            (format port "~a~a,\n" indent (gen num-free-vars))
+            (format port "~a~a,\n" indent (gen stack-size))
+            (format port "~a~a,\n" indent (gen src))
             (rewrite-insn* all-insn* more* (+ idx 7) port)]
           ;; 0 arg instructions.  
           [((? arg0-insn? insn) . more*)
@@ -60,8 +60,10 @@
             (rewrite-insn* all-insn* more*  (+ idx 1) port)]            
           ;; 1 arg jump instruction.
           [((? jump1-insn? insn) offset . more*)
-            (format port "~aOp::~a(~a),\n" indent (insn->string insn) (adjust-offset all-insn* idx))
-            (rewrite-insn* all-insn* more* (+ idx 2) port)] 
+            (let1 var (gen offset)
+              (format port "~aObject::Instruction(Op::~a),\n" indent (insn->string insn))            
+              (format port "~a~a,\n" indent var)
+              (rewrite-insn* all-insn* more* (+ idx 2) port))] 
           ;; CONSTANT family with 1 arg.
           [((? const1-insn? insn) v . more*)
             (let1 var (gen v)
@@ -74,7 +76,8 @@
             (rewrite-insn* all-insn* more* (+ idx 2) port)]                
           ;; Other 1 arg instructions.    
           [((? arg1-insn? insn) n . more*)
-            (format port "~aOp::~a(~a),\n" indent (insn->string insn) n)
+            (format port "~aObject::Instruction(Op::~a),\n" indent (insn->string insn))            
+            (format port "~a~a,\n" indent (gen n))          
             (rewrite-insn* all-insn* more* (+ idx 2) port)]                  
           ;; 2 args jump instructions.
           [((? jump2-insn? insn) m offset . more*)
