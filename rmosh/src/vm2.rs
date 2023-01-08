@@ -287,7 +287,14 @@ impl Vm {
                     // Same as define global op.
                     self.define_global_op(symbol);                    
                 }
-                Op::AssignLocal => todo!(),
+                Op::AssignLocal =>  {
+                    let n = self.isize_operand(&mut pc);
+                    match self.refer_local(n) {
+                    Object::Vox(mut vox) => vox.value = self.ac,
+                    _ => {
+                        panic!("assign_local: vox not found")
+                    }
+                }},
                 Op::Box => {
                     let n = self.isize_operand(&mut pc);
                     let vox = self.alloc(Vox::new(self.index(self.sp, n)));
