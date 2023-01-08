@@ -285,31 +285,51 @@ impl Vm {
                 Op::AssignGlobal => {
                     let symbol = self.symbol_operand(&mut pc);
                     // Same as define global op.
-                    self.define_global_op(symbol);                    
+                    self.define_global_op(symbol);
                 }
-                Op::AssignLocal =>  {
+                Op::AssignLocal => {
                     let n = self.isize_operand(&mut pc);
                     match self.refer_local(n) {
-                    Object::Vox(mut vox) => vox.value = self.ac,
-                    _ => {
-                        panic!("assign_local: vox not found")
+                        Object::Vox(mut vox) => vox.value = self.ac,
+                        _ => {
+                            panic!("assign_local: vox not found")
+                        }
                     }
-                }},
+                }
                 Op::Box => {
                     let n = self.isize_operand(&mut pc);
                     let vox = self.alloc(Vox::new(self.index(self.sp, n)));
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
                 Op::Caar => todo!(),
-                Op::Cadr => todo!(),
-                Op::Car => todo!(),
+                Op::Cadr => match self.ac {
+                    Object::Pair(pair) => match pair.cdr {
+                        Object::Pair(pair) => {
+                            self.set_return_value(pair.car);
+                        }
+                        obj => {
+                            self.arg_err("cadr", "pair", obj);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("cadr", "pair", obj);
+                    }
+                },
+                Op::Car => {
+                    self.car_op();
+                }
                 Op::Cdar => todo!(),
                 Op::Cddr => todo!(),
                 Op::Cdr => todo!(),
                 Op::Closure => {
                     self.closure_op(&mut pc);
                 }
-                Op::Cons => todo!(),
+                Op::Cons => {
+                    let car = self.pop();
+                    let cdr = self.ac;
+                    let pair = self.gc.cons(car, cdr);
+                    self.set_return_value(pair);                    
+                }
                 Op::Constant => {
                     self.constant_op(&mut pc);
                 }
@@ -412,7 +432,7 @@ impl Vm {
                 }
                 Op::ReferGlobal => {
                     let symbol = self.symbol_operand(&mut pc);
-                    self.refer_global_op(symbol);                    
+                    self.refer_global_op(symbol);
                 }
                 Op::ReferLocal => {
                     let n = self.isize_operand(&mut pc);
