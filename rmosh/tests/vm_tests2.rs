@@ -33,9 +33,9 @@ fn show_size() {
 */
 static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE
     + (SIZE_OF_PROCEDURE * 623)
-    + SIZE_OF_CLOSURE * 4
-    + SIZE_OF_SYMBOL * 5
-    + SIZE_OF_STRING * 3;
+    + SIZE_OF_CLOSURE * 0
+    + SIZE_OF_SYMBOL * 0
+    + SIZE_OF_STRING * 0;
 
 fn test_ops_with_size(vm: &mut Vm, ops: Vec<Object>, expected: Object, expected_heap_diff: usize) {
     // Keep reference so that it won't be freed.
