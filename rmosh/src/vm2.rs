@@ -213,29 +213,7 @@ impl Vm {
                 Op::Cddr => todo!(),
                 Op::Cdr => todo!(),
                 Op::Closure => {
-                    let size = self.operand(&mut pc).to_number() as usize;
-                    let arg_len = self.operand(&mut pc).to_number();
-                    let is_optional_arg = self.operand(&mut pc).to_bool();
-                    let num_free_vars = self.operand(&mut pc).to_number();
-                    let _max_stack = self.operand(&mut pc);
-                    let _src_info = self.operand(&mut pc);
-
-                    let mut free_vars = vec![];
-                    let start = self.dec(self.sp, 1);
-                    for i in 0..num_free_vars {
-                        let var = unsafe { *start.offset(-i) };
-                        free_vars.push(var);
-                    }
-                    let c = self.alloc(Closure::new2(
-                        pc,
-                        size - 1,
-                        arg_len,
-                        is_optional_arg,
-                        free_vars,
-                    ));
-                    self.set_return_value(Object::Closure(c));
-                    self.sp = self.dec(self.sp, num_free_vars);
-                    pc = self.jump(pc, size as isize - 6);  
+                    self.closure_op(&mut pc);  
                 },
                 Op::Cons => todo!(),
                 Op::Constant => {
@@ -248,25 +226,7 @@ impl Vm {
                 Op::Eqv => todo!(),
                 Op::Equal => todo!(),
                 Op::Frame => {
-                    // Call frame in stack.
-                    // ======================
-                    //          pc*
-                    // ======================
-                    //          dc
-                    // ======================
-                    //          cl
-                    // ======================
-                    //          fp
-                    // ======== sp ==========
-                    //
-                    // where pc* = pc + skip_offset -1
-                    let skip_offset = self.operand(&mut pc).to_number();
-                    let next_pc = self.jump(pc, skip_offset - 1);
-                    self.push(Object::ProgramCounter(next_pc));
-                    self.push(self.dc);
-                    // TODO: This should be cl register.
-                    self.push(self.dc);
-                    self.push(Object::ObjectPointer(self.fp));
+                    self.frame_op(&mut pc);
                 }
                 Op::Indirect => todo!(),
                 Op::Leave => todo!(),
@@ -352,6 +312,71 @@ impl Vm {
         self.ac
     }
 
+    #[inline(always)] 
+    fn closure_op(&mut self, pc: &mut *const Object) {
+        let size = self.usize_operand(pc);
+        let arg_len = self.isize_operand(pc);
+        let is_optional_arg = self.bool_operand(pc);
+        let num_free_vars = self.isize_operand(pc);
+        let _max_stack = self.operand(pc);
+        let _src_info = self.operand(pc);
+        let mut free_vars = vec![];
+        let start = self.dec(self.sp, 1);
+        for i in 0..num_free_vars {
+            let var = unsafe { *start.offset(-i) };
+            free_vars.push(var);
+        }
+        let c = self.alloc(Closure::new2(
+            *pc,
+            size - 1,
+            arg_len,
+            is_optional_arg,
+            free_vars,
+        ));
+        self.set_return_value(Object::Closure(c));
+        self.sp = self.dec(self.sp, num_free_vars);
+        *pc = self.jump(*pc, size as isize - 6);
+    }
+
+    #[inline(always)] 
+    fn bool_operand(&mut self, pc: &mut *const Object) -> bool {
+        self.operand(pc).to_bool()
+    }
+
+    #[inline(always)]        
+    fn isize_operand(&mut self, pc: &mut *const Object) -> isize {
+        self.operand(pc).to_number()
+    }
+
+
+    #[inline(always)]      
+    fn usize_operand(&mut self, pc: &mut *const Object) -> usize {
+        self.operand(pc).to_number() as usize
+    }
+
+    #[inline(always)]    
+    fn frame_op(&mut self, pc: &mut *const Object) {
+        // Call frame in stack.
+        // ======================
+        //          pc*
+        // ======================
+        //          dc
+        // ======================
+        //          cl
+        // ======================
+        //          fp
+        // ======== sp ==========
+        //
+        // where pc* = pc + skip_offset -1
+        let skip_offset = self.operand(pc).to_number();
+        let next_pc = self.jump(*pc, skip_offset - 1);
+        self.push(Object::ProgramCounter(next_pc));
+        self.push(self.dc);
+        // TODO: This should be cl register.
+        self.push(self.dc);
+        self.push(Object::ObjectPointer(self.fp));
+    }
+
     #[inline(always)]
     fn constant_op(&mut self, pc: &mut *const Object) {
         let v = self.operand(pc);
@@ -406,7 +431,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn frame_op(&mut self, pc: *const OpOld, skip_offset: isize) {
+    fn frame_op2(&mut self, pc: *const OpOld, skip_offset: isize) {
         // Call frame in stack.
         // ======================
         //          pc*

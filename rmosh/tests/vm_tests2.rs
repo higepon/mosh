@@ -110,3 +110,50 @@ fn call0() {
         SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0,
     );
 }
+
+
+
+    // ((lambda (a) (+ a a)) 1)
+    #[test]
+    fn call1() {
+        let mut vm = Vm::new();
+
+        let sym0 = vm.gc.symbol_intern("lambda");
+        let sym1 = vm.gc.symbol_intern("a");
+        let str0 = vm.gc.new_string("(input string port)");
+        let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+        let list1 = vm.gc.listn(&[list0, sym0, sym1]);
+        
+        let ops = vec![
+            Object::Instruction(Op::Frame),
+            Object::Number(21),
+            Object::Instruction(Op::Constant),
+            Object::Number(1),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Closure),
+            Object::Number(14),
+            Object::Number(1),
+            Object::False,
+            Object::Number(0),
+            Object::Number(6),
+            list1,
+            Object::Instruction(Op::ReferLocal),
+            Object::Number(0),
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::ReferLocal),
+            Object::Number(0),
+            Object::Instruction(Op::NumberAdd),
+            Object::Instruction(Op::Return),
+            Object::Number(1),
+            Object::Instruction(Op::Call),
+            Object::Number(1),
+            Object::Instruction(Op::Halt),
+            Object::Instruction(Op::Nop),
+            Object::Instruction(Op::Nop),
+
+        ];
+        let expected = Object::Number(2);
+        test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 1);
+    }
+        
+        
