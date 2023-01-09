@@ -349,7 +349,8 @@ impl Fasl<'_> {
                 Ok(sexp) => {
                     objects.push(sexp);
                 }
-                Err(_) => {
+                Err(err) => {
+                    println!("read error {:?}", err);
                     break;
                 }
             }

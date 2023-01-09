@@ -2419,14 +2419,14 @@ fn test_compiler() {
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(4),
+        Object::Number(8),
         Object::Instruction(Op::Constant),
         Object::Number(121),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferGlobal),        
         vm.gc.symbol_intern("compile"),
         Object::Instruction(Op::Call),
-        Object::Number(11),
+        Object::Number(1),
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());

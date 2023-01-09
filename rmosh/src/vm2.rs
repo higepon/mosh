@@ -14,7 +14,7 @@ use crate::{
     procs::{self, default_free_vars},
 };
 
-const STACK_SIZE: usize = 256;
+const STACK_SIZE: usize = 1024;
 const MAX_NUM_VALUES: usize = 256;
 
 #[macro_export]
@@ -228,7 +228,6 @@ impl Vm {
         self.lib_ops.as_ptr()
     }
 
-
     fn run_ops(&mut self, ops: *const Object) -> Object {
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
@@ -254,7 +253,15 @@ impl Vm {
                 Op::BranchNotNumberEqual => {
                     branch_number_cmp_op!(==, self, pc);
                 }
-                Op::BranchNotEq => todo!(),
+                Op::BranchNotEq => {
+                    let skip_offset = self.isize_operand(&mut pc);
+                    let pred = self.pop().eq(&self.ac);
+                    self.set_return_value(Object::make_bool(pred));
+                    if !pred {
+                        // Branch and jump to else.
+                        pc = self.jump(pc, skip_offset - 1);
+                    }
+                }
                 Op::BranchNotEqv => {
                     let skip_offset = self.isize_operand(&mut pc);
                     if self.pop().eqv(&self.ac) {
@@ -275,7 +282,7 @@ impl Vm {
                     }
                 }
                 Op::Call => {
-                    let argc = self.operand(&mut pc).to_number();
+                    let argc = self.isize_operand(&mut pc);
                     self.call_op(&mut pc, argc);
                 }
                 Op::Apply => todo!(),
@@ -331,7 +338,19 @@ impl Vm {
                     self.car_op();
                 }
                 Op::Cdar => todo!(),
-                Op::Cddr => todo!(),
+                Op::Cddr => match self.ac {
+                    Object::Pair(pair) => match pair.cdr {
+                        Object::Pair(pair) => {
+                            self.set_return_value(pair.cdr);
+                        }
+                        obj => {
+                            self.arg_err("cddr", "pair", obj);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("cddr", "pair", obj);
+                    }
+                },
                 Op::Cdr => {
                     self.cdr_op();
                 }
@@ -476,7 +495,7 @@ impl Vm {
                 Op::NumberSub => {
                     self.number_sub_op();
                 }
-                Op::PairP => todo!(),
+                Op::PairP => self.set_return_value(Object::make_bool(self.ac.is_pair())),
                 Op::Read => todo!(),
                 Op::ReadChar => match self.ac {
                     Object::InputPort(mut port) => match port.read_char() {
@@ -499,6 +518,7 @@ impl Vm {
                 Op::ReferGlobal => {
                     let symbol = self.symbol_operand(&mut pc);
                     self.refer_global_op(symbol);
+                    println!("symbol={}", Object::Symbol(symbol));                    
                 }
                 Op::ReferLocal => {
                     let n = self.isize_operand(&mut pc);
@@ -728,10 +748,26 @@ impl Vm {
                     self.push_op();
                     self.frame_op(&mut pc);
                 }
-                Op::CarPush => todo!(),
-                Op::CdrPush => todo!(),
+                Op::CarPush => {
+                    self.car_op();
+                    self.push_op();
+                }
+                Op::CdrPush => {
+                    self.cdr_op();
+                    self.push_op();
+                }
                 Op::ShiftCall => todo!(),
-                Op::NotTest => todo!(),
+                Op::NotTest => {
+                    let jump_offset = self.isize_operand(&mut pc);
+                    self.ac = if self.ac.is_false() {
+                        Object::True
+                    } else {
+                        Object::False
+                    };
+                    if self.ac.is_false() {
+                        pc = self.jump(pc, jump_offset - 1);
+                    }
+                }
                 Op::ReferGlobalCall => {
                     let symbol = self.symbol_operand(&mut pc);
                     let argc = self.isize_operand(&mut pc);
@@ -763,8 +799,17 @@ impl Vm {
                     branch_number_cmp_op!(>=, self, pc);
                 }
                 Op::ReferLocalPushConstantBranchNotNumberEqual => todo!(),
-                Op::ReferLocalBranchNotNull => todo!(),
-                Op::ReferLocalBranchNotLt => todo!(),
+                Op::ReferLocalBranchNotNull => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    let skip_offset = self.isize_operand(&mut pc);
+                    self.branch_not_null_op(&mut pc, skip_offset);
+                }
+                Op::ReferLocalBranchNotLt => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    branch_number_cmp_op!(<, self, pc);
+                }
                 Op::ReferFreeCall => {
                     let n = self.usize_operand(&mut pc);
                     let argc = self.isize_operand(&mut pc);
@@ -775,6 +820,7 @@ impl Vm {
                     let symbol = self.symbol_operand(&mut pc);
                     self.refer_global_op(symbol);
                     self.push_op();
+                    println!("symbol={}", Object::Symbol(symbol));
                 }
                 Op::ReferLocalCall => {
                     let n = self.isize_operand(&mut pc);
@@ -782,7 +828,23 @@ impl Vm {
                     self.refer_local_op(n);
                     self.call_op(&mut pc, argc);
                 }
-                Op::LocalCall => todo!(),
+                Op::LocalCall => {
+                    let argc = self.isize_operand(&mut pc);
+                    // Locall is lighter than Call
+                    // We can omit checking closure type and arguments length.
+                    match self.ac {
+                        Object::Closure(c) => {
+                            self.dc = self.ac;
+                            // todo
+                            //self.cl = self.ac;
+                            pc = c.ops;
+                            self.fp = self.dec(self.sp, argc);
+                        }
+                        obj => {
+                            panic!("LocalCall: Bug {}", obj)
+                        }
+                    }
+                }
                 Op::Vector => {
                     let n = self.usize_operand(&mut pc);
                     let mut v = vec![Object::Unspecified; n];
@@ -802,7 +864,17 @@ impl Vm {
                     let vec = self.gc.new_vector(&v);
                     self.set_return_value(vec);
                 }
-                Op::SimpleStructRef => todo!(),
+                Op::SimpleStructRef => match (self.pop(), self.ac) {
+                    (Object::SimpleStruct(s), Object::Number(idx)) => {
+                        self.set_return_value(s.data[idx as usize]);
+                    }
+                    (obj1, obj2) => {
+                        panic!(
+                            "simple-struct-ref: simple-struct and idx required but got {} {}",
+                            obj1, obj2
+                        );
+                    }
+                },
                 Op::DynamicWinders => todo!(),
                 Op::TailCall => {
                     let depth = self.isize_operand(&mut pc);
@@ -811,7 +883,16 @@ impl Vm {
                     let argc = depth;
                     self.call_op(&mut pc, argc);
                 }
-                Op::LocalTailCall => todo!(),
+                Op::LocalTailCall => {
+                    let depth = self.isize_operand(&mut pc);
+                    let diff = self.isize_operand(&mut pc);
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
+                    let closure = self.ac.to_closure();
+                    let argc = depth;
+                    self.dc = self.ac;
+                    pc = closure.ops;
+                    self.fp = self.dec(self.sp, argc);
+                }
             }
             self.print_vm(op);
             pc = self.jump(pc, 1);
@@ -936,12 +1017,12 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn branch_not_null_op(&mut self, pc: &mut *const OpOld, skip_offset: isize) {
+    fn branch_not_null_op(&mut self, pc: &mut *const Object, skip_offset: isize) {
         if self.ac.is_nil() {
             self.set_return_value(Object::False);
         } else {
             self.set_return_value(Object::True);
-            *pc = self.jump_old(*pc, skip_offset - 1);
+            *pc = self.jump(*pc, skip_offset - 1);
         }
     }
 
