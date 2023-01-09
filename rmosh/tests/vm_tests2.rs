@@ -2413,6 +2413,46 @@ fn test271() {
 }
 
 #[test]
+fn test_compiler2() {
+    let mut vm = Vm::new();
+    vm.should_load_compiler = true;
+
+    let plus = vm.gc.symbol_intern("+");
+    let code = vm.gc.list3( plus,  Object::Number(121),  Object::Number(20));
+
+    let ops = vec![
+        Object::Instruction(Op::Frame),
+        Object::Number(8),
+        Object::Instruction(Op::Constant),
+        code,
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::ReferGlobal),        
+        vm.gc.symbol_intern("compile"),
+        Object::Instruction(Op::Call),
+        Object::Number(1),
+        Object::Instruction(Op::Halt),
+    ];
+    let ret = vm.run(ops.as_ptr(), ops.len());
+    match ret {
+        Object::Vector(v) => {
+            let ret = vm.run(v.data.as_ptr(), v.data.len());
+            vm.expected = Object::True;
+            // Remove reference to ret.
+            vm.ac = Object::Unspecified;
+            let e = Equal::new();
+            if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+                println!("ret={} expected={}", ret, vm.expected);
+                assert_eq!(ret, vm.expected);
+            }
+        
+        }
+        _ => {
+
+        }
+    }
+}
+
+#[test]
 fn test_compiler() {
     let mut vm = Vm::new();
     vm.should_load_compiler = true;
@@ -2430,13 +2470,21 @@ fn test_compiler() {
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());
+    match ret {
+        Object::Vector(v) => {
+            let ret = vm.run(v.data.as_ptr(), v.data.len());
+            vm.expected = Object::True;
+            // Remove reference to ret.
+            vm.ac = Object::Unspecified;
+            let e = Equal::new();
+            if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+                println!("ret={} expected={}", ret, vm.expected);
+                assert_eq!(ret, vm.expected);
+            }
+        
+        }
+        _ => {
 
-    vm.expected = Object::True;
-    // Remove reference to ret.
-    vm.ac = Object::Unspecified;
-    let e = Equal::new();
-    if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
-        println!("ret={} expected={}", ret, vm.expected);
-        assert_eq!(ret, vm.expected);
+        }
     }
 }

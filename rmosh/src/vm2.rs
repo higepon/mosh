@@ -271,7 +271,18 @@ impl Vm {
                         self.set_return_value(Object::False);
                     }
                 }
-                Op::BranchNotEqual => todo!(),
+                Op::BranchNotEqual => {
+
+                    let skip_offset = self.isize_operand(&mut pc);
+                    let e = Equal::new();
+                    let x = self.pop();
+                    if e.is_equal(&mut self.gc, &x, &self.ac) {
+                        self.set_return_value(Object::True);
+                    } else {
+                        pc = self.jump(pc, skip_offset - 1);
+                        self.set_return_value(Object::False);
+                    }                    
+                }
                 Op::Append2 => {
                     let head = self.pop();
                     if Pair::is_list(head) {
