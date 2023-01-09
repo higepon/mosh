@@ -529,7 +529,7 @@ impl Vm {
                 Op::ReferGlobal => {
                     let symbol = self.symbol_operand(&mut pc);
                     self.refer_global_op(symbol);
-                    println!("symbol={}", Object::Symbol(symbol));                    
+                    //println!("symbol={}", Object::Symbol(symbol));                    
                 }
                 Op::ReferLocal => {
                     let n = self.isize_operand(&mut pc);
@@ -831,7 +831,7 @@ impl Vm {
                     let symbol = self.symbol_operand(&mut pc);
                     self.refer_global_op(symbol);
                     self.push_op();
-                    println!("symbol={}", Object::Symbol(symbol));
+                   // println!("symbol={}", Object::Symbol(symbol));
                 }
                 Op::ReferLocalCall => {
                     let n = self.isize_operand(&mut pc);
