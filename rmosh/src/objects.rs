@@ -1,11 +1,9 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
-use crate::op::OpOld;
 use crate::vm2::Vm;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
-use std::ptr::null;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -147,7 +145,6 @@ pub enum Object {
     Unspecified,
     ObjectPointer(*mut Object),
     ProgramCounter(*const Object),
-    OpPointer(*const OpOld),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
@@ -293,9 +290,6 @@ impl Debug for Object {
             Object::InputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
-            Object::OpPointer(op) => {
-                write!(f, "{:?}", *op)
-            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -362,9 +356,6 @@ impl Display for Object {
         match self {
             Object::InputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }
-            Object::OpPointer(op) => {
-                write!(f, "{:?}", *op)
             }
             Object::Char(c) => {
                 write!(f, "{}", c)
@@ -807,7 +798,6 @@ impl Display for Procedure {
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
-    pub ops_old: *const OpOld,
     pub ops: *const Object,
     pub ops_len: usize,
     pub argc: isize,
@@ -818,25 +808,6 @@ pub struct Closure {
 
 impl Closure {
     pub fn new(
-        ops: *const OpOld,
-        ops_len: usize,
-        argc: isize,
-        is_optional_arg: bool,
-        free_vars: Vec<Object>,
-    ) -> Self {
-        Closure {
-            header: GcHeader::new(ObjectType::Closure),
-            ops_old: ops,
-            ops: null(),
-            ops_len: ops_len,
-            argc: argc,
-            is_optional_arg: is_optional_arg,
-            free_vars: free_vars,
-            prev: Object::Unspecified,
-        }
-    }
-
-    pub fn new2(
         ops: *const Object,
         ops_len: usize,
         argc: isize,
@@ -845,7 +816,6 @@ impl Closure {
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
-            ops_old: null(),
             ops,
             ops_len: ops_len,
             argc: argc,

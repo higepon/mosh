@@ -10,7 +10,6 @@ use crate::{
     fasl::Fasl,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Op, Pair, Symbol, Vox},
-    op::OpOld,
     procs::{self, default_free_vars},
 };
 
@@ -128,7 +127,7 @@ impl Vm {
         let free_vars = default_free_vars(&mut self.gc);
         let mut display = self
             .gc
-            .alloc(Closure::new2(ops, ops_len, 0, false, free_vars));
+            .alloc(Closure::new(ops, ops_len, 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
     }
@@ -272,7 +271,6 @@ impl Vm {
                     }
                 }
                 Op::BranchNotEqual => {
-
                     let skip_offset = self.isize_operand(&mut pc);
                     let e = Equal::new();
                     let x = self.pop();
@@ -281,7 +279,7 @@ impl Vm {
                     } else {
                         pc = self.jump(pc, skip_offset - 1);
                         self.set_return_value(Object::False);
-                    }                    
+                    }
                 }
                 Op::Append2 => {
                     let head = self.pop();
@@ -529,7 +527,7 @@ impl Vm {
                 Op::ReferGlobal => {
                     let symbol = self.symbol_operand(&mut pc);
                     self.refer_global_op(symbol);
-                    //println!("symbol={}", Object::Symbol(symbol));                    
+                    //println!("symbol={}", Object::Symbol(symbol));
                 }
                 Op::ReferLocal => {
                     let n = self.isize_operand(&mut pc);
@@ -831,7 +829,7 @@ impl Vm {
                     let symbol = self.symbol_operand(&mut pc);
                     self.refer_global_op(symbol);
                     self.push_op();
-                   // println!("symbol={}", Object::Symbol(symbol));
+                    // println!("symbol={}", Object::Symbol(symbol));
                 }
                 Op::ReferLocalCall => {
                     let n = self.isize_operand(&mut pc);
@@ -925,7 +923,7 @@ impl Vm {
             let var = unsafe { *start.offset(-i) };
             free_vars.push(var);
         }
-        let c = self.alloc(Closure::new2(
+        let c = self.alloc(Closure::new(
             *pc,
             size - 1,
             arg_len,
@@ -1035,28 +1033,6 @@ impl Vm {
             self.set_return_value(Object::True);
             *pc = self.jump(*pc, skip_offset - 1);
         }
-    }
-
-    #[inline(always)]
-    fn frame_op2(&mut self, pc: *const OpOld, skip_offset: isize) {
-        // Call frame in stack.
-        // ======================
-        //          pc*
-        // ======================
-        //          dc
-        // ======================
-        //          cl
-        // ======================
-        //          fp
-        // ======== sp ==========
-        //
-        // where pc* = pc + skip_offset -1
-        let next_pc = self.jump_old(pc, skip_offset - 1);
-        self.push(Object::OpPointer(next_pc));
-        self.push(self.dc);
-        // TODO: This should be cl register.
-        self.push(self.dc);
-        self.push(Object::ObjectPointer(self.fp));
     }
 
     #[inline(always)]
@@ -1211,7 +1187,7 @@ impl Vm {
     fn reset_roots(&mut self) {
         // Clean up display closure so that Objects in ops can be freed.
         let mut closure = self.dc.to_closure();
-        closure.ops_old = null();
+        closure.ops = null();
         closure.ops_len = 0;
     }
     // Note we keep self.ac here, so that it can live after it returned by run().
@@ -1542,11 +1518,6 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn jump_old(&self, pc: *const OpOld, offset: isize) -> *const OpOld {
-        unsafe { pc.offset(offset) }
-    }
-
-    #[inline(always)]
     fn operand(&mut self, pc: &mut *const Object) -> Object {
         let next_pc = self.jump(*pc, 1);
         *pc = next_pc;
@@ -1584,32 +1555,6 @@ impl Vm {
         self.dc = self.index(sp, 2);
         match self.index(sp, 3) {
             Object::ProgramCounter(next_pc) => {
-                *pc = next_pc;
-            }
-            _ => {
-                panic!("not a pc");
-            }
-        }
-        self.sp = self.dec(sp, 4);
-    }
-
-    fn return_n_old(&mut self, n: isize, pc: &mut *const OpOld) {
-        #[cfg(feature = "debug_log_vm")]
-        println!("  return {}", n);
-        let sp = self.dec(self.sp, n);
-        match self.index(sp, 0) {
-            Object::ObjectPointer(fp) => {
-                self.fp = fp;
-            }
-            obj => {
-                panic!("not fp pointer but {}", obj)
-            }
-        }
-        // TODO: Take care of cl register.
-        // self.cl = index(sp, 1);
-        self.dc = self.index(sp, 2);
-        match self.index(sp, 3) {
-            Object::OpPointer(next_pc) => {
                 *pc = next_pc;
             }
             _ => {

@@ -1,7 +1,6 @@
 use gc::GcRef;
 use objects::{Object, Symbol};
 extern crate num_derive;
-use crate::op::OpOld;
 
 pub mod alloc;
 pub mod compiler;
@@ -11,14 +10,6 @@ pub mod gc;
 pub mod objects;
 pub mod op;
 pub mod procs;
-pub mod vm;
 pub mod vm2;
 
-fn main() {
-    println!(
-        "size_of<Object>={:?} size_of<GcRef<Symbol>>={} size_of<Op>={}",
-        std::mem::size_of::<Object>(),
-        std::mem::size_of::<GcRef<Symbol>>(),
-        std::mem::size_of::<OpOld>()
-    );
-}
+fn main() {}

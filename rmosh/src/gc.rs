@@ -4,7 +4,7 @@
 // TODO
 // https://github.com/ceronman/loxido/issues/3
 //
-// Make test link work everytime.
+
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
@@ -17,9 +17,7 @@ use crate::alloc::GlobalAllocator;
 use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
-use crate::op::OpOld;
 use crate::vm2::Vm;
-
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
@@ -342,12 +340,10 @@ impl Gc {
             Object::InputPort(_) => {}
             Object::Nil => {}
             Object::Number(_) => {}
-            Object::Instruction(_) => {}            
+            Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
-            Object::ProgramCounter(_) => {}            
-            Object::OpPointer(op) => {
-                self.mark_op(unsafe { *op });
-            }
+            Object::ProgramCounter(_) => {}
+
             Object::True => {}
             Object::Unspecified => {}
             Object::Vox(vox) => {
@@ -425,128 +421,6 @@ impl Gc {
         }
     }
 
-    // Some Op contains GC-ed objects.
-    pub fn mark_op(&mut self, op: OpOld) {
-        match op {
-            OpOld::ReferLocalBranchNotLt(_, _) => {}
-            OpOld::SimpleStructRef => {}
-            OpOld::Vector(_) => {}
-            OpOld::BranchNotEqual(_) => {}
-            OpOld::Cddr => {}
-            OpOld::NotTest(_) => {}
-            OpOld::NumberAddPush => {}
-            OpOld::ReferGlobalPush(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            OpOld::BranchNotEq(_) => {}
-            OpOld::PushConstant(v) => {
-                self.mark_object(v);
-            }
-            OpOld::NumberSubPush => {}
-            OpOld::ReferLocalPushConstantBranchNotLe(_, v, _) => {
-                self.mark_object(v);
-            }
-            OpOld::ReferLocalPushConstantBranchNotGe(_, v, _) => {
-                self.mark_object(v);
-            }
-            OpOld::MakeContinuation(_) => {}
-            OpOld::AssignGlobal(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            OpOld::Constant(v) => {
-                self.mark_object(v);
-            }
-            OpOld::ConstantPush(v) => {
-                self.mark_object(v);
-            }
-            OpOld::DefineGlobal(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            OpOld::ReferGlobal(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            OpOld::ReferGlobalCall(symbol, _) => {
-                self.mark_heap_object(symbol);
-            }
-            OpOld::ReferLocalPushConstant(_, v) => {
-                self.mark_object(v);
-            }
-            OpOld::Append2 => {}
-            OpOld::AssignFree(_) => (),
-            OpOld::AssignLocal(_) => (),
-            OpOld::Box(_) => (),
-            OpOld::BranchNotEqv(_) => (),
-            OpOld::BranchNotGe(_) => (),
-            OpOld::BranchNotGt(_) => (),
-            OpOld::BranchNotLe(_) => (),
-            OpOld::BranchNotLt(_) => (),
-            OpOld::BranchNotNull(_) => (),
-            OpOld::BranchNotNumberEqual(_) => (),
-            OpOld::Caar => {}
-            OpOld::Cadr => (),
-            OpOld::Call(_) => (),
-            OpOld::Car => (),
-            OpOld::CarPush => (),
-            OpOld::Cdar => {}
-            OpOld::Cdr => (),
-            OpOld::CdrPush => (),
-            OpOld::Closure { .. } => (),
-            OpOld::Cons => (),
-            OpOld::Display(_) => (),
-            OpOld::Enter(_) => (),
-            OpOld::Eq => (),
-            OpOld::Equal => (),
-            OpOld::Eqv => (),
-            OpOld::Frame(_) => (),
-            OpOld::Halt => (),
-            OpOld::Indirect => (),
-            OpOld::Leave(_) => (),
-            OpOld::LetFrame(_) => (),
-            OpOld::List(_) => (),
-            OpOld::LocalCall(_) => {}
-            OpOld::LocalJmp(_) => (),
-            OpOld::LocalTailCall(_, _) => {}
-            OpOld::MakeVector => (),
-            OpOld::Nop => (),
-            OpOld::Not => (),
-            OpOld::NullP => (),
-            OpOld::NumberAdd => (),
-            OpOld::NumberDiv => (),
-            OpOld::NumberEqual => (),
-            OpOld::NumberGe => (),
-            OpOld::NumberGt => (),
-            OpOld::NumberLe => (),
-            OpOld::NumberLt => (),
-            OpOld::NumberMul => (),
-            OpOld::NumberSub => (),
-            OpOld::PairP => (),
-            OpOld::Push => (),
-            OpOld::PushEnter(_) => {}
-            OpOld::PushFrame(_) => (),
-            OpOld::ReadChar => (),
-            OpOld::Receive(_, _) => (),
-            OpOld::ReferFree(_) => (),
-            OpOld::ReferFreeCall(_, _) => {}
-            OpOld::ReferFreePush(_) => (),
-            OpOld::ReferLocal(_) => (),
-            OpOld::ReferLocalBranchNotNull(_, _) => (),
-            OpOld::ReferLocalCall(_, _) => (),
-            OpOld::ReferLocalPush(_) => (),
-            OpOld::Return(_) => (),
-            OpOld::SetCar => (),
-            OpOld::SetCdr => (),
-            OpOld::Shiftj(_, _, _) => {}
-            OpOld::SymbolP => (),
-            OpOld::TailCall(_, _) => (),
-            OpOld::Test(_) => (),
-            OpOld::Undef => (),
-            OpOld::Values(_) => (),
-            OpOld::VectorLength => (),
-            OpOld::VectorP => (),
-            OpOld::VectorRef => (),
-            OpOld::VectorSet => (),
-        }
-    }
 
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
