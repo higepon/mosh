@@ -3,6 +3,7 @@ pub mod compiler;
 pub mod equal;
 pub mod fasl;
 pub mod gc;
+pub mod lexer;
 pub mod objects;
 pub mod op;
 pub mod procs;

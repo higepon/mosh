@@ -213,6 +213,7 @@ impl Fasl<'_> {
         Ok(FromPrimitive::from_u8(buf[0]).expect("unknown tag"))
     }
 }
+
 /// Tests.
 #[cfg(test)]
 pub mod tests {

@@ -1,11 +1,14 @@
 TESTS = #test_compiler #test63_optimized #test_test193_modified0 #test_vm_define #test_test193_modified0 #test_test153 #test_test92 #test_test62 #test_test61 #test_test19 #test_vm_alloc_many_pairs  # test_vm_run_add_pair
 FEATURES = #--features debug_log_vm # --features debug_log_gc
 
-test:
+test: src/lexer.rs
 	make -C scripts test
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture
 	grep "not implemented" src/procs.rs | wc -l	
 	grep "Object {" src/procs.rs | wc -l
+
+src/lexer.rs: src/lexer.re2c
+	re2rust $< > $@
 
 test-scheme:	
 	mosh --loadpath=./scripts/ tests/rust_sexp.scm 
