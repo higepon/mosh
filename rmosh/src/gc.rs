@@ -4,7 +4,7 @@
 // TODO
 // https://github.com/ceronman/loxido/issues/3
 //
-// Make test link work everytime.
+
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
@@ -17,7 +17,6 @@ use crate::alloc::GlobalAllocator;
 use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
-use crate::op::Op;
 use crate::vm::Vm;
 
 #[global_allocator]
@@ -341,10 +340,10 @@ impl Gc {
             Object::InputPort(_) => {}
             Object::Nil => {}
             Object::Number(_) => {}
-            Object::StackPointer(_) => {}
-            Object::OpPointer(op) => {
-                self.mark_op(unsafe { *op });
-            }
+            Object::Instruction(_) => {}
+            Object::ObjectPointer(_) => {}
+            Object::ProgramCounter(_) => {}
+
             Object::True => {}
             Object::Unspecified => {}
             Object::Vox(vox) => {
@@ -422,129 +421,6 @@ impl Gc {
         }
     }
 
-    // Some Op contains GC-ed objects.
-    pub fn mark_op(&mut self, op: Op) {
-        match op {
-            Op::ReferLocalBranchNotLt(_, _) => {}
-            Op::SimpleStructRef => {}
-            Op::Vector(_) => {}
-            Op::BranchNotEqual(_) => {}
-            Op::Cddr => {}
-            Op::NotTest(_) => {}
-            Op::NumberAddPush => {}
-            Op::ReferGlobalPush(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            Op::BranchNotEq(_) => {}
-            Op::PushConstant(v) => {
-                self.mark_object(v);
-            }
-            Op::NumberSubPush => {}
-            Op::ReferLocalPushConstantBranchNotLe(_, v, _) => {
-                self.mark_object(v);
-            }
-            Op::ReferLocalPushConstantBranchNotGe(_, v, _) => {
-                self.mark_object(v);
-            }
-            Op::MakeContinuation(_) => {}
-            Op::AssignGlobal(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            Op::Constant(v) => {
-                self.mark_object(v);
-            }
-            Op::ConstantPush(v) => {
-                self.mark_object(v);
-            }
-            Op::DefineGlobal(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            Op::ReferGlobal(symbol) => {
-                self.mark_heap_object(symbol);
-            }
-            Op::ReferGlobalCall(symbol, _) => {
-                self.mark_heap_object(symbol);
-            }
-            Op::ReferLocalPushConstant(_, v) => {
-                self.mark_object(v);
-            }
-            Op::Append2 => {}
-            Op::AssignFree(_) => (),
-            Op::AssignLocal(_) => (),
-            Op::Box(_) => (),
-            Op::BranchNotEqv(_) => (),
-            Op::BranchNotGe(_) => (),
-            Op::BranchNotGt(_) => (),
-            Op::BranchNotLe(_) => (),
-            Op::BranchNotLt(_) => (),
-            Op::BranchNotNull(_) => (),
-            Op::BranchNotNumberEqual(_) => (),
-            Op::Caar => {}
-            Op::Cadr => (),
-            Op::Call(_) => (),
-            Op::Car => (),
-            Op::CarPush => (),
-            Op::Cdar => {}
-            Op::Cdr => (),
-            Op::CdrPush => (),
-            Op::Closure { .. } => (),
-            Op::Cons => (),
-            Op::Display(_) => (),
-            Op::Enter(_) => (),
-            Op::Eq => (),
-            Op::Equal => (),
-            Op::Eqv => (),
-            Op::Frame(_) => (),
-            Op::Halt => (),
-            Op::Indirect => (),
-            Op::Leave(_) => (),
-            Op::LetFrame(_) => (),
-            Op::List(_) => (),
-            Op::LocalCall(_) => {}
-            Op::LocalJmp(_) => (),
-            Op::LocalTailCall(_, _) => {}
-            Op::MakeVector => (),
-            Op::Nop => (),
-            Op::Not => (),
-            Op::NullP => (),
-            Op::NumberAdd => (),
-            Op::NumberDiv => (),
-            Op::NumberEqual => (),
-            Op::NumberGe => (),
-            Op::NumberGt => (),
-            Op::NumberLe => (),
-            Op::NumberLt => (),
-            Op::NumberMul => (),
-            Op::NumberSub => (),
-            Op::PairP => (),
-            Op::Push => (),
-            Op::PushEnter(_) => {}
-            Op::PushFrame(_) => (),
-            Op::ReadChar => (),
-            Op::Receive(_, _) => (),
-            Op::ReferFree(_) => (),
-            Op::ReferFreeCall(_, _) => {}
-            Op::ReferFreePush(_) => (),
-            Op::ReferLocal(_) => (),
-            Op::ReferLocalBranchNotNull(_, _) => (),
-            Op::ReferLocalCall(_, _) => (),
-            Op::ReferLocalPush(_) => (),
-            Op::Return(_) => (),
-            Op::SetCar => (),
-            Op::SetCdr => (),
-            Op::Shiftj(_, _, _) => {}
-            Op::SymbolP => (),
-            Op::TailCall(_, _) => (),
-            Op::Test(_) => (),
-            Op::Undef => (),
-            Op::Values(_) => (),
-            Op::VectorLength => (),
-            Op::VectorP => (),
-            Op::VectorRef => (),
-            Op::VectorSet => (),
-        }
-    }
-
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
         match object_type {
@@ -556,7 +432,7 @@ impl Gc {
                 }
                 for i in 0..closure.ops_len {
                     let op = unsafe { *closure.ops.offset(i as isize) };
-                    self.mark_op(op);
+                    self.mark_object(op);
                 }
 
                 if !closure.prev.is_unspecified() {

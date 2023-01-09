@@ -1,335 +1,120 @@
 use std::fmt::{self, Display};
 
-use crate::{
-    gc::GcRef,
-    objects::{Object, Symbol},
-};
+use num_derive::FromPrimitive;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, FromPrimitive, Hash, PartialEq)]
 pub enum Op {
-    NumberAdd,
-    Append2,
-    AssignFree(usize),
-    AssignGlobal(GcRef<Symbol>),
-    AssignLocal(isize),
-    Box(isize),
-    BranchNotEq(isize),
-    BranchNotEqual(isize),
-    BranchNotEqv(isize),
-    BranchNotGe(isize),
-    BranchNotGt(isize),
-    BranchNotLe(isize),
-    BranchNotLt(isize),
-    BranchNotNull(isize),
-    BranchNotNumberEqual(isize),
-    Caar,
-    Cadr,
-    Call(isize),
-    Car,
-    CarPush,
-    Cdar,
-    Cddr,
-    Cdr,
-    CdrPush,
-    Cons,
-    Constant(Object),
-    ConstantPush(Object),
-    Closure {
-        size: usize,
-        arg_len: isize,
-        is_optional_arg: bool,
-        num_free_vars: isize,
-    },
-    DefineGlobal(GcRef<Symbol>),
-    Display(isize),
-    Enter(isize),
-    Eq,
-    Equal,
-    Eqv,
-    Frame(isize),
-    Halt,
-    Indirect,
-    Leave(isize),
-    LetFrame(isize),
-    List(usize),
-    LocalCall(isize),
-    LocalJmp(isize),
-    LocalTailCall(isize, isize),
-    MakeContinuation(isize),
-    MakeVector,
-    Nop,
-    Not,
-    NotTest(isize),
-    NullP,
-    NumberAddPush,
-    NumberDiv,
-    NumberEqual,
-    NumberGe,
-    NumberGt,
-    NumberLe,
-    NumberLt,
-    NumberMul,
-    NumberSub,
-    NumberSubPush,
-    PairP,
-    Push,
-    PushConstant(Object),
-    PushEnter(isize),
-    PushFrame(isize),
-    ReadChar,
-    Receive(usize, usize),
-    ReferFree(usize),
-    ReferFreeCall(usize, isize),
-    ReferFreePush(usize),
-    ReferGlobal(GcRef<Symbol>),
-    ReferGlobalCall(GcRef<Symbol>, isize),
-    ReferGlobalPush(GcRef<Symbol>),
-    ReferLocal(isize),
-    ReferLocalBranchNotLt(isize, isize),
-    ReferLocalBranchNotNull(isize, isize),
-    ReferLocalCall(isize, isize),
-    ReferLocalPush(isize),
-    ReferLocalPushConstant(isize, Object),
-    ReferLocalPushConstantBranchNotLe(isize, Object, isize),
-    ReferLocalPushConstantBranchNotGe(isize, Object, isize),
-    Return(isize),
-    SetCar,
-    SetCdr,
-    Shiftj(isize, isize, isize),
-    SimpleStructRef,
-    SymbolP,
-    TailCall(isize, isize),
-    Test(isize),
-    Undef,
-    Values(usize),
-    Vector(usize),
-    VectorLength,
-    VectorP,
-    VectorRef,
-    VectorSet,
+    CompileError = 0,
+    BranchNotLe = 1,
+    BranchNotGe = 2,
+    BranchNotLt = 3,
+    BranchNotGt = 4,
+    BranchNotNull = 5,
+    BranchNotNumberEqual = 6,
+    BranchNotEq = 7,
+    BranchNotEqv = 8,
+    BranchNotEqual = 9,
+    Append2 = 10,
+    Call = 11,
+    Apply = 12,
+    Push = 13,
+    AssignFree = 14,
+    AssignGlobal = 15,
+    AssignLocal = 16,
+    Box = 17,
+    Caar = 18,
+    Cadr = 19,
+    Car = 20,
+    Cdar = 21,
+    Cddr = 22,
+    Cdr = 23,
+    Closure = 24,
+    Cons = 25,
+    Constant = 26,
+    DefineGlobal = 27,
+    Display = 28,
+    Enter = 29,
+    Eq = 30,
+    Eqv = 31,
+    Equal = 32,
+    Frame = 33,
+    Indirect = 34,
+    Leave = 35,
+    LetFrame = 36,
+    List = 37,
+    LocalJmp = 38,
+    MakeContinuation = 39,
+    MakeVector = 40,
+    Nop = 41,
+    Not = 42,
+    NullP = 43,
+    NumberAdd = 44,
+    NumberEqual = 45,
+    NumberGe = 46,
+    NumberGt = 47,
+    NumberLe = 48,
+    NumberLt = 49,
+    NumberMul = 50,
+    NumberDiv = 51,
+    NumberSub = 52,
+    PairP = 53,
+    Read = 54,
+    ReadChar = 55,
+    Reduce = 56,
+    ReferFree = 57,
+    ReferGlobal = 58,
+    ReferLocal = 59,
+    RestoreContinuation = 60,
+    Return = 61,
+    SetCar = 62,
+    SetCdr = 63,
+    Shift = 64,
+    SymbolP = 65,
+    Test = 66,
+    Values = 67,
+    Receive = 68,
+    UnfixedJump = 69,
+    Stop = 70,
+    Shiftj = 71,
+    Undef = 72,
+    VectorLength = 73,
+    VectorP = 74,
+    VectorRef = 75,
+    VectorSet = 76,
+    PushEnter = 77,
+    Halt = 78,
+    ConstantPush = 79,
+    NumberSubPush = 80,
+    NumberAddPush = 81,
+    PushConstant = 82,
+    PushFrame = 83,
+    CarPush = 84,
+    CdrPush = 85,
+    ShiftCall = 86,
+    NotTest = 87,
+    ReferGlobalCall = 88,
+    ReferFreePush = 89,
+    ReferLocalPush = 90,
+    ReferLocalPushConstant = 91,
+    ReferLocalPushConstantBranchNotLe = 92,
+    ReferLocalPushConstantBranchNotGe = 93,
+    ReferLocalPushConstantBranchNotNumberEqual = 94,
+    ReferLocalBranchNotNull = 95,
+    ReferLocalBranchNotLt = 96,
+    ReferFreeCall = 97,
+    ReferGlobalPush = 98,
+    ReferLocalCall = 99,
+    LocalCall = 100,
+    Vector = 101,
+    SimpleStructRef = 102,
+    DynamicWinders = 103,
+    TailCall = 104,
+    LocalTailCall = 105,
 }
 
 impl Display for Op {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Op::DefineGlobal(sym) => {
-                write!(f, "DefineGlobal({})", unsafe { sym.pointer.as_ref() })
-            }
-            Op::ReferGlobal(sym) => {
-                write!(f, "ReferGlobal({})", unsafe { sym.pointer.as_ref() })
-            }
-            Op::ReferGlobalCall(sym, n) => {
-                write!(
-                    f,
-                    "ReferGlobalCall({}, {})",
-                    unsafe { sym.pointer.as_ref() },
-                    n
-                )
-            }
-            Op::ReferGlobalPush(sym) => {
-                write!(f, "ReferGlobalPush({}", unsafe { sym.pointer.as_ref() })
-            }
-            _ => {
-                write!(f, "{:?}", self)
-            }
-        }
-    }
-}
-
-#[cfg(test)]
-pub mod tests {
-
-    use std::ptr;
-
-    use super::*;
-    use crate::gc::Gc;
-
-    struct TestVm<'a> {
-        ops: &'a [Op],
-        pc: *const Op,
-    }
-
-    impl<'a> TestVm<'a> {
-        fn run(&mut self, ops: &'a [Op]) -> Object {
-            self.ops = ops;
-            let mut val = Object::Unspecified;
-            for i in 0..ops.len() {
-                match ops[i] {
-                    Op::Constant(n) => {
-                        val = n;
-                    }
-                    _ => {
-                        panic!("{:?} not supported", ops[i]);
-                    }
-                }
-            }
-            val
-        }
-
-        fn run_pc(&mut self, start_pc: *const Op, len: usize) -> Object {
-            self.pc = start_pc;
-            let mut val = Object::Unspecified;
-            let mut pc = start_pc;
-            for _ in 0..len {
-                match unsafe { *pc } {
-                    Op::Constant(n) => {
-                        val = n;
-                    }
-                    op => {
-                        panic!("{:?} not supported", op);
-                    }
-                }
-                pc = unsafe { pc.offset(1) };
-            }
-            val
-        }
-    }
-
-    fn print_slice_refs(s1: &[Op], s2: &[Op], s3: &[Op]) {
-        println!("{:?} {:?} {:?}", s1, s2, s3);
-    }
-
-    // This tests if *const Op is good enough for vm.run arguments.
-    #[test]
-    fn test_op_pointer() {
-        let mut gc = Gc::new();
-        let mut vm = TestVm {
-            pc: ptr::null(),
-            ops: &[],
-        };
-        let array_ops = [
-            Op::Constant(Object::Number(1)),
-            Op::Constant(Object::Number(2)),
-            Op::Constant(Object::Number(3)),
-            Op::Constant(Object::Number(4)),
-        ];
-
-        // Have 1 pointer.
-        let pc: *const Op = &array_ops[1] as *const Op;
-        match unsafe { *pc } {
-            Op::Constant(c) => {
-                assert_eq!(c, Object::Number(2));
-            }
-            _ => {
-                panic!("not supported.")
-            }
-        }
-        // Have one more pointer.
-        let pc2: *const Op = &array_ops[2] as *const Op;
-        match unsafe { (*pc, *pc2) } {
-            (Op::Constant(c), Op::Constant(d)) => {
-                assert_eq!(c, Object::Number(2));
-                assert_eq!(d, Object::Number(3));
-            }
-            _ => {
-                panic!("not supported.")
-            }
-        }
-
-        // Can mark Op but we can't know the lengths of the ops.
-        gc.mark_op(unsafe { *pc });
-
-        // Run the VM.
-        match vm.run_pc(pc, 2) {
-            Object::Number(n) => {
-                assert_eq!(n, 3);
-            }
-            _ => {
-                panic!("error");
-            }
-        }
-    }
-
-    // This tests if &[Op] is good enough for vm.run argument.
-    #[test]
-    fn test_vec_slice_op() {
-        let mut gc = Gc::new();
-        let mut vm = TestVm {
-            pc: ptr::null(),
-            ops: &[],
-        };
-        let vec_ops = vec![
-            Op::Constant(Object::Number(1)),
-            Op::Constant(Object::Number(2)),
-            Op::Constant(Object::Number(3)),
-            Op::Constant(Object::Number(4)),
-        ];
-
-        // Hold one slice ref.
-        let slice_ref: &[Op] = &vec_ops[1..3];
-        assert_eq!(slice_ref.len(), 2);
-        assert_eq!(slice_ref[0], Op::Constant(Object::Number(2)));
-
-        // Still can access original vec.
-        assert_eq!(vec_ops.len(), 4);
-
-        // Have different slice.
-        let slice_ref2: &[Op] = &vec_ops[2..3];
-        assert_eq!(slice_ref2.len(), 1);
-        assert_eq!(slice_ref2[0], Op::Constant(Object::Number(3)));
-
-        // Have sub slice_ref.
-        let sub_slice_ref: &[Op] = &slice_ref[1..2];
-        assert_eq!(sub_slice_ref.len(), 1);
-        assert_eq!(sub_slice_ref[0], Op::Constant(Object::Number(3)));
-
-        // Can pass refs to function.
-        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
-        // Can still access the refs.
-        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
-
-        // Can mark Op.
-        gc.mark_op(slice_ref[0]);
-
-        // Run the VM.
-        vm.run(slice_ref);
-        vm.run(slice_ref2);
-        vm.run(sub_slice_ref);
-    }
-
-    #[test]
-    fn test_array_slice_op() {
-        let mut vm = TestVm {
-            pc: ptr::null(),
-            ops: &[],
-        };
-        let mut gc = Gc::new();
-        let array_ops = [
-            Op::Constant(Object::Number(1)),
-            Op::Constant(Object::Number(2)),
-            Op::Constant(Object::Number(3)),
-            Op::Constant(Object::Number(4)),
-        ];
-
-        // Hold one slice ref.
-        let slice_ref: &[Op] = &array_ops[1..3];
-        assert_eq!(slice_ref.len(), 2);
-        assert_eq!(slice_ref[0], Op::Constant(Object::Number(2)));
-
-        // Still can access original array.
-        assert_eq!(array_ops.len(), 4);
-
-        // Have different slice.
-        let slice_ref2: &[Op] = &array_ops[2..3];
-        assert_eq!(slice_ref2.len(), 1);
-        assert_eq!(slice_ref2[0], Op::Constant(Object::Number(3)));
-
-        // Have sub slice_ref.
-        let sub_slice_ref: &[Op] = &slice_ref[1..2];
-        assert_eq!(sub_slice_ref.len(), 1);
-        assert_eq!(sub_slice_ref[0], Op::Constant(Object::Number(3)));
-
-        // Can pass refs to function.
-        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
-        // Can still access the refs.
-        print_slice_refs(slice_ref, slice_ref2, sub_slice_ref);
-
-        // Can mark Op through ref.
-        gc.mark_op(slice_ref[0]);
-
-        // Run the VM.
-        vm.run(slice_ref);
-        vm.run(slice_ref2);
-        vm.run(sub_slice_ref);
+        write!(f, "{:?}", self)
     }
 }

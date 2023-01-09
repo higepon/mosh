@@ -3404,6 +3404,8 @@
 (cond-expand
  [rmosh 
 (define (fetch-instructions)
+(map1
+(lambda (p) (cons (make-instruction (car p)) (cdr p)))
   '((0 . 3)
 (1 . 1)
 (2 . 1)
@@ -3510,7 +3512,7 @@
 (103 . 0)
 (104 . 2)
 (105 . 2)
-    ))
+    )))
  ]
  [else #f])
 
@@ -3602,7 +3604,7 @@
                          (loop2 (+ k 1))])))
                ]
                [else
-                (errorf "should not be here ~a" insn)
+                (errorf "should not be here ~a ~a" insn insn-table)
                 (vector-set! ret j insn)
                 (loop (+ i 1) (+ j 1))]))]))))
     (receive (code labels) (collect-labels)

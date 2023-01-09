@@ -2,7 +2,6 @@ SCHEME_FILES = $(shell ls -1v *.scm)
 OP_FILES = $(abspath $(patsubst %.scm,%.op,$(SCHEME_FILES)))
 RUST_OP_FILES = $(abspath $(patsubst %.op,%.rsop,$(OP_FILES)))
 
-
 # Generate Rmosh Ops code from tests/input/*.scm
 all: $(RUST_OP_FILES)
 	echo $(RUST_OP_FILES)

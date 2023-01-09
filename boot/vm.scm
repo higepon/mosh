@@ -1699,6 +1699,9 @@
    ;; compile string in a file
    [(and (= (length args) 3) (string=? (second args) "compile-file"))
     (write (compile-file-string (third args) #t))]    
+   ;; compile string in a file
+   [(and (= (length args) 3) (string=? (second args) "compile-file-no-optimize"))
+    (write (compile-file-string (third args) #f))]       
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro"))
     (load-file base-library)

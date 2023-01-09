@@ -2,6 +2,7 @@ use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::vm::Vm;
+
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
@@ -15,6 +16,7 @@ pub enum Object {
     EqHashtable(GcRef<EqHashtable>),
     False,
     InputPort(GcRef<InputPort>),
+    Instruction(Op),
     Nil,
     Number(isize),
     Pair(GcRef<Pair>),
@@ -24,8 +26,8 @@ pub enum Object {
     Symbol(GcRef<Symbol>),
     True,
     Unspecified,
-    StackPointer(*mut Object),
-    OpPointer(*const Op),
+    ObjectPointer(*mut Object),
+    ProgramCounter(*const Object),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
@@ -96,11 +98,27 @@ impl Object {
         self == other
     }
 
+    pub fn to_bool(self) -> bool {
+        match self {
+            Object::True => true,
+            Object::False => false,
+            _ => {
+                panic!("Not a bool object")
+            }
+        }
+    }
     pub fn to_number(self) -> isize {
         if let Self::Number(n) = self {
             n
         } else {
             panic!("Not a Object::Number")
+        }
+    }
+    pub fn to_instruction(self) -> Op {
+        if let Self::Instruction(p) = self {
+            p
+        } else {
+            panic!("Not a Object::Instruction")
         }
     }
     pub fn to_pair(self) -> GcRef<Pair> {
@@ -155,14 +173,14 @@ impl Debug for Object {
             Object::InputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
-            Object::OpPointer(op) => {
-                write!(f, "{:?}", *op)
-            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
             Object::Number(n) => {
                 write!(f, "{}", n)
+            }
+            Object::Instruction(op) => {
+                write!(f, "#<instruction {}>", op)
             }
             Object::Vox(obj) => {
                 write!(f, "#<vox {}>", obj.value)
@@ -191,8 +209,11 @@ impl Debug for Object {
             Object::False => {
                 write!(f, "#f")
             }
-            Object::StackPointer(v) => {
+            Object::ObjectPointer(v) => {
                 write!(f, "#<stack pointer {:?}>", v)
+            }
+            Object::ProgramCounter(v) => {
+                write!(f, "#<program counter {:?}>", v)
             }
             Object::Unspecified => {
                 write!(f, "#<unspecified>")
@@ -219,14 +240,14 @@ impl Display for Object {
             Object::InputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
-            Object::OpPointer(op) => {
-                write!(f, "{:?}", *op)
-            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
             Object::Number(n) => {
                 write!(f, "{}", n)
+            }
+            Object::Instruction(op) => {
+                write!(f, "#<instruction {}>", op)
             }
             Object::Vox(obj) => {
                 write!(f, "#<vox {}>", obj.value)
@@ -255,8 +276,11 @@ impl Display for Object {
             Object::False => {
                 write!(f, "#f")
             }
-            Object::StackPointer(v) => {
+            Object::ObjectPointer(v) => {
                 write!(f, "#<stack pointer {:?}>", v)
+            }
+            Object::ProgramCounter(v) => {
+                write!(f, "#<program counter {:?}>", v)
             }
             Object::Unspecified => {
                 write!(f, "#<unspecified>")
@@ -657,7 +681,7 @@ impl Display for Procedure {
 #[derive(Debug)]
 pub struct Closure {
     pub header: GcHeader,
-    pub ops: *const Op,
+    pub ops: *const Object,
     pub ops_len: usize,
     pub argc: isize,
     pub is_optional_arg: bool,
@@ -667,7 +691,7 @@ pub struct Closure {
 
 impl Closure {
     pub fn new(
-        ops: *const Op,
+        ops: *const Object,
         ops_len: usize,
         argc: isize,
         is_optional_arg: bool,
@@ -675,7 +699,7 @@ impl Closure {
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
-            ops: ops,
+            ops,
             ops_len: ops_len,
             argc: argc,
             is_optional_arg: is_optional_arg,
@@ -887,7 +911,7 @@ pub mod tests {
     fn test_stack_pointer_to_string() {
         let obj = Object::Number(10);
         let pointer: *mut Object = &obj as *const Object as *mut Object;
-        let stack_pointer = Object::StackPointer(pointer);
+        let stack_pointer = Object::ObjectPointer(pointer);
         let re = Regex::new(r"^#<stack pointer\s[^>]+>$").unwrap();
         assert!(re.is_match(&stack_pointer.to_string()));
     }

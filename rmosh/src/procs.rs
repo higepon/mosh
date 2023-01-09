@@ -6,6 +6,8 @@ use crate::{
     vm::Vm,
 };
 
+use num_traits::FromPrimitive;
+
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
         gc.new_procedure(is_number, "number?"),
@@ -1182,7 +1184,6 @@ fn integer_to_char(_vm: &mut Vm, args: &[Object]) -> Object {
     panic!("{}({}) not implemented", name, args.len());
 }
 fn format(_vm: &mut Vm, args: &[Object]) -> Object {
-    let name: &str = "format";
     if args.len() == 2 {
         println!("{} {}", args[0], args[1]);
     } else if args.len() == 3 {
@@ -1512,7 +1513,16 @@ fn hashtable_ref(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn hashtable_keys(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "hashtable-keys";
-    panic!("{}({}) not implemented", name, args.len());
+    match args[0] {
+        Object::EqHashtable(t) => {
+            for k in t.hash_map.keys() {
+                println!("key={}", k);
+            }
+        }
+        _ => {}
+    }
+    println!("{}({}) not implemented", name, args.len());
+    Object::Unspecified
 }
 fn string_hash(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "string-hash";
@@ -2461,7 +2471,15 @@ fn close_port(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn make_instruction(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-instruction";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Number(n) => {
+            Object::Instruction(FromPrimitive::from_u8(n as u8).expect("unknown Op"))
+        }
+        _ => {
+            panic!("{}: number requred but got {}", name, args[0])
+        }
+    }
 }
 fn make_compiler_instruction(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-compiler-instruction";
