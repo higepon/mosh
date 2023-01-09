@@ -33,6 +33,57 @@
 (define (const2-insn? insn)
   (memq insn '(REFER_LOCAL_PUSH_CONSTANT)))
 
+  ;; Instruction with no argument.
+  (define (arg0-insn? insn)
+    (memq insn '(APPEND2 CAAR CADR CAR CAR_PUSH CDAR CDDR
+                 CDR CDR_PUSH CONS EQ EQUAL EQV HALT
+                 INDIRECT MAKE_VECTOR NOP NOT NULL_P
+                 NUMBER_ADD NUMBER_ADD_PUSH
+                 NUMBER_DIV NUMBER_EQUAL NUMBER_GE NUMBER_GT
+                 NUMBER_LE NUMBER_LT NUMBER_MUL NUMBER_SUB NUMBER_SUB_PUSH
+                 PAIR_P
+                 PUSH READ_CHAR SET_CAR SET_CDR
+                 SIMPLE_STRUCT_REF SYMBOL_P UNDEF
+                 VECTOR_LENGTH VECTOR_P VECTOR_REF VECTOR_SET)))
+
+  ;; Instruction with 1 argument.
+  (define (arg1-insn? insn)
+    (or (jump1-insn? insn)
+        (memq insn '(ASSIGN_FREE ASSIGN_GLOBAL ASSIGN_LOCAL
+                     BOX CALL CONSTANT CONSTANT_PUSH
+                     DISPLAY ENTER LEAVE LET_FRAME LIST
+                     LOCAL_CALL MAKE_CONTINUATION PUSH_CONSTANT
+                     PUSH_ENTER REFER_FREE REFER_FREE_PUSH
+                     REFER_GLOBAL REFER_GLOBAL_PUSH
+                     REFER_LOCAL REFER_LOCAL_PUSH RETURN VALUES VECTOR))))
+
+  ;; Jump instuction with 1 argument.
+  (define (jump1-insn? insn)
+    (memq insn '(BRANCH_NOT_EQ BRANCH_NOT_EQUAL BRANCH_NOT_EQV BRANCH_NOT_GE
+                 BRANCH_NOT_GT BRANCH_NOT_LE BRANCH_NOT_LT BRANCH_NOT_NULL
+                 BRANCH_NOT_NUMBER_EQUAL FRAME LOCAL_JMP NOT_TEST
+                 PUSH_FRAME TEST)))
+
+  ;; Instruction with 2 arguments.
+  (define (arg2-insn? insn)
+    (or (jump2-insn? insn)
+        (memq insn '(LOCAL_TAIL_CALL RECEIVE REFER_FREE_CALL REFER_GLOBAL_CALL
+                     REFER_LOCAL_CALL REFER_LOCAL_PUSH_CONSTANT TAIL_CALL)))) 
+
+  ;; Jump instuction with 2 arguments.
+  (define (jump2-insn? insn)
+    (memq insn '(REFER_LOCAL_BRANCH_NOT_LT REFER_LOCAL_BRANCH_NOT_NULL)))
+
+  ;; Instruction with 3 arguments.
+  (define (arg3-insn? insn)
+    (or (jump3-insn? insn)
+        (memq insn '(SHIFTJ))))
+
+  ;; Jump instuction with 3 arguments.
+  (define (jump3-insn? insn)
+    (memq insn '(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE
+                REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE)))      
+
 (define rewrite-insn*
   (case-lambda
    [(all-insn* insn*)
