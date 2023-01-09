@@ -17,7 +17,6 @@ gen:
 gen-free-vars:
 	mosh scripts/gen_free_vars_procs.scm ../boot/free-vars-decl.scm
 
-
 clean:
 	rm data/test*.scm
 	make -C data clean
