@@ -1861,7 +1861,7 @@ fn test217() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0+ SIZE_OF_VECTOR,
+        SIZE_OF_SYMBOL * 1 + SIZE_OF_STRING * 0 + SIZE_OF_VECTOR,
     );
 }
 
@@ -2089,8 +2089,6 @@ fn test62() {
         SIZE_OF_SYMBOL * 0 + SIZE_OF_STRING * 0,
     );
 }
-
-
 
 // (cond ((cons 1 2) => car) (#f 2) (else 3))
 #[test]
@@ -2418,7 +2416,7 @@ fn test_compiler2() {
     vm.should_load_compiler = true;
 
     let plus = vm.gc.symbol_intern("+");
-    let code = vm.gc.list3( plus,  Object::Number(121),  Object::Number(20));
+    let code = vm.gc.list3(plus, Object::Number(121), Object::Number(20));
 
     let ops = vec![
         Object::Instruction(Op::Frame),
@@ -2426,7 +2424,7 @@ fn test_compiler2() {
         Object::Instruction(Op::Constant),
         code,
         Object::Instruction(Op::Push),
-        Object::Instruction(Op::ReferGlobal),        
+        Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("compile"),
         Object::Instruction(Op::Call),
         Object::Number(1),
@@ -2444,11 +2442,8 @@ fn test_compiler2() {
                 println!("ret={} expected={}", ret, vm.expected);
                 assert_eq!(ret, vm.expected);
             }
-        
         }
-        _ => {
-
-        }
+        _ => {}
     }
 }
 
@@ -2463,7 +2458,7 @@ fn test_compiler() {
         Object::Instruction(Op::Constant),
         Object::Number(121),
         Object::Instruction(Op::Push),
-        Object::Instruction(Op::ReferGlobal),        
+        Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("compile"),
         Object::Instruction(Op::Call),
         Object::Number(1),
@@ -2481,10 +2476,7 @@ fn test_compiler() {
                 println!("ret={} expected={}", ret, vm.expected);
                 assert_eq!(ret, vm.expected);
             }
-        
         }
-        _ => {
-
-        }
+        _ => {}
     }
 }

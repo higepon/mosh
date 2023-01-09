@@ -4,12 +4,10 @@ use crate::{
     gc::Gc,
     objects::{EqHashtable, InputPort, Object, Pair, SimpleStruct},
     vm::Vm,
-
 };
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-
 
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
@@ -2475,7 +2473,7 @@ fn close_port(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn make_instruction(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "make-instruction";
-    check_argc!(name, args, 1);    
+    check_argc!(name, args, 1);
     match args[0] {
         Object::Number(n) => {
             Object::Instruction(FromPrimitive::from_u8(n as u8).expect("unknown Op"))

@@ -1,11 +1,11 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
 use crate::vm::Vm;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, FromPrimitive, Hash, PartialEq)]

@@ -421,7 +421,6 @@ impl Gc {
         }
     }
 
-
     fn mark_object_fields(&mut self, pointer: NonNull<GcHeader>) {
         let object_type = unsafe { &pointer.as_ref().obj_type };
         match object_type {
