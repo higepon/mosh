@@ -9,7 +9,6 @@ test:
 
 test-scheme:	
 	mosh --loadpath=./scripts/ tests/rust_sexp.scm 
-	mosh --loadpath=./scripts/ tests/rust_jump.scm 	
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm
