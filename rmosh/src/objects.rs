@@ -1,6 +1,6 @@
 use crate::gc::GcRef;
 use crate::gc::{GcHeader, ObjectType};
-use crate::vm2::Vm;
+use crate::vm::Vm;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;

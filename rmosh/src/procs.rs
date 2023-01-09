@@ -3,7 +3,7 @@
 use crate::{
     gc::Gc,
     objects::{EqHashtable, InputPort, Object, Pair, SimpleStruct},
-    vm2::Vm,
+    vm::Vm,
 
 };
 

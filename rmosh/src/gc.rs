@@ -17,7 +17,7 @@ use crate::alloc::GlobalAllocator;
 use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
-use crate::vm2::Vm;
+use crate::vm::Vm;
 
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {

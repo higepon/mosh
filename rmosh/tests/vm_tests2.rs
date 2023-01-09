@@ -3,7 +3,7 @@ use rmosh::{
     equal::Equal,
     gc::Gc,
     objects::{Closure, Object, Op, Pair, Procedure, SString, Symbol, Vector},
-    vm2::Vm,
+    vm::Vm,
 };
 
 pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
