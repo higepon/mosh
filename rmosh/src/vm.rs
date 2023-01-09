@@ -5,12 +5,12 @@ use std::{
 };
 
 use crate::{
-    op::Op,
     compiler,
     equal::Equal,
     fasl::Fasl,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Pair, Symbol, Vox},
+    op::Op,
     procs::{self, default_free_vars},
 };
 
