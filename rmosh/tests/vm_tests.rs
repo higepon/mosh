@@ -1,7 +1,6 @@
 use rmosh::{
     self,
     equal::Equal,
-    gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     vm::Vm, op::Op,
 };

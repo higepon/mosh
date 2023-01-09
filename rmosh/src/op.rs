@@ -1,7 +1,6 @@
 use std::fmt::{self, Display};
 
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, FromPrimitive, Hash, PartialEq)]

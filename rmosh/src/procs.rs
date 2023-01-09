@@ -6,7 +6,6 @@ use crate::{
     vm::Vm,
 };
 
-use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
@@ -1185,7 +1184,6 @@ fn integer_to_char(_vm: &mut Vm, args: &[Object]) -> Object {
     panic!("{}({}) not implemented", name, args.len());
 }
 fn format(_vm: &mut Vm, args: &[Object]) -> Object {
-    let name: &str = "format";
     if args.len() == 2 {
         println!("{} {}", args[0], args[1]);
     } else if args.len() == 3 {

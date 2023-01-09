@@ -1,4 +1,3 @@
-use gc::GcRef;
 extern crate num_derive;
 
 pub mod alloc;
