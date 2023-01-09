@@ -7,7 +7,6 @@
 (import (match))
 (import (mosh control))
 (import (rust_sexp))
-(import (except (rust_jump) run-tests))
 (import (only (srfi :1) list-ref first second))
 (import (only (srfi :13) string-delete string-join))
 (import (only (mosh) format regexp-replace-all rxmatch))
