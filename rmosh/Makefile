@@ -7,7 +7,7 @@ test: src/lexer.rs
 	grep "not implemented" src/procs.rs | wc -l	
 	grep "Object {" src/procs.rs | wc -l
 
-src/lexer.rs: src/lexer.re2c
+src/lexer.rs: src/lexer.re
 	re2rust $< > $@
 
 test-scheme:	
