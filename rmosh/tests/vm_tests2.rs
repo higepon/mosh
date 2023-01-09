@@ -2436,7 +2436,7 @@ fn test_compiler2() {
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
-            vm.expected = Object::True;
+            vm.expected = Object::Number(141);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
             let e = Equal::new();
@@ -2473,7 +2473,7 @@ fn test_compiler() {
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
-            vm.expected = Object::True;
+            vm.expected = Object::Number(121);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
             let e = Equal::new();
