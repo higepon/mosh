@@ -81,6 +81,7 @@ pub struct Vm {
     num_values: usize,
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
+    pub compiled_programs: Vec<Object>,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }
@@ -101,6 +102,7 @@ impl Vm {
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),
             should_load_compiler: false,
+            compiled_programs: vec![],
         }
     }
 
@@ -153,6 +155,11 @@ impl Vm {
     }
 
     fn mark_roots(&mut self) {
+        //
+        for &compiled in &self.compiled_programs {
+            self.gc.mark_object(compiled);
+        }
+
         // Base library ops.
         for &op in &self.lib_ops {
             self.gc.mark_object(op);
@@ -327,7 +334,7 @@ impl Vm {
                 }
                 Op::Box => {
                     let n = self.isize_operand(&mut pc);
-                    let vox = self.alloc(Vox::new(self.index(self.sp, n)));
+                    let vox = self.gc.alloc(Vox::new(self.index(self.sp, n)));
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
                 Op::Caar => todo!(),
@@ -388,7 +395,7 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
+                    let mut display = self.gc.alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -924,7 +931,9 @@ impl Vm {
             let var = unsafe { *start.offset(-i) };
             free_vars.push(var);
         }
-        let c = self.alloc(Closure::new(
+        // Don't call self.alloc here.
+        // Becase it can trigger gc and free the allocated object *before* it is rooted.
+        let c = self.gc.alloc(Closure::new(
             *pc,
             size - 1,
             arg_len,

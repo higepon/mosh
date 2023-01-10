@@ -13,16 +13,17 @@ use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
 
-use crate::alloc::GlobalAllocator;
+//use crate::alloc::GlobalAllocator;
 use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 use crate::vm::Vm;
-
+/*
 #[global_allocator]
 static GLOBAL: GlobalAllocator = GlobalAllocator {
     bytes_allocated: AtomicUsize::new(0),
 };
+*/
 
 // GcRef.
 // This holds raw pointer to an object.
@@ -301,6 +302,7 @@ impl Gc {
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
+            /*
             #[cfg(feature = "debug_log_gc")]
             println!(
                 "alloc(adr:{:?} type:{} repr:{}, alloc_size={}, allocated bytes:{} next:{})",
@@ -308,10 +310,10 @@ impl Gc {
                 short_type_name::<T>(),
                 repr,
                 alloc_size,
-                GLOBAL.bytes_allocated(),
+                //GLOBAL.bytes_allocated(),
                 self.next_gc,
             );
-
+*/
             GcRef { pointer }
         }
     }
@@ -387,23 +389,26 @@ impl Gc {
 
             self.marked_objects.push(header);
 
-            #[cfg(feature = "debug_log_gc")]
+       /*     #[cfg(feature = "debug_log_gc")]
             if header.as_ref().obj_type != ObjectType::Procedure {
                 println!("mark(adr:{:?}, type:{:?}", header, header.as_ref().obj_type,);
             }
-        }
+        }*/
+    }
     }
 
     // Collect garbage.
     // This traces all references starting from marked_objects.
     pub fn collect_garbage(&mut self) {
+        /*
         #[cfg(feature = "debug_log_gc")]
         let before: isize = GLOBAL.bytes_allocated() as isize;
-
+        */
         self.trace_references();
         self.sweep();
-        self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
+        //self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
 
+        /*
         #[cfg(feature = "debug_log_gc")]
         println!(
             "collected(bytes:{} before:{} after:{} next:{})",
@@ -412,6 +417,7 @@ impl Gc {
             GLOBAL.bytes_allocated(),
             self.next_gc
         );
+        */
     }
 
     // Mark each object's fields.
@@ -484,7 +490,7 @@ impl Gc {
 
     #[cfg(not(feature = "test_gc_size"))]
     pub fn should_gc(&self) -> bool {
-        GLOBAL.bytes_allocated() > self.next_gc
+        self.current_alloc_size > self.next_gc
     }
 
     #[cfg(feature = "test_gc_size")]
