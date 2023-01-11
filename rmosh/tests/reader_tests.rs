@@ -30,7 +30,7 @@ fn parse_symbol() {
     );
 
     assert_eq!(
-        vm.gc.symbol_intern("$seq"),
-        DatumParser::new().parse(&mut vm.gc, "$seq").unwrap()
+        vm.gc.symbol_intern("$seq1"),
+        DatumParser::new().parse(&mut vm.gc, "$seq1").unwrap()
     );    
 }

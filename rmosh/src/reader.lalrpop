@@ -41,7 +41,12 @@ SpecialInitial: String = {
 }
 
 Subsequent: String = {
-    <Letter>
+    <Letter>,
+    <Digit>,
+}
+
+Digit: String = {
+    r"[0-9]" => <>.to_string()
 }
 
 Boolean: Object = {
