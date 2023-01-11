@@ -4,11 +4,22 @@ use crate::gc::Gc;
 
 grammar(gc: &mut Box<Gc>);
 
-pub Datum: Object = {
-    True => Object::True,
-    "(" <d:Datum> ")" => gc.cons(d, Object::Nil),
-};
-
 //Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
 
-True: bool = r"#[tT]" => true;
+// 7.1.2. External representations
+pub Datum: Object = {
+    SimpleDatum,
+}
+
+pub SimpleDatum: Object = {
+    Boolean,
+}
+
+// R7RS small 7.1.1. Lexical structure.
+Boolean: Object = {
+    "#t" => Object::True,
+    "#true" => Object::True,
+    "#f" => Object::False,
+    "#false" => Object::False,
+}
+

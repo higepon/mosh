@@ -2480,3 +2480,43 @@ fn test_compiler() {
         _ => {}
     }
 }
+
+//#[macro_use] extern crate lalrpop_util;
+
+//lalrpop_mod!(pub reader); // synthesized by LALRPOP
+use rmosh::reader::DatumParser;
+/*
+#[test]
+fn test_compiler3() {
+    let mut vm = Vm::new();
+    vm.should_load_compiler = true;
+
+    let ops = vec![
+        Object::Instruction(Op::Frame),
+        Object::Number(8),
+        Object::Instruction(Op::Constant),
+        DatumParser::new().parse(&mut vm.gc, "(#t)").unwrap(),
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::ReferGlobal),
+        vm.gc.symbol_intern("compile"),
+        Object::Instruction(Op::Call),
+        Object::Number(1),
+        Object::Instruction(Op::Halt),
+    ];
+    let ret = vm.run(ops.as_ptr(), ops.len());
+    match ret {
+        Object::Vector(v) => {
+            let ret = vm.run(v.data.as_ptr(), v.data.len());
+            vm.expected = Object::Number(121);
+            // Remove reference to ret.
+            vm.ac = Object::Unspecified;
+            let e = Equal::new();
+            if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+                println!("ret={} expected={}", ret, vm.expected);
+                assert_eq!(ret, vm.expected);
+            }
+        }
+        _ => {}
+    }
+}
+*/
