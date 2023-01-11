@@ -20,3 +20,12 @@ fn parse_boolean() {
         DatumParser::new().parse(&mut vm.gc, "#false").unwrap()
     );
 }
+
+#[test]
+fn parse_symbol() {
+    let mut vm = Vm::new();
+    assert_eq!(
+        vm.gc.symbol_intern("abc"),
+        DatumParser::new().parse(&mut vm.gc, "abc").unwrap()
+    );
+}
