@@ -28,4 +28,9 @@ fn parse_symbol() {
         vm.gc.symbol_intern("abc"),
         DatumParser::new().parse(&mut vm.gc, "abc").unwrap()
     );
+
+    assert_eq!(
+        vm.gc.symbol_intern("$seq"),
+        DatumParser::new().parse(&mut vm.gc, "$seq").unwrap()
+    );    
 }

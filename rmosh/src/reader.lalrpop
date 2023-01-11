@@ -6,7 +6,7 @@ grammar(gc: &mut Box<Gc>);
 
 //Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
 
-// 7.1.2. External representations
+// R7RS small 7.1.2. External representations
 pub Datum: Object = {
     SimpleDatum,
 }
@@ -28,11 +28,16 @@ Identifier: Object = {
 }
 
 Initial: String = {
-    <Letter>
+    <Letter>,
+    <SpecialInitial>,
 }
 
 Letter: String = {
-    r"[a-zA-z]" => <>.to_string()
+    r"[[:alpha:]]" => <>.to_string()
+}
+
+SpecialInitial: String = {
+    r"[!$%&*/:<=>?~^_]" => <>.to_string()
 }
 
 Subsequent: String = {
