@@ -14,13 +14,16 @@ pub mod vm;
 
 fn main() {}
 
-
+use crate::vm::Vm;
 
 
 #[test]
 fn calculator1() {
-    assert!(calculator1::TermParser::new().parse("22").is_ok());
-    assert!(calculator1::TermParser::new().parse("(22)").is_ok());
-    assert!(calculator1::TermParser::new().parse("((((22))))").is_ok());
-    assert!(calculator1::TermParser::new().parse("((22)").is_err());
+    let mut vm = Vm::new();
+    println!("{:?}", calculator1::DatumParser::new().parse(&mut vm.gc, "#t"));
+    println!("{:?}", calculator1::DatumParser::new().parse(&mut vm.gc, "(#t)"));    
+    //assert!(calculator1::TermParser::new().parse("#t").is_ok());
+    //assert!(calculator1::TermParser::new().parse("#f").is_ok());
+    //assert!(calculator1::TermParser::new().parse("#T").is_ok());
+    //assert!(calculator1::TermParser::new().parse("#f").is_err());
 }

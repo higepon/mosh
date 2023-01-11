@@ -1,10 +1,14 @@
 use std::str::FromStr;
+use crate::objects::Object;
+use crate::gc::Gc;
 
-grammar;
+grammar(gc: &mut Box<Gc>);
 
-pub Term: i32 = {
-    <n:Num> => n,
-    "(" <t:Term> ")" => t,
+pub Datum: Object = {
+    True => Object::True,
+    "(" <d:Datum> ")" => gc.cons(d, Object::Nil),
 };
 
-Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+//Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+
+True: bool = r"#[tT]" => true;
