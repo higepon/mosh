@@ -22,32 +22,94 @@ Symbol: Object = {
 
 
 // R7RS small 7.1.1. Lexical structure.
+VerticalLine: String = {
+   "|" => <>.to_string()
+}
 
 Identifier: Object = {
-    <i:Initial> <s:Subsequent *>  => gc.symbol_intern(&(i + &s.join(""))),   
+    <i:Initial> <s:Subsequent *> => gc.symbol_intern(&(i + &s.join(""))),   
+    // todo right hand side
+   // <v1:VerticalLine> <s:SymbolElement *> <v2:VerticalLine> => gc.symbol_intern(&s.join("")),  
 }
 
+// r"[!$%&*/:<=>?~^_]" precdences over r"[^|/]".
+match {
+    r"[!$%&*/:<=>?~^_]",
+    r"[^|/]",    
+} else {
+
+    r"[A-Za-z]",
+    _
+    
+}
+
+//〈initial〉 −→ 〈letter〉 | 〈special initial〉
 Initial: String = {
     <Letter>,
-    <SpecialInitial>,
+//    <SpecialInitial>,
 }
 
+//〈letter〉 −→ a | b | c | ... | z | A | B | C | ... | Z
 Letter: String = {
-    r"[[:alpha:]]" => <>.to_string()
+    r"[A-Za-z]" => <>.to_string()
 }
 
-SpecialInitial: String = {
-    r"[!$%&*/:<=>?~^_]" => <>.to_string()
-}
+//〈special initial〉 −→ ! | $ | % | & | * | / | : | < | = | > | ? | ^ | _ | ~
+//SpecialInitial: String = {
+    //r"[!$%&*/:<=>?~^_]" => <>.to_string()
+//}
 
+//〈subsequent〉 −→ 〈initial〉 | 〈digit〉|〈special subsequent〉
 Subsequent: String = {
-    <Letter>,
-    <Digit>,
+    <Initial>,
+    //<Digit>,
+    //<SpecialSubsequent>,
 }
 
+//〈digit〉 −→ 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 Digit: String = {
     r"[0-9]" => <>.to_string()
 }
+
+//〈hex digit〉 −→ 〈digit〉 | a | b | c | d | e | f
+HexDigit: String = {
+    <Digit>,
+    r"[a-f]" => <>.to_string()
+}
+
+//〈explicit sign〉 −→ + | -
+//ExplicitSign: String = {
+//    r"\+|-" => <>.to_string()
+//}
+
+//〈special subsequent〉 −→ 〈explicit sign〉 | . | @
+//SpecialSubsequent: String = {
+//    <ExplicitSign>,
+//    r"[.@]" => <>.to_string()
+//}
+
+//〈inline hex escape〉 −→ \x〈hex scalar value〉
+//InlineHexEscape: String = {
+//    "\\x" <HexScalarValue>,
+//}
+
+//〈hex scalar value〉 −→ 〈hex digit〉
+//HexScalarValue: String = {
+//    <h:HexDigit +> => h.join("")
+//} 
+
+//〈mnemonic escape〉 −→ \a | \b | \t | \n | \r
+//MnemonicEscape: String = {
+//    r"\\a|b|t|n|r" => <>.to_string(),
+//}
+
+//〈any character other than 〈vertical line〉 or \〉|〈inline hex escape〉 | 〈mnemonic escape〉 | \|
+//SymbolElement: String = {
+//    r"[^|/]" => <>.to_string(),
+//    <InlineHexEscape>,
+//    <MnemonicEscape>,
+ //   "\\|" => <>.to_string(),
+//}
 
 Boolean: Object = {
     "#t" => Object::True,
