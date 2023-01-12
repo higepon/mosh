@@ -15,6 +15,12 @@ pub struct Lexer<'input> {
     marker: usize,
 }
 
+// todo
+// parse true/false as lexer
+// parse true/false as parser.
+// Handle errror.
+// Fix range in Some.
+// Handle identifier.
 impl<'input> Lexer<'input> {
     pub fn new(input: &'input str) -> Self {
         Lexer { chars: input.char_indices() , s: input.as_bytes(), cursor: 0, marker:0}
