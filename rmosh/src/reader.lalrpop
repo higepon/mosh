@@ -117,8 +117,8 @@ Boolean: Object = {
     //"#true" => Object::True,
     //"#f" => Object::False,
     //"#false" => Object::False,
-    "hoge" => Object::True,
-    "#f" => Object::False,    
+    "token:true" => Object::True,
+    "token:false" => Object::False,    
 }
 
 extern {
@@ -126,8 +126,8 @@ extern {
     type Error = lexer::LexicalError;
 
     enum lexer::Token {
-        "hoge" => lexer::Token::True,
-        "#f" => lexer::Token::False,        
+        "token:true" => lexer::Token::True,
+        "token:false" => lexer::Token::False,        
 //        "#true" => lexer::Token::True,        
         //"#f" => lexer::Token::False,
   //      "#false" => lexer::Token::False,        
