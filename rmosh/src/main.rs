@@ -9,6 +9,7 @@ pub mod equal;
 pub mod fasl;
 pub mod gc;
 pub mod lexer;
+pub mod lexer_iter;
 pub mod objects;
 pub mod op;
 pub mod procs;
