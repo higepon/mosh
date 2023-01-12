@@ -1,17 +1,42 @@
-use rmosh::{objects::Object, reader::DatumParser, vm::Vm, lexer};
+
+use rmosh::{lexer, objects::Object, reader::DatumParser, vm::Vm};
 
 #[test]
 fn parse_boolean() {
-    let mut vm = Vm::new(); 
-    let lexer = lexer::Lexer::new("#t");
+    let mut vm = Vm::new();
+    assert_eq!(
+        Object::False,
+        DatumParser::new()
+            .parse(&mut vm.gc, lexer::Lexer::new(b"#false\0"))
+            .unwrap()
+    );       
+} 
+
+#[test]
+fn parse_boolean2() {
+    let mut vm = Vm::new();
     assert_eq!(
         Object::True,
-        DatumParser::new().parse(&mut vm.gc, lexer).unwrap()
-    );/*
-    assert_eq!(
-        Object::True,
-        DatumParser::new().parse(&mut vm.gc, lexer).unwrap()
+        DatumParser::new()
+            .parse(&mut vm.gc, lexer::Lexer::new(b"#t\0"))
+            .unwrap()
     );
+}
+
+#[test]
+fn parse_boolean3() {
+    let mut vm = Vm::new();
+    assert_eq!(
+        Object::True,
+        DatumParser::new()
+            .parse(&mut vm.gc, lexer::Lexer::new(b"#true\0"))
+            .unwrap()
+    );
+
+}
+ 
+
+    /*
     assert_eq!(
         Object::False,
         DatumParser::new().parse(&mut vm.gc, lexer).unwrap()
@@ -21,7 +46,7 @@ fn parse_boolean() {
         DatumParser::new().parse(&mut vm.gc, lexer).unwrap()
     );
     */
-}
+
 /*
 #[test]
 fn parse_symbol() {
@@ -34,6 +59,6 @@ fn parse_symbol() {
     assert_eq!(
         vm.gc.symbol_intern("$seq1-"),
         DatumParser::new().parse(&mut vm.gc, "$seq1-").unwrap()
-    );    
+    );
 }
 */

@@ -118,6 +118,7 @@ Boolean: Object = {
     //"#f" => Object::False,
     //"#false" => Object::False,
     "hoge" => Object::True,
+    "#f" => Object::False,    
 }
 
 extern {
@@ -126,6 +127,7 @@ extern {
 
     enum lexer::Token {
         "hoge" => lexer::Token::True,
+        "#f" => lexer::Token::False,        
 //        "#true" => lexer::Token::True,        
         //"#f" => lexer::Token::False,
   //      "#false" => lexer::Token::False,        

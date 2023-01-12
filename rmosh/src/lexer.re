@@ -9,10 +9,11 @@ use std::str::CharIndices;
 
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {
-    chars: CharIndices<'input>,
+ /*   chars: CharIndices<'input>,*/
     s: &'input [u8],
     cursor: usize,
     marker: usize,
+    limit: usize,
 }
 
 // todo
@@ -22,8 +23,9 @@ pub struct Lexer<'input> {
 // Fix range in Some.
 // Handle identifier.
 impl<'input> Lexer<'input> {
-    pub fn new(input: &'input str) -> Self {
-        Lexer { chars: input.char_indices() , s: input.as_bytes(), cursor: 0, marker:0}
+    pub fn new(input: &'input [u8]) -> Self {
+        // TODO: RE2Rust assumes strings are nul terminated.
+        Self { s: input, cursor: 0, marker:0, limit:input.len() - 1}
     }
 }
 
@@ -38,14 +40,16 @@ impl<'input> Iterator for Lexer<'input> {
         re2c:define:YYSKIP = "self.cursor += 1;";
         re2c:define:YYBACKUP = "self.marker = self.cursor;";
         re2c:define:YYRESTORE = "self.cursor = self.marker;";
+        re2c:define:YYLESSTHAN = "self.cursor >= self.limit";
         re2c:yyfill:enable = 0;
+        re2c:eof = 0;
         TRUE = "#"[tT] | "#true";
         FALSE = "#"[fF] | "#false";        
-        TRUE { return  Some(Ok((0, Token::True, 1))); }
-        FALSE { return  Some(Ok((0, Token::False, 1))) }        
-        * { return  None; }
-
-        */
+        TRUE { println!("****<true> cursor={}", self.cursor);return Some(Ok((0, Token::True, 2))); }
+        FALSE { println!("****<false>");return Some(Ok((0, Token::False, 2))); }        
+        $ { println!("$$$$");return  None; }        
+        * { println!("else else");return  None; }
+       */
     }
 }
 
