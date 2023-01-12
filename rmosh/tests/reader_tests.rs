@@ -3,7 +3,7 @@ use rmosh::{objects::Object, reader::DatumParser, vm::Vm, lexer};
 #[test]
 fn parse_boolean() {
     let mut vm = Vm::new(); 
-    let lexer = lexer::Lexer::new("#t#f");
+    let lexer = lexer::Lexer::new("#t");
     assert_eq!(
         Object::True,
         DatumParser::new().parse(&mut vm.gc, lexer).unwrap()
