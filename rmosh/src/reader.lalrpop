@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use crate::objects::Object;
 use crate::gc::Gc;
+use crate::lexer;
 
 grammar(gc: &mut Box<Gc>);
 
@@ -112,9 +113,22 @@ SimpleDatum: Object = {
 //}
 
 Boolean: Object = {
-    "#t" => Object::True,
-    "#true" => Object::True,
-    "#f" => Object::False,
-    "#false" => Object::False,
+    //"#t" => Object::True,
+    //"#true" => Object::True,
+    //"#f" => Object::False,
+    //"#false" => Object::False,
+    "hoge" => Object::True,
 }
 
+extern {
+    type Location = usize;
+    type Error = lexer::LexicalError;
+
+    enum lexer::Token {
+        "hoge" => lexer::Token::True,
+//        "#true" => lexer::Token::True,        
+        //"#f" => lexer::Token::False,
+  //      "#false" => lexer::Token::False,        
+        //"error" => lexer::Token::Error,
+    }
+}

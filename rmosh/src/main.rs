@@ -21,8 +21,8 @@ use crate::vm::Vm;
 #[test]
 fn datam_parser() {
     let mut vm = Vm::new();
-    println!("{:?}", reader::DatumParser::new().parse(&mut vm.gc, "#t"));
-    println!("{:?}", reader::DatumParser::new().parse(&mut vm.gc, "(#t)"));    
+    //println!("{:?}", reader::DatumParser::new().parse(&mut vm.gc, "#t"));
+    //println!("{:?}", reader::DatumParser::new().parse(&mut vm.gc, "(#t)"));    
     //assert!(calculator1::TermParser::new().parse("#t").is_ok());
     //assert!(calculator1::TermParser::new().parse("#f").is_ok());
     //assert!(calculator1::TermParser::new().parse("#T").is_ok());
