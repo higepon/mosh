@@ -7,6 +7,7 @@ pub mod objects;
 pub mod op;
 pub mod procs;
 pub mod vm;
+pub mod lexer;
 #[macro_use] extern crate lalrpop_util;
 
 lalrpop_mod!(pub reader); // synthesized by LALRPOP
