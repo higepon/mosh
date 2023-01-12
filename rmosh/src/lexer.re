@@ -10,14 +10,14 @@ use std::str::CharIndices;
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {
     chars: CharIndices<'input>,
-    s: &'input str,
+    s: &'input [u8],
     cursor: usize,
     marker: usize,
 }
 
 impl<'input> Lexer<'input> {
     pub fn new(input: &'input str) -> Self {
-        Lexer { chars: input.char_indices() , s: input, cursor: 0, marker:0}
+        Lexer { chars: input.char_indices() , s: input.as_bytes(), cursor: 0, marker:0}
     }
 }
 
@@ -28,7 +28,7 @@ impl<'input> Iterator for Lexer<'input> {
 
     /*!re2c
         re2c:define:YYCTYPE = u8;
-        re2c:define:YYPEEK = "*self.s.as_bytes().get_unchecked(self.cursor)";
+        re2c:define:YYPEEK = "*self.s.get_unchecked(self.cursor)";
         re2c:define:YYSKIP = "self.cursor += 1;";
         re2c:define:YYBACKUP = "self.marker = self.cursor;";
         re2c:define:YYRESTORE = "self.cursor = self.marker;";
