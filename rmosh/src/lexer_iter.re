@@ -17,11 +17,11 @@ impl<'input> Iterator for Lexer<'input> {
         TRUE = "#"[tT] | "#true";
         FALSE = "#"[fF] | "#false";        
         LETTER                 = [a-z] | [A-Z];
-        CONSTITUENT            = LETTER;        
-        INITIAL                = CONSTITUENT;        
+        SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~]; // Conforms R7RS.        
+        INITIAL                = LETTER | SPECIAL_INITIAL; // Conforms R7RS.
         DIGIT                  = [0-9];        
         SUBSEQUENT             = INITIAL | DIGIT;
-        IDENTIFIER = (INITIAL (SUBSEQUENT)*) ;
+        IDENTIFIER = (INITIAL (SUBSEQUENT)*);
         TRUE { println!("****<true> cursor={}", self.cursor);return Some(Ok((0, Token::True, 2))); }
         FALSE { println!("****<false>");return Some(Ok((0, Token::False, 2))); }        
         IDENTIFIER { println!("ident!!!!{:?}", str::from_utf8(&self.s[self.tok..self.cursor])); return Some(Ok((0, Token::Identifier{value: self.token()}, 2)));}
