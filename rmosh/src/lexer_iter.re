@@ -16,11 +16,14 @@ impl<'input> Iterator for Lexer<'input> {
         re2c:eof = 0;
         TRUE = "#"[tT] | "#true";
         FALSE = "#"[fF] | "#false";        
-        LETTER                 = [a-z] | [A-Z];
+        LETTER                 = [A-Za-z]; // Conforms R7RS.        
         SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~]; // Conforms R7RS.        
         INITIAL                = LETTER | SPECIAL_INITIAL; // Conforms R7RS.
-        DIGIT                  = [0-9];        
-        SUBSEQUENT             = INITIAL | DIGIT;
+        DIGIT                  = [0-9]; // Conforms R7RS.       
+        EXPLICIT_SIGN          = "+" | "-"; // Conforms R7RS.
+        SPECIAL_SUBSEQUENT     = EXPLICIT_SIGN | "." | "@"; // Conforms R7RS.        
+        SUBSEQUENT             = INITIAL | DIGIT | SPECIAL_SUBSEQUENT; //  // Conforms R7RS.
+
         IDENTIFIER = (INITIAL (SUBSEQUENT)*);
         TRUE { println!("****<true> cursor={}", self.cursor);return Some(Ok((0, Token::True, 2))); }
         FALSE { println!("****<false>");return Some(Ok((0, Token::False, 2))); }        

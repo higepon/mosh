@@ -19,4 +19,5 @@ fn parse_symbol() {
     let mut vm = Vm::new();
     assert_eq!(vm.gc.symbol_intern("abc"), read(&mut vm.gc, "abc").unwrap());
     assert_eq!(vm.gc.symbol_intern("$seq"), read(&mut vm.gc, "$seq").unwrap());    
+    assert_eq!(vm.gc.symbol_intern("$seq--"), read(&mut vm.gc, "$seq--").unwrap());        
 }
