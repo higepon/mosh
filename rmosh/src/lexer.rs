@@ -1,11 +1,11 @@
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
     True,
     False,
     LeftParen,
     RightParen,
-    Identifier{value: String},
+    Identifier { value: String },
+    String { value: String },
     Error,
 }
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
@@ -39,13 +39,21 @@ impl<'input> Lexer<'input> {
         }
     }
 
-
-
-    pub fn token(&self) -> String {
+    pub fn extract_token(&self) -> String {
         match std::str::from_utf8(&self.s[self.tok..self.cursor]) {
             Ok(s) => s.to_string(),
             Err(_) => {
-                panic!("hige");
+                panic!("malformed utf8 string")
+            }
+        }
+    }
+
+    pub fn extract_string(&self) -> String {
+        // Remove double quotes.
+        match std::str::from_utf8(&self.s[self.tok + 1..self.cursor - 1]) {
+            Ok(s) => s.to_string(),
+            Err(_) => {
+                panic!("malformed utf8 string")
             }
         }
     }

@@ -47,6 +47,8 @@ impl<'input> Iterator for Lexer<'input> {
         DELIMITER              = WHITE_SPACE | VERTICAL_LINE | LEFT_PAREN | RIGHT_PAREN | '"' | ";" | "\x00";
       
         // Doesn't conforms R7RS yet.  
+        STRING_ELEMENT         = [^\"\\] | MNEMONIC_ESCAPE | '\\"' | '\\\\' | '\\' INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE * | INLINE_HEX_ESCAPE;
+        STRING                 = '"' STRING_ELEMENT * '"';
 
         // Handlers
         LEFT_PAREN { println!("*** (");return return Some(Ok((0, Token::LeftParen, 2))); }
@@ -60,14 +62,17 @@ impl<'input> Iterator for Lexer<'input> {
             //self.cursor -= 1;
             return Some(Ok((0, Token::False, 2)));
         }
-        IDENTIFIER { println!("ident!!!!{:?}", str::from_utf8(&self.s[self.tok..self.cursor])); return Some(Ok((0, Token::Identifier{value: self.token()}, 2)));}
+        IDENTIFIER { println!("ident!!!!{:?}", str::from_utf8(&self.s[self.tok..self.cursor])); return Some(Ok((0, Token::Identifier{value: self.extract_token()}, 2)));}
+        STRING {
+            return Some(Ok((0, Token::String{value: self.extract_string()}, 2)));
+        }
         DELIMITER {
             println!("WHITE SPACE");
             continue 'lex;
         }        
         $ { println!("$$$$");return  
         None; }
-        * { println!("else else2 <{}>", self.token());return  None; }
+        * { println!("else else2 <{}>", self.extract_token());return  None; }
        */
 }
     }

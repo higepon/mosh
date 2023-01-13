@@ -21,6 +21,7 @@ CompoundDataum: Object = {
 
 SimpleDatum: Object = {
     Boolean,
+    String,
     Symbol,
 }
 
@@ -28,11 +29,13 @@ List: Object = {
     "token:(" <objects: Datum *> "token:)" => gc.listn(&objects),
 }
 
+String: Object = {
+    "token:string" => gc.new_string(&<>),  
+}
+
 Symbol: Object = {
     "token:identifier" => gc.symbol_intern(&<>),  
 }
-
-
 
 // R7RS small 7.1.1. Lexical structure.
 //VerticalLine: String = {
@@ -140,5 +143,7 @@ extern {
         "token:(" => lexer::Token::LeftParen,
         "token:)" => lexer::Token::RightParen,          
         "token:identifier" => lexer::Token::Identifier {value: <String> },
+        "token:string" => lexer::Token::String {value: <String> },
+
     }
 }
