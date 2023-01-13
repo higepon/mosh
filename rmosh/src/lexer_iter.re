@@ -39,12 +39,15 @@ impl<'input> Iterator for Lexer<'input> {
         IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
         LEFT_PAREN             = "(";
         RIGHT_PAREN            = ")";        
-
-
-        // Doesn't conforms R7RS yet.
-        WHITE_SPACE            = " ";
+        RETURN                 = "\r";
+        NEWLINE                = "\n";
+        INTRA_LINE_WHITE_SPACE = " " | "\t";
+        LINE_ENDING            = NEWLINE | RETURN NEWLINE | RETURN RETURN;
+        WHITE_SPACE            = INTRA_LINE_WHITE_SPACE | LINE_ENDING;
         DELIMITER              = WHITE_SPACE | VERTICAL_LINE | LEFT_PAREN | RIGHT_PAREN | '"' | ";" | "\x00";
       
+        // Doesn't conforms R7RS yet.  
+
         // Handlers
         LEFT_PAREN { println!("*** (");return return Some(Ok((0, Token::LeftParen, 2))); }
         RIGHT_PAREN { println!("*** )");return return Some(Ok((0, Token::RightParen, 2))); }        
