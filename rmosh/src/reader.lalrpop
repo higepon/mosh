@@ -118,7 +118,8 @@ Boolean: Object = {
     //"#f" => Object::False,
     //"#false" => Object::False,
     "token:true" => Object::True,
-    "token:false" => Object::False,    
+    "token:false" => Object::False,   
+    "token:identifier" => gc.symbol_intern(&<>),
 }
 
 extern {
@@ -127,7 +128,8 @@ extern {
 
     enum lexer::Token {
         "token:true" => lexer::Token::True,
-        "token:false" => lexer::Token::False,        
+        "token:false" => lexer::Token::False,      
+        "token:identifier" => lexer::Token::Identifier {value: <String> },
 //        "#true" => lexer::Token::True,        
         //"#f" => lexer::Token::False,
   //      "#false" => lexer::Token::False,        

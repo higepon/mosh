@@ -1,7 +1,9 @@
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
     True,
     False,
+    Identifier{value: String},
     Error,
 }
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
@@ -13,6 +15,7 @@ pub struct Lexer<'input> {
     pub cursor: usize,
     pub marker: usize,
     pub limit: usize,
+    pub tok: usize, // todo rename
 }
 
 // todo
@@ -29,7 +32,17 @@ impl<'input> Lexer<'input> {
             s: input,
             cursor: 0,
             marker: 0,
+            tok: 0,
             limit: input.len() - 1,
+        }
+    }
+
+    pub fn token(&self) -> String {
+        match std::str::from_utf8(&self.s[self.tok..self.cursor]) {
+            Ok(s) => s.to_string(),
+            Err(_) => {
+                panic!("hige");
+            }
         }
     }
 }
