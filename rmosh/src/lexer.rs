@@ -37,6 +37,8 @@ impl<'input> Lexer<'input> {
         }
     }
 
+
+
     pub fn token(&self) -> String {
         match std::str::from_utf8(&self.s[self.tok..self.cursor]) {
             Ok(s) => s.to_string(),

@@ -14,5 +14,6 @@ pub mod objects;
 pub mod op;
 pub mod procs;
 pub mod vm;
+pub mod read;
 
 fn main() {}
