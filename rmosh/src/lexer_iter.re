@@ -5,7 +5,7 @@ impl<'input> Iterator for Lexer<'input> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.tok = self.cursor;
-
+'lex: loop {
     /*!re2c
         re2c:define:YYCTYPE = u8;
         re2c:define:YYPEEK = "*self.s.get_unchecked(self.cursor)";
@@ -36,22 +36,37 @@ impl<'input> Iterator for Lexer<'input> {
         MNEMONIC_ESCAPE        = ('\\' [abtnr\\\"]);   
         PECULIAR_IDENTIFIER    = EXPLICIT_SIGN | EXPLICIT_SIGN SIGN_SUBSEQUENT SUBSEQUENT * | EXPLICIT_SIGN "." DOT_SUBSEQUENT SUBSEQUENT * | "." DOT_SUBSEQUENT SUBSEQUENT *;
         SYMBOL_ELEMENT         = [^\|\\] | "\\|" | INLINE_HEX_ESCAPE | MNEMONIC_ESCAPE;        
-        IDENTIFIER = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
+        IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
         LEFT_PAREN             = "(";
         RIGHT_PAREN            = ")";        
       
 
         // Doesn't conforms R7RS yet.
+        WHITE_SPACE            = " ";
+        DELIMITER              = WHITE_SPACE | LEFT_PAREN | RIGHT_PAREN | "\x00";
 
         // Handlers
-        LEFT_PAREN { return return Some(Ok((0, Token::LeftParen, 2))); }
-        RIGHT_PAREN { return return Some(Ok((0, Token::RightParen, 2))); }        
-        TRUE { println!("****<true> cursor={}", self.cursor);return Some(Ok((0, Token::True, 2))); }
-        FALSE { println!("****<false>");return Some(Ok((0, Token::False, 2))); }
+        LEFT_PAREN { println!("*** (");return return Some(Ok((0, Token::LeftParen, 2))); }
+        RIGHT_PAREN { println!("*** )");return return Some(Ok((0, Token::RightParen, 2))); }        
+        TRUE  {
+            //self.cursor -= 1;
+            return Some(Ok((0, Token::True, 2)));
+        }
+        FALSE  {
+            //make
+            //self.cursor -= 1;
+            return Some(Ok((0, Token::False, 2)));
+        }
         IDENTIFIER { println!("ident!!!!{:?}", str::from_utf8(&self.s[self.tok..self.cursor])); return Some(Ok((0, Token::Identifier{value: self.token()}, 2)));}
-        $ { println!("$$$$");return  None; }
-        * { println!("else else");return  None; }
+        WHITE_SPACE {
+            println!("WHITE SPACE");
+            continue 'lex;
+        }        
+        $ { println!("$$$$");return  
+        None; }
+        * { println!("else else2 <{}>", self.token());return  None; }
        */
+}
     }
 }
 

@@ -40,8 +40,23 @@ fn parse_symbol() {
 #[test]
 fn parse_list() {
     let mut vm = Vm::new();
+    let expected = Object::Nil;
+    let obj = read(&mut vm.gc, "()").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
+fn parse_list1() {
+    let mut vm = Vm::new();
     let expected = vm.gc.list1(Object::True);
     let obj = read(&mut vm.gc, "(#t)").unwrap();
     assert_equal!(vm.gc, expected, obj);
+}
 
+#[test]
+fn parse_list2() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.list2(Object::True, Object::False);
+    let obj = read(&mut vm.gc, "(#t #f)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
 }
