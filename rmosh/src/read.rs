@@ -1,9 +1,16 @@
-use crate::{gc::Gc, objects::Object, lexer, reader::DatumParser};
+use lalrpop_util::ParseError;
 
-pub fn read(gc: &mut Box<Gc>, s: &str) -> Object {
+use crate::{
+    gc::Gc,
+    lexer::{self, LexicalError},
+    objects::Object,
+    reader::DatumParser,
+};
+
+type ReadError = ParseError<usize, lexer::Token, LexicalError>;
+
+pub fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
     let mut s = s.to_string();
     s.push('\0');
-    DatumParser::new()
-        .parse(gc, lexer::Lexer::new(s.as_bytes()))
-        .unwrap()
+    DatumParser::new().parse(gc, lexer::Lexer::new(s.as_bytes()))
 }
