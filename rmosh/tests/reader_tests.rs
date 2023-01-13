@@ -69,3 +69,12 @@ fn parse_nested_list() {
     let obj = read(&mut vm.gc, "((#t) #f)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
+
+
+#[test]
+fn parse_string() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.new_string("hello");
+    let obj = read(&mut vm.gc, "\"hello\"").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
