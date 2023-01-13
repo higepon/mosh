@@ -39,12 +39,12 @@ impl<'input> Iterator for Lexer<'input> {
         IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
         LEFT_PAREN             = "(";
         RIGHT_PAREN            = ")";        
-      
+
 
         // Doesn't conforms R7RS yet.
         WHITE_SPACE            = " ";
-        DELIMITER              = WHITE_SPACE | LEFT_PAREN | RIGHT_PAREN | "\x00";
-
+        DELIMITER              = WHITE_SPACE | VERTICAL_LINE | LEFT_PAREN | RIGHT_PAREN | '"' | ";" | "\x00";
+      
         // Handlers
         LEFT_PAREN { println!("*** (");return return Some(Ok((0, Token::LeftParen, 2))); }
         RIGHT_PAREN { println!("*** )");return return Some(Ok((0, Token::RightParen, 2))); }        
@@ -58,7 +58,7 @@ impl<'input> Iterator for Lexer<'input> {
             return Some(Ok((0, Token::False, 2)));
         }
         IDENTIFIER { println!("ident!!!!{:?}", str::from_utf8(&self.s[self.tok..self.cursor])); return Some(Ok((0, Token::Identifier{value: self.token()}, 2)));}
-        WHITE_SPACE {
+        DELIMITER {
             println!("WHITE SPACE");
             continue 'lex;
         }        
