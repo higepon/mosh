@@ -30,17 +30,17 @@ impl<'input> Iterator for Lexer<'input> {
         HEX_DIGIT              = DIGIT | [A-Fa-f];         
         HEX_SCALAR_VALUE       = HEX_DIGIT +;        
         INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";            
-
+        SIGN_SUBSEQUENT        = INITIAL | EXPLICIT_SIGN | "@";
+        DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | ".";
         // Per R7RS Small Errata, we allow \\\\ and \\\" here.
         MNEMONIC_ESCAPE        = ('\\' [abtnr\\\"]);   
-
+        PECULIAR_IDENTIFIER    = EXPLICIT_SIGN | EXPLICIT_SIGN SIGN_SUBSEQUENT SUBSEQUENT * | EXPLICIT_SIGN "." DOT_SUBSEQUENT SUBSEQUENT * | "." DOT_SUBSEQUENT SUBSEQUENT *;
         SYMBOL_ELEMENT         = [^\|\\] | "\\|" | INLINE_HEX_ESCAPE | MNEMONIC_ESCAPE;        
-  
+        IDENTIFIER = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
+        
       
 
         // Doesn't conforms R7RS yet.
-        IDENTIFIER = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE;
-
 
         TRUE { println!("****<true> cursor={}", self.cursor);return Some(Ok((0, Token::True, 2))); }
         FALSE { println!("****<false>");return Some(Ok((0, Token::False, 2))); }
