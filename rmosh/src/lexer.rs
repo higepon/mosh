@@ -3,6 +3,8 @@
 pub enum Token {
     True,
     False,
+    LeftParen,
+    RightParen,
     Identifier{value: String},
     Error,
 }

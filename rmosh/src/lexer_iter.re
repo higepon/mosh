@@ -37,11 +37,15 @@ impl<'input> Iterator for Lexer<'input> {
         PECULIAR_IDENTIFIER    = EXPLICIT_SIGN | EXPLICIT_SIGN SIGN_SUBSEQUENT SUBSEQUENT * | EXPLICIT_SIGN "." DOT_SUBSEQUENT SUBSEQUENT * | "." DOT_SUBSEQUENT SUBSEQUENT *;
         SYMBOL_ELEMENT         = [^\|\\] | "\\|" | INLINE_HEX_ESCAPE | MNEMONIC_ESCAPE;        
         IDENTIFIER = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
-        
+        LEFT_PAREN             = "(";
+        RIGHT_PAREN            = ")";        
       
 
         // Doesn't conforms R7RS yet.
 
+        // Handlers
+        LEFT_PAREN { return return Some(Ok((0, Token::LeftParen, 2))); }
+        RIGHT_PAREN { return return Some(Ok((0, Token::RightParen, 2))); }        
         TRUE { println!("****<true> cursor={}", self.cursor);return Some(Ok((0, Token::True, 2))); }
         FALSE { println!("****<false>");return Some(Ok((0, Token::False, 2))); }
         IDENTIFIER { println!("ident!!!!{:?}", str::from_utf8(&self.s[self.tok..self.cursor])); return Some(Ok((0, Token::Identifier{value: self.token()}, 2)));}
