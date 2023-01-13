@@ -47,6 +47,21 @@ fn parse_symbol() {
 
 }
  
+/*
+#[test]
+fn handle_error() {
+    let mut vm = Vm::new();
+    assert_eq!(
+        Object::False,
+        DatumParser::new()
+            .parse(&mut vm.gc, lexer::Lexer::new(b"3\0"))
+            .unwrap()
+    );
+
+}
+ */
+
+    
 
     /*
     assert_eq!(

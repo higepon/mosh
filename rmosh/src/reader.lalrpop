@@ -14,12 +14,12 @@ pub Datum: Object = {
 
 SimpleDatum: Object = {
     Boolean,
-    //Symbol,
+    Symbol,
 }
 
-//Symbol: Object = {
-  //  <Identifier>
-//}
+Symbol: Object = {
+    "token:identifier" => gc.symbol_intern(&<>),  
+}
 
 
 // R7RS small 7.1.1. Lexical structure.
@@ -119,7 +119,7 @@ Boolean: Object = {
     //"#false" => Object::False,
     "token:true" => Object::True,
     "token:false" => Object::False,   
-    "token:identifier" => gc.symbol_intern(&<>),
+
 }
 
 extern {
