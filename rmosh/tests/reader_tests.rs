@@ -60,3 +60,12 @@ fn parse_list2() {
     let obj = read(&mut vm.gc, "(#t #f)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
+
+#[test]
+fn parse_nested_list() {
+    let mut vm = Vm::new();
+    let list1 = vm.gc.list1(Object::True);
+    let expected = vm.gc.list2(list1, Object::False);
+    let obj = read(&mut vm.gc, "((#t) #f)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
