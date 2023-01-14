@@ -121,3 +121,23 @@ fn parse_dot_pair() {
     let obj = read(&mut vm.gc, "(3 . #f)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
+
+#[test]
+fn parse_empty_vector() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.new_vector(&vec![]);
+    let obj = read(&mut vm.gc, "#()").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
+fn parse_vector() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.new_vector(&vec![
+        Object::Number(3),
+        Object::Number(4),
+        Object::Number(5),
+    ]);
+    let obj = read(&mut vm.gc, "#(3 4 5)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}

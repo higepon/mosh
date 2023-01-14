@@ -4,7 +4,6 @@ use rmosh::{
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
     vm::Vm,
-    read::read,
 };
 
 pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();

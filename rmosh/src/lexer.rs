@@ -8,6 +8,7 @@ pub enum Token {
     RightParen,
     String { value: String },
     True,
+    VectorStart,
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;

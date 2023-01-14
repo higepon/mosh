@@ -20,6 +20,7 @@ SimpleDatum: Object = {
     Number,
     String,
     Symbol,
+    Vector,
 }
 
 List: Object = {
@@ -29,12 +30,16 @@ List: Object = {
     }
 }
 
+Vector: Object = {
+    "token:#(" <objects: Datum *> "token:)" => gc.new_vector(&objects),
+}
+
 String: Object = {
-    "token:string" => gc.new_string(&<>),  
+    "token:string" => gc.new_string(&<>),
 }
 
 Symbol: Object = {
-    "token:identifier" => gc.symbol_intern(&<>),  
+    "token:identifier" => gc.symbol_intern(&<>),
 }
 
 Number: Object = {
@@ -48,7 +53,7 @@ Number: Object = {
 
 Boolean: Object = {
     "token:true" => Object::True,
-    "token:false" => Object::False,   
+    "token:false" => Object::False,
 }
 
 extern {
@@ -56,11 +61,13 @@ extern {
     type Error = lexer::LexicalError;
 
     enum lexer::Token {
-        "token:." => lexer::Token::Dot,            
+        "token:." => lexer::Token::Dot,
         "token:true" => lexer::Token::True,
-        "token:false" => lexer::Token::False,      
+        "token:false" => lexer::Token::False,
         "token:(" => lexer::Token::LeftParen,
-        "token:)" => lexer::Token::RightParen,          
+        "token:)" => lexer::Token::RightParen,
+        "token:)" => lexer::Token::RightParen,
+        "token:#(" => lexer::Token::VectorStart,
         "token:identifier" => lexer::Token::Identifier {value: <String> },
         "token:number10" => lexer::Token::Number10 {value: <String> },
         "token:string" => lexer::Token::String {value: <String> },
