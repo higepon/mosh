@@ -35,10 +35,10 @@ Symbol: Object = {
 }
 
 Number: Object = {
-    "token:number10" => {
-        match isize::from_str(&<>) {
+    <s: "token:number10"> => {
+        match isize::from_str(&s) {
             Ok(n) => Object::Number(n),
-            Err(e) => panic!("Number parse error: {}", e),
+            Err(e) => panic!("Number parse error: {} in <{}>", e, s),
         }
     }
 }

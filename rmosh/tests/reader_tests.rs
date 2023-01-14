@@ -97,3 +97,19 @@ fn parse_number() {
     let obj = read(&mut vm.gc, "101").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
+
+#[test]
+fn parse_number_list1() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.list1(Object::Number(3));
+    let obj = read(&mut vm.gc, "(3)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
+fn parse_number_list2() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.list2(Object::Number(3), Object::Number(4));
+    let obj = read(&mut vm.gc, "(3 4)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}

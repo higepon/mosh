@@ -4,6 +4,7 @@ use rmosh::{
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
     vm::Vm,
+    read::read,
 };
 
 pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
@@ -2487,7 +2488,7 @@ fn test_compiler3() {
     let mut vm = Vm::new();
     vm.should_load_compiler = true;
 
-    let sexp = read(&mut vm.gc, "((lambda (a) a) \"hige\")").unwrap();
+    let sexp = read(&mut vm.gc, "((lambda (a) a) 3)").unwrap();
 
     let ops = vec![
         Object::Instruction(Op::Frame),

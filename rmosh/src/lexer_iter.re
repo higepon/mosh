@@ -61,9 +61,8 @@ impl<'input> Iterator for Lexer<'input> {
     type Item = Spanned<Token, usize, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.tok = self.cursor;
         'lex: loop {
-   
+            self.tok = self.cursor;   
             /*!re2c
                 LEFT_PAREN { return Some(Ok((0, Token::LeftParen, 2))); }
                 RIGHT_PAREN { return Some(Ok((0, Token::RightParen, 2))); }        
