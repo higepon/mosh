@@ -13,6 +13,7 @@ pub Datum: Object = {
 
 CompoundDataum: Object = {
     List,
+    Vector,    
 }
 
 SimpleDatum: Object = {
@@ -20,7 +21,6 @@ SimpleDatum: Object = {
     Number,
     String,
     Symbol,
-    Vector,
 }
 
 List: Object = {
