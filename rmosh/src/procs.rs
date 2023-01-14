@@ -1709,7 +1709,18 @@ fn regexp_replace_all(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn source_info(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "source-info";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Pair(p) => {
+            p.src
+        }
+        Object::Closure(c) => {
+            c.src
+        }
+        _ => {
+            Object::False
+        }
+    }
 }
 fn eval(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "eval";
@@ -1916,7 +1927,20 @@ fn vector_to_list(vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn set_source_info_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-source-info!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args[0] {
+        Object::Pair(mut p) => {
+            p.src = args[1];
+            p.src
+        }
+        Object::Closure(mut c) => {
+            c.src = args[1];
+            c.src
+        }        
+        obj => {
+            panic!("{}: pair required but got {}", name, obj);
+        }
+    }
 }
 fn call_process(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%call-process";
@@ -3834,21 +3858,44 @@ fn file_to_string(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "file->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn annotated_cons(_vm: &mut Vm, args: &[Object]) -> Object {
+fn annotated_cons(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "annotated-cons";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 3);
+    if args.len() == 2 {
+        vm.gc.cons(args[0], args[1])
+    } else {
+        let p = vm.gc.cons(args[0], args[1]);
+        p.to_pair().src = args[2];
+        p
+    }
 }
 fn is_annotated_pair(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "annotated-pair?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_pair())
 }
 fn get_annotation(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "get-annotation";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Pair(p) => p.src,
+        obj => {
+            panic!("{}: pair required but got {}", name, obj);
+        }
+    }
 }
 fn set_annotation_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "set-annotation!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args[0] {
+        Object::Pair(mut p) => {
+            p.src = args[1];
+            Object::Unspecified
+        }
+        obj => {
+            panic!("{}: pair required but got {}", name, obj);
+        }
+    }
 }
 fn pointer_to_object(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "pointer->object";

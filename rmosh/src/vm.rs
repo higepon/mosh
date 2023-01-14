@@ -129,9 +129,14 @@ impl Vm {
 
     fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);
-        let mut display = self
-            .gc
-            .alloc(Closure::new(ops, ops_len, 0, false, free_vars));
+        let mut display = self.gc.alloc(Closure::new(
+            ops,
+            ops_len,
+            0,
+            false,
+            free_vars,
+            Object::False,
+        ));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
     }
@@ -394,9 +399,14 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display =
-                        self.gc
-                            .alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
+                    let mut display = self.gc.alloc(Closure::new(
+                        [].as_ptr(),
+                        0,
+                        0,
+                        false,
+                        free_vars,
+                        Object::False,
+                    ));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -925,7 +935,7 @@ impl Vm {
         let is_optional_arg = self.bool_operand(pc);
         let num_free_vars = self.isize_operand(pc);
         let _max_stack = self.operand(pc);
-        let _src_info = self.operand(pc);
+        let src_info = self.operand(pc);
         let mut free_vars = vec![];
         let start = self.dec(self.sp, 1);
         for i in 0..num_free_vars {
@@ -940,6 +950,7 @@ impl Vm {
             arg_len,
             is_optional_arg,
             free_vars,
+            src_info,
         ));
         self.set_return_value(Object::Closure(c));
         self.sp = self.dec(self.sp, num_free_vars);

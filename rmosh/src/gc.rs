@@ -441,6 +441,8 @@ impl Gc {
                 if !closure.prev.is_unspecified() {
                     self.mark_object(closure.prev);
                 }
+
+                self.mark_object(closure.src);
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
@@ -450,6 +452,7 @@ impl Gc {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.car);
                 self.mark_object(pair.cdr);
+                self.mark_object(pair.src);                
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
