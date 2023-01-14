@@ -11,18 +11,12 @@ use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::NonNull;
-use std::{ops::Deref, ops::DerefMut, sync::atomic::AtomicUsize, usize};
+use std::{ops::Deref, ops::DerefMut, usize};
 
-use crate::alloc::GlobalAllocator;
 use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 use crate::vm::Vm;
-
-#[global_allocator]
-static GLOBAL: GlobalAllocator = GlobalAllocator {
-    bytes_allocated: AtomicUsize::new(0),
-};
 
 // GcRef.
 // This holds raw pointer to an object.
@@ -197,6 +191,14 @@ impl Gc {
         self.cons(first, second)
     }
 
+    pub fn dot_pair(&mut self, objects: &[Object], last: Object) -> Object {
+        let mut ret = last;
+        for obj in objects.iter().rev() {
+            ret = self.cons(*obj, ret);
+        }
+        ret
+    }
+
     pub fn listn(&mut self, objects: &[Object]) -> Object {
         let mut ret = Object::Nil;
         for obj in objects.iter().rev() {
@@ -301,6 +303,7 @@ impl Gc {
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
+
             #[cfg(feature = "debug_log_gc")]
             println!(
                 "alloc(adr:{:?} type:{} repr:{}, alloc_size={}, allocated bytes:{} next:{})",
@@ -308,7 +311,7 @@ impl Gc {
                 short_type_name::<T>(),
                 repr,
                 alloc_size,
-                GLOBAL.bytes_allocated(),
+                self.current_alloc_size,
                 self.next_gc,
             );
 
@@ -343,7 +346,6 @@ impl Gc {
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
             Object::ProgramCounter(_) => {}
-
             Object::True => {}
             Object::Unspecified => {}
             Object::Vox(vox) => {
@@ -387,10 +389,11 @@ impl Gc {
 
             self.marked_objects.push(header);
 
-            #[cfg(feature = "debug_log_gc")]
-            if header.as_ref().obj_type != ObjectType::Procedure {
-                println!("mark(adr:{:?}, type:{:?}", header, header.as_ref().obj_type,);
-            }
+            /*     #[cfg(feature = "debug_log_gc")]
+                if header.as_ref().obj_type != ObjectType::Procedure {
+                    println!("mark(adr:{:?}, type:{:?}", header, header.as_ref().obj_type,);
+                }
+            }*/
         }
     }
 
@@ -398,18 +401,18 @@ impl Gc {
     // This traces all references starting from marked_objects.
     pub fn collect_garbage(&mut self) {
         #[cfg(feature = "debug_log_gc")]
-        let before: isize = GLOBAL.bytes_allocated() as isize;
-
+        let before: isize = self.current_alloc_size as isize;
         self.trace_references();
         self.sweep();
-        self.next_gc = GLOBAL.bytes_allocated() * Gc::HEAP_GROW_FACTOR;
+
+        self.next_gc = self.current_alloc_size * Gc::HEAP_GROW_FACTOR;
 
         #[cfg(feature = "debug_log_gc")]
         println!(
             "collected(bytes:{} before:{} after:{} next:{})",
-            before - GLOBAL.bytes_allocated() as isize,
+            before - self.current_alloc_size as isize,
             before,
-            GLOBAL.bytes_allocated(),
+            self.current_alloc_size,
             self.next_gc
         );
     }
@@ -438,6 +441,8 @@ impl Gc {
                 if !closure.prev.is_unspecified() {
                     self.mark_object(closure.prev);
                 }
+
+                self.mark_object(closure.src);
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
@@ -447,6 +452,7 @@ impl Gc {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.car);
                 self.mark_object(pair.cdr);
+                self.mark_object(pair.src);                
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
@@ -484,7 +490,7 @@ impl Gc {
 
     #[cfg(not(feature = "test_gc_size"))]
     pub fn should_gc(&self) -> bool {
-        GLOBAL.bytes_allocated() > self.next_gc
+        self.current_alloc_size > self.next_gc
     }
 
     #[cfg(feature = "test_gc_size")]
@@ -545,7 +551,6 @@ impl Gc {
 
     #[cfg(not(feature = "test_gc_size"))]
     fn free(&self, object_ptr: &mut GcHeader) {
-        panic!("not tested");
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 

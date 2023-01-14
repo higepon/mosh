@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    fmt::Display,
     ptr::{null, null_mut},
 };
 
@@ -79,8 +78,10 @@ pub struct Vm {
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
+    is_initialized: bool,
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
+    pub compiled_programs: Vec<Object>,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }
@@ -101,6 +102,8 @@ impl Vm {
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),
             should_load_compiler: false,
+            is_initialized: false,
+            compiled_programs: vec![],
         }
     }
 
@@ -126,17 +129,16 @@ impl Vm {
 
     fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);
-        let mut display = self
-            .gc
-            .alloc(Closure::new(ops, ops_len, 0, false, free_vars));
+        let mut display = self.gc.alloc(Closure::new(
+            ops,
+            ops_len,
+            0,
+            false,
+            free_vars,
+            Object::False,
+        ));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
-    }
-
-    // GC functions.
-    fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
-        self.mark_and_sweep();
-        self.gc.alloc(object)
     }
 
     pub fn mark_and_sweep(&mut self) {
@@ -153,6 +155,11 @@ impl Vm {
     }
 
     fn mark_roots(&mut self) {
+        //
+        for &compiled in &self.compiled_programs {
+            self.gc.mark_object(compiled);
+        }
+
         // Base library ops.
         for &op in &self.lib_ops {
             self.gc.mark_object(op);
@@ -197,20 +204,22 @@ impl Vm {
     }
 
     pub fn run(&mut self, ops: *const Object, ops_len: usize) -> Object {
-        // Create display closure and make free variables accessible.
-        self.initialize_free_vars(ops, ops_len);
+        if !self.is_initialized {
+            // Create display closure and make free variables accessible.
+            self.initialize_free_vars(ops, ops_len);
 
-        // Load the base library.
+            // Load the base library.
 
-        let lib_ops = if self.should_load_compiler {
-            self.register_compiler()
-        } else {
-            self.lib_ops = vec![Object::Instruction(Op::Halt)];
-            self.lib_ops.as_ptr()
-            //self.register_baselib()
-        };
-        self.run_ops(lib_ops);
-
+            let lib_ops = if self.should_load_compiler {
+                self.register_compiler()
+            } else {
+                self.lib_ops = vec![Object::Instruction(Op::Halt)];
+                self.lib_ops.as_ptr()
+                //self.register_baselib()
+            };
+            self.run_ops(lib_ops);
+            self.is_initialized = true;
+        }
         // Run the program.
         let ret = self.run_ops(ops);
 
@@ -249,7 +258,17 @@ impl Vm {
                 Op::BranchNotGt => {
                     branch_number_cmp_op!(>, self, pc);
                 }
-                Op::BranchNotNull => todo!(),
+                Op::BranchNotNull => {
+                    let skip_offset = self.isize_operand(&mut pc);
+                    let op_result = self.ac.is_nil();
+                    self.set_return_value(Object::make_bool(op_result));
+                    if op_result {
+                        // go to then.
+                    } else {
+                        // Branch and jump to else.
+                        pc = self.jump(pc, skip_offset - 1);
+                    }
+                }
                 Op::BranchNotNumberEqual => {
                     branch_number_cmp_op!(==, self, pc);
                 }
@@ -327,7 +346,7 @@ impl Vm {
                 }
                 Op::Box => {
                     let n = self.isize_operand(&mut pc);
-                    let vox = self.alloc(Vox::new(self.index(self.sp, n)));
+                    let vox = self.gc.alloc(Vox::new(self.index(self.sp, n)));
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
                 Op::Caar => todo!(),
@@ -366,6 +385,8 @@ impl Vm {
                 }
                 Op::Closure => {
                     self.closure_op(&mut pc);
+                    // TODO: Tentative GC here.
+                    self.mark_and_sweep();
                 }
                 Op::Cons => {
                     let car = self.pop();
@@ -388,7 +409,14 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.alloc(Closure::new([].as_ptr(), 0, 0, false, free_vars));
+                    let mut display = self.gc.alloc(Closure::new(
+                        [].as_ptr(),
+                        0,
+                        0,
+                        false,
+                        free_vars,
+                        Object::False,
+                    ));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
@@ -917,19 +945,22 @@ impl Vm {
         let is_optional_arg = self.bool_operand(pc);
         let num_free_vars = self.isize_operand(pc);
         let _max_stack = self.operand(pc);
-        let _src_info = self.operand(pc);
+        let src_info = self.operand(pc);
         let mut free_vars = vec![];
         let start = self.dec(self.sp, 1);
         for i in 0..num_free_vars {
             let var = unsafe { *start.offset(-i) };
             free_vars.push(var);
         }
-        let c = self.alloc(Closure::new(
+        // Don't call self.alloc here.
+        // Becase it can trigger gc and free the allocated object *before* it is rooted.
+        let c = self.gc.alloc(Closure::new(
             *pc,
             size - 1,
             arg_len,
             is_optional_arg,
             free_vars,
+            src_info,
         ));
         self.set_return_value(Object::Closure(c));
         self.sp = self.dec(self.sp, num_free_vars);
@@ -1086,102 +1117,104 @@ impl Vm {
 
     #[inline(always)]
     fn call_op(&mut self, pc: &mut *const Object, argc: isize) {
-        match self.ac {
-            Object::Closure(closure) => {
-                self.dc = self.ac;
-                // TODO:
-                // self.cl = self.ac;
-                *pc = closure.ops;
-                if closure.is_optional_arg {
-                    let extra_len = argc - closure.argc;
-                    if -1 == extra_len {
-                        let sp = self.unshift_args(self.sp, 1);
-                        self.index_set(sp, 0, Object::Nil);
-                        self.sp = sp;
-                        self.fp = self.dec(self.sp, closure.argc);
-                    } else if extra_len >= 0 {
-                        let args = self.stack_to_pair(extra_len + 1);
-                        self.index_set(self.sp, extra_len, args);
-                        let sp = self.dec(self.sp, extra_len);
-                        self.fp = self.dec(sp, closure.argc);
-                        self.sp = sp;
+        let mut argc = argc;
+        'call: loop {
+            match self.ac {
+                Object::Closure(closure) => {
+                    self.dc = self.ac;
+                    // TODO:
+                    // self.cl = self.ac;
+                    *pc = closure.ops;
+                    if closure.is_optional_arg {
+                        let extra_len = argc - closure.argc;
+                        if -1 == extra_len {
+                            let sp = self.unshift_args(self.sp, 1);
+                            self.index_set(sp, 0, Object::Nil);
+                            self.sp = sp;
+                            self.fp = self.dec(self.sp, closure.argc);
+                        } else if extra_len >= 0 {
+                            let args = self.stack_to_pair(extra_len + 1);
+                            self.index_set(self.sp, extra_len, args);
+                            let sp = self.dec(self.sp, extra_len);
+                            self.fp = self.dec(sp, closure.argc);
+                            self.sp = sp;
+                        } else {
+                            panic!(
+                                "call: wrong number of arguments {} required bug got {}",
+                                closure.argc, argc
+                            );
+                        }
+                    } else if argc == closure.argc {
+                        self.fp = self.dec(self.sp, argc);
                     } else {
                         panic!(
                             "call: wrong number of arguments {} required bug got {}",
                             closure.argc, argc
                         );
                     }
-                } else if argc == closure.argc {
-                    self.fp = self.dec(self.sp, argc);
-                } else {
-                    panic!(
-                        "call: wrong number of arguments {} required bug got {}",
-                        closure.argc, argc
-                    );
                 }
-            }
-            Object::Procedure(procedure) => {
-                let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
-                let start: usize = start as usize;
-                let uargc: usize = argc as usize;
-                let args = &self.stack[start..start + uargc];
+                Object::Procedure(procedure) => {
+                    let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
+                    let start: usize = start as usize;
+                    let uargc: usize = argc as usize;
+                    let args = &self.stack[start..start + uargc];
 
-                // copying args here because we can't borrow.
-                let args = &args.to_owned()[..];
+                    // copying args here because we can't borrow.
+                    let args = &args.to_owned()[..];
 
-                // We convert apply call to Op::Call.
-                if procedure.func as usize == procs::apply as usize {
-                    if argc == 1 {
-                        panic!("apply: need two or more arguments but only 1 argument");
-                    }
-                    self.sp = self.dec(self.sp, argc);
-                    self.ac = args[0];
-                    // (apply proc arg1 arg2 ... args-as-list)
-                    // We push arguments here. The last argument is flatten list.
-                    for i in 1..argc {
-                        if i == argc - 1 {
-                            let mut last_pair = args[i as usize];
-                            if !last_pair.is_list() {
-                                panic!(
-                                    "apply: last arguments shoulbe proper list but got {}",
-                                    last_pair
-                                );
-                            }
-                            let mut j: isize = 0;
-                            loop {
-                                if last_pair.is_nil() {
-                                    let new_argc = argc - 2 + j;
-                                    println!("Warning recursive self.call()");
-                                    self.call_op(pc, new_argc);
-                                    break;
-                                } else {
-                                    match last_pair {
-                                        Object::Pair(pair) => {
-                                            self.push(pair.car);
-                                            last_pair = pair.cdr;
-                                        }
-                                        _ => {
-                                            panic!("never reached");
+                    // We convert apply call to Op::Call.
+                    if procedure.func as usize == procs::apply as usize {
+                        if argc == 1 {
+                            panic!("apply: need two or more arguments but only 1 argument");
+                        }
+                        self.sp = self.dec(self.sp, argc);
+                        self.ac = args[0];
+                        // (apply proc arg1 arg2 ... args-as-list)
+                        // We push arguments here. The last argument is flatten list.
+                        for i in 1..argc {
+                            if i == argc - 1 {
+                                let mut last_pair = args[i as usize];
+                                if !last_pair.is_list() {
+                                    panic!(
+                                        "apply: last arguments shoulbe proper list but got {}",
+                                        last_pair
+                                    );
+                                }
+                                let mut j: isize = 0;
+                                loop {
+                                    if last_pair.is_nil() {
+                                        argc = argc - 2 + j;
+                                        continue 'call;
+                                    } else {
+                                        match last_pair {
+                                            Object::Pair(pair) => {
+                                                self.push(pair.car);
+                                                last_pair = pair.cdr;
+                                            }
+                                            _ => {
+                                                panic!("never reached");
+                                            }
                                         }
                                     }
+                                    j = j + 1;
                                 }
-                                j = j + 1;
+                            } else {
+                                self.push(args[i as usize]);
                             }
-                        } else {
-                            self.push(args[i as usize]);
                         }
-                    }
-                } else {
-                    // TODO: Take care of cl.
-                    // self.cl = self.ac
+                    } else {
+                        // TODO: Take care of cl.
+                        // self.cl = self.ac
 
-                    self.ac = (procedure.func)(self, args);
-                    self.return_n(argc, pc);
+                        self.ac = (procedure.func)(self, args);
+                        self.return_n(argc, pc);
+                    }
+                }
+                _ => {
+                    panic!("can't call {:?}", self.ac);
                 }
             }
-            _ => {
-                panic!("can't call {:?}", self.ac);
-            }
+            break;
         }
     }
 
@@ -1191,266 +1224,7 @@ impl Vm {
         closure.ops = null();
         closure.ops_len = 0;
     }
-    // Note we keep self.ac here, so that it can live after it returned by run().
-    /*
-        pub fn register_compiler(&mut self) -> *const Op {
-            let mut fasl = Fasl {
-                bytes: compiler::BIN_COMPILER,
-            };
-            let mut ops = vec![];
-            loop {
-                match fasl.read_op(&mut self.gc) {
-                    Ok(op) => {
-                        ops.push(op);
-                    }
-                    Err(_) => {
-                        break;
-                    }
-                }
-            }
-            self.lib_ops = ops;
-            self.lib_ops.as_ptr()
-        }
 
-        pub fn register_baselib(&mut self) -> *const Op {
-            let sym0 = self.gc.symbol_intern("for-all");
-            let str0 = self.gc.new_string("expected same length proper lists");
-            let str1 = self
-                .gc
-                .new_string("traversal reached to non-pair element ~s");
-            let str2 = self
-                .gc
-                .new_string("expected chain of pairs, but got ~r, as argument 2");
-
-            self.lib_ops = vec![
-                Op::Closure {
-                    size: 15,
-                    arg_len: 2,
-                    is_optional_arg: false,
-                    num_free_vars: 0,
-                },
-                Op::ReferLocalBranchNotNull(1, 3),
-                Op::ReferLocal(1),
-                Op::Return(2),
-                Op::Frame(4),
-                Op::ReferLocal(1),
-                Op::CarPush,
-                Op::ReferLocalCall(0, 1),
-                Op::PushFrame(5),
-                Op::ReferLocalPush(0),
-                Op::ReferLocal(1),
-                Op::CdrPush,
-                Op::ReferGlobalCall(self.gc.intern("map1"), 2),
-                Op::Cons,
-                Op::Return(2),
-                Op::DefineGlobal(self.gc.intern("map1")),
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::ReferFreePush(197),
-                Op::ReferFreePush(152),
-                Op::ReferFreePush(2),
-                Op::Closure {
-                    size: 39,
-                    arg_len: 3,
-                    is_optional_arg: true,
-                    num_free_vars: 3,
-                },
-                Op::ReferLocalBranchNotNull(2, 6),
-                Op::ReferLocalPush(0),
-                Op::ReferLocalPush(1),
-                Op::ReferGlobal(self.gc.intern("for-all-1")),
-                Op::TailCall(2, 3),
-                Op::Return(3),
-                Op::LetFrame(11),
-                Op::ReferLocalPush(0),
-                Op::ReferLocalPush(1),
-                Op::ReferLocalPush(2),
-                Op::ReferFreePush(0),
-                Op::ReferFreePush(2),
-                Op::ReferFreePush(1),
-                Op::Display(6),
-                Op::Frame(5),
-                Op::ReferFreePush(1),
-                Op::ReferLocalPush(1),
-                Op::ReferLocalPush(2),
-                Op::ReferFreeCall(0, 3),
-                Op::PushEnter(1),
-                Op::ReferLocal(0),
-                Op::Test(6),
-                Op::ReferFreePush(5),
-                Op::ReferLocalPush(0),
-                Op::ReferGlobal(self.gc.intern("for-all-n-quick")),
-                Op::TailCall(2, 6),
-                Op::LocalJmp(10),
-                Op::ConstantPush(sym0),
-                Op::ConstantPush(str0),
-                Op::Frame(4),
-                Op::ReferFreePush(4),
-                Op::ReferFreePush(3),
-                Op::ReferFreeCall(2, 2),
-                Op::Push,
-                Op::ReferGlobal(self.gc.intern("assertion-violation")),
-                Op::TailCall(3, 6),
-                Op::Leave(1),
-                Op::Return(3),
-                Op::DefineGlobal(self.gc.intern("for-all")),
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::ReferFreePush(48),
-                Op::ReferFreePush(89),
-                Op::Closure {
-                    size: 68,
-                    arg_len: 2,
-                    is_optional_arg: false,
-                    num_free_vars: 2,
-                },
-                Op::ReferLocalBranchNotNull(1, 3),
-                Op::Constant(Object::True),
-                Op::Return(2),
-                Op::ReferLocal(1),
-                Op::PairP,
-                Op::Test(49),
-                Op::LetFrame(14),
-                Op::ReferLocalPush(0),
-                Op::ReferLocalPush(1),
-                Op::ReferFreePush(1),
-                Op::ReferFreePush(0),
-                Op::Display(4),
-                Op::ReferLocal(1),
-                Op::CarPush,
-                Op::ReferLocal(1),
-                Op::CdrPush,
-                Op::Enter(2),
-                Op::ReferLocalBranchNotNull(1, 5),
-                Op::ReferLocalPush(0),
-                Op::ReferFree(3),
-                Op::TailCall(1, 6),
-                Op::LocalJmp(31),
-                Op::ReferLocal(1),
-                Op::PairP,
-                Op::Test(12),
-                Op::Frame(3),
-                Op::ReferLocalPush(0),
-                Op::ReferFreeCall(3, 1),
-                Op::Test(24),
-                Op::ReferLocal(1),
-                Op::CarPush,
-                Op::ReferLocal(1),
-                Op::CdrPush,
-                Op::Shiftj(2, 2, 0),
-                Op::LocalJmp(-17),
-                Op::LocalJmp(17),
-                Op::Frame(3),
-                Op::ReferLocalPush(0),
-                Op::ReferFreeCall(3, 1),
-                Op::Test(13),
-                Op::ConstantPush(sym0),
-                Op::Frame(4),
-                Op::ConstantPush(str1),
-                Op::ReferLocalPush(1),
-                Op::ReferFreeCall(1, 2),
-                Op::PushFrame(4),
-                Op::ReferFreePush(3),
-                Op::ReferFreePush(2),
-                Op::ReferFreeCall(0, 2),
-                Op::Push,
-                Op::ReferGlobal(self.gc.intern("assertion-violation")),
-                Op::TailCall(3, 6),
-                Op::Leave(2),
-                Op::Return(2),
-                Op::ConstantPush(sym0),
-                Op::Frame(4),
-                Op::ConstantPush(str2),
-                Op::ReferLocalPush(1),
-                Op::ReferFreeCall(1, 2),
-                Op::PushFrame(4),
-                Op::ReferLocalPush(0),
-                Op::ReferLocalPush(1),
-                Op::ReferFreeCall(0, 2),
-                Op::Push,
-                Op::ReferGlobal(self.gc.intern("assertion-violation")),
-                Op::TailCall(3, 2),
-                Op::Return(2),
-                Op::DefineGlobal(self.gc.intern("for-all-1")),
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::ReferFreePush(152),
-                Op::Closure {
-                    size: 32,
-                    arg_len: 2,
-                    is_optional_arg: false,
-                    num_free_vars: 1,
-                },
-                Op::ReferLocalBranchNotNull(1, 2),
-                Op::Return(2),
-                Op::LetFrame(8),
-                Op::ReferLocalPush(0),
-                Op::ReferFreePush(0),
-                Op::ReferLocalPush(1),
-                Op::Display(3),
-                Op::ReferLocal(1),
-                Op::CarPush,
-                Op::ReferLocal(1),
-                Op::CdrPush,
-                Op::Enter(2),
-                Op::ReferLocalBranchNotNull(1, 6),
-                Op::ReferFreePush(2),
-                Op::ReferLocalPush(0),
-                Op::ReferFree(1),
-                Op::TailCall(2, 6),
-                Op::LocalJmp(12),
-                Op::Frame(4),
-                Op::ReferFreePush(2),
-                Op::ReferLocalPush(0),
-                Op::ReferFreeCall(1, 2),
-                Op::Test(7),
-                Op::ReferLocal(1),
-                Op::CarPush,
-                Op::ReferLocal(1),
-                Op::CdrPush,
-                Op::Shiftj(2, 2, 0),
-                Op::LocalJmp(-16),
-                Op::Leave(2),
-                Op::Return(2),
-                Op::DefineGlobal(self.gc.intern("for-all-n-quick")),
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Nop,
-                Op::Halt,
-            ];
-
-            self.lib_ops.as_ptr()
-        }
-    */
     // Helpers.
     fn pop(&mut self) -> Object {
         unsafe {

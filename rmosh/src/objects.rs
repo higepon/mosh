@@ -390,6 +390,7 @@ pub struct Pair {
     pub header: GcHeader,
     pub car: Object,
     pub cdr: Object,
+    pub src: Object,
 }
 
 impl Pair {
@@ -398,6 +399,7 @@ impl Pair {
             header: GcHeader::new(ObjectType::Pair),
             car: first,
             cdr: second,
+            src: Object::False,
         }
     }
 
@@ -687,6 +689,7 @@ pub struct Closure {
     pub is_optional_arg: bool,
     pub free_vars: Vec<Object>,
     pub prev: Object,
+    pub src: Object,
 }
 
 impl Closure {
@@ -696,6 +699,7 @@ impl Closure {
         argc: isize,
         is_optional_arg: bool,
         free_vars: Vec<Object>,
+        src: Object,
     ) -> Self {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
@@ -705,6 +709,7 @@ impl Closure {
             is_optional_arg: is_optional_arg,
             free_vars: free_vars,
             prev: Object::Unspecified,
+            src: src,
         }
     }
 
@@ -892,7 +897,7 @@ pub mod tests {
     #[test]
     fn test_closure_to_string() {
         let mut gc = Gc::new();
-        let closure = gc.alloc(Closure::new([].as_ptr(), 0, 0, false, vec![]));
+        let closure = gc.alloc(Closure::new([].as_ptr(), 0, 0, false, vec![], Object::False));
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();

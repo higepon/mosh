@@ -3,6 +3,7 @@ use rmosh::{
     equal::Equal,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
+    read::read,
     vm::Vm,
 };
 
@@ -2469,6 +2470,41 @@ fn test_compiler() {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
             vm.expected = Object::Number(121);
+            // Remove reference to ret.
+            vm.ac = Object::Unspecified;
+            let e = Equal::new();
+            if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+                println!("ret={} expected={}", ret, vm.expected);
+                assert_eq!(ret, vm.expected);
+            }
+        }
+        _ => {}
+    }
+}
+
+#[test]
+fn test_compiler3() {
+    let mut vm = Vm::new();
+    vm.should_load_compiler = true;
+
+    let sexp = read(&mut vm.gc, "((lambda (a) a) 3)").unwrap();
+    let ops = vec![
+        Object::Instruction(Op::Frame),
+        Object::Number(8),
+        Object::Instruction(Op::Constant),
+        sexp,
+        Object::Instruction(Op::Push),
+        Object::Instruction(Op::ReferGlobal),
+        vm.gc.symbol_intern("compile-no-optimize"),
+        Object::Instruction(Op::Call),
+        Object::Number(1),
+        Object::Instruction(Op::Halt),
+    ];
+    let ret = vm.run(ops.as_ptr(), ops.len());
+    match ret {
+        Object::Vector(v) => {
+            let ret = vm.run(v.data.as_ptr(), v.data.len());
+            vm.expected = Object::Number(3);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
             let e = Equal::new();

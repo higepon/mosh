@@ -6,7 +6,6 @@ pub struct GlobalAllocator {
 }
 
 impl GlobalAllocator {
-    // TODO(higepon): Trigger gc based on this.
     pub fn bytes_allocated(&self) -> usize {
         self.bytes_allocated
             .load(std::sync::atomic::Ordering::Relaxed)
