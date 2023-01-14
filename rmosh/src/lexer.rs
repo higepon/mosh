@@ -1,36 +1,30 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
-    True,
+    Error,
     False,
+    Identifier { value: String },
     LeftParen,
     Number10 { value: String },
     RightParen,
-    Identifier { value: String },
     String { value: String },
-    Error,
+    True,
 }
+
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {
-    /*   chars: CharIndices<'input>,*/
     pub s: &'input [u8],
     pub cursor: usize,
     pub marker: usize,
     pub limit: usize,
-    pub tok: usize, // todo rename
+    pub tok: usize,
 }
 
-// todo
-// Extract out most of the code to rs file.
-// parse true/false as lexer
-// parse true/false as parser.
-// Handle errror.
-// Fix range in Some.
-// Handle identifier.
+// TODO:
+// - Fix range in Some.
 impl<'input> Lexer<'input> {
     pub fn new(input: &'input [u8]) -> Self {
-        // TODO: RE2Rust assumes strings are nul terminated.
         Self {
             s: input,
             cursor: 0,
@@ -61,6 +55,4 @@ impl<'input> Lexer<'input> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum LexicalError {
-    // Not possible
-}
+pub enum LexicalError {}
