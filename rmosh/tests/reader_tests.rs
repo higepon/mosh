@@ -161,11 +161,14 @@ fn parse_hex_chars() {
 }
 
 #[test]
-fn read_error() {
+fn read_quote() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "(a #v)").unwrap();
-        assert_equal!(vm.gc, Object::Char('A'), obj);
+        let obj = read(&mut vm.gc, "'a").unwrap();
+        let quote = vm.gc.symbol_intern("quote");
+        let symbol = vm.gc.symbol_intern("a");
+        let expected = vm.gc.list2(quote, symbol);
+        assert_equal!(vm.gc, expected, obj);
     }
 }
 

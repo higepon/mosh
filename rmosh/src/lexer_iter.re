@@ -119,6 +119,9 @@ impl<'input> Iterator for Lexer<'input> {
                 "#\\x" HEX_SCALAR_VALUE {
                     return self.with_location(Token::Character{value: self.extract_hex_character()});
                 }
+                "'" {
+                    return self.with_location(Token::AbbrevQuote);
+                }
                 DELIMITER {
                     continue 'lex;
                 }
