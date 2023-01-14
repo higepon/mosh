@@ -46,7 +46,7 @@ impl<'input> Lexer<'input> {
     }
 
     pub fn extract_character(&self) -> char {
-        // #\a.
+        // Actual character is at index = 2 #\a.
         match std::char::from_u32(self.s[self.tok + 2] as u32) {
             Some(c) => c,
             None => {
