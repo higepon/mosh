@@ -67,57 +67,57 @@ impl<'input> Iterator for Lexer<'input> {
         'lex: loop {
             self.tok = self.cursor;
             /*!re2c
-                LEFT_PAREN { return Some(Ok((0, Token::LeftParen, 2))); }
-                RIGHT_PAREN { return Some(Ok((0, Token::RightParen, 2))); }
-                TRUE  { return Some(Ok((0, Token::True, 2))); }
-                FALSE { return Some(Ok((0, Token::False, 2))); }
+                LEFT_PAREN { return self.with_location(Token::LeftParen); }
+                RIGHT_PAREN { return self.with_location(Token::RightParen); }
+                TRUE  { return self.with_location(Token::True); }
+                FALSE { return self.with_location(Token::False); }
                 IDENTIFIER {
-                    return Some(Ok((0, Token::Identifier{value: self.extract_token()}, 2)));
+                    return self.with_location(Token::Identifier { value: self.extract_token() });
                 }
                 STRING {
-                    return Some(Ok((0, Token::String{value: self.extract_string()}, 2)));
+                    return self.with_location(Token::String{value: self.extract_string()});
                 }
                 NUM_10 {
-                    return Some(Ok((0, Token::Number10{value: self.extract_token()}, 2)));
+                    return self.with_location(Token::Number10{value: self.extract_token()});
                 }
                 DOT {
-                    return Some(Ok((0, Token::Dot, 2)));
+                    return self.with_location(Token::Dot);
                 }
                 VECTOR_START {
-                    return Some(Ok((0, Token::VectorStart, 2)));
+                    return self.with_location(Token::VectorStart);
                 }
                 "#\\alarm" {
-                    return Some(Ok((0, Token::Character { value: char::from(7) }, 2)));
+                    return self.with_location(Token::Character { value: char::from(7) });
                 }
                 "#\\backspace" {
-                    return Some(Ok((0, Token::Character { value: char::from(8) }, 2)));
+                    return self.with_location(Token::Character { value: char::from(8) });
                 }
                 "#\\delete" {
-                    return Some(Ok((0, Token::Character { value: char::from(0x7f) }, 2)));
+                    return self.with_location(Token::Character { value: char::from(0x7f) });
                 }
                 "#\\escape" {
-                    return Some(Ok((0, Token::Character { value: char::from(0x1b) }, 2)));
+                    return self.with_location(Token::Character { value: char::from(0x1b) });
                 }
                 "#\\newline" {
-                    return Some(Ok((0, Token::Character { value: '\n' }, 2)));
+                    return self.with_location(Token::Character { value: '\n' });
                 }
                 "#\\null" {
-                    return Some(Ok((0, Token::Character { value: '\0' }, 2)));
+                    return self.with_location(Token::Character { value: '\0' });
                 }
                 "#\\return" {
-                    return Some(Ok((0, Token::Character { value: char::from(0x0d) }, 2)));
+                    return self.with_location(Token::Character { value: char::from(0x0d) });
                 }
                 "#\\space" {
-                    return Some(Ok((0, Token::Character { value: ' ' }, 2)));
+                    return self.with_location(Token::Character { value: ' ' });
                 }
                 "#\\tab" {
-                    return Some(Ok((0, Token::Character { value: '\t' }, 2)));
+                    return self.with_location(Token::Character { value: '\t' });
                 }
                 "#\\" ANY_CHARACTER {
-                    return Some(Ok((0, Token::Character{value: self.extract_character()}, 2)));
+                    return self.with_location(Token::Character{value: self.extract_character()});
                 }
                 "#\\x" HEX_SCALAR_VALUE {
-                    return Some(Ok((0, Token::Character{value: self.extract_hex_character()}, 2)));
+                    return self.with_location(Token::Character{value: self.extract_hex_character()});
                 }
                 DELIMITER {
                     continue 'lex;

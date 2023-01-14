@@ -161,6 +161,15 @@ fn parse_hex_chars() {
 }
 
 #[test]
+fn read_error() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "(a . b c)").unwrap();
+        assert_equal!(vm.gc, Object::Char('A'), obj);
+    }
+}
+
+#[test]
 fn parse_special_chars() {
     let mut vm = Vm::new();
     {

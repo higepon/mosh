@@ -13,6 +13,7 @@ pub enum Token {
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
+pub type LexerItem = Spanned<Token, usize, LexicalError>;
 
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {
@@ -34,6 +35,11 @@ impl<'input> Lexer<'input> {
             tok: 0,
             limit: input.len() - 1,
         }
+    }
+
+    // todo pub
+    pub fn with_location(&self, token: Token) -> Option<LexerItem> {
+        Some(Ok((self.tok, token, self.cursor)))
     }
 
     pub fn extract_token(&self) -> String {
