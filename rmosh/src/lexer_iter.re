@@ -113,6 +113,9 @@ impl<'input> Iterator for Lexer<'input> {
                 "#\\tab" {
                     return Some(Ok((0, Token::Character { value: '\t' }, 2)));
                 }
+                "#\\" ANY_CHARACTER {
+                    return Some(Ok((0, Token::Character{value: self.extract_character()}, 2)));
+                }
                 DELIMITER {
                     continue 'lex;
                 }

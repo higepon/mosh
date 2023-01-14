@@ -45,6 +45,16 @@ impl<'input> Lexer<'input> {
         }
     }
 
+    pub fn extract_character(&self) -> char {
+        // #\a.
+        match std::char::from_u32(self.s[self.tok + 2] as u32) {
+            Some(c) => c,
+            None => {
+                panic!("malformed char")
+            }
+        }
+    }
+
     pub fn extract_string(&self) -> String {
         // Remove double quotes.
         match std::str::from_utf8(&self.s[self.tok + 1..self.cursor - 1]) {

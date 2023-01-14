@@ -143,7 +143,16 @@ fn parse_vector() {
 }
 
 #[test]
-fn parse_char() {
+fn parse_chars() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "#\\a").unwrap();
+        assert_equal!(vm.gc, Object::Char('a'), obj);
+    }
+}
+
+#[test]
+fn parse_special_chars() {
     let mut vm = Vm::new();
     {
         let obj = read(&mut vm.gc, "#\\alarm").unwrap();
