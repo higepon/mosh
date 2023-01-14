@@ -145,6 +145,48 @@ fn parse_vector() {
 #[test]
 fn parse_char() {
     let mut vm = Vm::new();
-    let obj = read(&mut vm.gc, "#\\alarm").unwrap();
-    assert_equal!(vm.gc, Object::Char(char::from(7)), obj);
+    {
+        let obj = read(&mut vm.gc, "#\\alarm").unwrap();
+        assert_equal!(vm.gc, Object::Char(char::from(7)), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\backspace").unwrap();
+        assert_equal!(vm.gc, Object::Char(char::from(8)), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\delete").unwrap();
+        assert_equal!(vm.gc, Object::Char(char::from(0x7f)), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\escape").unwrap();
+        assert_equal!(vm.gc, Object::Char(char::from(0x1b)), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\newline").unwrap();
+        assert_equal!(vm.gc, Object::Char('\n'), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\null").unwrap();
+        assert_equal!(vm.gc, Object::Char('\0'), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\return").unwrap();
+        assert_equal!(vm.gc, Object::Char(char::from(0x0d)), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\space").unwrap();
+        assert_equal!(vm.gc, Object::Char(' '), obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "#\\tab").unwrap();
+        assert_equal!(vm.gc, Object::Char('\t'), obj);
+    }
 }
