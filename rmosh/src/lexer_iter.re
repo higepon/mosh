@@ -10,7 +10,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     re2c:yyfill:enable = 0;
     re2c:eof = 0;
 
-    // Conforms R7RS.
+    // Conforms to R7RS.
     ANY_CHARACTER          = [^];
     TRUE                   = "#t" | "#true";
     FALSE                  = "#f" | "#false";
