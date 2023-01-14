@@ -267,7 +267,7 @@ impl Vm {
                     } else {
                         // Branch and jump to else.
                         pc = self.jump(pc, skip_offset - 1);
-                    }                    
+                    }
                 }
                 Op::BranchNotNumberEqual => {
                     branch_number_cmp_op!(==, self, pc);
@@ -1117,102 +1117,104 @@ impl Vm {
 
     #[inline(always)]
     fn call_op(&mut self, pc: &mut *const Object, argc: isize) {
-        match self.ac {
-            Object::Closure(closure) => {
-                self.dc = self.ac;
-                // TODO:
-                // self.cl = self.ac;
-                *pc = closure.ops;
-                if closure.is_optional_arg {
-                    let extra_len = argc - closure.argc;
-                    if -1 == extra_len {
-                        let sp = self.unshift_args(self.sp, 1);
-                        self.index_set(sp, 0, Object::Nil);
-                        self.sp = sp;
-                        self.fp = self.dec(self.sp, closure.argc);
-                    } else if extra_len >= 0 {
-                        let args = self.stack_to_pair(extra_len + 1);
-                        self.index_set(self.sp, extra_len, args);
-                        let sp = self.dec(self.sp, extra_len);
-                        self.fp = self.dec(sp, closure.argc);
-                        self.sp = sp;
+        let mut argc = argc;
+        'call: loop {
+            match self.ac {
+                Object::Closure(closure) => {
+                    self.dc = self.ac;
+                    // TODO:
+                    // self.cl = self.ac;
+                    *pc = closure.ops;
+                    if closure.is_optional_arg {
+                        let extra_len = argc - closure.argc;
+                        if -1 == extra_len {
+                            let sp = self.unshift_args(self.sp, 1);
+                            self.index_set(sp, 0, Object::Nil);
+                            self.sp = sp;
+                            self.fp = self.dec(self.sp, closure.argc);
+                        } else if extra_len >= 0 {
+                            let args = self.stack_to_pair(extra_len + 1);
+                            self.index_set(self.sp, extra_len, args);
+                            let sp = self.dec(self.sp, extra_len);
+                            self.fp = self.dec(sp, closure.argc);
+                            self.sp = sp;
+                        } else {
+                            panic!(
+                                "call: wrong number of arguments {} required bug got {}",
+                                closure.argc, argc
+                            );
+                        }
+                    } else if argc == closure.argc {
+                        self.fp = self.dec(self.sp, argc);
                     } else {
                         panic!(
                             "call: wrong number of arguments {} required bug got {}",
                             closure.argc, argc
                         );
                     }
-                } else if argc == closure.argc {
-                    self.fp = self.dec(self.sp, argc);
-                } else {
-                    panic!(
-                        "call: wrong number of arguments {} required bug got {}",
-                        closure.argc, argc
-                    );
                 }
-            }
-            Object::Procedure(procedure) => {
-                let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
-                let start: usize = start as usize;
-                let uargc: usize = argc as usize;
-                let args = &self.stack[start..start + uargc];
+                Object::Procedure(procedure) => {
+                    let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
+                    let start: usize = start as usize;
+                    let uargc: usize = argc as usize;
+                    let args = &self.stack[start..start + uargc];
 
-                // copying args here because we can't borrow.
-                let args = &args.to_owned()[..];
+                    // copying args here because we can't borrow.
+                    let args = &args.to_owned()[..];
 
-                // We convert apply call to Op::Call.
-                if procedure.func as usize == procs::apply as usize {
-                    if argc == 1 {
-                        panic!("apply: need two or more arguments but only 1 argument");
-                    }
-                    self.sp = self.dec(self.sp, argc);
-                    self.ac = args[0];
-                    // (apply proc arg1 arg2 ... args-as-list)
-                    // We push arguments here. The last argument is flatten list.
-                    for i in 1..argc {
-                        if i == argc - 1 {
-                            let mut last_pair = args[i as usize];
-                            if !last_pair.is_list() {
-                                panic!(
-                                    "apply: last arguments shoulbe proper list but got {}",
-                                    last_pair
-                                );
-                            }
-                            let mut j: isize = 0;
-                            loop {
-                                if last_pair.is_nil() {
-                                    let new_argc = argc - 2 + j;
-                                    println!("Warning recursive self.call()");
-                                    self.call_op(pc, new_argc);
-                                    break;
-                                } else {
-                                    match last_pair {
-                                        Object::Pair(pair) => {
-                                            self.push(pair.car);
-                                            last_pair = pair.cdr;
-                                        }
-                                        _ => {
-                                            panic!("never reached");
+                    // We convert apply call to Op::Call.
+                    if procedure.func as usize == procs::apply as usize {
+                        if argc == 1 {
+                            panic!("apply: need two or more arguments but only 1 argument");
+                        }
+                        self.sp = self.dec(self.sp, argc);
+                        self.ac = args[0];
+                        // (apply proc arg1 arg2 ... args-as-list)
+                        // We push arguments here. The last argument is flatten list.
+                        for i in 1..argc {
+                            if i == argc - 1 {
+                                let mut last_pair = args[i as usize];
+                                if !last_pair.is_list() {
+                                    panic!(
+                                        "apply: last arguments shoulbe proper list but got {}",
+                                        last_pair
+                                    );
+                                }
+                                let mut j: isize = 0;
+                                loop {
+                                    if last_pair.is_nil() {
+                                        argc = argc - 2 + j;
+                                        continue 'call;
+                                    } else {
+                                        match last_pair {
+                                            Object::Pair(pair) => {
+                                                self.push(pair.car);
+                                                last_pair = pair.cdr;
+                                            }
+                                            _ => {
+                                                panic!("never reached");
+                                            }
                                         }
                                     }
+                                    j = j + 1;
                                 }
-                                j = j + 1;
+                            } else {
+                                self.push(args[i as usize]);
                             }
-                        } else {
-                            self.push(args[i as usize]);
                         }
-                    }
-                } else {
-                    // TODO: Take care of cl.
-                    // self.cl = self.ac
+                    } else {
+                        // TODO: Take care of cl.
+                        // self.cl = self.ac
 
-                    self.ac = (procedure.func)(self, args);
-                    self.return_n(argc, pc);
+                        self.ac = (procedure.func)(self, args);
+                        self.return_n(argc, pc);
+                    }
+                }
+                _ => {
+                    panic!("can't call {:?}", self.ac);
                 }
             }
-            _ => {
-                panic!("can't call {:?}", self.ac);
-            }
+            break;
         }
     }
 

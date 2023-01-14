@@ -551,7 +551,6 @@ impl Gc {
 
     #[cfg(not(feature = "test_gc_size"))]
     fn free(&self, object_ptr: &mut GcHeader) {
-        panic!("not tested");
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 
