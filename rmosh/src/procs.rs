@@ -891,7 +891,9 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn sys_display(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "sys-display";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    println!("{}", args[0]);
+    return Object::Unspecified;
 }
 fn rxmatch(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "rxmatch";
@@ -1253,7 +1255,31 @@ fn caadar(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn caaddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caaddr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => {
+                    match pair3.car {
+                        Object::Pair(pair4) => {
+                            pair4.car
+                        }
+                        _ => {
+                            panic!("{}: pair required but got {:?}", name, args);
+                        }
+                    }
+                }
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "caadr";
@@ -1334,7 +1360,31 @@ fn cdadar(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn cdaddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdaddr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => {
+                    match pair3.car {
+                        Object::Pair(pair4) => {
+                            pair4.cdr
+                        }
+                        _ => {
+                            panic!("{}: pair required but got {:?}", name, args);
+                        }
+                    }
+                }
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdadr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdadr";
@@ -1366,7 +1416,22 @@ fn cddddr(_vm: &mut Vm, args: &[Object]) -> Object {
 }
 fn cdddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cdddr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => return pair3.cdr,
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cddr(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "cddr";
@@ -1962,9 +2027,25 @@ fn get_closure_name(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "%get-closure-name";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn append(_vm: &mut Vm, args: &[Object]) -> Object {
+fn append(vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "append";
-    panic!("{}({}) not implemented", name, args.len());
+    if args.len() == 0 {
+        return Object::Nil;
+    }
+    let mut ret = args[args.len() - 1];
+    let mut i = args.len() as isize - 2;
+    loop {
+        if i < 0 {
+            break;
+        }
+        let p = args[i as usize];
+        if !p.is_list() {
+            panic!("{}: list required but got {}", name, p);
+        }
+        ret = vm.gc.append2(p, ret);
+        i -= 1;
+    }
+    return ret;
 }
 fn append2(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "append2";
