@@ -66,32 +66,24 @@ impl<'input> Iterator for Lexer<'input> {
         'lex: loop {
    
             /*!re2c
-                LEFT_PAREN { println!("*** (");return return Some(Ok((0, Token::LeftParen, 2))); }
-                RIGHT_PAREN { println!("*** )");return return Some(Ok((0, Token::RightParen, 2))); }        
-                TRUE  {
-                    //self.cursor -= 1;
-                    return Some(Ok((0, Token::True, 2)));
+                LEFT_PAREN { return Some(Ok((0, Token::LeftParen, 2))); }
+                RIGHT_PAREN { return Some(Ok((0, Token::RightParen, 2))); }        
+                TRUE  { return Some(Ok((0, Token::True, 2))); }
+                FALSE { return Some(Ok((0, Token::False, 2))); }
+                IDENTIFIER {
+                    return Some(Ok((0, Token::Identifier{value: self.extract_token()}, 2)));
                 }
-                FALSE  {
-                    //make
-                    //self.cursor -= 1;
-                    return Some(Ok((0, Token::False, 2)));
-                }
-                IDENTIFIER { println!("ident!!!!{:?}", str::from_utf8(&self.s[self.tok..self.cursor])); return Some(Ok((0, Token::Identifier{value: self.extract_token()}, 2)));}
                 STRING {
                     return Some(Ok((0, Token::String{value: self.extract_string()}, 2)));
                 }
                 NUM_10 {
-                    println!("*** Number10 ***");
                     return Some(Ok((0, Token::Number10{value: self.extract_token()}, 2)));
                 }  
                 DELIMITER {
-                    println!("WHITE SPACE");
                     continue 'lex;
                 }        
-                $ { println!("$$$$");return  
-                None; }
-                * { println!("else else2 <{}>", self.extract_token());return  None; }
+                $ { return None; }
+                * { return  None; }
             */
         }   
     }
