@@ -55,6 +55,26 @@ impl<'input> Lexer<'input> {
         }
     }
 
+    pub fn extract_hex_character(&self) -> char {
+        // #\xAB
+        match std::str::from_utf8(&self.s[self.tok + 3..self.cursor]) {
+            Ok(hex_str) => match u32::from_str_radix(hex_str, 16) {
+                Ok(n) => match char::from_u32(n) {
+                    Some(c) => c,
+                    None => {
+                        panic!("malformed hex scalar value character")
+                    }
+                },
+                Err(e) => {
+                    panic!("malformed hex scalar value character: {} in {}", e, hex_str)
+                }
+            },
+            Err(e) => {
+                panic!("malformed hex scalar value character: {}", e)
+            }
+        }
+    }
+
     pub fn extract_string(&self) -> String {
         // Remove double quotes.
         match std::str::from_utf8(&self.s[self.tok + 1..self.cursor - 1]) {

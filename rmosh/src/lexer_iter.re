@@ -116,6 +116,9 @@ impl<'input> Iterator for Lexer<'input> {
                 "#\\" ANY_CHARACTER {
                     return Some(Ok((0, Token::Character{value: self.extract_character()}, 2)));
                 }
+                "#\\x" HEX_SCALAR_VALUE {
+                    return Some(Ok((0, Token::Character{value: self.extract_hex_character()}, 2)));
+                }
                 DELIMITER {
                     continue 'lex;
                 }
