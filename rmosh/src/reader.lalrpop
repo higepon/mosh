@@ -18,6 +18,7 @@ CompoundDataum: Object = {
 
 SimpleDatum: Object = {
     Boolean,
+    Character,    
     Number,
     String,
     Symbol,
@@ -37,6 +38,11 @@ Vector: Object = {
 String: Object = {
     "token:string" => gc.new_string(&<>),
 }
+
+Character: Object = {
+    "token:character" => Object::Char(<>),
+}
+
 
 Symbol: Object = {
     "token:identifier" => gc.symbol_intern(&<>),
@@ -68,8 +74,9 @@ extern {
         "token:)" => lexer::Token::RightParen,
         "token:)" => lexer::Token::RightParen,
         "token:#(" => lexer::Token::VectorStart,
-        "token:identifier" => lexer::Token::Identifier {value: <String> },
-        "token:number10" => lexer::Token::Number10 {value: <String> },
-        "token:string" => lexer::Token::String {value: <String> },
+        "token:character" => lexer::Token::Character { value: <char> },        
+        "token:identifier" => lexer::Token::Identifier { value: <String> },
+        "token:number10" => lexer::Token::Number10 { value: <String> },
+        "token:string" => lexer::Token::String { value: <String> },
     }
 }

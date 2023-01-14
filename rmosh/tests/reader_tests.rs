@@ -141,3 +141,10 @@ fn parse_vector() {
     let obj = read(&mut vm.gc, "#(3 4 5)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
+
+#[test]
+fn parse_char() {
+    let mut vm = Vm::new();
+    let obj = read(&mut vm.gc, "#\\alarm").unwrap();
+    assert_equal!(vm.gc, Object::Char(char::from(7)), obj);
+}

@@ -1,5 +1,6 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
+    Character { value: char },
     Dot,
     False,
     Identifier { value: String },
