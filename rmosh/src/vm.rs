@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    fmt::Display,
     ptr::{null, null_mut},
 };
 
@@ -135,12 +134,6 @@ impl Vm {
             .alloc(Closure::new(ops, ops_len, 0, false, free_vars));
         display.prev = self.dc;
         self.dc = Object::Closure(display);
-    }
-
-    // GC functions.
-    fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
-        self.mark_and_sweep();
-        self.gc.alloc(object)
     }
 
     pub fn mark_and_sweep(&mut self) {
