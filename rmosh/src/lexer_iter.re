@@ -50,6 +50,21 @@ impl<'input> Iterator for Lexer<'input> {
         STRING_ELEMENT         = [^\"\\] | MNEMONIC_ESCAPE | '\\"' | '\\\\' | '\\' INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE * | INLINE_HEX_ESCAPE;
         STRING                 = '"' STRING_ELEMENT * '"';
 
+        DIGIT_10               = DIGIT;     
+        INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
+        EXACTNESS              = ("#"[ie])?;        
+        SIGN                   = [\+\-]?;
+        EXPONENT_MARKER        = "e";
+        SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;        
+        UINTEGER_10            = DIGIT_10 +;
+        DECIMAL_10             = (UINTEGER_10 SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX);
+        UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
+        REAL_10                = (SIGN UREAL_10) | INF_NAN;
+        RADIX_10               = "#d" ?;
+        COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+        PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
+        NUM_10                 = PREFIX_10 COMPLEX_10;        
+
         // Handlers
         LEFT_PAREN { println!("*** (");return return Some(Ok((0, Token::LeftParen, 2))); }
         RIGHT_PAREN { println!("*** )");return return Some(Ok((0, Token::RightParen, 2))); }        
@@ -66,6 +81,10 @@ impl<'input> Iterator for Lexer<'input> {
         STRING {
             return Some(Ok((0, Token::String{value: self.extract_string()}, 2)));
         }
+        NUM_10 {
+            println!("*** Number10 ***");
+            return Some(Ok((0, Token::Number10{value: self.extract_token()}, 2)));
+        }  
         DELIMITER {
             println!("WHITE SPACE");
             continue 'lex;

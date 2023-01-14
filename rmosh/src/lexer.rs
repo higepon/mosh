@@ -3,6 +3,7 @@ pub enum Token {
     True,
     False,
     LeftParen,
+    Number10 { value: String },
     RightParen,
     Identifier { value: String },
     String { value: String },

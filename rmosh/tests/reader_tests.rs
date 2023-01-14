@@ -1,4 +1,4 @@
-use rmosh::{objects::Object, read::read, vm::Vm, equal::Equal};
+use rmosh::{equal::Equal, objects::Object, read::read, vm::Vm};
 
 #[macro_export]
 macro_rules! assert_equal {
@@ -31,10 +31,22 @@ fn parse_false() {
 fn parse_symbol() {
     let mut vm = Vm::new();
     assert_eq!(vm.gc.symbol_intern("abc"), read(&mut vm.gc, "abc").unwrap());
-    assert_eq!(vm.gc.symbol_intern("$seq"), read(&mut vm.gc, "$seq").unwrap());
-    assert_eq!(vm.gc.symbol_intern("$seq--"), read(&mut vm.gc, "$seq--").unwrap());
-    assert_eq!(vm.gc.symbol_intern("|xy z|"), read(&mut vm.gc, "|xy z|").unwrap());
-    assert_eq!(vm.gc.symbol_intern(".abc"), read(&mut vm.gc, ".abc").unwrap());
+    assert_eq!(
+        vm.gc.symbol_intern("$seq"),
+        read(&mut vm.gc, "$seq").unwrap()
+    );
+    assert_eq!(
+        vm.gc.symbol_intern("$seq--"),
+        read(&mut vm.gc, "$seq--").unwrap()
+    );
+    assert_eq!(
+        vm.gc.symbol_intern("|xy z|"),
+        read(&mut vm.gc, "|xy z|").unwrap()
+    );
+    assert_eq!(
+        vm.gc.symbol_intern(".abc"),
+        read(&mut vm.gc, ".abc").unwrap()
+    );
 }
 
 #[test]
@@ -70,11 +82,18 @@ fn parse_nested_list() {
     assert_equal!(vm.gc, expected, obj);
 }
 
-
 #[test]
 fn parse_string() {
     let mut vm = Vm::new();
     let expected = vm.gc.new_string("hello");
     let obj = read(&mut vm.gc, "\"hello\"").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
+fn parse_number() {
+    let mut vm = Vm::new();
+    let expected = Object::Number(101);
+    let obj = read(&mut vm.gc, "101").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }

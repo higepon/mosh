@@ -3,7 +3,7 @@ use rmosh::{
     equal::Equal,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    vm::Vm,
+    vm::Vm, read::read,
 };
 
 pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
@@ -2481,21 +2481,20 @@ fn test_compiler() {
     }
 }
 
-//#[macro_use] extern crate lalrpop_util;
 
-//lalrpop_mod!(pub reader); // synthesized by LALRPOP
-use rmosh::reader::DatumParser;
 /*
 #[test]
 fn test_compiler3() {
     let mut vm = Vm::new();
     vm.should_load_compiler = true;
 
+    let sexp = read(&mut vm.gc, "((lambda (a) a) \"hige\")").unwrap();
+
     let ops = vec![
         Object::Instruction(Op::Frame),
         Object::Number(8),
         Object::Instruction(Op::Constant),
-        DatumParser::new().parse(&mut vm.gc, "(#t)").unwrap(),
+        sexp,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("compile"),
