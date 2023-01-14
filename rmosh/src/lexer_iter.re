@@ -1,5 +1,4 @@
 use crate::lexer::{Lexer, Spanned, Token, LexicalError};
-use std::str;
 
 /*!re2c
     re2c:define:YYCTYPE = u8;

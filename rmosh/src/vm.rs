@@ -79,6 +79,7 @@ pub struct Vm {
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
+    is_initialized: bool,
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
     pub compiled_programs: Vec<Object>,
@@ -102,6 +103,7 @@ impl Vm {
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),
             should_load_compiler: false,
+            is_initialized: false,
             compiled_programs: vec![],
         }
     }
@@ -204,20 +206,22 @@ impl Vm {
     }
 
     pub fn run(&mut self, ops: *const Object, ops_len: usize) -> Object {
-        // Create display closure and make free variables accessible.
-        self.initialize_free_vars(ops, ops_len);
+        if !self.is_initialized {
+            // Create display closure and make free variables accessible.
+            self.initialize_free_vars(ops, ops_len);
 
-        // Load the base library.
+            // Load the base library.
 
-        let lib_ops = if self.should_load_compiler {
-            self.register_compiler()
-        } else {
-            self.lib_ops = vec![Object::Instruction(Op::Halt)];
-            self.lib_ops.as_ptr()
-            //self.register_baselib()
-        };
-        self.run_ops(lib_ops);
-
+            let lib_ops = if self.should_load_compiler {
+                self.register_compiler()
+            } else {
+                self.lib_ops = vec![Object::Instruction(Op::Halt)];
+                self.lib_ops.as_ptr()
+                //self.register_baselib()
+            };
+            self.run_ops(lib_ops);
+            self.is_initialized = true;
+        }
         // Run the program.
         let ret = self.run_ops(ops);
 
@@ -373,6 +377,8 @@ impl Vm {
                 }
                 Op::Closure => {
                     self.closure_op(&mut pc);
+                    // TODO: Tentative GC here.
+                    self.mark_and_sweep();
                 }
                 Op::Cons => {
                     let car = self.pop();
