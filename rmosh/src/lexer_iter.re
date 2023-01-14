@@ -87,32 +87,32 @@ impl<'input> Iterator for Lexer<'input> {
                     return Some(Ok((0, Token::VectorStart, 2)));
                 }
                 "#\\alarm" {
-                    return Some(Ok((0, Token::Character { value: char::from(7) }, 2)));                    
+                    return Some(Ok((0, Token::Character { value: char::from(7) }, 2)));
                 }
                 "#\\backspace" {
-                    return Some(Ok((0, Token::Character { value: char::from(8) }, 2)));                    
-                }   
+                    return Some(Ok((0, Token::Character { value: char::from(8) }, 2)));
+                }
                 "#\\delete" {
-                    return Some(Ok((0, Token::Character { value: char::from(0x7f) }, 2)));                    
-                }   
+                    return Some(Ok((0, Token::Character { value: char::from(0x7f) }, 2)));
+                }
                 "#\\escape" {
-                    return Some(Ok((0, Token::Character { value: char::from(0x1b) }, 2)));                    
-                }    
+                    return Some(Ok((0, Token::Character { value: char::from(0x1b) }, 2)));
+                }
                 "#\\newline" {
-                    return Some(Ok((0, Token::Character { value: '\n' }, 2)));                    
-                }   
+                    return Some(Ok((0, Token::Character { value: '\n' }, 2)));
+                }
                 "#\\null" {
-                    return Some(Ok((0, Token::Character { value: '\0' }, 2)));                    
-                }   
+                    return Some(Ok((0, Token::Character { value: '\0' }, 2)));
+                }
                 "#\\return" {
-                    return Some(Ok((0, Token::Character { value: char::from(0x0d) }, 2)));                    
-                }   
+                    return Some(Ok((0, Token::Character { value: char::from(0x0d) }, 2)));
+                }
                 "#\\space" {
-                    return Some(Ok((0, Token::Character { value: ' ' }, 2)));                    
-                }     
+                    return Some(Ok((0, Token::Character { value: ' ' }, 2)));
+                }
                 "#\\tab" {
-                    return Some(Ok((0, Token::Character { value: '\t' }, 2)));                    
-                }                                                                                                        
+                    return Some(Ok((0, Token::Character { value: '\t' }, 2)));
+                }
                 DELIMITER {
                     continue 'lex;
                 }
