@@ -13,13 +13,13 @@ pub Datum: Object = {
 
 CompoundDataum: Object = {
     List,
-    Vector,    
+    Vector,
     Abbreviation,
 }
 
 SimpleDatum: Object = {
     Boolean,
-    Character,    
+    Character,
     Number,
     String,
     Symbol,
@@ -40,7 +40,11 @@ Abbreviation: Object = {
     "'" <datum: Datum> => {
         let quote = gc.symbol_intern("quote");
         gc.list2(quote, datum)
-    }
+    },
+    "`" <datum: Datum> => {
+        let quote = gc.symbol_intern("quasiquote");
+        gc.list2(quote, datum)
+    }    
 }
 
 String: Object = {
@@ -75,7 +79,8 @@ extern {
     type Error = lexer::LexicalError;
 
     enum lexer::Token {
-        "'" => lexer::Token::AbbrevQuote,        
+        "'" => lexer::Token::AbbrevQuote,
+        "`" => lexer::Token::AbbrevQuasiquote,
         "." => lexer::Token::Dot,
         "true" => lexer::Token::True,
         "false" => lexer::Token::False,
@@ -83,7 +88,7 @@ extern {
         ")" => lexer::Token::RightParen,
         ")" => lexer::Token::RightParen,
         "#(" => lexer::Token::VectorStart,
-        "character" => lexer::Token::Character { value: <char> },        
+        "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
         "string" => lexer::Token::String { value: <String> },
