@@ -2488,8 +2488,6 @@ fn test_compiler3() {
     vm.should_load_compiler = true;
 
     let sexp = read(&mut vm.gc, "((lambda (a) a) 3)").unwrap();
-    println!("sexp={}", sexp);
-
     let ops = vec![
         Object::Instruction(Op::Frame),
         Object::Number(8),
@@ -2503,8 +2501,6 @@ fn test_compiler3() {
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());
-    println!("sexp={}", sexp);    
-    println!("code={}", ret);
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
