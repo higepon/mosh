@@ -123,7 +123,11 @@ impl<'input> Iterator for Lexer<'input> {
                     continue 'lex;
                 }
                 $ { return None; }
-                * { return  None; }
+                * { return Some(Err(LexicalError {
+                        start: self.tok,
+                        end: self.cursor,
+                        token: self.extract_token()
+                    })); }
             */
         }
     }

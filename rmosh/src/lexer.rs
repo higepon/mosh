@@ -93,4 +93,8 @@ impl<'input> Lexer<'input> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum LexicalError {}
+pub struct LexicalError {
+    pub start: usize,
+    pub end: usize,
+    pub token: String,
+}
