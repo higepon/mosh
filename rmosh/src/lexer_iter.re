@@ -25,7 +25,8 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     HEX_SCALAR_VALUE       = HEX_DIGIT +;        
     INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";            
     SIGN_SUBSEQUENT        = INITIAL | EXPLICIT_SIGN | "@";
-    DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | ".";
+    DOT                    = ".";
+    DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | DOT;
     // Per R7RS Small Errata, we allow \\\\ and \\\" here.
     MNEMONIC_ESCAPE        = ('\\' [abtnr\\\"]);   
     PECULIAR_IDENTIFIER    = EXPLICIT_SIGN | EXPLICIT_SIGN SIGN_SUBSEQUENT SUBSEQUENT * | EXPLICIT_SIGN "." DOT_SUBSEQUENT SUBSEQUENT * | "." DOT_SUBSEQUENT SUBSEQUENT *;
@@ -76,6 +77,9 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 NUM_10 {
                     return Some(Ok((0, Token::Number10{value: self.extract_token()}, 2)));
+                }
+                DOT {
+                    return Some(Ok((0, Token::Dot, 2)));
                 }  
                 DELIMITER {
                     continue 'lex;

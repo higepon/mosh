@@ -1,6 +1,6 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
-    Error,
+    Dot,
     False,
     Identifier { value: String },
     LeftParen,

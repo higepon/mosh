@@ -24,6 +24,9 @@ SimpleDatum: Object = {
 
 List: Object = {
     "token:(" <objects: Datum *> "token:)" => gc.listn(&objects),
+    "token:(" <objects: Datum +> "token:." <last: Datum> "token:)" => {
+        gc.dot_pair(&objects, last)
+    }
 }
 
 String: Object = {
@@ -53,6 +56,7 @@ extern {
     type Error = lexer::LexicalError;
 
     enum lexer::Token {
+        "token:." => lexer::Token::Dot,            
         "token:true" => lexer::Token::True,
         "token:false" => lexer::Token::False,      
         "token:(" => lexer::Token::LeftParen,

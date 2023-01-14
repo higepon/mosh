@@ -113,3 +113,11 @@ fn parse_number_list2() {
     let obj = read(&mut vm.gc, "(3 4)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
+
+#[test]
+fn parse_dot_pair() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.cons(Object::Number(3), Object::False);
+    let obj = read(&mut vm.gc, "(3 . #f)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
