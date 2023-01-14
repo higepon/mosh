@@ -5,10 +5,6 @@ use crate::lexer;
 
 grammar(gc: &mut Box<Gc>);
 
-
-
-//Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
-
 // R7RS small 7.1.2. External representations
 pub Datum: Object = {
     SimpleDatum,
