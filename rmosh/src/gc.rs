@@ -13,17 +13,10 @@ use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
-//use crate::alloc::GlobalAllocator;
 use crate::objects::{
     Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 use crate::vm::Vm;
-/*
-#[global_allocator]
-static GLOBAL: GlobalAllocator = GlobalAllocator {
-    bytes_allocated: AtomicUsize::new(0),
-};
-*/
 
 // GcRef.
 // This holds raw pointer to an object.
