@@ -258,7 +258,17 @@ impl Vm {
                 Op::BranchNotGt => {
                     branch_number_cmp_op!(>, self, pc);
                 }
-                Op::BranchNotNull => todo!(),
+                Op::BranchNotNull => {
+                    let skip_offset = self.isize_operand(&mut pc);
+                    let op_result = self.ac.is_nil();
+                    self.set_return_value(Object::make_bool(op_result));
+                    if op_result {
+                        // go to then.
+                    } else {
+                        // Branch and jump to else.
+                        pc = self.jump(pc, skip_offset - 1);
+                    }                    
+                }
                 Op::BranchNotNumberEqual => {
                     branch_number_cmp_op!(==, self, pc);
                 }

@@ -2497,17 +2497,18 @@ fn test_compiler3() {
         sexp,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferGlobal),
-        vm.gc.symbol_intern("compile"),
+        vm.gc.symbol_intern("compile-no-optimize"),
         Object::Instruction(Op::Call),
         Object::Number(1),
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());
+    println!("sexp={}", sexp);    
     println!("code={}", ret);
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
-            vm.expected = Object::Number(121);
+            vm.expected = Object::Number(3);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
             let e = Equal::new();

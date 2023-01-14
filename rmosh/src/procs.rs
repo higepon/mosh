@@ -1931,11 +1931,11 @@ fn set_source_info_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
     match args[0] {
         Object::Pair(mut p) => {
             p.src = args[1];
-            p.src
+            args[0]
         }
         Object::Closure(mut c) => {
             c.src = args[1];
-            c.src
+            args[0]
         }        
         obj => {
             panic!("{}: pair required but got {}", name, obj);
