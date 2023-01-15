@@ -12,6 +12,7 @@ pub enum Token {
     RightParen,
     String { value: String },
     True,
+    AbbrevUnquoteSplicing,    
     VectorStart,
 }
 

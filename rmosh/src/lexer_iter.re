@@ -128,6 +128,9 @@ impl<'input> Iterator for Lexer<'input> {
                 "," {
                     return self.with_location(Token::AbbrevUnquote);
                 }
+                "@" {
+                    return self.with_location(Token::AbbrevUnquoteSplicing);
+                }                
                 DELIMITER {
                     continue 'lex;
                 }
