@@ -107,6 +107,14 @@ fn parse_number_list1() {
 }
 
 #[test]
+fn parse_number_comment_list1() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.list1(Object::Number(3));
+    let obj = read(&mut vm.gc, "; comment\n(3)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
 fn parse_number_list2() {
     let mut vm = Vm::new();
     let expected = vm.gc.list2(Object::Number(3), Object::Number(4));
