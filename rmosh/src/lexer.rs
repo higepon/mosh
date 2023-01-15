@@ -2,7 +2,12 @@
 pub enum Token {
     AbbrevQuasiquote,
     AbbrevQuote,
-    AbbrevUnquote,    
+    AbbrevUnquote, 
+    AbbrevUnquoteSplicing,           
+    AbbrevQuasisyntax,
+    AbbrevSyntax,
+    AbbrevUnsyntax, 
+    AbbrevUnsyntaxSplicing,      
     Character { value: char },
     Dot,
     False,
@@ -12,7 +17,7 @@ pub enum Token {
     RightParen,
     String { value: String },
     True,
-    AbbrevUnquoteSplicing,    
+
     VectorStart,
 }
 

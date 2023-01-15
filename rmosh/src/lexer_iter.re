@@ -130,7 +130,19 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 "@" {
                     return self.with_location(Token::AbbrevUnquoteSplicing);
-                }                
+                }        
+                "#'" {
+                    return self.with_location(Token::AbbrevSyntax);
+                }
+                "#`" {
+                    return self.with_location(Token::AbbrevQuasisyntax);
+                }
+                "#," {
+                    return self.with_location(Token::AbbrevUnsyntax);
+                }
+                "#@" {
+                    return self.with_location(Token::AbbrevUnsyntaxSplicing);
+                }                            
                 DELIMITER {
                     continue 'lex;
                 }

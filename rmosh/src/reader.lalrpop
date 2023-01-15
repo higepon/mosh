@@ -53,6 +53,22 @@ Abbreviation: Object = {
         let quote = gc.symbol_intern("unquotesplicing");
         gc.list2(quote, datum)
     },
+    "#'" <datum: Datum> => {
+        let quote = gc.symbol_intern("syntax");
+        gc.list2(quote, datum)
+    },
+    "#`" <datum: Datum> => {
+        let quote = gc.symbol_intern("quasisyntax");
+        gc.list2(quote, datum)
+    },
+    "#," <datum: Datum> => {
+        let quote = gc.symbol_intern("unsyntax");
+        gc.list2(quote, datum)
+    },
+    "#@" <datum: Datum> => {
+        let quote = gc.symbol_intern("unsyntaxsplicing");
+        gc.list2(quote, datum)
+    },    
 }
 
 String: Object = {
@@ -91,6 +107,10 @@ extern {
         "`" => lexer::Token::AbbrevQuasiquote,
         "," => lexer::Token::AbbrevUnquote,
         "@" => lexer::Token::AbbrevUnquoteSplicing,
+        "#'" => lexer::Token::AbbrevSyntax,
+        "#`" => lexer::Token::AbbrevQuasisyntax,
+        "#," => lexer::Token::AbbrevUnsyntax,
+        "#@" => lexer::Token::AbbrevUnsyntaxSplicing,        
         "." => lexer::Token::Dot,
         "true" => lexer::Token::True,
         "false" => lexer::Token::False,
