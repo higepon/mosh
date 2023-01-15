@@ -1,5 +1,6 @@
 pub mod alloc;
 pub mod compiler;
+pub mod psyntax;
 pub mod equal;
 pub mod fasl;
 pub mod gc;

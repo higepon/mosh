@@ -11,6 +11,7 @@ use crate::{
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
     procs::{self, default_free_vars},
+    psyntax,
 };
 
 const STACK_SIZE: usize = 1024;
@@ -72,9 +73,10 @@ pub struct Vm {
     fp: *mut Object,
     // global variables.
     globals: HashMap<GcRef<Symbol>, Object>,
-    // We keep the lib_ops here so that the lib_ops live longer than every call of run.
-    // If we kept lib_ops as local variable, it can/will be immediately freed after run(lib_ops).
-    pub lib_ops: Vec<Object>,
+    // We keep references to operators in base libraries so that the lib_ops live longer than every call of run.
+    // If we kept operators as local variable, it can/will be immediately freed after run(lib_ops).
+    lib_compiler: Vec<Object>,
+    lib_psyntax: Vec<Object>,
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
@@ -97,7 +99,8 @@ impl Vm {
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
-            lib_ops: vec![],
+            lib_compiler: vec![],
+            lib_psyntax: vec![],
             num_values: 0,
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),
@@ -161,8 +164,11 @@ impl Vm {
         }
 
         // Base library ops.
-        for &op in &self.lib_ops {
-            self.gc.mark_object(op);
+        for op in &self.lib_compiler {
+            self.gc.mark_object(*op);
+        }
+        for op in &self.lib_psyntax {
+            self.gc.mark_object(*op);
         }
 
         // Stack.
@@ -209,15 +215,8 @@ impl Vm {
             self.initialize_free_vars(ops, ops_len);
 
             // Load the base library.
-
-            let lib_ops = if self.should_load_compiler {
-                self.register_compiler()
-            } else {
-                self.lib_ops = vec![Object::Instruction(Op::Halt)];
-                self.lib_ops.as_ptr()
-                //self.register_baselib()
-            };
-            self.run_ops(lib_ops);
+            self.load_compiler();
+            self.load_psyntax();
             self.is_initialized = true;
         }
         // Run the program.
@@ -228,13 +227,28 @@ impl Vm {
         ret
     }
 
-    pub fn register_compiler(&mut self) -> *const Object {
+    fn load_compiler(&mut self) -> Object {
         let mut fasl = Fasl {
-            bytes: compiler::BIN_COMPILER,
+            bytes: compiler::U8_ARRAY,
         };
-        let ops = fasl.read_all_sexp(&mut self.gc);
-        self.lib_ops = ops;
-        self.lib_ops.as_ptr()
+        self.lib_compiler = if self.should_load_compiler {
+            fasl.read_all_sexp(&mut self.gc)
+        } else {
+            vec![Object::Instruction(Op::Halt)]
+        };
+        self.run_ops(self.lib_compiler.as_ptr())
+    }
+
+    fn load_psyntax(&mut self) -> Object {
+        let mut fasl = Fasl {
+            bytes: psyntax::U8_ARRAY,
+        };
+        self.lib_psyntax = if self.should_load_compiler {
+            fasl.read_all_sexp(&mut self.gc)
+        } else {
+            vec![Object::Instruction(Op::Halt)]
+        };
+        self.run_ops(self.lib_psyntax.as_ptr())
     }
 
     fn run_ops(&mut self, ops: *const Object) -> Object {

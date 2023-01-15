@@ -141,7 +141,7 @@
                [sexp* (file->sexp-list op-file)]
                [insn* (vector->list (car sexp*))]
                [u8* (rewrite-insn* insn* insn*)])
-          (display "pub static BIN_COMPILER: &[u8] = &[\n")
+          (display "pub static U8_ARRAY: &[u8] = &[\n")
           (for-each-with-index
             (lambda (i u8)
               (format #t "~a," u8)
