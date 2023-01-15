@@ -361,6 +361,7 @@ impl Gc {
             Object::False => {}
             Object::InputPort(_) => {}
             Object::Nil => {}
+            Object::Float(_) => {}            
             Object::Number(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}

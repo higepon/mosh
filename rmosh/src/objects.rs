@@ -7,6 +7,43 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
 
+// We use this Float which wraps f64.
+// Because we can't implement Hash for f64.
+#[derive(Copy, Clone)]
+pub union Float {
+    value: f64,
+    u64_value: u64,
+}
+
+impl std::hash::Hash for Float {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: std::hash::Hasher,
+    {
+        state.write_u64(unsafe { self.u64_value });
+        state.finish();
+    }
+}
+
+impl Float {
+    #[inline(always)]    
+    pub fn value(&self) -> f64 {
+        unsafe { self.value }
+    }
+}
+
+impl PartialEq for Float {
+    fn eq(&self, other: &Float) -> bool {
+        unsafe { self.u64_value == other.u64_value }
+    }
+}
+
+impl Display for Float {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value())
+    }
+}
+
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
@@ -16,6 +53,7 @@ pub enum Object {
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
+    Float(Float),
     InputPort(GcRef<InputPort>),
     Instruction(Op),
     Nil,
@@ -177,6 +215,9 @@ impl Debug for Object {
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
+            Object::Float(n) => {
+                write!(f, "{}", n)
+            }
             Object::Number(n) => {
                 write!(f, "{}", n)
             }
@@ -246,6 +287,9 @@ impl Display for Object {
             }
             Object::Char(c) => {
                 write!(f, "{}", c)
+            }
+            Object::Float(n) => {
+                write!(f, "{}", n)
             }
             Object::Number(n) => {
                 write!(f, "{}", n)
