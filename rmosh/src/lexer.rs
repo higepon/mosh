@@ -17,7 +17,7 @@ pub enum Token {
     RightParen,
     String { value: String },
     True,
-
+    ByteVectorStart,
     VectorStart,
 }
 

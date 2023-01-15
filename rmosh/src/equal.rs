@@ -88,6 +88,13 @@ impl Equal {
                     return self.is_pre(gc, &pair1.cdr, &pair2.cdr, k2);
                 }
             }
+            (Object::ByteVector(bv1), Object::ByteVector(bv2)) => {
+                if bv1.equal(&bv2) {
+                    return k;
+                } else {
+                    return Object::False;
+                }
+            }            
             (Object::Vector(v1), Object::Vector(v2)) => {
                 let n = v1.len();
                 if v2.len() != n {
@@ -345,6 +352,13 @@ impl Equal {
                     return self.is_e(gc, hashmap, &pair1.cdr, &pair2.cdr, k);
                 }
             }
+            (Object::ByteVector(bv1), Object::ByteVector(bv2)) => {
+                if bv1.equal(&bv2) {
+                    return k;
+                } else {
+                    return Object::False;
+                }
+            }                   
             (Object::Vector(v1), Object::Vector(v2)) => {
                 let n = v1.len();
                 if v2.len() != n {
@@ -432,6 +446,13 @@ impl Equal {
                 }
                 return self.is_e(gc, hashmap, &pair1.cdr, &pair2.cdr, k);
             }
+            (Object::ByteVector(bv1), Object::ByteVector(bv2)) => {
+                if bv1.equal(&bv2) {
+                    return k;
+                } else {
+                    return Object::False;
+                }
+            }                   
             (Object::Vector(v1), Object::Vector(v2)) => {
                 let n = v1.len();
                 if v2.len() != n {

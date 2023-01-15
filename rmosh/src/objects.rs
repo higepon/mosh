@@ -356,6 +356,10 @@ impl ByteVector {
         }
     }
 
+    pub fn equal(&self, other: &ByteVector) -> bool {
+        self.data == other.data
+    }
+
     pub fn len(&self) -> usize {
         self.data.len()
     }

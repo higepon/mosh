@@ -14,7 +14,8 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
-    Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox, ByteVector,
+    ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
+    Vector, Vox,
 };
 use crate::vm::Vm;
 
@@ -227,10 +228,23 @@ impl Gc {
         Object::Vector(v)
     }
 
-    pub fn new_bytevector(&mut self, data: &Vec<u8>) -> Object {
-        let v = self.alloc(ByteVector::new(data));
-        Object::ByteVector(v)
-    }    
+    pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> Object {
+        let mut u8_vec: Vec<u8> = vec![];
+        for obj in objects {
+            if let Object::Number(n) = obj {
+                if *n >= 0 && *n <= 255 {
+                    u8_vec.push(*n as u8);
+                } else {
+                    panic!("malformed bytevector");
+                }
+            } else {
+                panic!("malformed bytevector");
+            }
+        }
+        let bv = self.alloc(ByteVector::new(&u8_vec));        
+        Object::ByteVector(bv)
+    }
+
     pub fn new_eq_hashtable(&mut self) -> Object {
         let obj = self.alloc(EqHashtable::new());
         Object::EqHashtable(obj)
@@ -376,7 +390,7 @@ impl Gc {
             }
             Object::ByteVector(bytevector) => {
                 self.mark_heap_object(bytevector);
-            }            
+            }
             Object::Vector(vector) => {
                 self.mark_heap_object(vector);
             }
@@ -460,7 +474,7 @@ impl Gc {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.car);
                 self.mark_object(pair.cdr);
-                self.mark_object(pair.src);                
+                self.mark_object(pair.src);
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
@@ -484,11 +498,11 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
-            ObjectType::InputPort => {},
-            ObjectType::String => {},
-            ObjectType::Symbol => {},
-            ObjectType::Procedure => {},
-            ObjectType::ByteVector => {},
+            ObjectType::InputPort => {}
+            ObjectType::String => {}
+            ObjectType::Symbol => {}
+            ObjectType::Procedure => {}
+            ObjectType::ByteVector => {}
         }
     }
 
@@ -504,7 +518,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::{InputPort, ByteVector};
+        use crate::objects::{InputPort};
 
         let object_type = object_ptr.obj_type;
 
@@ -542,7 +556,7 @@ impl Gc {
             ObjectType::ByteVector => {
                 let v: &ByteVector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)
-            }            
+            }
             ObjectType::Vector => {
                 let v: &Vector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)

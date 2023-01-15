@@ -143,6 +143,18 @@ fn parse_vector() {
 }
 
 #[test]
+fn parse_bytevector() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.new_bytevector(&vec![
+        Object::Number(3),
+        Object::Number(4),
+        Object::Number(5),
+    ]);
+    let obj = read(&mut vm.gc, "#u8(3 4 5)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
 fn parse_chars() {
     let mut vm = Vm::new();
     {

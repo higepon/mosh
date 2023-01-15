@@ -28,6 +28,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     SIGN_SUBSEQUENT        = INITIAL | EXPLICIT_SIGN | "@";
     DOT                    = ".";
     VECTOR_START           = "#(";
+    BYTEVECTOR_START       = "#u8(" | "#vu8(";
     DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | DOT;
     // Per R7RS Small Errata, we allow \\\\ and \\\" here.
     MNEMONIC_ESCAPE        = ('\\' [abtnr\\\"]);
@@ -83,6 +84,9 @@ impl<'input> Iterator for Lexer<'input> {
                 DOT {
                     return self.with_location(Token::Dot);
                 }
+                BYTEVECTOR_START {
+                    return self.with_location(Token::ByteVectorStart);
+                }                
                 VECTOR_START {
                     return self.with_location(Token::VectorStart);
                 }
@@ -130,7 +134,7 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 "@" {
                     return self.with_location(Token::AbbrevUnquoteSplicing);
-                }        
+                }
                 "#'" {
                     return self.with_location(Token::AbbrevSyntax);
                 }
@@ -142,7 +146,7 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 "#@" {
                     return self.with_location(Token::AbbrevUnsyntaxSplicing);
-                }                            
+                }
                 DELIMITER {
                     continue 'lex;
                 }

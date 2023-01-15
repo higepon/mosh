@@ -19,6 +19,7 @@ CompoundDataum: Object = {
 
 SimpleDatum: Object = {
     Boolean,
+    ByteVector,
     Character,
     Number,
     String,
@@ -30,6 +31,10 @@ List: Object = {
     "(" <objects: Datum +> "." <last: Datum> ")" => {
         gc.dot_pair(&objects, last)
     }
+}
+
+ByteVector: Object = {
+    "#u8(" <objects: Datum *> ")" => gc.new_bytevector(&objects),
 }
 
 Vector: Object = {
@@ -111,6 +116,7 @@ extern {
         "#`" => lexer::Token::AbbrevQuasisyntax,
         "#," => lexer::Token::AbbrevUnsyntax,
         "#@" => lexer::Token::AbbrevUnsyntaxSplicing,        
+        "#u8(" => lexer::Token::ByteVectorStart,         
         "." => lexer::Token::Dot,
         "true" => lexer::Token::True,
         "false" => lexer::Token::False,
