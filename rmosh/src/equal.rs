@@ -94,7 +94,7 @@ impl Equal {
                 } else {
                     return Object::False;
                 }
-            }            
+            }
             (Object::Vector(v1), Object::Vector(v2)) => {
                 let n = v1.len();
                 if v2.len() != n {
@@ -358,7 +358,7 @@ impl Equal {
                 } else {
                     return Object::False;
                 }
-            }                   
+            }
             (Object::Vector(v1), Object::Vector(v2)) => {
                 let n = v1.len();
                 if v2.len() != n {
@@ -452,7 +452,7 @@ impl Equal {
                 } else {
                     return Object::False;
                 }
-            }                   
+            }
             (Object::Vector(v1), Object::Vector(v2)) => {
                 let n = v1.len();
                 if v2.len() != n {

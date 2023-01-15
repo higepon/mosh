@@ -1258,16 +1258,12 @@ fn caaddr(_vm: &mut Vm, args: &[Object]) -> Object {
     match args {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => {
-                    match pair3.car {
-                        Object::Pair(pair4) => {
-                            pair4.car
-                        }
-                        _ => {
-                            panic!("{}: pair required but got {:?}", name, args);
-                        }
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => pair4.car,
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
                     }
-                }
+                },
                 _ => {
                     panic!("{}: pair required but got {:?}", name, args);
                 }
@@ -1363,16 +1359,12 @@ fn cdaddr(_vm: &mut Vm, args: &[Object]) -> Object {
     match args {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => {
-                    match pair3.car {
-                        Object::Pair(pair4) => {
-                            pair4.cdr
-                        }
-                        _ => {
-                            panic!("{}: pair required but got {:?}", name, args);
-                        }
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => pair4.cdr,
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
                     }
-                }
+                },
                 _ => {
                     panic!("{}: pair required but got {:?}", name, args);
                 }
@@ -1776,15 +1768,9 @@ fn source_info(_vm: &mut Vm, args: &[Object]) -> Object {
     let name: &str = "source-info";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Pair(p) => {
-            p.src
-        }
-        Object::Closure(c) => {
-            c.src
-        }
-        _ => {
-            Object::False
-        }
+        Object::Pair(p) => p.src,
+        Object::Closure(c) => c.src,
+        _ => Object::False,
     }
 }
 fn eval(_vm: &mut Vm, args: &[Object]) -> Object {
@@ -2001,7 +1987,7 @@ fn set_source_info_destructive(_vm: &mut Vm, args: &[Object]) -> Object {
         Object::Closure(mut c) => {
             c.src = args[1];
             args[0]
-        }        
+        }
         obj => {
             panic!("{}: pair required but got {}", name, obj);
         }

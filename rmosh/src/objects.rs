@@ -10,7 +10,7 @@ use std::hash::Hash;
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
-    ByteVector(GcRef<ByteVector>),    
+    ByteVector(GcRef<ByteVector>),
     Char(char),
     Closure(GcRef<Closure>),
     Eof,
@@ -230,7 +230,7 @@ impl Debug for Object {
             }
             Object::ByteVector(bytevector) => {
                 write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
-            }            
+            }
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
@@ -300,7 +300,7 @@ impl Display for Object {
             }
             Object::ByteVector(bytevector) => {
                 write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
-            }            
+            }
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
@@ -941,7 +941,14 @@ pub mod tests {
     #[test]
     fn test_closure_to_string() {
         let mut gc = Gc::new();
-        let closure = gc.alloc(Closure::new([].as_ptr(), 0, 0, false, vec![], Object::False));
+        let closure = gc.alloc(Closure::new(
+            [].as_ptr(),
+            0,
+            0,
+            false,
+            vec![],
+            Object::False,
+        ));
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();

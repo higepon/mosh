@@ -241,7 +241,7 @@ impl Gc {
                 panic!("malformed bytevector");
             }
         }
-        let bv = self.alloc(ByteVector::new(&u8_vec));        
+        let bv = self.alloc(ByteVector::new(&u8_vec));
         Object::ByteVector(bv)
     }
 
@@ -518,7 +518,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::{InputPort};
+        use crate::objects::InputPort;
 
         let object_type = object_ptr.obj_type;
 
