@@ -45,6 +45,8 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     DELIMITER              = WHITE_SPACE | VERTICAL_LINE | LEFT_PAREN | RIGHT_PAREN | '"' | ";" | "\x00";
     STRING_ELEMENT         = [^\"\\] | MNEMONIC_ESCAPE | '\\"' | '\\\\' | '\\' INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE * | INLINE_HEX_ESCAPE;
     STRING                 = '"' STRING_ELEMENT * '"';
+    REGEXP_ELEMENT         = "\\\/" | [^/];
+    REGEXP                 = '#/' REGEXP_ELEMENT * '/';
     DIGIT_10               = DIGIT;
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
     EXACTNESS              = ("#"[ie])?;
@@ -59,8 +61,8 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
-    EOS                    = "\X0000";    
-    COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));    
+    EOS                    = "\X0000";
+    COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
 */
 
 impl<'input> Iterator for Lexer<'input> {
@@ -77,6 +79,9 @@ impl<'input> Iterator for Lexer<'input> {
                 IDENTIFIER {
                     return self.with_location(Token::Identifier { value: self.extract_token() });
                 }
+                REGEXP {
+                    return self.with_location(Token::Regexp { value: self.extract_regexp() });
+                }                
                 STRING {
                     return self.with_location(Token::String{value: self.extract_string()});
                 }
@@ -88,7 +93,7 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 BYTEVECTOR_START {
                     return self.with_location(Token::ByteVectorStart);
-                }                
+                }
                 VECTOR_START {
                     return self.with_location(Token::VectorStart);
                 }
@@ -154,7 +159,7 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 COMMENT {
                     continue 'lex;
-                }                
+                }
                 $ { return None; }
                 * { return Some(Err(LexicalError {
                         start: self.tok,

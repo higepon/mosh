@@ -22,6 +22,7 @@ SimpleDatum: Object = {
     ByteVector,
     Character,
     Number,
+    Regexp,
     String,
     Symbol,
 }
@@ -76,6 +77,12 @@ Abbreviation: Object = {
     },    
 }
 
+Regexp: Object = {
+    // todo
+    "regexp" => gc.new_string(&<>),
+}
+
+
 String: Object = {
     "string" => gc.new_string(&<>),
 }
@@ -127,6 +134,7 @@ extern {
         "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
+        "regexp" => lexer::Token::Regexp { value: <String> },        
         "string" => lexer::Token::String { value: <String> },
     }
 }

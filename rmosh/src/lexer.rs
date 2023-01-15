@@ -15,6 +15,7 @@ pub enum Token {
     LeftParen,
     Number10 { value: String },
     RightParen,
+    Regexp { value: String },
     String { value: String },
     True,
     ByteVectorStart,
@@ -55,7 +56,7 @@ impl<'input> Lexer<'input> {
         match std::str::from_utf8(&self.s[self.tok..self.cursor]) {
             Ok(s) => s.to_string(),
             Err(_) => {
-                panic!("malformed utf8 string")
+                panic!("malformed utf8 string {:?}", self.cursor);
             }
         }
     }
@@ -96,6 +97,16 @@ impl<'input> Lexer<'input> {
             Ok(s) => s.to_string(),
             Err(_) => {
                 panic!("malformed utf8 string")
+            }
+        }
+    }
+
+    pub fn extract_regexp(&self) -> String {
+        // Remove #/ and /
+        match std::str::from_utf8(&self.s[self.tok + 2..self.cursor - 1]) {
+            Ok(s) => s.to_string(),
+            Err(_) => {
+                panic!("malformed regexp")
             }
         }
     }
