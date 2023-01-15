@@ -177,6 +177,15 @@ impl Object {
             panic!("Not a Object::Symbol {}", self)
         }
     }
+
+    pub fn to_vector(self) -> GcRef<Vector> {
+        if let Self::Vector(v) = self {
+            v
+        } else {
+            panic!("Not a Object::Vector")
+        }
+     }   
+
     pub fn to_vox(self) -> GcRef<Vox> {
         if let Self::Vox(v) = self {
             v

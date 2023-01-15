@@ -1397,4 +1397,27 @@ impl Vm {
             _ => Object::False,
         }
     }
+
+    pub fn eval(&mut self, sexp: Object) -> Object {
+        println!("sexp={}", sexp);
+        let v = self.compile(sexp).to_vector();
+        println!("v={}", v);
+        self.run(v.data.as_ptr(), v.data.len())
+    }
+
+    pub fn compile(&mut self, sexp: Object) -> Object {
+        let ops = vec![
+            Object::Instruction(Op::Frame),
+            Object::Number(8),
+            Object::Instruction(Op::Constant),
+            sexp,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::ReferGlobal),
+            self.gc.symbol_intern("compile"),
+            Object::Instruction(Op::Call),
+            Object::Number(1),
+            Object::Instruction(Op::Halt),
+        ];
+        self.run(ops.as_ptr(), ops.len())
+    }
 }
