@@ -1,3 +1,5 @@
+use std::env;
+
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -3384,9 +3386,10 @@ fn ffi_error(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "%ffi-error";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn host_os(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn host_os(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "host-os";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);    
+    vm.gc.new_string(env::consts::OS)
 }
 fn is_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "output-port?";
