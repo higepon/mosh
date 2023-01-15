@@ -14,7 +14,7 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
-    Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
+    Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox, ByteVector,
 };
 use crate::vm::Vm;
 
@@ -69,6 +69,7 @@ impl<T> DerefMut for GcRef<T> {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
+    ByteVector,
     Closure,
     EqHashtable,
     InputPort,
@@ -226,6 +227,10 @@ impl Gc {
         Object::Vector(v)
     }
 
+    pub fn new_bytevector(&mut self, data: &Vec<u8>) -> Object {
+        let v = self.alloc(ByteVector::new(data));
+        Object::ByteVector(v)
+    }    
     pub fn new_eq_hashtable(&mut self) -> Object {
         let obj = self.alloc(EqHashtable::new());
         Object::EqHashtable(obj)
@@ -369,6 +374,9 @@ impl Gc {
             Object::Pair(pair) => {
                 self.mark_heap_object(pair);
             }
+            Object::ByteVector(bytevector) => {
+                self.mark_heap_object(bytevector);
+            }            
             Object::Vector(vector) => {
                 self.mark_heap_object(vector);
             }
@@ -476,10 +484,11 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
-            ObjectType::InputPort => {}
-            ObjectType::String => {}
-            ObjectType::Symbol => {}
-            ObjectType::Procedure => {}
+            ObjectType::InputPort => {},
+            ObjectType::String => {},
+            ObjectType::Symbol => {},
+            ObjectType::Procedure => {},
+            ObjectType::ByteVector => {},
         }
     }
 
@@ -495,7 +504,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::InputPort;
+        use crate::objects::{InputPort, ByteVector};
 
         let object_type = object_ptr.obj_type;
 
@@ -530,6 +539,10 @@ impl Gc {
                 let s: &SimpleStruct = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(s)
             }
+            ObjectType::ByteVector => {
+                let v: &ByteVector = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(v)
+            }            
             ObjectType::Vector => {
                 let v: &Vector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)

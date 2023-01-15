@@ -10,6 +10,7 @@ use std::hash::Hash;
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
+    ByteVector(GcRef<ByteVector>),    
     Char(char),
     Closure(GcRef<Closure>),
     Eof,
@@ -227,6 +228,9 @@ impl Debug for Object {
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
             }
+            Object::ByteVector(bytevector) => {
+                write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
+            }            
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
@@ -294,6 +298,9 @@ impl Display for Object {
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
             }
+            Object::ByteVector(bytevector) => {
+                write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
+            }            
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
@@ -331,6 +338,39 @@ impl Display for Vector {
             }
         }
         write!(f, "]")
+    }
+}
+
+/// ByteVector
+#[derive(Debug)]
+pub struct ByteVector {
+    pub header: GcHeader,
+    pub data: Vec<u8>,
+}
+
+impl ByteVector {
+    pub fn new(data: &Vec<u8>) -> Self {
+        ByteVector {
+            header: GcHeader::new(ObjectType::ByteVector),
+            data: data.to_owned(),
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+}
+
+impl Display for ByteVector {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#vu8(")?;
+        for i in 0..self.data.len() {
+            write!(f, "{}", self.data[i])?;
+            if i != self.data.len() - 1 {
+                write!(f, ", ")?;
+            }
+        }
+        write!(f, ")")
     }
 }
 
