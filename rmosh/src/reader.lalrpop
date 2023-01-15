@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use crate::objects::Float;
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
@@ -100,7 +101,14 @@ Number: Object = {
     <s: "number10"> => {
         match isize::from_str(&s) {
             Ok(n) => Object::Number(n),
-            Err(e) => panic!("Number parse error: {} in <{}>", e, s),
+            Err(e) => {
+                match f64::from_str(&s) {
+                    Ok(value) => Object::Float(Float::new(value)),
+                    Err(e2) => {                    
+                        panic!("Number parse error: {}{} in <{}>", e, e2, s)
+                    }
+                }
+            }
         }
     }
 }

@@ -26,6 +26,9 @@ impl std::hash::Hash for Float {
 }
 
 impl Float {
+    pub fn new(value: f64) -> Self {
+        Self { value: value }
+    }
     #[inline(always)]    
     pub fn value(&self) -> f64 {
         unsafe { self.value }
