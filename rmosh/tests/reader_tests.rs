@@ -91,6 +91,14 @@ fn parse_string() {
 }
 
 #[test]
+fn parse_special_string() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.new_string("\\a");
+    let obj = read(&mut vm.gc, "\"\\a\"").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
 fn parse_number() {
     let mut vm = Vm::new();
     let expected = Object::Number(101);
