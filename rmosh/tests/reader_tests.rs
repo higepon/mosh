@@ -185,6 +185,18 @@ fn read_quasiquote() {
 }
 
 #[test]
+fn read_unquote() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, ",a").unwrap();
+        let quote = vm.gc.symbol_intern("unquote");
+        let symbol = vm.gc.symbol_intern("a");
+        let expected = vm.gc.list2(quote, symbol);
+        assert_equal!(vm.gc, expected, obj);
+    }
+}
+
+#[test]
 fn parse_special_chars() {
     let mut vm = Vm::new();
     {

@@ -124,7 +124,10 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 "`" {
                     return self.with_location(Token::AbbrevQuasiquote);
-                }                
+                }
+                "," {
+                    return self.with_location(Token::AbbrevUnquote);
+                }
                 DELIMITER {
                     continue 'lex;
                 }

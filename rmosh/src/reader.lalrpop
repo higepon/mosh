@@ -44,7 +44,11 @@ Abbreviation: Object = {
     "`" <datum: Datum> => {
         let quote = gc.symbol_intern("quasiquote");
         gc.list2(quote, datum)
-    }    
+    },    
+    "," <datum: Datum> => {
+        let quote = gc.symbol_intern("unquote");
+        gc.list2(quote, datum)
+    },    
 }
 
 String: Object = {
@@ -81,6 +85,7 @@ extern {
     enum lexer::Token {
         "'" => lexer::Token::AbbrevQuote,
         "`" => lexer::Token::AbbrevQuasiquote,
+        "," => lexer::Token::AbbrevUnquote,        
         "." => lexer::Token::Dot,
         "true" => lexer::Token::True,
         "false" => lexer::Token::False,
