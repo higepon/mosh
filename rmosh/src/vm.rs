@@ -349,7 +349,19 @@ impl Vm {
                     let vox = self.gc.alloc(Vox::new(self.index(self.sp, n)));
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
-                Op::Caar => todo!(),
+                Op::Caar => match self.ac {
+                    Object::Pair(pair) => match pair.car {
+                        Object::Pair(pair) => {
+                            self.set_return_value(pair.car);
+                        }
+                        obj => {
+                            self.arg_err("caar", "pair", obj);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("caar", "pair", obj);
+                    }
+                },
                 Op::Cadr => match self.ac {
                     Object::Pair(pair) => match pair.cdr {
                         Object::Pair(pair) => {
@@ -366,7 +378,19 @@ impl Vm {
                 Op::Car => {
                     self.car_op();
                 }
-                Op::Cdar => todo!(),
+                Op::Cdar => match self.ac {
+                    Object::Pair(pair) => match pair.car {
+                        Object::Pair(pair) => {
+                            self.set_return_value(pair.cdr);
+                        }
+                        obj => {
+                            self.arg_err("cdar", "pair", obj);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("cdar", "pair", obj);
+                    }
+                },
                 Op::Cddr => match self.ac {
                     Object::Pair(pair) => match pair.cdr {
                         Object::Pair(pair) => {
