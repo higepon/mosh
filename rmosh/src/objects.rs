@@ -744,12 +744,12 @@ impl Display for Symbol {
 /// Procedures written in Rust.
 pub struct Procedure {
     pub header: GcHeader,
-    pub func: fn(&mut Vm, &[Object]) -> Object,
+    pub func: fn(&mut Vm, &mut [Object]) -> Object,
     pub name: String,
 }
 
 impl Procedure {
-    pub fn new(func: fn(&mut Vm, &[Object]) -> Object, name: String) -> Self {
+    pub fn new(func: fn(&mut Vm, &mut [Object]) -> Object, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
@@ -922,7 +922,7 @@ pub mod tests {
     use regex::Regex;
 
     // Helpers.
-    fn procedure1(_vm: &mut Vm, args: &[Object]) -> Object {
+    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> Object {
         assert_eq!(args.len(), 1);
         args[0]
     }
@@ -958,8 +958,8 @@ pub mod tests {
     fn test_procedure() {
         let mut vm = Vm::new();
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
-        let stack = [Object::Number(1), Object::Number(2)];
-        match (p.func)(&mut vm, &stack[0..1]) {
+        let mut stack = [Object::Number(1), Object::Number(2)];
+        match (p.func)(&mut vm, &mut stack[0..1]) {
             Object::Number(1) => {}
             _ => {
                 panic!("Wrong return value");

@@ -1181,10 +1181,10 @@ impl Vm {
                     let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
                     let start: usize = start as usize;
                     let uargc: usize = argc as usize;
-                    let args = &self.stack[start..start + uargc];
+                    let args = &mut self.stack[start..start + uargc];
 
                     // copying args here because we can't borrow.
-                    let args = &args.to_owned()[..];
+                    let args = &mut args.to_owned()[..];
 
                     // We convert apply call to Op::Call.
                     if procedure.func as usize == procs::apply as usize {
