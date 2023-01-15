@@ -1,8 +1,8 @@
 use crate::lexer::{Lexer, Spanned, Token, LexicalError};
 
 /*!re2c
-    re2c:define:YYCTYPE = u8;
-    re2c:define:YYPEEK = "*self.s.get_unchecked(self.cursor)";
+    re2c:define:YYCTYPE = usize; // We have Vec<char> and treat char as usize.
+    re2c:define:YYPEEK = "*self.s.get_unchecked(self.cursor) as usize";
     re2c:define:YYSKIP = "self.cursor += 1;";
     re2c:define:YYBACKUP = "self.marker = self.cursor;";
     re2c:define:YYRESTORE = "self.cursor = self.marker;";

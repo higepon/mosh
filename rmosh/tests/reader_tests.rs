@@ -172,6 +172,15 @@ fn parse_chars() {
 }
 
 #[test]
+fn parse_chars2() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "#\\あ").unwrap();
+        assert_equal!(vm.gc, Object::Char('あ'), obj);
+    }
+}
+
+#[test]
 fn parse_hex_chars() {
     let mut vm = Vm::new();
     {
