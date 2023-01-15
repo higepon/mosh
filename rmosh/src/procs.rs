@@ -2062,7 +2062,7 @@ fn append2(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn append_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "append!";
     match args {
-        &mut[] => Object::Nil,
+        &mut [] => Object::Nil,
         _ => {
             let mut ret = args[args.len() - 1];
             let mut i = args.len() as isize - 2;
@@ -2241,9 +2241,20 @@ fn list_transposeadd(vm: &mut Vm, args: &mut [Object]) -> Object {
     return do_transpose(vm, length, args);
 }
 
-fn symbol_value(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn symbol_value(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "symbol-value";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Symbol(symbol) => match vm.globals.get(&symbol) {
+            Some(&value) => value,
+            None => {
+                panic!("identifier {} not found", symbol.string);
+            }
+        },
+        obj => {
+            panic!("{}: symbol required but got {}", name, obj)
+        }
+    }
 }
 fn set_symbol_value_destructive(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-symbol-value!";
@@ -3388,7 +3399,7 @@ fn ffi_error(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn host_os(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "host-os";
-    check_argc!(name, args, 0);    
+    check_argc!(name, args, 0);
     vm.gc.new_string(env::consts::OS)
 }
 fn is_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {

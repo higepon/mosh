@@ -72,7 +72,7 @@ pub struct Vm {
     // frame pointer.
     fp: *mut Object,
     // global variables.
-    globals: HashMap<GcRef<Symbol>, Object>,
+    pub globals: HashMap<GcRef<Symbol>, Object>,
     // We keep references to operators in base libraries so that the lib_ops live longer than every call of run.
     // If we kept operators as local variable, it can/will be immediately freed after run(lib_ops).
     lib_compiler: Vec<Object>,
