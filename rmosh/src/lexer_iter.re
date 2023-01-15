@@ -59,6 +59,8 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
+    EOS                    = "\X0000";    
+    COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));    
 */
 
 impl<'input> Iterator for Lexer<'input> {
@@ -150,6 +152,9 @@ impl<'input> Iterator for Lexer<'input> {
                 DELIMITER {
                     continue 'lex;
                 }
+                COMMENT {
+                    continue 'lex;
+                }                
                 $ { return None; }
                 * { return Some(Err(LexicalError {
                         start: self.tok,
