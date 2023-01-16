@@ -2503,9 +2503,10 @@ fn current_directory(vm: &mut Vm, args: &mut [Object]) -> Object {
         }
     }
 }
-fn standard_library_path(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn standard_library_path(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "standard-library-path";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    return vm.gc.new_string(".");
 }
 fn native_endianness(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "native-endianness";
