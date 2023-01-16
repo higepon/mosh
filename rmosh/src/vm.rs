@@ -77,6 +77,7 @@ pub struct Vm {
     // If we kept operators as local variable, it can/will be immediately freed after run(lib_ops).
     lib_compiler: Vec<Object>,
     lib_psyntax: Vec<Object>,
+    pub dynamic_winders: Object,
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
@@ -101,6 +102,7 @@ impl Vm {
             globals: HashMap::new(),
             lib_compiler: vec![],
             lib_psyntax: vec![],
+            dynamic_winders: Object::Unspecified,
             num_values: 0,
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),
@@ -170,6 +172,8 @@ impl Vm {
         for op in &self.lib_psyntax {
             self.gc.mark_object(*op);
         }
+
+        self.gc.mark_object(self.dynamic_winders);
 
         // Stack.
         for &obj in &self.stack[0..self.stack_len()] {

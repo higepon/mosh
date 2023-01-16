@@ -1258,8 +1258,11 @@ fn is_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "write";
     check_argc_at_least!(name, args, 1);
-    println!("Tentateive write: {}", args[0]);
-    Object::Unspecified
+    println!("{} called", name);
+    for i in 0..args.len() {
+        println!("  arg={}", args[i]);
+    }
+    args[0]
 }
 fn gensym(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym";
@@ -2285,7 +2288,7 @@ fn list_transposeadd(vm: &mut Vm, args: &mut [Object]) -> Object {
     for i in 1..args.len() {
         let lst = args[i];
         if lst.is_list() {
-            if Pair::list_len(lst) == length {
+            if Pair::list_len(lst) != length {
                 return Object::False;
             }
         } else {
@@ -2415,9 +2418,10 @@ fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "hashtable-hash-function";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn throw(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn throw(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "throw";
-    panic!("{}({}) not implemented", name, args.len());
+    println!("{} tentative called", name);
+    vm.gc.new_string("return value of throw")
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "<";
@@ -4020,9 +4024,16 @@ fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym-prefix-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_dynamic_winders(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn current_dynamic_winders(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-dynamic-winders";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 0, 1);
+    let argc = args.len();
+    if argc == 0 {
+        return vm.dynamic_winders;
+    } else {
+        vm.dynamic_winders = args[0];
+        return Object::Unspecified;
+    }
 }
 fn sexp_map(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sexp-map";
