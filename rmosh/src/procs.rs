@@ -1857,8 +1857,25 @@ fn macroexpand_1(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn memv(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "memv";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let arg1 = args[0];
+    let p = args[1];
+    if !p.is_list() {
+        panic!("{}: list required but got {}", name, p);
+    }
+    let mut o = p;
+    loop {
+        if o.is_nil() {
+            break;
+        }
+        if o.to_pair().car.eqv(&arg1) {
+            return o;
+        }
+        o = o.to_pair().cdr;
+    }
+    return Object::False;
 }
+
 fn is_procedure(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "procedure?";
     check_argc!(name, args, 1);
