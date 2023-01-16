@@ -3510,9 +3510,10 @@ fn port_transcoder(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "port-transcoder";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn native_transcoder(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn native_transcoder(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "native-transcoder";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    return vm.gc.new_string("TODO: native-transcoder");
 }
 fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "put-bytevector";
