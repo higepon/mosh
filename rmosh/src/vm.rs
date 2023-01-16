@@ -72,7 +72,7 @@ pub struct Vm {
     // frame pointer.
     fp: *mut Object,
     // global variables.
-    pub globals: HashMap<GcRef<Symbol>, Object>,
+    globals: HashMap<GcRef<Symbol>, Object>,
     // We keep references to operators in base libraries so that the lib_ops live longer than every call of run.
     // If we kept operators as local variable, it can/will be immediately freed after run(lib_ops).
     lib_compiler: Vec<Object>,
@@ -1410,6 +1410,14 @@ impl Vm {
             Some(&value) => value,
             _ => Object::False,
         }
+    }
+
+    pub fn set_global_value(&mut self, key: GcRef<Symbol>, value: Object) {
+        self.globals.insert(key, value);
+    }
+
+    pub fn global_value(&mut self, key: GcRef<Symbol>) -> Option<&Object> {
+        self.globals.get(&key)
     }
 
     pub fn eval(&mut self, sexp: Object) -> Object {

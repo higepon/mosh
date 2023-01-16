@@ -2245,7 +2245,7 @@ fn symbol_value(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "symbol-value";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Symbol(symbol) => match vm.globals.get(&symbol) {
+        Object::Symbol(symbol) => match vm.global_value(symbol) {
             Some(&value) => value,
             None => {
                 panic!("identifier {} not found", symbol.string);
@@ -2261,7 +2261,7 @@ fn set_symbol_value_destructive(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 2);
     match args[0] {
         Object::Symbol(sym) => {
-            vm.set_symbol_value(sym, args[1]);
+            vm.set_global_value(sym, args[1]);
             Object::Unspecified
         }
         obj => {
