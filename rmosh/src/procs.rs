@@ -3357,9 +3357,19 @@ fn vector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector-fill!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn ungensym(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn ungensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "ungensym";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::Symbol(sym) = args[0] {
+        let splitted: Vec<String> = sym.string.split('@').map(|s| s.to_string()).collect();
+        if splitted.len() == 2 {
+            vm.gc.new_string(&splitted[1])
+        } else {
+            args[0]
+        }
+    } else {
+        panic!("{}: symbol required but got {}", name, args[0]);
+    }
 }
 fn disasm(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "disasm";
