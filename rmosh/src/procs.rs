@@ -1,4 +1,7 @@
-use std::{env, path::Path};
+use std::{
+    env::{self, current_dir},
+    path::Path,
+};
 
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -1101,7 +1104,7 @@ fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
         }
         return Object::True;
     } else {
-        panic!("{}: character required but got {}", name, args[0]);        
+        panic!("{}: character required but got {}", name, args[0]);
     }
 }
 fn is_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -2485,9 +2488,20 @@ fn is_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_directory(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn current_directory(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-directory";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    match current_dir() {
+        Ok(path_buf) => match path_buf.as_os_str().to_str() {
+            Some(s) => vm.gc.new_string(s),
+            None => {
+                panic!("{}: osstr conversion error ", name);
+            }
+        },
+        Err(err) => {
+            panic!("{}: failed {}", name, err);
+        }
+    }
 }
 fn standard_library_path(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "standard-library-path";
