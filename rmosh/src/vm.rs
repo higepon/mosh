@@ -244,10 +244,14 @@ impl Vm {
             bytes: psyntax::U8_ARRAY,
         };
         self.lib_psyntax = if self.should_load_compiler {
+            // Global variables.
+            let sym = self.gc.symbol_intern("%verbose");
+            self.set_global_value(sym.to_symbol(), Object::True);
             fasl.read_all_sexp(&mut self.gc)
         } else {
             vec![Object::Instruction(Op::Halt)]
         };
+
         self.run_ops(self.lib_psyntax.as_ptr())
     }
 
