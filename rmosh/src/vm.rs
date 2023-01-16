@@ -247,6 +247,10 @@ impl Vm {
             // Global variables.
             let sym = self.gc.symbol_intern("%verbose");
             self.set_global_value(sym.to_symbol(), Object::True);
+
+            let sym = self.gc.symbol_intern("*command-line-args*");
+            let args = self.gc.list2(Object::Number(123), Object::Number(456));
+            self.set_global_value(sym.to_symbol(), args);            
             fasl.read_all_sexp(&mut self.gc)
         } else {
             vec![Object::Instruction(Op::Halt)]
