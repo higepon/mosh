@@ -250,7 +250,11 @@ impl Vm {
 
             let sym = self.gc.symbol_intern("*command-line-args*");
             let args = self.gc.list2(Object::Number(123), Object::Number(456));
-            self.set_global_value(sym.to_symbol(), args);            
+            self.set_global_value(sym.to_symbol(), args);  
+
+            let sym = self.gc.symbol_intern("%loadpath");
+            let path = self.gc.new_string(".");
+            self.set_global_value(sym.to_symbol(), path);            
             fasl.read_all_sexp(&mut self.gc)
         } else {
             vec![Object::Instruction(Op::Halt)]

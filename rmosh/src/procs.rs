@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, path::Path};
 
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -1173,7 +1173,12 @@ fn directory_list(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "file-exists?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(s) = args[0] {
+        Object::make_bool(Path::new(&s.string).exists())
+    } else {
+        panic!("{}: string required but got {}", name, args[0])
+    }
 }
 fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "delete-file";
