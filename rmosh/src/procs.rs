@@ -1,5 +1,5 @@
 use std::{
-    env::{self, current_dir},
+    env::{self, current_dir, current_exe},
     path::Path,
 };
 
@@ -3544,9 +3544,20 @@ fn time_usage(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "time-usage";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn mosh_executable_path(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn mosh_executable_path(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "mosh-executable-path";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    match current_exe() {
+        Ok(path_buf) => match path_buf.as_os_str().to_str() {
+            Some(s) => vm.gc.new_string(s),
+            None => {
+                panic!("{}: osstr conversion error ", name);
+            }
+        },
+        Err(err) => {
+            panic!("{}: failed {}", name, err);
+        }
+    }
 }
 fn is_socket(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "socket?";
