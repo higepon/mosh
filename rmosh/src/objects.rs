@@ -57,7 +57,7 @@ pub enum Object {
     EqHashtable(GcRef<EqHashtable>),
     False,
     Float(Float),
-    InputPort(GcRef<InputPort>),
+    InputPort(GcRef<StringInputPort>),
     Instruction(Op),
     Nil,
     Number(isize),
@@ -888,22 +888,22 @@ impl Display for EqHashtable {
 
 /// InputPort
 #[derive(Debug)]
-pub struct InputPort {
+pub struct StringInputPort {
     pub header: GcHeader,
     source: String,
     idx: usize,
 }
 
-impl InputPort {
+impl StringInputPort {
     fn new(source: &str) -> Self {
-        InputPort {
+        StringInputPort {
             header: GcHeader::new(ObjectType::InputPort),
             source: source.to_owned(),
             idx: 0,
         }
     }
-    pub fn open(source: &str) -> std::io::Result<InputPort> {
-        Ok(InputPort::new(source))
+    pub fn open(source: &str) -> std::io::Result<StringInputPort> {
+        Ok(StringInputPort::new(source))
     }
 
     pub fn read_char(&mut self) -> Option<char> {
@@ -914,7 +914,7 @@ impl InputPort {
     }
 }
 
-impl Display for InputPort {
+impl Display for StringInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "<input port>")
     }

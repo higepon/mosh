@@ -519,7 +519,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::InputPort;
+        use crate::objects::StringInputPort;
 
         let object_type = object_ptr.obj_type;
 
@@ -539,7 +539,7 @@ impl Gc {
                 std::mem::size_of_val(closure)
             }
             ObjectType::InputPort => {
-                let port: &InputPort = unsafe { mem::transmute(header) };
+                let port: &StringInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
             ObjectType::Vox => {

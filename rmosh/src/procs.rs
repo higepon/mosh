@@ -7,7 +7,7 @@ use std::{
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{EqHashtable, InputPort, Object, Pair, SimpleStruct},
+    objects::{EqHashtable, StringInputPort, Object, Pair, SimpleStruct},
     vm::Vm,
 };
 
@@ -1139,7 +1139,7 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-string-input-port";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => match InputPort::open(&s.string) {
+        Object::String(s) => match StringInputPort::open(&s.string) {
             Ok(port) => Object::InputPort(vm.gc.alloc(port)),
             Err(err) => {
                 panic!("{}: {:?}", name, err);
