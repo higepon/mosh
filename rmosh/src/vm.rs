@@ -528,7 +528,11 @@ impl Vm {
                     let jump_offset = self.isize_operand(&mut pc);
                     pc = self.jump(pc, jump_offset - 1);
                 }
-                Op::MakeContinuation => todo!(),
+                Op::MakeContinuation => {
+                    let _n = self.isize_operand(&mut pc);
+                    let dummy = self.gc.new_string("TODO:continuation");
+                    self.set_return_value(dummy);
+                }
                 Op::MakeVector => match self.pop() {
                     Object::Number(size) => {
                         let v = vec![self.ac; size as usize];

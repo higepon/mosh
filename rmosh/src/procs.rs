@@ -1657,9 +1657,10 @@ fn eq_hashtable_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eq-hashtable-copy";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn current_error_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-error-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    vm.gc.new_string("TODO:current-error-port")
 }
 fn values(vm: &mut Vm, args: &mut [Object]) -> Object {
     vm.values(args)
