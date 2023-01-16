@@ -1257,7 +1257,9 @@ fn is_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "write";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    println!("Tentateive write: {}", args[0]);
+    Object::Unspecified
 }
 fn gensym(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym";
