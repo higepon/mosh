@@ -1088,7 +1088,21 @@ fn peek_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "char=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    if let Object::Char(c) = args[0] {
+        for i in 1..args.len() {
+            if let Object::Char(c2) = args[i] {
+                if c != c2 {
+                    return Object::False;
+                }
+            } else {
+                panic!("{}: character required but got {}", name, args[i]);
+            }
+        }
+        return Object::True;
+    } else {
+        panic!("{}: character required but got {}", name, args[0]);        
+    }
 }
 fn is_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string?";
