@@ -2451,7 +2451,19 @@ fn number_div(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn max(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "max";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut current_max = isize::MIN;
+    for i in 0..args.len() {
+        let arg = args[i];
+        if let Object::Number(n) = arg {
+            if n > current_max {
+                current_max = n;
+            }
+        } else {
+            panic!("{}: number required but got {}", name, arg);
+        }
+    }
+    return Object::Number(current_max);
 }
 fn min(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "min";
