@@ -259,6 +259,9 @@ impl Vm {
             let sym = self.gc.symbol_intern("%loadpath");
             let path = self.gc.new_string(".");
             self.set_global_value(sym.to_symbol(), path);            
+
+            let sym = self.gc.symbol_intern("%vm-import-spec");
+            self.set_global_value(sym.to_symbol(), Object::False);            
             fasl.read_all_sexp(&mut self.gc)
         } else {
             vec![Object::Instruction(Op::Halt)]
