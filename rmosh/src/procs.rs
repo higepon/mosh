@@ -1217,15 +1217,19 @@ fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer->char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn format(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    if args.len() == 2 {
-        println!("{} {}", args[0], args[1]);
+fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
+    // TODO
+    let text = if args.len() == 2 {
+        format!("{} {}", args[0], args[1])
     } else if args.len() == 3 {
-        println!("{} {} {}", args[0], args[1], args[2]);
+        format!("{} {} {}", args[0], args[1], args[2])
     } else if args.len() == 4 {
-        println!("{} {} {} {}", args[0], args[1], args[2], args[3]);
-    }
-    Object::Unspecified
+        format!("{} {} {} {}", args[0], args[1], args[2], args[3])
+    } else {
+        panic!("format {:?}", args);
+    };
+    println!("{}", &text);
+    vm.gc.new_string(&text)
 }
 fn current_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-input-port";
