@@ -882,7 +882,13 @@ impl Vm {
                     self.push_op();
                     self.constant_op(&mut pc);
                 }
-                Op::ReferLocalPushConstantBranchNotLe => todo!(),
+                Op::ReferLocalPushConstantBranchNotLe => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    self.push_op();
+                    self.constant_op(&mut pc);
+                    branch_number_cmp_op!(<=, self, pc);                    
+                }
                 Op::ReferLocalPushConstantBranchNotGe => {
                     let n = self.isize_operand(&mut pc);
                     self.refer_local_op(n);
