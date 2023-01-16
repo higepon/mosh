@@ -1098,9 +1098,17 @@ fn is_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
         _ => Object::False,
     }
 }
-fn get_environment_variable(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn get_environment_variable(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-environment-variable";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(key) = args[0] {
+        match env::var(&key.string) {
+            Ok(value) => vm.gc.new_string(&value),
+            Err(_) => Object::False,
+        }
+    } else {
+        panic!("{}: string key required but got {}", name, args[0])
+    }
 }
 fn get_environment_variables(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-environment-variables";
