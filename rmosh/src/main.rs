@@ -1,5 +1,6 @@
 use std::{env, fs};
 
+use rmosh::objects::Object;
 use rmosh::read::read_sexps;
 use rmosh::vm::Vm;
 extern crate num_derive;
@@ -26,11 +27,18 @@ fn main() {
     if args.len() == 2 {
         let mut vm = Vm::new();
         vm.should_load_compiler = true;
-
+        let mut vargs: Vec<Object> = vec![];
+        for i in 0..args.len() {
+            vargs.push(vm.gc.new_string(&args[i]));
+        }
+        let vargs = vm.gc.listn(&vargs);
+        vm.enable_r7rs(vargs);
+        /*
         let text = fs::read_to_string(args[1].to_owned()).unwrap();
         let sexps = read_sexps(&mut vm.gc, &text);
         for sexp in sexps {
             vm.eval(sexp);
         }
+        */
     }
 }

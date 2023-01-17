@@ -220,7 +220,6 @@ impl Vm {
 
             // Load the base library.
             self.load_compiler();
-            self.load_psyntax();
             self.is_initialized = true;
         }
         // Run the program.
@@ -243,7 +242,7 @@ impl Vm {
         self.run_ops(self.lib_compiler.as_ptr())
     }
 
-    fn load_psyntax(&mut self) -> Object {
+    pub fn enable_r7rs(&mut self, args: Object) -> Object {
         let mut fasl = Fasl {
             bytes: psyntax::U8_ARRAY,
         };
@@ -253,7 +252,7 @@ impl Vm {
             self.set_global_value(sym.to_symbol(), Object::True);
 
             let sym = self.gc.symbol_intern("*command-line-args*");
-            let args = self.gc.list2(Object::Number(123), Object::Number(456));
+            let args = args;
             self.set_global_value(sym.to_symbol(), args);  
 
             let sym = self.gc.symbol_intern("%loadpath");
