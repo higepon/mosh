@@ -2059,6 +2059,9 @@ fn is_chargt(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn read(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "read";
+    for i in 0..args.len() {
+        println!("arg={}", args[i]);
+    }
     panic!("{}({}) not implemented", name, args.len());
 }
 fn vector_to_list(vm: &mut Vm, args: &mut [Object]) -> Object {
