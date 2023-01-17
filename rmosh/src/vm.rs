@@ -597,7 +597,7 @@ impl Vm {
                 Op::PairP => self.set_return_value(Object::make_bool(self.ac.is_pair())),
                 Op::Read => todo!(),
                 Op::ReadChar => match self.ac {
-                    Object::InputPort(mut port) => match port.read_char() {
+                    Object::StringInputPort(mut port) => match port.read_char() {
                         Some(c) => {
                             self.set_return_value(Object::Char(c));
                         }

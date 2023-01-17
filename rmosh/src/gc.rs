@@ -73,7 +73,8 @@ pub enum ObjectType {
     ByteVector,
     Closure,
     EqHashtable,
-    InputPort,
+    FileInputPort,
+    StringInputPort,
     Pair,
     Procedure,
     SimpleStruct,
@@ -359,7 +360,8 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
-            Object::InputPort(_) => {}
+            Object::FileInputPort(_) => {}            
+            Object::StringInputPort(_) => {}
             Object::Nil => {}
             Object::Float(_) => {}            
             Object::Number(_) => {}
@@ -499,7 +501,8 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
-            ObjectType::InputPort => {}
+            ObjectType::FileInputPort => {}            
+            ObjectType::StringInputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
@@ -519,7 +522,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::StringInputPort;
+        use crate::objects::{StringInputPort, FileInputPort};
 
         let object_type = object_ptr.obj_type;
 
@@ -538,7 +541,11 @@ impl Gc {
                 let closure: &Closure = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(closure)
             }
-            ObjectType::InputPort => {
+            ObjectType::FileInputPort => {
+                let port: &FileInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }            
+            ObjectType::StringInputPort => {
                 let port: &StringInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }

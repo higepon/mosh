@@ -5,6 +5,7 @@ use crate::vm::Vm;
 
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
+use std::fs::File;
 use std::hash::Hash;
 
 // We use this Float which wraps f64.
@@ -57,7 +58,8 @@ pub enum Object {
     EqHashtable(GcRef<EqHashtable>),
     False,
     Float(Float),
-    InputPort(GcRef<StringInputPort>),
+    StringInputPort(GcRef<StringInputPort>),
+    FileInputPort(GcRef<FileInputPort>),    
     Instruction(Op),
     Nil,
     Number(isize),
@@ -221,9 +223,12 @@ impl Eq for Object {}
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Object::InputPort(port) => {
+            Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::FileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -294,7 +299,10 @@ impl Debug for Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Object::InputPort(port) => {
+            Object::FileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }                   
+            Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Char(c) => {
@@ -897,7 +905,7 @@ pub struct StringInputPort {
 impl StringInputPort {
     fn new(source: &str) -> Self {
         StringInputPort {
-            header: GcHeader::new(ObjectType::InputPort),
+            header: GcHeader::new(ObjectType::StringInputPort),
             source: source.to_owned(),
             idx: 0,
         }
@@ -916,7 +924,32 @@ impl StringInputPort {
 
 impl Display for StringInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<input port>")
+        write!(f, "#<string-input-port>")
+    }
+}
+
+#[derive(Debug)]
+pub struct FileInputPort {
+    pub header: GcHeader,
+    file: File,
+}
+
+impl FileInputPort {
+    fn new(file: File) -> Self {
+        FileInputPort {
+            header: GcHeader::new(ObjectType::FileInputPort),
+            file: file,
+        }
+    }
+    pub fn open(path: &str) -> std::io::Result<FileInputPort> {
+        let file = File::open(path)?;
+        Ok(FileInputPort::new(file))
+    }
+}
+
+impl Display for FileInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<file-input-port>")
     }
 }
 

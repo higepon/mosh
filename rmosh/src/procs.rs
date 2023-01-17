@@ -7,7 +7,7 @@ use std::{
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{EqHashtable, StringInputPort, Object, Pair, SimpleStruct},
+    objects::{EqHashtable, StringInputPort, Object, Pair, SimpleStruct, FileInputPort},
     vm::Vm,
 };
 
@@ -1140,7 +1140,7 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     match args[0] {
         Object::String(s) => match StringInputPort::open(&s.string) {
-            Ok(port) => Object::InputPort(vm.gc.alloc(port)),
+            Ok(port) => Object::StringInputPort(vm.gc.alloc(port)),
             Err(err) => {
                 panic!("{}: {:?}", name, err);
             }
@@ -1806,9 +1806,19 @@ fn open_file_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_file_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    if let Object::String(path) = args[0] {
+        match FileInputPort::open(&path.string) {
+            Ok(port) => Object::FileInputPort(vm.gc.alloc(port)),
+            Err(err) => {
+                panic!("{}: {}", name, err)
+            }
+        }
+    } else {
+        panic!("{}: string required but got {}", name, args[0]);
+    }
 }
 fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-input-port";
