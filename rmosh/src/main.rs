@@ -24,7 +24,7 @@ pub mod vm;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() == 2 {
+    //if args.len() == 2 {
         let mut vm = Vm::new();
         vm.should_load_compiler = true;
         let mut vargs: Vec<Object> = vec![];
@@ -40,5 +40,5 @@ fn main() {
             vm.eval(sexp);
         }
         */
-    }
+    //}
 }

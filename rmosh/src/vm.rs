@@ -266,7 +266,7 @@ impl Vm {
             vec![Object::Instruction(Op::Halt)]
         };
 
-        self.run_ops(self.lib_psyntax.as_ptr())
+        self.run(self.lib_psyntax.as_ptr(), self.lib_psyntax.len())
     }
 
     fn run_ops(&mut self, ops: *const Object) -> Object {
@@ -1449,9 +1449,7 @@ impl Vm {
     }
 
     pub fn eval(&mut self, sexp: Object) -> Object {
-        println!("sexp={}", sexp);
         let v = self.compile(sexp).to_vector();
-        println!("v={}", v);
         self.run(v.data.as_ptr(), v.data.len())
     }
 

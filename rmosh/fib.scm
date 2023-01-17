@@ -1,3 +1,4 @@
+(import (rnrs))
 (define (fib n)
   (if (<= n 2)
       1
