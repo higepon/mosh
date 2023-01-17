@@ -1231,17 +1231,23 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
     println!("{}", &text);
     vm.gc.new_string(&text)
 }
-fn current_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn current_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    vm.current_input_port()
 }
 fn current_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn set_current_input_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-current-input-port!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if !args[0].is_input_port() {
+        panic!("{}: input-port required but got {}", name, args[0]);
+    }
+    vm.set_current_input_port(args[0]);
+    Object::Unspecified
 }
 fn set_current_output_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-current-output-port!";

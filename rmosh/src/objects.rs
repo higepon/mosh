@@ -30,7 +30,7 @@ impl Float {
     pub fn new(value: f64) -> Self {
         Self { value: value }
     }
-    #[inline(always)]    
+    #[inline(always)]
     pub fn value(&self) -> f64 {
         unsafe { self.value }
     }
@@ -59,7 +59,7 @@ pub enum Object {
     False,
     Float(Float),
     StringInputPort(GcRef<StringInputPort>),
-    FileInputPort(GcRef<FileInputPort>),    
+    FileInputPort(GcRef<FileInputPort>),
     Instruction(Op),
     Nil,
     Number(isize),
@@ -119,6 +119,14 @@ impl Object {
     pub fn is_symbol(&self) -> bool {
         match self {
             Object::Symbol(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_input_port(&self) -> bool {
+        match self {
+            Object::FileInputPort(_) => true,
+            Object::StringInputPort(_) => true,
             _ => false,
         }
     }
@@ -186,7 +194,7 @@ impl Object {
         } else {
             panic!("Not a Object::Vector")
         }
-     }   
+    }
 
     pub fn to_vox(self) -> GcRef<Vox> {
         if let Self::Vox(v) = self {
@@ -228,7 +236,7 @@ impl Debug for Object {
             }
             Object::FileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -301,7 +309,7 @@ impl Display for Object {
         match self {
             Object::FileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }                   
+            }
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

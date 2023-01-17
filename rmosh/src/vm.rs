@@ -85,6 +85,7 @@ pub struct Vm {
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
     pub compiled_programs: Vec<Object>,
+    current_input_port: Object,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }
@@ -109,6 +110,7 @@ impl Vm {
             should_load_compiler: false,
             is_initialized: false,
             compiled_programs: vec![],
+            current_input_port: Object::Unspecified,
         }
     }
 
@@ -160,7 +162,10 @@ impl Vm {
     }
 
     fn mark_roots(&mut self) {
-        //
+
+        // Ports.
+        self.gc.mark_object(self.current_input_port);
+
         for &compiled in &self.compiled_programs {
             self.gc.mark_object(compiled);
         }
@@ -1446,6 +1451,14 @@ impl Vm {
 
     pub fn global_value(&mut self, key: GcRef<Symbol>) -> Option<&Object> {
         self.globals.get(&key)
+    }
+
+    pub fn current_input_port(&self) -> Object {
+        self.current_input_port
+    }
+
+    pub fn set_current_input_port(&mut self, port: Object) {
+        self.current_input_port = port;
     }
 
     pub fn eval(&mut self, sexp: Object) -> Object {
