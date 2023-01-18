@@ -14,7 +14,8 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
-    Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
+    ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
+    Vector, Vox,
 };
 use crate::vm::Vm;
 
@@ -69,9 +70,11 @@ impl<T> DerefMut for GcRef<T> {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
+    ByteVector,
     Closure,
     EqHashtable,
-    InputPort,
+    FileInputPort,
+    StringInputPort,
     Pair,
     Procedure,
     SimpleStruct,
@@ -212,7 +215,7 @@ impl Gc {
         Object::Symbol(symbol)
     }
 
-    pub fn new_procedure(&mut self, func: fn(&mut Vm, &[Object]) -> Object, name: &str) -> Object {
+    pub fn new_procedure(&mut self, func: fn(&mut Vm, &mut [Object]) -> Object, name: &str) -> Object {
         Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
     }
 
@@ -224,6 +227,23 @@ impl Gc {
     pub fn new_vector(&mut self, data: &Vec<Object>) -> Object {
         let v = self.alloc(Vector::new(data));
         Object::Vector(v)
+    }
+
+    pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> Object {
+        let mut u8_vec: Vec<u8> = vec![];
+        for obj in objects {
+            if let Object::Number(n) = obj {
+                if *n >= 0 && *n <= 255 {
+                    u8_vec.push(*n as u8);
+                } else {
+                    panic!("malformed bytevector");
+                }
+            } else {
+                panic!("malformed bytevector");
+            }
+        }
+        let bv = self.alloc(ByteVector::new(&u8_vec));
+        Object::ByteVector(bv)
     }
 
     pub fn new_eq_hashtable(&mut self) -> Object {
@@ -340,8 +360,10 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
-            Object::InputPort(_) => {}
+            Object::FileInputPort(_) => {}            
+            Object::StringInputPort(_) => {}
             Object::Nil => {}
+            Object::Float(_) => {}            
             Object::Number(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
@@ -368,6 +390,9 @@ impl Gc {
             }
             Object::Pair(pair) => {
                 self.mark_heap_object(pair);
+            }
+            Object::ByteVector(bytevector) => {
+                self.mark_heap_object(bytevector);
             }
             Object::Vector(vector) => {
                 self.mark_heap_object(vector);
@@ -452,7 +477,7 @@ impl Gc {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(pair.car);
                 self.mark_object(pair.cdr);
-                self.mark_object(pair.src);                
+                self.mark_object(pair.src);
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
@@ -476,10 +501,12 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
-            ObjectType::InputPort => {}
+            ObjectType::FileInputPort => {}            
+            ObjectType::StringInputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
+            ObjectType::ByteVector => {}
         }
     }
 
@@ -495,7 +522,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::InputPort;
+        use crate::objects::{StringInputPort, FileInputPort};
 
         let object_type = object_ptr.obj_type;
 
@@ -514,8 +541,12 @@ impl Gc {
                 let closure: &Closure = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(closure)
             }
-            ObjectType::InputPort => {
-                let port: &InputPort = unsafe { mem::transmute(header) };
+            ObjectType::FileInputPort => {
+                let port: &FileInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }            
+            ObjectType::StringInputPort => {
+                let port: &StringInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
             ObjectType::Vox => {
@@ -529,6 +560,10 @@ impl Gc {
             ObjectType::SimpleStruct => {
                 let s: &SimpleStruct = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(s)
+            }
+            ObjectType::ByteVector => {
+                let v: &ByteVector = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(v)
             }
             ObjectType::Vector => {
                 let v: &Vector = unsafe { mem::transmute(header) };

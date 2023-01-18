@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use crate::objects::Float;
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
@@ -13,53 +14,108 @@ pub Datum: Object = {
 
 CompoundDataum: Object = {
     List,
-    Vector,    
+    Vector,
+    Abbreviation,
 }
 
 SimpleDatum: Object = {
     Boolean,
-    Character,    
+    ByteVector,
+    Character,
     Number,
+    Regexp,
     String,
     Symbol,
 }
 
 List: Object = {
-    "token:(" <objects: Datum *> "token:)" => gc.listn(&objects),
-    "token:(" <objects: Datum +> "token:." <last: Datum> "token:)" => {
+    "(" <objects: Datum *> ")" => gc.listn(&objects),
+    "(" <objects: Datum +> "." <last: Datum> ")" => {
         gc.dot_pair(&objects, last)
     }
 }
 
-Vector: Object = {
-    "token:#(" <objects: Datum *> "token:)" => gc.new_vector(&objects),
+ByteVector: Object = {
+    "#u8(" <objects: Datum *> ")" => gc.new_bytevector(&objects),
 }
 
+Vector: Object = {
+    "#(" <objects: Datum *> ")" => gc.new_vector(&objects),
+}
+
+Abbreviation: Object = {
+    "'" <datum: Datum> => {
+        let quote = gc.symbol_intern("quote");
+        gc.list2(quote, datum)
+    },
+    "`" <datum: Datum> => {
+        let quote = gc.symbol_intern("quasiquote");
+        gc.list2(quote, datum)
+    },
+    "," <datum: Datum> => {
+        let quote = gc.symbol_intern("unquote");
+        gc.list2(quote, datum)
+    },
+    "@" <datum: Datum> => {
+        let quote = gc.symbol_intern("unquotesplicing");
+        gc.list2(quote, datum)
+    },
+    "#'" <datum: Datum> => {
+        let quote = gc.symbol_intern("syntax");
+        gc.list2(quote, datum)
+    },
+    "#`" <datum: Datum> => {
+        let quote = gc.symbol_intern("quasisyntax");
+        gc.list2(quote, datum)
+    },
+    "#," <datum: Datum> => {
+        let quote = gc.symbol_intern("unsyntax");
+        gc.list2(quote, datum)
+    },
+    "#@" <datum: Datum> => {
+        let quote = gc.symbol_intern("unsyntaxsplicing");
+        gc.list2(quote, datum)
+    },    
+}
+
+Regexp: Object = {
+    // todo
+    "regexp" => gc.new_string(&<>),
+}
+
+
 String: Object = {
-    "token:string" => gc.new_string(&<>),
+    "string" => gc.new_string(&<>),
 }
 
 Character: Object = {
-    "token:character" => Object::Char(<>),
+    "character" => Object::Char(<>),
 }
 
 
 Symbol: Object = {
-    "token:identifier" => gc.symbol_intern(&<>),
+    "identifier" => gc.symbol_intern(&<>),
 }
 
 Number: Object = {
-    <s: "token:number10"> => {
+    <s: "number10"> => {
         match isize::from_str(&s) {
             Ok(n) => Object::Number(n),
-            Err(e) => panic!("Number parse error: {} in <{}>", e, s),
+            Err(e) => {
+                match f64::from_str(&s) {
+                    Ok(value) => Object::Float(Float::new(value)),
+                    Err(e2) => {                    
+                        panic!("Number parse error: {}{} in <{}>", e, e2, s)
+                    }
+                }
+            }
         }
     }
 }
 
 Boolean: Object = {
-    "token:true" => Object::True,
-    "token:false" => Object::False,
+    "true" => Object::True,
+    "false" => Object::False,
 }
 
 extern {
@@ -67,16 +123,26 @@ extern {
     type Error = lexer::LexicalError;
 
     enum lexer::Token {
-        "token:." => lexer::Token::Dot,
-        "token:true" => lexer::Token::True,
-        "token:false" => lexer::Token::False,
-        "token:(" => lexer::Token::LeftParen,
-        "token:)" => lexer::Token::RightParen,
-        "token:)" => lexer::Token::RightParen,
-        "token:#(" => lexer::Token::VectorStart,
-        "token:character" => lexer::Token::Character { value: <char> },        
-        "token:identifier" => lexer::Token::Identifier { value: <String> },
-        "token:number10" => lexer::Token::Number10 { value: <String> },
-        "token:string" => lexer::Token::String { value: <String> },
+        "'" => lexer::Token::AbbrevQuote,
+        "`" => lexer::Token::AbbrevQuasiquote,
+        "," => lexer::Token::AbbrevUnquote,
+        "@" => lexer::Token::AbbrevUnquoteSplicing,
+        "#'" => lexer::Token::AbbrevSyntax,
+        "#`" => lexer::Token::AbbrevQuasisyntax,
+        "#," => lexer::Token::AbbrevUnsyntax,
+        "#@" => lexer::Token::AbbrevUnsyntaxSplicing,        
+        "#u8(" => lexer::Token::ByteVectorStart,         
+        "." => lexer::Token::Dot,
+        "true" => lexer::Token::True,
+        "false" => lexer::Token::False,
+        "(" => lexer::Token::LeftParen,
+        ")" => lexer::Token::RightParen,
+        ")" => lexer::Token::RightParen,
+        "#(" => lexer::Token::VectorStart,
+        "character" => lexer::Token::Character { value: <char> },
+        "identifier" => lexer::Token::Identifier { value: <String> },
+        "number10" => lexer::Token::Number10 { value: <String> },
+        "regexp" => lexer::Token::Regexp { value: <String> },        
+        "string" => lexer::Token::String { value: <String> },
     }
 }

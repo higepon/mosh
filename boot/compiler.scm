@@ -2449,14 +2449,20 @@
   ]
  [else #f])
 
-(cond-expand
- [mosh
-  (define make-file-options
+ (cond-expand
+  [(or mosh rmosh)
+     (define make-file-options
     (enum-set-constructor
      (make-enumeration
-      '(no-create no-fail no-truncate))))
+      '(no-create no-fail no-truncate))))]
+  [else #f])
+
+(cond-expand
+ [mosh
+    #f
   ]
  [else ;; rmosh here
+
   (define (make-array)
     (list 'array (make-vector 2) 0))
 

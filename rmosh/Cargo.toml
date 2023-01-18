@@ -22,3 +22,4 @@ regex = "1"
 num-derive = "0.3"
 num-traits = "0.2"
 lalrpop-util = { version = "^0.19", features = ["lexer"] }
+ordered-float = { version = "3.0", default-features = false }

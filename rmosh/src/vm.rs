@@ -11,6 +11,7 @@ use crate::{
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
     procs::{self, default_free_vars},
+    psyntax,
 };
 
 const STACK_SIZE: usize = 1024;
@@ -72,9 +73,11 @@ pub struct Vm {
     fp: *mut Object,
     // global variables.
     globals: HashMap<GcRef<Symbol>, Object>,
-    // We keep the lib_ops here so that the lib_ops live longer than every call of run.
-    // If we kept lib_ops as local variable, it can/will be immediately freed after run(lib_ops).
-    pub lib_ops: Vec<Object>,
+    // We keep references to operators in base libraries so that the lib_ops live longer than every call of run.
+    // If we kept operators as local variable, it can/will be immediately freed after run(lib_ops).
+    lib_compiler: Vec<Object>,
+    lib_psyntax: Vec<Object>,
+    pub dynamic_winders: Object,
     // Return values.
     values: [Object; MAX_NUM_VALUES],
     num_values: usize,
@@ -82,6 +85,7 @@ pub struct Vm {
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
     pub compiled_programs: Vec<Object>,
+    current_input_port: Object,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }
@@ -97,13 +101,16 @@ impl Vm {
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
-            lib_ops: vec![],
+            lib_compiler: vec![],
+            lib_psyntax: vec![],
+            dynamic_winders: Object::Unspecified,
             num_values: 0,
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),
             should_load_compiler: false,
             is_initialized: false,
             compiled_programs: vec![],
+            current_input_port: Object::Unspecified,
         }
     }
 
@@ -155,15 +162,23 @@ impl Vm {
     }
 
     fn mark_roots(&mut self) {
-        //
+
+        // Ports.
+        self.gc.mark_object(self.current_input_port);
+
         for &compiled in &self.compiled_programs {
             self.gc.mark_object(compiled);
         }
 
         // Base library ops.
-        for &op in &self.lib_ops {
-            self.gc.mark_object(op);
+        for op in &self.lib_compiler {
+            self.gc.mark_object(*op);
         }
+        for op in &self.lib_psyntax {
+            self.gc.mark_object(*op);
+        }
+
+        self.gc.mark_object(self.dynamic_winders);
 
         // Stack.
         for &obj in &self.stack[0..self.stack_len()] {
@@ -209,15 +224,7 @@ impl Vm {
             self.initialize_free_vars(ops, ops_len);
 
             // Load the base library.
-
-            let lib_ops = if self.should_load_compiler {
-                self.register_compiler()
-            } else {
-                self.lib_ops = vec![Object::Instruction(Op::Halt)];
-                self.lib_ops.as_ptr()
-                //self.register_baselib()
-            };
-            self.run_ops(lib_ops);
+            self.load_compiler();
             self.is_initialized = true;
         }
         // Run the program.
@@ -228,13 +235,43 @@ impl Vm {
         ret
     }
 
-    pub fn register_compiler(&mut self) -> *const Object {
+    fn load_compiler(&mut self) -> Object {
         let mut fasl = Fasl {
-            bytes: compiler::BIN_COMPILER,
+            bytes: compiler::U8_ARRAY,
         };
-        let ops = fasl.read_all_sexp(&mut self.gc);
-        self.lib_ops = ops;
-        self.lib_ops.as_ptr()
+        self.lib_compiler = if self.should_load_compiler {
+            fasl.read_all_sexp(&mut self.gc)
+        } else {
+            vec![Object::Instruction(Op::Halt)]
+        };
+        self.run_ops(self.lib_compiler.as_ptr())
+    }
+
+    pub fn enable_r7rs(&mut self, args: Object) -> Object {
+        let mut fasl = Fasl {
+            bytes: psyntax::U8_ARRAY,
+        };
+        self.lib_psyntax = if self.should_load_compiler {
+            // Global variables.
+            let sym = self.gc.symbol_intern("%verbose");
+            self.set_global_value(sym.to_symbol(), Object::True);
+
+            let sym = self.gc.symbol_intern("*command-line-args*");
+            let args = args;
+            self.set_global_value(sym.to_symbol(), args);  
+
+            let sym = self.gc.symbol_intern("%loadpath");
+            let path = self.gc.new_string(".");
+            self.set_global_value(sym.to_symbol(), path);            
+
+            let sym = self.gc.symbol_intern("%vm-import-spec");
+            self.set_global_value(sym.to_symbol(), Object::False);            
+            fasl.read_all_sexp(&mut self.gc)
+        } else {
+            vec![Object::Instruction(Op::Halt)]
+        };
+
+        self.run(self.lib_psyntax.as_ptr(), self.lib_psyntax.len())
     }
 
     fn run_ops(&mut self, ops: *const Object) -> Object {
@@ -349,7 +386,19 @@ impl Vm {
                     let vox = self.gc.alloc(Vox::new(self.index(self.sp, n)));
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
-                Op::Caar => todo!(),
+                Op::Caar => match self.ac {
+                    Object::Pair(pair) => match pair.car {
+                        Object::Pair(pair) => {
+                            self.set_return_value(pair.car);
+                        }
+                        obj => {
+                            self.arg_err("caar", "pair", obj);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("caar", "pair", obj);
+                    }
+                },
                 Op::Cadr => match self.ac {
                     Object::Pair(pair) => match pair.cdr {
                         Object::Pair(pair) => {
@@ -366,7 +415,19 @@ impl Vm {
                 Op::Car => {
                     self.car_op();
                 }
-                Op::Cdar => todo!(),
+                Op::Cdar => match self.ac {
+                    Object::Pair(pair) => match pair.car {
+                        Object::Pair(pair) => {
+                            self.set_return_value(pair.cdr);
+                        }
+                        obj => {
+                            self.arg_err("cdar", "pair", obj);
+                        }
+                    },
+                    obj => {
+                        self.arg_err("cdar", "pair", obj);
+                    }
+                },
                 Op::Cddr => match self.ac {
                     Object::Pair(pair) => match pair.cdr {
                         Object::Pair(pair) => {
@@ -478,7 +539,11 @@ impl Vm {
                     let jump_offset = self.isize_operand(&mut pc);
                     pc = self.jump(pc, jump_offset - 1);
                 }
-                Op::MakeContinuation => todo!(),
+                Op::MakeContinuation => {
+                    let _n = self.isize_operand(&mut pc);
+                    let dummy = self.gc.new_string("TODO:continuation");
+                    self.set_return_value(dummy);
+                }
                 Op::MakeVector => match self.pop() {
                     Object::Number(size) => {
                         let v = vec![self.ac; size as usize];
@@ -536,7 +601,7 @@ impl Vm {
                 Op::PairP => self.set_return_value(Object::make_bool(self.ac.is_pair())),
                 Op::Read => todo!(),
                 Op::ReadChar => match self.ac {
-                    Object::InputPort(mut port) => match port.read_char() {
+                    Object::StringInputPort(mut port) => match port.read_char() {
                         Some(c) => {
                             self.set_return_value(Object::Char(c));
                         }
@@ -828,7 +893,13 @@ impl Vm {
                     self.push_op();
                     self.constant_op(&mut pc);
                 }
-                Op::ReferLocalPushConstantBranchNotLe => todo!(),
+                Op::ReferLocalPushConstantBranchNotLe => {
+                    let n = self.isize_operand(&mut pc);
+                    self.refer_local_op(n);
+                    self.push_op();
+                    self.constant_op(&mut pc);
+                    branch_number_cmp_op!(<=, self, pc);                    
+                }
                 Op::ReferLocalPushConstantBranchNotGe => {
                     let n = self.isize_operand(&mut pc);
                     self.refer_local_op(n);
@@ -1157,10 +1228,10 @@ impl Vm {
                     let start = unsafe { self.sp.offset_from(self.stack.as_ptr()) } - argc;
                     let start: usize = start as usize;
                     let uargc: usize = argc as usize;
-                    let args = &self.stack[start..start + uargc];
+                    let args = &mut self.stack[start..start + uargc];
 
                     // copying args here because we can't borrow.
-                    let args = &args.to_owned()[..];
+                    let args = &mut args.to_owned()[..];
 
                     // We convert apply call to Op::Call.
                     if procedure.func as usize == procs::apply as usize {
@@ -1372,5 +1443,42 @@ impl Vm {
             Some(&value) => value,
             _ => Object::False,
         }
+    }
+
+    pub fn set_global_value(&mut self, key: GcRef<Symbol>, value: Object) {
+        self.globals.insert(key, value);
+    }
+
+    pub fn global_value(&mut self, key: GcRef<Symbol>) -> Option<&Object> {
+        self.globals.get(&key)
+    }
+
+    pub fn current_input_port(&self) -> Object {
+        self.current_input_port
+    }
+
+    pub fn set_current_input_port(&mut self, port: Object) {
+        self.current_input_port = port;
+    }
+
+    pub fn eval(&mut self, sexp: Object) -> Object {
+        let v = self.compile(sexp).to_vector();
+        self.run(v.data.as_ptr(), v.data.len())
+    }
+
+    pub fn compile(&mut self, sexp: Object) -> Object {
+        let ops = vec![
+            Object::Instruction(Op::Frame),
+            Object::Number(8),
+            Object::Instruction(Op::Constant),
+            sexp,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::ReferGlobal),
+            self.gc.symbol_intern("compile"),
+            Object::Instruction(Op::Call),
+            Object::Number(1),
+            Object::Instruction(Op::Halt),
+        ];
+        self.run(ops.as_ptr(), ops.len())
     }
 }

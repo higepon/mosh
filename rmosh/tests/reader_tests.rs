@@ -91,6 +91,14 @@ fn parse_string() {
 }
 
 #[test]
+fn parse_special_string() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.new_string("\\a");
+    let obj = read(&mut vm.gc, "\"\\a\"").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
 fn parse_number() {
     let mut vm = Vm::new();
     let expected = Object::Number(101);
@@ -103,6 +111,14 @@ fn parse_number_list1() {
     let mut vm = Vm::new();
     let expected = vm.gc.list1(Object::Number(3));
     let obj = read(&mut vm.gc, "(3)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
+fn parse_number_comment_list1() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.list1(Object::Number(3));
+    let obj = read(&mut vm.gc, "; comment\n(3)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -143,6 +159,18 @@ fn parse_vector() {
 }
 
 #[test]
+fn parse_bytevector() {
+    let mut vm = Vm::new();
+    let expected = vm.gc.new_bytevector(&vec![
+        Object::Number(3),
+        Object::Number(4),
+        Object::Number(5),
+    ]);
+    let obj = read(&mut vm.gc, "#u8(3 4 5)").unwrap();
+    assert_equal!(vm.gc, expected, obj);
+}
+
+#[test]
 fn parse_chars() {
     let mut vm = Vm::new();
     {
@@ -152,11 +180,56 @@ fn parse_chars() {
 }
 
 #[test]
+fn parse_chars2() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "#\\あ").unwrap();
+        assert_equal!(vm.gc, Object::Char('あ'), obj);
+    }
+}
+
+#[test]
 fn parse_hex_chars() {
     let mut vm = Vm::new();
     {
         let obj = read(&mut vm.gc, "#\\x41").unwrap();
         assert_equal!(vm.gc, Object::Char('A'), obj);
+    }
+}
+
+#[test]
+fn read_quote() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "'a").unwrap();
+        let quote = vm.gc.symbol_intern("quote");
+        let symbol = vm.gc.symbol_intern("a");
+        let expected = vm.gc.list2(quote, symbol);
+        assert_equal!(vm.gc, expected, obj);
+    }
+}
+
+#[test]
+fn read_quasiquote() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "`a").unwrap();
+        let quote = vm.gc.symbol_intern("quasiquote");
+        let symbol = vm.gc.symbol_intern("a");
+        let expected = vm.gc.list2(quote, symbol);
+        assert_equal!(vm.gc, expected, obj);
+    }
+}
+
+#[test]
+fn read_unquote() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, ",a").unwrap();
+        let quote = vm.gc.symbol_intern("unquote");
+        let symbol = vm.gc.symbol_intern("a");
+        let expected = vm.gc.list2(quote, symbol);
+        assert_equal!(vm.gc, expected, obj);
     }
 }
 

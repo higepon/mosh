@@ -5,17 +5,61 @@ use crate::vm::Vm;
 
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
+use std::fs::File;
 use std::hash::Hash;
+
+// We use this Float which wraps f64.
+// Because we can't implement Hash for f64.
+#[derive(Copy, Clone)]
+pub union Float {
+    value: f64,
+    u64_value: u64,
+}
+
+impl std::hash::Hash for Float {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: std::hash::Hasher,
+    {
+        state.write_u64(unsafe { self.u64_value });
+        state.finish();
+    }
+}
+
+impl Float {
+    pub fn new(value: f64) -> Self {
+        Self { value: value }
+    }
+    #[inline(always)]
+    pub fn value(&self) -> f64 {
+        unsafe { self.value }
+    }
+}
+
+impl PartialEq for Float {
+    fn eq(&self, other: &Float) -> bool {
+        unsafe { self.u64_value == other.u64_value }
+    }
+}
+
+impl Display for Float {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value())
+    }
+}
 
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
+    ByteVector(GcRef<ByteVector>),
     Char(char),
     Closure(GcRef<Closure>),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
-    InputPort(GcRef<InputPort>),
+    Float(Float),
+    StringInputPort(GcRef<StringInputPort>),
+    FileInputPort(GcRef<FileInputPort>),
     Instruction(Op),
     Nil,
     Number(isize),
@@ -79,6 +123,14 @@ impl Object {
         }
     }
 
+    pub fn is_input_port(&self) -> bool {
+        match self {
+            Object::FileInputPort(_) => true,
+            Object::StringInputPort(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_unspecified(&self) -> bool {
         match self {
             Object::Unspecified => true,
@@ -135,6 +187,15 @@ impl Object {
             panic!("Not a Object::Symbol {}", self)
         }
     }
+
+    pub fn to_vector(self) -> GcRef<Vector> {
+        if let Self::Vector(v) = self {
+            v
+        } else {
+            panic!("Not a Object::Vector")
+        }
+    }
+
     pub fn to_vox(self) -> GcRef<Vox> {
         if let Self::Vox(v) = self {
             v
@@ -170,11 +231,17 @@ impl Eq for Object {}
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Object::InputPort(port) => {
+            Object::StringInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::FileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Char(c) => {
                 write!(f, "{}", c)
+            }
+            Object::Float(n) => {
+                write!(f, "{}", n)
             }
             Object::Number(n) => {
                 write!(f, "{}", n)
@@ -226,6 +293,9 @@ impl Debug for Object {
             }
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
+            }
+            Object::ByteVector(bytevector) => {
+                write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
@@ -237,11 +307,17 @@ impl Debug for Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Object::InputPort(port) => {
+            Object::FileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Char(c) => {
                 write!(f, "{}", c)
+            }
+            Object::Float(n) => {
+                write!(f, "{}", n)
             }
             Object::Number(n) => {
                 write!(f, "{}", n)
@@ -293,6 +369,9 @@ impl Display for Object {
             }
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
+            }
+            Object::ByteVector(bytevector) => {
+                write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
@@ -331,6 +410,43 @@ impl Display for Vector {
             }
         }
         write!(f, "]")
+    }
+}
+
+/// ByteVector
+#[derive(Debug)]
+pub struct ByteVector {
+    pub header: GcHeader,
+    pub data: Vec<u8>,
+}
+
+impl ByteVector {
+    pub fn new(data: &Vec<u8>) -> Self {
+        ByteVector {
+            header: GcHeader::new(ObjectType::ByteVector),
+            data: data.to_owned(),
+        }
+    }
+
+    pub fn equal(&self, other: &ByteVector) -> bool {
+        self.data == other.data
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+}
+
+impl Display for ByteVector {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#vu8(")?;
+        for i in 0..self.data.len() {
+            write!(f, "{}", self.data[i])?;
+            if i != self.data.len() - 1 {
+                write!(f, ", ")?;
+            }
+        }
+        write!(f, ")")
     }
 }
 
@@ -653,12 +769,12 @@ impl Display for Symbol {
 /// Procedures written in Rust.
 pub struct Procedure {
     pub header: GcHeader,
-    pub func: fn(&mut Vm, &[Object]) -> Object,
+    pub func: fn(&mut Vm, &mut [Object]) -> Object,
     pub name: String,
 }
 
 impl Procedure {
-    pub fn new(func: fn(&mut Vm, &[Object]) -> Object, name: String) -> Self {
+    pub fn new(func: fn(&mut Vm, &mut [Object]) -> Object, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
@@ -788,22 +904,22 @@ impl Display for EqHashtable {
 
 /// InputPort
 #[derive(Debug)]
-pub struct InputPort {
+pub struct StringInputPort {
     pub header: GcHeader,
     source: String,
     idx: usize,
 }
 
-impl InputPort {
+impl StringInputPort {
     fn new(source: &str) -> Self {
-        InputPort {
-            header: GcHeader::new(ObjectType::InputPort),
+        StringInputPort {
+            header: GcHeader::new(ObjectType::StringInputPort),
             source: source.to_owned(),
             idx: 0,
         }
     }
-    pub fn open(source: &str) -> std::io::Result<InputPort> {
-        Ok(InputPort::new(source))
+    pub fn open(source: &str) -> std::io::Result<StringInputPort> {
+        Ok(StringInputPort::new(source))
     }
 
     pub fn read_char(&mut self) -> Option<char> {
@@ -814,9 +930,34 @@ impl InputPort {
     }
 }
 
-impl Display for InputPort {
+impl Display for StringInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<input port>")
+        write!(f, "#<string-input-port>")
+    }
+}
+
+#[derive(Debug)]
+pub struct FileInputPort {
+    pub header: GcHeader,
+    file: File,
+}
+
+impl FileInputPort {
+    fn new(file: File) -> Self {
+        FileInputPort {
+            header: GcHeader::new(ObjectType::FileInputPort),
+            file: file,
+        }
+    }
+    pub fn open(path: &str) -> std::io::Result<FileInputPort> {
+        let file = File::open(path)?;
+        Ok(FileInputPort::new(file))
+    }
+}
+
+impl Display for FileInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<file-input-port>")
     }
 }
 
@@ -831,7 +972,7 @@ pub mod tests {
     use regex::Regex;
 
     // Helpers.
-    fn procedure1(_vm: &mut Vm, args: &[Object]) -> Object {
+    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> Object {
         assert_eq!(args.len(), 1);
         args[0]
     }
@@ -867,8 +1008,8 @@ pub mod tests {
     fn test_procedure() {
         let mut vm = Vm::new();
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
-        let stack = [Object::Number(1), Object::Number(2)];
-        match (p.func)(&mut vm, &stack[0..1]) {
+        let mut stack = [Object::Number(1), Object::Number(2)];
+        match (p.func)(&mut vm, &mut stack[0..1]) {
             Object::Number(1) => {}
             _ => {
                 panic!("Wrong return value");
@@ -897,7 +1038,14 @@ pub mod tests {
     #[test]
     fn test_closure_to_string() {
         let mut gc = Gc::new();
-        let closure = gc.alloc(Closure::new([].as_ptr(), 0, 0, false, vec![], Object::False));
+        let closure = gc.alloc(Closure::new(
+            [].as_ptr(),
+            0,
+            0,
+            false,
+            vec![],
+            Object::False,
+        ));
         let closure = Object::Closure(closure);
 
         let re = Regex::new(r"^#<closure\s[^>]+>$").unwrap();
