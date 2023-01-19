@@ -1243,9 +1243,9 @@ fn current_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-current-input-port!";
     check_argc!(name, args, 1);
-    if !args[0].is_input_port() {
-        panic!("{}: input-port required but got {}", name, args[0]);
-    }
+    //if !args[0].is_input_port() {
+    //panic!("{}: input-port required but got {}", name, args[0]);
+    //    }
     vm.set_current_input_port(args[0]);
     Object::Unspecified
 }
@@ -1828,7 +1828,12 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    if let Object::FileInputPort(mut port) = args[0] {
+        port.close();
+        Object::Unspecified
+    } else {
+        panic!("{}: required input-port but got {}", name, args[0]);
+    }
 }
 fn vector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector";
@@ -2062,6 +2067,18 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> Object {
     let argc = args.len();
     if argc == 0 {
         vm.read().unwrap()
+    } else if argc == 1 {
+        match args[0] {
+            Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {
+                Ok(obj) => obj,
+                Err(err) => {
+                    panic!("{}: {:?}", name, err)
+                }
+            },
+            _ => {
+                panic!("{}: required input-port bug got {}", name, args[0]);
+            }
+        }
     } else {
         panic!("{}({}) not implemented", name, args.len());
     }
@@ -2742,7 +2759,7 @@ fn close_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
         Object::Unspecified
     } else {
         panic!("{}: required input-port but got {}", name, args[0]);
-    }    
+    }
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-instruction";
@@ -3686,8 +3703,8 @@ fn vm_join_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     panic!("{}({}) not implemented", name, args.len());
 }
 fn is_main_vm(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "main-vm?";
-    panic!("{}({}) not implemented", name, args.len());
+    let _name: &str = "main-vm?";
+    Object::True
 }
 fn vm_self(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vm-self";
