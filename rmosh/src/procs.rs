@@ -7,7 +7,7 @@ use std::{
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{EqHashtable, FileInputPort, Object, Pair, SimpleStruct, StringInputPort},
+    objects::{EqHashtable, FileInputPort, Object, Pair, SimpleStruct, StringInputPort, FileOutputPort},
     vm::Vm,
 };
 
@@ -1823,9 +1823,19 @@ fn get_bytevector_n(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-bytevector-n";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_file_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    if let Object::String(path) = args[0] {
+        match FileOutputPort::open(&path.string) {
+            Ok(port) => Object::FileOutputPort(vm.gc.alloc(port)),
+            Err(err) => {
+                panic!("{}: {}", name, err)
+            }
+        }
+    } else {
+        panic!("{}: string required but got {}", name, args[0]);
+    }
 }
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-input-port";
