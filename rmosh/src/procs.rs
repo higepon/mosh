@@ -1220,7 +1220,17 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer->char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::Number(n) = args[0] {
+        match char::from_u32(n as u32) {
+            Some(c) => Object::Char(c),
+            None => {
+                panic!("{}: integer out of range {}", name, args[0]);
+            }
+        }
+    } else {
+        panic!("{}: integer required but got {}", name, args[0]);
+    }
 }
 fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
     // TODO
