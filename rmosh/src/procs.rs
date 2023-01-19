@@ -7,7 +7,9 @@ use std::{
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{EqHashtable, FileInputPort, Object, Pair, SimpleStruct, StringInputPort, FileOutputPort},
+    objects::{
+        EqHashtable, FileInputPort, FileOutputPort, Object, Pair, SimpleStruct, StringInputPort,
+    },
     vm::Vm,
 };
 
@@ -2779,11 +2781,18 @@ fn utf32_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn close_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-port";
     check_argc!(name, args, 1);
-    if let Object::FileInputPort(mut port) = args[0] {
-        port.close();
-        Object::Unspecified
-    } else {
-        panic!("{}: required input-port but got {}", name, args[0]);
+    match args[0] {
+        Object::FileInputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        Object::FileOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        _ => {
+            panic!("{}: required input-port but got {}", name, args[0]);
+        }
     }
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
