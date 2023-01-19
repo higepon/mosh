@@ -28,7 +28,7 @@ impl Reader {
         if self.parsed.is_unspecified() {
             let text = self.text.to_string();
             let text = "(".to_string() + &text;
-            // re2c assumes null terminated string.            
+            // re2c assumes null terminated string.
             let text = text + ")\0";
             let chars: Vec<char> = text.chars().collect();
 

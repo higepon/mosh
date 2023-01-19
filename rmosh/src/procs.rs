@@ -7,7 +7,7 @@ use std::{
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     gc::Gc,
-    objects::{EqHashtable, StringInputPort, Object, Pair, SimpleStruct, FileInputPort},
+    objects::{EqHashtable, FileInputPort, Object, Pair, SimpleStruct, StringInputPort},
     vm::Vm,
 };
 

@@ -11,7 +11,8 @@ use crate::{
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
     procs::{self, default_free_vars},
-    psyntax, read::{read, ReadError},
+    psyntax,
+    read::{read, ReadError},
 };
 
 const STACK_SIZE: usize = 1024;
@@ -162,7 +163,6 @@ impl Vm {
     }
 
     fn mark_roots(&mut self) {
-
         // Ports.
         self.gc.mark_object(self.current_input_port);
 
@@ -258,14 +258,14 @@ impl Vm {
 
             let sym = self.gc.symbol_intern("*command-line-args*");
             let args = args;
-            self.set_global_value(sym.to_symbol(), args);  
+            self.set_global_value(sym.to_symbol(), args);
 
             let sym = self.gc.symbol_intern("%loadpath");
             let path = self.gc.new_string(".");
-            self.set_global_value(sym.to_symbol(), path);            
+            self.set_global_value(sym.to_symbol(), path);
 
             let sym = self.gc.symbol_intern("%vm-import-spec");
-            self.set_global_value(sym.to_symbol(), Object::False);            
+            self.set_global_value(sym.to_symbol(), Object::False);
             fasl.read_all_sexp(&mut self.gc)
         } else {
             vec![Object::Instruction(Op::Halt)]
@@ -898,7 +898,7 @@ impl Vm {
                     self.refer_local_op(n);
                     self.push_op();
                     self.constant_op(&mut pc);
-                    branch_number_cmp_op!(<=, self, pc);                    
+                    branch_number_cmp_op!(<=, self, pc);
                 }
                 Op::ReferLocalPushConstantBranchNotGe => {
                     let n = self.isize_operand(&mut pc);
@@ -1459,16 +1459,16 @@ impl Vm {
 
     pub fn set_current_input_port(&mut self, port: Object) {
         self.current_input_port = port;
-
     }
 
-    pub fn read(&mut self) -> Result<Object, ReadError>  {
+    pub fn read(&mut self) -> Result<Object, ReadError> {
         match self.current_input_port {
-            Object::FileInputPort(mut port) => {
-                port.read(&mut self.gc)
-            }
+            Object::FileInputPort(mut port) => port.read(&mut self.gc),
             _ => {
-                panic!("read: input-port required but got {}", self.current_input_port)
+                panic!(
+                    "read: input-port required but got {}",
+                    self.current_input_port
+                )
             }
         }
     }

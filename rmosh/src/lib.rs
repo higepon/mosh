@@ -1,6 +1,5 @@
 pub mod alloc;
 pub mod compiler;
-pub mod psyntax;
 pub mod equal;
 pub mod fasl;
 pub mod gc;
@@ -9,6 +8,7 @@ pub mod lexer_iter;
 pub mod objects;
 pub mod op;
 pub mod procs;
+pub mod psyntax;
 pub mod read;
 pub mod vm;
 #[macro_use]
