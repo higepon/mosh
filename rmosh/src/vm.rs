@@ -256,6 +256,9 @@ impl Vm {
             let sym = self.gc.symbol_intern("%verbose");
             self.set_global_value(sym.to_symbol(), Object::True);
 
+            let sym = self.gc.symbol_intern("%clean-acc");
+            self.set_global_value(sym.to_symbol(), Object::False);
+
             let sym = self.gc.symbol_intern("*command-line-args*");
             let args = args;
             self.set_global_value(sym.to_symbol(), args);
