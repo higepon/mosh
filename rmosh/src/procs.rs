@@ -15,6 +15,8 @@ use crate::{
 
 use num_traits::FromPrimitive;
 
+static mut GENSYM_PREFIX: char = 'a';
+
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
         gc.new_procedure(is_number, "number?"),
@@ -4099,10 +4101,18 @@ fn join_wraps(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "join-wraps";
     panic!("{}({}) not implemented", name, args.len());
 }
+
 fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym-prefix-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::Symbol(s) = args[0] {
+        unsafe { GENSYM_PREFIX = s.string.chars().nth(0).unwrap() };
+        Object::Unspecified
+    } else {
+        panic!("{}: symbol required but got {}", name, args[0]);
+    }
 }
+
 fn current_dynamic_winders(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-dynamic-winders";
     check_argc_between!(name, args, 0, 1);
