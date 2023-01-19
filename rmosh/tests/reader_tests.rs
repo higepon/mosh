@@ -21,6 +21,7 @@ macro_rules! assert_equal {
 #[test]
 fn parse_true() {
     let mut vm = Vm::new();
+
     assert_eq!(Object::True, read(&mut vm.gc, "#t").unwrap());
     assert_eq!(Object::True, read(&mut vm.gc, "#true").unwrap());
 }

@@ -12,7 +12,7 @@ use crate::{
     op::Op,
     procs::{self, default_free_vars},
     psyntax,
-    read::{read, ReadError},
+    read::ReadError,
 };
 
 const STACK_SIZE: usize = 1024;

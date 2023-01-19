@@ -536,7 +536,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::{FileInputPort, StringInputPort};
+        use crate::objects::StringInputPort;
 
         let object_type = object_ptr.obj_type;
 

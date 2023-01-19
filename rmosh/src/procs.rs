@@ -2439,7 +2439,7 @@ fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "hashtable-hash-function";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn throw(vm: &mut Vm, args: &mut [Object]) -> Object {
+fn throw(vm: &mut Vm, _args: &mut [Object]) -> Object {
     let name: &str = "throw";
     println!("{} tentative called", name);
     vm.gc.new_string("return value of throw")

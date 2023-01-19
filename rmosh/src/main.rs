@@ -1,7 +1,6 @@
-use std::{env, fs};
+use std::env;
 
 use rmosh::objects::Object;
-use rmosh::read::read_sexps;
 use rmosh::vm::Vm;
 extern crate num_derive;
 #[macro_use]
@@ -33,12 +32,4 @@ fn main() {
     }
     let vargs = vm.gc.listn(&vargs);
     vm.enable_r7rs(vargs);
-    /*
-    let text = fs::read_to_string(args[1].to_owned()).unwrap();
-    let sexps = read_sexps(&mut vm.gc, &text);
-    for sexp in sexps {
-        vm.eval(sexp);
-    }
-    */
-    //}
 }

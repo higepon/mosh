@@ -2,7 +2,7 @@ use lalrpop_util::ParseError;
 
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::lexer::{LexicalError, Token};
+use crate::lexer::LexicalError;
 use crate::op::Op;
 use crate::read::{ReadError, Reader};
 use crate::vm::Vm;
