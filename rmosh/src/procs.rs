@@ -1211,7 +1211,12 @@ fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "char->integer";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::Char(c) = args[0] {
+        Object::Number(c as isize)
+    } else {
+        panic!("{}: char required but got {}", name, args[0]);
+    }
 }
 fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer->char";
