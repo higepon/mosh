@@ -1654,18 +1654,19 @@ fn hashtable_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
         }
     }
 }
-fn hashtable_keys(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn hashtable_keys(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "hashtable-keys";
+    check_argc!(name, args, 1);
+    let mut keys: Vec<Object> = vec![];
     match args[0] {
         Object::EqHashtable(t) => {
             for k in t.hash_map.keys() {
-                println!("key={}", k);
+                keys.push(*k);
             }
         }
         _ => {}
     }
-    println!("{}({}) not implemented", name, args.len());
-    Object::Unspecified
+    vm.gc.new_vector(&keys)
 }
 fn string_hash(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-hash";
