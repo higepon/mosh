@@ -1,3 +1,3 @@
-3
+(import (rnrs))
 
-4
+(display "Hello")

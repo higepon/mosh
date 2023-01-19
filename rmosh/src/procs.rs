@@ -1,11 +1,13 @@
 use std::{
     env::{self, current_dir, current_exe},
-    path::Path, fmt,
+    fmt,
+    path::Path,
 };
 
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
+    equal::Equal,
     gc::Gc,
     objects::{
         EqHashtable, FileInputPort, FileOutputPort, Object, Pair, SimpleStruct, StringInputPort,
@@ -1302,9 +1304,7 @@ fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
                 let name = name + &s.string;
                 vm.gc.symbol_intern(&name)
             }
-            _ => {
-                vm.gc.symbol_intern(&name)
-            }
+            _ => vm.gc.symbol_intern(&name),
         }
     } else {
         panic!("{}({}) not implemented", name, args.len());
@@ -1904,9 +1904,10 @@ fn source_info(_vm: &mut Vm, args: &mut [Object]) -> Object {
         _ => Object::False,
     }
 }
-fn eval(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn eval(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    vm.eval_after(args[0])
 }
 fn eval_compiled(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval-compiled";
@@ -3484,9 +3485,11 @@ fn print_stack(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "print-stack";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fast_equal(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_fast_equal(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fast-equal?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let e = Equal::new();
+    Object::make_bool(e.is_equal(&mut vm.gc, &args[0], &args[1]))
 }
 fn native_eol_style(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "native-eol-style";

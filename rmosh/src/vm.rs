@@ -1480,6 +1480,12 @@ impl Vm {
         }
     }
 
+    pub fn eval_after(&mut self, sexp: Object) -> Object {
+        println!("TODO: this eval is tentative {}", sexp);
+        let v = self.compile(sexp).to_vector();
+        self.run(v.data.as_ptr(), v.data.len())
+    }
+
     pub fn eval(&mut self, sexp: Object) -> Object {
         let v = self.compile(sexp).to_vector();
         self.run(v.data.as_ptr(), v.data.len())
