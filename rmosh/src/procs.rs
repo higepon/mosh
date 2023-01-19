@@ -1706,7 +1706,8 @@ fn vm_apply(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_pair(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "pair?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_pair())
 }
 fn make_custom_binary_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-custom-binary-input-port";
