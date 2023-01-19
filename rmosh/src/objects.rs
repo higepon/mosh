@@ -1,12 +1,17 @@
-use crate::gc::GcRef;
+use lalrpop_util::ParseError;
+
+use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
+use crate::lexer::{LexicalError, Token};
 use crate::op::Op;
+use crate::read::{ReadError, Reader};
 use crate::vm::Vm;
 
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
-use std::fs::File;
+use std::fs::{File};
 use std::hash::Hash;
+use std::io::Read;
 
 // We use this Float which wraps f64.
 // Because we can't implement Hash for f64.
@@ -940,6 +945,7 @@ impl Display for StringInputPort {
 pub struct FileInputPort {
     pub header: GcHeader,
     file: File,
+    pub reader: Option<Reader>,
 }
 
 impl FileInputPort {
@@ -947,11 +953,41 @@ impl FileInputPort {
         FileInputPort {
             header: GcHeader::new(ObjectType::FileInputPort),
             file: file,
+            reader: None,
         }
     }
     pub fn open(path: &str) -> std::io::Result<FileInputPort> {
         let file = File::open(path)?;
         Ok(FileInputPort::new(file))
+    }
+
+    pub fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
+        self.file.read_to_string(str)
+    }
+
+    pub fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError> {
+        match &mut self.reader {
+            Some(reader) => reader.read(gc),
+            None => {
+                let mut text = String::new();
+                match self.read_to_string(&mut text) {
+                    Ok(_) => {
+                        let mut reader = Reader::new(&text);
+                        let parsed = reader.read(gc);
+                        self.reader = Some(reader);
+                        parsed
+                    }
+                    // todo todo
+                    Err(_) => Err(ParseError::User {
+                        error: LexicalError {
+                            start: 0,
+                            end: 0,
+                            token: "can't read file".to_owned(),
+                        },
+                    }),
+                }
+            }
+        }
     }
 }
 

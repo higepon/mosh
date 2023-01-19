@@ -28,7 +28,7 @@ fn main() {
         let mut vm = Vm::new();
         vm.should_load_compiler = true;
         let mut vargs: Vec<Object> = vec![];
-        for i in 0..args.len() {
+        for i in 1..args.len() {
             vargs.push(vm.gc.new_string(&args[i]));
         }
         let vargs = vm.gc.listn(&vargs);

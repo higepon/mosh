@@ -11,7 +11,7 @@ use crate::{
     objects::{Closure, Object, Pair, Symbol, Vox},
     op::Op,
     procs::{self, default_free_vars},
-    psyntax,
+    psyntax, read::{read, ReadError},
 };
 
 const STACK_SIZE: usize = 1024;
@@ -1459,6 +1459,18 @@ impl Vm {
 
     pub fn set_current_input_port(&mut self, port: Object) {
         self.current_input_port = port;
+
+    }
+
+    pub fn read(&mut self) -> Result<Object, ReadError>  {
+        match self.current_input_port {
+            Object::FileInputPort(mut port) => {
+                port.read(&mut self.gc)
+            }
+            _ => {
+                panic!("read: input-port required but got {}", self.current_input_port)
+            }
+        }
     }
 
     pub fn eval(&mut self, sexp: Object) -> Object {

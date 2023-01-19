@@ -2057,12 +2057,14 @@ fn is_chargt(_vm: &mut Vm, args: &mut [Object]) -> Object {
     }
     Object::True
 }
-fn read(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn read(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "read";
-    for i in 0..args.len() {
-        println!("arg={}", args[i]);
+    let argc = args.len();
+    if argc == 0 {
+        vm.read().unwrap()
+    } else {
+        panic!("{}({}) not implemented", name, args.len());
     }
-    panic!("{}({}) not implemented", name, args.len());
 }
 fn vector_to_list(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector->list";

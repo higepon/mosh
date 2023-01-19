@@ -1,4 +1,9 @@
-use rmosh::{equal::Equal, objects::Object, read::read, vm::Vm};
+use rmosh::{
+    equal::Equal,
+    objects::Object,
+    read::{read, Reader},
+    vm::Vm,
+};
 
 #[macro_export]
 macro_rules! assert_equal {
@@ -231,6 +236,24 @@ fn read_unquote() {
         let expected = vm.gc.list2(quote, symbol);
         assert_equal!(vm.gc, expected, obj);
     }
+}
+
+#[test]
+fn parse_multiple() {
+    let mut vm = Vm::new();
+    let mut reader = Reader::new("(3) (4)");
+
+    let expected = vm.gc.list1(Object::Number(3));
+    let parsed = reader.read(&mut vm.gc).unwrap();
+    assert_equal!(vm.gc, expected, parsed);
+
+    let expected = vm.gc.list1(Object::Number(4));
+    let parsed = reader.read(&mut vm.gc).unwrap();
+    assert_equal!(vm.gc, expected, parsed);
+
+    let expected = Object::Eof;
+    let parsed = reader.read(&mut vm.gc).unwrap();
+    assert_equal!(vm.gc, expected, parsed);
 }
 
 #[test]

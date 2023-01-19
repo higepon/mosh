@@ -15,7 +15,7 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
     ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
-    Vector, Vox,
+    Vector, Vox, FileInputPort,
 };
 use crate::vm::Vm;
 
@@ -360,7 +360,9 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
-            Object::FileInputPort(_) => {}            
+            Object::FileInputPort(port) => {
+                self.mark_heap_object(port);                
+            }            
             Object::StringInputPort(_) => {}
             Object::Nil => {}
             Object::Float(_) => {}            
@@ -501,7 +503,15 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
-            ObjectType::FileInputPort => {}            
+            ObjectType::FileInputPort => {
+                let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                match &port.reader {
+                    None => {},
+                    Some(reader) => {
+                        self.mark_object(reader.parsed);
+                    }
+                }
+            }            
             ObjectType::StringInputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
