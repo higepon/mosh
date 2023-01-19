@@ -945,6 +945,7 @@ impl Display for StringInputPort {
 pub struct FileInputPort {
     pub header: GcHeader,
     file: File,
+    is_closed: bool,
     pub reader: Option<Reader>,
 }
 
@@ -953,12 +954,17 @@ impl FileInputPort {
         FileInputPort {
             header: GcHeader::new(ObjectType::FileInputPort),
             file: file,
+            is_closed: false,
             reader: None,
         }
     }
     pub fn open(path: &str) -> std::io::Result<FileInputPort> {
         let file = File::open(path)?;
         Ok(FileInputPort::new(file))
+    }
+
+    pub fn close(&mut self) {
+        self.is_closed = true;
     }
 
     pub fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {

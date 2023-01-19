@@ -2736,7 +2736,13 @@ fn utf32_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn close_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::FileInputPort(mut port) = args[0] {
+        port.close();
+        Object::Unspecified
+    } else {
+        panic!("{}: required input-port but got {}", name, args[0]);
+    }    
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-instruction";
