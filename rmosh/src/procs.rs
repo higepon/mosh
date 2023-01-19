@@ -4084,7 +4084,19 @@ fn simple_struct_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn simple_struct_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "simple-struct-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match (args[0], args[1]) {
+        (Object::SimpleStruct(mut s), Object::Number(index)) => {
+            s.set(index as usize, args[2]);
+            Object::Unspecified
+        }
+        _ => {
+            panic!(
+                "{}: simple-struct and number required but got {} and {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 fn simple_struct_name(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "simple-struct-name";

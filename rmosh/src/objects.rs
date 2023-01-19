@@ -494,6 +494,10 @@ impl SimpleStruct {
         }
     }
 
+    pub fn set(&mut self, index: usize, obj: Object) {
+        self.data[index] = obj;
+    }
+
     pub fn len(&self) -> usize {
         self.len
     }
