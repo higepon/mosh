@@ -1,6 +1,6 @@
 use std::{
     env::{self, current_dir, current_exe},
-    path::Path,
+    path::Path, fmt,
 };
 
 /// Scheme procedures written in Rust.
@@ -16,6 +16,7 @@ use crate::{
 use num_traits::FromPrimitive;
 
 static mut GENSYM_PREFIX: char = 'a';
+static mut GENSYM_INDEX: isize = 0;
 
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
@@ -1289,9 +1290,25 @@ fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
     }
     args[0]
 }
-fn gensym(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 0, 1);
+    let argc = args.len();
+    if argc == 1 {
+        let name = unsafe { format!("{}{}", GENSYM_PREFIX, GENSYM_INDEX) };
+        unsafe { GENSYM_INDEX += 1 };
+        match args[0] {
+            Object::Symbol(s) => {
+                let name = name + &s.string;
+                vm.gc.symbol_intern(&name)
+            }
+            _ => {
+                vm.gc.symbol_intern(&name)
+            }
+        }
+    } else {
+        panic!("{}({}) not implemented", name, args.len());
+    }
 }
 fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string=?";
