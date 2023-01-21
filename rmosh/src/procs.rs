@@ -1919,7 +1919,8 @@ fn source_info(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn eval(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval";
     check_argc!(name, args, 2);
-    vm.eval_after(args[0])
+    panic!("hoge");
+    //vm.eval_after(args[0])
 }
 fn eval_compiled(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval-compiled";

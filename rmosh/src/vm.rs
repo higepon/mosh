@@ -86,6 +86,7 @@ pub struct Vm {
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
     pub compiled_programs: Vec<Object>,
+    pub trigger0_code: Vec<Object>,
     current_input_port: Object,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
@@ -93,7 +94,7 @@ pub struct Vm {
 
 impl Vm {
     pub fn new() -> Self {
-        Self {
+        let mut ret = Self {
             gc: Box::new(Gc::new()),
             stack: [Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
@@ -111,8 +112,17 @@ impl Vm {
             should_load_compiler: false,
             is_initialized: false,
             compiled_programs: vec![],
+            trigger0_code: vec![],
             current_input_port: Object::Unspecified,
-        }
+        };
+        ret.trigger0_code.push(Object::Instruction(Op::Constant));
+        ret.trigger0_code.push(Object::Unspecified);
+        ret.trigger0_code.push(Object::Instruction(Op::Call));
+        ret.trigger0_code.push(Object::Number(0));
+        ret.trigger0_code.push(Object::Instruction(Op::Return));
+        ret.trigger0_code.push(Object::Number(0));
+        ret.trigger0_code.push(Object::Instruction(Op::Halt));
+        ret
     }
 
     pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
@@ -168,6 +178,10 @@ impl Vm {
 
         for &compiled in &self.compiled_programs {
             self.gc.mark_object(compiled);
+        }
+
+        for &obj in &self.trigger0_code {
+            self.gc.mark_object(obj);
         }
 
         // Base library ops.
@@ -259,9 +273,8 @@ impl Vm {
             let sym = self.gc.symbol_intern("%clean-acc");
             self.set_global_value(sym.to_symbol(), Object::False);
 
-
             let sym = self.gc.symbol_intern("%disable-acc");
-            self.set_global_value(sym.to_symbol(), Object::True);            
+            self.set_global_value(sym.to_symbol(), Object::True);
 
             let sym = self.gc.symbol_intern("*command-line-args*");
             let args = args;
@@ -1480,10 +1493,41 @@ impl Vm {
         }
     }
 
-    pub fn eval_after(&mut self, sexp: Object) -> Object {
-        println!("TODO: this eval is tentative {}", sexp);
+    pub fn eval_after(&mut self, pc: &mut *const Object, sexp: Object) -> Object {
         let v = self.compile(sexp).to_vector();
-        self.run(v.data.as_ptr(), v.data.len())
+        let code_size = v.len();
+        let body_size = code_size + 2;
+        // TODO: Take care of this lifetime.
+        let mut body: Vec<Object> = vec![];
+        for i in 0..code_size {
+            body.push(v.data[i]);
+        }
+        body.push(Object::Instruction(Op::Return));
+        body.push(Object::Number(0));
+        // todo: Should shere this!
+        let free_vars = default_free_vars(&mut self.gc);
+        let c = self.gc.alloc(Closure::new(
+            body.as_ptr(),
+            body_size,
+            0,
+            false,
+            free_vars,
+            Object::False,
+        ));
+
+        return self.set_after_trigger0(pc, Object::Closure(c));
+    }
+
+    pub fn set_after_trigger0(&mut self, pc: &mut *const Object, closure: Object) -> Object {
+        self.push(Object::ProgramCounter(*pc));
+        self.push(self.dc);
+        // TODO: This should be cl register.
+        self.push(self.dc);
+        self.push(Object::ObjectPointer(self.fp));
+
+        self.trigger0_code[1] = closure;
+        *pc = self.trigger0_code.as_ptr();
+        return self.ac;
     }
 
     pub fn eval(&mut self, sexp: Object) -> Object {
