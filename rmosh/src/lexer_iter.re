@@ -160,8 +160,8 @@ impl<'input> Iterator for Lexer<'input> {
                 COMMENT {
                     continue 'lex;
                 }
-                $ { println!("EOF"); return None; }
-                * { println!("LEX ERROR");return Some(Err(LexicalError {
+                $ { return None; }
+                * { return Some(Err(LexicalError {
                         start: self.tok,
                         end: self.cursor,
                         token: self.extract_token()

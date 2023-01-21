@@ -1250,7 +1250,10 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
     } else if args.len() == 4 {
         format!("{} {} {} {}", args[0], args[1], args[2], args[3])
     } else if args.len() == 5 {
-        format!("{} {} {} {} {}", args[0], args[1], args[2], args[3], args[4])
+        format!(
+            "{} {} {} {} {}",
+            args[0], args[1], args[2], args[3], args[4]
+        )
     } else {
         panic!("format {:?}", args);
     };
@@ -1872,7 +1875,6 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-input-port";
     check_argc_at_least!(name, args, 1);
-    println!("OPEN:{}", args[0]);
     if let Object::String(path) = args[0] {
         match FileInputPort::open(&path.string) {
             Ok(port) => Object::FileInputPort(vm.gc.alloc(port)),
@@ -4181,7 +4183,6 @@ fn is_same_marks(_vm: &mut Vm, args: &mut [Object]) -> Object {
                (same-marks? (cdr x) (cdr y))))))
 */
 fn is_same_marks_raw(x: Object, y: Object) -> bool {
-    println!("{} x={} y={}", "is_same_marks_raw", x, y);
     let mut x = x;
     let mut y = y;
     loop {
@@ -4252,11 +4253,9 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
         let sym = id.field(0);
         let mut mark_mul = id.field(1);
         let mut subst_mul = id.field(2);
-        println!("{} sym={} mark_mul={} subst_mul={}", "id_to_real_label", sym, mark_mul, subst_mul);
         let shift_symbol = vm.gc.symbol_intern("shift");
         loop {
             if subst_mul.is_nil() {
-                println!("{} return false",  "id->real-label");
                 return Object::False;
             }
 
@@ -4283,8 +4282,6 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
                         subst_mul = subst_mul.cdr_unchecked();
                         continue;
                     } else {
-                        println!("{} return found1 {}",  "id->real-label", rib.to_simple_struct().field(2).to_vector().data
-                        [i.to_number() as usize]);                        
                         return rib.to_simple_struct().field(2).to_vector().data
                             [i.to_number() as usize];
                     }
@@ -4299,7 +4296,6 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
                         } else if sym == sym_mul.car_unchecked()
                             && is_same_marks_raw(mark_mul_mul.car_unchecked(), mark_mul)
                         {
-                            println!("{} return found2",  "id->real-label");                             
                             return label_mul.car_unchecked();
                         } else {
                             sym_mul = sym_mul.cdr_unchecked();
@@ -4335,7 +4331,6 @@ fn join_wraps(vm: &mut Vm, args: &mut [Object]) -> Object {
     let s1_mul = args[1];
     let ae1_mul = args[2];
     let e = args[3];
-    println!("{}: {}, {}, {}, {}", name, args[0], args[1], args[2], args[3]);
     let m2_mul = e.to_simple_struct().field(1);
     let s2_mul = e.to_simple_struct().field(2);
     let ae2_mul = e.to_simple_struct().field(3);

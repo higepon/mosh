@@ -47,7 +47,6 @@ impl Reader {
         } else {
             let obj = self.parsed.car_unchecked();
             self.parsed = self.parsed.cdr_unchecked();
-            println!("READ result={}", obj);
             return Ok(obj);
         }
     }
