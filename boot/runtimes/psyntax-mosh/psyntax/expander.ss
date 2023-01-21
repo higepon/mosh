@@ -603,11 +603,13 @@
   ;;; none of which is bound-id=? to another.
   (define valid-bound-ids?
     (lambda (id*)
+      (format (current-error-port) "valid-bound-ids  ~a ~a"  (for-all id? id*) (distinct-bound-ids? id*))
       (and (for-all id? id*)
            (distinct-bound-ids? id*))))
 
   (define distinct-bound-ids?
     (lambda (id*)
+    (format (current-error-port) "distinct ~a " (null? id*))
       (or (null? id*)
           ;; In R7RS small we allow multple _ in <pattern>.q
           (and (or (eq? (stx-expr (car id*)) '_) (not (bound-id-member? (car id*) (cdr id*))))
@@ -3369,8 +3371,10 @@
 
   (define (parse-exports exp*)
     (let f ((exp* exp*) (int* '()) (ext* '()))
+      (format (current-error-port) "parse-ex0 state [~a] [~a] [~a]" exp* int* ext*)    
       (cond
         ((null? exp*)
+         (format (current-error-port) "parse-ex [~a] [~a] [~a]" exp* int* ext*)
          (unless (valid-bound-ids? ext*)
              (syntax-violation 'export "invalid exports"
               (find-dups ext*)))

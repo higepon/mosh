@@ -45,8 +45,9 @@ impl Reader {
         if self.parsed.is_nil() {
             return Ok(Object::Eof);
         } else {
-            let obj = self.parsed.to_pair().car;
-            self.parsed = self.parsed.to_pair().cdr;
+            let obj = self.parsed.car_unchecked();
+            self.parsed = self.parsed.cdr_unchecked();
+            println!("READ result={}", obj);
             return Ok(obj);
         }
     }

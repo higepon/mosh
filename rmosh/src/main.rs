@@ -30,6 +30,7 @@ fn main() {
     for i in 1..args.len() {
         vargs.push(vm.gc.new_string(&args[i]));
     }
+    vargs.push(vm.gc.new_string("fib.scm"));
     let vargs = vm.gc.listn(&vargs);
     vm.enable_r7rs(vargs);
 }

@@ -1138,9 +1138,9 @@ impl Vm {
     #[inline(always)]
     fn branch_not_null_op(&mut self, pc: &mut *const Object, skip_offset: isize) {
         if self.ac.is_nil() {
-            self.set_return_value(Object::False);
-        } else {
             self.set_return_value(Object::True);
+        } else {
+            self.set_return_value(Object::False);
             *pc = self.jump(*pc, skip_offset - 1);
         }
     }

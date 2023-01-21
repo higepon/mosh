@@ -172,6 +172,20 @@ impl Object {
             panic!("Not a Object::Number")
         }
     }
+    pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {
+        if let Self::EqHashtable(e) = self {
+            e
+        } else {
+            panic!("Not a Object::EqHashtable")
+        }
+    }
+    pub fn to_simple_struct(self) -> GcRef<SimpleStruct> {
+        if let Self::SimpleStruct(s) = self {
+            s
+        } else {
+            panic!("Not a Object::SimpleStruct")
+        }
+    }
     pub fn to_instruction(self) -> Op {
         if let Self::Instruction(p) = self {
             p
@@ -185,6 +199,12 @@ impl Object {
         } else {
             panic!("Not a Object::Pair")
         }
+    }
+    pub fn car_unchecked(self) -> Object {
+        self.to_pair().car
+    }
+    pub fn cdr_unchecked(self) -> Object {
+        self.to_pair().cdr
     }
     pub fn to_symbol(self) -> GcRef<Symbol> {
         if let Self::Symbol(s) = self {
@@ -245,7 +265,7 @@ impl Debug for Object {
             }
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -321,7 +341,7 @@ impl Display for Object {
             }
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -494,6 +514,10 @@ impl SimpleStruct {
         }
     }
 
+    pub fn field(&self, index: usize) -> Object {
+        self.data[index]
+    }
+
     pub fn set(&mut self, index: usize, obj: Object) {
         self.data[index] = obj;
     }
@@ -543,7 +567,7 @@ impl Pair {
             if obj.is_nil() {
                 break;
             }
-            obj = obj.to_pair().cdr;
+            obj = obj.cdr_unchecked();
             len += 1;
         }
         len
@@ -659,6 +683,19 @@ impl Pair {
                 panic!("never reached");
             }
         }
+    }
+
+    pub fn reverse(gc: &mut Box<Gc>, lst: Object) -> Object {
+        let mut ret = Object::Nil;
+        let mut p = lst;
+        loop {
+            if !p.is_pair() {
+                break;
+            }
+            ret = gc.cons(p.car_unchecked(), ret);
+            p = p.cdr_unchecked();
+        }
+        return ret;
     }
 }
 

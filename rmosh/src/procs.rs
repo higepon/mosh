@@ -913,7 +913,9 @@ fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    println!("{} dummy implementation", name);
+    Object::False
 }
 fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp->string";
@@ -1247,6 +1249,8 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
         format!("{} {} {}", args[0], args[1], args[2])
     } else if args.len() == 4 {
         format!("{} {} {} {}", args[0], args[1], args[2], args[3])
+    } else if args.len() == 5 {
+        format!("{} {} {} {} {}", args[0], args[1], args[2], args[3], args[4])
     } else {
         panic!("format {:?}", args);
     };
@@ -1603,7 +1607,12 @@ fn member(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_boolean(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "boolean?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::True => Object::True,
+        Object::False => Object::True,
+        _ => Object::False,
+    }
 }
 fn symbol_to_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "symbol->string";
@@ -1863,6 +1872,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-input-port";
     check_argc_at_least!(name, args, 1);
+    println!("OPEN:{}", args[0]);
     if let Object::String(path) = args[0] {
         match FileInputPort::open(&path.string) {
             Ok(port) => Object::FileInputPort(vm.gc.alloc(port)),
@@ -1978,10 +1988,10 @@ fn memv(_vm: &mut Vm, args: &mut [Object]) -> Object {
         if o.is_nil() {
             break;
         }
-        if o.to_pair().car.eqv(&arg1) {
+        if o.car_unchecked().eqv(&arg1) {
             return o;
         }
-        o = o.to_pair().cdr;
+        o = o.cdr_unchecked();
     }
     return Object::False;
 }
@@ -2119,7 +2129,10 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> Object {
     } else if argc == 1 {
         match args[0] {
             Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {
-                Ok(obj) => obj,
+                Ok(obj) => {
+                    println!("READ result={}", obj);
+                    obj
+                }
                 Err(err) => {
                     panic!("{}: {:?}", name, err)
                 }
@@ -2318,7 +2331,7 @@ fn list_to_vector(vm: &mut Vm, args: &mut [Object]) -> Object {
         if obj.is_nil() {
             break;
         }
-        v.push(obj.to_pair().car);
+        v.push(obj.car_unchecked());
         obj = obj.to_pair().cdr;
     }
     vm.gc.new_vector(&v)
@@ -2345,20 +2358,20 @@ fn do_transpose(vm: &mut Vm, each_len: usize, args: &mut [Object]) -> Object {
     let mut ans = Object::Nil;
     let mut ans_tail = Object::Nil;
     for _ in 0..each_len {
-        let elt = vm.gc.cons(args[0].to_pair().car, Object::Nil);
+        let elt = vm.gc.cons(args[0].car_unchecked(), Object::Nil);
         let mut elt_tail = elt;
-        args[0] = args[0].to_pair().cdr;
+        args[0] = args[0].cdr_unchecked();
         for n in 1..args.len() {
-            elt_tail.to_pair().cdr = vm.gc.cons(args[n].to_pair().car, Object::Nil);
-            elt_tail = elt_tail.to_pair().cdr;
-            args[n] = args[n].to_pair().cdr;
+            elt_tail.to_pair().cdr = vm.gc.cons(args[n].car_unchecked(), Object::Nil);
+            elt_tail = elt_tail.cdr_unchecked();
+            args[n] = args[n].cdr_unchecked();
         }
         if ans == Object::Nil {
             ans = vm.gc.cons(elt, Object::Nil);
             ans_tail = ans;
         } else {
             ans_tail.to_pair().cdr = vm.gc.cons(elt, Object::Nil);
-            ans_tail = ans_tail.to_pair().cdr;
+            ans_tail = ans_tail.cdr_unchecked();
         }
     }
     return ans;
@@ -2596,7 +2609,11 @@ fn get_datum(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(_) => Object::True,
+        _ => Object::False,
+    }
 }
 fn current_directory(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-directory";
@@ -4119,21 +4136,222 @@ fn nongenerative_rtd_set_destructive(vm: &mut Vm, args: &mut [Object]) -> Object
     vm.set_rtd(args[0], args[1]);
     Object::Unspecified
 }
-fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+/* psyntax/expander.ss
+(define (same-marks*? mark* mark** si)
+    (if (null? si)
+        #f
+        (if (same-marks? mark* (vector-ref mark** (car si)))
+            (car si)
+            (same-marks*? mark* mark** (cdr si)))))
+*/
+fn is_same_marksmul(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "same-marks*?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mark_mul = args[0];
+    let mark_mul_mul = args[1];
+    let mut si = args[2];
+    loop {
+        if si.is_nil() {
+            return Object::False;
+        }
+        if is_same_marks_raw(
+            mark_mul,
+            mark_mul_mul.to_vector().data[si.car_unchecked().to_number() as usize],
+        ) {
+            return si.car_unchecked();
+        }
+        si = si.cdr_unchecked();
+    }
 }
+
 fn is_same_marks(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "same-marks?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn id_to_real_label(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "id->real-label";
-    panic!("{}({}) not implemented", name, args.len());
+
+/* psyntax/expander.ss
+  ;;; Two lists of marks are considered the same if they have the
+  ;;; same length and the corresponding marks on each are eq?.
+  (define same-marks?
+    (lambda (x y)
+      (or (and (null? x) (null? y)) ;(eq? x y)
+          (and (pair? x) (pair? y)
+               (eq? (car x) (car y))
+               (same-marks? (cdr x) (cdr y))))))
+*/
+fn is_same_marks_raw(x: Object, y: Object) -> bool {
+    println!("{} x={} y={}", "is_same_marks_raw", x, y);
+    let mut x = x;
+    let mut y = y;
+    loop {
+        if x.is_nil() && y.is_nil() {
+            return true;
+        }
+        if x.is_nil() && !y.is_nil() {
+            return false;
+        }
+        if !x.is_nil() && y.is_nil() {
+            return false;
+        }
+        if x.is_pair() && !y.is_pair() {
+            return false;
+        }
+        if !x.is_pair() && y.is_pair() {
+            return false;
+        }
+        if x.car_unchecked() != y.car_unchecked() {
+            return false;
+        }
+        x = x.cdr_unchecked();
+        y = y.cdr_unchecked();
+    }
 }
-fn join_wraps(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+/* psyntax/expander.ss
+(define id->real-label
+    (lambda (id)
+      (let ((sym (id->sym id)))
+        (let search ((subst* (stx-subst* id)) (mark* (stx-mark* id)))
+          (cond
+            ((null? subst*) #f)
+            ((eq? (car subst*) 'shift)
+             ;;; a shift is inserted when a mark is added.
+             ;;; so, we search the rest of the substitution
+             ;;; without the mark.
+             (search (cdr subst*) (cdr mark*)))
+            (else
+             (let ((rib (car subst*)))
+               (cond
+                 ((rib-sealed/freq rib) =>
+                  (lambda (ht)
+                    (let ((si (hashtable-ref ht sym #f)))
+                      (let ((i (and si
+                            (same-marks*? mark*
+                              (rib-mark** rib) (reverse si)))))
+                        (if i
+                          (vector-ref (rib-label* rib) i)
+                        (search (cdr subst*) mark*))))))
+;                 ((find-label rib sym mark*))
+                 (else
+                  (let f ((sym* (rib-sym* rib))
+                          (mark** (rib-mark** rib))
+                          (label* (rib-label* rib)))
+                    (cond
+                      ((null? sym*) (search (cdr subst*) mark*))
+                      ((and (eq? (car sym*) sym)
+                            (same-marks? (car mark**) mark*))
+                       (car label*))
+                      (else (f (cdr sym*) (cdr mark**) (cdr label*))))))))))))))
+*/
+
+fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
+    let name: &str = "id->real-label";
+    check_argc!(name, args, 1);
+    if let Object::SimpleStruct(id) = args[0] {
+        let sym = id.field(0);
+        let mut mark_mul = id.field(1);
+        let mut subst_mul = id.field(2);
+        println!("{} sym={} mark_mul={} subst_mul={}", "id_to_real_label", sym, mark_mul, subst_mul);
+        let shift_symbol = vm.gc.symbol_intern("shift");
+        loop {
+            if subst_mul.is_nil() {
+                println!("{} return false",  "id->real-label");
+                return Object::False;
+            }
+
+            if subst_mul.car_unchecked() == shift_symbol {
+                subst_mul = subst_mul.cdr_unchecked();
+                mark_mul = mark_mul.cdr_unchecked();
+                continue;
+            } else {
+                let rib = subst_mul.car_unchecked();
+                let rib_sealed_freq = rib.to_simple_struct().field(3);
+                if !rib_sealed_freq.is_false() {
+                    let si = rib_sealed_freq.to_eq_hashtable().get(sym, Object::False);
+                    let mut i = Object::Unspecified;
+                    if si.is_false() {
+                        i = Object::False;
+                    } else {
+                        let mut xs: [Object; 3] = [Object::Unspecified; 3];
+                        xs[0] = mark_mul;
+                        xs[1] = rib.to_simple_struct().field(1);
+                        xs[2] = Pair::reverse(&mut vm.gc, si);
+                        i = is_same_marksmul(vm, &mut xs);
+                    }
+                    if i.is_false() {
+                        subst_mul = subst_mul.cdr_unchecked();
+                        continue;
+                    } else {
+                        println!("{} return found1 {}",  "id->real-label", rib.to_simple_struct().field(2).to_vector().data
+                        [i.to_number() as usize]);                        
+                        return rib.to_simple_struct().field(2).to_vector().data
+                            [i.to_number() as usize];
+                    }
+                } else {
+                    let mut sym_mul = rib.to_simple_struct().field(0);
+                    let mut mark_mul_mul = rib.to_simple_struct().field(1);
+                    let mut label_mul = rib.to_simple_struct().field(2);
+                    loop {
+                        if sym_mul.is_nil() {
+                            subst_mul = subst_mul.cdr_unchecked();
+                            break;
+                        } else if sym == sym_mul.car_unchecked()
+                            && is_same_marks_raw(mark_mul_mul.car_unchecked(), mark_mul)
+                        {
+                            println!("{} return found2",  "id->real-label");                             
+                            return label_mul.car_unchecked();
+                        } else {
+                            sym_mul = sym_mul.cdr_unchecked();
+                            mark_mul_mul = mark_mul_mul.cdr_unchecked();
+                            label_mul = label_mul.cdr_unchecked();
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        panic!("{}: simple-struct required but got {}", name, args[0]);
+    }
+}
+
+fn f(gc: &mut Box<Gc>, x: Object, ls1: Object, ls2: Object) -> Object {
+    if ls1.is_nil() {
+        return ls2.cdr_unchecked();
+    } else {
+        let kdr = f(gc, ls1.car_unchecked(), ls1.cdr_unchecked(), ls2);
+        return gc.cons(x, kdr);
+    }
+}
+
+fn cancel(gc: &mut Box<Gc>, ls1: Object, ls2: Object) -> Object {
+    f(gc, ls1.car_unchecked(), ls1.cdr_unchecked(), ls2)
+}
+
+fn join_wraps(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "join-wraps";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let m1_mul = args[0];
+    let s1_mul = args[1];
+    let ae1_mul = args[2];
+    let e = args[3];
+    println!("{}: {}, {}, {}, {}", name, args[0], args[1], args[2], args[3]);
+    let m2_mul = e.to_simple_struct().field(1);
+    let s2_mul = e.to_simple_struct().field(2);
+    let ae2_mul = e.to_simple_struct().field(3);
+    if !m1_mul.is_nil() && !m2_mul.is_nil() && m2_mul.car_unchecked().is_false() {
+        let x = cancel(&mut vm.gc, m1_mul, m2_mul);
+        let y = cancel(&mut vm.gc, s1_mul, s2_mul);
+        let z = cancel(&mut vm.gc, ae1_mul, ae2_mul);
+        let values = [x, y, z];
+        return vm.values(&values);
+    } else {
+        let x = vm.gc.append2(m1_mul, m2_mul);
+        let y = vm.gc.append2(s1_mul, s2_mul);
+        let z = vm.gc.append2(ae1_mul, ae2_mul);
+        let values = [x, y, z];
+        return vm.values(&values);
+    }
 }
 
 fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
