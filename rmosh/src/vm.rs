@@ -16,7 +16,7 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
-    procs::{default_free_vars},
+    procs::default_free_vars,
     psyntax,
     read::ReadError,
 };
@@ -169,6 +169,22 @@ impl Vm {
         };
 
         self.run(self.lib_psyntax.as_ptr(), self.lib_psyntax.len())
+    }
+
+    pub fn values(&mut self, values: &[Object]) -> Object {
+        let n = values.len();
+        self.num_values = n;
+        if 0 == n {
+            return Object::Unspecified;
+        }
+        for i in 1..n as usize {
+            if i >= MAX_NUM_VALUES {
+                panic!("values: too many values");
+            }
+            self.values[i - 1] = values[i];
+        }
+        // this is set to ac later.
+        return values[0];
     }
 
     pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {

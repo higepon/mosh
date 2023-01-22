@@ -4,30 +4,7 @@ use crate::{
     vm::Vm,
 };
 
-use super::MAX_NUM_VALUES;
-
 impl Vm {
-    /*
-    pub(super) fn intern(&mut self, s: &str) -> GcRef<Symbol> {
-        self.gc.intern(s)
-    }
-    */
-    pub fn values(&mut self, values: &[Object]) -> Object {
-        let n = values.len();
-        self.num_values = n;
-        if 0 == n {
-            return Object::Unspecified;
-        }
-        for i in 1..n as usize {
-            if i >= MAX_NUM_VALUES {
-                panic!("values: too many values");
-            }
-            self.values[i - 1] = values[i];
-        }
-        // this is set to ac later.
-        return values[0];
-    }
-
     #[inline(always)]
     pub(super) fn return_n(&mut self, n: isize) {
         #[cfg(feature = "debug_log_vm")]
