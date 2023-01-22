@@ -549,7 +549,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::{StringInputPort, FileOutputPort};
+        use crate::objects::{FileOutputPort, StringInputPort};
 
         let object_type = object_ptr.obj_type;
 
@@ -558,8 +558,8 @@ impl Gc {
         let free_size = match object_type {
             ObjectType::Symbol => 0,
             ObjectType::Procedure => {
-              //  panic!("procedure should not be freed");
-              0
+                //  panic!("procedure should not be freed");
+                0
             }
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(header) };
@@ -572,7 +572,7 @@ impl Gc {
             ObjectType::FileOutputPort => {
                 let port: &FileOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
-            }            
+            }
             ObjectType::FileInputPort => {
                 let port: &FileInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)

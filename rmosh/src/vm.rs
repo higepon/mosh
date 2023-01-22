@@ -212,7 +212,7 @@ impl Vm {
             false,
             free_vars,
             Object::False,
-        )));        
+        )));
         self.dc = Object::Closure(display);
     }
 
@@ -311,8 +311,6 @@ impl Vm {
             // Create display closure and make free variables accessible.
             self.initialize_free_vars(ops, ops_len);
 
-
-
             // Load the base library.
             self.load_compiler();
             self.is_initialized = true;
@@ -377,7 +375,7 @@ impl Vm {
         self.pc = ops;
         loop {
             let op: Op = unsafe { *self.pc }.to_instruction();
-            self.pc = self.jump(self.pc, 1);            
+            self.pc = self.jump(self.pc, 1);
             match op {
                 Op::CompileError => todo!(),
                 Op::BranchNotLe => {
@@ -1378,7 +1376,7 @@ impl Vm {
                         self.pc = self.ret_code.as_ptr();
                         println!("BEFORE pc={:?}", self.pc);
                         (procedure.func)(self, args);
-                        println!("After pc={:?}", self.pc);                        
+                        println!("After pc={:?}", self.pc);
                         //self.return_n(argc);
                     } else {
                         // TODO: Take care of cl.
@@ -1477,7 +1475,7 @@ impl Vm {
         let next_pc = self.jump(self.pc, 1);
         self.pc = next_pc;
         //unsafe { *next_pc }
-        return obj
+        return obj;
     }
 
     #[inline(always)]
@@ -1587,10 +1585,9 @@ impl Vm {
     //   new closure(compiled_code)
     //   push frame
     pub fn eval_after(&mut self, sexp: Object) -> Object {
-        
         println!("eval_after = {}", sexp);
         let name = self.gc.symbol_intern("compile");
-        let v = self.call_by_name(name, sexp).to_vector();//self.compile(sexp).to_vector();
+        let v = self.call_by_name(name, sexp).to_vector(); //self.compile(sexp).to_vector();
         let code_size = v.len();
         let body_size = code_size + 2;
 
@@ -1622,7 +1619,11 @@ impl Vm {
         self.push(Object::ObjectPointer(self.fp));
 
         self.trigger0_code[1] = closure;
-        println!("trigger0_code[0] {} {:?}", self.trigger0_code[0], self.trigger0_code.as_ptr());
+        println!(
+            "trigger0_code[0] {} {:?}",
+            self.trigger0_code[0],
+            self.trigger0_code.as_ptr()
+        );
         self.pc = self.trigger0_code.as_ptr();
         return self.ac;
     }
@@ -1659,11 +1660,9 @@ impl Vm {
     }
 
     fn evaluate_safe(&mut self, ops: *const Object) -> Object {
-        println!("before ac={} dc={} sp={:?} fp={:?}", self.ac, self.dc, self.sp, self.fp);           
         self.save_registers();
         let ret = self.evaluate_unsafe(ops);
         self.restore_registers();
-        println!("abefore ac={} dc={} sp={:?} fp={:?}", self.ac, self.dc, self.sp, self.fp);        
         ret
     }
 
@@ -1690,8 +1689,16 @@ impl Vm {
         self.ac = self.saved_registers.ac;
         self.dc = self.saved_registers.dc;
         self.pc = self.saved_registers.pc;
-        self.sp = unsafe { self.stack.as_mut_ptr().offset(self.saved_registers.sp_offset) };
-        self.fp = unsafe { self.stack.as_mut_ptr().offset(self.saved_registers.fp_offset) };        
+        self.sp = unsafe {
+            self.stack
+                .as_mut_ptr()
+                .offset(self.saved_registers.sp_offset)
+        };
+        self.fp = unsafe {
+            self.stack
+                .as_mut_ptr()
+                .offset(self.saved_registers.fp_offset)
+        };
         self.saved_registers.ac = Object::Unspecified;
     }
 }
