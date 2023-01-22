@@ -14,9 +14,9 @@ use crate::{
     compiler,
     fasl::Fasl,
     gc::{Gc, GcRef},
-    objects::{Closure, Object, Pair, Symbol, Vox},
+    objects::{Closure, Object, Symbol},
     op::Op,
-    procs::{self, default_free_vars},
+    procs::{default_free_vars},
     psyntax,
     read::ReadError,
 };
