@@ -8,7 +8,7 @@ mod eval;
 mod helpers;
 mod mark;
 mod ops;
-mod run_loop;
+mod run;
 
 use crate::{
     compiler,
