@@ -1,6 +1,5 @@
 use std::{
     env::{self, current_dir, current_exe},
-    fmt,
     path::Path,
 };
 
@@ -1916,11 +1915,10 @@ fn source_info(_vm: &mut Vm, args: &mut [Object]) -> Object {
         _ => Object::False,
     }
 }
-fn eval(vm: &mut Vm, args: &mut [Object]) -> Object {
+pub fn eval(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval";
     check_argc!(name, args, 2);
-    panic!("hoge");
-    //vm.eval_after(args[0])
+    vm.eval_after(args[0])
 }
 fn eval_compiled(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval-compiled";

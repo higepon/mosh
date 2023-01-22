@@ -32,8 +32,8 @@ fn show_size() {
    3 strings.
    4 closures.
 */
-static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE
-    + (SIZE_OF_PROCEDURE * 623)
+static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE * 2
+    + (SIZE_OF_PROCEDURE * 623 * 2)
     + SIZE_OF_CLOSURE * 0
     + SIZE_OF_SYMBOL * 0
     + SIZE_OF_STRING * 0;

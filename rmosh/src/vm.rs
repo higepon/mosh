@@ -20,9 +20,9 @@ const MAX_NUM_VALUES: usize = 256;
 
 #[macro_export]
 macro_rules! branch_number_cmp_op {
-    ($op:tt, $self:ident, $pc:ident) => {
+    ($op:tt, $self:ident) => {
         {
-            let skip_offset = $self.isize_operand(&mut $pc);
+            let skip_offset = $self.isize_operand();
             match ($self.pop(), $self.ac) {
                 (Object::Number(lhs), Object::Number(rhs)) => {
                     let op_result = lhs $op rhs;
@@ -31,7 +31,7 @@ macro_rules! branch_number_cmp_op {
                         // go to then.
                     } else {
                         // Branch and jump to else.
-                        $pc = $self.jump($pc, skip_offset - 1);
+                        $self.pc = $self.jump($self.pc, skip_offset - 1);
                     }
                 }
                 obj => {
@@ -58,8 +58,30 @@ macro_rules! number_cmp_op {
     };
 }
 
+struct Registers {
+    pub ac: Object,
+    pub dc: Object,
+    pub pc: *const Object,
+    pub sp_offset: isize,
+    pub fp_offset: isize,
+}
+
+impl Registers {
+    fn new() -> Self {
+        Self {
+            ac: Object::Unspecified,
+            dc: Object::Unspecified,
+            pc: null(),
+            sp_offset: 0,
+            fp_offset: 0,
+        }
+    }
+}
+
 pub struct Vm {
     pub gc: Box<Gc>,
+    // Program counter
+    pc: *const Object,
     // The stack.
     stack: [Object; STACK_SIZE],
     // accumulator register.
@@ -87,7 +109,12 @@ pub struct Vm {
     pub should_load_compiler: bool,
     pub compiled_programs: Vec<Object>,
     pub trigger0_code: Vec<Object>,
+    pub eval_code: Vec<Object>,
+    pub ret_code: Vec<Object>,
+    pub call_by_name_code: Vec<Object>,
+    pub closure_for_evaluate: Object,
     current_input_port: Object,
+    saved_registers: Registers,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
 }
@@ -100,6 +127,7 @@ impl Vm {
             ac: Object::Unspecified,
             dc: Object::Unspecified,
             expected: Object::Unspecified,
+            pc: null_mut(),
             sp: null_mut(),
             fp: null_mut(),
             globals: HashMap::new(),
@@ -113,7 +141,12 @@ impl Vm {
             is_initialized: false,
             compiled_programs: vec![],
             trigger0_code: vec![],
+            eval_code: vec![],
+            ret_code: vec![],
+            call_by_name_code: vec![],
+            closure_for_evaluate: Object::Unspecified,
             current_input_port: Object::Unspecified,
+            saved_registers: Registers::new(),
         };
         ret.trigger0_code.push(Object::Instruction(Op::Constant));
         ret.trigger0_code.push(Object::Unspecified);
@@ -122,6 +155,20 @@ impl Vm {
         ret.trigger0_code.push(Object::Instruction(Op::Return));
         ret.trigger0_code.push(Object::Number(0));
         ret.trigger0_code.push(Object::Instruction(Op::Halt));
+
+        ret.call_by_name_code.push(Object::Instruction(Op::Frame));
+        ret.call_by_name_code.push(Object::Number(8));
+        ret.call_by_name_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_by_name_code.push(Object::Unspecified);
+        ret.call_by_name_code.push(Object::Instruction(Op::Push));
+        ret.call_by_name_code
+            .push(Object::Instruction(Op::ReferGlobal));
+        ret.call_by_name_code.push(Object::Unspecified);
+        ret.call_by_name_code.push(Object::Instruction(Op::Call));
+        ret.call_by_name_code.push(Object::Number(1));
+        ret.call_by_name_code.push(Object::Instruction(Op::Halt));
+
         ret
     }
 
@@ -155,7 +202,17 @@ impl Vm {
             free_vars,
             Object::False,
         ));
+
         display.prev = self.dc;
+        let free_vars = default_free_vars(&mut self.gc);
+        self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
+            null(),
+            0,
+            0,
+            false,
+            free_vars,
+            Object::False,
+        )));        
         self.dc = Object::Closure(display);
     }
 
@@ -183,6 +240,23 @@ impl Vm {
         for &obj in &self.trigger0_code {
             self.gc.mark_object(obj);
         }
+
+        for &obj in &self.eval_code {
+            self.gc.mark_object(obj);
+        }
+
+        for &obj in &self.ret_code {
+            self.gc.mark_object(obj);
+        }
+
+        for &obj in &self.call_by_name_code {
+            self.gc.mark_object(obj);
+        }
+
+        self.gc.mark_object(self.saved_registers.ac);
+        self.gc.mark_object(self.saved_registers.dc);
+
+        self.gc.mark_object(self.closure_for_evaluate);
 
         // Base library ops.
         for op in &self.lib_compiler {
@@ -236,6 +310,8 @@ impl Vm {
         if !self.is_initialized {
             // Create display closure and make free variables accessible.
             self.initialize_free_vars(ops, ops_len);
+
+
 
             // Load the base library.
             self.load_compiler();
@@ -298,63 +374,64 @@ impl Vm {
         self.sp = self.stack.as_mut_ptr();
         self.fp = self.sp;
 
-        let mut pc: *const Object = ops;
+        self.pc = ops;
         loop {
-            let op: Op = unsafe { *pc }.to_instruction();
+            let op: Op = unsafe { *self.pc }.to_instruction();
+            self.pc = self.jump(self.pc, 1);            
             match op {
                 Op::CompileError => todo!(),
                 Op::BranchNotLe => {
-                    branch_number_cmp_op!(<=, self, pc);
+                    branch_number_cmp_op!(<=, self);
                 }
                 Op::BranchNotGe => {
-                    branch_number_cmp_op!(>=, self, pc);
+                    branch_number_cmp_op!(>=, self);
                 }
                 Op::BranchNotLt => {
-                    branch_number_cmp_op!(<, self, pc);
+                    branch_number_cmp_op!(<, self);
                 }
                 Op::BranchNotGt => {
-                    branch_number_cmp_op!(>, self, pc);
+                    branch_number_cmp_op!(>, self);
                 }
                 Op::BranchNotNull => {
-                    let skip_offset = self.isize_operand(&mut pc);
+                    let skip_offset = self.isize_operand();
                     let op_result = self.ac.is_nil();
                     self.set_return_value(Object::make_bool(op_result));
                     if op_result {
                         // go to then.
                     } else {
                         // Branch and jump to else.
-                        pc = self.jump(pc, skip_offset - 1);
+                        self.pc = self.jump(self.pc, skip_offset - 1);
                     }
                 }
                 Op::BranchNotNumberEqual => {
-                    branch_number_cmp_op!(==, self, pc);
+                    branch_number_cmp_op!(==, self);
                 }
                 Op::BranchNotEq => {
-                    let skip_offset = self.isize_operand(&mut pc);
+                    let skip_offset = self.isize_operand();
                     let pred = self.pop().eq(&self.ac);
                     self.set_return_value(Object::make_bool(pred));
                     if !pred {
                         // Branch and jump to else.
-                        pc = self.jump(pc, skip_offset - 1);
+                        self.pc = self.jump(self.pc, skip_offset - 1);
                     }
                 }
                 Op::BranchNotEqv => {
-                    let skip_offset = self.isize_operand(&mut pc);
+                    let skip_offset = self.isize_operand();
                     if self.pop().eqv(&self.ac) {
                         self.set_return_value(Object::True);
                     } else {
-                        pc = self.jump(pc, skip_offset - 1);
+                        self.pc = self.jump(self.pc, skip_offset - 1);
                         self.set_return_value(Object::False);
                     }
                 }
                 Op::BranchNotEqual => {
-                    let skip_offset = self.isize_operand(&mut pc);
+                    let skip_offset = self.isize_operand();
                     let e = Equal::new();
                     let x = self.pop();
                     if e.is_equal(&mut self.gc, &x, &self.ac) {
                         self.set_return_value(Object::True);
                     } else {
-                        pc = self.jump(pc, skip_offset - 1);
+                        self.pc = self.jump(self.pc, skip_offset - 1);
                         self.set_return_value(Object::False);
                     }
                 }
@@ -368,15 +445,15 @@ impl Vm {
                     }
                 }
                 Op::Call => {
-                    let argc = self.isize_operand(&mut pc);
-                    self.call_op(&mut pc, argc);
+                    let argc = self.isize_operand();
+                    self.call_op(argc);
                 }
                 Op::Apply => todo!(),
                 Op::Push => {
                     self.push_op();
                 }
                 Op::AssignFree => {
-                    let n = self.usize_operand(&mut pc);
+                    let n = self.usize_operand();
                     let closure = self.dc.to_closure();
                     match closure.refer_free(n) {
                         Object::Vox(mut vox) => {
@@ -388,12 +465,12 @@ impl Vm {
                     }
                 }
                 Op::AssignGlobal => {
-                    let symbol = self.symbol_operand(&mut pc);
+                    let symbol = self.symbol_operand();
                     // Same as define global op.
                     self.define_global_op(symbol);
                 }
                 Op::AssignLocal => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     match self.refer_local(n) {
                         Object::Vox(mut vox) => vox.value = self.ac,
                         _ => {
@@ -402,7 +479,7 @@ impl Vm {
                     }
                 }
                 Op::Box => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     let vox = self.gc.alloc(Vox::new(self.index(self.sp, n)));
                     self.index_set(self.sp, n, Object::Vox(vox));
                 }
@@ -465,7 +542,7 @@ impl Vm {
                     self.cdr_op();
                 }
                 Op::Closure => {
-                    self.closure_op(&mut pc);
+                    self.closure_op();
                     // TODO: Tentative GC here.
                     self.mark_and_sweep();
                 }
@@ -476,14 +553,14 @@ impl Vm {
                     self.set_return_value(pair);
                 }
                 Op::Constant => {
-                    self.constant_op(&mut pc);
+                    self.constant_op();
                 }
                 Op::DefineGlobal => {
-                    let symbol = self.symbol_operand(&mut pc);
+                    let symbol = self.symbol_operand();
                     self.define_global_op(symbol)
                 }
                 Op::Display => {
-                    let num_free_vars = self.isize_operand(&mut pc);
+                    let num_free_vars = self.isize_operand();
                     let mut free_vars = vec![];
                     let start = self.dec(self.sp, 1);
                     for i in 0..num_free_vars {
@@ -505,7 +582,7 @@ impl Vm {
                     self.sp = self.dec(self.sp, num_free_vars);
                 }
                 Op::Enter => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.enter_op(n)
                 }
                 Op::Eq => {
@@ -523,7 +600,7 @@ impl Vm {
                     self.set_return_value(Object::make_bool(ret));
                 }
                 Op::Frame => {
-                    self.frame_op(&mut pc);
+                    self.frame_op();
                 }
                 Op::Indirect => match self.ac {
                     Object::Vox(vox) => {
@@ -534,7 +611,7 @@ impl Vm {
                     }
                 },
                 Op::Leave => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     let sp = self.dec(self.sp, n);
 
                     match self.index(sp, 0) {
@@ -549,18 +626,18 @@ impl Vm {
                     self.sp = self.dec(sp, 2);
                 }
                 Op::LetFrame => {
-                    let _unused = self.operand(&mut pc);
+                    let _unused = self.operand();
                     // TODO: expand stack.
                     self.push(self.dc);
                     self.push(Object::ObjectPointer(self.fp));
                 }
                 Op::List => todo!(),
                 Op::LocalJmp => {
-                    let jump_offset = self.isize_operand(&mut pc);
-                    pc = self.jump(pc, jump_offset - 1);
+                    let jump_offset = self.isize_operand();
+                    self.pc = self.jump(self.pc, jump_offset - 1);
                 }
                 Op::MakeContinuation => {
-                    let _n = self.isize_operand(&mut pc);
+                    let _n = self.isize_operand();
                     let dummy = self.gc.new_string("TODO:continuation");
                     self.set_return_value(dummy);
                 }
@@ -635,22 +712,22 @@ impl Vm {
                 },
                 Op::Reduce => todo!(),
                 Op::ReferFree => {
-                    let n = self.usize_operand(&mut pc);
+                    let n = self.usize_operand();
                     self.refer_free_op(n);
                 }
                 Op::ReferGlobal => {
-                    let symbol = self.symbol_operand(&mut pc);
+                    let symbol = self.symbol_operand();
                     self.refer_global_op(symbol);
                     //println!("symbol={}", Object::Symbol(symbol));
                 }
                 Op::ReferLocal => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.refer_local_op(n)
                 }
                 Op::RestoreContinuation => todo!(),
                 Op::Return => {
-                    let n = self.operand(&mut pc).to_number();
-                    self.return_n(n, &mut pc);
+                    let n = self.isize_operand();
+                    self.return_n(n);
                 }
                 Op::SetCar => match self.pop() {
                     Object::Pair(mut pair) => {
@@ -675,9 +752,9 @@ impl Vm {
                     self.set_return_value(Object::make_bool(self.ac.is_symbol()));
                 }
                 Op::Test => {
-                    let jump_offset = self.isize_operand(&mut pc);
+                    let jump_offset = self.isize_operand();
                     if self.ac.is_false() {
-                        pc = self.jump(pc, jump_offset - 1);
+                        self.pc = self.jump(self.pc, jump_offset - 1);
                     }
                 }
                 Op::Values => {
@@ -694,7 +771,7 @@ impl Vm {
                     //  values are stored in [valuez vector] and [a-reg] like following.
                     //  #(b c d)
                     //  [ac_] = a
-                    let n = self.usize_operand(&mut pc);
+                    let n = self.usize_operand();
 
                     if n > MAX_NUM_VALUES + 1 {
                         panic!("values too many values {}", n);
@@ -717,8 +794,8 @@ impl Vm {
                     }
                 }
                 Op::Receive => {
-                    let num_req_args = self.usize_operand(&mut pc);
-                    let num_opt_args = self.usize_operand(&mut pc);
+                    let num_req_args = self.usize_operand();
+                    let num_opt_args = self.usize_operand();
                     if self.num_values < num_req_args {
                         panic!(
                             "receive: received fewer valeus than expected {} {}",
@@ -766,9 +843,9 @@ impl Vm {
                 Op::UnfixedJump => todo!(),
                 Op::Stop => todo!(),
                 Op::Shiftj => {
-                    let depth = self.isize_operand(&mut pc);
-                    let diff = self.isize_operand(&mut pc);
-                    let display_count = self.isize_operand(&mut pc);
+                    let depth = self.isize_operand();
+                    let diff = self.isize_operand();
+                    let display_count = self.isize_operand();
 
                     // SHIFT for embedded jump which appears in named let optimization.
                     //   Two things happens.
@@ -845,14 +922,14 @@ impl Vm {
                 }
                 Op::PushEnter => {
                     self.push_op();
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.enter_op(n);
                 }
                 Op::Halt => {
                     break;
                 }
                 Op::ConstantPush => {
-                    self.constant_op(&mut pc);
+                    self.constant_op();
                     self.push_op();
                 }
                 Op::NumberSubPush => {
@@ -865,11 +942,11 @@ impl Vm {
                 }
                 Op::PushConstant => {
                     self.push_op();
-                    self.constant_op(&mut pc);
+                    self.constant_op();
                 }
                 Op::PushFrame => {
                     self.push_op();
-                    self.frame_op(&mut pc);
+                    self.frame_op();
                 }
                 Op::CarPush => {
                     self.car_op();
@@ -881,84 +958,84 @@ impl Vm {
                 }
                 Op::ShiftCall => todo!(),
                 Op::NotTest => {
-                    let jump_offset = self.isize_operand(&mut pc);
+                    let jump_offset = self.isize_operand();
                     self.ac = if self.ac.is_false() {
                         Object::True
                     } else {
                         Object::False
                     };
                     if self.ac.is_false() {
-                        pc = self.jump(pc, jump_offset - 1);
+                        self.pc = self.jump(self.pc, jump_offset - 1);
                     }
                 }
                 Op::ReferGlobalCall => {
-                    let symbol = self.symbol_operand(&mut pc);
-                    let argc = self.isize_operand(&mut pc);
+                    let symbol = self.symbol_operand();
+                    let argc = self.isize_operand();
                     self.refer_global_op(symbol);
-                    self.call_op(&mut pc, argc);
+                    self.call_op(argc);
                 }
                 Op::ReferFreePush => {
-                    let n = self.usize_operand(&mut pc);
+                    let n = self.usize_operand();
                     self.refer_free_op(n);
                     self.push_op();
                 }
                 Op::ReferLocalPush => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.refer_local_op(n);
                     self.push_op();
                 }
                 Op::ReferLocalPushConstant => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.refer_local_op(n);
                     self.push_op();
-                    self.constant_op(&mut pc);
+                    self.constant_op();
                 }
                 Op::ReferLocalPushConstantBranchNotLe => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.refer_local_op(n);
                     self.push_op();
-                    self.constant_op(&mut pc);
-                    branch_number_cmp_op!(<=, self, pc);
+                    self.constant_op();
+                    branch_number_cmp_op!(<=, self);
                 }
                 Op::ReferLocalPushConstantBranchNotGe => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.refer_local_op(n);
                     self.push_op();
-                    self.constant_op(&mut pc);
-                    branch_number_cmp_op!(>=, self, pc);
+                    self.constant_op();
+                    branch_number_cmp_op!(>=, self);
                 }
                 Op::ReferLocalPushConstantBranchNotNumberEqual => todo!(),
                 Op::ReferLocalBranchNotNull => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.refer_local_op(n);
-                    let skip_offset = self.isize_operand(&mut pc);
-                    self.branch_not_null_op(&mut pc, skip_offset);
+                    let skip_offset = self.isize_operand();
+                    self.branch_not_null_op(skip_offset);
                 }
                 Op::ReferLocalBranchNotLt => {
-                    let n = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
                     self.refer_local_op(n);
-                    branch_number_cmp_op!(<, self, pc);
+                    branch_number_cmp_op!(<, self);
                 }
                 Op::ReferFreeCall => {
-                    let n = self.usize_operand(&mut pc);
-                    let argc = self.isize_operand(&mut pc);
+                    let n = self.usize_operand();
+                    let argc = self.isize_operand();
                     self.refer_free_op(n);
-                    self.call_op(&mut pc, argc);
+                    self.call_op(argc);
                 }
                 Op::ReferGlobalPush => {
-                    let symbol = self.symbol_operand(&mut pc);
+                    let symbol = self.symbol_operand();
                     self.refer_global_op(symbol);
                     self.push_op();
                     // println!("symbol={}", Object::Symbol(symbol));
                 }
                 Op::ReferLocalCall => {
-                    let n = self.isize_operand(&mut pc);
-                    let argc = self.isize_operand(&mut pc);
+                    let n = self.isize_operand();
+                    let argc = self.isize_operand();
                     self.refer_local_op(n);
-                    self.call_op(&mut pc, argc);
+                    self.call_op(argc);
                 }
                 Op::LocalCall => {
-                    let argc = self.isize_operand(&mut pc);
+                    let argc = self.isize_operand();
                     // Locall is lighter than Call
                     // We can omit checking closure type and arguments length.
                     match self.ac {
@@ -966,7 +1043,7 @@ impl Vm {
                             self.dc = self.ac;
                             // todo
                             //self.cl = self.ac;
-                            pc = c.ops;
+                            self.pc = c.ops;
                             self.fp = self.dec(self.sp, argc);
                         }
                         obj => {
@@ -975,7 +1052,7 @@ impl Vm {
                     }
                 }
                 Op::Vector => {
-                    let n = self.usize_operand(&mut pc);
+                    let n = self.usize_operand();
                     let mut v = vec![Object::Unspecified; n];
                     let mut arg = self.ac;
                     if n > 0 {
@@ -1006,37 +1083,37 @@ impl Vm {
                 },
                 Op::DynamicWinders => todo!(),
                 Op::TailCall => {
-                    let depth = self.isize_operand(&mut pc);
-                    let diff = self.isize_operand(&mut pc);
+                    let depth = self.isize_operand();
+                    let diff = self.isize_operand();
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let argc = depth;
-                    self.call_op(&mut pc, argc);
+                    self.call_op(argc);
                 }
                 Op::LocalTailCall => {
-                    let depth = self.isize_operand(&mut pc);
-                    let diff = self.isize_operand(&mut pc);
+                    let depth = self.isize_operand();
+                    let diff = self.isize_operand();
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let closure = self.ac.to_closure();
                     let argc = depth;
                     self.dc = self.ac;
-                    pc = closure.ops;
+                    self.pc = closure.ops;
                     self.fp = self.dec(self.sp, argc);
                 }
             }
             self.print_vm(op);
-            pc = self.jump(pc, 1);
+            //self.pc = self.jump(self.pc, 1);
         }
         self.ac
     }
 
     #[inline(always)]
-    fn closure_op(&mut self, pc: &mut *const Object) {
-        let size = self.usize_operand(pc);
-        let arg_len = self.isize_operand(pc);
-        let is_optional_arg = self.bool_operand(pc);
-        let num_free_vars = self.isize_operand(pc);
-        let _max_stack = self.operand(pc);
-        let src_info = self.operand(pc);
+    fn closure_op(&mut self) {
+        let size = self.usize_operand();
+        let arg_len = self.isize_operand();
+        let is_optional_arg = self.bool_operand();
+        let num_free_vars = self.isize_operand();
+        let _max_stack = self.operand();
+        let src_info = self.operand();
         let mut free_vars = vec![];
         let start = self.dec(self.sp, 1);
         for i in 0..num_free_vars {
@@ -1046,7 +1123,7 @@ impl Vm {
         // Don't call self.alloc here.
         // Becase it can trigger gc and free the allocated object *before* it is rooted.
         let c = self.gc.alloc(Closure::new(
-            *pc,
+            self.pc,
             size - 1,
             arg_len,
             is_optional_arg,
@@ -1055,27 +1132,27 @@ impl Vm {
         ));
         self.set_return_value(Object::Closure(c));
         self.sp = self.dec(self.sp, num_free_vars);
-        *pc = self.jump(*pc, size as isize - 6);
+        self.pc = self.jump(self.pc, size as isize - 6);
     }
 
     #[inline(always)]
-    fn bool_operand(&mut self, pc: &mut *const Object) -> bool {
-        self.operand(pc).to_bool()
+    fn bool_operand(&mut self) -> bool {
+        self.operand().to_bool()
     }
 
     #[inline(always)]
-    fn isize_operand(&mut self, pc: &mut *const Object) -> isize {
-        self.operand(pc).to_number()
+    fn isize_operand(&mut self) -> isize {
+        self.operand().to_number()
     }
 
     #[inline(always)]
-    fn symbol_operand(&mut self, pc: &mut *const Object) -> GcRef<Symbol> {
-        self.operand(pc).to_symbol()
+    fn symbol_operand(&mut self) -> GcRef<Symbol> {
+        self.operand().to_symbol()
     }
 
     #[inline(always)]
-    fn usize_operand(&mut self, pc: &mut *const Object) -> usize {
-        self.operand(pc).to_number() as usize
+    fn usize_operand(&mut self) -> usize {
+        self.operand().to_number() as usize
     }
 
     #[inline(always)]
@@ -1083,7 +1160,7 @@ impl Vm {
         self.push(self.ac);
     }
     #[inline(always)]
-    fn frame_op(&mut self, pc: &mut *const Object) {
+    fn frame_op(&mut self) {
         // Call frame in stack.
         // ======================
         //          pc*
@@ -1096,8 +1173,8 @@ impl Vm {
         // ======== sp ==========
         //
         // where pc* = pc + skip_offset -1
-        let skip_offset = self.operand(pc).to_number();
-        let next_pc = self.jump(*pc, skip_offset - 1);
+        let skip_offset = self.operand().to_number();
+        let next_pc = self.jump(self.pc, skip_offset - 1);
         self.push(Object::ProgramCounter(next_pc));
         self.push(self.dc);
         // TODO: This should be cl register.
@@ -1106,8 +1183,8 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn constant_op(&mut self, pc: &mut *const Object) {
-        let v = self.operand(pc);
+    fn constant_op(&mut self) {
+        let v = self.operand();
         self.set_return_value(v);
     }
 
@@ -1149,12 +1226,12 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn branch_not_null_op(&mut self, pc: &mut *const Object, skip_offset: isize) {
+    fn branch_not_null_op(&mut self, skip_offset: isize) {
         if self.ac.is_nil() {
             self.set_return_value(Object::True);
         } else {
             self.set_return_value(Object::False);
-            *pc = self.jump(*pc, skip_offset - 1);
+            self.pc = self.jump(self.pc, skip_offset - 1);
         }
     }
 
@@ -1207,7 +1284,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn call_op(&mut self, pc: &mut *const Object, argc: isize) {
+    fn call_op(&mut self, argc: isize) {
         let mut argc = argc;
         'call: loop {
             match self.ac {
@@ -1215,7 +1292,7 @@ impl Vm {
                     self.dc = self.ac;
                     // TODO:
                     // self.cl = self.ac;
-                    *pc = closure.ops;
+                    self.pc = closure.ops;
                     if closure.is_optional_arg {
                         let extra_len = argc - closure.argc;
                         if -1 == extra_len {
@@ -1293,12 +1370,23 @@ impl Vm {
                                 self.push(args[i as usize]);
                             }
                         }
+                    } else if procedure.func as usize == procs::eval as usize {
+                        self.ret_code = vec![];
+                        self.ret_code.push(Object::Instruction(Op::Return));
+                        self.ret_code.push(Object::Number(argc));
+
+                        self.pc = self.ret_code.as_ptr();
+                        println!("BEFORE pc={:?}", self.pc);
+                        (procedure.func)(self, args);
+                        println!("After pc={:?}", self.pc);                        
+                        //self.return_n(argc);
                     } else {
                         // TODO: Take care of cl.
                         // self.cl = self.ac
 
                         self.ac = (procedure.func)(self, args);
-                        self.return_n(argc, pc);
+                        // TODO is this right??
+                        self.return_n(argc);
                     }
                 }
                 _ => {
@@ -1384,10 +1472,12 @@ impl Vm {
     }
 
     #[inline(always)]
-    fn operand(&mut self, pc: &mut *const Object) -> Object {
-        let next_pc = self.jump(*pc, 1);
-        *pc = next_pc;
-        unsafe { *next_pc }
+    fn operand(&mut self) -> Object {
+        let obj = unsafe { *self.pc };
+        let next_pc = self.jump(self.pc, 1);
+        self.pc = next_pc;
+        //unsafe { *next_pc }
+        return obj
     }
 
     #[inline(always)]
@@ -1404,7 +1494,7 @@ impl Vm {
         panic!("{}: requires {} but got {}", who, expected, actual);
     }
 
-    fn return_n(&mut self, n: isize, pc: &mut *const Object) {
+    fn return_n(&mut self, n: isize) {
         #[cfg(feature = "debug_log_vm")]
         println!("  return {}", n);
         let sp = self.dec(self.sp, n);
@@ -1421,7 +1511,7 @@ impl Vm {
         self.dc = self.index(sp, 2);
         match self.index(sp, 3) {
             Object::ProgramCounter(next_pc) => {
-                *pc = next_pc;
+                self.pc = next_pc;
             }
             _ => {
                 panic!("not a pc");
@@ -1492,22 +1582,28 @@ impl Vm {
             }
         }
     }
-
-    pub fn eval_after(&mut self, pc: &mut *const Object, sexp: Object) -> Object {
-        let v = self.compile(sexp).to_vector();
+    // eval
+    // eval_after
+    //   new closure(compiled_code)
+    //   push frame
+    pub fn eval_after(&mut self, sexp: Object) -> Object {
+        
+        println!("eval_after = {}", sexp);
+        let name = self.gc.symbol_intern("compile");
+        let v = self.call_by_name(name, sexp).to_vector();//self.compile(sexp).to_vector();
         let code_size = v.len();
         let body_size = code_size + 2;
-        // TODO: Take care of this lifetime.
-        let mut body: Vec<Object> = vec![];
+
+        self.eval_code = vec![];
         for i in 0..code_size {
-            body.push(v.data[i]);
+            self.eval_code.push(v.data[i]);
         }
-        body.push(Object::Instruction(Op::Return));
-        body.push(Object::Number(0));
-        // todo: Should shere this!
+        self.eval_code.push(Object::Instruction(Op::Return));
+        self.eval_code.push(Object::Number(0));
+        // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
-            body.as_ptr(),
+            self.eval_code.as_ptr(),
             body_size,
             0,
             false,
@@ -1515,18 +1611,19 @@ impl Vm {
             Object::False,
         ));
 
-        return self.set_after_trigger0(pc, Object::Closure(c));
+        return self.set_after_trigger0(Object::Closure(c));
     }
 
-    pub fn set_after_trigger0(&mut self, pc: &mut *const Object, closure: Object) -> Object {
-        self.push(Object::ProgramCounter(*pc));
+    pub fn set_after_trigger0(&mut self, closure: Object) -> Object {
+        self.push(Object::ProgramCounter(self.pc));
         self.push(self.dc);
         // TODO: This should be cl register.
         self.push(self.dc);
         self.push(Object::ObjectPointer(self.fp));
 
         self.trigger0_code[1] = closure;
-        *pc = self.trigger0_code.as_ptr();
+        println!("trigger0_code[0] {} {:?}", self.trigger0_code[0], self.trigger0_code.as_ptr());
+        self.pc = self.trigger0_code.as_ptr();
         return self.ac;
     }
 
@@ -1535,7 +1632,9 @@ impl Vm {
         self.run(v.data.as_ptr(), v.data.len())
     }
 
+    // todo remove
     pub fn compile(&mut self, sexp: Object) -> Object {
+        println!("COMPILE: before {:?} {:?}", self.sp, self.fp);
         let ops = vec![
             Object::Instruction(Op::Frame),
             Object::Number(8),
@@ -1548,6 +1647,51 @@ impl Vm {
             Object::Number(1),
             Object::Instruction(Op::Halt),
         ];
-        self.run(ops.as_ptr(), ops.len())
+        let ret = self.run(ops.as_ptr(), ops.len());
+        println!("COMPILE: after {:?} {:?}", self.sp, self.fp);
+        return ret;
+    }
+
+    fn call_by_name(&mut self, name: Object, arg: Object) -> Object {
+        self.call_by_name_code[3] = arg;
+        self.call_by_name_code[6] = name;
+        self.evaluate_safe(self.call_by_name_code.as_ptr())
+    }
+
+    fn evaluate_safe(&mut self, ops: *const Object) -> Object {
+        println!("before ac={} dc={} sp={:?} fp={:?}", self.ac, self.dc, self.sp, self.fp);           
+        self.save_registers();
+        let ret = self.evaluate_unsafe(ops);
+        self.restore_registers();
+        println!("abefore ac={} dc={} sp={:?} fp={:?}", self.ac, self.dc, self.sp, self.fp);        
+        ret
+    }
+
+    fn evaluate_unsafe(&mut self, ops: *const Object) -> Object {
+        self.closure_for_evaluate.to_closure().ops = ops;
+        self.ac = self.closure_for_evaluate;
+        self.dc = self.closure_for_evaluate;
+        self.fp = null_mut();
+        self.run_ops(ops)
+    }
+
+    fn save_registers(&mut self) {
+        // Found we already stored something.
+        assert!(self.saved_registers.ac.is_unspecified());
+
+        self.saved_registers.ac = self.ac;
+        self.saved_registers.dc = self.dc;
+        self.saved_registers.pc = self.pc;
+        self.saved_registers.sp_offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) };
+        self.saved_registers.fp_offset = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
+    }
+
+    fn restore_registers(&mut self) {
+        self.ac = self.saved_registers.ac;
+        self.dc = self.saved_registers.dc;
+        self.pc = self.saved_registers.pc;
+        self.sp = unsafe { self.stack.as_mut_ptr().offset(self.saved_registers.sp_offset) };
+        self.fp = unsafe { self.stack.as_mut_ptr().offset(self.saved_registers.fp_offset) };        
+        self.saved_registers.ac = Object::Unspecified;
     }
 }
