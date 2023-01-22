@@ -228,65 +228,13 @@ impl Vm {
         self.run(self.lib_psyntax.as_ptr(), self.lib_psyntax.len())
     }
 
-    #[inline(always)]
-    fn bool_operand(&mut self) -> bool {
-        self.operand().to_bool()
-    }
 
-    #[inline(always)]
-    fn isize_operand(&mut self) -> isize {
-        self.operand().to_number()
-    }
-
-    #[inline(always)]
-    fn symbol_operand(&mut self) -> GcRef<Symbol> {
-        self.operand().to_symbol()
-    }
-
-    #[inline(always)]
-    fn usize_operand(&mut self) -> usize {
-        self.operand().to_number() as usize
-    }
-
-    #[inline(always)]
-    fn make_frame(&mut self, next_pc: *const Object) {
-        self.push(Object::ProgramCounter(next_pc));
-        self.push(self.dc);
-        // TODO: This should be cl register.
-        self.push(self.dc);
-        self.push(Object::ObjectPointer(self.fp));
-    }
 
     pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {
         self.globals.insert(symbol, value);
     }
 
     // Helpers.
-    fn pop(&mut self) -> Object {
-        unsafe {
-            self.sp = self.dec(self.sp, 1);
-            *self.sp
-        }
-    }
-
-    fn push(&mut self, value: Object) {
-        unsafe {
-            *self.sp = value;
-            self.sp = self.inc(self.sp, 1);
-        }
-    }
-
-    fn index(&self, sp: *mut Object, n: isize) -> Object {
-        unsafe { *self.dec(sp, n + 1) }
-    }
-
-    fn index_set(&mut self, sp: *mut Object, n: isize, obj: Object) {
-        unsafe { *self.dec(sp, n + 1) = obj }
-    }
-
-    fn stack_len(&self) -> usize {
-        unsafe { self.sp.offset_from(self.stack.as_ptr()) as usize }
-    }
 
     #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
@@ -344,21 +292,6 @@ impl Vm {
         self.sp = self.dec(sp, 4);
     }
 
-    fn shift_args_to_bottom(&mut self, sp: *mut Object, depth: isize, diff: isize) -> *mut Object {
-        let mut i = depth - 1;
-        while i >= 0 {
-            self.index_set(sp, i + diff, self.index(self.sp, i));
-            i = i - 1;
-        }
-        self.dec(sp, diff)
-    }
-
-    fn unshift_args(&mut self, sp: *mut Object, diff: isize) -> *mut Object {
-        for i in 0..diff {
-            self.index_set(self.inc(sp, diff - i), 0, self.index(sp, 1));
-        }
-        self.inc(sp, diff)
-    }
 
     fn stack_to_pair(&mut self, n: isize) -> Object {
         let mut args = Object::Nil;
