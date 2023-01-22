@@ -918,7 +918,18 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sys-display";
     check_argc_between!(name, args, 1, 2);
-    println!("{}", args[0]);
+    println!("display called {}", args[0]);
+    let argc = args.len();
+    if argc == 2 {
+        match args[1] {
+            Object::StringOutputPort(mut port) => {
+                port.display(args[0]);
+                return Object::Unspecified;
+            }
+            _ => {}
+        }
+    }    
+
     return Object::Unspecified;
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -1259,6 +1270,18 @@ fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     }
 }
 fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
+    let argc = args.len();
+    if argc >= 2 {
+        match (args[0], args[1]) {
+            (Object::StringOutputPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }
+            _ => {
+
+            }
+        }
+    }
     // TODO
     let text = if args.len() == 2 {
         format!("{} {}", args[0], args[1])
@@ -1310,6 +1333,16 @@ fn is_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "write";
     check_argc_at_least!(name, args, 1);
+    let argc = args.len();
+    if argc == 2 {
+        match args[1] {
+            Object::StringOutputPort(mut port) => {
+                port.write(args[0]);
+                return Object::Unspecified;
+            }
+            _ => {}
+        }
+    }
     println!("{} called", name);
     for i in 0..args.len() {
         println!("  arg={}", args[i]);
@@ -3717,36 +3750,42 @@ fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn quotient(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "quotient";
     check_argc!(name, args, 2);
-    match (args[0], args[1])  {
+    match (args[0], args[1]) {
         (Object::Number(x), Object::Number(y)) => {
             if x == 0 {
                 Object::Number(0)
             } else if y == 0 {
                 panic!("{}: must be non-zero", name)
             } else {
-                Object::Number( x / y)
+                Object::Number(x / y)
             }
-        },   
+        }
         _ => {
-            panic!("{}: number and number required but got {} {}", name, args[0], args[1])
+            panic!(
+                "{}: number and number required but got {} {}",
+                name, args[0], args[1]
+            )
         }
     }
 }
 fn remainder(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "remainder";
     check_argc!(name, args, 2);
-    match (args[0], args[1])  {
+    match (args[0], args[1]) {
         (Object::Number(x), Object::Number(y)) => {
             if x == 0 {
                 Object::Number(0)
             } else if y == 0 {
                 panic!("{}: must be non-zero", name)
             } else {
-                Object::Number( x % y)
+                Object::Number(x % y)
             }
-        },   
+        }
         _ => {
-            panic!("{}: number and number required but got {} {}", name, args[0], args[1])
+            panic!(
+                "{}: number and number required but got {} {}",
+                name, args[0], args[1]
+            )
         }
     }
 }

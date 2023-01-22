@@ -255,6 +255,7 @@ impl Object {
 // For HashMap<Object, Object>
 impl Eq for Object {}
 
+// This is for debug
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -337,6 +338,7 @@ impl Debug for Object {
     }
 }
 
+// This is for (display ...)
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -781,7 +783,6 @@ impl Display for Vox {
 }
 
 /// SString (Sceheme String)
-#[derive(Debug)]
 pub struct SString {
     pub header: GcHeader,
     pub string: String,
@@ -797,6 +798,12 @@ impl SString {
 }
 
 impl Display for SString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.string)
+    }
+}
+
+impl Debug for SString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "\"{}\"", self.string)
     }
@@ -1093,6 +1100,7 @@ impl Display for FileOutputPort {
 #[derive(Debug)]
 pub struct StringOutputPort {
     pub header: GcHeader,
+    string: String,
     is_closed: bool,
 }
 
@@ -1101,6 +1109,7 @@ impl StringOutputPort {
         StringOutputPort {
             header: GcHeader::new(ObjectType::StringOutputPort),
             is_closed: false,
+            string: "".to_string(),
         }
     }
     pub fn open(_path: &str) -> std::io::Result<StringOutputPort> {
@@ -1111,8 +1120,51 @@ impl StringOutputPort {
         self.is_closed = true;
     }
 
+    pub fn write(&mut self, obj: Object) {
+        let written = format!("{:?}", obj);
+        self.string.push_str(&written);
+    }
+
+    // TODO: Make this human readable.
+    pub fn display(&mut self, obj: Object) {
+        let written = format!("{}", obj);
+        self.string.push_str(&written);
+    }
+
+    pub fn format(&mut self, fmt_str: &str, args: &mut [Object]) {
+        let mut chars = fmt_str.chars();
+        let mut i = 0;
+        while let Some(c) = chars.next() {
+            if c == '~' {
+                if let Some(c) = chars.next() {
+                    if c == 'a' {
+                        if i < args.len() {
+                            self.display(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
+                    } else if c == 's' {
+                        if i < args.len() {
+                            self.write(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
+                    } else {
+                        panic!("format: unknown ~{}", c);
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                self.string.push(c);
+            }
+        }
+    }
+
     pub fn string(&self) -> String {
-        "get-output-string".to_string()
+        self.string.to_owned()
     }
 }
 

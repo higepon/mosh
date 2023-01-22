@@ -158,7 +158,8 @@ impl Vm {
             self.set_global_value(sym.to_symbol(), args);
 
             let sym = self.gc.symbol_intern("%loadpath");
-            let path = self.gc.new_string(".");
+            // TODO: tentative.
+            let path = self.gc.new_string("/root/mosh.git/lib");
             self.set_global_value(sym.to_symbol(), path);
 
             let sym = self.gc.symbol_intern("%vm-import-spec");
