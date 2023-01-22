@@ -928,7 +928,7 @@ fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
             }
             _ => {}
         }
-    }    
+    }
 
     return Object::Unspecified;
 }
@@ -1277,9 +1277,7 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
                 port.format(&s.string, &mut args[2..]);
                 return Object::Unspecified;
             }
-            _ => {
-
-            }
+            _ => {}
         }
     }
     // TODO
@@ -1353,8 +1351,9 @@ fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym";
     check_argc_max!(name, args, 1);
     let argc = args.len();
+
     if argc == 1 {
-        let name = unsafe { format!("{}{}", GENSYM_PREFIX, GENSYM_INDEX) };
+        let name = unsafe { format!("{}{}@", GENSYM_PREFIX, GENSYM_INDEX) };
         unsafe { GENSYM_INDEX += 1 };
         match args[0] {
             Object::Symbol(s) => {
@@ -1364,7 +1363,9 @@ fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
             _ => vm.gc.symbol_intern(&name),
         }
     } else {
-        panic!("{}({}) not implemented", name, args.len());
+        let name = unsafe { format!("{}{}", GENSYM_PREFIX, GENSYM_INDEX) };
+        unsafe { GENSYM_INDEX += 1 };
+        vm.gc.symbol_intern(&name)
     }
 }
 fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
