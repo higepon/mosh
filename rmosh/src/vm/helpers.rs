@@ -10,6 +10,32 @@ impl Vm {
         self.gc.intern(s)
     }
     */
+    #[inline(always)]    
+    pub(super) fn return_n(&mut self, n: isize) {
+        #[cfg(feature = "debug_log_vm")]
+        println!("  return {}", n);
+        let sp = self.dec(self.sp, n);
+        match self.index(sp, 0) {
+            Object::ObjectPointer(fp) => {
+                self.fp = fp;
+            }
+            obj => {
+                panic!("not fp pointer but {}", obj)
+            }
+        }
+        // TODO: Take care of cl register.
+        // self.cl = index(sp, 1);
+        self.dc = self.index(sp, 2);
+        match self.index(sp, 3) {
+            Object::ProgramCounter(next_pc) => {
+                self.pc = next_pc;
+            }
+            _ => {
+                panic!("not a pc");
+            }
+        }
+        self.sp = self.dec(sp, 4);
+    }    
     #[inline(always)]
     pub(super) fn stack_to_pair(&mut self, n: isize) -> Object {
         let mut args = Object::Nil;

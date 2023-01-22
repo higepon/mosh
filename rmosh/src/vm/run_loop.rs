@@ -761,4 +761,31 @@ impl Vm {
         }
         self.ac
     }
+    #[cfg(feature = "debug_log_vm")]
+    fn print_vm(&mut self, op: Op) {
+        println!("-----------------------------------------");
+        println!("{} executed", op);
+        println!("  ac={}", self.ac);
+        println!("  dc={}", self.dc);
+        println!("-----------------------------------------");
+        let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
+        for i in 0..self.stack_len() {
+            println!(
+                "  {}{}",
+                self.stack[i],
+                if fp_idx == i.try_into().unwrap() {
+                    "  <== fp"
+                } else {
+                    ""
+                }
+            );
+        }
+        println!("-----------------------------------------<== sp")
+    }
+    #[cfg(not(feature = "debug_log_vm"))]
+    fn print_vm(&mut self, _: Op) {}
+
+    pub(super) fn arg_err(&self, who: &str, expected: &str, actual: Object) {
+        panic!("{}: requires {} but got {}", who, expected, actual);
+    }
 }
