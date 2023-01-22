@@ -9,7 +9,8 @@ use crate::{
     equal::Equal,
     gc::Gc,
     objects::{
-        EqHashtable, FileInputPort, FileOutputPort, Object, Pair, SimpleStruct, StringInputPort,
+        ByteVector, EqHashtable, FileInputPort, FileOutputPort, Object, Pair, SimpleStruct,
+        StringInputPort, StringOutputPort,
     },
     vm::Vm,
 };
@@ -1172,9 +1173,8 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
         }
     }
 }
-fn open_output_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "open-output-string";
-    panic!("{}({}) not implemented", name, args.len());
+fn open_output_string(vm: &mut Vm, _args: &mut [Object]) -> Object {
+    Object::StringOutputPort(vm.gc.alloc(StringOutputPort::new()))
 }
 fn sys_port_seek(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sys-port-seek";
@@ -2821,9 +2821,14 @@ fn string_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->bytevector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_utf8(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->utf8";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(s) = args[0] {
+        Object::ByteVector(vm.gc.alloc(ByteVector::new(&s.string.as_bytes().to_vec())))
+    } else {
+        panic!("{}: string required but got {}", name, args[0]);
+    }
 }
 fn utf8_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "utf8->string";

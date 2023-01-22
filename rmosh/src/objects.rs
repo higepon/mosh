@@ -1093,7 +1093,7 @@ pub struct StringOutputPort {
 }
 
 impl StringOutputPort {
-    fn new() -> Self {
+    pub fn new() -> Self {
         StringOutputPort {
             header: GcHeader::new(ObjectType::StringOutputPort),
             is_closed: false,

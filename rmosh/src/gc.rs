@@ -252,6 +252,7 @@ impl Gc {
         Object::ByteVector(bv)
     }
 
+
     pub fn new_eq_hashtable(&mut self) -> Object {
         let obj = self.alloc(EqHashtable::new());
         Object::EqHashtable(obj)
