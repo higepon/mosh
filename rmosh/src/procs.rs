@@ -1920,7 +1920,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
         match FileInputPort::open(&path.string) {
             Ok(port) => Object::FileInputPort(vm.gc.alloc(port)),
             Err(err) => {
-                panic!("{}: {}", name, err)
+                panic!("{}: {} {}", name, path.string, err)
             }
         }
     } else {
@@ -3716,11 +3716,39 @@ fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn quotient(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "quotient";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1])  {
+        (Object::Number(x), Object::Number(y)) => {
+            if x == 0 {
+                Object::Number(0)
+            } else if y == 0 {
+                panic!("{}: must be non-zero", name)
+            } else {
+                Object::Number( x / y)
+            }
+        },   
+        _ => {
+            panic!("{}: number and number required but got {} {}", name, args[0], args[1])
+        }
+    }
 }
 fn remainder(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "remainder";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1])  {
+        (Object::Number(x), Object::Number(y)) => {
+            if x == 0 {
+                Object::Number(0)
+            } else if y == 0 {
+                panic!("{}: must be non-zero", name)
+            } else {
+                Object::Number( x % y)
+            }
+        },   
+        _ => {
+            panic!("{}: number and number required but got {} {}", name, args[0], args[1])
+        }
+    }
 }
 fn modulo(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "modulo";
