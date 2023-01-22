@@ -4,10 +4,11 @@ use std::{
 };
 
 // Sub module definitions.
+mod eval;
+mod helpers;
 mod mark;
 mod ops;
 mod run_loop;
-mod helpers;
 
 use crate::{
     compiler,
@@ -22,8 +23,6 @@ use crate::{
 
 const STACK_SIZE: usize = 1024;
 const MAX_NUM_VALUES: usize = 256;
-
-
 
 struct Registers {
     pub ac: Object,
@@ -139,10 +138,6 @@ impl Vm {
         ret
     }
 
-    pub fn intern(&mut self, s: &str) -> GcRef<Symbol> {
-        self.gc.intern(s)
-    }
-
     pub fn values(&mut self, values: &[Object]) -> Object {
         let n = values.len();
         self.num_values = n;
@@ -228,8 +223,6 @@ impl Vm {
         self.run(self.lib_psyntax.as_ptr(), self.lib_psyntax.len())
     }
 
-
-
     pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {
         self.globals.insert(symbol, value);
     }
@@ -260,8 +253,6 @@ impl Vm {
     #[cfg(not(feature = "debug_log_vm"))]
     fn print_vm(&mut self, _: Op) {}
 
-
-
     fn arg_err(&self, who: &str, expected: &str, actual: Object) {
         panic!("{}: requires {} but got {}", who, expected, actual);
     }
@@ -290,15 +281,6 @@ impl Vm {
             }
         }
         self.sp = self.dec(sp, 4);
-    }
-
-
-    fn stack_to_pair(&mut self, n: isize) -> Object {
-        let mut args = Object::Nil;
-        for i in 0..n {
-            args = self.gc.cons(self.index(self.sp, i), args);
-        }
-        args
     }
 
     pub fn set_rtd(&mut self, key: Object, rtd: Object) {
@@ -338,58 +320,5 @@ impl Vm {
                 )
             }
         }
-    }
-    pub fn eval_after(&mut self, sexp: Object) -> Object {
-        let name = self.gc.symbol_intern("compile");
-        let v = self.call_by_name(name, sexp).to_vector(); //self.compile(sexp).to_vector();
-        let code_size = v.len();
-        let body_size = code_size + 2;
-
-        self.eval_code = vec![];
-        for i in 0..code_size {
-            self.eval_code.push(v.data[i]);
-        }
-        self.eval_code.push(Object::Instruction(Op::Return));
-        self.eval_code.push(Object::Number(0));
-        // todo: Should share this!
-        let free_vars = default_free_vars(&mut self.gc);
-        let c = self.gc.alloc(Closure::new(
-            self.eval_code.as_ptr(),
-            body_size,
-            0,
-            false,
-            free_vars,
-            Object::False,
-        ));
-
-        return self.set_after_trigger0(Object::Closure(c));
-    }
-
-    pub fn set_after_trigger0(&mut self, closure: Object) -> Object {
-        self.make_frame(self.pc);
-        self.trigger0_code[1] = closure;
-        self.pc = self.trigger0_code.as_ptr();
-        return self.ac;
-    }
-
-    fn call_by_name(&mut self, name: Object, arg: Object) -> Object {
-        self.call_by_name_code[3] = arg;
-        self.call_by_name_code[6] = name;
-        self.evaluate_safe(self.call_by_name_code.as_ptr())
-    }
-
-    fn evaluate_safe(&mut self, ops: *const Object) -> Object {
-        self.save_registers();
-        let ret = self.evaluate_unsafe(ops);
-        self.restore_registers();
-        ret
-    }
-
-    fn evaluate_unsafe(&mut self, ops: *const Object) -> Object {
-        self.closure_for_evaluate.to_closure().ops = ops;
-        self.ac = self.closure_for_evaluate;
-        self.dc = self.closure_for_evaluate;
-        self.fp = null_mut();
-        self.run_ops(ops)
     }
 }

@@ -1,6 +1,23 @@
-use crate::{gc::GcRef, objects::{Object, Symbol}, vm::Vm};
+use crate::{
+    gc::GcRef,
+    objects::{Object, Symbol},
+    vm::Vm,
+};
 
 impl Vm {
+    /*
+    pub(super) fn intern(&mut self, s: &str) -> GcRef<Symbol> {
+        self.gc.intern(s)
+    }
+    */
+    #[inline(always)]
+    pub(super) fn stack_to_pair(&mut self, n: isize) -> Object {
+        let mut args = Object::Nil;
+        for i in 0..n {
+            args = self.gc.cons(self.index(self.sp, i), args);
+        }
+        args
+    }
     #[inline(always)]
     pub(super) fn bool_operand(&mut self) -> bool {
         self.operand().to_bool()
