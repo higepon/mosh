@@ -1,4 +1,7 @@
-use crate::{objects::{Symbol, Object}, gc::GcRef};
+use crate::{
+    gc::GcRef,
+    objects::{Object, Symbol},
+};
 
 use super::Vm;
 

@@ -1,4 +1,4 @@
-use crate::{vm::Vm, objects::Object};
+use crate::{objects::Object, vm::Vm};
 
 impl Vm {
     pub(super) fn save_registers(&mut self) {
