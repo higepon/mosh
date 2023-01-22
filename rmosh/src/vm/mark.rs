@@ -1,3 +1,5 @@
+use std::ptr::null;
+
 use crate::{
     gc::GcRef,
     objects::{Object, Symbol},
@@ -6,6 +8,13 @@ use crate::{
 use super::Vm;
 
 impl Vm {
+    pub(super) fn reset_roots(&mut self) {
+        // Clean up display closure so that Objects in ops can be freed.
+        let mut closure = self.dc.to_closure();
+        closure.ops = null();
+        closure.ops_len = 0;
+    }
+
     pub(super) fn mark_roots(&mut self) {
         // Ports.
         self.gc.mark_object(self.current_input_port);
