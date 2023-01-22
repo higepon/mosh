@@ -1173,6 +1173,11 @@ impl Vm {
         // where pc* = pc + skip_offset -1
         let skip_offset = self.operand().to_number();
         let next_pc = self.jump(self.pc, skip_offset - 1);
+        self.make_frame(next_pc);
+    }
+
+    #[inline(always)]
+    fn make_frame(&mut self, next_pc: *const Object) {
         self.push(Object::ProgramCounter(next_pc));
         self.push(self.dc);
         // TODO: This should be cl register.
@@ -1374,10 +1379,7 @@ impl Vm {
                         self.ret_code.push(Object::Number(argc));
 
                         self.pc = self.ret_code.as_ptr();
-                        println!("BEFORE pc={:?}", self.pc);
                         (procedure.func)(self, args);
-                        println!("After pc={:?}", self.pc);
-                        //self.return_n(argc);
                     } else {
                         // TODO: Take care of cl.
                         // self.cl = self.ac
@@ -1580,12 +1582,7 @@ impl Vm {
             }
         }
     }
-    // eval
-    // eval_after
-    //   new closure(compiled_code)
-    //   push frame
     pub fn eval_after(&mut self, sexp: Object) -> Object {
-        println!("eval_after = {}", sexp);
         let name = self.gc.symbol_intern("compile");
         let v = self.call_by_name(name, sexp).to_vector(); //self.compile(sexp).to_vector();
         let code_size = v.len();
@@ -1612,45 +1609,10 @@ impl Vm {
     }
 
     pub fn set_after_trigger0(&mut self, closure: Object) -> Object {
-        self.push(Object::ProgramCounter(self.pc));
-        self.push(self.dc);
-        // TODO: This should be cl register.
-        self.push(self.dc);
-        self.push(Object::ObjectPointer(self.fp));
-
+        self.make_frame(self.pc);
         self.trigger0_code[1] = closure;
-        println!(
-            "trigger0_code[0] {} {:?}",
-            self.trigger0_code[0],
-            self.trigger0_code.as_ptr()
-        );
         self.pc = self.trigger0_code.as_ptr();
         return self.ac;
-    }
-
-    pub fn eval(&mut self, sexp: Object) -> Object {
-        let v = self.compile(sexp).to_vector();
-        self.run(v.data.as_ptr(), v.data.len())
-    }
-
-    // todo remove
-    pub fn compile(&mut self, sexp: Object) -> Object {
-        println!("COMPILE: before {:?} {:?}", self.sp, self.fp);
-        let ops = vec![
-            Object::Instruction(Op::Frame),
-            Object::Number(8),
-            Object::Instruction(Op::Constant),
-            sexp,
-            Object::Instruction(Op::Push),
-            Object::Instruction(Op::ReferGlobal),
-            self.gc.symbol_intern("compile"),
-            Object::Instruction(Op::Call),
-            Object::Number(1),
-            Object::Instruction(Op::Halt),
-        ];
-        let ret = self.run(ops.as_ptr(), ops.len());
-        println!("COMPILE: after {:?} {:?}", self.sp, self.fp);
-        return ret;
     }
 
     fn call_by_name(&mut self, name: Object, arg: Object) -> Object {
