@@ -1223,9 +1223,14 @@ fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "delete-file";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_output_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-output-string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::StringOutputPort(s) = args[0] {
+        vm.gc.new_string(&s.string())
+    } else {
+        panic!("{}: string-output-port require but got {}", name, args[0])
+    }
 }
 fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->regexp";
@@ -2715,7 +2720,9 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> Object {
     let mut ret = Object::Nil;
     if let Object::ByteVector(bv) = args[0] {
         for i in 0..bv.len() {
-            ret = vm.gc.cons(Object::Number(bv.ref_u8(bv.len() - i - 1) as isize), ret);
+            ret = vm
+                .gc
+                .cons(Object::Number(bv.ref_u8(bv.len() - i - 1) as isize), ret);
         }
         ret
     } else {

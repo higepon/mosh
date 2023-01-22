@@ -1110,6 +1110,10 @@ impl StringOutputPort {
     pub fn close(&mut self) {
         self.is_closed = true;
     }
+
+    pub fn string(&self) -> String {
+        "get-output-string".to_string()
+    }
 }
 
 impl Display for StringOutputPort {
