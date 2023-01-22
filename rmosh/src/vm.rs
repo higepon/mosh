@@ -138,58 +138,6 @@ impl Vm {
         ret
     }
 
-    pub fn values(&mut self, values: &[Object]) -> Object {
-        let n = values.len();
-        self.num_values = n;
-        if 0 == n {
-            return Object::Unspecified;
-        }
-        for i in 1..n as usize {
-            if i >= MAX_NUM_VALUES {
-                panic!("values: too many values");
-            }
-            self.values[i - 1] = values[i];
-        }
-        // this is set to ac later.
-        return values[0];
-    }
-
-    fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
-        let free_vars = default_free_vars(&mut self.gc);
-        let mut display = self.gc.alloc(Closure::new(
-            ops,
-            ops_len,
-            0,
-            false,
-            free_vars,
-            Object::False,
-        ));
-
-        display.prev = self.dc;
-        let free_vars = default_free_vars(&mut self.gc);
-        self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
-            null(),
-            0,
-            0,
-            false,
-            free_vars,
-            Object::False,
-        )));
-        self.dc = Object::Closure(display);
-    }
-
-    fn load_compiler(&mut self) -> Object {
-        let mut fasl = Fasl {
-            bytes: compiler::U8_ARRAY,
-        };
-        self.lib_compiler = if self.should_load_compiler {
-            fasl.read_all_sexp(&mut self.gc)
-        } else {
-            vec![Object::Instruction(Op::Halt)]
-        };
-        self.run_ops(self.lib_compiler.as_ptr())
-    }
-
     pub fn enable_r7rs(&mut self, args: Object) -> Object {
         let mut fasl = Fasl {
             bytes: psyntax::U8_ARRAY,
@@ -226,11 +174,6 @@ impl Vm {
     pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {
         self.globals.insert(symbol, value);
     }
-
-    // Helpers.
-
-
-
 
     pub fn set_rtd(&mut self, key: Object, rtd: Object) {
         self.rtds.insert(key, rtd);
@@ -269,5 +212,40 @@ impl Vm {
                 )
             }
         }
+    }
+    fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
+        let free_vars = default_free_vars(&mut self.gc);
+        let mut display = self.gc.alloc(Closure::new(
+            ops,
+            ops_len,
+            0,
+            false,
+            free_vars,
+            Object::False,
+        ));
+
+        display.prev = self.dc;
+        let free_vars = default_free_vars(&mut self.gc);
+        self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
+            null(),
+            0,
+            0,
+            false,
+            free_vars,
+            Object::False,
+        )));
+        self.dc = Object::Closure(display);
+    }
+
+    fn load_compiler(&mut self) -> Object {
+        let mut fasl = Fasl {
+            bytes: compiler::U8_ARRAY,
+        };
+        self.lib_compiler = if self.should_load_compiler {
+            fasl.read_all_sexp(&mut self.gc)
+        } else {
+            vec![Object::Instruction(Op::Halt)]
+        };
+        self.run_ops(self.lib_compiler.as_ptr())
     }
 }
