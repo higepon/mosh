@@ -3,7 +3,9 @@ use std::{
     ptr::{null, null_mut},
 };
 
+// Sub module definitions.
 mod vm_helpers;
+mod mark;
 
 use crate::{
     compiler,
@@ -231,82 +233,7 @@ impl Vm {
         }
     }
 
-    fn mark_roots(&mut self) {
-        // Ports.
-        self.gc.mark_object(self.current_input_port);
 
-        for &compiled in &self.compiled_programs {
-            self.gc.mark_object(compiled);
-        }
-
-        for &obj in &self.trigger0_code {
-            self.gc.mark_object(obj);
-        }
-
-        for &obj in &self.eval_code {
-            self.gc.mark_object(obj);
-        }
-
-        for &obj in &self.ret_code {
-            self.gc.mark_object(obj);
-        }
-
-        for &obj in &self.call_by_name_code {
-            self.gc.mark_object(obj);
-        }
-
-        self.gc.mark_object(self.saved_registers.ac);
-        self.gc.mark_object(self.saved_registers.dc);
-
-        self.gc.mark_object(self.closure_for_evaluate);
-
-        // Base library ops.
-        for op in &self.lib_compiler {
-            self.gc.mark_object(*op);
-        }
-        for op in &self.lib_psyntax {
-            self.gc.mark_object(*op);
-        }
-
-        self.gc.mark_object(self.dynamic_winders);
-
-        // Stack.
-        for &obj in &self.stack[0..self.stack_len()] {
-            self.gc.mark_object(obj);
-        }
-
-        // Values.
-        for &obj in &self.values[0..self.num_values] {
-            self.gc.mark_object(obj);
-        }
-
-        // Symbols.
-        let symbols = self
-            .gc
-            .symbols
-            .values()
-            .cloned()
-            .collect::<Vec<GcRef<Symbol>>>();
-        for symbol in symbols {
-            self.gc.mark_object(Object::Symbol(symbol));
-        }
-
-        // Global variables.
-        for &obj in self.globals.values() {
-            self.gc.mark_object(obj);
-        }
-
-        // RTDs.
-        for (k, v) in self.rtds.iter() {
-            self.gc.mark_object(*k);
-            self.gc.mark_object(*v);
-        }
-
-        // Registers.
-        self.gc.mark_object(self.ac);
-        self.gc.mark_object(self.dc);
-        self.gc.mark_object(self.expected);
-    }
 
     pub fn run(&mut self, ops: *const Object, ops_len: usize) -> Object {
         if !self.is_initialized {
