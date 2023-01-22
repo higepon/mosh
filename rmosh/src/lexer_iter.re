@@ -65,8 +65,38 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
 */
 
+impl<'input> Lexer<'input> {
+    // Return true if reached EOS.
+    fn skip_block_comment(&mut self) -> bool {
+        let mut comment_level = 1;
+        'lex: loop {
+            /*!re2c
+            "|#" {
+                comment_level -= 1;
+                if comment_level == 0 {
+                    return false;
+                }
+                continue 'lex;   
+            }
+            "#|" {
+                comment_level += 1;
+                continue 'lex;
+            }
+            "EOS" {
+                return true;
+            }
+            $ { return true; }            
+            ANY_CHARACTER {
+                continue 'lex;                   
+            }
+            */
+        }
+    }
+}
+
 impl<'input> Iterator for Lexer<'input> {
     type Item = Spanned<Token, usize, LexicalError>;
+
 
     fn next(&mut self) -> Option<Self::Item> {
         'lex: loop {
@@ -159,6 +189,14 @@ impl<'input> Iterator for Lexer<'input> {
                 }
                 COMMENT {
                     continue 'lex;
+                }
+                "#|" {
+                    if self.skip_block_comment() {
+                        // Reached EOS while skipping block comment.
+                        return None;
+                    } else {
+                        continue 'lex;    
+                    }
                 }
                 $ { return None; }
                 * { return Some(Err(LexicalError {
