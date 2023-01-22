@@ -263,7 +263,7 @@ impl Debug for Object {
             }
             Object::StringOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::FileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -351,7 +351,7 @@ impl Display for Object {
             }
             Object::StringOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -465,6 +465,10 @@ impl ByteVector {
             header: GcHeader::new(ObjectType::ByteVector),
             data: data.to_owned(),
         }
+    }
+
+    pub fn ref_u8(&self, i: usize) -> u8 {
+        self.data[i]
     }
 
     pub fn equal(&self, other: &ByteVector) -> bool {

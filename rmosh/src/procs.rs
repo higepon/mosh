@@ -2709,9 +2709,18 @@ fn bytevector_s8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-s8-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_to_u8_list(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector->u8-list";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let mut ret = Object::Nil;
+    if let Object::ByteVector(bv) = args[0] {
+        for i in 0..bv.len() {
+            ret = vm.gc.cons(Object::Number(bv.ref_u8(bv.len() - i - 1) as isize), ret);
+        }
+        ret
+    } else {
+        panic!("{}: bytevector required but got {}", name, args[0])
+    }
 }
 fn u8_list_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "u8-list->bytevector";
