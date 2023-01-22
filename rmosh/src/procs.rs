@@ -1617,9 +1617,33 @@ fn is_eqv(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eqv?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn member(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn member(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "member";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let key = args[0];
+    let mut list = args[1];
+    if !list.is_list() {
+        panic!("{}: list required but got {}", name, list);
+    }
+
+    let e = Equal::new();
+
+    loop {
+        if list.is_nil() {
+            return Object::False;
+        }
+        match list {
+            Object::Pair(pair) => {
+                if e.is_equal(&mut vm.gc, &pair.car, &key) {
+                    return list;
+                }
+                list = pair.cdr;
+            }
+            _ => {
+                panic!("{}: list required but got {}", name, list);
+            }
+        }
+    }
 }
 fn is_boolean(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "boolean?";
