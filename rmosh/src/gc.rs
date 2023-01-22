@@ -15,7 +15,7 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
     ByteVector, Closure, EqHashtable, FileInputPort, Object, Pair, Procedure, SString,
-    SimpleStruct, Symbol, Vector, Vox,
+    SimpleStruct, Symbol, StringOutputPort, Vector, Vox,
 };
 use crate::vm::Vm;
 
@@ -76,6 +76,7 @@ pub enum ObjectType {
     FileOutputPort,
     FileInputPort,
     StringInputPort,
+    StringOutputPort,
     Pair,
     Procedure,
     SimpleStruct,
@@ -372,6 +373,7 @@ impl Gc {
                 self.mark_heap_object(port);
             }
             Object::StringInputPort(_) => {}
+            Object::StringOutputPort(_) => {}
             Object::Nil => {}
             Object::Float(_) => {}
             Object::Number(_) => {}
@@ -530,6 +532,7 @@ impl Gc {
                 }
             }
             ObjectType::StringInputPort => {}
+            ObjectType::StringOutputPort => {}            
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
@@ -581,6 +584,10 @@ impl Gc {
                 let port: &StringInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
+            ObjectType::StringOutputPort => {
+                let port: &StringOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }            
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(vox)

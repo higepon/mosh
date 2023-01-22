@@ -66,6 +66,7 @@ pub enum Object {
     StringInputPort(GcRef<StringInputPort>),
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
+    StringOutputPort(GcRef<StringOutputPort>),
     Instruction(Op),
     Nil,
     Number(isize),
@@ -260,6 +261,9 @@ impl Debug for Object {
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::StringOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::FileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -345,6 +349,9 @@ impl Display for Object {
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::StringOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -1074,6 +1081,34 @@ impl FileOutputPort {
 }
 
 impl Display for FileOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<file-output-port>")
+    }
+}
+
+#[derive(Debug)]
+pub struct StringOutputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+}
+
+impl StringOutputPort {
+    fn new() -> Self {
+        StringOutputPort {
+            header: GcHeader::new(ObjectType::StringOutputPort),
+            is_closed: false,
+        }
+    }
+    pub fn open(_path: &str) -> std::io::Result<StringOutputPort> {
+        Ok(StringOutputPort::new())
+    }
+
+    pub fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl Display for StringOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<file-output-port>")
     }
