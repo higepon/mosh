@@ -1176,9 +1176,8 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
 fn open_output_string(vm: &mut Vm, _args: &mut [Object]) -> Object {
     Object::StringOutputPort(vm.gc.alloc(StringOutputPort::new()))
 }
-fn sys_port_seek(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "sys-port-seek";
-    panic!("{}({}) not implemented", name, args.len());
+fn sys_port_seek(vm: &mut Vm, _args: &mut [Object]) -> Object {
+    vm.gc.new_string("sys-port-seek dummy return value")
 }
 fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-output-port";
