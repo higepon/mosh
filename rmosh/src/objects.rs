@@ -1054,21 +1054,18 @@ impl Display for FileInputPort {
 #[derive(Debug)]
 pub struct FileOutputPort {
     pub header: GcHeader,
-    file: File,
     is_closed: bool,
 }
 
 impl FileOutputPort {
-    fn new(file: File) -> Self {
+    fn new() -> Self {
         FileOutputPort {
             header: GcHeader::new(ObjectType::FileOutputPort),
-            file: file,
             is_closed: false,
         }
     }
-    pub fn open(path: &str) -> std::io::Result<FileOutputPort> {
-        let file = File::open(path)?;
-        Ok(FileOutputPort::new(file))
+    pub fn open(_path: &str) -> std::io::Result<FileOutputPort> {
+        Ok(FileOutputPort::new())
     }
 
     pub fn close(&mut self) {

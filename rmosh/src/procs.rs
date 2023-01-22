@@ -811,6 +811,20 @@ macro_rules! check_argc_at_least {
 }
 
 #[macro_export]
+macro_rules! check_argc_max {
+    ($name:ident, $args:ident, $max:expr) => {{
+        if $args.len() > $max {
+            panic!(
+                "{}: max {} arguments required but got {}",
+                $name,
+                $max,
+                $args.len()
+            );
+        }
+    }};
+}
+
+#[macro_export]
 macro_rules! check_argc_between {
     ($name:ident, $args:ident, $min:expr, $max:expr) => {{
         if $args.len() > $max || $args.len() < $min {
@@ -1300,7 +1314,7 @@ fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym";
-    check_argc_between!(name, args, 0, 1);
+    check_argc_max!(name, args, 1);
     let argc = args.len();
     if argc == 1 {
         let name = unsafe { format!("{}{}", GENSYM_PREFIX, GENSYM_INDEX) };
@@ -2130,9 +2144,7 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> Object {
     } else if argc == 1 {
         match args[0] {
             Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {
-                Ok(obj) => {
-                    obj
-                }
+                Ok(obj) => obj,
                 Err(err) => {
                     panic!("{}: {:?}", name, err)
                 }
@@ -3777,7 +3789,7 @@ fn vm_join_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vm-join!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_main_vm(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_main_vm(_vm: &mut Vm, _args: &mut [Object]) -> Object {
     let _name: &str = "main-vm?";
     Object::True
 }
@@ -4145,7 +4157,7 @@ fn nongenerative_rtd_set_destructive(vm: &mut Vm, args: &mut [Object]) -> Object
             (car si)
             (same-marks*? mark* mark** (cdr si)))))
 */
-fn is_same_marksmul(vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "same-marks*?";
     check_argc!(name, args, 3);
     let mark_mul = args[0];
@@ -4266,7 +4278,7 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
                 let rib_sealed_freq = rib.to_simple_struct().field(3);
                 if !rib_sealed_freq.is_false() {
                     let si = rib_sealed_freq.to_eq_hashtable().get(sym, Object::False);
-                    let mut i = Object::Unspecified;
+                    let i;
                     if si.is_false() {
                         i = Object::False;
                     } else {
@@ -4360,7 +4372,7 @@ fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
 
 fn current_dynamic_winders(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-dynamic-winders";
-    check_argc_between!(name, args, 0, 1);
+    check_argc_max!(name, args, 1);
     let argc = args.len();
     if argc == 0 {
         return vm.dynamic_winders;
