@@ -1,6 +1,40 @@
 use crate::{objects::Object, vm::Vm};
 
 impl Vm {
+    #[inline(always)]
+    pub(super) fn set_return_value(&mut self, obj: Object) {
+        self.ac = obj;
+        self.num_values = 1;
+    }
+
+    #[inline(always)]
+    pub(super) fn refer_local(&mut self, n: isize) -> Object {
+        unsafe { *self.fp.offset(n) }
+    }
+
+    #[inline(always)]
+    pub(super) fn jump(&self, pc: *const Object, offset: isize) -> *const Object {
+        unsafe { pc.offset(offset) }
+    }
+
+    #[inline(always)]
+    pub(super) fn operand(&mut self) -> Object {
+        let obj = unsafe { *self.pc };
+        let next_pc = self.jump(self.pc, 1);
+        self.pc = next_pc;
+        //unsafe { *next_pc }
+        return obj;
+    }
+
+    #[inline(always)]
+    pub(super) fn inc(&self, pointer: *mut Object, offset: isize) -> *mut Object {
+        unsafe { pointer.offset(offset) }
+    }
+
+    #[inline(always)]
+    pub(super) fn dec(&self, pointer: *mut Object, offset: isize) -> *mut Object {
+        unsafe { pointer.offset(-offset) }
+    }
     pub(super) fn save_registers(&mut self) {
         // Found we already stored something.
         assert!(self.saved_registers.ac.is_unspecified());

@@ -7,7 +7,7 @@ use std::{
 mod mark;
 mod ops;
 mod run_loop;
-mod vm_helpers;
+mod helpers;
 
 use crate::{
     compiler,
@@ -23,45 +23,7 @@ use crate::{
 const STACK_SIZE: usize = 1024;
 const MAX_NUM_VALUES: usize = 256;
 
-#[macro_export]
-macro_rules! branch_number_cmp_op {
-    ($op:tt, $self:ident) => {
-        {
-            let skip_offset = $self.isize_operand();
-            match ($self.pop(), $self.ac) {
-                (Object::Number(lhs), Object::Number(rhs)) => {
-                    let op_result = lhs $op rhs;
-                    $self.set_return_value(Object::make_bool(op_result));
-                    if op_result {
-                        // go to then.
-                    } else {
-                        // Branch and jump to else.
-                        $self.pc = $self.jump($self.pc, skip_offset - 1);
-                    }
-                }
-                obj => {
-                    panic!("{}: numbers requierd but got {:?}",  stringify!($op), obj);
-                }
-            }
-        }
-    };
-}
 
-#[macro_export]
-macro_rules! number_cmp_op {
-    ($op:tt, $self:ident) => {
-        {
-            match ($self.pop(), $self.ac) {
-                (Object::Number(l), Object::Number(r)) => {
-                    $self.set_return_value(Object::make_bool(l $op r))
-                }
-                obj => {
-                    panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
-                }
-            }
-        }
-    };
-}
 
 struct Registers {
     pub ac: Object,
@@ -221,19 +183,6 @@ impl Vm {
         self.dc = Object::Closure(display);
     }
 
-    pub fn mark_and_sweep(&mut self) {
-        if self.gc.should_gc() {
-            #[cfg(feature = "debug_log_gc")]
-            println!("-- gc begin");
-
-            self.mark_roots();
-            self.gc.collect_garbage();
-
-            #[cfg(feature = "debug_log_gc")]
-            println!("-- gc end");
-        }
-    }
-
     fn load_compiler(&mut self) -> Object {
         let mut fasl = Fasl {
             bytes: compiler::U8_ARRAY,
@@ -363,40 +312,7 @@ impl Vm {
     #[cfg(not(feature = "debug_log_vm"))]
     fn print_vm(&mut self, _: Op) {}
 
-    #[inline(always)]
-    fn set_return_value(&mut self, obj: Object) {
-        self.ac = obj;
-        self.num_values = 1;
-    }
 
-    #[inline(always)]
-    fn refer_local(&mut self, n: isize) -> Object {
-        unsafe { *self.fp.offset(n) }
-    }
-
-    #[inline(always)]
-    fn jump(&self, pc: *const Object, offset: isize) -> *const Object {
-        unsafe { pc.offset(offset) }
-    }
-
-    #[inline(always)]
-    fn operand(&mut self) -> Object {
-        let obj = unsafe { *self.pc };
-        let next_pc = self.jump(self.pc, 1);
-        self.pc = next_pc;
-        //unsafe { *next_pc }
-        return obj;
-    }
-
-    #[inline(always)]
-    fn inc(&self, pointer: *mut Object, offset: isize) -> *mut Object {
-        unsafe { pointer.offset(offset) }
-    }
-
-    #[inline(always)]
-    fn dec(&self, pointer: *mut Object, offset: isize) -> *mut Object {
-        unsafe { pointer.offset(-offset) }
-    }
 
     fn arg_err(&self, who: &str, expected: &str, actual: Object) {
         panic!("{}: requires {} but got {}", who, expected, actual);

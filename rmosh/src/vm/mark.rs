@@ -15,6 +15,19 @@ impl Vm {
         closure.ops_len = 0;
     }
 
+    pub fn mark_and_sweep(&mut self) {
+        if self.gc.should_gc() {
+            #[cfg(feature = "debug_log_gc")]
+            println!("-- gc begin");
+
+            self.mark_roots();
+            self.gc.collect_garbage();
+
+            #[cfg(feature = "debug_log_gc")]
+            println!("-- gc end");
+        }
+    }
+
     pub(super) fn mark_roots(&mut self) {
         // Ports.
         self.gc.mark_object(self.current_input_port);

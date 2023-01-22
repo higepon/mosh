@@ -7,6 +7,46 @@ use crate::{
 
 use super::Vm;
 
+#[macro_export]
+macro_rules! branch_number_cmp_op {
+    ($op:tt, $self:ident) => {
+        {
+            let skip_offset = $self.isize_operand();
+            match ($self.pop(), $self.ac) {
+                (Object::Number(lhs), Object::Number(rhs)) => {
+                    let op_result = lhs $op rhs;
+                    $self.set_return_value(Object::make_bool(op_result));
+                    if op_result {
+                        // go to then.
+                    } else {
+                        // Branch and jump to else.
+                        $self.pc = $self.jump($self.pc, skip_offset - 1);
+                    }
+                }
+                obj => {
+                    panic!("{}: numbers requierd but got {:?}",  stringify!($op), obj);
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! number_cmp_op {
+    ($op:tt, $self:ident) => {
+        {
+            match ($self.pop(), $self.ac) {
+                (Object::Number(l), Object::Number(r)) => {
+                    $self.set_return_value(Object::make_bool(l $op r))
+                }
+                obj => {
+                    panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
+                }
+            }
+        }
+    };
+}
+
 impl Vm {
     #[inline(always)]
     pub(super) fn push_op(&mut self) {
