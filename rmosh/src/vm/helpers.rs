@@ -40,7 +40,7 @@ impl Vm {
         }
         args
     }
-    
+
     #[inline(always)]
     pub(super) fn bool_operand(&mut self) -> bool {
         self.operand().to_bool()

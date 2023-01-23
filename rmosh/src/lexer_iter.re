@@ -65,146 +65,140 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
 */
 
-impl<'input> Lexer<'input> {
-    // Return true if reached EOS.
-    fn skip_block_comment(&mut self) -> bool {
-        let mut comment_level = 1;
-        'lex: loop {
-            /*!re2c
-            "|#" {
-                comment_level -= 1;
-                if comment_level == 0 {
-                    return false;
-                }
-                continue 'lex;   
-            }
-            "#|" {
-                comment_level += 1;
-                continue 'lex;
-            }
-            "EOS" {
-                return true;
-            }
-            $ { return true; }            
-            ANY_CHARACTER {
-                continue 'lex;                   
-            }
-            */
-        }
-    }
-}
-
 impl<'input> Iterator for Lexer<'input> {
     type Item = Spanned<Token, usize, LexicalError>;
 
-
-    fn next(&mut self) -> Option<Self::Item> {
-        'lex: loop {
-            self.tok = self.cursor;
-            /*!re2c
-                LEFT_PAREN { return self.with_location(Token::LeftParen); }
-                RIGHT_PAREN { return self.with_location(Token::RightParen); }
-                TRUE  { return self.with_location(Token::True); }
-                FALSE { return self.with_location(Token::False); }
-                IDENTIFIER {
-                    return self.with_location(Token::Identifier { value: self.extract_token() });
-                }
-                REGEXP {
-                    return self.with_location(Token::Regexp { value: self.extract_regexp() });
-                }                
-                STRING {
-                    return self.with_location(Token::String{value: self.extract_string()});
-                }
-                NUM_10 {
-                    return self.with_location(Token::Number10{value: self.extract_token()});
-                }
-                DOT {
-                    return self.with_location(Token::Dot);
-                }
-                BYTEVECTOR_START {
-                    return self.with_location(Token::ByteVectorStart);
-                }
-                VECTOR_START {
-                    return self.with_location(Token::VectorStart);
-                }
-                "#\\alarm" {
-                    return self.with_location(Token::Character { value: char::from(7) });
-                }
-                "#\\backspace" {
-                    return self.with_location(Token::Character { value: char::from(8) });
-                }
-                "#\\delete" {
-                    return self.with_location(Token::Character { value: char::from(0x7f) });
-                }
-                "#\\escape" {
-                    return self.with_location(Token::Character { value: char::from(0x1b) });
-                }
-                "#\\newline" {
-                    return self.with_location(Token::Character { value: '\n' });
-                }
-                "#\\null" {
-                    return self.with_location(Token::Character { value: '\0' });
-                }
-                "#\\return" {
-                    return self.with_location(Token::Character { value: char::from(0x0d) });
-                }
-                "#\\space" {
-                    return self.with_location(Token::Character { value: ' ' });
-                }
-                "#\\tab" {
-                    return self.with_location(Token::Character { value: '\t' });
-                }
-                "#\\" ANY_CHARACTER {
-                    return self.with_location(Token::Character{value: self.extract_character()});
-                }
-                "#\\x" HEX_SCALAR_VALUE {
-                    return self.with_location(Token::Character{value: self.extract_hex_character()});
-                }
-                "'" {
-                    return self.with_location(Token::AbbrevQuote);
-                }
-                "`" {
-                    return self.with_location(Token::AbbrevQuasiquote);
-                }
-                "," {
-                    return self.with_location(Token::AbbrevUnquote);
-                }
-                "@" {
-                    return self.with_location(Token::AbbrevUnquoteSplicing);
-                }
-                "#'" {
-                    return self.with_location(Token::AbbrevSyntax);
-                }
-                "#`" {
-                    return self.with_location(Token::AbbrevQuasisyntax);
-                }
-                "#," {
-                    return self.with_location(Token::AbbrevUnsyntax);
-                }
-                "#@" {
-                    return self.with_location(Token::AbbrevUnsyntaxSplicing);
-                }
-                DELIMITER {
-                    continue 'lex;
-                }
-                COMMENT {
-                    continue 'lex;
-                }
-                "#|" {
-                    if self.skip_block_comment() {
-                        // Reached EOS while skipping block comment.
-                        return None;
-                    } else {
-                        continue 'lex;    
+    fn next(&mut self) -> Option<Self::Item> {       
+        loop {
+            let should_skip_comment;
+            let mut comment_level = 1;             
+            'lex: loop {
+                self.tok = self.cursor;
+                /*!re2c
+                    LEFT_PAREN { return self.with_location(Token::LeftParen); }
+                    RIGHT_PAREN { return self.with_location(Token::RightParen); }
+                    TRUE  { return self.with_location(Token::True); }
+                    FALSE { return self.with_location(Token::False); }
+                    IDENTIFIER {
+                        return self.with_location(Token::Identifier { value: self.extract_token() });
                     }
+                    REGEXP {
+                        return self.with_location(Token::Regexp { value: self.extract_regexp() });
+                    }                
+                    STRING {
+                        return self.with_location(Token::String{value: self.extract_string()});
+                    }
+                    NUM_10 {
+                        return self.with_location(Token::Number10{value: self.extract_token()});
+                    }
+                    DOT {
+                        return self.with_location(Token::Dot);
+                    }
+                    BYTEVECTOR_START {
+                        return self.with_location(Token::ByteVectorStart);
+                    }
+                    VECTOR_START {
+                        return self.with_location(Token::VectorStart);
+                    }
+                    "#\\alarm" {
+                        return self.with_location(Token::Character { value: char::from(7) });
+                    }
+                    "#\\backspace" {
+                        return self.with_location(Token::Character { value: char::from(8) });
+                    }
+                    "#\\delete" {
+                        return self.with_location(Token::Character { value: char::from(0x7f) });
+                    }
+                    "#\\escape" {
+                        return self.with_location(Token::Character { value: char::from(0x1b) });
+                    }
+                    "#\\newline" {
+                        return self.with_location(Token::Character { value: '\n' });
+                    }
+                    "#\\null" {
+                        return self.with_location(Token::Character { value: '\0' });
+                    }
+                    "#\\return" {
+                        return self.with_location(Token::Character { value: char::from(0x0d) });
+                    }
+                    "#\\space" {
+                        return self.with_location(Token::Character { value: ' ' });
+                    }
+                    "#\\tab" {
+                        return self.with_location(Token::Character { value: '\t' });
+                    }
+                    "#\\" ANY_CHARACTER {
+                        return self.with_location(Token::Character{value: self.extract_character()});
+                    }
+                    "#\\x" HEX_SCALAR_VALUE {
+                        return self.with_location(Token::Character{value: self.extract_hex_character()});
+                    }
+                    "'" {
+                        return self.with_location(Token::AbbrevQuote);
+                    }
+                    "`" {
+                        return self.with_location(Token::AbbrevQuasiquote);
+                    }
+                    "," {
+                        return self.with_location(Token::AbbrevUnquote);
+                    }
+                    "@" {
+                        return self.with_location(Token::AbbrevUnquoteSplicing);
+                    }
+                    "#'" {
+                        return self.with_location(Token::AbbrevSyntax);
+                    }
+                    "#`" {
+                        return self.with_location(Token::AbbrevQuasisyntax);
+                    }
+                    "#," {
+                        return self.with_location(Token::AbbrevUnsyntax);
+                    }
+                    "#@" {
+                        return self.with_location(Token::AbbrevUnsyntaxSplicing);
+                    }
+                    DELIMITER {
+                        continue 'lex;
+                    }
+                    COMMENT {
+                        continue 'lex;
+                    }
+                    "#|" {
+                        should_skip_comment = true;
+                        break 'lex;
+                    }
+                    $ { return None; }
+                    * { return Some(Err(LexicalError {
+                            start: self.tok,
+                            end: self.cursor,
+                            token: self.extract_token()
+                        })); }
+                */
+            }
+            if should_skip_comment {
+                'skip_comment: loop {
+                    /*!re2c
+                    "|#" {
+                        comment_level -= 1;
+                        if comment_level == 0 {
+                            break 'skip_comment;
+                        }
+                        continue 'skip_comment;   
+                    }
+                    "#|" {
+                        comment_level += 1;
+                        continue 'skip_comment;
+                    }
+                    "EOS" {
+                        return None;
+                    }
+                    ANY_CHARACTER {
+                        continue 'skip_comment;                   
+                    }            
+                    $ { return None; }            
+                    */                    
                 }
-                $ { return None; }
-                * { return Some(Err(LexicalError {
-                        start: self.tok,
-                        end: self.cursor,
-                        token: self.extract_token()
-                    })); }
-            */
+            }
         }
     }
 }

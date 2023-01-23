@@ -11,6 +11,7 @@ use super::Vm;
 impl Vm {
     // Main entry point for eval.
     pub fn eval_after(&mut self, sexp: Object) -> Object {
+        println!("eval={}", sexp);
         let name = self.gc.symbol_intern("compile");
         let v = self.call_by_name(name, sexp).to_vector();
         let code_size = v.len();

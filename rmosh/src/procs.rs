@@ -929,7 +929,10 @@ fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
             _ => {}
         }
     }
-    println!("display called {}", args[0]);
+    println!("{} called", name);
+    for i in 0..args.len() {
+        println!("  arg={}", args[i]);
+    }
     return Object::Unspecified;
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
