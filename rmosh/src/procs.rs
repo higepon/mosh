@@ -905,7 +905,8 @@ fn cdr(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_null(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "null?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_nil())
 }
 fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-car!";
@@ -918,7 +919,6 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sys-display";
     check_argc_between!(name, args, 1, 2);
-    println!("display called {}", args[0]);
     let argc = args.len();
     if argc == 2 {
         match args[1] {
@@ -929,7 +929,7 @@ fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
             _ => {}
         }
     }
-
+    println!("display called {}", args[0]);
     return Object::Unspecified;
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
