@@ -1,6 +1,7 @@
 use std::{
     env::{self, current_dir, current_exe},
     path::Path,
+    fs,
 };
 
 /// Scheme procedures written in Rust.
@@ -2595,9 +2596,14 @@ fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "hashtable-hash-function";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn throw(vm: &mut Vm, _args: &mut [Object]) -> Object {
+fn throw(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "throw";
     println!("{} tentative called", name);
+    println!("{} called", name);
+    for i in 0..args.len() {
+        println!("  arg={}", args[i]);
+    }
+
     vm.gc.new_string("return value of throw")
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -3974,7 +3980,19 @@ fn vector_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn create_directory(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "create-directory";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(path) = args[0] {
+        match fs::create_dir(&path.string) {
+            Ok(()) => {
+                Object::Unspecified
+            }
+            Err(err) => {
+                panic!("{}: {} {}", name, args[0], err)
+            }
+        }
+    } else {
+        panic!("{}: string path required but got {}", name, args[0])
+    }
 }
 fn delete_directory(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "delete-directory";

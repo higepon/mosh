@@ -235,7 +235,7 @@ impl Object {
         if let Self::Closure(c) = self {
             c
         } else {
-            panic!("Not a Object::Closure")
+            panic!("Not a Object::Closure but {}", self)
         }
     }
 
