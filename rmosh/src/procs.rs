@@ -1196,7 +1196,20 @@ fn sys_port_seek(vm: &mut Vm, _args: &mut [Object]) -> Object {
 }
 fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::StringOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        Object::FileOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }        
+        _ => {
+            panic!("{}: string-output-port required but got {:?}", name, args);
+        }
+    }
 }
 fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "digit->integer";
