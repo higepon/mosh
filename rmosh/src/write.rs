@@ -83,7 +83,7 @@ impl Writer {
 #[cfg(test)]
 pub mod tests {
 
-    use crate::objects::Object;
+    use crate::{objects::Object, vm::Vm};
 
     use super::Writer;
 
@@ -93,4 +93,13 @@ pub mod tests {
         w.display(Object::Number(123));
         assert_eq!("123", w.as_str());
     }
+
+    #[test]
+    fn test_simple_pair() {
+        let mut vm = Vm::new();
+        let pair = vm.gc.cons(Object::Number(123), Object::Number(456));
+        let mut w = Writer::new();
+        w.display(pair);
+        assert_eq!("(123 . 456)", w.as_str());
+    }    
 }
