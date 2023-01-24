@@ -19,6 +19,7 @@ pub mod op;
 pub mod procs;
 pub mod psyntax;
 pub mod read;
+pub mod write;
 pub mod vm;
 
 fn main() {
