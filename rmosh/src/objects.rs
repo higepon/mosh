@@ -239,6 +239,15 @@ impl Object {
         }
     }
 
+    pub fn to_procedure(self) -> GcRef<Procedure> {
+        if let Self::Procedure(p) = self {
+            p
+        } else {
+            panic!("Not a Object::Procedure but {}", self)
+        }
+    }
+
+
     // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
         match (self, other) {

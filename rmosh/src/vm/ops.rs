@@ -2,7 +2,7 @@ use crate::{
     gc::GcRef,
     objects::{Closure, Object, Symbol},
     op::Op,
-    procs,
+    procs::{self, default_free_vars},
 };
 
 use super::Vm;
@@ -222,19 +222,29 @@ impl Vm {
                             }
                         }
                     } else if procedure.func as usize == procs::eval as usize {
+                        self.eval_ret_code = vec![];
+                        self.eval_ret_code.push(Object::Instruction(Op::Return));
+                        self.eval_ret_code.push(Object::Number(argc));
+
+                        self.pc = self.eval_ret_code.as_ptr();
+                        (procedure.func)(self, args);
+                    } else {
+                        // TODO: Take care of cl.
+                        // self.cl = self.ac
                         self.ret_code = vec![];
                         self.ret_code.push(Object::Instruction(Op::Return));
                         self.ret_code.push(Object::Number(argc));
 
                         self.pc = self.ret_code.as_ptr();
-                        (procedure.func)(self, args);
-                    } else {
-                        // TODO: Take care of cl.
-                        // self.cl = self.ac
-
+                        /*
+                        let free_vars = default_free_vars(&mut self.gc);
+                        for free_var in free_vars {
+                            if free_var.to_procedure().func as usize == procedure.func as usize {
+                                println!("free_var={} called", free_var.to_procedure().name)
+                            }
+                        }
+                        */
                         self.ac = (procedure.func)(self, args);
-                        // TODO is this right??
-                        self.return_n(argc);
                     }
                 }
                 _ => {

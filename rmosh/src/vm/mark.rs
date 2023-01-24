@@ -44,7 +44,7 @@ impl Vm {
             self.gc.mark_object(obj);
         }
 
-        for &obj in &self.ret_code {
+        for &obj in &self.eval_ret_code {
             self.gc.mark_object(obj);
         }
 

@@ -765,9 +765,10 @@ impl Vm {
     fn print_vm(&mut self, op: Op) {
         println!("-----------------------------------------");
         println!("{} executed", op);
-        println!("  ac={}", self.ac);
-        println!("  dc={}", self.dc);
+       // println!("  ac={}", self.ac);
+        //println!("  dc={}", self.dc);
         println!("-----------------------------------------");
+        /*
         let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
         for i in 0..self.stack_len() {
             println!(
@@ -780,6 +781,7 @@ impl Vm {
                 }
             );
         }
+        */
         println!("-----------------------------------------<== sp")
     }
     #[cfg(not(feature = "debug_log_vm"))]
