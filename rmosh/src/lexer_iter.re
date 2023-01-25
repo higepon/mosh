@@ -62,6 +62,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
     EOS                    = "\X0000";
+    DIRECTIVE              = "#!fold-case" | "#!no-fold-case" | "#!r6rs";
     COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
 */
 
@@ -156,6 +157,9 @@ impl<'input> Iterator for Lexer<'input> {
                     }
                     "#@" {
                         return self.with_location(Token::AbbrevUnsyntaxSplicing);
+                    }
+                    DIRECTIVE {
+                        continue 'lex;
                     }
                     DELIMITER {
                         continue 'lex;
