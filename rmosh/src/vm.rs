@@ -21,7 +21,7 @@ use crate::{
     read::ReadError,
 };
 
-const STACK_SIZE: usize = 1024;
+const STACK_SIZE: usize = 65536;
 const MAX_NUM_VALUES: usize = 256;
 
 struct Registers {
