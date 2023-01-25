@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     gc::GcRef,
-    objects::{Object, Pair},
+    objects::{Object, Pair, Vector},
 };
 
 pub struct Writer {
@@ -41,7 +41,7 @@ impl Writer {
         }
         match obj {
             Object::Pair(p) => self.display_pair(p),
-            Object::Vector(_) => todo!(),
+            Object::Vector(v) => self.display_vector(v),
             Object::SimpleStruct(_) => todo!(),
             Object::ByteVector(_)
             | Object::Closure(_)
@@ -109,6 +109,17 @@ impl Writer {
         self.put_string(")");
     }
 
+    fn display_vector(&mut self, v: GcRef<Vector>) {
+        self.put_string("#(");
+        for i in 0..v.len() {
+            self.display_one(v.data[i]);
+            if i != v.len() - 1 {
+                self.put_string(" ");
+            }
+        }
+       self.put_string(")");        
+    }    
+
     fn scan(&mut self, obj: Object) {
         let mut o = obj;
         loop {
@@ -154,7 +165,7 @@ impl Writer {
                 }
                 Object::Vector(v) => {
                     let val = match self.seen.get(&o) {
-                        Some(v) => *v,
+                        Some(found) => *found,
                         None => Object::Unspecified,
                     };
                     if val.is_false() {
@@ -168,6 +179,7 @@ impl Writer {
                     for i in 0..v.len() {
                         self.scan(v.data[i]);
                     }
+                    break;               
                 }
                 Object::SimpleStruct(s) => {
                     let val = match self.seen.get(&o) {
@@ -185,6 +197,7 @@ impl Writer {
                     for i in 0..s.len() {
                         self.scan(s.field(i));
                     }
+                    break;
                 }
             }
         }
@@ -224,4 +237,13 @@ pub mod tests {
         w.display(pair);
         assert_eq!("#1=(123 . #1#)", w.as_str());
     }
+
+    #[test]
+    fn test_simple_vector() {
+        let mut vm = Vm::new();
+        let v = vm.gc.new_vector(&vec![Object::Number(123), Object::Number(456)]);
+        let mut w = Writer::new();
+        w.display(v);
+        assert_eq!("#(123 456)", w.as_str());
+    }    
 }
