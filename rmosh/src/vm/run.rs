@@ -763,17 +763,18 @@ impl Vm {
     }
     #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
+        use crate::write::display_as_str;
+
         println!("-----------------------------------------");
         println!("{} executed", op);
-       // println!("  ac={}", self.ac);
-        //println!("  dc={}", self.dc);
+        println!("  ac={}", display_as_str(self.ac));
+        println!("  dc={}", display_as_str(self.dc));
         println!("-----------------------------------------");
-        /*
         let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
         for i in 0..self.stack_len() {
             println!(
                 "  {}{}",
-                self.stack[i],
+                display_as_str(self.stack[i]),
                 if fp_idx == i.try_into().unwrap() {
                     "  <== fp"
                 } else {
@@ -781,7 +782,6 @@ impl Vm {
                 }
             );
         }
-        */
         println!("-----------------------------------------<== sp")
     }
     #[cfg(not(feature = "debug_log_vm"))]

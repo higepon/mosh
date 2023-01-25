@@ -2,10 +2,16 @@ use std::collections::HashMap;
 
 use crate::{
     gc::GcRef,
-    objects::{Object, Pair, Vector},
+    objects::{Object, Pair, Vector, SimpleStruct},
 };
 
-pub struct Writer {
+pub fn display_as_str(obj: Object) -> String {
+    let mut writer = Writer::new();
+    writer.display(obj);
+    writer.as_str().to_owned()
+}
+
+struct Writer {
     accumulated: String,
     seen: HashMap<Object, Object>,
     shared_id: isize,
@@ -42,7 +48,7 @@ impl Writer {
         match obj {
             Object::Pair(p) => self.display_pair(p),
             Object::Vector(v) => self.display_vector(v),
-            Object::SimpleStruct(_) => todo!(),
+            Object::SimpleStruct(s) => self.display_struct(s),
             Object::ByteVector(_)
             | Object::Closure(_)
             | Object::Vox(_)
@@ -117,8 +123,20 @@ impl Writer {
                 self.put_string(" ");
             }
         }
-       self.put_string(")");        
-    }    
+        self.put_string(")");
+    }
+
+    fn display_struct(&mut self, s: GcRef<SimpleStruct>) {
+        self.put_string("#<simple-stuct ");
+        for i in 0..s.len() {
+            self.display_one(s.field(i));
+            if i != s.len() - 1 {
+                self.put_string(" ");
+            }
+        }
+        self.put_string(">");
+    }
+
 
     fn scan(&mut self, obj: Object) {
         let mut o = obj;
@@ -179,7 +197,7 @@ impl Writer {
                     for i in 0..v.len() {
                         self.scan(v.data[i]);
                     }
-                    break;               
+                    break;
                 }
                 Object::SimpleStruct(s) => {
                     let val = match self.seen.get(&o) {
@@ -241,9 +259,11 @@ pub mod tests {
     #[test]
     fn test_simple_vector() {
         let mut vm = Vm::new();
-        let v = vm.gc.new_vector(&vec![Object::Number(123), Object::Number(456)]);
+        let v = vm
+            .gc
+            .new_vector(&vec![Object::Number(123), Object::Number(456)]);
         let mut w = Writer::new();
         w.display(v);
         assert_eq!("#(123 456)", w.as_str());
-    }    
+    }
 }
