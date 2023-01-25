@@ -2225,7 +2225,7 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> Object {
             Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {
                 Ok(obj) => obj,
                 Err(err) => {
-                    panic!("{}: {:?}", name, err)
+                    panic!("{}: {:?} {:?}", name, err, port.file)
                 }
             },
             _ => {

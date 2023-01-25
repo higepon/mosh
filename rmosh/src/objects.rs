@@ -1025,7 +1025,7 @@ impl Display for StringInputPort {
 #[derive(Debug)]
 pub struct FileInputPort {
     pub header: GcHeader,
-    file: File,
+    pub file: File,
     is_closed: bool,
     pub reader: Option<Reader>,
 }
@@ -1053,6 +1053,7 @@ impl FileInputPort {
     }
 
     pub fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError> {
+        println!("{:?}", self.file);
         match &mut self.reader {
             Some(reader) => reader.read(gc),
             None => {

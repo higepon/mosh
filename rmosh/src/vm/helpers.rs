@@ -4,6 +4,8 @@ use crate::{
     vm::Vm,
 };
 
+use super::STACK_SIZE;
+
 impl Vm {
     #[inline(always)]
     pub(super) fn return_n(&mut self, n: isize) {
@@ -83,6 +85,9 @@ impl Vm {
         unsafe {
             *self.sp = value;
             self.sp = self.inc(self.sp, 1);
+            if self.stack_len() >= STACK_SIZE {
+                panic!("Stack Overflow")
+            }
         }
     }
 
