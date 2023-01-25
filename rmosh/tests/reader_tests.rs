@@ -240,6 +240,34 @@ fn read_unquote() {
 }
 
 #[test]
+fn read_datum_comment() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "#; 3 4").unwrap();
+        let expected = Object::Number(4);
+        assert_equal!(vm.gc, expected, obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "(3 #; 4)").unwrap();
+        let expected = vm.gc.list1(Object::Number(3));
+        assert_equal!(vm.gc, expected, obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "(3 #;(9))").unwrap();
+        let expected = vm.gc.list1(Object::Number(3));
+        assert_equal!(vm.gc, expected, obj);
+    }      
+    
+    {
+        let obj = read(&mut vm.gc, "(3 #;8 #;9)").unwrap();
+        let expected = vm.gc.list1(Object::Number(3));
+        assert_equal!(vm.gc, expected, obj);
+    }      
+}
+
+#[test]
 fn parse_multiple() {
     let mut vm = Vm::new();
     let mut reader = Reader::new("(3) (4)");

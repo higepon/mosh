@@ -9,6 +9,7 @@ pub enum Token {
     AbbrevUnsyntax,
     AbbrevUnsyntaxSplicing,
     Character { value: char },
+    DatumComment,
     Dot,
     False,
     Identifier { value: String },
