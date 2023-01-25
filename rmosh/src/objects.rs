@@ -91,6 +91,13 @@ impl Object {
         }
     }
 
+    pub fn is_true(&self) -> bool {
+        match self {
+            Object::True => true,
+            _ => false,
+        }
+    }
+
     pub fn is_list(&self) -> bool {
         Pair::is_list(*self)
     }
@@ -246,7 +253,6 @@ impl Object {
             panic!("Not a Object::Procedure but {}", self)
         }
     }
-
 
     // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
