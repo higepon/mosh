@@ -2,9 +2,10 @@
 
 333
 |#
-;(import (rnrs))
+;(import (rnrs))s
 ;(import (mosh file))
 (import (scheme base))
+(import (scheme write))
 ;(import (srfi :1))
 ;(import (mosh control))
 ;

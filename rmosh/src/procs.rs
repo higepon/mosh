@@ -1,7 +1,7 @@
 use std::{
     env::{self, current_dir, current_exe},
-    path::Path,
     fs,
+    path::Path,
 };
 
 /// Scheme procedures written in Rust.
@@ -917,7 +917,7 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-cdr!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sys-display";
     check_argc_between!(name, args, 1, 2);
     let argc = args.len();
@@ -927,12 +927,35 @@ fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
                 port.display(args[0]);
                 return Object::Unspecified;
             }
-            _ => {}
+            Object::StdOutputPort(mut port) => {
+                port.display(args[0]);
+                return Object::Unspecified;
+            }
+            Object::StdErrorPort(mut port) => {
+                port.display(args[0]);
+                return Object::Unspecified;
+            }
+            _ => {
+                println!("{}({}) called", name, argc);
+                for i in 0..args.len() {
+                    println!("  arg={}", args[i]);
+                }
+                return Object::Unspecified;
+            }
         }
     }
-    println!("{} called", name);
-    for i in 0..args.len() {
-        println!("  arg={}", args[i]);
+    match vm.current_output_port() {
+        Object::StdOutputPort(mut port) => {
+            port.display(args[0]);
+            return Object::Unspecified;
+        }
+        _ => {
+            println!("{}({}) called", name, argc);
+            for i in 0..args.len() {
+                println!("  arg={}", args[i]);
+            }
+            return Object::Unspecified;
+        }
     }
     return Object::Unspecified;
 }
@@ -1205,7 +1228,7 @@ fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
         Object::FileOutputPort(mut port) => {
             port.close();
             Object::Unspecified
-        }        
+        }
         _ => {
             panic!("{}: string-output-port required but got {:?}", name, args);
         }
@@ -1294,9 +1317,32 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
                 port.format(&s.string, &mut args[2..]);
                 return Object::Unspecified;
             }
+            (Object::StdErrorPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }
+            (Object::StdOutputPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }            
+            (Object::False, Object::String(s)) => {
+                let mut port = StringOutputPort::new();
+                port.format(&s.string, &mut args[2..]);
+                return vm.gc.new_string(&port.string())
+            }
+            (Object::String(s), _) => {
+                let mut port = StringOutputPort::new();
+                port.format(&s.string, &mut args[1..]);
+                return vm.gc.new_string(&port.string())
+            }                               
             _ => {}
         }
     }
+    println!("***{} called", "format");
+    for i in 0..args.len() {
+        println!("  arg[{}]={}", i, args[i]);
+    }
+
     // TODO
     let text = if args.len() == 2 {
         format!("{} {}", args[0], args[1])
@@ -1320,9 +1366,9 @@ fn current_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 0);
     vm.current_input_port()
 }
-fn current_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn current_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    vm.current_output_port()
 }
 fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-current-input-port!";
@@ -1352,6 +1398,14 @@ fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
     if argc == 2 {
         match args[1] {
             Object::StringOutputPort(mut port) => {
+                port.write(args[0]);
+                return Object::Unspecified;
+            }
+            Object::StdOutputPort(mut port) => {
+                port.write(args[0]);
+                return Object::Unspecified;
+            }
+            Object::StdErrorPort(mut port) => {
                 port.write(args[0]);
                 return Object::Unspecified;
             }
@@ -1851,7 +1905,7 @@ fn eq_hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
 fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-error-port";
     check_argc!(name, args, 0);
-    vm.gc.new_string("TODO:current-error-port")
+    vm.current_error_port()
 }
 fn values(vm: &mut Vm, args: &mut [Object]) -> Object {
     vm.values(args)
@@ -4031,9 +4085,7 @@ fn create_directory(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     if let Object::String(path) = args[0] {
         match fs::create_dir(&path.string) {
-            Ok(()) => {
-                Object::Unspecified
-            }
+            Ok(()) => Object::Unspecified,
             Err(err) => {
                 panic!("{}: {} {}", name, args[0], err)
             }

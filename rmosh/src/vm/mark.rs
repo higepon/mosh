@@ -29,8 +29,12 @@ impl Vm {
     }
 
     pub(super) fn mark_roots(&mut self) {
+
+
         // Ports.
         self.gc.mark_object(self.current_input_port);
+        self.gc.mark_object(self.current_error_port);        
+        self.gc.mark_object(self.current_output_port);         
 
         for &compiled in &self.compiled_programs {
             self.gc.mark_object(compiled);

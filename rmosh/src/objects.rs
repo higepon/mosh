@@ -66,6 +66,8 @@ pub enum Object {
     StringInputPort(GcRef<StringInputPort>),
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
+    StdOutputPort(GcRef<StdOutputPort>),
+    StdErrorPort(GcRef<StdErrorPort>),    
     StringOutputPort(GcRef<StringOutputPort>),
     Instruction(Op),
     Nil,
@@ -274,6 +276,12 @@ impl Eq for Object {}
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::StdOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::StdErrorPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -357,6 +365,12 @@ impl Debug for Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::StdOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::StdErrorPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::FileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -1120,12 +1134,139 @@ impl Display for FileOutputPort {
     }
 }
 
+
+pub struct StdOutputPort {
+    pub header: GcHeader,
+}
+impl StdOutputPort {
+    pub fn new() -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::StdOutputPort),
+        }
+    }
+
+    pub fn close(&mut self) {}
+
+    pub fn write(&mut self, obj: Object) {
+        let written = format!("{:?}", obj);
+        print!("{}", written)
+    }
+
+    // TODO: Make this human readable.
+    pub fn display(&mut self, obj: Object) {
+        let written = format!("{}", obj);
+        print!("{}", written)
+    }
+
+    pub fn format(&mut self, fmt_str: &str, args: &mut [Object]) {
+        let mut chars = fmt_str.chars();
+        let mut i = 0;
+        while let Some(c) = chars.next() {
+            if c == '~' {
+                if let Some(c) = chars.next() {
+                    if c == 'a' || c == 'd' {
+                        if i < args.len() {
+                            self.display(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
+                    } else if c == 's' {
+                        if i < args.len() {
+                            self.write(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
+                    } else {
+                        panic!("format: unknown ~{}", c);
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                print!("{}", c)
+            }
+        }
+    }
+}
+
+impl Display for StdOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<std-output-port>")
+    }
+}
+
+
+pub struct StdErrorPort {
+    pub header: GcHeader,
+}
+impl StdErrorPort {
+    pub fn new() -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::StdErrOutputPort),
+        }
+    }
+
+    pub fn close(&mut self) {}
+
+    pub fn write(&mut self, obj: Object) {
+        let written = format!("{:?}", obj);
+        eprint!("{}", written)
+    }
+
+    // TODO: Make this human readable.
+    pub fn display(&mut self, obj: Object) {
+        let written = format!("{}", obj);
+        eprint!("{}", written)
+    }
+
+    pub fn format(&mut self, fmt_str: &str, args: &mut [Object]) {
+        let mut chars = fmt_str.chars();
+        let mut i = 0;
+        while let Some(c) = chars.next() {
+            if c == '~' {
+                if let Some(c) = chars.next() {
+                    if c == 'a' || c == 'd' {
+                        if i < args.len() {
+                            self.display(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
+                    } else if c == 's' {
+                        if i < args.len() {
+                            self.write(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
+                    } else {
+                        panic!("format: unknown ~{}", c);
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                eprint!("{}", c)
+            }
+        }
+    }
+}
+
+impl Display for StdErrorPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<stderr-output-port>")
+    }
+}
+
 #[derive(Debug)]
 pub struct StringOutputPort {
     pub header: GcHeader,
     string: String,
     is_closed: bool,
 }
+
 
 impl StringOutputPort {
     pub fn new() -> Self {

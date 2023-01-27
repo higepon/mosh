@@ -75,6 +75,8 @@ pub enum ObjectType {
     EqHashtable,
     FileOutputPort,
     FileInputPort,
+    StdOutputPort,
+    StdErrOutputPort,
     StringInputPort,
     StringOutputPort,
     Pair,
@@ -374,6 +376,8 @@ impl Gc {
             }
             Object::StringInputPort(_) => {}
             Object::StringOutputPort(_) => {}
+            Object::StdOutputPort(_) => {}
+            Object::StdErrorPort(_) => {}
             Object::Nil => {}
             Object::Float(_) => {}
             Object::Number(_) => {}
@@ -531,6 +535,8 @@ impl Gc {
                     }
                 }
             }
+            ObjectType::StdOutputPort => {}
+            ObjectType::StdErrOutputPort => {}
             ObjectType::StringInputPort => {}
             ObjectType::StringOutputPort => {}
             ObjectType::String => {}

@@ -66,6 +66,8 @@ impl Writer {
             | Object::Eof
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StdErrorPort(_)                        
             | Object::Instruction(_)
             | Object::Nil
             | Object::Symbol(_)
@@ -159,6 +161,8 @@ impl Writer {
                 | Object::Eof
                 | Object::FileOutputPort(_)
                 | Object::StringOutputPort(_)
+                | Object::StdOutputPort(_)                
+                | Object::StdErrorPort(_)                                
                 | Object::Instruction(_)
                 | Object::Nil
                 | Object::Symbol(_)
