@@ -14,7 +14,7 @@ use crate::{
     compiler,
     fasl::Fasl,
     gc::{Gc, GcRef},
-    objects::{Closure, Object, Symbol, StdErrorPort, StdOutputPort},
+    objects::{Closure, Object, StdErrorPort, StdOutputPort, Symbol},
     op::Op,
     procs::default_free_vars,
     psyntax,
@@ -81,7 +81,7 @@ pub struct Vm {
     pub call_by_name_code: Vec<Object>,
     pub closure_for_evaluate: Object,
     current_input_port: Object,
-    current_output_port: Object,    
+    current_output_port: Object,
     current_error_port: Object,
     saved_registers: Registers,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
@@ -116,11 +116,11 @@ impl Vm {
             call_by_name_code: vec![],
             closure_for_evaluate: Object::Unspecified,
             current_input_port: Object::Unspecified,
-            current_output_port: Object::Unspecified,            
+            current_output_port: Object::Unspecified,
             current_error_port: Object::Unspecified,
             saved_registers: Registers::new(),
         };
-        ret.current_output_port = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));        
+        ret.current_output_port = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
         ret.current_error_port = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
         ret.trigger0_code.push(Object::Instruction(Op::Constant));
         ret.trigger0_code.push(Object::Unspecified);
@@ -157,7 +157,7 @@ impl Vm {
 
             let sym = self.gc.symbol_intern("%optimize?");
             self.set_global_value(sym.to_symbol(), Object::False);
-            
+
             let sym = self.gc.symbol_intern("%clean-acc");
             self.set_global_value(sym.to_symbol(), Object::False);
 
@@ -229,7 +229,6 @@ impl Vm {
     pub fn current_error_port(&self) -> Object {
         self.current_output_port
     }
-
 
     pub fn current_input_port(&self) -> Object {
         self.current_input_port
