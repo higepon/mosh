@@ -950,6 +950,13 @@ impl EqHashtable {
         }
     }
 
+    pub fn copy(&self) -> Self {
+        let mut h = Self::new();
+        h.is_mutable = self.is_mutable;
+        h.hash_map.clone_from(&self.hash_map);
+        h
+    }
+
     pub fn contains(&self, key: Object) -> bool {
         match self.hash_map.get(&key) {
             Some(_) => true,

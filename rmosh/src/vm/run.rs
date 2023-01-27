@@ -11,6 +11,9 @@ use super::{Vm, MAX_NUM_VALUES};
 impl Vm {
     pub fn run(&mut self, ops: *const Object, ops_len: usize) -> Object {
         if !self.is_initialized {
+            self.sp = self.stack.as_mut_ptr();
+            self.fp = self.sp;
+
             // Create display closure and make free variables accessible.
             self.initialize_free_vars(ops, ops_len);
 
@@ -27,9 +30,6 @@ impl Vm {
     }
 
     pub(super) fn run_ops(&mut self, ops: *const Object) -> Object {
-        self.sp = self.stack.as_mut_ptr();
-        self.fp = self.sp;
-
         self.pc = ops;
         loop {
             let op: Op = unsafe { *self.pc }.to_instruction();

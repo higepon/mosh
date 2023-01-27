@@ -1839,9 +1839,14 @@ fn equal_hash(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "equal-hash";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn eq_hashtable_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn eq_hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eq-hashtable-copy";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::EqHashtable(e) = args[0] {
+        Object::EqHashtable(vm.gc.alloc(e.copy()))
+    } else {
+        panic!("{}: eq-hashtable required but got {}", name, args[0]);
+    }
 }
 fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-error-port";

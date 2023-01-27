@@ -1,9 +1,9 @@
-use std::ptr::null_mut;
+use std::{ptr::null_mut, cmp};
 
 use crate::{
     objects::{Closure, Object},
     op::Op,
-    procs::default_free_vars,
+    procs::default_free_vars, write::display_as_str,
 };
 
 use super::Vm;
@@ -12,7 +12,7 @@ impl Vm {
     // Main entry point for eval.
     pub fn eval_after(&mut self, sexp: Object) -> Object {
         println!("eval={}", sexp);
-        let name = self.gc.symbol_intern("compile");
+        let name = self.gc.symbol_intern("compile-w/o-halt");
         let v = self.call_by_name(name, sexp).to_vector();
         let code_size = v.len();
         let body_size = code_size + 2;
