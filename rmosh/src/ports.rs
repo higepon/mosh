@@ -11,7 +11,10 @@ pub trait TextOutputPort {
 
     // (write obj): Machine readable print.
     fn write(&mut self, obj: Object) {
-        self.put_string(&format!("{:?}", obj))
+        let mut shared_id = 1;
+        let mut seen: HashMap<Object, Object> = HashMap::new();
+        self.scan(obj, &mut seen);
+        self.display_one(obj, &mut seen, &mut shared_id);
     }
 
     // (display obj): Human readable print.
