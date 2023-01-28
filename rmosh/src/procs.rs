@@ -1324,6 +1324,10 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
                 port.format(&s.string, &mut args[2..]);
                 return Object::Unspecified;
             }
+            (Object::FileOutputPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }
             (Object::False, Object::String(s)) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[2..]);
