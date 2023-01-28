@@ -911,11 +911,23 @@ fn is_null(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-car!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    if let Object::Pair(mut p) = args[0] {
+        p.car = args[1];
+        Object::Unspecified
+    } else {
+        panic!("{}: pair required but got {}", name, args[0]);
+    }
 }
 fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-cdr!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    if let Object::Pair(mut p) = args[0] {
+        p.cdr = args[1];
+        Object::Unspecified
+    } else {
+        panic!("{}: pair required but got {}", name, args[0]);
+    }
 }
 fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "display";
