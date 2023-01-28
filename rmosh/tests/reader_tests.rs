@@ -258,13 +258,13 @@ fn read_datum_comment() {
         let obj = read(&mut vm.gc, "(3 #;(9))").unwrap();
         let expected = vm.gc.list1(Object::Number(3));
         assert_equal!(vm.gc, expected, obj);
-    }      
-    
+    }
+
     {
         let obj = read(&mut vm.gc, "(3 #;8 #;9)").unwrap();
         let expected = vm.gc.list1(Object::Number(3));
         assert_equal!(vm.gc, expected, obj);
-    }      
+    }
 }
 
 #[test]
