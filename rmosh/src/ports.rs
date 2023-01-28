@@ -1,23 +1,211 @@
-use std::fmt::{self, Display};
+use std::{fmt::{self, Display}, collections::HashMap};
 
 use crate::{
-    gc::{GcHeader, ObjectType},
-    objects::Object,
+    gc::{GcHeader, ObjectType, GcRef},
+    objects::{Object, Vector, SimpleStruct, Pair},
 };
 
 // Trait for TextOutputPort.
 pub trait TextOutputPort {
     fn put_string(&mut self, s: &str);
 
-    // (display obj): Human readable print.
-    fn display(&mut self, obj: Object) {
-        self.put_string(&format!("{}", obj))
-    }
-
     // (write obj): Machine readable print.
     fn write(&mut self, obj: Object) {
         self.put_string(&format!("{:?}", obj))
     }
+
+    // (display obj): Human readable print.
+    fn display(&mut self, obj: Object) {
+        let mut shared_id = 1;
+        let mut seen: HashMap<Object, Object> = HashMap::new();
+        self.scan(obj, &mut seen);
+        self.display_one(obj, &mut seen, &mut shared_id);
+    }
+
+    fn display_one(&mut self, obj: Object, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+        let seen_state = match seen.get(&obj) {
+            Some(val) => *val,
+            None => Object::False,
+        };
+        if seen_state.is_true() {
+            seen.insert(obj, Object::Number(*shared_id));
+            self.put_string(&format!("#{}=", shared_id));
+            *shared_id += 1;
+        } else if seen_state.is_number() {
+            self.put_string(&format!("#{}#", seen_state.to_number()));
+            return;
+        }
+        match obj {
+            Object::Pair(p) => self.display_pair(p, seen, shared_id),
+            Object::Vector(v) => self.display_vector(v, seen, shared_id),
+            Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id),
+            Object::ByteVector(_)
+            | Object::Closure(_)
+            | Object::Vox(_)
+            | Object::ProgramCounter(_)
+            | Object::ObjectPointer(_)
+            | Object::Unspecified
+            | Object::True
+            | Object::Procedure(_)
+            | Object::Char(_)
+            | Object::EqHashtable(_)
+            | Object::False
+            | Object::Float(_)
+            | Object::StringInputPort(_)
+            | Object::FileInputPort(_)
+            | Object::Eof
+            | Object::FileOutputPort(_)
+            | Object::StringOutputPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::Instruction(_)
+            | Object::Nil
+            | Object::Symbol(_)
+            | Object::String(_)
+            | Object::Number(_) => self.as_display(obj),
+        }
+    }
+
+
+    fn display_pair(&mut self, p: GcRef<Pair>, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+        self.put_string("(");
+        self.display_one(p.car, seen, shared_id);
+
+        let mut obj = p.cdr;
+        loop {
+            let seen_state = match seen.get(&obj) {
+                Some(v) => *v,
+                None => Object::False,
+            };
+            match obj {
+                Object::Pair(pair) if seen_state.is_false() => {
+                    self.put_string(" ");
+                    self.display_one(pair.car, seen, shared_id);
+                    obj = pair.cdr;
+                }
+                Object::Nil => {
+                    break;
+                }
+                _ => {
+                    self.put_string(" . ");
+                    self.display_one(obj, seen, shared_id);
+                    break;
+                }
+            }
+        }
+        self.put_string(")");
+    }
+
+    fn as_display(&mut self, obj: Object) {
+        self.put_string(&format!("{}", obj));
+    }    
+
+    fn display_vector(&mut self, v: GcRef<Vector>, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+        self.put_string("#(");
+        for i in 0..v.len() {
+            self.display_one(v.data[i], seen, shared_id);
+            if i != v.len() - 1 {
+                self.put_string(" ");
+            }
+        }
+        self.put_string(")");
+    }
+
+    fn display_struct(&mut self, s: GcRef<SimpleStruct>, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+        self.put_string("#<simple-stuct ");
+        for i in 0..s.len() {
+            self.display_one(s.field(i), seen, shared_id);
+            if i != s.len() - 1 {
+                self.put_string(" ");
+            }
+        }
+        self.put_string(">");
+    }
+
+    fn scan(&mut self, obj: Object, seen: &mut HashMap<Object, Object>) {
+        let mut o = obj;
+        loop {
+            match o {
+                Object::ByteVector(_)
+                | Object::Closure(_)
+                | Object::Vox(_)
+                | Object::ProgramCounter(_)
+                | Object::ObjectPointer(_)
+                | Object::Unspecified
+                | Object::True
+                | Object::Procedure(_)
+                | Object::Char(_)
+                | Object::EqHashtable(_)
+                | Object::False
+                | Object::Float(_)
+                | Object::StringInputPort(_)
+                | Object::FileInputPort(_)
+                | Object::Eof
+                | Object::FileOutputPort(_)
+                | Object::StringOutputPort(_)
+                | Object::StdOutputPort(_)
+                | Object::StdErrorPort(_)
+                | Object::Instruction(_)
+                | Object::Nil
+                | Object::Symbol(_)
+                | Object::String(_)
+                | Object::Number(_) => return,
+                Object::Pair(p) => {
+                    let val = match seen.get(&o) {
+                        Some(v) => *v,
+                        None => Object::Unspecified,
+                    };
+                    if val.is_false() {
+                        seen.insert(o, Object::True);
+                        return;
+                    } else if val.is_true() {
+                        return;
+                    } else {
+                        seen.insert(obj, Object::False);
+                    }
+                    self.scan(p.car, seen);
+                    o = p.cdr;
+                    continue;
+                }
+                Object::Vector(v) => {
+                    let val = match seen.get(&o) {
+                        Some(found) => *found,
+                        None => Object::Unspecified,
+                    };
+                    if val.is_false() {
+                        seen.insert(o, Object::True);
+                        return;
+                    } else if val.is_true() {
+                        return;
+                    } else {
+                        seen.insert(obj, Object::False);
+                    }
+                    for i in 0..v.len() {
+                        self.scan(v.data[i], seen);
+                    }
+                    break;
+                }
+                Object::SimpleStruct(s) => {
+                    let val = match seen.get(&o) {
+                        Some(v) => *v,
+                        None => Object::Unspecified,
+                    };
+                    if val.is_false() {
+                        seen.insert(o, Object::True);
+                        return;
+                    } else if val.is_true() {
+                        return;
+                    } else {
+                        seen.insert(obj, Object::False);
+                    }
+                    for i in 0..s.len() {
+                        self.scan(s.field(i), seen);
+                    }
+                    break;
+                }
+            }
+        }
+    }    
 
     // (format ...).
     fn format(&mut self, fmt: &str, args: &mut [Object]) {
