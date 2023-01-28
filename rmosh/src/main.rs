@@ -21,7 +21,6 @@ pub mod procs;
 pub mod psyntax;
 pub mod read;
 pub mod vm;
-pub mod write;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

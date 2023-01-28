@@ -12,7 +12,6 @@ pub mod procs;
 pub mod psyntax;
 pub mod read;
 pub mod vm;
-pub mod write;
 
 #[macro_use]
 extern crate lalrpop_util;
