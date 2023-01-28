@@ -4398,7 +4398,8 @@ fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> Object {
 
 fn is_same_marks(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "same-marks?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    Object::make_bool(is_same_marks_raw(args[0], args[1]))
 }
 
 /* psyntax/expander.ss
