@@ -1144,47 +1144,49 @@ pub trait TextOutputPort {
     fn write(&mut self, obj: Object) {
         self.put_string(&format!("{:?}", obj))
     }
-}
 
-pub fn format(port: &mut dyn TextOutputPort, fmt: &str, args: &mut [Object]) {
-    let mut chars = fmt.chars();
-    let mut i = 0;
-    while let Some(c) = chars.next() {
-        if c == '~' {
-            if let Some(c) = chars.next() {
-                if c == 'a' || c == 'd' {
-                    if i < args.len() {
-                        port.display(args[i]);
-                        i += 1;
+    fn format(&mut self, fmt: &str, args: &mut [Object]) {
+        let mut chars = fmt.chars();
+        let mut i = 0;
+        while let Some(c) = chars.next() {
+            if c == '~' {
+                if let Some(c) = chars.next() {
+                    if c == 'a' || c == 'd' {
+                        if i < args.len() {
+                            self.display(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
+                    } else if c == 's' {
+                        if i < args.len() {
+                            self.write(args[i]);
+                            i += 1;
+                        } else {
+                            panic!("format: not enough arguments");
+                        }
                     } else {
-                        panic!("format: not enough arguments");
-                    }
-                } else if c == 's' {
-                    if i < args.len() {
-                        port.write(args[i]);
-                        i += 1;
-                    } else {
-                        panic!("format: not enough arguments");
+                        panic!("format: unknown ~{}", c);
                     }
                 } else {
-                    panic!("format: unknown ~{}", c);
+                    break;
                 }
             } else {
-                break;
+                print!("{}", c)
             }
-        } else {
-            print!("{}", c)
         }
-    }
+    }    
 }
 
-impl TextOutputPort for GcRef<StdOutputPort> {
+
+
+impl TextOutputPort for StdOutputPort {
     fn put_string(&mut self, s: &str) {
         print!("{}", s);
     }
 }
 
-impl TextOutputPort for GcRef<StdErrorPort> {
+impl TextOutputPort for StdErrorPort {
     fn put_string(&mut self, s: &str) {
         eprint!("{}", s);
     }
@@ -1258,7 +1260,7 @@ pub struct StringOutputPort {
     is_closed: bool,
 }
 
-impl TextOutputPort for GcRef<StringOutputPort> {
+impl TextOutputPort for StringOutputPort {
     fn put_string(&mut self, s: &str) {
         self.string.push_str(s);
     }

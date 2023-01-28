@@ -11,7 +11,7 @@ use crate::{
     gc::Gc,
     objects::{
         ByteVector, EqHashtable, FileInputPort, FileOutputPort, Object, Pair, SimpleStruct,
-        StringInputPort, StringOutputPort, self,
+        StringInputPort, StringOutputPort, self, TextOutputPort,
     },
     vm::Vm,
 };
@@ -1314,25 +1314,25 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
     if argc >= 2 {
         match (args[0], args[1]) {
             (Object::StringOutputPort(mut port), Object::String(s)) => {
-                objects::format(&mut port, &s.string, &mut args[2..]);
+                port.format(&s.string, &mut args[2..]);
                 return Object::Unspecified;
             }
             (Object::StdErrorPort(mut port), Object::String(s)) => {
-                objects::format(&mut port, &s.string, &mut args[2..]);
+                port.format(&s.string, &mut args[2..]);
                 return Object::Unspecified;
             }
             (Object::StdOutputPort(mut port), Object::String(s)) => {
-                objects::format(&mut port, &s.string, &mut args[2..]);
+                port.format(&s.string, &mut args[2..]);
                 return Object::Unspecified;
             }            
             (Object::False, Object::String(s)) => {
                 let mut port = vm.gc.alloc(StringOutputPort::new());
-                objects::format(&mut port, &s.string, &mut args[2..]);
+                port.format(&s.string, &mut args[2..]);
                 return vm.gc.new_string(&port.string())
             }
             (Object::String(s), _) => {
                 let mut port = vm.gc.alloc(StringOutputPort::new());
-                objects::format(&mut port, &s.string, &mut args[1..]);
+                port.format(&s.string, &mut args[1..]);
                 return vm.gc.new_string(&port.string())
 
             }                               
