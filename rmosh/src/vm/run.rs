@@ -763,27 +763,17 @@ impl Vm {
     }
 
     #[cfg(feature = "debug_log_vm")]
-    fn display_as_str(&mut self, obj: Object) -> Object {
-        use crate::ports::StringOutputPort;
-        use crate::ports::TextOutputPort;
-
-        let mut port = StringOutputPort::new();
-        port.display(obj);
-        self.gc.new_string(&port.string())
-    }
-
-    #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
         println!("-----------------------------------------");
         println!("{} executed", op);
-        println!("  ac={}", self.display_as_str(self.ac));
-        println!("  dc={}", self.display_as_str(self.dc));
+        println!("  ac={}", self.ac.to_short_string());
+        println!("  dc={}", self.dc.to_short_string());
         println!("-----------------------------------------");
         let fp_idx = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
         for i in 0..self.stack_len() {
             println!(
                 "  {}{}",
-                self.display_as_str(self.stack[i]),
+                self.stack[i].to_short_string(),
                 if fp_idx == i.try_into().unwrap() {
                     "  <== fp"
                 } else {

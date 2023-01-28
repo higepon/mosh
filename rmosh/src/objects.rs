@@ -96,7 +96,7 @@ impl Object {
 
     pub fn to_short_string(&self) -> String {
         let s = self.to_string();
-        s[..min(s.len(), 15)].to_string()
+        s[..min(s.len(), 40)].to_string()
     }
 
     pub fn is_false(&self) -> bool {

@@ -42,8 +42,10 @@ impl Vm {
             self.gc.mark_object(obj);
         }
 
-        for &obj in &self.eval_code {
-            self.gc.mark_object(obj);
+        for eval_code in &self.eval_code_array {
+            for obj in eval_code {
+                self.gc.mark_object(*obj);
+            }
         }
 
         for &obj in &self.eval_ret_code {

@@ -17,16 +17,19 @@ impl Vm {
         let code_size = v.len();
         let body_size = code_size + 2;
 
-        self.eval_code = vec![];
+        // We allocate new code array for every eval calls.
+        // We can't share them between multiple eval calls.
+        self.eval_code_array.push(vec![]);
+        let eval_code = self.eval_code_array.last_mut().unwrap();
         for i in 0..code_size {
-            self.eval_code.push(v.data[i]);
+            eval_code.push(v.data[i]);
         }
-        self.eval_code.push(Object::Instruction(Op::Return));
-        self.eval_code.push(Object::Number(0));
+        eval_code.push(Object::Instruction(Op::Return));
+        eval_code.push(Object::Number(0));
         // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
-            self.eval_code.as_ptr(),
+            eval_code.as_ptr(),
             body_size,
             0,
             false,
