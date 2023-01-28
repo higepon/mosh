@@ -213,7 +213,7 @@ impl Object {
         if let Self::Instruction(p) = self {
             p
         } else {
-            panic!("Not a Object::Instruction")
+            panic!("Not a Object::Instruction {}", self)
         }
     }
     pub fn to_pair(self) -> GcRef<Pair> {
