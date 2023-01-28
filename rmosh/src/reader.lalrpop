@@ -62,7 +62,7 @@ Abbreviation: Object = {
         gc.list2(quote, datum)
     },
     "@" <datum: Datum> => {
-        let quote = gc.symbol_intern("unquotesplicing");
+        let quote = gc.symbol_intern("unquote-splicing");
         gc.list2(quote, datum)
     },
     "#'" <datum: Datum> => {

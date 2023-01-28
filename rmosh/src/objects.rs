@@ -4,10 +4,11 @@ use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::lexer::LexicalError;
 use crate::op::Op;
-use crate::ports::{FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort};
+use crate::ports::{FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort, TextOutputPort};
 use crate::read::{ReadError, Reader};
 use crate::vm::Vm;
 
+use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::fs::File;
@@ -87,6 +88,17 @@ pub enum Object {
 }
 
 impl Object {
+    pub fn to_string(&self) -> String {
+        let mut port = StringOutputPort::new();
+        port.display(*self);
+        port.string()
+    }
+
+    pub fn to_short_string(&self) -> String {
+        let s = self.to_string();
+        s[..min(s.len(), 15)].to_string()
+    }
+
     pub fn is_false(&self) -> bool {
         match self {
             Object::False => true,

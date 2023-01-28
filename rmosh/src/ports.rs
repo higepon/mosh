@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    gc::{GcHeader, GcRef, ObjectType},
+    gc::{GcHeader, GcRef, ObjectType, Gc},
     objects::{Object, Pair, SimpleStruct, Vector},
 };
 
