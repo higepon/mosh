@@ -77,13 +77,38 @@ pub trait TextOutputPort {
         }
     }
 
+    fn display_abbreviated(&mut self, obj: Object) -> bool {
+        if let Object::Symbol(s) = obj {
+            if s.string.eq("quote") {
+                self.put_string("'");
+                return true;
+            } else if s.string.eq("unquote") {
+                self.put_string(",");                
+                return true;
+            } else if s.string.eq("unquote-splicing") {
+                self.put_string(",@");                
+                return true;
+            } else if s.string.eq("quasiquote") {
+                self.put_string("`");
+                return true;
+            }
+        } 
+        return false;
+    }        
+
     fn display_pair(
         &mut self,
         p: GcRef<Pair>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
     ) {
-        self.put_string("(");
+        let mut p = p;
+        let abbreviated = p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
+        if abbreviated {
+            p = p.cdr.to_pair();
+        } else {
+            self.put_string("(");
+        }
         self.display_one(p.car, seen, shared_id);
 
         let mut obj = p.cdr;
@@ -108,7 +133,9 @@ pub trait TextOutputPort {
                 }
             }
         }
-        self.put_string(")");
+        if !abbreviated {
+            self.put_string(")");
+        }
     }
 
     fn as_display(&mut self, obj: Object) {

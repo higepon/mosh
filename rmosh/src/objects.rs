@@ -1297,7 +1297,7 @@ pub mod tests {
         let mut gc = Gc::new();
         let data = vec![Object::Number(1), Object::Number(2)];
         let v = gc.new_vector(&data);
-        assert_eq!("#[1, 2]", v.to_string());
+        assert_eq!("#(1 2)", v.to_string());
     }
 
     trait InputPort {
