@@ -1204,6 +1204,7 @@ impl StdOutputPort {
 
     pub fn close(&mut self) {}
 
+    /*
     pub fn write(&mut self, obj: Object) {
         let written = format!("{:?}", obj);
         print!("{}", written)
@@ -1214,6 +1215,7 @@ impl StdOutputPort {
         let written = format!("{}", obj);
         print!("{}", written)
     }
+    */
 }
 
 impl Display for StdOutputPort {
@@ -1233,7 +1235,7 @@ impl StdErrorPort {
     }
 
     pub fn close(&mut self) {}
-
+/*
     pub fn write(&mut self, obj: Object) {
         let written = format!("{:?}", obj);
         eprint!("{}", written)
@@ -1244,7 +1246,7 @@ impl StdErrorPort {
         let written = format!("{}", obj);
         eprint!("{}", written)
     }
-
+*/
 }
 
 impl Display for StdErrorPort {
@@ -1281,7 +1283,7 @@ impl StringOutputPort {
     pub fn close(&mut self) {
         self.is_closed = true;
     }
-
+/*
     pub fn write(&mut self, obj: Object) {
         let written = format!("{:?}", obj);
         self.string.push_str(&written);
@@ -1292,7 +1294,7 @@ impl StringOutputPort {
         let written = format!("{}", obj);
         self.string.push_str(&written);
     }
-
+*/
 
     pub fn string(&self) -> String {
         self.string.to_owned()
