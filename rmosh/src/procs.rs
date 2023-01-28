@@ -918,45 +918,29 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     panic!("{}({}) not implemented", name, args.len());
 }
 fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "sys-display";
+    let name: &str = "display";
     check_argc_between!(name, args, 1, 2);
     let argc = args.len();
-    if argc == 2 {
-        match args[1] {
-            Object::StringOutputPort(mut port) => {
-                port.display(args[0]);
-                return Object::Unspecified;
-            }
-            Object::StdOutputPort(mut port) => {
-                port.display(args[0]);
-                return Object::Unspecified;
-            }
-            Object::StdErrorPort(mut port) => {
-                port.display(args[0]);
-                return Object::Unspecified;
-            }
-            _ => {
-                println!("{}({}) called", name, argc);
-                for i in 0..args.len() {
-                    println!("  arg={}", args[i]);
-                }
-                return Object::Unspecified;
-            }
+    let port = if argc == 1 {
+        vm.current_output_port()
+    } else {
+        args[1]
+    };
+    match port {
+        Object::StringOutputPort(mut port) => {
+            port.display(args[0]);
         }
-    }
-    match vm.current_output_port() {
         Object::StdOutputPort(mut port) => {
             port.display(args[0]);
-            return Object::Unspecified;
+        }
+        Object::StdErrorPort(mut port) => {
+            port.display(args[0]);
         }
         _ => {
-            println!("{}({}) called", name, argc);
-            for i in 0..args.len() {
-                println!("  arg={}", args[i]);
-            }
-            return Object::Unspecified;
+            println!("{}: port required but got {}", name, port)
         }
     }
+    Object::Unspecified
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rxmatch";
@@ -1415,7 +1399,7 @@ fn write(vm: &mut Vm, args: &mut [Object]) -> Object {
             port.write(args[0]);
         }
         _ => {
-            println!("{}: port required but got {}",name, port)
+            println!("{}: port required but got {}", name, port)
         }
     }
     Object::Unspecified

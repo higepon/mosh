@@ -1,8 +1,11 @@
-use std::{fmt::{self, Display}, collections::HashMap};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display},
+};
 
 use crate::{
-    gc::{GcHeader, ObjectType, GcRef},
-    objects::{Object, Vector, SimpleStruct, Pair},
+    gc::{GcHeader, GcRef, ObjectType},
+    objects::{Object, Pair, SimpleStruct, Vector},
 };
 
 // Trait for TextOutputPort.
@@ -25,7 +28,12 @@ pub trait TextOutputPort {
         self.display_one(obj, &mut seen, &mut shared_id);
     }
 
-    fn display_one(&mut self, obj: Object, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+    fn display_one(
+        &mut self,
+        obj: Object,
+        seen: &mut HashMap<Object, Object>,
+        shared_id: &mut isize,
+    ) {
         let seen_state = match seen.get(&obj) {
             Some(val) => *val,
             None => Object::False,
@@ -69,8 +77,12 @@ pub trait TextOutputPort {
         }
     }
 
-
-    fn display_pair(&mut self, p: GcRef<Pair>, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+    fn display_pair(
+        &mut self,
+        p: GcRef<Pair>,
+        seen: &mut HashMap<Object, Object>,
+        shared_id: &mut isize,
+    ) {
         self.put_string("(");
         self.display_one(p.car, seen, shared_id);
 
@@ -101,9 +113,14 @@ pub trait TextOutputPort {
 
     fn as_display(&mut self, obj: Object) {
         self.put_string(&format!("{}", obj));
-    }    
+    }
 
-    fn display_vector(&mut self, v: GcRef<Vector>, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+    fn display_vector(
+        &mut self,
+        v: GcRef<Vector>,
+        seen: &mut HashMap<Object, Object>,
+        shared_id: &mut isize,
+    ) {
         self.put_string("#(");
         for i in 0..v.len() {
             self.display_one(v.data[i], seen, shared_id);
@@ -114,7 +131,12 @@ pub trait TextOutputPort {
         self.put_string(")");
     }
 
-    fn display_struct(&mut self, s: GcRef<SimpleStruct>, seen: &mut HashMap<Object, Object>, shared_id: &mut isize) {
+    fn display_struct(
+        &mut self,
+        s: GcRef<SimpleStruct>,
+        seen: &mut HashMap<Object, Object>,
+        shared_id: &mut isize,
+    ) {
         self.put_string("#<simple-stuct ");
         for i in 0..s.len() {
             self.display_one(s.field(i), seen, shared_id);
@@ -208,7 +230,7 @@ pub trait TextOutputPort {
                 }
             }
         }
-    }    
+    }
 
     // (format ...).
     fn format(&mut self, fmt: &str, args: &mut [Object]) {
