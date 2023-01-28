@@ -61,7 +61,7 @@ Abbreviation: Object = {
         let quote = gc.symbol_intern("unquote");
         gc.list2(quote, datum)
     },
-    "@" <datum: Datum> => {
+    ",@" <datum: Datum> => {
         let quote = gc.symbol_intern("unquote-splicing");
         gc.list2(quote, datum)
     },
@@ -131,7 +131,7 @@ extern {
         "'" => lexer::Token::AbbrevQuote,
         "`" => lexer::Token::AbbrevQuasiquote,
         "," => lexer::Token::AbbrevUnquote,
-        "@" => lexer::Token::AbbrevUnquoteSplicing,
+        ",@" => lexer::Token::AbbrevUnquoteSplicing,
         "#'" => lexer::Token::AbbrevSyntax,
         "#`" => lexer::Token::AbbrevQuasisyntax,
         "#," => lexer::Token::AbbrevUnsyntax,
