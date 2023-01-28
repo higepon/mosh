@@ -15,7 +15,7 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
     ByteVector, Closure, EqHashtable, FileInputPort, Object, Pair, Procedure, SString,
-    SimpleStruct, StringOutputPort, Symbol, Vector, Vox,
+    SimpleStruct,  Symbol, Vector, Vox,
 };
 use crate::vm::Vm;
 

@@ -10,10 +10,10 @@ use crate::{
     equal::Equal,
     gc::Gc,
     objects::{
-        ByteVector, EqHashtable, FileInputPort, FileOutputPort, Object, Pair, SimpleStruct,
-        StringInputPort, StringOutputPort, self, TextOutputPort,
+        ByteVector, EqHashtable, FileInputPort, Object, Pair, SimpleStruct,
+        StringInputPort, 
     },
-    vm::Vm,
+    vm::Vm, ports::{TextOutputPort, StringOutputPort, FileOutputPort},
 };
 
 use num_traits::FromPrimitive;
@@ -1326,12 +1326,12 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
                 return Object::Unspecified;
             }            
             (Object::False, Object::String(s)) => {
-                let mut port = vm.gc.alloc(StringOutputPort::new());
+                let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[2..]);
                 return vm.gc.new_string(&port.string())
             }
             (Object::String(s), _) => {
-                let mut port = vm.gc.alloc(StringOutputPort::new());
+                let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[1..]);
                 return vm.gc.new_string(&port.string())
 

@@ -14,11 +14,11 @@ use crate::{
     compiler,
     fasl::Fasl,
     gc::{Gc, GcRef},
-    objects::{Closure, Object, StdErrorPort, StdOutputPort, Symbol},
+    objects::{Closure, Object, Symbol},
     op::Op,
     procs::default_free_vars,
     psyntax,
-    read::ReadError,
+    read::ReadError, ports::{StdOutputPort, StdErrorPort},
 };
 
 const STACK_SIZE: usize = 8192;
