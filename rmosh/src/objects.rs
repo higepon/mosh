@@ -4,7 +4,7 @@ use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::lexer::LexicalError;
 use crate::op::Op;
-use crate::ports::{StringOutputPort, StdOutputPort, FileOutputPort, StdErrorPort};
+use crate::ports::{FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort};
 use crate::read::{ReadError, Reader};
 use crate::vm::Vm;
 
@@ -1106,7 +1106,6 @@ impl Display for FileInputPort {
         write!(f, "#<file-input-port>")
     }
 }
-
 
 /// Tests.
 #[cfg(test)]

@@ -10,10 +10,10 @@ use crate::{
     equal::Equal,
     gc::Gc,
     objects::{
-        ByteVector, EqHashtable, FileInputPort, Object, Pair, SimpleStruct,
-        StringInputPort, 
+        ByteVector, EqHashtable, FileInputPort, Object, Pair, SimpleStruct, StringInputPort,
     },
-    vm::Vm, ports::{TextOutputPort, StringOutputPort, FileOutputPort},
+    ports::{FileOutputPort, StringOutputPort, TextOutputPort},
+    vm::Vm,
 };
 
 use num_traits::FromPrimitive;
@@ -957,7 +957,6 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Object {
             return Object::Unspecified;
         }
     }
-    return Object::Unspecified;
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rxmatch";
@@ -1324,18 +1323,17 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
             (Object::StdOutputPort(mut port), Object::String(s)) => {
                 port.format(&s.string, &mut args[2..]);
                 return Object::Unspecified;
-            }            
+            }
             (Object::False, Object::String(s)) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[2..]);
-                return vm.gc.new_string(&port.string())
+                return vm.gc.new_string(&port.string());
             }
             (Object::String(s), _) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[1..]);
-                return vm.gc.new_string(&port.string())
-
-            }                               
+                return vm.gc.new_string(&port.string());
+            }
             _ => {}
         }
     }
@@ -1369,6 +1367,7 @@ fn current_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn current_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-output-port";
+    check_argc!(name, args, 0);
     vm.current_output_port()
 }
 fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> Object {

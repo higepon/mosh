@@ -16,9 +16,10 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
+    ports::{StdErrorPort, StdOutputPort},
     procs::default_free_vars,
     psyntax,
-    read::ReadError, ports::{StdOutputPort, StdErrorPort},
+    read::ReadError,
 };
 
 const STACK_SIZE: usize = 8192;

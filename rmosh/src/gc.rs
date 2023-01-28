@@ -15,7 +15,7 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
     ByteVector, Closure, EqHashtable, FileInputPort, Object, Pair, Procedure, SString,
-    SimpleStruct,  Symbol, Vector, Vox,
+    SimpleStruct, Symbol, Vector, Vox,
 };
 use crate::vm::Vm;
 
@@ -76,7 +76,7 @@ pub enum ObjectType {
     FileOutputPort,
     FileInputPort,
     StdOutputPort,
-    StdErrOutputPort,
+    StdErrorPort,
     StringInputPort,
     StringOutputPort,
     Pair,
@@ -536,7 +536,7 @@ impl Gc {
                 }
             }
             ObjectType::StdOutputPort => {}
-            ObjectType::StdErrOutputPort => {}
+            ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {}
             ObjectType::StringOutputPort => {}
             ObjectType::String => {}
@@ -558,7 +558,8 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::{FileOutputPort, StringInputPort};
+        use crate::objects::StringInputPort;
+        use crate::ports::{FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort};
 
         let object_type = object_ptr.obj_type;
 
@@ -592,6 +593,14 @@ impl Gc {
             }
             ObjectType::StringOutputPort => {
                 let port: &StringOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
+            ObjectType::StdOutputPort => {
+                let port: &StdOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
+            ObjectType::StdErrorPort => {
+                let port: &StdErrorPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
             ObjectType::Vox => {

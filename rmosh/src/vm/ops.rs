@@ -2,7 +2,7 @@ use crate::{
     gc::GcRef,
     objects::{Closure, Object, Symbol},
     op::Op,
-    procs::{self, default_free_vars},
+    procs::{self},
 };
 
 use super::Vm;

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     gc::GcRef,
-    objects::{Object, Pair, Vector, SimpleStruct},
+    objects::{Object, Pair, SimpleStruct, Vector},
 };
 
 pub fn display_as_str(obj: Object) -> String {
@@ -67,7 +67,7 @@ impl Writer {
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
             | Object::StdOutputPort(_)
-            | Object::StdErrorPort(_)                        
+            | Object::StdErrorPort(_)
             | Object::Instruction(_)
             | Object::Nil
             | Object::Symbol(_)
@@ -139,7 +139,6 @@ impl Writer {
         self.put_string(">");
     }
 
-
     fn scan(&mut self, obj: Object) {
         let mut o = obj;
         loop {
@@ -161,8 +160,8 @@ impl Writer {
                 | Object::Eof
                 | Object::FileOutputPort(_)
                 | Object::StringOutputPort(_)
-                | Object::StdOutputPort(_)                
-                | Object::StdErrorPort(_)                                
+                | Object::StdOutputPort(_)
+                | Object::StdErrorPort(_)
                 | Object::Instruction(_)
                 | Object::Nil
                 | Object::Symbol(_)

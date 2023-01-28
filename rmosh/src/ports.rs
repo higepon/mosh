@@ -1,7 +1,9 @@
-use std::fmt::{Display, self};
+use std::fmt::{self, Display};
 
-use crate::{objects::Object, gc::{GcHeader, ObjectType}};
-
+use crate::{
+    gc::{GcHeader, ObjectType},
+    objects::Object,
+};
 
 pub trait TextOutputPort {
     fn put_string(&mut self, s: &str);
@@ -44,9 +46,8 @@ pub trait TextOutputPort {
                 print!("{}", c)
             }
         }
-    }    
+    }
 }
-
 
 #[derive(Debug)]
 pub struct FileOutputPort {
@@ -75,9 +76,6 @@ impl Display for FileOutputPort {
         write!(f, "#<file-output-port>")
     }
 }
-
-
-
 
 impl TextOutputPort for StdOutputPort {
     fn put_string(&mut self, s: &str) {
@@ -129,23 +127,23 @@ pub struct StdErrorPort {
 impl StdErrorPort {
     pub fn new() -> Self {
         Self {
-            header: GcHeader::new(ObjectType::StdErrOutputPort),
+            header: GcHeader::new(ObjectType::StdErrorPort),
         }
     }
 
     pub fn close(&mut self) {}
-/*
-    pub fn write(&mut self, obj: Object) {
-        let written = format!("{:?}", obj);
-        eprint!("{}", written)
-    }
+    /*
+        pub fn write(&mut self, obj: Object) {
+            let written = format!("{:?}", obj);
+            eprint!("{}", written)
+        }
 
-    // TODO: Make this human readable.
-    pub fn display(&mut self, obj: Object) {
-        let written = format!("{}", obj);
-        eprint!("{}", written)
-    }
-*/
+        // TODO: Make this human readable.
+        pub fn display(&mut self, obj: Object) {
+            let written = format!("{}", obj);
+            eprint!("{}", written)
+        }
+    */
 }
 
 impl Display for StdErrorPort {
@@ -182,18 +180,18 @@ impl StringOutputPort {
     pub fn close(&mut self) {
         self.is_closed = true;
     }
-/*
-    pub fn write(&mut self, obj: Object) {
-        let written = format!("{:?}", obj);
-        self.string.push_str(&written);
-    }
+    /*
+        pub fn write(&mut self, obj: Object) {
+            let written = format!("{:?}", obj);
+            self.string.push_str(&written);
+        }
 
-    // TODO: Make this human readable.
-    pub fn display(&mut self, obj: Object) {
-        let written = format!("{}", obj);
-        self.string.push_str(&written);
-    }
-*/
+        // TODO: Make this human readable.
+        pub fn display(&mut self, obj: Object) {
+            let written = format!("{}", obj);
+            self.string.push_str(&written);
+        }
+    */
 
     pub fn string(&self) -> String {
         self.string.to_owned()

@@ -1,9 +1,9 @@
-use std::{ptr::null_mut, cmp};
+use std::ptr::null_mut;
 
 use crate::{
     objects::{Closure, Object},
     op::Op,
-    procs::default_free_vars, write::display_as_str,
+    procs::default_free_vars,
 };
 
 use super::Vm;
