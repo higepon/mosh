@@ -1395,32 +1395,30 @@ fn is_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
         _ => Object::False,
     }
 }
-fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn write(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "write";
-    check_argc_at_least!(name, args, 1);
+    check_argc_between!(name, args, 1, 2);
     let argc = args.len();
-    if argc == 2 {
-        match args[1] {
-            Object::StringOutputPort(mut port) => {
-                port.write(args[0]);
-                return Object::Unspecified;
-            }
-            Object::StdOutputPort(mut port) => {
-                port.write(args[0]);
-                return Object::Unspecified;
-            }
-            Object::StdErrorPort(mut port) => {
-                port.write(args[0]);
-                return Object::Unspecified;
-            }
-            _ => {}
+    let port = if argc == 1 {
+        vm.current_output_port()
+    } else {
+        args[1]
+    };
+    match port {
+        Object::StringOutputPort(mut port) => {
+            port.write(args[0]);
+        }
+        Object::StdOutputPort(mut port) => {
+            port.write(args[0]);
+        }
+        Object::StdErrorPort(mut port) => {
+            port.write(args[0]);
+        }
+        _ => {
+            println!("{}: port required but got {}",name, port)
         }
     }
-    println!("{} called", name);
-    for i in 0..args.len() {
-        println!("  arg={}", args[i]);
-    }
-    args[0]
+    Object::Unspecified
 }
 fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym";
