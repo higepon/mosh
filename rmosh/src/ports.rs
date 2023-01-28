@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    gc::{GcHeader, GcRef, ObjectType, Gc},
+    gc::{GcHeader, GcRef, ObjectType},
     objects::{Object, Pair, SimpleStruct, Vector},
 };
 
@@ -83,18 +83,18 @@ pub trait TextOutputPort {
                 self.put_string("'");
                 return true;
             } else if s.string.eq("unquote") {
-                self.put_string(",");                
+                self.put_string(",");
                 return true;
             } else if s.string.eq("unquote-splicing") {
-                self.put_string(",@");                
+                self.put_string(",@");
                 return true;
             } else if s.string.eq("quasiquote") {
                 self.put_string("`");
                 return true;
             }
-        } 
+        }
         return false;
-    }        
+    }
 
     fn display_pair(
         &mut self,
@@ -103,7 +103,8 @@ pub trait TextOutputPort {
         shared_id: &mut isize,
     ) {
         let mut p = p;
-        let abbreviated = p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
+        let abbreviated =
+            p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
         if abbreviated {
             p = p.cdr.to_pair();
         } else {
