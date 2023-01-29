@@ -77,6 +77,7 @@ impl FileInputPort {
         }
     }
     pub fn open(path: &str) -> std::io::Result<FileInputPort> {
+     //   println!("OPEN: path={}", path);
         let file = File::open(path)?;
         Ok(FileInputPort::new(file))
     }
@@ -121,7 +122,7 @@ impl StringInputPort {
             parsed: Object::Unspecified,
         }
     }
-    
+
     pub fn read_char(&mut self) -> Option<char> {
         let mut chars = self.source.chars();
         let ret = chars.nth(self.idx);

@@ -39,9 +39,12 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     RIGHT_PAREN            = ")" | "]";
     RETURN                 = "\r";
     NEWLINE                = "\n";
+    CHARACTER_TABULATION   = "\X0009"; // Not in R7RS
+    LINE_TABULATION        = "\X000B"; // Not in R7RS
+    FORM_FEED              = "\X000C"; // Not in R7RS.
     INTRA_LINE_WHITE_SPACE = " " | "\t";
     LINE_ENDING            = NEWLINE | RETURN NEWLINE | RETURN RETURN;
-    WHITE_SPACE            = INTRA_LINE_WHITE_SPACE | LINE_ENDING;
+    WHITE_SPACE            = INTRA_LINE_WHITE_SPACE | LINE_ENDING | CHARACTER_TABULATION | LINE_TABULATION | FORM_FEED;
     DELIMITER              = WHITE_SPACE | VERTICAL_LINE | LEFT_PAREN | RIGHT_PAREN | '"' | ";" | "\x00";
     STRING_ELEMENT         = [^\"\\] | MNEMONIC_ESCAPE | '\\"' | '\\\\' | '\\' INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE * | INLINE_HEX_ESCAPE;
     STRING                 = '"' STRING_ELEMENT * '"';

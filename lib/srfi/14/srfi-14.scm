@@ -692,7 +692,7 @@
 
 (define char-set:ascii (ucs-range->char-set 0 128))
 
-
+
 ;;; Porting & performance-tuning notes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; See the section at the beginning of this file on external dependencies.
