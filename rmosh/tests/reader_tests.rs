@@ -1,9 +1,13 @@
 use rmosh::{
     equal::Equal,
-    objects::Object,
-    read::{read, Reader},
-    vm::Vm,
+    objects::{Object},
+    vm::Vm, gc::Gc, ports::{StringInputPort, ReadError, TextInputPort},
 };
+
+fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
+    let mut port = StringInputPort::new(s);
+    port.read(gc)
+}
 
 #[macro_export]
 macro_rules! assert_equal {
@@ -21,7 +25,6 @@ macro_rules! assert_equal {
 #[test]
 fn parse_true() {
     let mut vm = Vm::new();
-
     assert_eq!(Object::True, read(&mut vm.gc, "#t").unwrap());
     assert_eq!(Object::True, read(&mut vm.gc, "#true").unwrap());
 }
@@ -270,18 +273,18 @@ fn read_datum_comment() {
 #[test]
 fn parse_multiple() {
     let mut vm = Vm::new();
-    let mut reader = Reader::new("(3) (4)");
+    let mut port = StringInputPort::new("(3) (4)");
 
     let expected = vm.gc.list1(Object::Number(3));
-    let parsed = reader.read(&mut vm.gc).unwrap();
+    let parsed = port.read(&mut vm.gc).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 
     let expected = vm.gc.list1(Object::Number(4));
-    let parsed = reader.read(&mut vm.gc).unwrap();
+    let parsed = port.read(&mut vm.gc).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 
     let expected = Object::Eof;
-    let parsed = reader.read(&mut vm.gc).unwrap();
+    let parsed = port.read(&mut vm.gc).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 }
 

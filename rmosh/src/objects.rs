@@ -1,21 +1,15 @@
-use lalrpop_util::ParseError;
-
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::lexer::LexicalError;
 use crate::op::Op;
 use crate::ports::{
-    FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort, TextOutputPort,
+    FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort, TextOutputPort, StringInputPort,
 };
-use crate::read::{ReadError, Reader};
 use crate::vm::Vm;
 
 use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
-use std::fs::File;
 use std::hash::Hash;
-use std::io::Read;
 
 // We use this Float which wraps f64.
 // Because we can't implement Hash for f64.
@@ -1021,40 +1015,6 @@ impl EqHashtable {
 impl Display for EqHashtable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<eq-hashtable>")
-    }
-}
-
-/// InputPort
-#[derive(Debug)]
-pub struct StringInputPort {
-    pub header: GcHeader,
-    source: String,
-    idx: usize,
-}
-
-impl StringInputPort {
-    fn new(source: &str) -> Self {
-        StringInputPort {
-            header: GcHeader::new(ObjectType::StringInputPort),
-            source: source.to_owned(),
-            idx: 0,
-        }
-    }
-    pub fn open(source: &str) -> std::io::Result<StringInputPort> {
-        Ok(StringInputPort::new(source))
-    }
-
-    pub fn read_char(&mut self) -> Option<char> {
-        let mut chars = self.source.chars();
-        let ret = chars.nth(self.idx);
-        self.idx = self.idx + 1;
-        ret
-    }
-}
-
-impl Display for StringInputPort {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<string-input-port>")
     }
 }
 

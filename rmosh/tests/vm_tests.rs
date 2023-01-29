@@ -3,8 +3,7 @@ use rmosh::{
     equal::Equal,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    read::read,
-    vm::Vm,
+    vm::Vm, gc::Gc, ports::{ReadError, StringInputPort, TextInputPort},
 };
 
 pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
@@ -2480,6 +2479,11 @@ fn test_compiler() {
         }
         _ => {}
     }
+}
+
+fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
+    let mut port = StringInputPort::new(s);
+    port.read(gc)
 }
 
 #[test]

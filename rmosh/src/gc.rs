@@ -17,7 +17,7 @@ use crate::objects::{
     ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
     Vector, Vox,
 };
-use crate::ports::{FileInputPort, FileOutputPort};
+use crate::ports::{FileInputPort};
 use crate::vm::Vm;
 
 // GcRef.
@@ -546,8 +546,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::StringInputPort;
-        use crate::ports::{FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort};
+        use crate::ports::{FileOutputPort, StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort};
 
         let object_type = object_ptr.obj_type;
 

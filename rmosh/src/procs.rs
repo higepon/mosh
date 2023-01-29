@@ -9,8 +9,8 @@ use std::{
 use crate::{
     equal::Equal,
     gc::Gc,
-    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct, StringInputPort},
-    ports::{FileInputPort, FileOutputPort, StringOutputPort, TextInputPort, TextOutputPort},
+    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
+    ports::{FileInputPort, FileOutputPort, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort},
     vm::Vm,
 };
 
@@ -1193,12 +1193,10 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-string-input-port";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => match StringInputPort::open(&s.string) {
-            Ok(port) => Object::StringInputPort(vm.gc.alloc(port)),
-            Err(err) => {
-                panic!("{}: {:?}", name, err);
-            }
-        },
+        Object::String(s) => {
+            let port = StringInputPort::new(&s.string);
+            Object::StringInputPort(vm.gc.alloc(port))
+        }
         _ => {
             panic!("{}: string required but got {:?}", name, args);
         }

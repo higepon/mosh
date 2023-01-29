@@ -7,11 +7,12 @@ use std::{
 
 use lalrpop_util::ParseError;
 
+pub type ReadError = ParseError<usize, lexer::Token, LexicalError>;
+
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self, LexicalError},
     objects::{Object, Pair, SimpleStruct, Vector},
-    read::ReadError,
     reader::DatumParser,
 };
 
@@ -94,6 +95,51 @@ impl Display for FileInputPort {
 impl TextInputPort for FileInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         self.file.read_to_string(str)
+    }
+    fn set_parsed(&mut self, obj: Object) {
+        self.parsed = obj;
+    }
+    fn parsed(&self) -> Object {
+        self.parsed
+    }
+}
+
+#[derive(Debug)]
+pub struct StringInputPort {
+    pub header: GcHeader,
+    source: String,
+    idx: usize,
+    pub parsed: Object,
+}
+
+impl StringInputPort {
+    pub fn new(source: &str) -> Self {
+        StringInputPort {
+            header: GcHeader::new(ObjectType::StringInputPort),
+            source: source.to_owned(),
+            idx: 0,
+            parsed: Object::Unspecified,
+        }
+    }
+    
+    pub fn read_char(&mut self) -> Option<char> {
+        let mut chars = self.source.chars();
+        let ret = chars.nth(self.idx);
+        self.idx = self.idx + 1;
+        ret
+    }
+}
+
+impl Display for StringInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<string-input-port>")
+    }
+}
+
+impl TextInputPort for StringInputPort {
+    fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
+        str.push_str(&self.source);
+        Ok(self.source.len())
     }
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;

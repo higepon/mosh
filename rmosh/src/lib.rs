@@ -10,7 +10,6 @@ pub mod op;
 pub mod ports;
 pub mod procs;
 pub mod psyntax;
-pub mod read;
 pub mod vm;
 
 #[macro_use]
