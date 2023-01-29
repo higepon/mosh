@@ -115,7 +115,20 @@ Number: Object = {
                 }
             }
         }
-    }
+    },
+    <s: "number16"> => {
+        // #x123A => 123A
+        if s.chars().nth(0) == Some('#') {
+            match isize::from_str_radix(&s[2..], 16) {
+                Ok(n) => Object::Number(n),
+                Err(e) => {
+                        panic!("Number parse error: {} in <{}>", e, s)
+                }                
+            }
+        } else {
+            panic!("number16 parse error {}", s)
+        }
+    }    
 }
 
 Boolean: Object = {
@@ -148,6 +161,7 @@ extern {
         "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
+        "number16" => lexer::Token::Number16 { value: <String> },        
         "regexp" => lexer::Token::Regexp { value: <String> },
         "string" => lexer::Token::String { value: <String> },
     }

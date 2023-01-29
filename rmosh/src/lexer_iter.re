@@ -48,6 +48,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     REGEXP_ELEMENT         = "\\\/" | [^/];
     REGEXP                 = '#/' REGEXP_ELEMENT * '/';
     DIGIT_10               = DIGIT;
+    DIGIT_16               = HEX_DIGIT;
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
     EXACTNESS              = ("#"[ie])?;
     SIGN                   = [\+\-]?;
@@ -61,6 +62,13 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
+    UINTEGER_16            = DIGIT_16 +;
+    UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16);
+    REAL_16                = (SIGN UREAL_16) | INF_NAN;
+    RADIX_16               = "#x" ?;
+    COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 'i') | (REAL_16 [\+\-] INF_NAN 'i') | (REAL_16 [\+\-] 'i') | ([\+\-] UREAL_16 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
+    NUM_16                 = PREFIX_16 COMPLEX_16;    
     EOS                    = "\X0000";
     DIRECTIVE              = "#!fold-case" | "#!no-fold-case" | "#!r6rs";
     DATUM_COMMENT          = "#;";
@@ -93,6 +101,9 @@ impl<'input> Iterator for Lexer<'input> {
                     NUM_10 {
                         return self.with_location(Token::Number10{value: self.extract_token()});
                     }
+                    NUM_16 {
+                        return self.with_location(Token::Number16{value: self.extract_token()});
+                    }                    
                     DOT {
                         return self.with_location(Token::Dot);
                     }
