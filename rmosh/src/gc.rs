@@ -375,7 +375,7 @@ impl Gc {
             }
             Object::BinaryFileOutputPort(port) => {
                 self.mark_heap_object(port);
-            }            
+            }
             Object::FileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -526,7 +526,7 @@ impl Gc {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.parsed);
             }
-            ObjectType::BinaryFileOutputPort => {}            
+            ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
             ObjectType::StdOutputPort => {}
             ObjectType::StdErrorPort => {}

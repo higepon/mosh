@@ -208,7 +208,7 @@ pub trait TextOutputPort {
             | Object::StringInputPort(_)
             | Object::FileInputPort(_)
             | Object::Eof
-            | Object::BinaryFileOutputPort(_)            
+            | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
             | Object::StdOutputPort(_)
@@ -340,7 +340,7 @@ pub trait TextOutputPort {
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
-                | Object::BinaryFileOutputPort(_)                
+                | Object::BinaryFileOutputPort(_)
                 | Object::FileOutputPort(_)
                 | Object::StringOutputPort(_)
                 | Object::StdOutputPort(_)
