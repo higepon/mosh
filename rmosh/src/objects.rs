@@ -3,7 +3,7 @@ use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TextOutputPort,
+    StringInputPort, StringOutputPort, TextOutputPort, BinaryFileInputPort,
 };
 use crate::vm::Vm;
 
@@ -66,6 +66,7 @@ pub enum Object {
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
+    BinaryFileInputPort(GcRef<BinaryFileInputPort>),    
     StdOutputPort(GcRef<StdOutputPort>),
     StdErrorPort(GcRef<StdErrorPort>),
     StringOutputPort(GcRef<StringOutputPort>),
@@ -305,6 +306,9 @@ impl Debug for Object {
             Object::BinaryFileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::BinaryFileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -391,6 +395,9 @@ impl Display for Object {
             Object::BinaryFileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::BinaryFileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

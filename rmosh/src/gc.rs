@@ -75,6 +75,7 @@ pub enum ObjectType {
     Closure,
     EqHashtable,
     BinaryFileOutputPort,
+    BinaryFileInputPort,    
     FileOutputPort,
     FileInputPort,
     StdOutputPort,
@@ -376,6 +377,9 @@ impl Gc {
             Object::BinaryFileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
+            Object::BinaryFileInputPort(port) => {
+                self.mark_heap_object(port);
+            }            
             Object::FileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -526,6 +530,7 @@ impl Gc {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.parsed);
             }
+            ObjectType::BinaryFileInputPort => {}            
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
             ObjectType::StdOutputPort => {}
@@ -553,6 +558,7 @@ impl Gc {
     fn free(&mut self, object_ptr: &mut GcHeader) {
         use crate::ports::{
             FileOutputPort, StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort,
+            BinaryFileOutputPort, BinaryFileInputPort
         };
 
         let object_type = object_ptr.obj_type;
@@ -581,6 +587,14 @@ impl Gc {
                 let port: &FileInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
+            ObjectType::BinaryFileInputPort => {
+                let port: &BinaryFileInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }            
+            ObjectType::BinaryFileOutputPort => {
+                let port: &BinaryFileOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }                     
             ObjectType::StringInputPort => {
                 let port: &StringInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
