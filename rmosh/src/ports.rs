@@ -4,12 +4,46 @@ use std::{
 };
 
 use crate::{
-    gc::{GcHeader, GcRef, ObjectType},
-    objects::{Object, Pair, SimpleStruct, Vector},
+    gc::{GcHeader, GcRef, ObjectType, Gc},
+    objects::{Object, Pair, SimpleStruct, Vector}, read::ReadError, reader::DatumParser, lexer,
 };
+
+// Trait for TextInputPort.
+pub trait TextInputPort {
+    // The only methods you have to implement.
+    fn read_all(&mut self) -> Result<String, ReadError>;
+    fn set_parsed(&mut self, obj: Object);
+    fn parsed(&self) -> Object;
+
+    // (read ...)
+    // LALRPOP doesn't support multiple calls of parse.
+    // We parse all S-Expressions once then store them.
+    fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError> {
+        // 
+        if self.parsed().is_unspecified() {
+            let text = self.read_all()?;
+            let text = "(".to_string() + &text;
+            // re2c assumes null terminated string.
+            let text = text + ")\0";
+            let chars: Vec<char> = text.chars().collect();
+
+            self.set_parsed(DatumParser::new().parse(gc, lexer::Lexer::new(&chars))?);
+        }
+        if self.parsed().is_nil() {
+            return Ok(Object::Eof);
+        } else {
+            let obj = self.parsed().car_unchecked();
+            self.set_parsed(self.parsed().cdr_unchecked());
+            return Ok(obj);
+        }
+    }    
+}
+
+
 
 // Trait for TextOutputPort.
 pub trait TextOutputPort {
+    // The only method you have to implement :)
     fn put_string(&mut self, s: &str);
 
     // (write obj): Machine readable print.
