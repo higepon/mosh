@@ -1744,7 +1744,8 @@ fn memq(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_eq(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eq?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    Object::make_bool(args[0].eq(&args[1]))
 }
 fn is_eqv(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eqv?";
