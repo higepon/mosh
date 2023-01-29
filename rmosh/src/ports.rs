@@ -208,6 +208,7 @@ pub trait TextOutputPort {
             | Object::StringInputPort(_)
             | Object::FileInputPort(_)
             | Object::Eof
+            | Object::BinaryFileOutputPort(_)            
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
             | Object::StdOutputPort(_)
@@ -339,6 +340,7 @@ pub trait TextOutputPort {
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
+                | Object::BinaryFileOutputPort(_)                
                 | Object::FileOutputPort(_)
                 | Object::StringOutputPort(_)
                 | Object::StdOutputPort(_)
@@ -564,5 +566,33 @@ impl TextOutputPort for StringOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         self.string.push_str(s);
         Ok(())
+    }
+}
+
+// BinaryFileOutputPort
+#[derive(Debug)]
+pub struct BinaryFileOutputPort {
+    pub header: GcHeader,
+    file: File,
+    is_closed: bool,
+}
+
+impl BinaryFileOutputPort {
+    pub fn new(file: File) -> Self {
+        BinaryFileOutputPort {
+            header: GcHeader::new(ObjectType::BinaryFileOutputPort),
+            is_closed: false,
+            file: file,
+        }
+    }
+
+    pub fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl Display for BinaryFileOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<binary-file-output-port>")
     }
 }

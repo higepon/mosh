@@ -162,7 +162,7 @@ impl Vm {
             self.set_global_value(sym.to_symbol(), Object::False);
 
             let sym = self.gc.symbol_intern("%disable-acc");
-            self.set_global_value(sym.to_symbol(), Object::True);
+            self.set_global_value(sym.to_symbol(), Object::False);
 
             let sym = self.gc.symbol_intern("*command-line-args*");
             let args = args;

@@ -1,7 +1,8 @@
 use std::{
     env::{self, current_dir, current_exe},
-    fs::{self, OpenOptions},
+    fs::{self, File, OpenOptions},
     path::Path,
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 /// Scheme procedures written in Rust.
@@ -11,8 +12,8 @@ use crate::{
     gc::Gc,
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
-        FileInputPort, FileOutputPort, StringInputPort, StringOutputPort, TextInputPort,
-        TextOutputPort,
+        BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort, StringOutputPort,
+        TextInputPort, TextOutputPort,
     },
     vm::Vm,
 };
@@ -1258,6 +1259,7 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "file-exists?";
     check_argc!(name, args, 1);
     if let Object::String(s) = args[0] {
+        //println!("{} {} => {}", name, s.string, Path::new(&s.string).exists());
         Object::make_bool(Path::new(&s.string).exists())
     } else {
         panic!("{}: string required but got {}", name, args[0])
@@ -1666,7 +1668,27 @@ fn cdddar(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn cddddr(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cddddr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => pair4.cdr,
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdddr(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cdddr";
@@ -2083,9 +2105,20 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let file_exists = Path::new(&path).exists();
 
     let argc = args.len();
+    let mut open_options = OpenOptions::new();
+    open_options.write(true).create(true);
 
     if argc == 1 {
-        panic!("{}: file already exists {}", name, path)
+        if file_exists {
+            panic!("{}: file already exists {}", name, path);
+        }
+        let file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{}: {} {}", name, path, err);
+            }
+        };
+        Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(file)))
     } else {
         let file_options = match args[1] {
             Object::SimpleStruct(s) => s.field(1),
@@ -2100,9 +2133,6 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
         let no_create_p = !memq(vm, &mut [sym_no_create, file_options]).is_false();
         let no_truncate_p = !memq(vm, &mut [sym_no_truncate, file_options]).is_false();
         let no_fail_p = !memq(vm, &mut [sym_no_fail, file_options]).is_false();
-
-        let mut open_options = OpenOptions::new();
-        open_options.write(true).create(true);
 
         if file_exists && empty_p {
             panic!("{}: file already exists {}", name, path)
@@ -4226,7 +4256,28 @@ fn file_size_in_bytes(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn file_stat_mtime(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "file-stat-mtime";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(path) = args[0] {
+        let metadata = File::open(&path.string)
+            .map(|file| file.metadata())
+            .unwrap_or_else(|_| panic!("failed to retrieve metadata for {}", path.string));
+
+        // Get the last modification time
+        let mtime = metadata
+            .map(|metadata| metadata.modified())
+            .unwrap_or_else(|_| panic!("failed to retrieve modification time for {}", path.string));
+
+        // Convert the last modification time to a system time
+        let mtime = mtime.unwrap_or(SystemTime::now());
+        let mtime_seconds = mtime
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
+            .as_secs();
+
+        Object::Number(mtime_seconds as isize)
+    } else {
+        panic!("{}: file path required but got {}", name, args[0])
+    }
 }
 fn file_stat_atime(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "file-stat-atime";
