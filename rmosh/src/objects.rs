@@ -2,7 +2,8 @@ use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::ports::{
-    FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort, TextOutputPort, StringInputPort,
+    FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort,
+    TextOutputPort,
 };
 use crate::vm::Vm;
 
@@ -86,7 +87,7 @@ pub enum Object {
 impl Object {
     pub fn to_string(&self) -> String {
         let mut port = StringOutputPort::new();
-        port.display(*self);
+        port.display(*self).ok();
         port.string()
     }
 

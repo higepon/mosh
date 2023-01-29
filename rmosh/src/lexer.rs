@@ -15,7 +15,7 @@ pub enum Token {
     Identifier { value: String },
     LeftParen,
     Number10 { value: String },
-    Number16 { value: String },    
+    Number16 { value: String },
     RightParen,
     Regexp { value: String },
     String { value: String },

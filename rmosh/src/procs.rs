@@ -1,6 +1,6 @@
 use std::{
     env::{self, current_dir, current_exe},
-    fs,
+    fs::{self, OpenOptions},
     path::Path,
 };
 
@@ -10,7 +10,10 @@ use crate::{
     equal::Equal,
     gc::Gc,
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
-    ports::{FileInputPort, FileOutputPort, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort},
+    ports::{
+        FileInputPort, FileOutputPort, StringInputPort, StringOutputPort, TextInputPort,
+        TextOutputPort,
+    },
     vm::Vm,
 };
 
@@ -938,13 +941,13 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Object {
     };
     match port {
         Object::StringOutputPort(mut port) => {
-            port.display(args[0]);
+            port.display(args[0]).ok();
         }
         Object::StdOutputPort(mut port) => {
-            port.display(args[0]);
+            port.display(args[0]).ok();
         }
         Object::StdErrorPort(mut port) => {
-            port.display(args[0]);
+            port.display(args[0]).ok();
         }
         _ => {
             println!("{}: port required but got {}", name, port)
@@ -1398,16 +1401,19 @@ fn write(vm: &mut Vm, args: &mut [Object]) -> Object {
     };
     match port {
         Object::StringOutputPort(mut port) => {
-            port.write(args[0]);
+            port.write(args[0]).ok();
         }
         Object::StdOutputPort(mut port) => {
-            port.write(args[0]);
+            port.write(args[0]).ok();
         }
         Object::StdErrorPort(mut port) => {
-            port.write(args[0]);
+            port.write(args[0]).ok();
+        }
+        Object::FileOutputPort(mut port) => {
+            port.write(args[0]).ok();
         }
         _ => {
-            println!("{}: port required but got {}", name, port)
+            println!("{}: port required but got {} {}", name, port, args[0])
         }
     }
     Object::Unspecified
@@ -2034,18 +2040,107 @@ fn get_bytevector_n(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-bytevector-n";
     panic!("{}({}) not implemented", name, args.len());
 }
+
+/*
+    file-options
+
+    (file-options)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create)
+      If file exists:     truncate
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-fail)
+      If file exists:     truncate
+      If does not exist:  create new file
+    (file-options no-truncate)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create no-fail)
+      If file exists:     truncate
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
+    (file-options no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  create new file
+    (file-options no-create no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-create no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
+
+*/
 fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-output-port";
-    check_argc_at_least!(name, args, 1);
-    if let Object::String(path) = args[0] {
-        match FileOutputPort::open(&path.string) {
-            Ok(port) => Object::FileOutputPort(vm.gc.alloc(port)),
-            Err(err) => {
-                panic!("{}: {}", name, err)
+    check_argc_between!(name, args, 1, 4);
+
+    let path = match args[0] {
+        Object::String(s) => s.string.to_owned(),
+        _ => {
+            panic!("{}: path string required but got {}", name, args[0])
+        }
+    };
+    let file_exists = Path::new(&path).exists();
+
+    let argc = args.len();
+
+    if argc == 1 {
+        panic!("{}: file already exists {}", name, path)
+    } else {
+        let file_options = match args[1] {
+            Object::SimpleStruct(s) => s.field(1),
+            _ => {
+                panic!("{}: file-options required but got {}", name, args[1])
+            }
+        };
+        let empty_p = file_options.is_nil();
+        let sym_no_create = vm.gc.symbol_intern("no-create");
+        let sym_no_truncate = vm.gc.symbol_intern("no-truncate");
+        let sym_no_fail = vm.gc.symbol_intern("no-fail");
+        let no_create_p = !memq(vm, &mut [sym_no_create, file_options]).is_false();
+        let no_truncate_p = !memq(vm, &mut [sym_no_truncate, file_options]).is_false();
+        let no_fail_p = !memq(vm, &mut [sym_no_fail, file_options]).is_false();
+
+        let mut open_options = OpenOptions::new();
+        open_options.write(true).create(true);
+
+        if file_exists && empty_p {
+            panic!("{}: file already exists {}", name, path)
+        } else if no_create_p && no_truncate_p {
+            if !file_exists {
+                panic!("{}: file-options no-create: file not exist {}", name, path);
+            }
+        } else if no_create_p {
+            if file_exists {
+                open_options.truncate(true);
+            } else {
+                panic!("{}: file-options no-create: file not exist {}", name, path);
+            }
+        } else if no_fail_p && no_truncate_p {
+            if !file_exists {
+                open_options.truncate(true);
+            }
+        } else if no_fail_p {
+            open_options.truncate(true);
+        } else if no_truncate_p {
+            if file_exists {
+                panic!(
+                    "{}: file-options no-trucate: file already exists {}",
+                    name, path
+                );
+            } else {
+                open_options.truncate(true);
             }
         }
-    } else {
-        panic!("{}: string required but got {}", name, args[0]);
+
+        println!("WARNING {}: {:?} silently ignored", name, args);
+        let file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{}: {} {}", name, path, err);
+            }
+        };
+        Object::FileOutputPort(vm.gc.alloc(FileOutputPort::new(file)))
     }
 }
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {

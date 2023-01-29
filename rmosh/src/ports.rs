@@ -1,3 +1,4 @@
+use std::io::Write;
 use std::{
     collections::HashMap,
     fmt::{self, Display},
@@ -77,7 +78,7 @@ impl FileInputPort {
         }
     }
     pub fn open(path: &str) -> std::io::Result<FileInputPort> {
-     //   println!("OPEN: path={}", path);
+        //   println!("OPEN: path={}", path);
         let file = File::open(path)?;
         Ok(FileInputPort::new(file))
     }
@@ -153,22 +154,22 @@ impl TextInputPort for StringInputPort {
 // Trait for TextOutputPort.
 pub trait TextOutputPort {
     // The only method you have to implement :)
-    fn put_string(&mut self, s: &str);
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error>;
 
     // (write obj): Machine readable print.
-    fn write(&mut self, obj: Object) {
+    fn write(&mut self, obj: Object) -> Result<(), std::io::Error> {
         let mut shared_id = 1;
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
-        self.display_one(obj, &mut seen, &mut shared_id);
+        self.display_one(obj, &mut seen, &mut shared_id)
     }
 
     // (display obj): Human readable print.
-    fn display(&mut self, obj: Object) {
+    fn display(&mut self, obj: Object) -> Result<(), std::io::Error> {
         let mut shared_id = 1;
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
-        self.display_one(obj, &mut seen, &mut shared_id);
+        self.display_one(obj, &mut seen, &mut shared_id)
     }
 
     fn display_one(
@@ -176,18 +177,17 @@ pub trait TextOutputPort {
         obj: Object,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
-    ) {
+    ) -> Result<(), std::io::Error> {
         let seen_state = match seen.get(&obj) {
             Some(val) => *val,
             None => Object::False,
         };
         if seen_state.is_true() {
             seen.insert(obj, Object::Number(*shared_id));
-            self.put_string(&format!("#{}=", shared_id));
+            self.put_string(&format!("#{}=", shared_id))?;
             *shared_id += 1;
         } else if seen_state.is_number() {
-            self.put_string(&format!("#{}#", seen_state.to_number()));
-            return;
+            return self.put_string(&format!("#{}#", seen_state.to_number()));
         }
         match obj {
             Object::Pair(p) => self.display_pair(p, seen, shared_id),
@@ -223,16 +223,16 @@ pub trait TextOutputPort {
     fn display_abbreviated(&mut self, obj: Object) -> bool {
         if let Object::Symbol(s) = obj {
             if s.string.eq("quote") {
-                self.put_string("'");
+                self.put_string("'").ok();
                 return true;
             } else if s.string.eq("unquote") {
-                self.put_string(",");
+                self.put_string(",").ok();
                 return true;
             } else if s.string.eq("unquote-splicing") {
-                self.put_string(",@");
+                self.put_string(",@").ok();
                 return true;
             } else if s.string.eq("quasiquote") {
-                self.put_string("`");
+                self.put_string("`").ok();
                 return true;
             }
         }
@@ -244,16 +244,16 @@ pub trait TextOutputPort {
         p: GcRef<Pair>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
-    ) {
+    ) -> Result<(), std::io::Error> {
         let mut p = p;
         let abbreviated =
             p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
         if abbreviated {
             p = p.cdr.to_pair();
         } else {
-            self.put_string("(");
+            self.put_string("(")?;
         }
-        self.display_one(p.car, seen, shared_id);
+        self.display_one(p.car, seen, shared_id)?;
 
         let mut obj = p.cdr;
         loop {
@@ -263,27 +263,29 @@ pub trait TextOutputPort {
             };
             match obj {
                 Object::Pair(pair) if seen_state.is_false() => {
-                    self.put_string(" ");
-                    self.display_one(pair.car, seen, shared_id);
+                    self.put_string(" ")?;
+                    self.display_one(pair.car, seen, shared_id)?;
                     obj = pair.cdr;
                 }
                 Object::Nil => {
                     break;
                 }
                 _ => {
-                    self.put_string(" . ");
-                    self.display_one(obj, seen, shared_id);
+                    self.put_string(" . ")?;
+                    self.display_one(obj, seen, shared_id)?;
                     break;
                 }
             }
         }
         if !abbreviated {
-            self.put_string(")");
+            return self.put_string(")");
+        } else {
+            Ok(())
         }
     }
 
-    fn as_display(&mut self, obj: Object) {
-        self.put_string(&format!("{}", obj));
+    fn as_display(&mut self, obj: Object) -> Result<(), std::io::Error> {
+        self.put_string(&format!("{}", obj))
     }
 
     fn display_vector(
@@ -291,15 +293,15 @@ pub trait TextOutputPort {
         v: GcRef<Vector>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
-    ) {
-        self.put_string("#(");
+    ) -> Result<(), std::io::Error> {
+        self.put_string("#(")?;
         for i in 0..v.len() {
-            self.display_one(v.data[i], seen, shared_id);
+            self.display_one(v.data[i], seen, shared_id)?;
             if i != v.len() - 1 {
-                self.put_string(" ");
+                self.put_string(" ")?;
             }
         }
-        self.put_string(")");
+        self.put_string(")")
     }
 
     fn display_struct(
@@ -307,15 +309,15 @@ pub trait TextOutputPort {
         s: GcRef<SimpleStruct>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
-    ) {
-        self.put_string("#<simple-stuct ");
+    ) -> Result<(), std::io::Error> {
+        self.put_string("#<simple-stuct ")?;
         for i in 0..s.len() {
-            self.display_one(s.field(i), seen, shared_id);
+            self.display_one(s.field(i), seen, shared_id)?;
             if i != s.len() - 1 {
-                self.put_string(" ");
+                self.put_string(" ")?;
             }
         }
-        self.put_string(">");
+        self.put_string(">")
     }
 
     fn scan(&mut self, obj: Object, seen: &mut HashMap<Object, Object>) {
@@ -412,14 +414,14 @@ pub trait TextOutputPort {
                 if let Some(c) = chars.next() {
                     if c == 'a' || c == 'd' {
                         if i < args.len() {
-                            self.display(args[i]);
+                            self.display(args[i]).ok();
                             i += 1;
                         } else {
                             panic!("format: not enough arguments");
                         }
                     } else if c == 's' {
                         if i < args.len() {
-                            self.write(args[i]);
+                            self.write(args[i]).ok();
                             i += 1;
                         } else {
                             panic!("format: not enough arguments");
@@ -441,18 +443,17 @@ pub trait TextOutputPort {
 #[derive(Debug)]
 pub struct FileOutputPort {
     pub header: GcHeader,
+    file: File,
     is_closed: bool,
 }
 
 impl FileOutputPort {
-    fn new() -> Self {
+    pub fn new(file: File) -> Self {
         FileOutputPort {
             header: GcHeader::new(ObjectType::FileOutputPort),
             is_closed: false,
+            file: file,
         }
-    }
-    pub fn open(_path: &str) -> std::io::Result<FileOutputPort> {
-        Ok(FileOutputPort::new())
     }
 
     pub fn close(&mut self) {
@@ -467,8 +468,8 @@ impl Display for FileOutputPort {
 }
 
 impl TextOutputPort for FileOutputPort {
-    fn put_string(&mut self, _s: &str) {
-        todo!()
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+        write!(self.file, "{}", s)
     }
 }
 
@@ -492,8 +493,9 @@ impl Display for StdOutputPort {
 }
 
 impl TextOutputPort for StdOutputPort {
-    fn put_string(&mut self, s: &str) {
-        print!("{}", s)
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+        print!("{}", s);
+        Ok(())
     }
 }
 
@@ -517,8 +519,9 @@ impl Display for StdErrorPort {
 }
 
 impl TextOutputPort for StdErrorPort {
-    fn put_string(&mut self, s: &str) {
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         eprint!("{}", s);
+        Ok(())
     }
 }
 
@@ -558,7 +561,8 @@ impl Display for StringOutputPort {
 }
 
 impl TextOutputPort for StringOutputPort {
-    fn put_string(&mut self, s: &str) {
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         self.string.push_str(s);
+        Ok(())
     }
 }

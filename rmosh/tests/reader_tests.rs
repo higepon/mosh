@@ -1,7 +1,9 @@
 use rmosh::{
     equal::Equal,
-    objects::{Object},
-    vm::Vm, gc::Gc, ports::{StringInputPort, ReadError, TextInputPort},
+    gc::Gc,
+    objects::Object,
+    ports::{ReadError, StringInputPort, TextInputPort},
+    vm::Vm,
 };
 
 fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {

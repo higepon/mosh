@@ -16,7 +16,7 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
-    ports::{StdErrorPort, StdOutputPort, TextInputPort, ReadError},
+    ports::{ReadError, StdErrorPort, StdOutputPort, TextInputPort},
     procs::default_free_vars,
     psyntax,
 };

@@ -1,9 +1,11 @@
 use rmosh::{
     self,
     equal::Equal,
+    gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    vm::Vm, gc::Gc, ports::{ReadError, StringInputPort, TextInputPort},
+    ports::{ReadError, StringInputPort, TextInputPort},
+    vm::Vm,
 };
 
 pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();
