@@ -460,6 +460,10 @@ impl BinaryFileInputPort {
         }
     }
 
+    pub fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
+        self.file.read_to_end(buf)
+    }
+
     pub fn close(&mut self) {
         self.is_closed = true;
     }
@@ -467,7 +471,7 @@ impl BinaryFileInputPort {
 
 impl Display for BinaryFileInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<binary-file-input-port>")
+        write!(f, "#<binary-file-input-port {:?}>", self.file)
     }
 }
 

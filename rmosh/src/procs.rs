@@ -14,8 +14,8 @@ use crate::{
     gc::Gc,
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
-        BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort, StringOutputPort,
-        TextInputPort, TextOutputPort, BinaryFileInputPort,
+        BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
+        StringOutputPort, TextInputPort, TextOutputPort,
     },
     vm::Vm,
 };
@@ -2185,7 +2185,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
         if let Object::String(path) = args[0] {
             let file = match File::open(&path.string) {
                 Ok(file) => file,
-                Err(err) => panic!("{}: {} {}", name, args[0], err)
+                Err(err) => panic!("{}: {} {}", name, args[0], err),
             };
             Object::BinaryFileInputPort(vm.gc.alloc(BinaryFileInputPort::new(file)))
         } else {
@@ -2196,8 +2196,12 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     } else if argc == 3 {
         todo!();
     } else if argc == 4 {
-        match (args[0], args[1], args[2])  {
-            (Object::String(path), Object::SimpleStruct(file_options), Object::Symbol(buffer_mode)) => {
+        match (args[0], args[1], args[2]) {
+            (
+                Object::String(path),
+                Object::SimpleStruct(file_options),
+                Object::Symbol(buffer_mode),
+            ) => {
                 if buffer_mode.string.eq("block") || buffer_mode.string.eq("line") {
                     match FileInputPort::open(&path.string) {
                         Ok(port) => Object::FileInputPort(vm.gc.alloc(port)),
@@ -2210,9 +2214,12 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
                 } else {
                     panic!("{}: invalid buffer-mode option {}", name, args[2]);
                 }
-            },
+            }
             _ => {
-                panic!("{}: path, file-options and buffer-mode required but got {}, {} and {}", name, args[0], args[1], args[2])
+                panic!(
+                    "{}: path, file-options and buffer-mode required but got {}, {} and {}",
+                    name, args[0], args[1], args[2]
+                )
             }
         }
     } else {
@@ -3210,19 +3217,18 @@ fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fasl-read";
     check_argc!(name, args, 1);
-    if let Object::String(path) = args[0] {
-        let mut file = File::open(&path.string)
-            .unwrap_or_else(|_| panic!("{}: failed to open {}", name, path.string));
-
+    if let Object::BinaryFileInputPort(mut port) = args[0] {
         let mut content = Vec::new();
-        file.read_to_end(&mut content)
-            .unwrap_or_else(|_| panic!("failed to read {}", path.string));
-
+        port.read_to_end(&mut content).ok();
         let mut fasl = Fasl {
-            bytes: &content[..]
+            bytes: &content[..],
         };
-        // todo
-        fasl.read_sexp(&mut vm.gc).ok().unwrap()
+        match fasl.read_sexp(&mut vm.gc) {
+            Ok(sexp) => sexp,
+            Err(err) => {
+                panic!("{}: {} {}", name, err, args[0])
+            }
+        }
     } else {
         panic!("{}: file path required but got {}", name, args[0])
     }
