@@ -9,10 +9,8 @@ use std::{
 use crate::{
     equal::Equal,
     gc::Gc,
-    objects::{
-        ByteVector, EqHashtable, FileInputPort, Object, Pair, SimpleStruct, StringInputPort,
-    },
-    ports::{FileOutputPort, StringOutputPort, TextOutputPort},
+    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct, StringInputPort},
+    ports::{FileInputPort, FileOutputPort, StringOutputPort, TextInputPort, TextOutputPort},
     vm::Vm,
 };
 

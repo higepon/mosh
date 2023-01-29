@@ -4,6 +4,7 @@ use crate::{
     number_cmp_op,
     objects::{Closure, Object, Pair, Vox},
     op::Op,
+    ports::TextInputPort,
 };
 
 use super::{Vm, MAX_NUM_VALUES};
@@ -352,7 +353,27 @@ impl Vm {
                     self.number_sub_op();
                 }
                 Op::PairP => self.set_return_value(Object::make_bool(self.ac.is_pair())),
-                Op::Read => todo!(),
+                Op::Read => {
+                    let port;
+                    if self.ac.is_nil() {
+                        port = self.current_input_port;
+                    } else {
+                        port = self.ac;
+                    }
+                    match port {
+                        Object::FileInputPort(mut port) => match port.read(&mut self.gc) {
+                            Ok(obj) => {
+                                self.set_return_value(obj);
+                            }
+                            Err(err) => {
+                                panic!("read: error {:?}", err)
+                            }
+                        },
+                        _ => {
+                            panic!("read: input port required but got {}", port)
+                        }
+                    }
+                }
                 Op::ReadChar => match self.ac {
                     Object::StringInputPort(mut port) => match port.read_char() {
                         Some(c) => {

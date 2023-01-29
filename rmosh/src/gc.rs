@@ -14,9 +14,10 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
-    ByteVector, Closure, EqHashtable, FileInputPort, Object, Pair, Procedure, SString,
-    SimpleStruct, Symbol, Vector, Vox,
+    ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
+    Vector, Vox,
 };
+use crate::ports::{FileInputPort, FileOutputPort};
 use crate::vm::Vm;
 
 // GcRef.
@@ -519,22 +520,9 @@ impl Gc {
             }
             ObjectType::FileInputPort => {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                match &port.reader {
-                    None => {}
-                    Some(reader) => {
-                        self.mark_object(reader.parsed);
-                    }
-                }
+                self.mark_object(port.parsed);
             }
-            ObjectType::FileOutputPort => {
-                let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                match &port.reader {
-                    None => {}
-                    Some(reader) => {
-                        self.mark_object(reader.parsed);
-                    }
-                }
-            }
+            ObjectType::FileOutputPort => {}
             ObjectType::StdOutputPort => {}
             ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {}

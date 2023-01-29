@@ -1,17 +1,24 @@
 use std::{
     collections::HashMap,
     fmt::{self, Display},
+    fs::File,
+    io::{self, Read},
 };
 
+use lalrpop_util::ParseError;
+
 use crate::{
-    gc::{GcHeader, GcRef, ObjectType, Gc},
-    objects::{Object, Pair, SimpleStruct, Vector}, read::ReadError, reader::DatumParser, lexer,
+    gc::{Gc, GcHeader, GcRef, ObjectType},
+    lexer::{self, LexicalError},
+    objects::{Object, Pair, SimpleStruct, Vector},
+    read::ReadError,
+    reader::DatumParser,
 };
 
 // Trait for TextInputPort.
 pub trait TextInputPort {
     // The only methods you have to implement.
-    fn read_all(&mut self) -> Result<String, ReadError>;
+    fn read_to_string(&mut self, str: &mut String) -> io::Result<usize>;
     fn set_parsed(&mut self, obj: Object);
     fn parsed(&self) -> Object;
 
@@ -19,13 +26,25 @@ pub trait TextInputPort {
     // LALRPOP doesn't support multiple calls of parse.
     // We parse all S-Expressions once then store them.
     fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError> {
-        // 
+        //
         if self.parsed().is_unspecified() {
-            let text = self.read_all()?;
-            let text = "(".to_string() + &text;
+            let mut s = String::new();
+            match self.read_to_string(&mut s) {
+                Ok(_) => {}
+                Err(err) => {
+                    return Err(ParseError::User {
+                        error: LexicalError {
+                            start: 0,
+                            end: 0,
+                            token: err.to_string(),
+                        },
+                    });
+                }
+            }
+            let s = "(".to_string() + &s;
             // re2c assumes null terminated string.
-            let text = text + ")\0";
-            let chars: Vec<char> = text.chars().collect();
+            let s = s + ")\0";
+            let chars: Vec<char> = s.chars().collect();
 
             self.set_parsed(DatumParser::new().parse(gc, lexer::Lexer::new(&chars))?);
         }
@@ -36,10 +55,53 @@ pub trait TextInputPort {
             self.set_parsed(self.parsed().cdr_unchecked());
             return Ok(obj);
         }
-    }    
+    }
 }
 
+#[derive(Debug)]
+pub struct FileInputPort {
+    pub header: GcHeader,
+    pub file: File,
+    is_closed: bool,
+    pub parsed: Object,
+}
 
+impl FileInputPort {
+    fn new(file: File) -> Self {
+        FileInputPort {
+            header: GcHeader::new(ObjectType::FileInputPort),
+            file: file,
+            is_closed: false,
+            parsed: Object::Unspecified,
+        }
+    }
+    pub fn open(path: &str) -> std::io::Result<FileInputPort> {
+        let file = File::open(path)?;
+        Ok(FileInputPort::new(file))
+    }
+
+    pub fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl Display for FileInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<file-input-port>")
+    }
+}
+
+impl TextInputPort for FileInputPort {
+    fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
+        self.file.read_to_string(str)
+    }
+    fn set_parsed(&mut self, obj: Object) {
+        self.parsed = obj;
+    }
+    fn parsed(&self) -> Object {
+        self.parsed
+    }
+}
 
 // Trait for TextOutputPort.
 pub trait TextOutputPort {

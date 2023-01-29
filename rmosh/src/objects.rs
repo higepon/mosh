@@ -4,7 +4,9 @@ use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::lexer::LexicalError;
 use crate::op::Op;
-use crate::ports::{FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort, TextOutputPort};
+use crate::ports::{
+    FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringOutputPort, TextOutputPort,
+};
 use crate::read::{ReadError, Reader};
 use crate::vm::Vm;
 
@@ -1053,69 +1055,6 @@ impl StringInputPort {
 impl Display for StringInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<string-input-port>")
-    }
-}
-
-#[derive(Debug)]
-pub struct FileInputPort {
-    pub header: GcHeader,
-    pub file: File,
-    is_closed: bool,
-    pub reader: Option<Reader>,
-}
-
-impl FileInputPort {
-    fn new(file: File) -> Self {
-        FileInputPort {
-            header: GcHeader::new(ObjectType::FileInputPort),
-            file: file,
-            is_closed: false,
-            reader: None,
-        }
-    }
-    pub fn open(path: &str) -> std::io::Result<FileInputPort> {
-        let file = File::open(path)?;
-        Ok(FileInputPort::new(file))
-    }
-
-    pub fn close(&mut self) {
-        self.is_closed = true;
-    }
-
-    pub fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
-        self.file.read_to_string(str)
-    }
-
-    pub fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError> {
-        println!("{:?}", self.file);
-        match &mut self.reader {
-            Some(reader) => reader.read(gc),
-            None => {
-                let mut text = String::new();
-                match self.read_to_string(&mut text) {
-                    Ok(_) => {
-                        let mut reader = Reader::new(&text);
-                        let parsed = reader.read(gc);
-                        self.reader = Some(reader);
-                        parsed
-                    }
-                    // todo todo
-                    Err(_) => Err(ParseError::User {
-                        error: LexicalError {
-                            start: 0,
-                            end: 0,
-                            token: "can't read file".to_owned(),
-                        },
-                    }),
-                }
-            }
-        }
-    }
-}
-
-impl Display for FileInputPort {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<file-input-port>")
     }
 }
 
