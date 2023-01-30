@@ -965,7 +965,7 @@ fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp?";
     check_argc!(name, args, 1);
-    println!("{} dummy implementation", name);
+    println!("{} dummy implementation {} {}", name, args[0], args[0].to_string());
     Object::False
 }
 fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {

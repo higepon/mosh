@@ -40,6 +40,35 @@ impl Vm {
         return self.set_after_trigger0(Object::Closure(c));
     }
 
+    pub fn eval_compiled(&mut self, sexp: Object) -> Object {
+        //println!("eval={}", sexp);
+        let v = sexp.to_vector();
+        let code_size = v.len();
+        let body_size = code_size + 2;
+
+        // We allocate new code array for every eval calls.
+        // We can't share them between multiple eval calls.
+        self.eval_code_array.push(vec![]);
+        let eval_code = self.eval_code_array.last_mut().unwrap();
+        for i in 0..code_size {
+            eval_code.push(v.data[i]);
+        }
+        eval_code.push(Object::Instruction(Op::Return));
+        eval_code.push(Object::Number(0));
+        // todo: Should share this!
+        let free_vars = default_free_vars(&mut self.gc);
+        let c = self.gc.alloc(Closure::new(
+            eval_code.as_ptr(),
+            body_size,
+            0,
+            false,
+            free_vars,
+            Object::False,
+        ));
+
+        return self.set_after_trigger0(Object::Closure(c));
+    }    
+
     fn set_after_trigger0(&mut self, closure: Object) -> Object {
         self.make_frame(self.pc);
         self.trigger0_code[1] = closure;
