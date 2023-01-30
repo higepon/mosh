@@ -288,7 +288,16 @@ impl Vm {
                     self.push(self.dc);
                     self.push(Object::ObjectPointer(self.fp));
                 }
-                Op::List => todo!(),
+                Op::List => {
+                    let n = self.isize_operand();
+                    let mut list = Object::Nil;
+                    for i in 0..n {
+                        let obj = self.index(self.sp, i);
+                        list = self.gc.cons(obj, list);
+                    }
+                    self.set_return_value(list);
+                    self.sp = self.dec(self.sp, n);
+                }
                 Op::LocalJmp => {
                     let jump_offset = self.isize_operand();
                     self.pc = self.jump(self.pc, jump_offset - 1);
