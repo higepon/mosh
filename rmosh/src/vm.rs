@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    ptr::{null, null_mut},
+    ptr::{null, null_mut}, env,
 };
 
 // Sub module definitions.
@@ -151,6 +151,7 @@ impl Vm {
             bytes: psyntax::U8_ARRAY,
         };
         self.lib_psyntax = if self.should_load_compiler {
+            env::set_var("MOSH_CACHE_DIR", "/.rmosh");
             // Global variables.
             let sym = self.gc.symbol_intern("%verbose");
             self.set_global_value(sym.to_symbol(), Object::True);
