@@ -849,6 +849,7 @@ fn is_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     match args[0] {
         Object::Number(_) => Object::True,
+        Object::Float(_) => Object::True,        
         _ => Object::False,
     }
 }
@@ -2260,9 +2261,10 @@ pub fn eval(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 2);
     vm.eval_after(args[0])
 }
-fn eval_compiled(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn eval_compiled(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval-compiled";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    vm.eval_compiled(args[0])
 }
 
 // We make apply public so that Vm can access.
