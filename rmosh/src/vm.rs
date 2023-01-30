@@ -12,7 +12,7 @@ mod run;
 
 use crate::{
     compiler,
-    fasl::Fasl,
+    fasl::FaslReader,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
@@ -147,8 +147,9 @@ impl Vm {
     }
 
     pub fn enable_r7rs(&mut self, args: Object) -> Object {
-        let mut fasl = Fasl {
+        let mut fasl = FaslReader {
             bytes: psyntax::U8_ARRAY,
+            shared_objects: &mut HashMap::new(),
         };
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
@@ -275,8 +276,9 @@ impl Vm {
     }
 
     fn load_compiler(&mut self) -> Object {
-        let mut fasl = Fasl {
+        let mut fasl = FaslReader{
             bytes: compiler::U8_ARRAY,
+            shared_objects: &mut HashMap::new(),
         };
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)

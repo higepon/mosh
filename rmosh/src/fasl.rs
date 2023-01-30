@@ -1,9 +1,16 @@
-use std::io::{self, Read};
+use std::{
+    collections::HashMap,
+    io::{self, Read},
+};
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::{gc::Gc, objects::Object};
+use crate::{
+    gc::{Gc, GcRef},
+    objects::{EqHashtable, Object, SimpleStruct},
+    ports::BinaryFileOutputPort,
+};
 
 #[derive(FromPrimitive)]
 enum Tag {
@@ -17,11 +24,232 @@ enum Tag {
     Pair = 7,
     Vector = 8,
     CompilerInsn = 9,
+    Struct = 10,
+    Unspecified = 11,
+    EqHashtable = 12,
+    DefineShared = 13,
+    LookupShared = 14,
 }
 
-// S-expression de-serializer.
-pub struct Fasl<'a> {
-    pub bytes: &'a [u8],
+// S-expression serializer.
+pub struct FaslWriter {}
+
+impl FaslWriter {
+    pub fn new() -> Self {
+        Self {}
+    }
+    pub fn write(
+        &self,
+        port: &mut GcRef<BinaryFileOutputPort>,
+        obj: Object,
+    ) -> Result<(), io::Error> {
+        let mut seen: HashMap<Object, Object> = HashMap::new();
+        self.scan(obj, &mut seen);
+        let mut shared_id = 1;
+        self.write_one(port, &mut seen, &mut shared_id, obj)
+    }
+    pub fn write_one(
+        &self,
+        port: &mut GcRef<BinaryFileOutputPort>,
+        seen: &mut HashMap<Object, Object>,
+        shared_id: &mut isize,
+        obj: Object,
+    ) -> Result<(), io::Error> {
+        let seen_state = match seen.get(&obj) {
+            Some(val) => *val,
+            None => Object::False,
+        };
+        if seen_state.is_true() {
+            seen.insert(obj, Object::Number(*shared_id));
+            self.put_tag(port, Tag::DefineShared)?;
+            port.put_u32(*shared_id as u32)?;
+            seen.insert(obj, Object::Number(*shared_id));
+            *shared_id += 1;
+            // We don't return here and write the object.
+        } else if seen_state.is_number() {
+            self.put_tag(port, Tag::LookupShared)?;
+            port.put_u32(seen_state.to_number() as u32);
+            return Ok(());
+        }
+        match obj {
+            Object::ByteVector(_) => todo!(),
+            Object::Char(c) => {
+                self.put_tag(port, Tag::Char)?;                
+                port.put_u32(c as u32)?;                
+            }
+            Object::Closure(_) => todo!(),
+            Object::Eof => todo!(),
+            Object::EqHashtable(t) => {
+                self.put_tag(port, Tag::EqHashtable)?;
+                port.put_u16(t.size() as u16)?;
+                for (key, value) in t.hash_map.iter() {
+                    self.write_one(port, seen, shared_id, *key)?;
+                    self.write_one(port, seen, shared_id, *value)?;
+                }
+                port.put_u8(if t.is_mutable { 1 } else { 0 })?;
+            }
+            Object::False => {
+                self.put_tag(port, Tag::False)?;
+            }
+            Object::Float(_) => todo!(),
+            Object::StringInputPort(_) => todo!(),
+            Object::FileInputPort(_) => todo!(),
+            Object::FileOutputPort(_) => todo!(),
+            Object::BinaryFileOutputPort(_) => todo!(),
+            Object::BinaryFileInputPort(_) => todo!(),
+            Object::StdOutputPort(_) => todo!(),
+            Object::StdErrorPort(_) => todo!(),
+            Object::StringOutputPort(_) => todo!(),
+            Object::Instruction(op) => {
+                self.put_tag(port, Tag::CompilerInsn)?;
+                port.put_u8(op as u8)?;
+            }
+            Object::Nil => {
+                self.put_tag(port, Tag::Nil)?;
+            }
+            Object::Number(n) => {
+                self.put_tag(port, Tag::Fixnum)?;
+                port.put_u64(n as u64)?;
+            }
+            Object::Pair(p) => {
+                self.put_tag(port, Tag::Pair)?;
+                self.write_one(port, seen, shared_id, p.car)?;
+                self.write_one(port, seen, shared_id, p.cdr)?;
+            }
+            Object::Procedure(_) => todo!(),
+            Object::SimpleStruct(s) => {
+                self.put_tag(port, Tag::Struct)?;
+                port.put_u16(s.len() as u16)?;
+                for i in 0..s.len() {
+                    self.write_one(port, seen, shared_id, s.field(i))?;
+                }
+                self.write_one(port, seen, shared_id, s.name)?;
+            }
+            Object::String(s) => {
+                self.put_tag(port, Tag::String)?;
+                port.put_u16(s.string.len() as u16)?;
+                for c in s.string.chars() {
+                    port.put_u32(c as u32)?;
+                }
+            }
+            Object::Symbol(s) => {
+                self.put_tag(port, Tag::Symbol)?;
+                port.put_u16(s.string.len() as u16)?;
+                for c in s.string.chars() {
+                    port.put_u32(c as u32)?;
+                }
+            }
+            Object::True => {
+                self.put_tag(port, Tag::True)?;
+            }
+            Object::Unspecified => {
+                self.put_tag(port, Tag::Unspecified)?;
+            }
+            Object::ObjectPointer(_) => todo!(),
+            Object::ProgramCounter(_) => todo!(),
+            Object::Vector(v) => {
+                self.put_tag(port, Tag::Vector)?;
+                port.put_u16(v.len() as u16)?;
+                for i in 0..v.len() {
+                    self.write_one(port, seen, shared_id, v.data[i])?
+                }
+            }
+            Object::Vox(_) => todo!(),
+        }
+        Ok(())
+    }
+
+    fn put_tag(&self, port: &mut GcRef<BinaryFileOutputPort>, tag: Tag) -> Result<(), io::Error> {
+        port.put_u8(tag as u8)?;
+        Ok(())
+    }
+
+    fn scan(&self, obj: Object, seen: &mut HashMap<Object, Object>) {
+        let mut o = obj;
+        loop {
+            match o {
+                Object::ByteVector(_)
+                | Object::Closure(_)
+                | Object::Vox(_)
+                | Object::ProgramCounter(_)
+                | Object::ObjectPointer(_)
+                | Object::Unspecified
+                | Object::True
+                | Object::Procedure(_)
+                | Object::Char(_)
+                | Object::EqHashtable(_)
+                | Object::False
+                | Object::Float(_)
+                | Object::StringInputPort(_)
+                | Object::FileInputPort(_)
+                | Object::Eof
+                | Object::BinaryFileInputPort(_)
+                | Object::BinaryFileOutputPort(_)
+                | Object::FileOutputPort(_)
+                | Object::StringOutputPort(_)
+                | Object::StdOutputPort(_)
+                | Object::StdErrorPort(_)
+                | Object::Instruction(_)
+                | Object::Nil
+                | Object::Symbol(_)
+                | Object::String(_)
+                | Object::Number(_) => return,
+                Object::Pair(p) => {
+                    let val = match seen.get(&o) {
+                        Some(v) => *v,
+                        None => Object::Unspecified,
+                    };
+                    if val.is_false() {
+                        seen.insert(o, Object::True);
+                        return;
+                    } else if val.is_true() {
+                        return;
+                    } else {
+                        seen.insert(obj, Object::False);
+                    }
+                    self.scan(p.car, seen);
+                    o = p.cdr;
+                    continue;
+                }
+                Object::Vector(v) => {
+                    let val = match seen.get(&o) {
+                        Some(found) => *found,
+                        None => Object::Unspecified,
+                    };
+                    if val.is_false() {
+                        seen.insert(o, Object::True);
+                        return;
+                    } else if val.is_true() {
+                        return;
+                    } else {
+                        seen.insert(obj, Object::False);
+                    }
+                    for i in 0..v.len() {
+                        self.scan(v.data[i], seen);
+                    }
+                    break;
+                }
+                Object::SimpleStruct(s) => {
+                    let val = match seen.get(&o) {
+                        Some(v) => *v,
+                        None => Object::Unspecified,
+                    };
+                    if val.is_false() {
+                        seen.insert(o, Object::True);
+                        return;
+                    } else if val.is_true() {
+                        return;
+                    } else {
+                        seen.insert(obj, Object::False);
+                    }
+                    for i in 0..s.len() {
+                        self.scan(s.field(i), seen);
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
 
 #[macro_export]
@@ -95,7 +323,13 @@ macro_rules! read_num3 {
     }};
 }
 
-impl Fasl<'_> {
+// S-expression de-serializer.
+pub struct FaslReader<'a> {
+    pub bytes: &'a [u8],
+    pub shared_objects: &'a mut HashMap<u32, Object>,
+}
+
+impl FaslReader<'_> {
     pub fn read_all_sexp(&mut self, gc: &mut Gc) -> Vec<Object> {
         let mut objects = vec![];
         loop {
@@ -123,7 +357,12 @@ impl Fasl<'_> {
             Tag::True => Ok(Object::True),
             Tag::False => Ok(Object::False),
             Tag::Nil => Ok(Object::Nil),
+            Tag::Unspecified => Ok(Object::Unspecified),
             Tag::CompilerInsn => self.read_compiler_insn(),
+            Tag::Struct => self.read_struct(gc),
+            Tag::EqHashtable => self.read_eq_hashtable(gc),
+            Tag::DefineShared => self.read_define_shared(gc),
+            Tag::LookupShared => self.read_lookup_shared(gc),
         }
     }
 
@@ -133,6 +372,25 @@ impl Fasl<'_> {
         Ok(Object::Instruction(
             FromPrimitive::from_u8(buf[0]).expect("unknown Op"),
         ))
+    }
+
+    fn read_define_shared(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 4];
+        self.bytes.read_exact(&mut buf)?;
+        let uid = u32::from_le_bytes(buf);
+        let obj = self.read_sexp(gc)?;
+        self.shared_objects.insert(uid, obj);
+        Ok(obj)
+    }
+
+    fn read_lookup_shared(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 4];
+        self.bytes.read_exact(&mut buf)?;
+        let uid = u32::from_le_bytes(buf);
+        match self.shared_objects.get(&uid) {
+            Some(v) => Ok(*v),
+            None => todo!(),
+        }
     }
 
     fn read_fixnum(&mut self) -> Result<Object, io::Error> {
@@ -187,6 +445,38 @@ impl Fasl<'_> {
         Ok(gc.new_vector(&objs))
     }
 
+    fn read_struct(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf) as usize;
+        let mut objs = vec![];
+        for _ in 0..len {
+            objs.push(self.read_sexp(gc)?);
+        }
+        let name = self.read_sexp(gc)?;
+        let mut s = SimpleStruct::new(name, len as usize);
+        for i in 0..len {
+            s.set(i, objs[i]);
+        }
+        Ok(Object::SimpleStruct(gc.alloc(s)))
+    }
+
+    fn read_eq_hashtable(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut t = EqHashtable::new();
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf) as usize;
+        for _ in 0..len {
+            let key = self.read_sexp(gc)?;
+            let value = self.read_sexp(gc)?;
+            t.set(key, value);
+        }
+        let mut buf = [0; 1];
+        self.bytes.read_exact(&mut buf)?;
+        t.is_mutable = buf[0] == 1;
+        Ok(Object::EqHashtable(gc.alloc(t)))
+    }
+
     fn read_char(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
@@ -217,9 +507,11 @@ impl Fasl<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
+    use std::collections::HashMap;
+
     use crate::{equal::Equal, gc::Gc, objects::Object};
 
-    use super::Fasl;
+    use super::FaslReader;
 
     #[macro_export]
     macro_rules! assert_equal {
@@ -238,7 +530,10 @@ pub mod tests {
     fn test_constant_number() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[0, 3, 0, 0, 0, 0, 0, 0, 0];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let expected = Object::Number(3);
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -248,7 +543,10 @@ pub mod tests {
     fn test_constant_true() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[1];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let expected = Object::True;
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -258,7 +556,10 @@ pub mod tests {
     fn test_constant_false() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[2];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let expected = Object::False;
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -267,7 +568,10 @@ pub mod tests {
     fn test_constant_nil() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[3];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let expected = Object::Nil;
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -276,7 +580,10 @@ pub mod tests {
     fn test_constant_char() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[4, 97, 0, 0, 0];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let expected = Object::Char('a');
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -288,7 +595,10 @@ pub mod tests {
         let bytes: &[u8] = &[
             5, 5, 0, 104, 0, 0, 0, 101, 0, 0, 0, 108, 0, 0, 0, 108, 0, 0, 0, 111, 0, 0, 0,
         ];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let expected = gc.symbol_intern("hello");
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -298,7 +608,10 @@ pub mod tests {
     fn test_constant_string() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[6, 3, 0, 97, 0, 0, 0, 98, 0, 0, 0, 99, 0, 0, 0];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let expected = gc.new_string("abc");
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -308,7 +621,10 @@ pub mod tests {
     fn test_constant_simple_pair() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[7, 5, 1, 0, 97, 0, 0, 0, 3];
-        let mut fasl = Fasl { bytes };
+        let mut fasl = FaslReader {
+            bytes: bytes,
+            shared_objects: &mut HashMap::new(),
+        };
         let sym = gc.symbol_intern("a");
         let expected = gc.cons(sym, Object::Nil);
         let obj = fasl.read_sexp(&mut gc).unwrap();

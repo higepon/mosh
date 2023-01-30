@@ -208,7 +208,7 @@ pub trait TextOutputPort {
             | Object::StringInputPort(_)
             | Object::FileInputPort(_)
             | Object::Eof
-            | Object::BinaryFileInputPort(_)            
+            | Object::BinaryFileInputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
@@ -341,7 +341,7 @@ pub trait TextOutputPort {
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
-                | Object::BinaryFileInputPort(_)                
+                | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::FileOutputPort(_)
                 | Object::StringOutputPort(_)
@@ -416,7 +416,7 @@ pub trait TextOutputPort {
         while let Some(c) = chars.next() {
             if c == '~' {
                 if let Some(c) = chars.next() {
-                    if c == 'a' || c == 'd' {
+                    if c == 'a' || c == 'd' || c == 'e' {
                         if i < args.len() {
                             self.display(args[i]).ok();
                             i += 1;
@@ -474,7 +474,6 @@ impl Display for BinaryFileInputPort {
         write!(f, "#<binary-file-input-port {:?}>", self.file)
     }
 }
-
 
 // FileOutputPort
 #[derive(Debug)]
@@ -619,6 +618,22 @@ impl BinaryFileOutputPort {
             is_closed: false,
             file: file,
         }
+    }
+
+    pub fn put_u8(&mut self, value: u8) -> io::Result<usize> {
+        self.file.write(&[value])
+    }
+
+    pub fn put_u16(&mut self, value: u16) -> io::Result<usize> {
+        self.file.write(&value.to_le_bytes())
+    }
+
+    pub fn put_u32(&mut self, value: u32) -> io::Result<usize> {
+        self.file.write(&value.to_le_bytes())
+    }
+
+    pub fn put_u64(&mut self, value: u64) -> io::Result<usize> {
+        self.file.write(&value.to_le_bytes())
     }
 
     pub fn close(&mut self) {

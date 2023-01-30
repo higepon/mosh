@@ -1,16 +1,15 @@
 use std::{
     env::{self, current_dir, current_exe},
     fs::{self, File, OpenOptions},
-    io::Read,
     path::Path,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{SystemTime, UNIX_EPOCH}, collections::HashMap,
 };
 
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     equal::Equal,
-    fasl::Fasl,
+    fasl::{FaslReader, FaslWriter},
     gc::Gc,
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
@@ -2199,7 +2198,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
         match (args[0], args[1], args[2]) {
             (
                 Object::String(path),
-                Object::SimpleStruct(file_options),
+                Object::SimpleStruct(_file_options),
                 Object::Symbol(buffer_mode),
             ) => {
                 if buffer_mode.string.eq("block") || buffer_mode.string.eq("line") {
@@ -3189,6 +3188,14 @@ fn close_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
             port.close();
             Object::Unspecified
         }
+        Object::BinaryFileInputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        Object::BinaryFileOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
         _ => {
             panic!("{}: required input-port but got {}", name, args[0]);
         }
@@ -3206,13 +3213,24 @@ fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
         }
     }
 }
-fn make_compiler_instruction(vm: &mut Vm, args: &mut [Object]) -> Object {
+fn make_compiler_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-compiler-instruction";
     panic!("{}({}) not implemented", name, args.len());
 }
 fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fasl-write";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    if let Object::BinaryFileOutputPort(mut port) = args[1] {
+        let fasl = FaslWriter::new();
+        match fasl.write(&mut port, args[0]) {
+            Ok(()) => Object::Unspecified,
+            Err(err) => {
+                panic!("{}: {} {} {}", name, err, args[0], args[1])
+            }
+        }
+    } else {
+        panic!("{}: file path required but got {}", name, args[0])
+    }
 }
 fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fasl-read";
@@ -3220,8 +3238,9 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Object {
     if let Object::BinaryFileInputPort(mut port) = args[0] {
         let mut content = Vec::new();
         port.read_to_end(&mut content).ok();
-        let mut fasl = Fasl {
+        let mut fasl = FaslReader {
             bytes: &content[..],
+            shared_objects: &mut HashMap::new(),
         };
         match fasl.read_sexp(&mut vm.gc) {
             Ok(sexp) => sexp,
