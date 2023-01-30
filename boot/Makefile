@@ -61,7 +61,7 @@ match.scmc: baselib/match.scm compiler-vm.scm
 	gosh vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
-baselib-rust.scmc: baselib-rust.scm compiler-vm.scm
+baselib-rust.scmc: baselib-rust.scm compiler-vm-rust.scm
 	gosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
