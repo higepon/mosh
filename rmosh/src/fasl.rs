@@ -8,7 +8,7 @@ use num_traits::FromPrimitive;
 
 use crate::{
     gc::{Gc, GcRef},
-    objects::{EqHashtable, Object, SimpleStruct},
+    objects::{EqHashtable, Object, SimpleStruct, Float},
     ports::BinaryFileOutputPort,
 };
 
@@ -29,6 +29,7 @@ enum Tag {
     EqHashtable = 12,
     DefineShared = 13,
     LookupShared = 14,
+    Float = 15,
 }
 
 // S-expression serializer.
@@ -91,7 +92,11 @@ impl FaslWriter {
             Object::False => {
                 self.put_tag(port, Tag::False)?;
             }
-            Object::Float(_) => todo!(),
+            Object::Float(f) => {
+                println!("WARNING: dummy float fasl write");
+                self.put_tag(port, Tag::Float)?;
+                port.put_u64(f.value() as u64)?;                
+            }
             Object::StringInputPort(_) => todo!(),
             Object::FileInputPort(_) => todo!(),
             Object::FileOutputPort(_) => todo!(),
@@ -363,6 +368,7 @@ impl FaslReader<'_> {
             Tag::EqHashtable => self.read_eq_hashtable(gc),
             Tag::DefineShared => self.read_define_shared(gc),
             Tag::LookupShared => self.read_lookup_shared(gc),
+            Tag::Float => self.read_float(),
         }
     }
 
@@ -399,6 +405,13 @@ impl FaslReader<'_> {
         let n = isize::from_le_bytes(buf);
         Ok(Object::Number(n))
     }
+
+    fn read_float(&mut self) -> Result<Object, io::Error> {
+        let mut buf = [0; 8];
+        self.bytes.read_exact(&mut buf)?;
+        let n = f64::from_le_bytes(buf);
+        Ok(Object::Float(Float::new(n)))
+    }    
 
     fn read_symbol(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let mut buf = [0; 2];
