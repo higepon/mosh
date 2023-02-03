@@ -2,8 +2,8 @@ use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
 use crate::ports::{
-    BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TextOutputPort, BinaryFileInputPort,
+    BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
+    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort,
 };
 use crate::vm::Vm;
 
@@ -11,6 +11,7 @@ use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
+use std::ops::{Deref, DerefMut};
 
 // We use this Float which wraps f64.
 // Because we can't implement Hash for f64.
@@ -66,7 +67,7 @@ pub enum Object {
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
-    BinaryFileInputPort(GcRef<BinaryFileInputPort>),    
+    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     StdOutputPort(GcRef<StdOutputPort>),
     StdErrorPort(GcRef<StdErrorPort>),
     StringOutputPort(GcRef<StringOutputPort>),
@@ -308,7 +309,7 @@ impl Debug for Object {
             }
             Object::BinaryFileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -397,7 +398,7 @@ impl Display for Object {
             }
             Object::BinaryFileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -868,6 +869,20 @@ impl PartialEq for SString {
     }
 }
 
+impl Deref for SString {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.string
+    }
+}
+
+impl DerefMut for SString {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.string
+    }
+}
+
 /// Symbol
 #[derive(Debug)]
 pub struct Symbol {
@@ -1205,6 +1220,13 @@ pub mod tests {
         let b = SString::new("abc");
         assert_eq!(a, b);
     }
+
+    #[test]
+    fn test_sstring_deref() {
+        let mut a = SString::new("abc");
+        *a = "def".to_owned();
+        assert_eq!("def".to_string(), a.string);
+    }    
 
     #[test]
     fn test_vector_to_string() {
