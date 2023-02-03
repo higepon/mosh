@@ -75,7 +75,7 @@ pub enum ObjectType {
     Closure,
     EqHashtable,
     BinaryFileOutputPort,
-    BinaryFileInputPort,    
+    BinaryFileInputPort,
     FileOutputPort,
     FileInputPort,
     StdOutputPort,
@@ -379,7 +379,7 @@ impl Gc {
             }
             Object::BinaryFileInputPort(port) => {
                 self.mark_heap_object(port);
-            }            
+            }
             Object::FileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -479,9 +479,8 @@ impl Gc {
         match object_type {
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
-                for i in 0..closure.free_vars.len() {
-                    let obj = closure.free_vars[i];
-                    self.mark_object(obj);
+                for obj in closure.free_vars.iter() {
+                    self.mark_object(*obj);
                 }
                 for i in 0..closure.ops_len {
                     let op = unsafe { *closure.ops.offset(i as isize) };
@@ -506,14 +505,14 @@ impl Gc {
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
-                for i in 0..vector.data.len() {
-                    self.mark_object(vector.data[i]);
+                for obj in vector.data.iter() {
+                    self.mark_object(*obj);
                 }
             }
             ObjectType::SimpleStruct => {
                 let s: &SimpleStruct = unsafe { mem::transmute(pointer.as_ref()) };
-                for i in 0..s.data.len() {
-                    self.mark_object(s.data[i]);
+                for obj in s.data.iter() {
+                    self.mark_object(*obj);
                 }
             }
             ObjectType::EqHashtable => {
@@ -530,7 +529,7 @@ impl Gc {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.parsed);
             }
-            ObjectType::BinaryFileInputPort => {}            
+            ObjectType::BinaryFileInputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
             ObjectType::StdOutputPort => {}
@@ -557,8 +556,8 @@ impl Gc {
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
         use crate::ports::{
-            FileOutputPort, StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort,
-            BinaryFileOutputPort, BinaryFileInputPort
+            BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
+            StringInputPort, StringOutputPort,
         };
 
         let object_type = object_ptr.obj_type;
@@ -590,11 +589,11 @@ impl Gc {
             ObjectType::BinaryFileInputPort => {
                 let port: &BinaryFileInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
-            }            
+            }
             ObjectType::BinaryFileOutputPort => {
                 let port: &BinaryFileOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
-            }                     
+            }
             ObjectType::StringInputPort => {
                 let port: &StringInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)

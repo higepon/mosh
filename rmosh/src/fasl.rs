@@ -69,7 +69,7 @@ impl FaslWriter {
             // We don't return here and write the object.
         } else if seen_state.is_number() {
             self.put_tag(port, Tag::LookupShared)?;
-            port.put_u32(seen_state.to_number() as u32);
+            port.put_u32(seen_state.to_number() as u32)?;
             return Ok(());
         }
         match obj {
@@ -389,7 +389,7 @@ impl FaslReader<'_> {
         Ok(obj)
     }
 
-    fn read_lookup_shared(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+    fn read_lookup_shared(&mut self, _gc: &mut Gc) -> Result<Object, io::Error> {
         let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
         let uid = u32::from_le_bytes(buf);

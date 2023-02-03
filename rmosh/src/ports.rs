@@ -382,8 +382,8 @@ pub trait TextOutputPort {
                     } else {
                         seen.insert(obj, Object::False);
                     }
-                    for i in 0..v.len() {
-                        self.scan(v.data[i], seen);
+                    for obj in v.data.iter() {
+                        self.scan(*obj, seen);
                     }
                     break;
                 }
