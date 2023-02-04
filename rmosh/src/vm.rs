@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
-    ptr::{null, null_mut}, env,
+    env,
+    ptr::{null, null_mut},
 };
 
 // Sub module definitions.
@@ -276,7 +277,7 @@ impl Vm {
     }
 
     fn load_compiler(&mut self) -> Object {
-        let mut fasl = FaslReader{
+        let mut fasl = FaslReader {
             bytes: compiler::U8_ARRAY,
             shared_objects: &mut HashMap::new(),
         };

@@ -1,8 +1,9 @@
 use std::{
+    collections::HashMap,
     env::{self, current_dir, current_exe},
     fs::{self, File, OpenOptions},
     path::Path,
-    time::{SystemTime, UNIX_EPOCH}, collections::HashMap,
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 /// Scheme procedures written in Rust.
@@ -849,7 +850,7 @@ fn is_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     match args[0] {
         Object::Fixnum(_) => Object::True,
-        Object::Float(_) => Object::True,        
+        Object::Float(_) => Object::True,
         _ => Object::False,
     }
 }
@@ -965,7 +966,12 @@ fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp?";
     check_argc!(name, args, 1);
-    println!("{} dummy implementation {} {}", name, args[0], args[0].to_string());
+    println!(
+        "{} dummy implementation {} {}",
+        name,
+        args[0],
+        args[0].to_string()
+    );
     Object::False
 }
 fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -4618,7 +4624,7 @@ fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> Object {
         }
         if is_same_marks_raw(
             mark_mul,
-            mark_mul_mul.to_vector().data[si.car_unchecked().to_number() as usize],
+            mark_mul_mul.to_vector().data[si.car_unchecked().to_isize() as usize],
         ) {
             return si.car_unchecked();
         }
@@ -4743,7 +4749,7 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
                         continue;
                     } else {
                         return rib.to_simple_struct().field(2).to_vector().data
-                            [i.to_number() as usize];
+                            [i.to_isize() as usize];
                     }
                 } else {
                     let mut sym_mul = rib.to_simple_struct().field(0);

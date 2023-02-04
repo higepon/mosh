@@ -286,7 +286,7 @@ impl Vm {
         // ======== sp ==========
         //
         // where pc* = pc + skip_offset -1
-        let skip_offset = self.operand().to_number();
+        let skip_offset = self.operand().to_isize();
         let next_pc = self.jump(self.pc, skip_offset - 1);
         self.make_frame(next_pc);
     }

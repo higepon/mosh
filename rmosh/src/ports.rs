@@ -187,7 +187,7 @@ pub trait TextOutputPort {
             self.put_string(&format!("#{}=", shared_id))?;
             *shared_id += 1;
         } else if seen_state.is_number() {
-            return self.put_string(&format!("#{}#", seen_state.to_number()));
+            return self.put_string(&format!("#{}#", seen_state.to_isize()));
         }
         match obj {
             Object::Pair(p) => self.display_pair(p, seen, shared_id),
@@ -203,8 +203,8 @@ pub trait TextOutputPort {
             | Object::Procedure(_)
             | Object::Char(_)
             | Object::EqHashtable(_)
-            | Object::Compnum(_)               
-            | Object::Ratnum(_)            
+            | Object::Compnum(_)
+            | Object::Ratnum(_)
             | Object::False
             | Object::Float(_)
             | Object::StringInputPort(_)
@@ -333,7 +333,7 @@ pub trait TextOutputPort {
                 | Object::BinaryFileOutputPort(_)
                 | Object::Char(_)
                 | Object::Closure(_)
-                | Object::Compnum(_)  
+                | Object::Compnum(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::False
@@ -345,7 +345,7 @@ pub trait TextOutputPort {
                 | Object::ObjectPointer(_)
                 | Object::Procedure(_)
                 | Object::ProgramCounter(_)
-                | Object::Ratnum(_)  
+                | Object::Ratnum(_)
                 | Object::StdErrorPort(_)
                 | Object::StdOutputPort(_)
                 | Object::String(_)

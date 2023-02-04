@@ -8,7 +8,7 @@ use num_traits::FromPrimitive;
 
 use crate::{
     gc::{Gc, GcRef},
-    objects::{EqHashtable, Object, SimpleStruct, Float},
+    objects::{EqHashtable, Float, Object, SimpleStruct},
     ports::BinaryFileOutputPort,
 };
 
@@ -69,14 +69,14 @@ impl FaslWriter {
             // We don't return here and write the object.
         } else if seen_state.is_number() {
             self.put_tag(port, Tag::LookupShared)?;
-            port.put_u32(seen_state.to_number() as u32)?;
+            port.put_u32(seen_state.to_isize() as u32)?;
             return Ok(());
         }
         match obj {
             Object::ByteVector(_) => todo!(),
             Object::Char(c) => {
-                self.put_tag(port, Tag::Char)?;                
-                port.put_u32(c as u32)?;                
+                self.put_tag(port, Tag::Char)?;
+                port.put_u32(c as u32)?;
             }
             Object::Closure(_) => todo!(),
             Object::Eof => todo!(),
@@ -95,11 +95,11 @@ impl FaslWriter {
             Object::Float(f) => {
                 println!("WARNING: dummy float fasl write");
                 self.put_tag(port, Tag::Float)?;
-                port.put_u64(f.value() as u64)?;                
+                port.put_u64(f.value() as u64)?;
             }
             Object::Compnum(_r) => {
                 todo!();
-            }            
+            }
             Object::Ratnum(_r) => {
                 todo!();
             }
@@ -194,7 +194,7 @@ impl FaslWriter {
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
-                | Object::Compnum(_)                
+                | Object::Compnum(_)
                 | Object::Ratnum(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
@@ -419,7 +419,7 @@ impl FaslReader<'_> {
         self.bytes.read_exact(&mut buf)?;
         let n = f64::from_le_bytes(buf);
         Ok(Object::Float(Float::new(n)))
-    }    
+    }
 
     fn read_symbol(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let mut buf = [0; 2];

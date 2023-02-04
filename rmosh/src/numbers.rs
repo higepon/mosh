@@ -1,8 +1,11 @@
-use std::fmt::{Display, self};
+use std::fmt::{self, Display};
 
 use num_rational::Rational64;
 
-use crate::{gc::{GcHeader, ObjectType}, objects::Object};
+use crate::{
+    gc::{GcHeader, ObjectType},
+    objects::Object,
+};
 
 /// Rational number.
 #[derive(Debug)]
@@ -23,7 +26,7 @@ impl Ratnum {
             header: GcHeader::new(ObjectType::Ratnum),
             ratio: ratio,
         }
-    }    
+    }
 }
 
 impl Display for Ratnum {

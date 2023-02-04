@@ -15,7 +15,7 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
     ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
-    Vector, Vox
+    Vector, Vox,
 };
 
 use crate::ports::FileInputPort;
@@ -393,7 +393,7 @@ impl Gc {
             Object::Nil => {}
             Object::Float(_) => {}
             Object::Fixnum(_) => {}
-            Object::Compnum(_) => {}            
+            Object::Compnum(_) => {}
             Object::Ratnum(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
@@ -544,8 +544,8 @@ impl Gc {
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
-            ObjectType::Ratnum => {}  
-            ObjectType::Compnum => {}                       
+            ObjectType::Ratnum => {}
+            ObjectType::Compnum => {}
             ObjectType::ByteVector => {}
         }
     }
@@ -562,12 +562,10 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
+        use crate::numbers::{Compnum, Ratnum};
         use crate::ports::{
             BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
             StringInputPort, StringOutputPort,
-        };
-        use crate::numbers::{
-            Compnum, Ratnum,
         };
 
         let object_type = object_ptr.obj_type;
@@ -587,11 +585,11 @@ impl Gc {
             ObjectType::Ratnum => {
                 let n: &Ratnum = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
-            }   
+            }
             ObjectType::Compnum => {
                 let n: &Compnum = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
-            }                        
+            }
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(closure)

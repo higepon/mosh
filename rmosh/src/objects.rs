@@ -191,7 +191,7 @@ impl Object {
             }
         }
     }
-    pub fn to_number(self) -> isize {
+    pub fn to_isize(self) -> isize {
         if let Self::Fixnum(n) = self {
             n
         } else {

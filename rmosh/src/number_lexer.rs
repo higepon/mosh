@@ -44,7 +44,7 @@ impl<'input> NumberLexer<'input> {
 
     pub fn extract_token(&self) -> String {
         self.s[self.tok..self.cursor].iter().collect()
-    }    
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

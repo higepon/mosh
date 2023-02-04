@@ -67,7 +67,7 @@ impl Vm {
         ));
 
         return self.set_after_trigger0(Object::Closure(c));
-    }    
+    }
 
     fn set_after_trigger0(&mut self, closure: Object) -> Object {
         self.make_frame(self.pc);
