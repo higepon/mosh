@@ -1,0 +1,80 @@
+use std::str::FromStr;
+use crate::objects::Float;
+use crate::objects::Object;
+use crate::gc::Gc;
+use crate::lexer;
+
+grammar(gc: &mut Box<Gc>);
+
+// R7RS small 7.1.2. External representations
+pub Number: Object = {
+    SimpleDatum,
+    CompoundDataum,
+}
+
+CompoundDataum: Object = {
+}
+
+SimpleDatum: Object = {
+
+}
+
+
+
+
+
+Regexp: Object = {
+    // todo
+    "regexp" => gc.new_string(&<>),
+}
+
+
+String: Object = {
+    "string" => gc.new_string(&<>),
+}
+
+Character: Object = {
+    "character" => Object::Char(<>),
+}
+
+
+Symbol: Object = {
+    "identifier" => gc.symbol_intern(&<>),
+}
+
+
+Boolean: Object = {
+    "true" => Object::True,
+    "false" => Object::False,
+}
+
+extern {
+    type Location = usize;
+    type Error = lexer::LexicalError;
+
+    enum lexer::Token {
+        "'" => lexer::Token::AbbrevQuote,
+        "`" => lexer::Token::AbbrevQuasiquote,
+        "," => lexer::Token::AbbrevUnquote,
+        ",@" => lexer::Token::AbbrevUnquoteSplicing,
+        "#'" => lexer::Token::AbbrevSyntax,
+        "#`" => lexer::Token::AbbrevQuasisyntax,
+        "#," => lexer::Token::AbbrevUnsyntax,
+        "#@" => lexer::Token::AbbrevUnsyntaxSplicing,
+        "#;" => lexer::Token::DatumComment,
+        "#u8(" => lexer::Token::ByteVectorStart,
+        "." => lexer::Token::Dot,
+        "true" => lexer::Token::True,
+        "false" => lexer::Token::False,
+        "(" => lexer::Token::LeftParen,
+        ")" => lexer::Token::RightParen,
+        ")" => lexer::Token::RightParen,
+        "#(" => lexer::Token::VectorStart,
+        "character" => lexer::Token::Character { value: <char> },
+        "identifier" => lexer::Token::Identifier { value: <String> },
+        "number10" => lexer::Token::Number10 { value: <String> },
+        "number16" => lexer::Token::Number16 { value: <String> },        
+        "regexp" => lexer::Token::Regexp { value: <String> },
+        "string" => lexer::Token::String { value: <String> },
+    }
+}

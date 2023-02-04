@@ -16,3 +16,4 @@ pub mod vm;
 extern crate lalrpop_util;
 
 lalrpop_mod!(pub reader); // synthesized by LALRPOP
+lalrpop_mod!(pub number_reader); // synthesized by LALRPOP

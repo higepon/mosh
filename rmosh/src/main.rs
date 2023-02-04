@@ -7,6 +7,7 @@ extern crate num_derive;
 extern crate lalrpop_util;
 
 lalrpop_mod!(pub reader); // synthesized by LALRPOP
+lalrpop_mod!(pub number_reader); // synthesized by LALRPOP
 pub mod alloc;
 pub mod compiler;
 pub mod equal;

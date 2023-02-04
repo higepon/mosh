@@ -3,6 +3,7 @@ use crate::objects::Float;
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
+use crate::number_reader::NumberParser;
 
 grammar(gc: &mut Box<Gc>);
 
@@ -110,6 +111,10 @@ Number: Object = {
                 match f64::from_str(&s) {
                     Ok(value) => Object::Float(Float::new(value)),
                     Err(e2) => {
+
+
+                        let chars: Vec<char> = s.chars().collect();
+                        println!("{:?}", NumberParser::new().parse(gc, lexer::Lexer::new(&chars)));
                         panic!("Number parse error: {}{} in <{}>", e, e2, s)
                     }
                 }
