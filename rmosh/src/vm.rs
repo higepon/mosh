@@ -21,7 +21,7 @@ use crate::{
     psyntax,
 };
 
-const STACK_SIZE: usize = 8192;
+const STACK_SIZE: usize = 16384;
 const MAX_NUM_VALUES: usize = 256;
 
 struct Registers {

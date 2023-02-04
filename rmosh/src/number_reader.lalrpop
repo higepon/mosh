@@ -37,9 +37,16 @@ Complex10: Object = {
     <real: Real10> "+" <imag: UReal10> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
+    <real: Real10> "-" <imag: UReal10> "i" => {
+        let imag = imag.neg(gc);
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+    },    
     <real: Real10> "+" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(1))))
     },    
+    <real: Real10> "-" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
+    },       
 }
 
 Real10: Object = {
@@ -48,18 +55,7 @@ Real10: Object = {
         ureal10
     },
     "-" <ureal10: UReal10> => {
-        match ureal10 {
-            Object::Fixnum(n) => {
-                Object::Fixnum(n * -1)
-            },
-            Object::Float(f) => {
-                Object::Float(Float::new(f.value() * -1.0))
-            },
-            Object::Ratnum(r) => {
-                Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(-r.ratio)))
-            },
-            _ => todo!(),
-        }
+        ureal10.neg(gc)
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::numbers::{Ratnum, Compnum};
+use crate::numbers::{Compnum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -283,6 +283,15 @@ impl Object {
             }
         }
     }
+
+    pub fn neg(&self, gc: &mut Box<Gc>) -> Self {
+        match self {
+            Object::Fixnum(n) => Object::Fixnum(n * -1),
+            Object::Float(f) => Object::Float(Float::new(f.value() * -1.0)),
+            Object::Ratnum(r) => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(-r.ratio))),
+            _ => todo!(),
+        }
+    }
 }
 
 // For HashMap<Object, Object>
@@ -324,10 +333,10 @@ impl Debug for Object {
             }
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
-            }            
+            }
             Object::Compnum(n) => {
                 write!(f, "{}", n)
-            }                      
+            }
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
@@ -425,10 +434,10 @@ impl Display for Object {
             }
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
-            }          
+            }
             Object::Compnum(n) => {
                 write!(f, "{}", n)
-            }                 
+            }
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
@@ -1241,7 +1250,7 @@ pub mod tests {
         let mut a = SString::new("abc");
         *a = "def".to_owned();
         assert_eq!("def".to_string(), a.string);
-    }    
+    }
 
     #[test]
     fn test_vector_to_string() {
