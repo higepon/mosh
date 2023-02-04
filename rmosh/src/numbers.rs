@@ -8,7 +8,7 @@ use crate::{gc::{GcHeader, ObjectType}, objects::Object};
 #[derive(Debug)]
 pub struct Ratnum {
     pub header: GcHeader,
-    ratio: Rational64,
+    pub ratio: Rational64,
 }
 
 impl Ratnum {
@@ -18,6 +18,12 @@ impl Ratnum {
             ratio: Rational64::new_raw(numer as i64, denom as i64),
         }
     }
+    pub fn new_from_ratio(ratio: Rational64) -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::Ratnum),
+            ratio: ratio,
+        }
+    }    
 }
 
 impl Display for Ratnum {

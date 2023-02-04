@@ -37,6 +37,9 @@ Complex10: Object = {
     <real: Real10> "+" <imag: UReal10> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
+    <real: Real10> "+" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(1))))
+    },    
 }
 
 Real10: Object = {
@@ -51,7 +54,10 @@ Real10: Object = {
             },
             Object::Float(f) => {
                 Object::Float(Float::new(f.value() * -1.0))
-            }
+            },
+            Object::Ratnum(r) => {
+                Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(-r.ratio)))
+            },
             _ => todo!(),
         }
     }
