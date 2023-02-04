@@ -195,7 +195,7 @@ impl Object {
         if let Self::Fixnum(n) = self {
             n
         } else {
-            panic!("Not a Object::Fixnum")
+            panic!("Not a Object::Fixnum but {}", self)
         }
     }
     pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {

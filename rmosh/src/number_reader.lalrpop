@@ -1,4 +1,5 @@
 use crate::objects::Object;
+use crate::objects::Float;
 use crate::gc::Gc;
 use crate::number_lexer;
 use std::str::FromStr;
@@ -14,11 +15,10 @@ pub Number: Object = {
 
 Number10 = {
     Complex10,
-    // todo move this!
-    UReal10,
 }
 
 Complex10: Object = {
+    Real10,
     <real: Real10> "+" <imag: UReal10> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -30,9 +30,16 @@ Real10: Object = {
         ureal10
     },
     "-" <ureal10: UReal10> => {
-        Object::Fixnum(ureal10.to_number() * -1)
+        match ureal10 {
+            Object::Fixnum(n) => {
+                Object::Fixnum(n * -1)
+            },
+            Object::Float(f) => {
+                Object::Float(Float::new(f.value() * -1.0))
+            }
+            _ => todo!(),
+        }
     }
-
 }
 
 UReal10: Object = {
@@ -56,7 +63,38 @@ UReal10: Object = {
             }
         }
     },
+    Decimal10 => {
+        match f64::from_str(&<>) {
+            Ok(n) => {
+                Object::Float(Float::new(n))
+            },
+            Err(err) => todo!(),
+        }
+    }
+}
 
+Decimal10: String = {
+    <uinteger10: UInteger10> <suffix: Suffix> => {
+        uinteger10 + &suffix
+    },
+    "." <digits: "digit10" +> <suffix: Suffix ?> => {
+        ".".to_owned() + &digits.join("") + &suffix.unwrap_or("".to_string())
+    },
+    <digits: "digit10" +> "." <digits2: "digit10" *> <suffix: Suffix ?> => {
+        digits.join("") + &"." + &digits2.join("") + &suffix.unwrap_or("".to_string())
+    },
+}
+
+Suffix: String = {
+    "e" "+" <digits: "digit10" +> => {
+        "e+".to_owned() + &digits.join("")
+    },
+    "e" "-" <digits: "digit10" +> => {
+        "e-".to_owned() + &digits.join("")
+    },
+    "e" <digits: "digit10" +> => {
+        "e".to_owned() + &digits.join("")
+    },
 }
 
 UInteger10: String = {
@@ -75,6 +113,7 @@ extern {
         "-" => number_lexer::Token::Minus,
         "/" => number_lexer::Token::Slash,
         "." => number_lexer::Token::Dot,
+        "e" => number_lexer::Token::Exponent,        
         "i" => number_lexer::Token::Imag,
     }
 }

@@ -2,6 +2,7 @@
 pub enum Token {
     Digit10 { value: String },
     Dot,
+    Exponent,
     Imag,
     Minus,
     Plus,
