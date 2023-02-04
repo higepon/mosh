@@ -107,7 +107,7 @@ Symbol: Object = {
 Number: Object = {
     <s: "number10"> => {
         match isize::from_str(&s) {
-            Ok(n) => Object::Number(n),
+            Ok(n) => Object::Fixnum(n),
             Err(e) => {
                 match f64::from_str(&s) {
                     Ok(value) => Object::Float(Float::new(value)),
@@ -126,7 +126,7 @@ Number: Object = {
         // #x123A => 123A
         if s.chars().nth(0) == Some('#') {
             match isize::from_str_radix(&s[2..], 16) {
-                Ok(n) => Object::Number(n),
+                Ok(n) => Object::Fixnum(n),
                 Err(e) => {
                         panic!("Number parse error: {} in <{}>", e, s)
                 }                

@@ -25,7 +25,7 @@ impl Vm {
             eval_code.push(v.data[i]);
         }
         eval_code.push(Object::Instruction(Op::Return));
-        eval_code.push(Object::Number(0));
+        eval_code.push(Object::Fixnum(0));
         // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
@@ -54,7 +54,7 @@ impl Vm {
             eval_code.push(v.data[i]);
         }
         eval_code.push(Object::Instruction(Op::Return));
-        eval_code.push(Object::Number(0));
+        eval_code.push(Object::Fixnum(0));
         // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(

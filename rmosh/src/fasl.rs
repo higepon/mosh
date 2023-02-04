@@ -61,10 +61,10 @@ impl FaslWriter {
             None => Object::False,
         };
         if seen_state.is_true() {
-            seen.insert(obj, Object::Number(*shared_id));
+            seen.insert(obj, Object::Fixnum(*shared_id));
             self.put_tag(port, Tag::DefineShared)?;
             port.put_u32(*shared_id as u32)?;
-            seen.insert(obj, Object::Number(*shared_id));
+            seen.insert(obj, Object::Fixnum(*shared_id));
             *shared_id += 1;
             // We don't return here and write the object.
         } else if seen_state.is_number() {
@@ -112,7 +112,7 @@ impl FaslWriter {
             Object::Nil => {
                 self.put_tag(port, Tag::Nil)?;
             }
-            Object::Number(n) => {
+            Object::Fixnum(n) => {
                 self.put_tag(port, Tag::Fixnum)?;
                 port.put_u64(n as u64)?;
             }
@@ -198,7 +198,7 @@ impl FaslWriter {
                 | Object::Nil
                 | Object::Symbol(_)
                 | Object::String(_)
-                | Object::Number(_) => return,
+                | Object::Fixnum(_) => return,
                 Object::Pair(p) => {
                     let val = match seen.get(&o) {
                         Some(v) => *v,
@@ -403,7 +403,7 @@ impl FaslReader<'_> {
         let mut buf = [0; 8];
         self.bytes.read_exact(&mut buf)?;
         let n = isize::from_le_bytes(buf);
-        Ok(Object::Number(n))
+        Ok(Object::Fixnum(n))
     }
 
     fn read_float(&mut self) -> Result<Object, io::Error> {
@@ -547,7 +547,7 @@ pub mod tests {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
         };
-        let expected = Object::Number(3);
+        let expected = Object::Fixnum(3);
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }

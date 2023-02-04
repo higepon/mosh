@@ -73,7 +73,7 @@ pub enum Object {
     StringOutputPort(GcRef<StringOutputPort>),
     Instruction(Op),
     Nil,
-    Number(isize),
+    Fixnum(isize),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
     SimpleStruct(GcRef<SimpleStruct>),
@@ -133,7 +133,7 @@ impl Object {
 
     pub fn is_number(&self) -> bool {
         match self {
-            Object::Number(_) => true,
+            Object::Fixnum(_) => true,
             _ => false,
         }
     }
@@ -189,10 +189,10 @@ impl Object {
         }
     }
     pub fn to_number(self) -> isize {
-        if let Self::Number(n) = self {
+        if let Self::Fixnum(n) = self {
             n
         } else {
-            panic!("Not a Object::Number")
+            panic!("Not a Object::Fixnum")
         }
     }
     pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {
@@ -272,7 +272,7 @@ impl Object {
     // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
         match (self, other) {
-            (Object::Number(a), Object::Number(b)) => {
+            (Object::Fixnum(a), Object::Fixnum(b)) => {
                 return a == b;
             }
             _ => {
@@ -319,7 +319,7 @@ impl Debug for Object {
             Object::Float(n) => {
                 write!(f, "{}", n)
             }
-            Object::Number(n) => {
+            Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
             Object::Instruction(op) => {
@@ -414,7 +414,7 @@ impl Display for Object {
             Object::Float(n) => {
                 write!(f, "{}", n)
             }
-            Object::Number(n) => {
+            Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
             Object::Instruction(op) => {
@@ -1095,9 +1095,9 @@ pub mod tests {
     fn test_procedure() {
         let mut vm = Vm::new();
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
-        let mut stack = [Object::Number(1), Object::Number(2)];
+        let mut stack = [Object::Fixnum(1), Object::Fixnum(2)];
         match (p.func)(&mut vm, &mut stack[0..1]) {
-            Object::Number(1) => {}
+            Object::Fixnum(1) => {}
             _ => {
                 panic!("Wrong return value");
             }
@@ -1106,7 +1106,7 @@ pub mod tests {
 
     #[test]
     fn test_simple_to_string() {
-        assert_eq!("101", Object::Number(101).to_string());
+        assert_eq!("101", Object::Fixnum(101).to_string());
         assert_eq!("#t", Object::True.to_string());
         assert_eq!("#f", Object::False.to_string());
         assert_eq!("()", Object::Nil.to_string());
@@ -1149,7 +1149,7 @@ pub mod tests {
 
     #[test]
     fn test_stack_pointer_to_string() {
-        let obj = Object::Number(10);
+        let obj = Object::Fixnum(10);
         let pointer: *mut Object = &obj as *const Object as *mut Object;
         let stack_pointer = Object::ObjectPointer(pointer);
         let re = Regex::new(r"^#<stack pointer\s[^>]+>$").unwrap();
@@ -1159,7 +1159,7 @@ pub mod tests {
     #[test]
     fn test_vox_to_string() {
         let mut gc = Gc::new();
-        let vox = gc.alloc(Vox::new(Object::Number(101)));
+        let vox = gc.alloc(Vox::new(Object::Fixnum(101)));
         let vox = Object::Vox(vox);
         assert_eq!("#<vox 101>", vox.to_string());
 
@@ -1173,24 +1173,24 @@ pub mod tests {
     #[test]
     fn test_dot_pair_to_string() {
         let mut gc = Gc::new();
-        let pair = gc.cons(Object::Number(1), Object::Number(2));
+        let pair = gc.cons(Object::Fixnum(1), Object::Fixnum(2));
         assert_eq!("(1 . 2)", pair.to_string());
     }
 
     #[test]
     fn test_simple_pair_to_string() {
         let mut gc = Gc::new();
-        let pair1 = gc.cons(Object::Number(2), Object::Nil);
-        let pair2 = gc.cons(Object::Number(1), pair1);
+        let pair1 = gc.cons(Object::Fixnum(2), Object::Nil);
+        let pair2 = gc.cons(Object::Fixnum(1), pair1);
         assert_eq!("(1 2)", pair2.to_string());
     }
 
     #[test]
     fn test_pair_to_string() {
         let mut gc = Gc::new();
-        let pair1 = gc.cons(Object::Number(3), Object::Nil);
-        let pair2 = gc.cons(Object::Number(2), pair1);
-        let pair3 = gc.cons(Object::Number(1), pair2);
+        let pair1 = gc.cons(Object::Fixnum(3), Object::Nil);
+        let pair2 = gc.cons(Object::Fixnum(2), pair1);
+        let pair3 = gc.cons(Object::Fixnum(1), pair2);
         assert_eq!("(1 2 3)", pair3.to_string());
     }
 
@@ -1231,7 +1231,7 @@ pub mod tests {
     #[test]
     fn test_vector_to_string() {
         let mut gc = Gc::new();
-        let data = vec![Object::Number(1), Object::Number(2)];
+        let data = vec![Object::Fixnum(1), Object::Fixnum(2)];
         let v = gc.new_vector(&data);
         assert_eq!("#(1 2)", v.to_string());
     }

@@ -183,7 +183,7 @@ pub trait TextOutputPort {
             None => Object::False,
         };
         if seen_state.is_true() {
-            seen.insert(obj, Object::Number(*shared_id));
+            seen.insert(obj, Object::Fixnum(*shared_id));
             self.put_string(&format!("#{}=", shared_id))?;
             *shared_id += 1;
         } else if seen_state.is_number() {
@@ -218,7 +218,7 @@ pub trait TextOutputPort {
             | Object::Nil
             | Object::Symbol(_)
             | Object::String(_)
-            | Object::Number(_) => self.as_display(obj),
+            | Object::Fixnum(_) => self.as_display(obj),
         }
     }
 
@@ -351,7 +351,7 @@ pub trait TextOutputPort {
                 | Object::Nil
                 | Object::Symbol(_)
                 | Object::String(_)
-                | Object::Number(_) => return,
+                | Object::Fixnum(_) => return,
                 Object::Pair(p) => {
                     let val = match seen.get(&o) {
                         Some(v) => *v,

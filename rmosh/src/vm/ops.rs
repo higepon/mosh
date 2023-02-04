@@ -13,7 +13,7 @@ macro_rules! branch_number_cmp_op {
         {
             let skip_offset = $self.isize_operand();
             match ($self.pop(), $self.ac) {
-                (Object::Number(lhs), Object::Number(rhs)) => {
+                (Object::Fixnum(lhs), Object::Fixnum(rhs)) => {
                     let op_result = lhs $op rhs;
                     $self.set_return_value(Object::make_bool(op_result));
                     if op_result {
@@ -36,7 +36,7 @@ macro_rules! number_cmp_op {
     ($op:tt, $self:ident) => {
         {
             match ($self.pop(), $self.ac) {
-                (Object::Number(l), Object::Number(r)) => {
+                (Object::Fixnum(l), Object::Fixnum(r)) => {
                     $self.set_return_value(Object::make_bool(l $op r))
                 }
                 obj => {
@@ -62,8 +62,8 @@ impl Vm {
     #[inline(always)]
     pub(super) fn number_add_op(&mut self) {
         match (self.pop(), self.ac) {
-            (Object::Number(a), Object::Number(b)) => {
-                self.set_return_value(Object::Number(a + b));
+            (Object::Fixnum(a), Object::Fixnum(b)) => {
+                self.set_return_value(Object::Fixnum(a + b));
             }
             (a, b) => {
                 panic!("+: numbers required but got {:?} {:?}", a, b);
@@ -224,7 +224,7 @@ impl Vm {
                     } else if procedure.func as usize == procs::eval as usize {
                         self.eval_ret_code = vec![];
                         self.eval_ret_code.push(Object::Instruction(Op::Return));
-                        self.eval_ret_code.push(Object::Number(argc));
+                        self.eval_ret_code.push(Object::Fixnum(argc));
 
                         self.pc = self.eval_ret_code.as_ptr();
                         (procedure.func)(self, args);
@@ -233,7 +233,7 @@ impl Vm {
                         // self.cl = self.ac
                         self.ret_code = vec![];
                         self.ret_code.push(Object::Instruction(Op::Return));
-                        self.ret_code.push(Object::Number(argc));
+                        self.ret_code.push(Object::Fixnum(argc));
 
                         self.pc = self.ret_code.as_ptr();
                         /*
@@ -263,8 +263,8 @@ impl Vm {
     #[inline(always)]
     pub(super) fn number_sub_op(&mut self) {
         match (self.pop(), self.ac) {
-            (Object::Number(a), Object::Number(b)) => {
-                self.set_return_value(Object::Number(a - b));
+            (Object::Fixnum(a), Object::Fixnum(b)) => {
+                self.set_return_value(Object::Fixnum(a - b));
             }
             (a, b) => {
                 panic!("-: numbers required but got {:?} {:?}", a, b);

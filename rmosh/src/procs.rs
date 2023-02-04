@@ -848,7 +848,7 @@ fn is_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "number?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Number(_) => Object::True,
+        Object::Fixnum(_) => Object::True,
         Object::Float(_) => Object::True,        
         _ => Object::False,
     }
@@ -996,8 +996,8 @@ fn make_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-string";
     check_argc_between!(name, args, 1, 2);
     match args {
-        [Object::Number(n)] => vm.gc.new_string(&" ".repeat(*n as usize)),
-        [Object::Number(n), Object::Char(c)] => {
+        [Object::Fixnum(n)] => vm.gc.new_string(&" ".repeat(*n as usize)),
+        [Object::Fixnum(n), Object::Char(c)] => {
             vm.gc.new_string(&*c.to_string().repeat(*n as usize))
         }
         _ => {
@@ -1009,7 +1009,7 @@ fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-set!";
     check_argc!(name, args, 3);
     match args {
-        [Object::String(mut s), Object::Number(idx), Object::Char(c)] => {
+        [Object::String(mut s), Object::Fixnum(idx), Object::Char(c)] => {
             let idx = *idx as usize;
             s.string.replace_range(idx..idx + 1, &c.to_string());
             Object::Unspecified
@@ -1026,7 +1026,7 @@ fn string_length(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-length";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => Object::Number(s.string.chars().count().try_into().unwrap()),
+        Object::String(s) => Object::Fixnum(s.string.chars().count().try_into().unwrap()),
         v => {
             panic!("{}: string required but got {}", name, v)
         }
@@ -1047,7 +1047,7 @@ fn string_to_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     match args[0] {
         Object::String(s) => match s.string.parse::<isize>() {
-            Ok(n) => Object::Number(n),
+            Ok(n) => Object::Fixnum(n),
             Err(err) => {
                 panic!("{}: can't convert to numver {:?}", name, err)
             }
@@ -1109,7 +1109,7 @@ fn number_to_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "number->string";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Number(n) => vm.gc.new_string(&format!("{}", n)[..]),
+        Object::Fixnum(n) => vm.gc.new_string(&format!("{}", n)[..]),
         v => {
             panic!("{}: number required but got {}", name, v)
         }
@@ -1235,8 +1235,8 @@ fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "digit->integer";
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
-        (Object::Char(c), Object::Number(radix)) => match c.to_digit(radix as u32) {
-            Some(v) => Object::Number(v as isize),
+        (Object::Char(c), Object::Fixnum(radix)) => match c.to_digit(radix as u32) {
+            Some(v) => Object::Fixnum(v as isize),
             None => {
                 panic!("{}: could not convert ({}, {})", name, args[0], args[1]);
             }
@@ -1288,7 +1288,7 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "char->integer";
     check_argc!(name, args, 1);
     if let Object::Char(c) = args[0] {
-        Object::Number(c as isize)
+        Object::Fixnum(c as isize)
     } else {
         panic!("{}: char required but got {}", name, args[0]);
     }
@@ -1296,7 +1296,7 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer->char";
     check_argc!(name, args, 1);
-    if let Object::Number(n) = args[0] {
+    if let Object::Fixnum(n) = args[0] {
         match char::from_u32(n as u32) {
             Some(c) => Object::Char(c),
             None => {
@@ -1832,7 +1832,7 @@ fn string_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-ref";
     check_argc!(name, args, 2);
     match args {
-        [Object::String(s), Object::Number(idx)] => {
+        [Object::String(s), Object::Fixnum(idx)] => {
             let idx = *idx as usize;
             match s.string.chars().nth(idx) {
                 Some(c) => Object::Char(c),
@@ -2657,7 +2657,7 @@ fn length(_vm: &mut Vm, args: &mut [Object]) -> Object {
             }
         }
     }
-    Object::Number(len)
+    Object::Fixnum(len)
 }
 fn list_to_vector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "list->vector";
@@ -2782,7 +2782,7 @@ fn hashtable_size(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "hashtable-size";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::EqHashtable(hashtable) => Object::Number(hashtable.size() as isize),
+        Object::EqHashtable(hashtable) => Object::Fixnum(hashtable.size() as isize),
         _ => {
             panic!("{}: hashtable required but got {:?}", name, args)
         }
@@ -2910,7 +2910,7 @@ fn max(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let mut current_max = isize::MIN;
     for i in 0..args.len() {
         let arg = args[i];
-        if let Object::Number(n) = arg {
+        if let Object::Fixnum(n) = arg {
             if n > current_max {
                 current_max = n;
             }
@@ -2918,7 +2918,7 @@ fn max(_vm: &mut Vm, args: &mut [Object]) -> Object {
             panic!("{}: number required but got {}", name, arg);
         }
     }
-    return Object::Number(current_max);
+    return Object::Fixnum(current_max);
 }
 fn min(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "min";
@@ -3026,7 +3026,7 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> Object {
         for i in 0..bv.len() {
             ret = vm
                 .gc
-                .cons(Object::Number(bv.ref_u8(bv.len() - i - 1) as isize), ret);
+                .cons(Object::Fixnum(bv.ref_u8(bv.len() - i - 1) as isize), ret);
         }
         ret
     } else {
@@ -3207,7 +3207,7 @@ fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-instruction";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Number(n) => {
+        Object::Fixnum(n) => {
             Object::Instruction(FromPrimitive::from_u8(n as u8).expect("unknown Op"))
         }
         _ => {
@@ -3279,12 +3279,12 @@ fn fixnum_width(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn least_fixnum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);
-    Object::Number(-(2_isize.pow(62)))
+    Object::Fixnum(-(2_isize.pow(62)))
 }
 fn greatest_fixnum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);
-    Object::Number(2_isize.pow(62) - 1)
+    Object::Fixnum(2_isize.pow(62) - 1)
 }
 fn make_rectangular(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-rectangular";
@@ -3743,7 +3743,7 @@ fn is_even(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "even?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Number(n) => Object::make_bool(n % 2 == 0),
+        Object::Fixnum(n) => Object::make_bool(n % 2 == 0),
         _ => {
             panic!("{}: required number but got {}", name, args[0]);
         }
@@ -3757,7 +3757,7 @@ fn abs(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "abs";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Number(n) => Object::Number(n.abs()),
+        Object::Fixnum(n) => Object::Fixnum(n.abs()),
         _ => {
             panic!("{}: number required but got {}", name, args[0])
         }
@@ -3767,10 +3767,10 @@ fn div(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "div";
     check_argc!(name, args, 2);
     match args {
-        [Object::Number(_), Object::Number(0)] => {
+        [Object::Fixnum(_), Object::Fixnum(0)] => {
             panic!("{}: division by zero", name)
         }
-        [Object::Number(x), Object::Number(y)] => {
+        [Object::Fixnum(x), Object::Fixnum(y)] => {
             let ret;
             if *x == 0 {
                 ret = 0;
@@ -3781,7 +3781,7 @@ fn div(_vm: &mut Vm, args: &mut [Object]) -> Object {
             } else {
                 ret = (*x + *y + 1) / *y;
             }
-            return Object::Number(ret);
+            return Object::Fixnum(ret);
         }
         _ => {
             panic!("{}: numbers required but got {:?}", name, args)
@@ -4058,13 +4058,13 @@ fn quotient(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "quotient";
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
-        (Object::Number(x), Object::Number(y)) => {
+        (Object::Fixnum(x), Object::Fixnum(y)) => {
             if x == 0 {
-                Object::Number(0)
+                Object::Fixnum(0)
             } else if y == 0 {
                 panic!("{}: must be non-zero", name)
             } else {
-                Object::Number(x / y)
+                Object::Fixnum(x / y)
             }
         }
         _ => {
@@ -4079,13 +4079,13 @@ fn remainder(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "remainder";
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
-        (Object::Number(x), Object::Number(y)) => {
+        (Object::Fixnum(x), Object::Fixnum(y)) => {
             if x == 0 {
-                Object::Number(0)
+                Object::Fixnum(0)
             } else if y == 0 {
                 panic!("{}: must be non-zero", name)
             } else {
-                Object::Number(x % y)
+                Object::Fixnum(x % y)
             }
         }
         _ => {
@@ -4349,7 +4349,7 @@ fn file_stat_mtime(_vm: &mut Vm, args: &mut [Object]) -> Object {
             .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
             .as_secs();
 
-        Object::Number(mtime_seconds as isize)
+        Object::Fixnum(mtime_seconds as isize)
     } else {
         panic!("{}: file path required but got {}", name, args[0])
     }
@@ -4546,7 +4546,7 @@ fn make_simple_struct(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-simple-struct";
     check_argc!(name, args, 3);
     match args[1] {
-        Object::Number(len) => {
+        Object::Fixnum(len) => {
             let mut s = vm.gc.alloc(SimpleStruct::new(args[0], len as usize));
             s.initialize(args[2]);
             Object::SimpleStruct(s)
@@ -4564,7 +4564,7 @@ fn simple_struct_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "simple-struct-set!";
     check_argc!(name, args, 3);
     match (args[0], args[1]) {
-        (Object::SimpleStruct(mut s), Object::Number(index)) => {
+        (Object::SimpleStruct(mut s), Object::Fixnum(index)) => {
             s.set(index as usize, args[2]);
             Object::Unspecified
         }

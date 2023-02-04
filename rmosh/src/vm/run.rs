@@ -308,7 +308,7 @@ impl Vm {
                     self.set_return_value(dummy);
                 }
                 Op::MakeVector => match self.pop() {
-                    Object::Number(size) => {
+                    Object::Fixnum(size) => {
                         let v = vec![self.ac; size as usize];
                         let v = self.gc.new_vector(&v);
                         self.set_return_value(v);
@@ -343,16 +343,16 @@ impl Vm {
                     number_cmp_op!(<, self);
                 }
                 Op::NumberMul => match (self.pop(), self.ac) {
-                    (Object::Number(a), Object::Number(b)) => {
-                        self.set_return_value(Object::Number(a * b));
+                    (Object::Fixnum(a), Object::Fixnum(b)) => {
+                        self.set_return_value(Object::Fixnum(a * b));
                     }
                     (a, b) => {
                         panic!("+: numbers required but got {:?} {:?}", a, b);
                     }
                 },
                 Op::NumberDiv => match (self.pop(), self.ac) {
-                    (Object::Number(a), Object::Number(b)) => {
-                        self.set_return_value(Object::Number(a / b));
+                    (Object::Fixnum(a), Object::Fixnum(b)) => {
+                        self.set_return_value(Object::Fixnum(a / b));
                     }
                     (a, b) => {
                         panic!("/: numbers required but got {:?} {:?}", a, b);
@@ -556,7 +556,7 @@ impl Vm {
                 }
                 Op::VectorLength => match self.ac {
                     Object::Vector(v) => {
-                        self.set_return_value(Object::Number(v.len() as isize));
+                        self.set_return_value(Object::Fixnum(v.len() as isize));
                     }
                     obj => {
                         self.arg_err("vector-length", "vector", obj);
@@ -571,7 +571,7 @@ impl Vm {
                     }
                 },
                 Op::VectorRef => match (self.pop(), self.ac) {
-                    (Object::Vector(v), Object::Number(idx)) => {
+                    (Object::Vector(v), Object::Fixnum(idx)) => {
                         let idx = idx as usize;
                         if idx < v.data.len() {
                             self.set_return_value(v.data[idx]);
@@ -590,7 +590,7 @@ impl Vm {
                     let n = self.pop();
                     let obj = self.pop();
                     match (obj, n) {
-                        (Object::Vector(mut v), Object::Number(idx)) => {
+                        (Object::Vector(mut v), Object::Fixnum(idx)) => {
                             let idx = idx as usize;
                             if idx < v.data.len() {
                                 v.data[idx] = self.ac;
@@ -757,7 +757,7 @@ impl Vm {
                     self.set_return_value(vec);
                 }
                 Op::SimpleStructRef => match (self.pop(), self.ac) {
-                    (Object::SimpleStruct(s), Object::Number(idx)) => {
+                    (Object::SimpleStruct(s), Object::Fixnum(idx)) => {
                         self.set_return_value(s.data[idx as usize]);
                     }
                     (obj1, obj2) => {

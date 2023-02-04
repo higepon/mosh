@@ -243,7 +243,7 @@ impl Gc {
     pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> Object {
         let mut u8_vec: Vec<u8> = vec![];
         for obj in objects {
-            if let Object::Number(n) = obj {
+            if let Object::Fixnum(n) = obj {
                 if *n >= 0 && *n <= 255 {
                     u8_vec.push(*n as u8);
                 } else {
@@ -389,7 +389,7 @@ impl Gc {
             Object::StdErrorPort(_) => {}
             Object::Nil => {}
             Object::Float(_) => {}
-            Object::Number(_) => {}
+            Object::Fixnum(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
             Object::ProgramCounter(_) => {}

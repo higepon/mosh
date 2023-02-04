@@ -112,7 +112,7 @@ fn parse_special_string() {
 #[test]
 fn parse_number() {
     let mut vm = Vm::new();
-    let expected = Object::Number(101);
+    let expected = Object::Fixnum(101);
     let obj = read(&mut vm.gc, "101").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
@@ -120,7 +120,7 @@ fn parse_number() {
 #[test]
 fn parse_number_list1() {
     let mut vm = Vm::new();
-    let expected = vm.gc.list1(Object::Number(3));
+    let expected = vm.gc.list1(Object::Fixnum(3));
     let obj = read(&mut vm.gc, "(3)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
@@ -128,7 +128,7 @@ fn parse_number_list1() {
 #[test]
 fn parse_number_comment_list1() {
     let mut vm = Vm::new();
-    let expected = vm.gc.list1(Object::Number(3));
+    let expected = vm.gc.list1(Object::Fixnum(3));
     let obj = read(&mut vm.gc, "; comment\n(3)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
@@ -136,7 +136,7 @@ fn parse_number_comment_list1() {
 #[test]
 fn parse_number_list2() {
     let mut vm = Vm::new();
-    let expected = vm.gc.list2(Object::Number(3), Object::Number(4));
+    let expected = vm.gc.list2(Object::Fixnum(3), Object::Fixnum(4));
     let obj = read(&mut vm.gc, "(3 4)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
@@ -144,7 +144,7 @@ fn parse_number_list2() {
 #[test]
 fn parse_dot_pair() {
     let mut vm = Vm::new();
-    let expected = vm.gc.cons(Object::Number(3), Object::False);
+    let expected = vm.gc.cons(Object::Fixnum(3), Object::False);
     let obj = read(&mut vm.gc, "(3 . #f)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
@@ -161,9 +161,9 @@ fn parse_empty_vector() {
 fn parse_vector() {
     let mut vm = Vm::new();
     let expected = vm.gc.new_vector(&vec![
-        Object::Number(3),
-        Object::Number(4),
-        Object::Number(5),
+        Object::Fixnum(3),
+        Object::Fixnum(4),
+        Object::Fixnum(5),
     ]);
     let obj = read(&mut vm.gc, "#(3 4 5)").unwrap();
     assert_equal!(vm.gc, expected, obj);
@@ -173,9 +173,9 @@ fn parse_vector() {
 fn parse_bytevector() {
     let mut vm = Vm::new();
     let expected = vm.gc.new_bytevector(&vec![
-        Object::Number(3),
-        Object::Number(4),
-        Object::Number(5),
+        Object::Fixnum(3),
+        Object::Fixnum(4),
+        Object::Fixnum(5),
     ]);
     let obj = read(&mut vm.gc, "#u8(3 4 5)").unwrap();
     assert_equal!(vm.gc, expected, obj);
@@ -249,25 +249,25 @@ fn read_datum_comment() {
     let mut vm = Vm::new();
     {
         let obj = read(&mut vm.gc, "#; 3 4").unwrap();
-        let expected = Object::Number(4);
+        let expected = Object::Fixnum(4);
         assert_equal!(vm.gc, expected, obj);
     }
 
     {
         let obj = read(&mut vm.gc, "(3 #; 4)").unwrap();
-        let expected = vm.gc.list1(Object::Number(3));
+        let expected = vm.gc.list1(Object::Fixnum(3));
         assert_equal!(vm.gc, expected, obj);
     }
 
     {
         let obj = read(&mut vm.gc, "(3 #;(9))").unwrap();
-        let expected = vm.gc.list1(Object::Number(3));
+        let expected = vm.gc.list1(Object::Fixnum(3));
         assert_equal!(vm.gc, expected, obj);
     }
 
     {
         let obj = read(&mut vm.gc, "(3 #;8 #;9)").unwrap();
-        let expected = vm.gc.list1(Object::Number(3));
+        let expected = vm.gc.list1(Object::Fixnum(3));
         assert_equal!(vm.gc, expected, obj);
     }
 }
@@ -277,11 +277,11 @@ fn parse_multiple() {
     let mut vm = Vm::new();
     let mut port = StringInputPort::new("(3) (4)");
 
-    let expected = vm.gc.list1(Object::Number(3));
+    let expected = vm.gc.list1(Object::Fixnum(3));
     let parsed = port.read(&mut vm.gc).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 
-    let expected = vm.gc.list1(Object::Number(4));
+    let expected = vm.gc.list1(Object::Fixnum(4));
     let parsed = port.read(&mut vm.gc).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 
