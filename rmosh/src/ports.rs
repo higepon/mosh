@@ -206,7 +206,7 @@ pub trait TextOutputPort {
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::False
-            | Object::Float(_)
+            | Object::Flonum(_)
             | Object::StringInputPort(_)
             | Object::FileInputPort(_)
             | Object::Eof
@@ -339,7 +339,7 @@ pub trait TextOutputPort {
                 | Object::False
                 | Object::FileInputPort(_)
                 | Object::FileOutputPort(_)
-                | Object::Float(_)
+                | Object::Flonum(_)
                 | Object::Instruction(_)
                 | Object::Nil
                 | Object::ObjectPointer(_)

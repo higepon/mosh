@@ -1,5 +1,5 @@
 use crate::objects::Object;
-use crate::objects::Float;
+use crate::numbers::Flonum;
 use crate::gc::Gc;
 use crate::number_lexer;
 use std::str::FromStr;
@@ -83,7 +83,7 @@ UReal10: Object = {
     Decimal10 => {
         match f64::from_str(&<>) {
             Ok(n) => {
-                Object::Float(Float::new(n))
+                Object::Flonum(Flonum::new(n))
             },
             Err(err) => todo!(),
         }

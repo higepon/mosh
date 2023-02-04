@@ -7,6 +7,47 @@ use crate::{
     objects::Object,
 };
 
+// Float number
+// We use this struct which wraps f64.
+// Because we can't implement Hash for f64.
+#[derive(Copy, Clone)]
+pub union Flonum {
+    value: f64,
+    u64_value: u64,
+}
+
+impl std::hash::Hash for Flonum {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: std::hash::Hasher,
+    {
+        state.write_u64(unsafe { self.u64_value });
+        state.finish();
+    }
+}
+
+impl Flonum {
+    pub fn new(value: f64) -> Self {
+        Self { value: value }
+    }
+    #[inline(always)]
+    pub fn value(&self) -> f64 {
+        unsafe { self.value }
+    }
+}
+
+impl PartialEq for Flonum {
+    fn eq(&self, other: &Flonum) -> bool {
+        unsafe { self.u64_value == other.u64_value }
+    }
+}
+
+impl Display for Flonum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value())
+    }
+}
+
 /// Rational number.
 #[derive(Debug)]
 pub struct Ratnum {

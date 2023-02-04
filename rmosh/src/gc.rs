@@ -391,7 +391,7 @@ impl Gc {
             Object::StdOutputPort(_) => {}
             Object::StdErrorPort(_) => {}
             Object::Nil => {}
-            Object::Float(_) => {}
+            Object::Flonum(_) => {}
             Object::Fixnum(_) => {}
             Object::Compnum(_) => {}
             Object::Ratnum(_) => {}

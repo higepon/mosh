@@ -850,7 +850,7 @@ fn is_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     match args[0] {
         Object::Fixnum(_) => Object::True,
-        Object::Float(_) => Object::True,
+        Object::Flonum(_) => Object::True,
         _ => Object::False,
     }
 }

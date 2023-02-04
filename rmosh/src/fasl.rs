@@ -8,7 +8,8 @@ use num_traits::FromPrimitive;
 
 use crate::{
     gc::{Gc, GcRef},
-    objects::{EqHashtable, Float, Object, SimpleStruct},
+    numbers::Flonum,
+    objects::{EqHashtable, Object, SimpleStruct},
     ports::BinaryFileOutputPort,
 };
 
@@ -92,7 +93,7 @@ impl FaslWriter {
             Object::False => {
                 self.put_tag(port, Tag::False)?;
             }
-            Object::Float(f) => {
+            Object::Flonum(f) => {
                 println!("WARNING: dummy float fasl write");
                 self.put_tag(port, Tag::Float)?;
                 port.put_u64(f.value() as u64)?;
@@ -190,7 +191,7 @@ impl FaslWriter {
                 | Object::Char(_)
                 | Object::EqHashtable(_)
                 | Object::False
-                | Object::Float(_)
+                | Object::Flonum(_)
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
@@ -418,7 +419,7 @@ impl FaslReader<'_> {
         let mut buf = [0; 8];
         self.bytes.read_exact(&mut buf)?;
         let n = f64::from_le_bytes(buf);
-        Ok(Object::Float(Float::new(n)))
+        Ok(Object::Flonum(Flonum::new(n)))
     }
 
     fn read_symbol(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {

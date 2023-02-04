@@ -1,6 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::numbers::{Compnum, Ratnum};
+use crate::numbers::{Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -13,46 +13,6 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
-
-// We use this Float which wraps f64.
-// Because we can't implement Hash for f64.
-#[derive(Copy, Clone)]
-pub union Float {
-    value: f64,
-    u64_value: u64,
-}
-
-impl std::hash::Hash for Float {
-    fn hash<H>(&self, state: &mut H)
-    where
-        H: std::hash::Hasher,
-    {
-        state.write_u64(unsafe { self.u64_value });
-        state.finish();
-    }
-}
-
-impl Float {
-    pub fn new(value: f64) -> Self {
-        Self { value: value }
-    }
-    #[inline(always)]
-    pub fn value(&self) -> f64 {
-        unsafe { self.value }
-    }
-}
-
-impl PartialEq for Float {
-    fn eq(&self, other: &Float) -> bool {
-        unsafe { self.u64_value == other.u64_value }
-    }
-}
-
-impl Display for Float {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.value())
-    }
-}
 
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
@@ -69,7 +29,7 @@ pub enum Object {
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
     Fixnum(isize),
-    Float(Float),
+    Flonum(Flonum),
     Instruction(Op),
     Nil,
     ObjectPointer(*mut Object),
@@ -287,7 +247,7 @@ impl Object {
     pub fn neg(&self, gc: &mut Box<Gc>) -> Self {
         match self {
             Object::Fixnum(n) => Object::Fixnum(n * -1),
-            Object::Float(f) => Object::Float(Float::new(f.value() * -1.0)),
+            Object::Flonum(f) => Object::Flonum(Flonum::new(f.value() * -1.0)),
             Object::Ratnum(r) => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(-r.ratio))),
             _ => todo!(),
         }
@@ -328,7 +288,7 @@ impl Debug for Object {
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
-            Object::Float(n) => {
+            Object::Flonum(n) => {
                 write!(f, "{}", n)
             }
             Object::Ratnum(n) => {
@@ -429,7 +389,7 @@ impl Display for Object {
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
-            Object::Float(n) => {
+            Object::Flonum(n) => {
                 write!(f, "{}", n)
             }
             Object::Ratnum(n) => {
