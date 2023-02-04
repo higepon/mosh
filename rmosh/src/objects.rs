@@ -1,12 +1,17 @@
-use crate::gc::GcRef;
+use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::op::Op;
+use crate::ports::{
+    BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
+    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort,
+};
 use crate::vm::Vm;
 
+use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
-use std::fs::File;
 use std::hash::Hash;
+use std::ops::{Deref, DerefMut};
 
 // We use this Float which wraps f64.
 // Because we can't implement Hash for f64.
@@ -60,6 +65,12 @@ pub enum Object {
     Float(Float),
     StringInputPort(GcRef<StringInputPort>),
     FileInputPort(GcRef<FileInputPort>),
+    FileOutputPort(GcRef<FileOutputPort>),
+    BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
+    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
+    StdOutputPort(GcRef<StdOutputPort>),
+    StdErrorPort(GcRef<StdErrorPort>),
+    StringOutputPort(GcRef<StringOutputPort>),
     Instruction(Op),
     Nil,
     Number(isize),
@@ -77,9 +88,27 @@ pub enum Object {
 }
 
 impl Object {
+    pub fn to_string(&self) -> String {
+        let mut port = StringOutputPort::new();
+        port.display(*self).ok();
+        port.string()
+    }
+
+    pub fn to_short_string(&self) -> String {
+        let s = self.to_string();
+        s[..min(s.len(), 40)].to_string()
+    }
+
     pub fn is_false(&self) -> bool {
         match self {
             Object::False => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_true(&self) -> bool {
+        match self {
+            Object::True => true,
             _ => false,
         }
     }
@@ -166,11 +195,25 @@ impl Object {
             panic!("Not a Object::Number")
         }
     }
+    pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {
+        if let Self::EqHashtable(e) = self {
+            e
+        } else {
+            panic!("Not a Object::EqHashtable")
+        }
+    }
+    pub fn to_simple_struct(self) -> GcRef<SimpleStruct> {
+        if let Self::SimpleStruct(s) = self {
+            s
+        } else {
+            panic!("Not a Object::SimpleStruct")
+        }
+    }
     pub fn to_instruction(self) -> Op {
         if let Self::Instruction(p) = self {
             p
         } else {
-            panic!("Not a Object::Instruction")
+            panic!("Not a Object::Instruction {}", self)
         }
     }
     pub fn to_pair(self) -> GcRef<Pair> {
@@ -179,6 +222,12 @@ impl Object {
         } else {
             panic!("Not a Object::Pair")
         }
+    }
+    pub fn car_unchecked(self) -> Object {
+        self.to_pair().car
+    }
+    pub fn cdr_unchecked(self) -> Object {
+        self.to_pair().cdr
     }
     pub fn to_symbol(self) -> GcRef<Symbol> {
         if let Self::Symbol(s) = self {
@@ -208,7 +257,15 @@ impl Object {
         if let Self::Closure(c) = self {
             c
         } else {
-            panic!("Not a Object::Closure")
+            panic!("Not a Object::Closure but {}", self)
+        }
+    }
+
+    pub fn to_procedure(self) -> GcRef<Procedure> {
+        if let Self::Procedure(p) = self {
+            p
+        } else {
+            panic!("Not a Object::Procedure but {}", self)
         }
     }
 
@@ -228,13 +285,32 @@ impl Object {
 // For HashMap<Object, Object>
 impl Eq for Object {}
 
+// This is for debug
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::StdOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::StdErrorPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::StringOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::FileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::BinaryFileOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::BinaryFileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Char(c) => {
@@ -304,13 +380,32 @@ impl Debug for Object {
     }
 }
 
+// This is for (display ...)
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::StdOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::StdErrorPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::FileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::BinaryFileOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::BinaryFileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::FileOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::StringInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::StringOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Char(c) => {
@@ -428,6 +523,10 @@ impl ByteVector {
         }
     }
 
+    pub fn ref_u8(&self, i: usize) -> u8 {
+        self.data[i]
+    }
+
     pub fn equal(&self, other: &ByteVector) -> bool {
         self.data == other.data
     }
@@ -482,6 +581,14 @@ impl SimpleStruct {
         }
     }
 
+    pub fn field(&self, index: usize) -> Object {
+        self.data[index]
+    }
+
+    pub fn set(&mut self, index: usize, obj: Object) {
+        self.data[index] = obj;
+    }
+
     pub fn len(&self) -> usize {
         self.len
     }
@@ -527,7 +634,7 @@ impl Pair {
             if obj.is_nil() {
                 break;
             }
-            obj = obj.to_pair().cdr;
+            obj = obj.cdr_unchecked();
             len += 1;
         }
         len
@@ -644,6 +751,19 @@ impl Pair {
             }
         }
     }
+
+    pub fn reverse(gc: &mut Box<Gc>, lst: Object) -> Object {
+        let mut ret = Object::Nil;
+        let mut p = lst;
+        loop {
+            if !p.is_pair() {
+                break;
+            }
+            ret = gc.cons(p.car_unchecked(), ret);
+            p = p.cdr_unchecked();
+        }
+        return ret;
+    }
 }
 
 impl Display for Pair {
@@ -717,7 +837,6 @@ impl Display for Vox {
 }
 
 /// SString (Sceheme String)
-#[derive(Debug)]
 pub struct SString {
     pub header: GcHeader,
     pub string: String,
@@ -734,6 +853,12 @@ impl SString {
 
 impl Display for SString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.string)
+    }
+}
+
+impl Debug for SString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "\"{}\"", self.string)
     }
 }
@@ -741,6 +866,20 @@ impl Display for SString {
 impl PartialEq for SString {
     fn eq(&self, other: &Self) -> bool {
         self.string.eq(&other.string)
+    }
+}
+
+impl Deref for SString {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.string
+    }
+}
+
+impl DerefMut for SString {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.string
     }
 }
 
@@ -864,6 +1003,13 @@ impl EqHashtable {
         }
     }
 
+    pub fn copy(&self) -> Self {
+        let mut h = Self::new();
+        h.is_mutable = self.is_mutable;
+        h.hash_map.clone_from(&self.hash_map);
+        h
+    }
+
     pub fn contains(&self, key: Object) -> bool {
         match self.hash_map.get(&key) {
             Some(_) => true,
@@ -899,65 +1045,6 @@ impl EqHashtable {
 impl Display for EqHashtable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<eq-hashtable>")
-    }
-}
-
-/// InputPort
-#[derive(Debug)]
-pub struct StringInputPort {
-    pub header: GcHeader,
-    source: String,
-    idx: usize,
-}
-
-impl StringInputPort {
-    fn new(source: &str) -> Self {
-        StringInputPort {
-            header: GcHeader::new(ObjectType::StringInputPort),
-            source: source.to_owned(),
-            idx: 0,
-        }
-    }
-    pub fn open(source: &str) -> std::io::Result<StringInputPort> {
-        Ok(StringInputPort::new(source))
-    }
-
-    pub fn read_char(&mut self) -> Option<char> {
-        let mut chars = self.source.chars();
-        let ret = chars.nth(self.idx);
-        self.idx = self.idx + 1;
-        ret
-    }
-}
-
-impl Display for StringInputPort {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<string-input-port>")
-    }
-}
-
-#[derive(Debug)]
-pub struct FileInputPort {
-    pub header: GcHeader,
-    file: File,
-}
-
-impl FileInputPort {
-    fn new(file: File) -> Self {
-        FileInputPort {
-            header: GcHeader::new(ObjectType::FileInputPort),
-            file: file,
-        }
-    }
-    pub fn open(path: &str) -> std::io::Result<FileInputPort> {
-        let file = File::open(path)?;
-        Ok(FileInputPort::new(file))
-    }
-}
-
-impl Display for FileInputPort {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<file-input-port>")
     }
 }
 
@@ -1135,11 +1222,18 @@ pub mod tests {
     }
 
     #[test]
+    fn test_sstring_deref() {
+        let mut a = SString::new("abc");
+        *a = "def".to_owned();
+        assert_eq!("def".to_string(), a.string);
+    }    
+
+    #[test]
     fn test_vector_to_string() {
         let mut gc = Gc::new();
         let data = vec![Object::Number(1), Object::Number(2)];
         let v = gc.new_vector(&data);
-        assert_eq!("#[1, 2]", v.to_string());
+        assert_eq!("#(1 2)", v.to_string());
     }
 
     trait InputPort {

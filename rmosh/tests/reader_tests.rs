@@ -1,4 +1,15 @@
-use rmosh::{equal::Equal, objects::Object, read::read, vm::Vm};
+use rmosh::{
+    equal::Equal,
+    gc::Gc,
+    objects::Object,
+    ports::{ReadError, StringInputPort, TextInputPort},
+    vm::Vm,
+};
+
+fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
+    let mut port = StringInputPort::new(s);
+    port.read(gc)
+}
 
 #[macro_export]
 macro_rules! assert_equal {
@@ -231,6 +242,52 @@ fn read_unquote() {
         let expected = vm.gc.list2(quote, symbol);
         assert_equal!(vm.gc, expected, obj);
     }
+}
+
+#[test]
+fn read_datum_comment() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "#; 3 4").unwrap();
+        let expected = Object::Number(4);
+        assert_equal!(vm.gc, expected, obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "(3 #; 4)").unwrap();
+        let expected = vm.gc.list1(Object::Number(3));
+        assert_equal!(vm.gc, expected, obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "(3 #;(9))").unwrap();
+        let expected = vm.gc.list1(Object::Number(3));
+        assert_equal!(vm.gc, expected, obj);
+    }
+
+    {
+        let obj = read(&mut vm.gc, "(3 #;8 #;9)").unwrap();
+        let expected = vm.gc.list1(Object::Number(3));
+        assert_equal!(vm.gc, expected, obj);
+    }
+}
+
+#[test]
+fn parse_multiple() {
+    let mut vm = Vm::new();
+    let mut port = StringInputPort::new("(3) (4)");
+
+    let expected = vm.gc.list1(Object::Number(3));
+    let parsed = port.read(&mut vm.gc).unwrap();
+    assert_equal!(vm.gc, expected, parsed);
+
+    let expected = vm.gc.list1(Object::Number(4));
+    let parsed = port.read(&mut vm.gc).unwrap();
+    assert_equal!(vm.gc, expected, parsed);
+
+    let expected = Object::Eof;
+    let parsed = port.read(&mut vm.gc).unwrap();
+    assert_equal!(vm.gc, expected, parsed);
 }
 
 #[test]

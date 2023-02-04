@@ -493,7 +493,7 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
             ibuf[i] = ubuf[i];
         }
         ucs4string val(ibuf);
-        const Object sym = argv[1];
+        const Object sym = argv[0];
         if (sym.isSymbol()) {
             val += sym.toSymbol()->c_str();
             return Symbol::intern(val.strdup());

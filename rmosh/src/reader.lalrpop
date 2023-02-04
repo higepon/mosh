@@ -10,6 +10,7 @@ grammar(gc: &mut Box<Gc>);
 pub Datum: Object = {
     SimpleDatum,
     CompoundDataum,
+    "#;" Datum <datum: Datum> => datum,
 }
 
 CompoundDataum: Object = {
@@ -30,6 +31,10 @@ SimpleDatum: Object = {
 
 List: Object = {
     "(" <objects: Datum *> ")" => gc.listn(&objects),
+    "(" <objects: Datum *> "#;" Datum ")" => gc.listn(&objects),
+    // TODO: There should be a better way to skip datum comment.    
+    "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => gc.listn(&objects),  
+    "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => gc.listn(&objects),        
     "(" <objects: Datum +> "." <last: Datum> ")" => {
         gc.dot_pair(&objects, last)
     }
@@ -56,8 +61,8 @@ Abbreviation: Object = {
         let quote = gc.symbol_intern("unquote");
         gc.list2(quote, datum)
     },
-    "@" <datum: Datum> => {
-        let quote = gc.symbol_intern("unquotesplicing");
+    ",@" <datum: Datum> => {
+        let quote = gc.symbol_intern("unquote-splicing");
         gc.list2(quote, datum)
     },
     "#'" <datum: Datum> => {
@@ -75,7 +80,7 @@ Abbreviation: Object = {
     "#@" <datum: Datum> => {
         let quote = gc.symbol_intern("unsyntaxsplicing");
         gc.list2(quote, datum)
-    },    
+    },
 }
 
 Regexp: Object = {
@@ -104,13 +109,26 @@ Number: Object = {
             Err(e) => {
                 match f64::from_str(&s) {
                     Ok(value) => Object::Float(Float::new(value)),
-                    Err(e2) => {                    
+                    Err(e2) => {
                         panic!("Number parse error: {}{} in <{}>", e, e2, s)
                     }
                 }
             }
         }
-    }
+    },
+    <s: "number16"> => {
+        // #x123A => 123A
+        if s.chars().nth(0) == Some('#') {
+            match isize::from_str_radix(&s[2..], 16) {
+                Ok(n) => Object::Number(n),
+                Err(e) => {
+                        panic!("Number parse error: {} in <{}>", e, s)
+                }                
+            }
+        } else {
+            panic!("number16 parse error {}", s)
+        }
+    }    
 }
 
 Boolean: Object = {
@@ -126,12 +144,13 @@ extern {
         "'" => lexer::Token::AbbrevQuote,
         "`" => lexer::Token::AbbrevQuasiquote,
         "," => lexer::Token::AbbrevUnquote,
-        "@" => lexer::Token::AbbrevUnquoteSplicing,
+        ",@" => lexer::Token::AbbrevUnquoteSplicing,
         "#'" => lexer::Token::AbbrevSyntax,
         "#`" => lexer::Token::AbbrevQuasisyntax,
         "#," => lexer::Token::AbbrevUnsyntax,
-        "#@" => lexer::Token::AbbrevUnsyntaxSplicing,        
-        "#u8(" => lexer::Token::ByteVectorStart,         
+        "#@" => lexer::Token::AbbrevUnsyntaxSplicing,
+        "#;" => lexer::Token::DatumComment,
+        "#u8(" => lexer::Token::ByteVectorStart,
         "." => lexer::Token::Dot,
         "true" => lexer::Token::True,
         "false" => lexer::Token::False,
@@ -142,7 +161,8 @@ extern {
         "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
-        "regexp" => lexer::Token::Regexp { value: <String> },        
+        "number16" => lexer::Token::Number16 { value: <String> },        
+        "regexp" => lexer::Token::Regexp { value: <String> },
         "string" => lexer::Token::String { value: <String> },
     }
 }

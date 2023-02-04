@@ -17,6 +17,7 @@ use crate::objects::{
     ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
     Vector, Vox,
 };
+use crate::ports::FileInputPort;
 use crate::vm::Vm;
 
 // GcRef.
@@ -73,8 +74,14 @@ pub enum ObjectType {
     ByteVector,
     Closure,
     EqHashtable,
+    BinaryFileOutputPort,
+    BinaryFileInputPort,
+    FileOutputPort,
     FileInputPort,
+    StdOutputPort,
+    StdErrorPort,
     StringInputPort,
+    StringOutputPort,
     Pair,
     Procedure,
     SimpleStruct,
@@ -215,7 +222,11 @@ impl Gc {
         Object::Symbol(symbol)
     }
 
-    pub fn new_procedure(&mut self, func: fn(&mut Vm, &mut [Object]) -> Object, name: &str) -> Object {
+    pub fn new_procedure(
+        &mut self,
+        func: fn(&mut Vm, &mut [Object]) -> Object,
+        name: &str,
+    ) -> Object {
         Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
     }
 
@@ -360,10 +371,24 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
-            Object::FileInputPort(_) => {}            
+            Object::FileInputPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::BinaryFileOutputPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::BinaryFileInputPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::FileOutputPort(port) => {
+                self.mark_heap_object(port);
+            }
             Object::StringInputPort(_) => {}
+            Object::StringOutputPort(_) => {}
+            Object::StdOutputPort(_) => {}
+            Object::StdErrorPort(_) => {}
             Object::Nil => {}
-            Object::Float(_) => {}            
+            Object::Float(_) => {}
             Object::Number(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
@@ -454,9 +479,8 @@ impl Gc {
         match object_type {
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
-                for i in 0..closure.free_vars.len() {
-                    let obj = closure.free_vars[i];
-                    self.mark_object(obj);
+                for obj in closure.free_vars.iter() {
+                    self.mark_object(*obj);
                 }
                 for i in 0..closure.ops_len {
                     let op = unsafe { *closure.ops.offset(i as isize) };
@@ -481,14 +505,14 @@ impl Gc {
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
-                for i in 0..vector.data.len() {
-                    self.mark_object(vector.data[i]);
+                for obj in vector.data.iter() {
+                    self.mark_object(*obj);
                 }
             }
             ObjectType::SimpleStruct => {
                 let s: &SimpleStruct = unsafe { mem::transmute(pointer.as_ref()) };
-                for i in 0..s.data.len() {
-                    self.mark_object(s.data[i]);
+                for obj in s.data.iter() {
+                    self.mark_object(*obj);
                 }
             }
             ObjectType::EqHashtable => {
@@ -501,8 +525,17 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
-            ObjectType::FileInputPort => {}            
+            ObjectType::FileInputPort => {
+                let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(port.parsed);
+            }
+            ObjectType::BinaryFileInputPort => {}
+            ObjectType::BinaryFileOutputPort => {}
+            ObjectType::FileOutputPort => {}
+            ObjectType::StdOutputPort => {}
+            ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {}
+            ObjectType::StringOutputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
@@ -522,7 +555,10 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::objects::{StringInputPort, FileInputPort};
+        use crate::ports::{
+            BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
+            StringInputPort, StringOutputPort,
+        };
 
         let object_type = object_ptr.obj_type;
 
@@ -531,7 +567,8 @@ impl Gc {
         let free_size = match object_type {
             ObjectType::Symbol => 0,
             ObjectType::Procedure => {
-                panic!("procedure should not be freed");
+                //  panic!("procedure should not be freed");
+                0
             }
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(header) };
@@ -541,12 +578,36 @@ impl Gc {
                 let closure: &Closure = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(closure)
             }
+            ObjectType::FileOutputPort => {
+                let port: &FileOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
             ObjectType::FileInputPort => {
                 let port: &FileInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
-            }            
+            }
+            ObjectType::BinaryFileInputPort => {
+                let port: &BinaryFileInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
+            ObjectType::BinaryFileOutputPort => {
+                let port: &BinaryFileOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
             ObjectType::StringInputPort => {
                 let port: &StringInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
+            ObjectType::StringOutputPort => {
+                let port: &StringOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
+            ObjectType::StdOutputPort => {
+                let port: &StdOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }
+            ObjectType::StdErrorPort => {
+                let port: &StdErrorPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
             ObjectType::Vox => {

@@ -3790,10 +3790,11 @@
 (define eval-compiled! eval-compiled)
 
 (define (create-mosh-cache-dir)
+  (define (cache-dir) (or (get-environment-variable "MOSH_CACHE_DIR") "/.mosh"))
   (define (try-create base-dir)
     (cond
      [(and base-dir (file-exists? base-dir))
-      (let ([cache-dir (string-append base-dir "/.mosh")])
+      (let ([cache-dir (string-append base-dir (cache-dir))])
         (guard
          (c
           [#t  #f])

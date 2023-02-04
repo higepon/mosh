@@ -24,6 +24,10 @@ gen-compiler:
 src/lexer_iter.rs: src/lexer_iter.re
 	re2rust $< > $@	
 
+# Only for dev purpose
+update-psyntax:
+	 (cd ../boot/runtimes/psyntax-mosh/ && make && cd ../.. && make && cd ../rmosh/boot && make ../src/psyntax.rs)
+
 clean:
 	rm data/test*.scm
 	make -C data clean

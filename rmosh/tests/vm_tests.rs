@@ -1,9 +1,10 @@
 use rmosh::{
     self,
     equal::Equal,
+    gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    read::read,
+    ports::{ReadError, StringInputPort, TextInputPort},
     vm::Vm,
 };
 
@@ -32,8 +33,8 @@ fn show_size() {
    3 strings.
    4 closures.
 */
-static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE
-    + (SIZE_OF_PROCEDURE * 623)
+static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE * 2
+    + (SIZE_OF_PROCEDURE * 623 * 2)
     + SIZE_OF_CLOSURE * 0
     + SIZE_OF_SYMBOL * 0
     + SIZE_OF_STRING * 0;
@@ -2480,6 +2481,11 @@ fn test_compiler() {
         }
         _ => {}
     }
+}
+
+fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
+    let mut port = StringInputPort::new(s);
+    port.read(gc)
 }
 
 #[test]

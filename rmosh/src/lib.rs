@@ -1,6 +1,5 @@
 pub mod alloc;
 pub mod compiler;
-pub mod psyntax;
 pub mod equal;
 pub mod fasl;
 pub mod gc;
@@ -8,9 +7,11 @@ pub mod lexer;
 pub mod lexer_iter;
 pub mod objects;
 pub mod op;
+pub mod ports;
 pub mod procs;
-pub mod read;
+pub mod psyntax;
 pub mod vm;
+
 #[macro_use]
 extern crate lalrpop_util;
 

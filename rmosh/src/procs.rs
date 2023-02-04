@@ -1,17 +1,28 @@
 use std::{
     env::{self, current_dir, current_exe},
+    fs::{self, File, OpenOptions},
     path::Path,
+    time::{SystemTime, UNIX_EPOCH}, collections::HashMap,
 };
 
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
+    equal::Equal,
+    fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    objects::{EqHashtable, StringInputPort, Object, Pair, SimpleStruct, FileInputPort},
+    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
+    ports::{
+        BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
+        StringOutputPort, TextInputPort, TextOutputPort,
+    },
     vm::Vm,
 };
 
 use num_traits::FromPrimitive;
+
+static mut GENSYM_PREFIX: char = 'a';
+static mut GENSYM_INDEX: isize = 0;
 
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
@@ -805,6 +816,20 @@ macro_rules! check_argc_at_least {
 }
 
 #[macro_export]
+macro_rules! check_argc_max {
+    ($name:ident, $args:ident, $max:expr) => {{
+        if $args.len() > $max {
+            panic!(
+                "{}: max {} arguments required but got {}",
+                $name,
+                $max,
+                $args.len()
+            );
+        }
+    }};
+}
+
+#[macro_export]
 macro_rules! check_argc_between {
     ($name:ident, $args:ident, $min:expr, $max:expr) => {{
         if $args.len() > $max || $args.len() < $min {
@@ -824,6 +849,7 @@ fn is_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     match args[0] {
         Object::Number(_) => Object::True,
+        Object::Float(_) => Object::True,        
         _ => Object::False,
     }
 }
@@ -884,21 +910,53 @@ fn cdr(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_null(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "null?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_nil())
 }
 fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-car!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    if let Object::Pair(mut p) = args[0] {
+        p.car = args[1];
+        Object::Unspecified
+    } else {
+        panic!("{}: pair required but got {}", name, args[0]);
+    }
 }
 fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-cdr!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    if let Object::Pair(mut p) = args[0] {
+        p.cdr = args[1];
+        Object::Unspecified
+    } else {
+        panic!("{}: pair required but got {}", name, args[0]);
+    }
 }
-fn sys_display(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "sys-display";
+fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Object {
+    let name: &str = "display";
     check_argc_between!(name, args, 1, 2);
-    println!("{}", args[0]);
-    return Object::Unspecified;
+    let argc = args.len();
+    let port = if argc == 1 {
+        vm.current_output_port()
+    } else {
+        args[1]
+    };
+    match port {
+        Object::StringOutputPort(mut port) => {
+            port.display(args[0]).ok();
+        }
+        Object::StdOutputPort(mut port) => {
+            port.display(args[0]).ok();
+        }
+        Object::StdErrorPort(mut port) => {
+            port.display(args[0]).ok();
+        }
+        _ => {
+            println!("{}: port required but got {}", name, port)
+        }
+    }
+    Object::Unspecified
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rxmatch";
@@ -906,7 +964,9 @@ fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    println!("{} dummy implementation {} {}", name, args[0], args[0].to_string());
+    Object::False
 }
 fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp->string";
@@ -1139,28 +1199,37 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-string-input-port";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => match StringInputPort::open(&s.string) {
-            Ok(port) => Object::StringInputPort(vm.gc.alloc(port)),
-            Err(err) => {
-                panic!("{}: {:?}", name, err);
-            }
-        },
+        Object::String(s) => {
+            let port = StringInputPort::new(&s.string);
+            Object::StringInputPort(vm.gc.alloc(port))
+        }
         _ => {
             panic!("{}: string required but got {:?}", name, args);
         }
     }
 }
-fn open_output_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "open-output-string";
-    panic!("{}({}) not implemented", name, args.len());
+fn open_output_string(vm: &mut Vm, _args: &mut [Object]) -> Object {
+    Object::StringOutputPort(vm.gc.alloc(StringOutputPort::new()))
 }
-fn sys_port_seek(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "sys-port-seek";
-    panic!("{}({}) not implemented", name, args.len());
+fn sys_port_seek(vm: &mut Vm, _args: &mut [Object]) -> Object {
+    vm.gc.new_string("sys-port-seek dummy return value")
 }
 fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::StringOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        Object::FileOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        _ => {
+            panic!("{}: string-output-port required but got {:?}", name, args);
+        }
+    }
 }
 fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "digit->integer";
@@ -1192,6 +1261,7 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "file-exists?";
     check_argc!(name, args, 1);
     if let Object::String(s) = args[0] {
+        //println!("{} {} => {}", name, s.string, Path::new(&s.string).exists());
         Object::make_bool(Path::new(&s.string).exists())
     } else {
         panic!("{}: string required but got {}", name, args[0])
@@ -1201,9 +1271,14 @@ fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "delete-file";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_output_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-output-string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::StringOutputPort(s) = args[0] {
+        vm.gc.new_string(&s.string())
+    } else {
+        panic!("{}: string-output-port require but got {}", name, args[0])
+    }
 }
 fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->regexp";
@@ -1211,13 +1286,65 @@ fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "char->integer";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::Char(c) = args[0] {
+        Object::Number(c as isize)
+    } else {
+        panic!("{}: char required but got {}", name, args[0]);
+    }
 }
 fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer->char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::Number(n) = args[0] {
+        match char::from_u32(n as u32) {
+            Some(c) => Object::Char(c),
+            None => {
+                panic!("{}: integer out of range {}", name, args[0]);
+            }
+        }
+    } else {
+        panic!("{}: integer required but got {}", name, args[0]);
+    }
 }
 fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
+    let argc = args.len();
+    if argc >= 2 {
+        match (args[0], args[1]) {
+            (Object::StringOutputPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }
+            (Object::StdErrorPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }
+            (Object::StdOutputPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }
+            (Object::FileOutputPort(mut port), Object::String(s)) => {
+                port.format(&s.string, &mut args[2..]);
+                return Object::Unspecified;
+            }
+            (Object::False, Object::String(s)) => {
+                let mut port = StringOutputPort::new();
+                port.format(&s.string, &mut args[2..]);
+                return vm.gc.new_string(&port.string());
+            }
+            (Object::String(s), _) => {
+                let mut port = StringOutputPort::new();
+                port.format(&s.string, &mut args[1..]);
+                return vm.gc.new_string(&port.string());
+            }
+            _ => {}
+        }
+    }
+    println!("***{} called", "format");
+    for i in 0..args.len() {
+        println!("  arg[{}]={}", i, args[i]);
+    }
+
     // TODO
     let text = if args.len() == 2 {
         format!("{} {}", args[0], args[1])
@@ -1225,6 +1352,11 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
         format!("{} {} {}", args[0], args[1], args[2])
     } else if args.len() == 4 {
         format!("{} {} {} {}", args[0], args[1], args[2], args[3])
+    } else if args.len() == 5 {
+        format!(
+            "{} {} {} {} {}",
+            args[0], args[1], args[2], args[3], args[4]
+        )
     } else {
         panic!("format {:?}", args);
     };
@@ -1236,16 +1368,17 @@ fn current_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 0);
     vm.current_input_port()
 }
-fn current_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn current_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    vm.current_output_port()
 }
 fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "set-current-input-port!";
     check_argc!(name, args, 1);
-    if !args[0].is_input_port() {
-        panic!("{}: input-port required but got {}", name, args[0]);
-    }
+    //if !args[0].is_input_port() {
+    //panic!("{}: input-port required but got {}", name, args[0]);
+    //    }
     vm.set_current_input_port(args[0]);
     Object::Unspecified
 }
@@ -1261,18 +1394,54 @@ fn is_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
         _ => Object::False,
     }
 }
-fn write(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn write(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "write";
-    check_argc_at_least!(name, args, 1);
-    println!("{} called", name);
-    for i in 0..args.len() {
-        println!("  arg={}", args[i]);
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    let port = if argc == 1 {
+        vm.current_output_port()
+    } else {
+        args[1]
+    };
+    match port {
+        Object::StringOutputPort(mut port) => {
+            port.write(args[0]).ok();
+        }
+        Object::StdOutputPort(mut port) => {
+            port.write(args[0]).ok();
+        }
+        Object::StdErrorPort(mut port) => {
+            port.write(args[0]).ok();
+        }
+        Object::FileOutputPort(mut port) => {
+            port.write(args[0]).ok();
+        }
+        _ => {
+            println!("{}: port required but got {} {}", name, port, args[0])
+        }
     }
-    args[0]
+    Object::Unspecified
 }
-fn gensym(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_max!(name, args, 1);
+    let argc = args.len();
+
+    if argc == 1 {
+        let name = unsafe { format!("{}{}@", GENSYM_PREFIX, GENSYM_INDEX) };
+        unsafe { GENSYM_INDEX += 1 };
+        match args[0] {
+            Object::Symbol(s) => {
+                let name = name + &s.string;
+                vm.gc.symbol_intern(&name)
+            }
+            _ => vm.gc.symbol_intern(&name),
+        }
+    } else {
+        let name = unsafe { format!("{}{}", GENSYM_PREFIX, GENSYM_INDEX) };
+        unsafe { GENSYM_INDEX += 1 };
+        vm.gc.symbol_intern(&name)
+    }
 }
 fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string=?";
@@ -1342,7 +1511,22 @@ fn cadadr(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn cadar(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cadar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => return pair3.car,
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caddar(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "caddar";
@@ -1463,7 +1647,22 @@ fn cddadr(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn cddar(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cddar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => return pair3.cdr,
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdddar(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cdddar";
@@ -1471,7 +1670,27 @@ fn cdddar(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn cddddr(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cddddr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => pair4.cdr,
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdddr(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cdddr";
@@ -1555,19 +1774,49 @@ fn memq(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_eq(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eq?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    Object::make_bool(args[0].eq(&args[1]))
 }
 fn is_eqv(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eqv?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn member(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn member(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "member";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let key = args[0];
+    let mut list = args[1];
+    if !list.is_list() {
+        panic!("{}: list required but got {}", name, list);
+    }
+
+    let e = Equal::new();
+
+    loop {
+        if list.is_nil() {
+            return Object::False;
+        }
+        match list {
+            Object::Pair(pair) => {
+                if e.is_equal(&mut vm.gc, &pair.car, &key) {
+                    return list;
+                }
+                list = pair.cdr;
+            }
+            _ => {
+                panic!("{}: list required but got {}", name, list);
+            }
+        }
+    }
 }
 fn is_boolean(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "boolean?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::True => Object::True,
+        Object::False => Object::True,
+        _ => Object::False,
+    }
 }
 fn symbol_to_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "symbol->string";
@@ -1635,18 +1884,19 @@ fn hashtable_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
         }
     }
 }
-fn hashtable_keys(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn hashtable_keys(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "hashtable-keys";
+    check_argc!(name, args, 1);
+    let mut keys: Vec<Object> = vec![];
     match args[0] {
         Object::EqHashtable(t) => {
             for k in t.hash_map.keys() {
-                println!("key={}", k);
+                keys.push(*k);
             }
         }
         _ => {}
     }
-    println!("{}({}) not implemented", name, args.len());
-    Object::Unspecified
+    vm.gc.new_vector(&keys)
 }
 fn string_hash(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-hash";
@@ -1668,14 +1918,19 @@ fn equal_hash(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "equal-hash";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn eq_hashtable_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn eq_hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eq-hashtable-copy";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::EqHashtable(e) = args[0] {
+        Object::EqHashtable(vm.gc.alloc(e.copy()))
+    } else {
+        panic!("{}: eq-hashtable required but got {}", name, args[0]);
+    }
 }
 fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-error-port";
     check_argc!(name, args, 0);
-    vm.gc.new_string("TODO:current-error-port")
+    vm.current_error_port()
 }
 fn values(vm: &mut Vm, args: &mut [Object]) -> Object {
     vm.values(args)
@@ -1686,7 +1941,8 @@ fn vm_apply(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_pair(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "pair?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_pair())
 }
 fn make_custom_binary_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-custom-binary-input-port";
@@ -1808,27 +2064,176 @@ fn get_bytevector_n(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-bytevector-n";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_file_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+/*
+    file-options
+
+    (file-options)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create)
+      If file exists:     truncate
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-fail)
+      If file exists:     truncate
+      If does not exist:  create new file
+    (file-options no-truncate)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create no-fail)
+      If file exists:     truncate
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
+    (file-options no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  create new file
+    (file-options no-create no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-create no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
+
+*/
+fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 4);
+
+    let path = match args[0] {
+        Object::String(s) => s.string.to_owned(),
+        _ => {
+            panic!("{}: path string required but got {}", name, args[0])
+        }
+    };
+    let file_exists = Path::new(&path).exists();
+
+    let argc = args.len();
+    let mut open_options = OpenOptions::new();
+    open_options.write(true).create(true);
+
+    if argc == 1 {
+        if file_exists {
+            panic!("{}: file already exists {}", name, path);
+        }
+        let file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{}: {} {}", name, path, err);
+            }
+        };
+        Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(file)))
+    } else {
+        let file_options = match args[1] {
+            Object::SimpleStruct(s) => s.field(1),
+            _ => {
+                panic!("{}: file-options required but got {}", name, args[1])
+            }
+        };
+        let empty_p = file_options.is_nil();
+        let sym_no_create = vm.gc.symbol_intern("no-create");
+        let sym_no_truncate = vm.gc.symbol_intern("no-truncate");
+        let sym_no_fail = vm.gc.symbol_intern("no-fail");
+        let no_create_p = !memq(vm, &mut [sym_no_create, file_options]).is_false();
+        let no_truncate_p = !memq(vm, &mut [sym_no_truncate, file_options]).is_false();
+        let no_fail_p = !memq(vm, &mut [sym_no_fail, file_options]).is_false();
+
+        if file_exists && empty_p {
+            panic!("{}: file already exists {}", name, path)
+        } else if no_create_p && no_truncate_p {
+            if !file_exists {
+                panic!("{}: file-options no-create: file not exist {}", name, path);
+            }
+        } else if no_create_p {
+            if file_exists {
+                open_options.truncate(true);
+            } else {
+                panic!("{}: file-options no-create: file not exist {}", name, path);
+            }
+        } else if no_fail_p && no_truncate_p {
+            if !file_exists {
+                open_options.truncate(true);
+            }
+        } else if no_fail_p {
+            open_options.truncate(true);
+        } else if no_truncate_p {
+            if file_exists {
+                panic!(
+                    "{}: file-options no-trucate: file already exists {}",
+                    name, path
+                );
+            } else {
+                open_options.truncate(true);
+            }
+        }
+
+        println!("WARNING {}: {:?} silently ignored", name, args);
+        let file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{}: {} {}", name, path, err);
+            }
+        };
+        Object::FileOutputPort(vm.gc.alloc(FileOutputPort::new(file)))
+    }
 }
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-input-port";
-    check_argc_at_least!(name, args, 1);
-    if let Object::String(path) = args[0] {
-        match FileInputPort::open(&path.string) {
-            Ok(port) => Object::FileInputPort(vm.gc.alloc(port)),
-            Err(err) => {
-                panic!("{}: {}", name, err)
+    check_argc_between!(name, args, 1, 4);
+    let argc = args.len();
+
+    // N.B. As R6RS says, we ignore "file-options" for input-port.
+    if argc == 1 {
+        if let Object::String(path) = args[0] {
+            let file = match File::open(&path.string) {
+                Ok(file) => file,
+                Err(err) => panic!("{}: {} {}", name, args[0], err),
+            };
+            Object::BinaryFileInputPort(vm.gc.alloc(BinaryFileInputPort::new(file)))
+        } else {
+            panic!("{}: path required but got {}", name, args[0]);
+        }
+    } else if argc == 2 {
+        todo!();
+    } else if argc == 3 {
+        todo!();
+    } else if argc == 4 {
+        match (args[0], args[1], args[2]) {
+            (
+                Object::String(path),
+                Object::SimpleStruct(_file_options),
+                Object::Symbol(buffer_mode),
+            ) => {
+                if buffer_mode.string.eq("block") || buffer_mode.string.eq("line") {
+                    match FileInputPort::open(&path.string) {
+                        Ok(port) => Object::FileInputPort(vm.gc.alloc(port)),
+                        Err(err) => {
+                            panic!("{}: {} {}", name, path.string, err)
+                        }
+                    }
+                } else if buffer_mode.string.eq("none") {
+                    todo!()
+                } else {
+                    panic!("{}: invalid buffer-mode option {}", name, args[2]);
+                }
+            }
+            _ => {
+                panic!(
+                    "{}: path, file-options and buffer-mode required but got {}, {} and {}",
+                    name, args[0], args[1], args[2]
+                )
             }
         }
     } else {
-        panic!("{}: string required but got {}", name, args[0]);
+        todo!();
     }
 }
 fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    if let Object::FileInputPort(mut port) = args[0] {
+        port.close();
+        Object::Unspecified
+    } else {
+        panic!("{}: required input-port but got {}", name, args[0]);
+    }
 }
 fn vector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector";
@@ -1851,13 +2256,15 @@ fn source_info(_vm: &mut Vm, args: &mut [Object]) -> Object {
         _ => Object::False,
     }
 }
-fn eval(_vm: &mut Vm, args: &mut [Object]) -> Object {
+pub fn eval(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    vm.eval_after(args[0])
 }
-fn eval_compiled(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn eval_compiled(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eval-compiled";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    vm.eval_compiled(args[0])
 }
 
 // We make apply public so that Vm can access.
@@ -1924,10 +2331,10 @@ fn memv(_vm: &mut Vm, args: &mut [Object]) -> Object {
         if o.is_nil() {
             break;
         }
-        if o.to_pair().car.eqv(&arg1) {
+        if o.car_unchecked().eqv(&arg1) {
             return o;
         }
-        o = o.to_pair().cdr;
+        o = o.cdr_unchecked();
     }
     return Object::False;
 }
@@ -2057,12 +2464,26 @@ fn is_chargt(_vm: &mut Vm, args: &mut [Object]) -> Object {
     }
     Object::True
 }
-fn read(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn read(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "read";
-    for i in 0..args.len() {
-        println!("arg={}", args[i]);
+    let argc = args.len();
+    if argc == 0 {
+        vm.read().unwrap()
+    } else if argc == 1 {
+        match args[0] {
+            Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {
+                Ok(obj) => obj,
+                Err(err) => {
+                    panic!("{}: {:?} {:?}", name, err, port.file)
+                }
+            },
+            _ => {
+                panic!("{}: required input-port bug got {}", name, args[0]);
+            }
+        }
+    } else {
+        panic!("{}({}) not implemented", name, args.len());
     }
-    panic!("{}({}) not implemented", name, args.len());
 }
 fn vector_to_list(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector->list";
@@ -2250,7 +2671,7 @@ fn list_to_vector(vm: &mut Vm, args: &mut [Object]) -> Object {
         if obj.is_nil() {
             break;
         }
-        v.push(obj.to_pair().car);
+        v.push(obj.car_unchecked());
         obj = obj.to_pair().cdr;
     }
     vm.gc.new_vector(&v)
@@ -2277,20 +2698,20 @@ fn do_transpose(vm: &mut Vm, each_len: usize, args: &mut [Object]) -> Object {
     let mut ans = Object::Nil;
     let mut ans_tail = Object::Nil;
     for _ in 0..each_len {
-        let elt = vm.gc.cons(args[0].to_pair().car, Object::Nil);
+        let elt = vm.gc.cons(args[0].car_unchecked(), Object::Nil);
         let mut elt_tail = elt;
-        args[0] = args[0].to_pair().cdr;
+        args[0] = args[0].cdr_unchecked();
         for n in 1..args.len() {
-            elt_tail.to_pair().cdr = vm.gc.cons(args[n].to_pair().car, Object::Nil);
-            elt_tail = elt_tail.to_pair().cdr;
-            args[n] = args[n].to_pair().cdr;
+            elt_tail.to_pair().cdr = vm.gc.cons(args[n].car_unchecked(), Object::Nil);
+            elt_tail = elt_tail.cdr_unchecked();
+            args[n] = args[n].cdr_unchecked();
         }
         if ans == Object::Nil {
             ans = vm.gc.cons(elt, Object::Nil);
             ans_tail = ans;
         } else {
             ans_tail.to_pair().cdr = vm.gc.cons(elt, Object::Nil);
-            ans_tail = ans_tail.to_pair().cdr;
+            ans_tail = ans_tail.cdr_unchecked();
         }
     }
     return ans;
@@ -2440,6 +2861,11 @@ fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn throw(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "throw";
     println!("{} tentative called", name);
+    println!("{} called", name);
+    for i in 0..args.len() {
+        println!("  arg={}", args[i]);
+    }
+
     vm.gc.new_string("return value of throw")
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -2528,7 +2954,11 @@ fn get_datum(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(_) => Object::True,
+        _ => Object::False,
+    }
 }
 fn current_directory(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-directory";
@@ -2588,9 +3018,20 @@ fn bytevector_s8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-s8-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_to_u8_list(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector->u8-list";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let mut ret = Object::Nil;
+    if let Object::ByteVector(bv) = args[0] {
+        for i in 0..bv.len() {
+            ret = vm
+                .gc
+                .cons(Object::Number(bv.ref_u8(bv.len() - i - 1) as isize), ret);
+        }
+        ret
+    } else {
+        panic!("{}: bytevector required but got {}", name, args[0])
+    }
 }
 fn u8_list_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "u8-list->bytevector";
@@ -2700,9 +3141,14 @@ fn string_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->bytevector";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_utf8(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->utf8";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(s) = args[0] {
+        Object::ByteVector(vm.gc.alloc(ByteVector::new(&s.string.as_bytes().to_vec())))
+    } else {
+        panic!("{}: string required but got {}", name, args[0]);
+    }
 }
 fn utf8_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "utf8->string";
@@ -2734,7 +3180,28 @@ fn utf32_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn close_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "close-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::FileInputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        Object::FileOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        Object::BinaryFileInputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        Object::BinaryFileOutputPort(mut port) => {
+            port.close();
+            Object::Unspecified
+        }
+        _ => {
+            panic!("{}: required input-port but got {}", name, args[0]);
+        }
+    }
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-instruction";
@@ -2754,11 +3221,38 @@ fn make_compiler_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fasl-write";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    if let Object::BinaryFileOutputPort(mut port) = args[1] {
+        let fasl = FaslWriter::new();
+        match fasl.write(&mut port, args[0]) {
+            Ok(()) => Object::Unspecified,
+            Err(err) => {
+                panic!("{}: {} {} {}", name, err, args[0], args[1])
+            }
+        }
+    } else {
+        panic!("{}: file path required but got {}", name, args[0])
+    }
 }
-fn fasl_read(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fasl-read";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::BinaryFileInputPort(mut port) = args[0] {
+        let mut content = Vec::new();
+        port.read_to_end(&mut content).ok();
+        let mut fasl = FaslReader {
+            bytes: &content[..],
+            shared_objects: &mut HashMap::new(),
+        };
+        match fasl.read_sexp(&mut vm.gc) {
+            Ok(sexp) => sexp,
+            Err(err) => {
+                panic!("{}: {} {}", name, err, args[0])
+            }
+        }
+    } else {
+        panic!("{}: file path required but got {}", name, args[0])
+    }
 }
 
 fn is_rational(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -3404,9 +3898,11 @@ fn print_stack(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "print-stack";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_fast_equal(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_fast_equal(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fast-equal?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let e = Equal::new();
+    Object::make_bool(e.is_equal(&mut vm.gc, &args[0], &args[1]))
 }
 fn native_eol_style(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "native-eol-style";
@@ -3560,11 +4056,45 @@ fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn quotient(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "quotient";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::Number(x), Object::Number(y)) => {
+            if x == 0 {
+                Object::Number(0)
+            } else if y == 0 {
+                panic!("{}: must be non-zero", name)
+            } else {
+                Object::Number(x / y)
+            }
+        }
+        _ => {
+            panic!(
+                "{}: number and number required but got {} {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 fn remainder(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "remainder";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::Number(x), Object::Number(y)) => {
+            if x == 0 {
+                Object::Number(0)
+            } else if y == 0 {
+                panic!("{}: must be non-zero", name)
+            } else {
+                Object::Number(x % y)
+            }
+        }
+        _ => {
+            panic!(
+                "{}: number and number required but got {} {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 fn modulo(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "modulo";
@@ -3677,9 +4207,9 @@ fn vm_join_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vm-join!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_main_vm(_vm: &mut Vm, args: &mut [Object]) -> Object {
-    let name: &str = "main-vm?";
-    panic!("{}({}) not implemented", name, args.len());
+fn is_main_vm(_vm: &mut Vm, _args: &mut [Object]) -> Object {
+    let _name: &str = "main-vm?";
+    Object::True
 }
 fn vm_self(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vm-self";
@@ -3747,7 +4277,17 @@ fn vector_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn create_directory(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "create-directory";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(path) = args[0] {
+        match fs::create_dir(&path.string) {
+            Ok(()) => Object::Unspecified,
+            Err(err) => {
+                panic!("{}: {} {}", name, args[0], err)
+            }
+        }
+    } else {
+        panic!("{}: string path required but got {}", name, args[0])
+    }
 }
 fn delete_directory(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "delete-directory";
@@ -3791,7 +4331,28 @@ fn file_size_in_bytes(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn file_stat_mtime(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "file-stat-mtime";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::String(path) = args[0] {
+        let metadata = File::open(&path.string)
+            .map(|file| file.metadata())
+            .unwrap_or_else(|_| panic!("failed to retrieve metadata for {}", path.string));
+
+        // Get the last modification time
+        let mtime = metadata
+            .map(|metadata| metadata.modified())
+            .unwrap_or_else(|_| panic!("failed to retrieve modification time for {}", path.string));
+
+        // Convert the last modification time to a system time
+        let mtime = mtime.unwrap_or(SystemTime::now());
+        let mtime_seconds = mtime
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
+            .as_secs();
+
+        Object::Number(mtime_seconds as isize)
+    } else {
+        panic!("{}: file path required but got {}", name, args[0])
+    }
 }
 fn file_stat_atime(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "file-stat-atime";
@@ -4001,7 +4562,19 @@ fn simple_struct_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn simple_struct_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "simple-struct-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match (args[0], args[1]) {
+        (Object::SimpleStruct(mut s), Object::Number(index)) => {
+            s.set(index as usize, args[2]);
+            Object::Unspecified
+        }
+        _ => {
+            panic!(
+                "{}: simple-struct and number required but got {} and {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 fn simple_struct_name(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "simple-struct-name";
@@ -4024,29 +4597,232 @@ fn nongenerative_rtd_set_destructive(vm: &mut Vm, args: &mut [Object]) -> Object
     vm.set_rtd(args[0], args[1]);
     Object::Unspecified
 }
+
+/* psyntax/expander.ss
+(define (same-marks*? mark* mark** si)
+    (if (null? si)
+        #f
+        (if (same-marks? mark* (vector-ref mark** (car si)))
+            (car si)
+            (same-marks*? mark* mark** (cdr si)))))
+*/
 fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "same-marks*?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mark_mul = args[0];
+    let mark_mul_mul = args[1];
+    let mut si = args[2];
+    loop {
+        if si.is_nil() {
+            return Object::False;
+        }
+        if is_same_marks_raw(
+            mark_mul,
+            mark_mul_mul.to_vector().data[si.car_unchecked().to_number() as usize],
+        ) {
+            return si.car_unchecked();
+        }
+        si = si.cdr_unchecked();
+    }
 }
+
 fn is_same_marks(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "same-marks?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    Object::make_bool(is_same_marks_raw(args[0], args[1]))
 }
-fn id_to_real_label(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+/* psyntax/expander.ss
+  ;;; Two lists of marks are considered the same if they have the
+  ;;; same length and the corresponding marks on each are eq?.
+  (define same-marks?
+    (lambda (x y)
+      (or (and (null? x) (null? y)) ;(eq? x y)
+          (and (pair? x) (pair? y)
+               (eq? (car x) (car y))
+               (same-marks? (cdr x) (cdr y))))))
+*/
+fn is_same_marks_raw(x: Object, y: Object) -> bool {
+    let mut x = x;
+    let mut y = y;
+    loop {
+        if x.is_nil() && y.is_nil() {
+            return true;
+        }
+        if x.is_nil() && !y.is_nil() {
+            return false;
+        }
+        if !x.is_nil() && y.is_nil() {
+            return false;
+        }
+        if x.is_pair() && !y.is_pair() {
+            return false;
+        }
+        if !x.is_pair() && y.is_pair() {
+            return false;
+        }
+        if x.car_unchecked() != y.car_unchecked() {
+            return false;
+        }
+        x = x.cdr_unchecked();
+        y = y.cdr_unchecked();
+    }
+}
+
+/* psyntax/expander.ss
+(define id->real-label
+    (lambda (id)
+      (let ((sym (id->sym id)))
+        (let search ((subst* (stx-subst* id)) (mark* (stx-mark* id)))
+          (cond
+            ((null? subst*) #f)
+            ((eq? (car subst*) 'shift)
+             ;;; a shift is inserted when a mark is added.
+             ;;; so, we search the rest of the substitution
+             ;;; without the mark.
+             (search (cdr subst*) (cdr mark*)))
+            (else
+             (let ((rib (car subst*)))
+               (cond
+                 ((rib-sealed/freq rib) =>
+                  (lambda (ht)
+                    (let ((si (hashtable-ref ht sym #f)))
+                      (let ((i (and si
+                            (same-marks*? mark*
+                              (rib-mark** rib) (reverse si)))))
+                        (if i
+                          (vector-ref (rib-label* rib) i)
+                        (search (cdr subst*) mark*))))))
+;                 ((find-label rib sym mark*))
+                 (else
+                  (let f ((sym* (rib-sym* rib))
+                          (mark** (rib-mark** rib))
+                          (label* (rib-label* rib)))
+                    (cond
+                      ((null? sym*) (search (cdr subst*) mark*))
+                      ((and (eq? (car sym*) sym)
+                            (same-marks? (car mark**) mark*))
+                       (car label*))
+                      (else (f (cdr sym*) (cdr mark**) (cdr label*))))))))))))))
+*/
+
+fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "id->real-label";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::SimpleStruct(id) = args[0] {
+        let sym = id.field(0);
+        let mut mark_mul = id.field(1);
+        let mut subst_mul = id.field(2);
+        let shift_symbol = vm.gc.symbol_intern("shift");
+        loop {
+            if subst_mul.is_nil() {
+                return Object::False;
+            }
+
+            if subst_mul.car_unchecked() == shift_symbol {
+                subst_mul = subst_mul.cdr_unchecked();
+                mark_mul = mark_mul.cdr_unchecked();
+                continue;
+            } else {
+                let rib = subst_mul.car_unchecked();
+                let rib_sealed_freq = rib.to_simple_struct().field(3);
+                if !rib_sealed_freq.is_false() {
+                    let si = rib_sealed_freq.to_eq_hashtable().get(sym, Object::False);
+                    let i;
+                    if si.is_false() {
+                        i = Object::False;
+                    } else {
+                        let mut xs: [Object; 3] = [Object::Unspecified; 3];
+                        xs[0] = mark_mul;
+                        xs[1] = rib.to_simple_struct().field(1);
+                        xs[2] = Pair::reverse(&mut vm.gc, si);
+                        i = is_same_marksmul(vm, &mut xs);
+                    }
+                    if i.is_false() {
+                        subst_mul = subst_mul.cdr_unchecked();
+                        continue;
+                    } else {
+                        return rib.to_simple_struct().field(2).to_vector().data
+                            [i.to_number() as usize];
+                    }
+                } else {
+                    let mut sym_mul = rib.to_simple_struct().field(0);
+                    let mut mark_mul_mul = rib.to_simple_struct().field(1);
+                    let mut label_mul = rib.to_simple_struct().field(2);
+                    loop {
+                        if sym_mul.is_nil() {
+                            subst_mul = subst_mul.cdr_unchecked();
+                            break;
+                        } else if sym == sym_mul.car_unchecked()
+                            && is_same_marks_raw(mark_mul_mul.car_unchecked(), mark_mul)
+                        {
+                            return label_mul.car_unchecked();
+                        } else {
+                            sym_mul = sym_mul.cdr_unchecked();
+                            mark_mul_mul = mark_mul_mul.cdr_unchecked();
+                            label_mul = label_mul.cdr_unchecked();
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        panic!("{}: simple-struct required but got {}", name, args[0]);
+    }
 }
-fn join_wraps(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+fn f(gc: &mut Box<Gc>, x: Object, ls1: Object, ls2: Object) -> Object {
+    if ls1.is_nil() {
+        return ls2.cdr_unchecked();
+    } else {
+        let kdr = f(gc, ls1.car_unchecked(), ls1.cdr_unchecked(), ls2);
+        return gc.cons(x, kdr);
+    }
+}
+
+fn cancel(gc: &mut Box<Gc>, ls1: Object, ls2: Object) -> Object {
+    f(gc, ls1.car_unchecked(), ls1.cdr_unchecked(), ls2)
+}
+
+fn join_wraps(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "join-wraps";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let m1_mul = args[0];
+    let s1_mul = args[1];
+    let ae1_mul = args[2];
+    let e = args[3];
+    let m2_mul = e.to_simple_struct().field(1);
+    let s2_mul = e.to_simple_struct().field(2);
+    let ae2_mul = e.to_simple_struct().field(3);
+    if !m1_mul.is_nil() && !m2_mul.is_nil() && m2_mul.car_unchecked().is_false() {
+        let x = cancel(&mut vm.gc, m1_mul, m2_mul);
+        let y = cancel(&mut vm.gc, s1_mul, s2_mul);
+        let z = cancel(&mut vm.gc, ae1_mul, ae2_mul);
+        let values = [x, y, z];
+        return vm.values(&values);
+    } else {
+        let x = vm.gc.append2(m1_mul, m2_mul);
+        let y = vm.gc.append2(s1_mul, s2_mul);
+        let z = vm.gc.append2(ae1_mul, ae2_mul);
+        let values = [x, y, z];
+        return vm.values(&values);
+    }
 }
+
 fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "gensym-prefix-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if let Object::Symbol(s) = args[0] {
+        unsafe { GENSYM_PREFIX = s.string.chars().nth(0).unwrap() };
+        Object::Unspecified
+    } else {
+        panic!("{}: symbol required but got {}", name, args[0]);
+    }
 }
+
 fn current_dynamic_winders(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "current-dynamic-winders";
-    check_argc_between!(name, args, 0, 1);
+    check_argc_max!(name, args, 1);
     let argc = args.len();
     if argc == 0 {
         return vm.dynamic_winders;
