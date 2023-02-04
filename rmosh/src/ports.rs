@@ -203,6 +203,7 @@ pub trait TextOutputPort {
             | Object::Procedure(_)
             | Object::Char(_)
             | Object::EqHashtable(_)
+            | Object::Compnum(_)               
             | Object::Ratnum(_)            
             | Object::False
             | Object::Float(_)
@@ -328,31 +329,32 @@ pub trait TextOutputPort {
         loop {
             match o {
                 Object::ByteVector(_)
-                | Object::Closure(_)
-                | Object::Vox(_)
-                | Object::ProgramCounter(_)
-                | Object::ObjectPointer(_)
-                | Object::Unspecified
-                | Object::True
-                | Object::Procedure(_)
-                | Object::Char(_)
-                | Object::EqHashtable(_)
-                | Object::False
-                | Object::Float(_)
-                | Object::StringInputPort(_)
-                | Object::FileInputPort(_)
-                | Object::Eof
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
-                | Object::Ratnum(_)                
+                | Object::Char(_)
+                | Object::Closure(_)
+                | Object::Compnum(_)  
+                | Object::Eof
+                | Object::EqHashtable(_)
+                | Object::False
+                | Object::FileInputPort(_)
                 | Object::FileOutputPort(_)
-                | Object::StringOutputPort(_)
-                | Object::StdOutputPort(_)
-                | Object::StdErrorPort(_)
+                | Object::Float(_)
                 | Object::Instruction(_)
                 | Object::Nil
-                | Object::Symbol(_)
+                | Object::ObjectPointer(_)
+                | Object::Procedure(_)
+                | Object::ProgramCounter(_)
+                | Object::Ratnum(_)  
+                | Object::StdErrorPort(_)
+                | Object::StdOutputPort(_)
                 | Object::String(_)
+                | Object::StringInputPort(_)
+                | Object::StringOutputPort(_)
+                | Object::Symbol(_)
+                | Object::True
+                | Object::Unspecified
+                | Object::Vox(_)
                 | Object::Fixnum(_) => return,
                 Object::Pair(p) => {
                     let val = match seen.get(&o) {

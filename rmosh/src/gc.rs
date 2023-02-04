@@ -71,22 +71,23 @@ impl<T> DerefMut for GcRef<T> {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
+    BinaryFileInputPort,
+    BinaryFileOutputPort,
     ByteVector,
     Closure,
+    Compnum,
     EqHashtable,
-    BinaryFileOutputPort,
-    BinaryFileInputPort,
-    FileOutputPort,
     FileInputPort,
-    StdOutputPort,
+    FileOutputPort,
+    Pair,
+    Procedure,
+    Ratnum,
+    SimpleStruct,
     StdErrorPort,
+    StdOutputPort,
+    String,
     StringInputPort,
     StringOutputPort,
-    Pair,
-    Ratnum,
-    Procedure,
-    SimpleStruct,
-    String,
     Symbol,
     Vector,
     Vox,
@@ -391,6 +392,7 @@ impl Gc {
             Object::Nil => {}
             Object::Float(_) => {}
             Object::Fixnum(_) => {}
+            Object::Compnum(_) => {}            
             Object::Ratnum(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
@@ -541,7 +543,8 @@ impl Gc {
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
-            ObjectType::Ratnum => {}            
+            ObjectType::Ratnum => {}  
+            ObjectType::Compnum => {}                       
             ObjectType::ByteVector => {}
         }
     }

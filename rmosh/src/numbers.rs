@@ -25,3 +25,27 @@ impl Display for Ratnum {
         write!(f, "#<ratnum>")
     }
 }
+
+/// Complex number.
+#[derive(Debug)]
+pub struct Compnum {
+    pub header: GcHeader,
+    real: Object,
+    imag: Object,
+}
+
+impl Compnum {
+    pub fn new(real: Object, imag: Object) -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::Compnum),
+            real: real,
+            imag: imag,
+        }
+    }
+}
+
+impl Display for Compnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<compnum>")
+    }
+}

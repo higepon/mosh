@@ -1,6 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::numbers::Ratnum;
+use crate::numbers::{Ratnum, Compnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -57,34 +57,35 @@ impl Display for Float {
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
+    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
+    BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
     ByteVector(GcRef<ByteVector>),
     Char(char),
     Closure(GcRef<Closure>),
+    Compnum(GcRef<Compnum>),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
-    Float(Float),
-    StringInputPort(GcRef<StringInputPort>),
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
-    BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
-    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
-    StdOutputPort(GcRef<StdOutputPort>),
-    StdErrorPort(GcRef<StdErrorPort>),
-    StringOutputPort(GcRef<StringOutputPort>),
+    Fixnum(isize),
+    Float(Float),
     Instruction(Op),
     Nil,
-    Fixnum(isize),
-    Ratnum(GcRef<Ratnum>),
+    ObjectPointer(*mut Object),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
+    ProgramCounter(*const Object),
+    Ratnum(GcRef<Ratnum>),
     SimpleStruct(GcRef<SimpleStruct>),
+    StdErrorPort(GcRef<StdErrorPort>),
+    StdOutputPort(GcRef<StdOutputPort>),
     String(GcRef<SString>),
+    StringInputPort(GcRef<StringInputPort>),
+    StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
     True,
     Unspecified,
-    ObjectPointer(*mut Object),
-    ProgramCounter(*const Object),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
@@ -324,6 +325,9 @@ impl Debug for Object {
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
             }            
+            Object::Compnum(n) => {
+                write!(f, "{}", n)
+            }                      
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
@@ -421,7 +425,10 @@ impl Display for Object {
             }
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
-            }            
+            }          
+            Object::Compnum(n) => {
+                write!(f, "{}", n)
+            }                 
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }

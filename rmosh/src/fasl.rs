@@ -97,6 +97,9 @@ impl FaslWriter {
                 self.put_tag(port, Tag::Float)?;
                 port.put_u64(f.value() as u64)?;                
             }
+            Object::Compnum(_r) => {
+                todo!();
+            }            
             Object::Ratnum(_r) => {
                 todo!();
             }
@@ -191,6 +194,7 @@ impl FaslWriter {
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
+                | Object::Compnum(_)                
                 | Object::Ratnum(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
