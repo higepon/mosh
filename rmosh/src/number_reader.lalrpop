@@ -14,13 +14,13 @@ pub Number: Object = {
 
 Number10 = {
     Complex10,
-    // todo move this!    
+    // todo move this!
     UReal10,
 }
 
 Complex10: Object = {
     <real: Real10> "+" <imag: UReal10> "i" => {
-        Object::Compnum(gc.alloc(Compnum::new(real, imag)))        
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
 }
 
@@ -59,14 +59,11 @@ UReal10: Object = {
 
 }
 
-
 UInteger10: String = {
     <digits: "digit10" +> => {
         digits.join("")
     }
 }
-
-
 
 extern {
     type Location = usize;
@@ -75,8 +72,9 @@ extern {
     enum number_lexer::Token {
         "digit10" => number_lexer::Token::Digit10 { value: <String> },
         "+" => number_lexer::Token::Plus,
-        "-" => number_lexer::Token::Minus,        
+        "-" => number_lexer::Token::Minus,
         "/" => number_lexer::Token::Slash,
+        "." => number_lexer::Token::Dot,
         "i" => number_lexer::Token::Imag,
     }
 }

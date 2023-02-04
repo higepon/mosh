@@ -1,14 +1,10 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
     Digit10 { value: String },
-    /*
-    Uinteger10 { value: String },
-    Ureal10 { value: String },
-    Real10 { value: String },
-    */
-    Imag,    
-    Plus,
+    Dot,
+    Imag,
     Minus,
+    Plus,
     Slash,
 }
 
@@ -40,7 +36,7 @@ impl<'input> NumberLexer<'input> {
 
     pub fn with_location(&self, token: Token) -> Option<LexerItem> {
         Some(Ok((self.tok, token, self.cursor)))
-    }    
+    }
 
     pub fn extract_token(&self) -> String {
         self.s[self.tok..self.cursor].iter().collect()

@@ -51,20 +51,11 @@ impl<'input> Iterator for NumberLexer<'input> {
                         println!("digit10 ");
                         return self.with_location(Token::Digit10 { value: self.extract_token() });
                     }
-                    /*
-                    REAL_10 {
-                        println!("r10");
-                        return self.with_location(Token::Real10 { value: self.extract_token() });
-                    }
-                    */
-                    /*UREAL_10 {
-                        println!("ur10");                        
-                        return self.with_location(Token::Ureal10 { value: self.extract_token() });
-                    } */                                       
                     "/" { return self.with_location(Token::Slash); }
                     "+" { return self.with_location(Token::Plus); }
-                    "-" { return self.with_location(Token::Minus); }                    
-                    "i" { return self.with_location(Token::Imag); }                    
+                    "-" { return self.with_location(Token::Minus); }
+                    "." { return self.with_location(Token::Dot); }
+                    "i" { return self.with_location(Token::Imag); }
                     $ { return None; }
                     * { return Some(Err(NumberLexicalError {
                             start: self.tok,
