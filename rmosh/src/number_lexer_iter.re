@@ -55,8 +55,11 @@ impl<'input> Iterator for NumberLexer<'input> {
                     "+" { return self.with_location(Token::Plus); }
                     "-" { return self.with_location(Token::Minus); }
                     "." { return self.with_location(Token::Dot); }
-                    "e" { return self.with_location(Token::Exponent); }                    
+                    "e" { return self.with_location(Token::Exponent); }
                     "i" { return self.with_location(Token::Imag); }
+                    "#d" { return self.with_location(Token::Radix10); }                    
+                    "#e" { return self.with_location(Token::Exact); }
+                    "#i" { return self.with_location(Token::Inexact); }                    
                     $ { return None; }
                     * { return Some(Err(NumberLexicalError {
                             start: self.tok,

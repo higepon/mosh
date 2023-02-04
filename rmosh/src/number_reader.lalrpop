@@ -13,8 +13,23 @@ pub Number: Object = {
     Number10,
 }
 
-Number10 = {
-    Complex10,
+Number10: Object = {
+    Prefix10? <c: Complex10> => c,
+}
+
+Prefix10: bool = {
+    Radix10 <e: Exactness> => e,
+    <e: Exactness> Radix10 => e,
+    Exactness,
+}
+
+Exactness: bool = {
+    "#e" => true,
+    "#i" => false,
+}
+
+Radix10 = {
+    "#d"
 }
 
 Complex10: Object = {
@@ -108,11 +123,14 @@ extern {
     type Error = number_lexer::NumberLexicalError;
 
     enum number_lexer::Token {
-        "digit10" => number_lexer::Token::Digit10 { value: <String> },
-        "+" => number_lexer::Token::Plus,
         "-" => number_lexer::Token::Minus,
-        "/" => number_lexer::Token::Slash,
         "." => number_lexer::Token::Dot,
+        "/" => number_lexer::Token::Slash,
+        "#d" => number_lexer::Token::Radix10,            
+        "#e" => number_lexer::Token::Exact,        
+        "#i" => number_lexer::Token::Inexact,                
+        "+" => number_lexer::Token::Plus,
+        "digit10" => number_lexer::Token::Digit10 { value: <String> },
         "e" => number_lexer::Token::Exponent,        
         "i" => number_lexer::Token::Imag,
     }
