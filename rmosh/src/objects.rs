@@ -1,5 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
+use crate::numbers::Ratnum;
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -74,6 +75,7 @@ pub enum Object {
     Instruction(Op),
     Nil,
     Fixnum(isize),
+    Ratnum(GcRef<Ratnum>),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
     SimpleStruct(GcRef<SimpleStruct>),
@@ -319,6 +321,9 @@ impl Debug for Object {
             Object::Float(n) => {
                 write!(f, "{}", n)
             }
+            Object::Ratnum(n) => {
+                write!(f, "{}", n)
+            }            
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
@@ -414,6 +419,9 @@ impl Display for Object {
             Object::Float(n) => {
                 write!(f, "{}", n)
             }
+            Object::Ratnum(n) => {
+                write!(f, "{}", n)
+            }            
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }

@@ -83,6 +83,7 @@ pub enum ObjectType {
     StringInputPort,
     StringOutputPort,
     Pair,
+    Ratnum,
     Procedure,
     SimpleStruct,
     String,
@@ -390,6 +391,7 @@ impl Gc {
             Object::Nil => {}
             Object::Float(_) => {}
             Object::Fixnum(_) => {}
+            Object::Ratnum(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
             Object::ProgramCounter(_) => {}
@@ -539,6 +541,7 @@ impl Gc {
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
+            ObjectType::Ratnum => {}            
             ObjectType::ByteVector => {}
         }
     }

@@ -1,6 +1,8 @@
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::number_lexer;
+use std::str::FromStr;
+use crate::numbers::Ratnum;
 
 grammar(gc: &mut Box<Gc>);
 
@@ -11,8 +13,15 @@ pub Number: Object = {
 
 
 Ureal10: Object = {
-    "uinteger10" "/" "uinteger10" => {
-        todo!();
+    <numer: "uinteger10"> "/" <denom: "uinteger10"> => {
+        match (isize::from_str(&numer), isize::from_str(&denom)) {
+            (Ok(n), Ok(d)) => {
+                Object::Ratnum(gc.alloc(Ratnum::new(n, d)))
+            }
+            _ => {
+                todo!();
+            }
+        }
     }
 }
 

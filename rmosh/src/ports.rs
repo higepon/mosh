@@ -203,6 +203,7 @@ pub trait TextOutputPort {
             | Object::Procedure(_)
             | Object::Char(_)
             | Object::EqHashtable(_)
+            | Object::Ratnum(_)            
             | Object::False
             | Object::Float(_)
             | Object::StringInputPort(_)
@@ -343,6 +344,7 @@ pub trait TextOutputPort {
                 | Object::Eof
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
+                | Object::Ratnum(_)                
                 | Object::FileOutputPort(_)
                 | Object::StringOutputPort(_)
                 | Object::StdOutputPort(_)

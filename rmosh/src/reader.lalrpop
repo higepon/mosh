@@ -107,16 +107,18 @@ Symbol: Object = {
 Number: Object = {
     <s: "number10"> => {
         match isize::from_str(&s) {
+            // TODO: remove this 
             Ok(n) => Object::Fixnum(n),
             Err(e) => {
+                // TODO: remove this.
                 match f64::from_str(&s) {
                     Ok(value) => Object::Float(Float::new(value)),
                     Err(e2) => {
-
-
                         let chars: Vec<char> = s.chars().collect();
-                        println!("{:?}", NumberParser::new().parse(gc, NumberLexer::new(&chars)));
-                        panic!("Number parse error: {}{} in <{}>", e, e2, s)
+                        match NumberParser::new().parse(gc, NumberLexer::new(&chars)) {
+                            Ok(n) => n,
+                            Err(err) => todo!("{:?}", err)
+                        }
                     }
                 }
             }
