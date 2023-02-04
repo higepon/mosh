@@ -1,6 +1,14 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
+    Digit10 { value: String },
+    /*
     Uinteger10 { value: String },
+    Ureal10 { value: String },
+    Real10 { value: String },
+    */
+    Imag,    
+    Plus,
+    Minus,
     Slash,
 }
 

@@ -35,22 +35,36 @@ use crate::number_lexer::{NumberLexer, Token, NumberLexicalError};
     RADIX_16               = "#x" ?;
     COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 'i') | (REAL_16 [\+\-] INF_NAN 'i') | (REAL_16 [\+\-] 'i') | ([\+\-] UREAL_16 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
-    NUM_16                 = PREFIX_16 COMPLEX_16;    
+    NUM_16                 = PREFIX_16 COMPLEX_16;
     EOS                    = "\X0000";
 */
 
 impl<'input> Iterator for NumberLexer<'input> {
     type Item = Spanned<Token, usize, NumberLexicalError>;
 
-    fn next(&mut self) -> Option<Self::Item> {       
+    fn next(&mut self) -> Option<Self::Item> {
         loop {
             loop {
                 self.tok = self.cursor;
                 /*!re2c
-                    UINTEGER_10 {
-                        return self.with_location(Token::Uinteger10 { value: self.extract_token() });
+                    DIGIT_10 {
+                        println!("digit10 ");
+                        return self.with_location(Token::Digit10 { value: self.extract_token() });
                     }
-                    "/" { return self.with_location(Token::Slash); }                        
+                    /*
+                    REAL_10 {
+                        println!("r10");
+                        return self.with_location(Token::Real10 { value: self.extract_token() });
+                    }
+                    */
+                    /*UREAL_10 {
+                        println!("ur10");                        
+                        return self.with_location(Token::Ureal10 { value: self.extract_token() });
+                    } */                                       
+                    "/" { return self.with_location(Token::Slash); }
+                    "+" { return self.with_location(Token::Plus); }
+                    "-" { return self.with_location(Token::Minus); }                    
+                    "i" { return self.with_location(Token::Imag); }                    
                     $ { return None; }
                     * { return Some(Err(NumberLexicalError {
                             start: self.tok,

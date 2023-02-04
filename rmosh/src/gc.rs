@@ -15,8 +15,9 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
     ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
-    Vector, Vox,
+    Vector, Vox
 };
+
 use crate::ports::FileInputPort;
 use crate::vm::Vm;
 
@@ -565,6 +566,9 @@ impl Gc {
             BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
             StringInputPort, StringOutputPort,
         };
+        use crate::numbers::{
+            Compnum, Ratnum,
+        };
 
         let object_type = object_ptr.obj_type;
 
@@ -580,6 +584,14 @@ impl Gc {
                 let sstring: &SString = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(sstring)
             }
+            ObjectType::Ratnum => {
+                let n: &Ratnum = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }   
+            ObjectType::Compnum => {
+                let n: &Compnum = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }                        
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(closure)

@@ -3,17 +3,50 @@ use crate::gc::Gc;
 use crate::number_lexer;
 use std::str::FromStr;
 use crate::numbers::Ratnum;
+use crate::numbers::Compnum;
 
 grammar(gc: &mut Box<Gc>);
 
 // R7RS small 7.1.2. External representations
 pub Number: Object = {
-    Ureal10,
+    Number10,
 }
 
+Number10 = {
+    // todo move this!
+    Complex10,
+    UReal10,
+}
 
-Ureal10: Object = {
-    <numer: "uinteger10"> "/" <denom: "uinteger10"> => {
+Complex10: Object = {
+    <real: Real10> "+" <imag: UReal10> "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))        
+    },
+}
+
+Real10: Object = {
+    UReal10,
+    "+" <ureal10: UReal10> => {
+        ureal10
+    },
+    "-" <ureal10: UReal10> => {
+        Object::Fixnum(ureal10.to_number() * -1)
+    }
+
+}
+
+UReal10: Object = {
+    UInteger10 => {
+        match isize::from_str(&<>) {
+            Ok(n) => {
+                Object::Fixnum(n)
+            }
+            Err(err) => {
+                todo!("ureal10 {:?}", err);
+            }
+        }
+    },
+    <numer: UInteger10> "/" <denom: UInteger10> => {
         match (isize::from_str(&numer), isize::from_str(&denom)) {
             (Ok(n), Ok(d)) => {
                 Object::Ratnum(gc.alloc(Ratnum::new(n, d)))
@@ -22,15 +55,28 @@ Ureal10: Object = {
                 todo!();
             }
         }
+    },
+
+}
+
+
+UInteger10: String = {
+    <digits: "digit10" +> => {
+        digits.join("")
     }
 }
+
+
 
 extern {
     type Location = usize;
     type Error = number_lexer::NumberLexicalError;
 
     enum number_lexer::Token {
-        "uinteger10" => number_lexer::Token::Uinteger10 { value: <String> },
+        "digit10" => number_lexer::Token::Digit10 { value: <String> },
+        "+" => number_lexer::Token::Plus,
+        "-" => number_lexer::Token::Minus,        
         "/" => number_lexer::Token::Slash,
+        "i" => number_lexer::Token::Imag,
     }
 }
