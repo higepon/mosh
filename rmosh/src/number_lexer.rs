@@ -1,10 +1,11 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
-
+    Uinteger10 { value: String },
+    Slash,
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, LexicalError>;
+pub type LexerItem = Spanned<Token, usize, NumberLexicalError>;
 
 #[derive(Clone, Debug)]
 pub struct NumberLexer<'input> {
@@ -27,6 +28,15 @@ impl<'input> NumberLexer<'input> {
             limit: input.len() - 1,
         }
     }
+
+    pub fn with_location(&self, token: Token) -> Option<LexerItem> {
+        Some(Ok((self.tok, token, self.cursor)))
+    }    
+
+    pub fn extract_token(&self) -> String {
+        self.s[self.tok..self.cursor].iter().collect()
+    }
+
 }
 
 #[derive(Clone, Debug, PartialEq)]

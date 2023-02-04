@@ -4,6 +4,7 @@ use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
 use crate::number_reader::NumberParser;
+use crate::number_lexer::NumberLexer;
 
 grammar(gc: &mut Box<Gc>);
 
@@ -114,7 +115,7 @@ Number: Object = {
 
 
                         let chars: Vec<char> = s.chars().collect();
-                        println!("{:?}", NumberParser::new().parse(gc, lexer::Lexer::new(&chars)));
+                        println!("{:?}", NumberParser::new().parse(gc, NumberLexer::new(&chars)));
                         panic!("Number parse error: {}{} in <{}>", e, e2, s)
                     }
                 }

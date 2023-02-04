@@ -15,6 +15,8 @@ pub mod fasl;
 pub mod gc;
 pub mod lexer;
 pub mod lexer_iter;
+pub mod number_lexer;
+pub mod number_lexer_iter;
 pub mod objects;
 pub mod op;
 pub mod ports;
