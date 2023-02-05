@@ -92,6 +92,9 @@ impl<'input> Iterator for Lexer<'input> {
                     RIGHT_PAREN { return self.with_location(Token::RightParen); }
                     TRUE  { return self.with_location(Token::True); }
                     FALSE { return self.with_location(Token::False); }
+                    NUM_10 {
+                        return self.with_location(Token::Number10{value: self.extract_token()});
+                    }                    
                     IDENTIFIER {
                         return self.with_location(Token::Identifier { value: self.extract_token() });
                     }
@@ -100,9 +103,6 @@ impl<'input> Iterator for Lexer<'input> {
                     }                
                     STRING {
                         return self.with_location(Token::String{value: self.extract_string()});
-                    }
-                    NUM_10 {
-                        return self.with_location(Token::Number10{value: self.extract_token()});
                     }
                     NUM_16 {
                         return self.with_location(Token::Number16{value: self.extract_token()});

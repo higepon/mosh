@@ -72,6 +72,7 @@ impl<T> DerefMut for GcRef<T> {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
+    Bignum,
     BinaryFileInputPort,
     BinaryFileOutputPort,
     ByteVector,
@@ -546,6 +547,7 @@ impl Gc {
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Ratnum => {}
+            ObjectType::Bignum => {}            
             ObjectType::Compnum => {}
             ObjectType::ByteVector => {}
         }
@@ -563,7 +565,7 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::numbers::{Compnum, Ratnum};
+        use crate::numbers::{Bignum, Compnum, Ratnum};
         use crate::ports::{
             BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
             StringInputPort, StringOutputPort,
@@ -583,6 +585,10 @@ impl Gc {
                 let sstring: &SString = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(sstring)
             }
+            ObjectType::Bignum => {
+                let n: &Bignum = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }            
             ObjectType::Ratnum => {
                 let n: &Ratnum = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)

@@ -101,27 +101,17 @@ Character: Object = {
 
 
 Symbol: Object = {
-    "identifier" => gc.symbol_intern(&<>),
+    "identifier" => gc.symbol_intern(&<>)
 }
 
 Number: Object = {
     <s: "number10"> => {
-        match isize::from_str(&s) {
-            // TODO: remove this 
-            Ok(n) => Object::Fixnum(n),
-            Err(e) => {
-                // TODO: remove this.
-                match f64::from_str(&s) {
-                    Ok(value) => Object::Flonum(Flonum::new(value)),
-                    Err(e2) => {
-                        let chars: Vec<char> = s.chars().collect();
-                        match NumberParser::new().parse(gc, NumberLexer::new(&chars)) {
-                            Ok(n) => n,
-                            Err(err) => todo!("{:?}", err)
-                        }
-                    }
-                }
-            }
+        println!("NUMBER parse {}", s);
+        let mut chars: Vec<char> = s.chars().collect();
+        chars.push('\0');
+        match NumberParser::new().parse(gc, NumberLexer::new(&chars)) {
+            Ok(n) => n,
+            Err(err) => todo!("{:?}", err)
         }
     },
     <s: "number16"> => {

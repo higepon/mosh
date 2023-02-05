@@ -197,6 +197,12 @@ impl DerefMut for Bignum {
 }
 
 impl Bignum {
+    pub fn new(value: BigInt) -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::Bignum),
+            value: value
+        }
+    }
     pub fn fx_eq(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v == f,

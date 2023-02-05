@@ -1,10 +1,12 @@
-use crate::objects::Object;
-use crate::numbers::Flonum;
 use crate::gc::Gc;
 use crate::number_lexer;
-use std::str::FromStr;
-use crate::numbers::Ratnum;
+use crate::numbers::Bignum;
 use crate::numbers::Compnum;
+use crate::numbers::Flonum;
+use crate::numbers::Ratnum;
+use crate::objects::Object;
+use std::str::FromStr;
+use num_bigint::BigInt;
 
 grammar(gc: &mut Box<Gc>);
 
@@ -40,13 +42,13 @@ Complex10: Object = {
     <real: Real10> "-" <imag: UReal10> "i" => {
         let imag = imag.neg(gc);
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
-    },    
+    },
     <real: Real10> "+" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(1))))
-    },    
+    },
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
-    },       
+    },
 }
 
 Real10: Object = {
@@ -62,12 +64,20 @@ Real10: Object = {
 
 UReal10: Object = {
     UInteger10 => {
+        println!("uinteger10 parse={}", <>);
         match isize::from_str(&<>) {
             Ok(n) => {
                 Object::Fixnum(n)
             }
             Err(err) => {
-                todo!("ureal10 {:?}", err);
+                match BigInt::from_str(&<>) {
+                    Ok(b) => {
+                        Object::Bignum(gc.alloc(Bignum::new(b)))
+                    },
+                    Err(err2) => {
+                        todo!("err {:?} {:?}", err, err2);
+                    }
+                }
             }
         }
     },
@@ -122,8 +132,18 @@ UInteger10: String = {
 }
 
 InfNan: Object = {
-    "+inf.0" => Object::Flonum(Flonum::new(f64:: INFINITY)),
-    "-inf.0" => Object::Flonum(Flonum::new(f64:: NEG_INFINITY)),    
+    "+inf.0" => {
+        Object::Flonum(Flonum::new(f64:: INFINITY))
+    },
+    "-inf.0" => {
+        Object::Flonum(Flonum::new(f64:: NEG_INFINITY))
+    },
+    "+nan.0" => {
+        Object::Flonum(Flonum::new(f64:: NAN))
+    },
+    "-nan.0" => {
+        Object::Flonum(Flonum::new(f64:: NAN))
+    },
 }
 
 extern {
@@ -134,14 +154,16 @@ extern {
         "-" => number_lexer::Token::Minus,
         "." => number_lexer::Token::Dot,
         "/" => number_lexer::Token::Slash,
-        "#d" => number_lexer::Token::Radix10,            
-        "#e" => number_lexer::Token::Exact,        
-        "#i" => number_lexer::Token::Inexact,                
+        "#d" => number_lexer::Token::Radix10,
+        "#e" => number_lexer::Token::Exact,
+        "#i" => number_lexer::Token::Inexact,
         "+" => number_lexer::Token::Plus,
         "digit10" => number_lexer::Token::Digit10 { value: <String> },
-        "e" => number_lexer::Token::Exponent,        
+        "e" => number_lexer::Token::Exponent,
         "i" => number_lexer::Token::Imag,
-        "+inf.0" => number_lexer::Token::PlusInf,        
-        "-inf.0" => number_lexer::Token::MinusInf,        
+        "+inf.0" => number_lexer::Token::PlusInf,
+        "-inf.0" => number_lexer::Token::MinusInf,
+        "+nan.0" => number_lexer::Token::PlusNan,
+        "-nan.0" => number_lexer::Token::MinusNan,
     }
 }

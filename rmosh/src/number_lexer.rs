@@ -9,8 +9,10 @@ pub enum Token {
     Inexact,
     Minus,
     MinusInf,
+    MinusNan,
     Plus,
     PlusInf,
+    PlusNan,
     Slash,
 }
 

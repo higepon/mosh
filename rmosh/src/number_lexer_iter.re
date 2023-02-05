@@ -48,9 +48,12 @@ impl<'input> Iterator for NumberLexer<'input> {
                 self.tok = self.cursor;
                 /*!re2c
                     DIGIT_10 {
-                        println!("digit10 ");
                         return self.with_location(Token::Digit10 { value: self.extract_token() });
                     }
+                    "+inf.0" { return self.with_location(Token::PlusInf); }
+                    "-inf.0" { return self.with_location(Token::MinusInf); }
+                    "+nan.0" { return self.with_location(Token::PlusNan); }
+                    "-nan.0" { return self.with_location(Token::MinusNan); }
                     "/" { return self.with_location(Token::Slash); }
                     "+" { return self.with_location(Token::Plus); }
                     "-" { return self.with_location(Token::Minus); }
@@ -60,8 +63,7 @@ impl<'input> Iterator for NumberLexer<'input> {
                     "#d" { return self.with_location(Token::Radix10); }
                     "#e" { return self.with_location(Token::Exact); }
                     "#i" { return self.with_location(Token::Inexact); }
-                    "+inf.0" { return self.with_location(Token::PlusInf); }
-                    "-inf.0" { return self.with_location(Token::MinusInf); }                    
+                    "EOS" { return None; }
                     $ { return None; }
                     * { return Some(Err(NumberLexicalError {
                             start: self.tok,
