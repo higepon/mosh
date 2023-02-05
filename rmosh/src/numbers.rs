@@ -116,6 +116,10 @@ impl Ratnum {
         }
     }
 
+    pub fn eq(&self, other: &Ratnum) -> bool {
+        self.ratio.eq(&other.ratio)
+    }
+
     pub fn fx_eq(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v == f,
@@ -214,6 +218,9 @@ impl Compnum {
         assert!(o.is_fixnum() || o.is_bignum() || o.is_flonum() || o.is_ratnum());
         number_eq(self.imag, Object::Fixnum(0)) && number_eq(self.real, o)
     }
+    pub fn eq(&self, other: &Compnum) -> bool {
+        number_eq(self.real, other.real) && number_eq(other.imag, other.imag)
+    }
 }
 
 impl Display for Compnum {
@@ -242,77 +249,20 @@ pub fn number_eq(n1: Object, n2: Object) -> bool {
         (Object::Bignum(b), Object::Ratnum(r)) => r.bi_eq(&b),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.eq(&b2),
         (Object::Bignum(_), Object::Compnum(c)) => c.obj_eq(n1),
+        (Object::Ratnum(r), Object::Fixnum(f)) => r.fx_eq(f),
+        (Object::Ratnum(r), Object::Flonum(fl)) => r.fl_eq(&fl),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.eq(&r2),
+        (Object::Ratnum(r), Object::Bignum(b)) => r.bi_eq(&b),
+        (Object::Ratnum(_), Object::Compnum(c)) => c.obj_eq(n1),
+        (Object::Compnum(c), Object::Fixnum(_)) => c.obj_eq(n2),
+        (Object::Compnum(c), Object::Flonum(_)) => c.obj_eq(n2),
+        (Object::Compnum(c), Object::Ratnum(_)) => c.obj_eq(n2),
+        (Object::Compnum(c), Object::Bignum(_)) => c.obj_eq(n2),
+        (Object::Compnum(c1), Object::Compnum(c2)) => c1.eq(&c2),
         _ => todo!(),
     }
 }
-/*
-MOSH_ASSERT(n1.isNumber());
-MOSH_ASSERT(n2.isNumber());
-if (n1.isFixnum()) {
-    if (n2.isFixnum()) {
-        return Fixnum::eq(n1.toFixnum(), n2.toFixnum());
-    } else if (n2.isFlonum()) {
-        return Flonum::eq(n1.toFixnum(), n2.toFlonum());
-    } else if (n2.isRatnum()) {
-        return Ratnum::eq(n1.toFixnum(), n2.toRatnum());
-    } else if (n2.isBignum()) {
-        return Bignum::eq(n1.toFixnum(), n2.toBignum());
-    } else if (n2.isCompnum()) {
-        return Compnum::eq(n1, n2.toCompnum());
-    }
-} else if (n1.isFlonum()) {
-    if (n2.isFixnum()) {
-        return Flonum::eq(n1.toFlonum(), n2.toFixnum());
-    } else if (n2.isFlonum()) {
-        return Flonum::eq(n1.toFlonum(), n2.toFlonum());
-    } else if (n2.isRatnum()) {
-        return Flonum::eq(n1.toFlonum(), n2.toRatnum());
-    } else if (n2.isBignum()) {
-        Bignum* b1 = new Bignum(n1.toFlonum()->value());
-        return Bignum::eq(b1, n2.toBignum());
-    } else if (n2.isCompnum()) {
-        return Compnum::eq(n1, n2.toCompnum());
-    }
-} else if (n1.isBignum()) {
-    if (n2.isFixnum()) {
-        return Bignum::eq(n1.toBignum(), n2.toFixnum());
-    } else if (n2.isFlonum()) {
-        Bignum *b2 = new Bignum(n2.toFlonum()->value());
-        return Bignum::eq(n1.toBignum(), b2);
-    } else if (n2.isRatnum()) {
-        return Ratnum::eq(n1.toBignum(), n2.toRatnum());
-    } else if (n2.isBignum()) {
-        return Bignum::eq(n1.toBignum(), n2.toBignum());
-    } else if (n2.isCompnum()) {
-        return Compnum::eq(n1, n2.toCompnum());
-    }
-} else if (n1.isRatnum()) {
-    if (n2.isFixnum()) {
-        return Ratnum::eq(n1.toRatnum(), n2.toFixnum());
-    } else if (n2.isFlonum()) {
-        return Flonum::eq(n1.toRatnum(), n2.toFlonum());
-    } else if (n2.isRatnum()) {
-        return Ratnum::eq(n1.toRatnum(), n2.toRatnum());
-    } else if (n2.isBignum()) {
-        return Ratnum::eq(n1.toRatnum(), n2.toBignum());
-    } else if (n2.isCompnum()) {
-        return Compnum::eq(n1, n2.toCompnum());
-    }
-} else if (n1.isCompnum()) {
-    if (n2.isFixnum()) {
-        return Compnum::eq(n1.toCompnum(), n2);
-    } else if (n2.isRatnum()) {
-        return Compnum::eq(n1.toCompnum(), n2);
-    } else if (n2.isFlonum()) {
-        return Compnum::eq(n1.toCompnum(), n2);
-    } else if (n2.isBignum()) {
-        return Compnum::eq(n1.toCompnum(), n2);
-    } else if (n2.isCompnum()) {
-        return Compnum::eq(n1.toCompnum(), n2.toCompnum());
-    }
-}
-return false;
-*/
+
 impl Object {
     #[inline(always)]
     pub fn is_exact(&self) -> bool {
