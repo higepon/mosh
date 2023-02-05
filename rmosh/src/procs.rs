@@ -1188,9 +1188,11 @@ fn get_environment_variables(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-environment-variables";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_equal(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_equal(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "equal?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let e = Equal::new();
+    Object::make_bool(e.is_equal(&mut vm.gc, &args[0], &args[1]))
 }
 fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-string-input-port";

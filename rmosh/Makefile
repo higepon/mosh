@@ -3,7 +3,7 @@ FEATURES = #--features debug_log_vm # --features debug_log_gc
 
 test: src/lexer_iter.rs src/number_lexer_iter.rs
 	make -C scripts test
-	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture
+	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture # -- --test-threads 1
 	grep "not implemented" src/procs.rs | wc -l
 	grep "Object {" src/procs.rs | wc -l
 

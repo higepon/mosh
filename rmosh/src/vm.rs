@@ -50,7 +50,7 @@ pub struct Vm {
     // Program counter
     pc: *const Object,
     // The stack.
-    stack: [Object; STACK_SIZE],
+    stack: Vec<Object>,
     // accumulator register.
     pub ac: Object,
     // display closure register.
@@ -93,7 +93,7 @@ impl Vm {
     pub fn new() -> Self {
         let mut ret = Self {
             gc: Box::new(Gc::new()),
-            stack: [Object::Unspecified; STACK_SIZE],
+            stack: vec![Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
             expected: Object::Unspecified,
