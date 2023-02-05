@@ -848,11 +848,7 @@ macro_rules! check_argc_between {
 fn is_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "number?";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Fixnum(_) => Object::True,
-        Object::Flonum(_) => Object::True,
-        _ => Object::False,
-    }
+    Object::make_bool(args[0].is_number())
 }
 fn cons(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cons";
@@ -2040,7 +2036,8 @@ fn make_transcoder(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn eof_object(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eof-object";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Object::Eof
 }
 fn sys_open_bytevector_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sys-open-bytevector-output-port";

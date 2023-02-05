@@ -598,7 +598,7 @@ impl StringOutputPort {
 
 impl Display for StringOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<file-output-port>")
+        write!(f, "#<string-output-port>")
     }
 }
 

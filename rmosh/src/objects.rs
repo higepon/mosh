@@ -307,6 +307,15 @@ impl Debug for Object {
             Object::StdErrorPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::Bignum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Ratnum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Compnum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }            
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -329,15 +338,6 @@ impl Debug for Object {
                 write!(f, "{}", c)
             }
             Object::Flonum(n) => {
-                write!(f, "{}", n)
-            }
-            Object::Bignum(n) => {
-                write!(f, "{}", n)
-            }
-            Object::Ratnum(n) => {
-                write!(f, "{}", n)
-            }
-            Object::Compnum(n) => {
                 write!(f, "{}", n)
             }
             Object::Fixnum(n) => {
@@ -436,14 +436,14 @@ impl Display for Object {
                 write!(f, "{}", n)
             }
             Object::Bignum(n) => {
-                write!(f, "{}", n)
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Ratnum(n) => {
-                write!(f, "{}", n)
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Compnum(n) => {
-                write!(f, "{}", n)
-            }
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            } 
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }

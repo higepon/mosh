@@ -1,5 +1,5 @@
 use std::{
-    fmt::{self, Display},
+    fmt::{self, Debug, Display},
     ops::{Deref, DerefMut},
 };
 
@@ -94,8 +94,13 @@ impl Display for Flonum {
     }
 }
 
+impl Debug for Flonum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value())
+    }
+}
+
 /// Rational number.
-#[derive(Debug)]
 pub struct Ratnum {
     pub header: GcHeader,
     pub ratio: Rational64,
@@ -161,12 +166,17 @@ impl Ratnum {
 
 impl Display for Ratnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<ratnum>")
+        write!(f, "#<ratnum {}>", self.ratio)
+    }
+}
+
+impl Debug for Ratnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<ratnum {}>", self.ratio)
     }
 }
 
 /// Big number.
-#[derive(Debug)]
 pub struct Bignum {
     pub header: GcHeader,
     pub value: BigInt,
@@ -205,6 +215,12 @@ impl Bignum {
 }
 
 impl Display for Bignum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<bignum>")
+    }
+}
+
+impl Debug for Bignum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<bignum>")
     }
