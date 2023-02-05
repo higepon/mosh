@@ -397,6 +397,7 @@ impl Gc {
             Object::Compnum(_) => {}
             Object::Bignum(_) => {}
             Object::Ratnum(_) => {}
+            Object::Regexp(_) => {}            
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
             Object::ProgramCounter(_) => {}

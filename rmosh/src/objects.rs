@@ -38,6 +38,7 @@ pub enum Object {
     Procedure(GcRef<Procedure>),
     ProgramCounter(*const Object),
     Ratnum(GcRef<Ratnum>),
+    Regexp(GcRef<Regexp>),
     SimpleStruct(GcRef<SimpleStruct>),
     StdErrorPort(GcRef<StdErrorPort>),
     StdOutputPort(GcRef<StdOutputPort>),
@@ -126,7 +127,12 @@ impl Object {
             _ => false,
         }
     }
-
+    pub fn is_regexp(&self) -> bool {
+        match self {
+            Object::Regexp(_) => true,
+            _ => false,
+        }
+    }
     pub fn is_nil(&self) -> bool {
         match self {
             Object::Nil => true,
@@ -334,6 +340,9 @@ impl Debug for Object {
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::Regexp(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }            
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -444,6 +453,9 @@ impl Display for Object {
             Object::Compnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             } 
+            Object::Regexp(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }             
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
@@ -964,6 +976,25 @@ impl Display for Procedure {
     }
 }
 
+/// Regexp.
+pub struct Regexp {
+    pub header: GcHeader,
+}
+
+impl Regexp {
+}
+
+impl fmt::Debug for Regexp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("#<regexp>")
+    }
+}
+
+impl Display for Regexp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<regexp>")
+    }
+}
 /// Closure
 #[derive(Debug)]
 pub struct Closure {

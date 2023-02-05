@@ -206,6 +206,7 @@ pub trait TextOutputPort {
             | Object::Bignum(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
+            | Object::Regexp(_)            
             | Object::False
             | Object::Flonum(_)
             | Object::StringInputPort(_)
@@ -330,11 +331,11 @@ pub trait TextOutputPort {
         loop {
             match o {
                 Object::ByteVector(_)
+                | Object::Bignum(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::Char(_)
                 | Object::Closure(_)
-                | Object::Bignum(_)
                 | Object::Compnum(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
@@ -348,6 +349,7 @@ pub trait TextOutputPort {
                 | Object::Procedure(_)
                 | Object::ProgramCounter(_)
                 | Object::Ratnum(_)
+                | Object::Regexp(_)
                 | Object::StdErrorPort(_)
                 | Object::StdOutputPort(_)
                 | Object::String(_)
