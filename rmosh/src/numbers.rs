@@ -65,6 +65,14 @@ impl Flonum {
         }
     }
 
+    pub fn fx_lt(&self, f: isize) -> bool {
+        if self.is_finite() || self.is_nan() {
+            false
+        } else {
+            (f as f64) < self.value()
+        }
+    }
+
     pub fn is_rational(&self) -> bool {
         !self.is_nan() && !self.is_infinite()
     }
@@ -159,10 +167,21 @@ impl Ratnum {
             None => false,
         }
     }
-
+    pub fn fx_lt(&self, f: isize) -> bool {
+        match self.to_isize() {
+            Some(v) => v < f,
+            None => false,
+        }
+    }
     pub fn fl_eq(&self, fl: &Flonum) -> bool {
         match self.to_f64() {
             Some(v) => v == **fl,
+            None => false,
+        }
+    }
+    pub fn fl_lt(&self, fl: &Flonum) -> bool {
+        match self.to_f64() {
+            Some(v) => v < **fl,
             None => false,
         }
     }
@@ -170,6 +189,13 @@ impl Ratnum {
     pub fn bi_eq(&self, b: &Bignum) -> bool {
         match (b.to_f64(), self.to_f64()) {
             (Some(l), Some(r)) => l == r,
+            _ => false,
+        }
+    }
+
+    pub fn bi_lt(&self, b: &Bignum) -> bool {
+        match (b.to_f64(), self.to_f64()) {
+            (Some(l), Some(r)) => l < r,
             _ => false,
         }
     }
@@ -220,12 +246,24 @@ impl Bignum {
             None => false,
         }
     }
+    pub fn fx_lt(&self, f: isize) -> bool {
+        match self.to_isize() {
+            Some(v) => v < f,
+            None => false,
+        }
+    }
     pub fn eq(&self, other: &Bignum) -> bool {
         self.value.eq(&other.value)
     }
     pub fn fl_eq(&self, fl: &Flonum) -> bool {
         match self.to_f64() {
             Some(v) => v == **fl,
+            None => false,
+        }
+    }
+    pub fn fl_lt(&self, fl: &Flonum) -> bool {
+        match self.to_f64() {
+            Some(v) => v < **fl,
             None => false,
         }
     }
@@ -309,6 +347,30 @@ pub fn number_eq(n1: Object, n2: Object) -> bool {
         (Object::Compnum(c), Object::Ratnum(_)) => c.obj_eq(n2),
         (Object::Compnum(c), Object::Bignum(_)) => c.obj_eq(n2),
         (Object::Compnum(c1), Object::Compnum(c2)) => c1.eq(&c2),
+        _ => todo!(),
+    }
+}
+
+pub fn number_lt(n1: Object, n2: Object) -> bool {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(f), Object::Fixnum(fl)) => f < fl,
+        (Object::Fixnum(f), Object::Flonum(fl)) => fl.fx_lt(f),
+        (Object::Fixnum(f), Object::Ratnum(r)) => r.fx_lt(f),
+        (Object::Fixnum(f), Object::Bignum(b)) => b.fx_lt(f),
+        (Object::Flonum(fl), Object::Fixnum(f)) => fl.fx_lt(f),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.lt(&fl2),
+        (Object::Flonum(fl), Object::Ratnum(r)) => r.fl_lt(&fl),
+        (Object::Flonum(fl), Object::Bignum(b)) => b.fl_lt(&fl),
+        (Object::Bignum(b), Object::Fixnum(f)) => b.fx_lt(f),
+        (Object::Bignum(b), Object::Flonum(fl)) => b.fl_lt(&fl),
+        (Object::Bignum(b), Object::Ratnum(r)) => r.bi_lt(&b),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.lt(&b2),
+        (Object::Ratnum(r), Object::Fixnum(f)) => r.fx_lt(f),
+        (Object::Ratnum(r), Object::Flonum(fl)) => r.fl_lt(&fl),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.lt(&r2),
+        (Object::Ratnum(r), Object::Bignum(b)) => r.bi_lt(&b),
         _ => todo!(),
     }
 }

@@ -12,7 +12,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers,
+    numbers::{self, Flonum},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -2920,7 +2920,19 @@ fn max(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn min(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "min";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut min = Object::Flonum(Flonum::new(f64::INFINITY));
+    for obj in args {
+        if obj.is_number() {
+            panic!("{}: number required but got {}", name, obj);
+        }
+        if obj.is_flonum() && obj.to_flonum().is_nan() {
+            return *obj;
+        }
+        if numbers::number_lt(*obj, min) {
+            min = *obj;
+        }
+    }
+    return min;
 }
 fn get_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-char";
