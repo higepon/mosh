@@ -291,19 +291,15 @@ fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
             Some(v) => Object::Flonum(Flonum::new(v)),
             None => todo!(),
         },
-        Object::Bignum(b) => {
-            match b.to_f64() {
-                Some(v) => Object::Flonum(Flonum::new(v)),
-                None => todo!()
-            }
-        }
+        Object::Bignum(b) => match b.to_f64() {
+            Some(v) => Object::Flonum(Flonum::new(v)),
+            None => todo!(),
+        },
         Object::Flonum(_) => obj,
-        Object::Ratnum(r) => {
-            match r.to_f64() {
-                Some(v) => Object::Flonum(Flonum::new(v)),
-                None => todo!()
-            }
-        }            
+        Object::Ratnum(r) => match r.to_f64() {
+            Some(v) => Object::Flonum(Flonum::new(v)),
+            None => todo!(),
+        },
         Object::Compnum(c) => {
             let real = inexact(gc, c.real);
             let imag = inexact(gc, c.imag);
@@ -339,7 +335,13 @@ fn is_integer(gc: &mut Box<Gc>, obj: Object) -> bool {
 impl Object {
     #[inline(always)]
     pub fn is_exact(&self) -> bool {
-        todo!()
+        assert!(self.is_number());
+        match self {
+            Object::Fixnum(_) | Object::Bignum(_) | Object::Ratnum(_) => true,
+            Object::Flonum(_) => false,
+            Object::Compnum(c) => c.real.is_exact() && c.imag.is_exact(),
+            _ => todo!(),
+        }
     }
     #[inline(always)]
     pub fn is_number(&self) -> bool {

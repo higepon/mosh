@@ -3306,7 +3306,8 @@ fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exact?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_exact())
 }
 fn is_inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "inexact?";
