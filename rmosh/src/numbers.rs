@@ -200,7 +200,7 @@ impl Bignum {
     pub fn new(value: BigInt) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Bignum),
-            value: value
+            value: value,
         }
     }
     pub fn fx_eq(&self, f: isize) -> bool {
@@ -302,7 +302,50 @@ pub fn number_eq(n1: Object, n2: Object) -> bool {
     }
 }
 
-fn is_exact_zero(obj: Object) -> bool {
+pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    assert!(!n2.is_bignum());
+    match (n1, n2) {
+        (Object::Fixnum(f1), Object::Fixnum(f2)) => match (BigInt::from_isize(f1), f2 as u32) {
+            (Some(b1), b2) => {
+                let b = b1.pow(b2);
+                match b.to_isize() {
+                    Some(v) => Object::Fixnum(v),
+                    None => Object::Bignum(gc.alloc(Bignum::new(b))),
+                }
+            }
+            _ => todo!(),
+        },
+        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
+        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        _ => todo!(),
+    }
+}
+
+fn is_exact_zero(_obj: Object) -> bool {
     todo!()
 }
 

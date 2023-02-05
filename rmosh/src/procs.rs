@@ -12,6 +12,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
+    numbers,
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -3859,10 +3860,21 @@ fn atan(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "atan";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn expt(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn expt(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "expt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_number() && n2.is_number() {
+        if n2.is_bignum() {
+            panic!("{}: number ({}, {}) too big", name, n1, n2);
+        }
+        numbers::expt(&mut vm.gc, n1, n2)
+    } else {
+        panic!("{}: numbers required but got {} and {}", name, n1, n2);
+    }
 }
+
 fn make_polar(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-polar";
     panic!("{}({}) not implemented", name, args.len());
@@ -4117,8 +4129,31 @@ fn put_datum(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "list-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let mut obj = args[0];
+    match args[1] {
+        Object::Fixnum(mut index) => loop {
+            index -= 1;
+            if index < 0 {
+                break;
+            }
+            if let Object::Pair(p) = obj {
+                obj = p.cdr;
+            } else {
+                panic!("{}: pair required but got {}", name, obj)
+            }
+        },
+        _ => {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    }
+    if obj.is_pair() {
+        obj.car_unchecked()
+    } else {
+        panic!("{}: pair required but got {}", name, obj)
+    }
 }
+
 fn list_tail(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "list-tail";
     panic!("{}({}) not implemented", name, args.len());

@@ -1,5 +1,3 @@
-use std::str::FromStr;
-use crate::numbers::Flonum;
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
