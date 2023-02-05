@@ -197,7 +197,7 @@ impl Object {
         } else {
             panic!("Not a Object::Flonum")
         }
-    }    
+    }
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
