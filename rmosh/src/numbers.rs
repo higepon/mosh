@@ -5,11 +5,10 @@ use std::{
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
-use num_traits::ToPrimitive;
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::{
-    gc::{GcHeader, GcRef, ObjectType},
-    numbers,
+    gc::{Gc, GcHeader, ObjectType},
     objects::Object,
 };
 
@@ -36,6 +35,7 @@ impl Flonum {
     pub fn new(value: f64) -> Self {
         Self { value: value }
     }
+
     #[inline(always)]
     pub fn value(&self) -> f64 {
         unsafe { self.value }
@@ -43,7 +43,7 @@ impl Flonum {
 
     #[inline(always)]
     pub fn eq(&self, other: &Flonum) -> bool {
-        self.value == other.value
+        self.value() == other.value()
     }
 
     pub fn fx_eq(&self, f: isize) -> bool {
@@ -51,6 +51,19 @@ impl Flonum {
             false
         } else {
             (f as f64) == self.value()
+        }
+    }
+
+    pub fn is_rational(&self) -> bool {
+        !self.is_nan() && !self.is_infinite()
+    }
+
+    pub fn to_exact(&self, gc: &mut Box<Gc>) -> Object {
+        match Rational64::from_f64(**self) {
+            Some(r) => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))),
+            None => {
+                todo!()
+            }
         }
     }
 }
@@ -118,6 +131,10 @@ impl Ratnum {
 
     pub fn eq(&self, other: &Ratnum) -> bool {
         self.ratio.eq(&other.ratio)
+    }
+
+    pub fn denom(&self) -> Object {
+        Object::Fixnum(*self.ratio.denom() as isize)
     }
 
     pub fn fx_eq(&self, f: isize) -> bool {
@@ -263,10 +280,66 @@ pub fn number_eq(n1: Object, n2: Object) -> bool {
     }
 }
 
+fn is_exact_zero(obj: Object) -> bool {
+    todo!()
+}
+
+fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
+    assert!(obj.is_number());
+    match obj {
+        Object::Fixnum(f) => match f.to_f64() {
+            Some(v) => Object::Flonum(Flonum::new(v)),
+            None => todo!(),
+        },
+        Object::Bignum(b) => {
+            match b.to_f64() {
+                Some(v) => Object::Flonum(Flonum::new(v)),
+                None => todo!()
+            }
+        }
+        Object::Flonum(_) => obj,
+        Object::Ratnum(r) => {
+            match r.to_f64() {
+                Some(v) => Object::Flonum(Flonum::new(v)),
+                None => todo!()
+            }
+        }            
+        Object::Compnum(c) => {
+            let real = inexact(gc, c.real);
+            let imag = inexact(gc, c.imag);
+            Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+        }
+        _ => todo!(),
+    }
+}
+
+fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
+    assert!(obj.is_rational());
+    match obj {
+        Object::Ratnum(r) => r.denom(),
+        Object::Flonum(fl) => {
+            let m = fl.to_exact(gc);
+            let denom = denominator(gc, m);
+            inexact(gc, denom)
+        }
+        _ => Object::Fixnum(1),
+    }
+}
+
+// http://www.r6rs.org/final/html/r6rs/r6rs-Z-H-14.html#node_idx_448
+fn is_integer(gc: &mut Box<Gc>, obj: Object) -> bool {
+    assert!(obj.is_number());
+    match obj {
+        Object::Flonum(f) if f.is_nan() || f.is_infinite() => false,
+        Object::Compnum(c) => is_exact_zero(c.imag) && is_integer(gc, c.real),
+        _ => number_eq(denominator(gc, obj), Object::Fixnum(1)),
+    }
+}
+
 impl Object {
     #[inline(always)]
     pub fn is_exact(&self) -> bool {
-        false
+        todo!()
     }
     #[inline(always)]
     pub fn is_number(&self) -> bool {
@@ -284,11 +357,24 @@ impl Object {
     }
 
     #[inline(always)]
+    pub fn is_integer(&self, gc: &mut Box<Gc>) -> bool {
+        self.is_fixnum() || self.is_bignum() || (self.is_number() && is_integer(gc, *self))
+    }
+
+    #[inline(always)]
     pub fn is_real(&self) -> bool {
         self.is_fixnum()
             || self.is_bignum()
             || self.is_flonum()
             || self.is_ratnum()
             || (self.is_compnum() && self.to_compnum().is_real())
+    }
+
+    #[inline(always)]
+    pub fn is_rational(&self) -> bool {
+        self.is_fixnum()
+            || self.is_bignum()
+            || (self.is_flonum() && self.to_flonum().is_rational())
+            || self.is_ratnum()
     }
 }

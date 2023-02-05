@@ -191,6 +191,13 @@ impl Object {
             panic!("Not a Object::EqHashtable")
         }
     }
+    pub fn to_flonum(self) -> Flonum {
+        if let Self::Flonum(fl) = self {
+            fl
+        } else {
+            panic!("Not a Object::Flonum")
+        }
+    }    
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
