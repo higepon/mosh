@@ -47,13 +47,13 @@ impl<'input> Iterator for NumberLexer<'input> {
             loop {
                 self.tok = self.cursor;
                 /*!re2c
-                    DIGIT_10 {
-                        return self.with_location(Token::Digit10 { value: self.extract_token() });
-                    }
                     "+inf.0" { return self.with_location(Token::PlusInf); }
                     "-inf.0" { return self.with_location(Token::MinusInf); }
                     "+nan.0" { return self.with_location(Token::PlusNan); }
-                    "-nan.0" { return self.with_location(Token::MinusNan); }
+                    "-nan.0" { return self.with_location(Token::MinusNan); }                
+                    DIGIT_10 {
+                        return self.with_location(Token::Digit10 { value: self.extract_token() });
+                    }
                     "/" { return self.with_location(Token::Slash); }
                     "+" { return self.with_location(Token::Plus); }
                     "-" { return self.with_location(Token::Minus); }

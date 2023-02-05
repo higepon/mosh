@@ -264,7 +264,7 @@ impl Compnum {
 
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<compnum>")
+        write!(f, "{}+/-{}i", self.real.to_string(), self.imag.to_string())
     }
 }
 

@@ -46,6 +46,9 @@ Complex10: Object = {
     <real: Real10> "+" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(1))))
     },
+    <real: Real10> "+inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
+    },    
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
