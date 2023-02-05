@@ -1,6 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::numbers::{Compnum, Flonum, Ratnum, Bignum};
+use crate::numbers::{Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -99,7 +99,7 @@ impl Object {
         match self {
             Object::Bignum(_) => true,
             _ => false,
-        }        
+        }
     }
 
     pub fn is_fixnum(&self) -> bool {
@@ -197,7 +197,7 @@ impl Object {
         } else {
             panic!("Not a Object::Compnum")
         }
-    }    
+    }
     pub fn to_simple_struct(self) -> GcRef<SimpleStruct> {
         if let Self::SimpleStruct(s) = self {
             s
@@ -326,7 +326,7 @@ impl Debug for Object {
             }
             Object::Bignum(n) => {
                 write!(f, "{}", n)
-            }            
+            }
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
             }
@@ -430,7 +430,7 @@ impl Display for Object {
             }
             Object::Bignum(n) => {
                 write!(f, "{}", n)
-            }            
+            }
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
             }

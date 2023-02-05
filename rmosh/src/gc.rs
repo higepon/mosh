@@ -394,7 +394,7 @@ impl Gc {
             Object::Flonum(_) => {}
             Object::Fixnum(_) => {}
             Object::Compnum(_) => {}
-            Object::Bignum(_) => {}            
+            Object::Bignum(_) => {}
             Object::Ratnum(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}

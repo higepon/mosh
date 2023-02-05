@@ -86,13 +86,13 @@ impl Deref for Ratnum {
     type Target = Rational64;
 
     fn deref(&self) -> &Self::Target {
-        unsafe { &self.ratio }
+        &self.ratio
     }
 }
 
 impl DerefMut for Ratnum {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { &mut self.ratio }
+        &mut self.ratio
     }
 }
 
@@ -135,13 +135,13 @@ impl Deref for Bignum {
     type Target = BigInt;
 
     fn deref(&self) -> &Self::Target {
-        unsafe { &self.value }
+        &self.value
     }
 }
 
 impl DerefMut for Bignum {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { &mut self.value }
+        &mut self.value
     }
 }
 

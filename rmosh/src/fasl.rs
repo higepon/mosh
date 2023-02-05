@@ -100,7 +100,7 @@ impl FaslWriter {
             }
             Object::Bignum(_r) => {
                 todo!();
-            }            
+            }
             Object::Compnum(_r) => {
                 todo!();
             }
