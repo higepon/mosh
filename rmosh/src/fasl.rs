@@ -30,7 +30,7 @@ enum Tag {
     EqHashtable = 12,
     DefineShared = 13,
     LookupShared = 14,
-    Float = 15,
+    Flonum = 15,
 }
 
 // S-expression serializer.
@@ -94,9 +94,8 @@ impl FaslWriter {
                 self.put_tag(port, Tag::False)?;
             }
             Object::Flonum(f) => {
-                println!("WARNING: dummy float fasl write");
-                self.put_tag(port, Tag::Float)?;
-                port.put_u64(f.value() as u64)?;
+                self.put_tag(port, Tag::Flonum)?;
+                port.put_u64(f.u64_value())?;
             }
             Object::Bignum(_r) => {
                 todo!();
@@ -385,7 +384,7 @@ impl FaslReader<'_> {
             Tag::EqHashtable => self.read_eq_hashtable(gc),
             Tag::DefineShared => self.read_define_shared(gc),
             Tag::LookupShared => self.read_lookup_shared(gc),
-            Tag::Float => self.read_float(),
+            Tag::Flonum => self.read_float(),
         }
     }
 
@@ -426,8 +425,8 @@ impl FaslReader<'_> {
     fn read_float(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 8];
         self.bytes.read_exact(&mut buf)?;
-        let n = f64::from_le_bytes(buf);
-        Ok(Object::Flonum(Flonum::new(n)))
+        let n = u64::from_le_bytes(buf);
+        Ok(Object::Flonum(Flonum::new_from_64(n)))
     }
 
     fn read_symbol(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {

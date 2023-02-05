@@ -36,9 +36,20 @@ impl Flonum {
         Self { value: value }
     }
 
+    pub fn new_from_64(u64_value: u64) -> Self {
+        Self {
+            u64_value: u64_value,
+        }
+    }
+
     #[inline(always)]
     pub fn value(&self) -> f64 {
         unsafe { self.value }
+    }
+
+    #[inline(always)]
+    pub fn u64_value(&self) -> u64 {
+        unsafe { self.u64_value }
     }
 
     #[inline(always)]
