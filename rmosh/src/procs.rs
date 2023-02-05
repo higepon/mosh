@@ -3555,6 +3555,15 @@ fn is_real(_vm: &mut Vm, args: &mut [Object]) -> Object {
 
 fn is_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer?";
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Flonum(f) => {
+            if f.is_nan() || f.is_infinite() {
+                return Object::False;
+            }
+        }
+        _ => todo!(),
+    }
     panic!("{}({}) not implemented", name, args.len());
 }
 fn is_real_valued(_vm: &mut Vm, args: &mut [Object]) -> Object {

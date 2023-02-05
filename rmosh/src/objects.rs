@@ -1,6 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::numbers::{Compnum, Flonum, Ratnum};
+use crate::numbers::{Compnum, Flonum, Ratnum, Bignum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -17,6 +17,7 @@ use std::ops::{Deref, DerefMut};
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
+    Bignum(GcRef<Bignum>),
     BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
     ByteVector(GcRef<ByteVector>),
@@ -94,9 +95,34 @@ impl Object {
         }
     }
 
-    pub fn is_number(&self) -> bool {
+    pub fn is_bignum(&self) -> bool {
+        match self {
+            Object::Bignum(_) => true,
+            _ => false,
+        }        
+    }
+
+    pub fn is_fixnum(&self) -> bool {
         match self {
             Object::Fixnum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_flonum(&self) -> bool {
+        match self {
+            Object::Flonum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_ratnum(&self) -> bool {
+        match self {
+            Object::Ratnum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_compnum(&self) -> bool {
+        match self {
+            Object::Compnum(_) => true,
             _ => false,
         }
     }
@@ -165,6 +191,13 @@ impl Object {
             panic!("Not a Object::EqHashtable")
         }
     }
+    pub fn to_compnum(self) -> GcRef<Compnum> {
+        if let Self::Compnum(c) = self {
+            c
+        } else {
+            panic!("Not a Object::Compnum")
+        }
+    }    
     pub fn to_simple_struct(self) -> GcRef<SimpleStruct> {
         if let Self::SimpleStruct(s) = self {
             s
@@ -291,6 +324,9 @@ impl Debug for Object {
             Object::Flonum(n) => {
                 write!(f, "{}", n)
             }
+            Object::Bignum(n) => {
+                write!(f, "{}", n)
+            }            
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
             }
@@ -392,6 +428,9 @@ impl Display for Object {
             Object::Flonum(n) => {
                 write!(f, "{}", n)
             }
+            Object::Bignum(n) => {
+                write!(f, "{}", n)
+            }            
             Object::Ratnum(n) => {
                 write!(f, "{}", n)
             }
