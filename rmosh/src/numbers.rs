@@ -9,6 +9,7 @@ use num_traits::ToPrimitive;
 
 use crate::{
     gc::{GcHeader, GcRef, ObjectType},
+    numbers,
     objects::Object,
 };
 
@@ -40,11 +41,16 @@ impl Flonum {
         unsafe { self.value }
     }
 
-    pub fn eq(f1: isize, f2: Flonum) -> bool {
-        if f2.is_finite() || f2.is_nan() {
+    #[inline(always)]
+    pub fn eq(&self, other: &Flonum) -> bool {
+        self.value == other.value
+    }
+
+    pub fn fx_eq(&self, f: isize) -> bool {
+        if self.is_finite() || self.is_nan() {
             false
         } else {
-            (f1 as f64) == *f2
+            (f as f64) == self.value()
         }
     }
 }
@@ -110,10 +116,24 @@ impl Ratnum {
         }
     }
 
-    pub fn eq(f1: isize, r2: &GcRef<Ratnum>) -> bool {
-        match r2.to_isize() {
-            Some(v) => v == f1,
+    pub fn fx_eq(&self, f: isize) -> bool {
+        match self.to_isize() {
+            Some(v) => v == f,
             None => false,
+        }
+    }
+
+    pub fn fl_eq(&self, fl: &Flonum) -> bool {
+        match self.to_f64() {
+            Some(v) => v == **fl,
+            None => false,
+        }
+    }
+
+    pub fn bi_eq(&self, b: &Bignum) -> bool {
+        match (b.to_f64(), self.to_f64()) {
+            (Some(l), Some(r)) => l == r,
+            _ => false,
         }
     }
 }
@@ -145,7 +165,23 @@ impl DerefMut for Bignum {
     }
 }
 
-impl Bignum {}
+impl Bignum {
+    pub fn fx_eq(&self, f: isize) -> bool {
+        match self.to_isize() {
+            Some(v) => v == f,
+            None => false,
+        }
+    }
+    pub fn eq(&self, other: &Bignum) -> bool {
+        self.value.eq(&other.value)
+    }
+    pub fn fl_eq(&self, fl: &Flonum) -> bool {
+        match self.to_f64() {
+            Some(v) => v == **fl,
+            None => false,
+        }
+    }
+}
 
 impl Display for Bignum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -173,6 +209,11 @@ impl Compnum {
     pub fn is_real(&self) -> bool {
         number_eq(self.imag, Object::Fixnum(0)) && self.imag.is_exact()
     }
+
+    pub fn obj_eq(&self, o: Object) -> bool {
+        assert!(o.is_fixnum() || o.is_bignum() || o.is_flonum() || o.is_ratnum());
+        number_eq(self.imag, Object::Fixnum(0)) && number_eq(self.real, o)
+    }
 }
 
 impl Display for Compnum {
@@ -186,10 +227,21 @@ pub fn number_eq(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
-        (Object::Fixnum(f1), Object::Fixnum(f2)) => f1 == f2,
-        (Object::Fixnum(f1), Object::Flonum(f2)) => Flonum::eq(f1, f2),
-        (Object::Fixnum(f1), Object::Ratnum(r2)) => Ratnum::eq(f1, &r2),
-
+        (Object::Fixnum(f), Object::Fixnum(fl)) => f == fl,
+        (Object::Fixnum(f), Object::Flonum(fl)) => fl.fx_eq(f),
+        (Object::Fixnum(f), Object::Ratnum(r)) => r.fx_eq(f),
+        (Object::Fixnum(f), Object::Bignum(b)) => b.fx_eq(f),
+        (Object::Fixnum(_), Object::Compnum(c)) => c.obj_eq(n1),
+        (Object::Flonum(fl), Object::Fixnum(f)) => fl.fx_eq(f),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.eq(&fl2),
+        (Object::Flonum(fl), Object::Ratnum(r)) => r.fl_eq(&fl),
+        (Object::Flonum(fl), Object::Bignum(b)) => b.fl_eq(&fl),
+        (Object::Flonum(_), Object::Compnum(c)) => c.obj_eq(n1),
+        (Object::Bignum(b), Object::Fixnum(f)) => b.fx_eq(f),
+        (Object::Bignum(b), Object::Flonum(fl)) => b.fl_eq(&fl),
+        (Object::Bignum(b), Object::Ratnum(r)) => r.bi_eq(&b),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.eq(&b2),
+        (Object::Bignum(_), Object::Compnum(c)) => c.obj_eq(n1),
         _ => todo!(),
     }
 }
