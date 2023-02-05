@@ -321,7 +321,7 @@ impl Debug for Object {
             }
             Object::Compnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
-            }            
+            }
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -342,7 +342,7 @@ impl Debug for Object {
             }
             Object::Regexp(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
-            }            
+            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
@@ -452,10 +452,10 @@ impl Display for Object {
             }
             Object::Compnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
-            } 
+            }
             Object::Regexp(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
-            }             
+            }
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
@@ -981,8 +981,7 @@ pub struct Regexp {
     pub header: GcHeader,
 }
 
-impl Regexp {
-}
+impl Regexp {}
 
 impl fmt::Debug for Regexp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

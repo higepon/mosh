@@ -109,7 +109,7 @@ impl FaslWriter {
             }
             Object::Regexp(_r) => {
                 todo!();
-            }            
+            }
             Object::StringInputPort(_) => todo!(),
             Object::FileInputPort(_) => todo!(),
             Object::FileOutputPort(_) => todo!(),
@@ -204,7 +204,7 @@ impl FaslWriter {
                 | Object::Bignum(_)
                 | Object::Compnum(_)
                 | Object::Ratnum(_)
-                | Object::Regexp(_)                
+                | Object::Regexp(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::FileOutputPort(_)

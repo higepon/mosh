@@ -206,7 +206,7 @@ pub trait TextOutputPort {
             | Object::Bignum(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
-            | Object::Regexp(_)            
+            | Object::Regexp(_)
             | Object::False
             | Object::Flonum(_)
             | Object::StringInputPort(_)

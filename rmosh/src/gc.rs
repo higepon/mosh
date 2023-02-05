@@ -397,7 +397,7 @@ impl Gc {
             Object::Compnum(_) => {}
             Object::Bignum(_) => {}
             Object::Ratnum(_) => {}
-            Object::Regexp(_) => {}            
+            Object::Regexp(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
             Object::ProgramCounter(_) => {}
@@ -548,7 +548,7 @@ impl Gc {
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Ratnum => {}
-            ObjectType::Bignum => {}            
+            ObjectType::Bignum => {}
             ObjectType::Compnum => {}
             ObjectType::ByteVector => {}
         }
@@ -589,7 +589,7 @@ impl Gc {
             ObjectType::Bignum => {
                 let n: &Bignum = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
-            }            
+            }
             ObjectType::Ratnum => {
                 let n: &Ratnum = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
