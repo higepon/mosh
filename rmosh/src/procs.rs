@@ -2922,7 +2922,7 @@ fn min(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "min";
     let mut min = Object::Flonum(Flonum::new(f64::INFINITY));
     for obj in args {
-        if obj.is_number() {
+        if !obj.is_number() {
             panic!("{}: number required but got {}", name, obj);
         }
         if obj.is_flonum() && obj.to_flonum().is_nan() {
