@@ -2308,7 +2308,23 @@ fn assoc(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn assv(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "assv";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let obj = args[0];
+    let list = args[1];
+    if !list.is_list() {
+        panic!("{}: list required but got {}", name, list);
+    }
+    let mut o = list;
+    loop {
+        if o.is_nil() {
+            break;
+        }
+        if obj.eqv(&o.car_unchecked().car_unchecked()) {
+            return o.car_unchecked();
+        }
+        o = o.cdr_unchecked();
+    }
+    Object::False
 }
 fn exit(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exit";
