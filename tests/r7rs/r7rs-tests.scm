@@ -176,7 +176,7 @@
               (x (p 5))
               (y x))
              y))
-#|
+
 ;; By Jussi Piitulainen <jpiitula@ling.helsinki.fi>
 ;; and John Cowan <cowan@mercury.ccil.org>:
 ;; http://lists.scheme-reports.org/pipermail/scheme-reports/2013-December/003876.html
@@ -208,7 +208,7 @@
 (test '(1073741824 0)
     (let*-values (((root rem) (exact-integer-sqrt (expt 2 60))))
       (list root rem)))
-
+#|
 (test '(1518500249 3000631951)
     (let*-values (((root rem) (exact-integer-sqrt (expt 2 61))))
       (list root rem)))

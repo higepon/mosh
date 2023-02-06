@@ -11,7 +11,7 @@ use std::{
 use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
-    gc::{Gc, self},
+    gc::{self, Gc},
     numbers::{self, Flonum},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
@@ -3870,8 +3870,23 @@ fn exp(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn log(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "log";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    if argc == 1 {
+        let n = args[0];
+        if !n.is_number() {
+            panic!("{}: number required but got {}", name, n);
+        }
+        if numbers::is_exact_zero(n) {
+            panic!("{} nonzero required but got {}", name, n);
+        } else {
+            return numbers::log(n);
+        }
+    } else {
+        todo!();
+    }
 }
+
 fn sin(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sin";
     panic!("{}({}) not implemented", name, args.len());

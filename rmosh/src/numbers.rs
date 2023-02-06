@@ -462,8 +462,42 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     }
 }
 
-fn is_exact_zero(_obj: Object) -> bool {
-    todo!()
+fn fx_log(n: isize) -> Object {
+    if n == 1 {
+        // Exact 0.
+        Object::Fixnum(0)
+    } else {
+        Object::Flonum(Flonum::new((n as f64).ln()))
+    }
+}
+
+pub fn log(n: Object) -> Object {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(fx) => fx_log(fx),
+        Object::Compnum(_) => todo!(),
+        _ => todo!(),
+    }
+}
+
+pub fn is_exact_zero(n: Object) -> bool {
+    is_zero(n) && is_exact(n)
+}
+
+fn is_exact(n: Object) -> bool {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(_) | Object::Bignum(_) | Object::Ratnum(_) =>  true,
+        Object::Flonum(_) => false,
+        Object::Compnum(c) => {
+            is_exact(c.real) && is_exact(c.imag)
+        }
+        _ => panic!()
+    }
+}
+
+fn is_zero(n: Object) -> bool {
+    number_eq(Object::Fixnum(0), n)
 }
 
 fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
