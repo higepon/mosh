@@ -1,5 +1,6 @@
 use crate::{
     gc::GcRef,
+    numbers::number_add,
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
@@ -66,7 +67,8 @@ impl Vm {
                 self.set_return_value(Object::Fixnum(a + b));
             }
             (a, b) => {
-                panic!("+: numbers required but got {:?} {:?}", a, b);
+                let val = number_add(&mut self.gc, a, b);
+                self.set_return_value(val);
             }
         }
     }
