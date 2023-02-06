@@ -12,7 +12,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, Flonum},
+    numbers::{self, Flonum, SchemeError},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -2934,9 +2934,20 @@ fn number_mul(vm: &mut Vm, args: &mut [Object]) -> Object {
         ret
     }
 }
-fn number_div(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn number_div(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "/";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let argc = args.len();
+    if argc == 1 {
+        match numbers::number_div(&mut vm.gc, Object::Fixnum(1), args[0]) {
+            Ok(value) => value,
+            Err(SchemeError::Div0) => {
+                panic!("/: division by zero {}", args[0])
+            }
+        }
+    } else {
+        todo!();
+    }
 }
 fn max(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "max";
