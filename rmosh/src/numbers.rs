@@ -201,6 +201,20 @@ impl Ratnum {
             Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
         }
     }
+
+    pub fn fx_div(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+        if fx == 0 {
+            Err(SchemeError::Div0)
+        } else {
+            let r = self.ratio / Rational64::new_raw(fx as i64, 1);
+            if r.is_integer() {
+                Ok(Object::Fixnum(*r.numer() as isize))
+            } else {
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
+            }
+        }
+    }    
+
     pub fn fx_lt(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v < f,
@@ -455,7 +469,7 @@ pub fn number_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sc
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
-        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => r.fx_div(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
         (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
