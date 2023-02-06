@@ -192,6 +192,15 @@ impl Ratnum {
             None => false,
         }
     }
+
+    pub fn fx_add(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
+        let r = self.ratio + Rational64::new_raw(fx as i64, 1);
+        if *r.denom() == 1 {
+            Object::Fixnum(*r.numer() as isize)
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+        }
+    }
     pub fn fx_lt(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v < f,
@@ -387,7 +396,7 @@ pub fn number_add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::fx_add(gc, fx1, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fl.fx_add(fx),
-        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => r.fx_add(gc, fx),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.fx_add(fx),
@@ -400,7 +409,7 @@ pub fn number_add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
-        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => r.fx_add(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
         (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
@@ -540,10 +549,8 @@ pub fn number_lt(n1: Object, n2: Object) -> bool {
 
 pub fn exp(_gc: &mut Box<Gc>, n: Object) -> Object {
     match n {
-        Object::Flonum(fl)  => {
-            Object::Flonum(Flonum::new(fl.value().exp()))
-        }
-        _ => todo!()
+        Object::Flonum(fl) => Object::Flonum(Flonum::new(fl.value().exp())),
+        _ => todo!(),
     }
 }
 
