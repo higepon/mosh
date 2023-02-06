@@ -60,11 +60,22 @@ impl Flonum {
     #[inline(always)]
     pub fn add(&self, other: &Flonum) -> Object {
         Object::Flonum(Flonum::new(self.value() + other.value()))
-    }    
+    }
 
     pub fn fx_add(&self, fx: isize) -> Object {
-        let f = (fx as f64) + unsafe { self.value };
+        let f = (fx as f64) + self.value();
         Object::Flonum(Flonum::new(f))
+    }
+
+    pub fn fx_div(&self, fx: isize) -> Result<Object, SchemeError> {
+        if fx == 0 {
+            Err(SchemeError::Div0)
+        } else if fx == 1 {
+            Ok(Object::Flonum(Flonum::new(self.value())))
+        } else {
+            let value = self.value() / (fx as f64);
+            Ok(Object::Flonum(Flonum::new(value)))
+        }
     }
 
     pub fn fx_eq(&self, fx: isize) -> bool {
@@ -169,6 +180,10 @@ impl Ratnum {
 
     pub fn denom(&self) -> Object {
         Object::Fixnum(*self.ratio.denom() as isize)
+    }
+
+    pub fn numer(&self) -> Object {
+        Object::Fixnum(*self.ratio.numer() as isize)
     }
 
     pub fn fx_eq(&self, f: isize) -> bool {
@@ -301,6 +316,20 @@ impl Bignum {
             }
         }
     }
+    pub fn fx_div(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Result<Object, SchemeError> {
+        if fx2 == 0 {
+            Err(SchemeError::Div0)
+        } else if fx2 == 1 {
+            Ok(Object::Fixnum(fx1))
+        } else {
+            let r = Ratnum::new(fx1, fx2);
+            if *r.ratio.denom() == 1 {
+                Ok(r.numer())
+            } else {
+                Ok(Object::Ratnum(gc.alloc(r)))
+            }
+        }
+    }
 }
 
 impl Display for Bignum {
@@ -363,6 +392,42 @@ pub fn number_add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.fx_add(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.add(&fl2),
+        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        _ => todo!(),
+    }
+}
+
+pub enum SchemeError {
+    Div0,
+}
+pub fn number_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::fx_div(gc, fx1, fx2),
+        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fl.fx_div(fx),
+        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),

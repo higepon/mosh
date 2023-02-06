@@ -4,7 +4,7 @@ use crate::{
     number_cmp_op,
     objects::{Closure, Object, Pair, Vox},
     op::Op,
-    ports::TextInputPort,
+    ports::TextInputPort, numbers::{number_div, SchemeError},
 };
 
 use super::{Vm, MAX_NUM_VALUES};
@@ -350,14 +350,18 @@ impl Vm {
                         panic!("+: numbers required but got {:?} {:?}", a, b);
                     }
                 },
-                Op::NumberDiv => match (self.pop(), self.ac) {
-                    (Object::Fixnum(a), Object::Fixnum(b)) => {
-                        self.set_return_value(Object::Fixnum(a / b));
+                Op::NumberDiv => {
+                    let n = self.pop();
+                    let d = self.ac;
+                    match number_div(&mut self.gc, n, d) {
+                        Ok(result) => {
+                            self.set_return_value(result)
+                        }
+                        Err(SchemeError::Div0) => {
+                            panic!("/: division by zero {} {}", n, d)
+                        }
                     }
-                    (a, b) => {
-                        panic!("/: numbers required but got {:?} {:?}", a, b);
-                    }
-                },
+                }
                 Op::NumberSub => {
                     self.number_sub_op();
                 }
