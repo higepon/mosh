@@ -11,7 +11,7 @@ use std::{
 use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
-    gc::{self, Gc},
+    gc::Gc,
     numbers::{self, Flonum},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
@@ -3864,9 +3864,10 @@ fn round(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "round";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn exp(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn exp(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exp";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    numbers::exp(&mut vm.gc, args[0])
 }
 fn log(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "log";

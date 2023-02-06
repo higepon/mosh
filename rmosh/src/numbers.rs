@@ -538,6 +538,15 @@ pub fn number_lt(n1: Object, n2: Object) -> bool {
     }
 }
 
+pub fn exp(_gc: &mut Box<Gc>, n: Object) -> Object {
+    match n {
+        Object::Flonum(fl)  => {
+            Object::Flonum(Flonum::new(fl.value().exp()))
+        }
+        _ => todo!()
+    }
+}
+
 pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_number());
     assert!(n2.is_number());
