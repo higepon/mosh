@@ -8,7 +8,7 @@ use num_rational::Rational64;
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::{
-    gc::{Gc, GcHeader, ObjectType},
+    gc::{Gc, GcHeader, ObjectType, GcRef},
     objects::Object,
 };
 
@@ -195,7 +195,7 @@ impl Ratnum {
 
     pub fn fx_add(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         let r = self.ratio + Rational64::new_raw(fx as i64, 1);
-        if *r.denom() == 1 {
+        if r.is_integer() {
             Object::Fixnum(*r.numer() as isize)
         } else {
             Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
@@ -232,6 +232,16 @@ impl Ratnum {
             (Some(l), Some(r)) => l < r,
             _ => false,
         }
+    }
+
+    pub fn add(&self, gc: &mut Box<Gc>, other: GcRef<Ratnum>) -> Object {
+        let r = self.ratio + other.ratio;
+        if r.is_integer() {
+            Object::Fixnum(r.to_isize().unwrap())
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+        }
+
     }
 }
 
@@ -332,7 +342,7 @@ impl Bignum {
             Ok(Object::Fixnum(fx1))
         } else {
             let r = Ratnum::new(fx1, fx2);
-            if *r.ratio.denom() == 1 {
+            if r.is_integer() {
                 Ok(r.numer())
             } else {
                 Ok(Object::Ratnum(gc.alloc(r)))
@@ -411,7 +421,7 @@ pub fn number_add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => r.fx_add(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.add(gc, r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
         (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
