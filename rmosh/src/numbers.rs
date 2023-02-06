@@ -267,6 +267,18 @@ impl Bignum {
             None => false,
         }
     }
+
+    pub fn fx_mul(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
+        match fx1.checked_mul(fx2) {
+            Some(value) => Object::Fixnum(value),
+            None => {
+                let b1 = BigInt::from_isize(fx1).unwrap();
+                let b2 = BigInt::from_isize(fx2).unwrap();
+                let b = b1 * b2;
+                Object::Bignum(gc.alloc(Bignum::new(b)))
+            }
+        }
+    }
 }
 
 impl Display for Bignum {
@@ -318,6 +330,38 @@ impl Display for Compnum {
 }
 
 /// Number functions.
+pub fn number_mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::fx_mul(gc, fx1, fx2),
+        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
+        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        _ => todo!(),
+    }
+}
 pub fn number_eq(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());

@@ -11,7 +11,7 @@ use std::{
 use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
-    gc::Gc,
+    gc::{Gc, self},
     numbers::{self, Flonum},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
@@ -2896,9 +2896,27 @@ fn nuber_sub(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "-";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_mul(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn number_mul(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "*";
-    panic!("{}({}) not implemented", name, args.len());
+    let argc = args.len();
+    if argc == 0 {
+        Object::Fixnum(1)
+    } else if argc == 1 {
+        if args[0].is_number() {
+            args[0]
+        } else {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    } else {
+        let mut ret = Object::Fixnum(1);
+        for obj in args {
+            if !obj.is_number() {
+                panic!("{}: number required but got {}", name, obj)
+            }
+            ret = numbers::number_mul(&mut vm.gc, ret, *obj);
+        }
+        ret
+    }
 }
 fn number_div(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "/";
