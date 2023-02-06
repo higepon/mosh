@@ -2,9 +2,10 @@ use crate::{
     branch_number_cmp_op,
     equal::Equal,
     number_cmp_op,
+    numbers::{number_div, SchemeError},
     objects::{Closure, Object, Pair, Vox},
     op::Op,
-    ports::TextInputPort, numbers::{number_div, SchemeError},
+    ports::TextInputPort,
 };
 
 use super::{Vm, MAX_NUM_VALUES};
@@ -354,9 +355,7 @@ impl Vm {
                     let n = self.pop();
                     let d = self.ac;
                     match number_div(&mut self.gc, n, d) {
-                        Ok(result) => {
-                            self.set_return_value(result)
-                        }
+                        Ok(result) => self.set_return_value(result),
                         Err(SchemeError::Div0) => {
                             panic!("/: division by zero {} {}", n, d)
                         }
