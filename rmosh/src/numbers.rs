@@ -375,6 +375,18 @@ impl Bignum {
             }
         }
     }
+
+    pub fn fx_sub(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
+        match fx1.checked_sub(fx2) {
+            Some(value) => Object::Fixnum(value),
+            None => {
+                let b1 = BigInt::from_isize(fx1).unwrap();
+                let b2 = BigInt::from_isize(fx2).unwrap();
+                let b = b1 - b2;
+                Object::Bignum(gc.alloc(Bignum::new(b)))
+            }
+        }
+    }    
     pub fn fx_div(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Result<Object, SchemeError> {
         if fx2 == 0 {
             Err(SchemeError::Div0)
@@ -476,7 +488,7 @@ pub fn number_sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
-        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => todo!(),
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) =>  Bignum::fx_sub(gc, fx1, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => todo!(),
         (Object::Fixnum(fx), Object::Ratnum(r)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
