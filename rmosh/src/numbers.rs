@@ -303,6 +303,14 @@ impl Ratnum {
             Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
         }
     }
+    pub fn mul(&self, gc: &mut Box<Gc>, other: GcRef<Ratnum>) -> Object {
+        let r = self.ratio * other.ratio;
+        if r.is_integer() {
+            Object::Fixnum(r.to_isize().unwrap())
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+        }
+    }    
 }
 
 impl Display for Ratnum {
@@ -619,7 +627,7 @@ pub fn number_mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.mul(gc, r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
         (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
