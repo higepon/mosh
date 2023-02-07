@@ -3,6 +3,7 @@ use std::{
     env::{self, current_dir, current_exe},
     fs::{self, File, OpenOptions},
     path::Path,
+    process,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -2328,8 +2329,16 @@ fn assv(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn exit(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exit";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => process::exit(fx as i32),
+        Object::False => process::exit(-1),
+        _ => {
+            panic!("{}: integer or boolean required but got {}", name, args[0])
+        }
+    }
 }
+
 fn macroexpand_1(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "macroexpand-1";
     panic!("{}({}) not implemented", name, args.len());
