@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Debug, Display},
-    ops::{Deref, DerefMut},
+    ops::{Deref, DerefMut, Neg},
 };
 
 use num_bigint::BigInt;
@@ -70,6 +70,11 @@ impl Flonum {
     #[inline(always)]
     pub fn div(&self, other: &Flonum) -> Result<Object, SchemeError> {
         Ok(Object::Flonum(Flonum::new(self.value() / other.value())))
+    }
+
+    #[inline(always)]
+    pub fn sqrt(&self) -> Object {
+        Object::Flonum(Flonum::new(self.value().sqrt()))
     }
 
     #[inline(always)]
@@ -360,6 +365,28 @@ impl Bignum {
 
     pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
         Object::Bignum(gc.alloc(Bignum::new(self.value.abs())))
+    }
+
+    pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
+        if self.is_positive() {
+            let b = self.value.sqrt();
+            match b.to_isize() {
+                Some(v) => Object::Fixnum(v),
+                None => Object::Bignum(gc.alloc(Bignum::new(b))),
+            }
+        } else {
+            let b = self.value.clone().neg();
+            let b = b.sqrt();
+            match b.to_isize() {
+                Some(v) => {
+                    Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(v))))
+                }
+                None => {
+                    let b = gc.alloc(Bignum::new(b));
+                    Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Bignum(b))))
+                }
+            }
+        }
     }
 
     pub fn fx_mul(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
@@ -824,6 +851,45 @@ pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Flonum(fl) => fl.abs(),
         Object::Bignum(b) => b.abs(gc),
         Object::Ratnum(r) => r.abs(gc),
+        _ => panic!(),
+    }
+}
+
+fn fx_sqrt(gc: &mut Box<Gc>, fx: isize) -> Object {
+    if fx == 0 {
+        return Object::Fixnum(0);
+    } else if fx > 0 {
+        let root = (fx as f64).sqrt();
+        let root_as_int = root.floor() as isize;
+        // exact
+        if root_as_int * root_as_int == fx {
+            Object::Fixnum(root_as_int)
+        } else {
+            Object::Flonum(Flonum::new(root))
+        }
+    } else {
+        // negative
+        let root = (-fx as f64).sqrt();
+        let root_as_int = root.floor() as isize;
+        // exact
+        if root_as_int * root_as_int == -fx {
+            Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(root_as_int))))
+        } else {
+            Object::Compnum(gc.alloc(Compnum::new(
+                Object::Flonum(Flonum::new(0.0)),
+                Object::Flonum(Flonum::new(root)),
+            )))
+        }
+    }
+}
+
+pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
+    match obj {
+        Object::Fixnum(fx) => fx_sqrt(gc, fx),
+        Object::Flonum(fl) => fl.sqrt(),
+        Object::Bignum(b) => b.sqrt(gc),
+        Object::Compnum(c) => todo!(),
+        Object::Ratnum(r) => todo!(),
         _ => panic!(),
     }
 }

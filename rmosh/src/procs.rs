@@ -3920,9 +3920,10 @@ fn acos(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "acos";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn sqrt(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn sqrt(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sqrt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    numbers::sqrt(&mut vm.gc, args[0])
 }
 fn magnitude(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "magnitude";
