@@ -3868,9 +3868,13 @@ fn ceiling(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "ceiling";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn truncate(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn truncate(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "truncate";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if !args[0].is_real() {
+        panic!("{}: real number required but got {}", name, args[0])
+    }
+    numbers::truncate(&mut vm.gc, args[0])
 }
 fn round(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "round";

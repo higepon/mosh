@@ -78,6 +78,11 @@ impl Flonum {
     }
 
     #[inline(always)]
+    pub fn truncate(&self) -> Object {
+        Object::Flonum(Flonum::new(self.value().trunc()))
+    }
+
+    #[inline(always)]
     pub fn gt(&self, other: &Flonum) -> bool {
         self.value() > other.value()
     }
@@ -220,6 +225,10 @@ impl Ratnum {
 
     pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
         Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.abs())))
+    }
+
+    pub fn truncate(&self, gc: &mut Box<Gc>) -> Object {
+        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.trunc())))
     }
 
     pub fn fx_add(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
@@ -890,6 +899,16 @@ pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
         Object::Bignum(b) => b.sqrt(gc),
         Object::Compnum(c) => todo!(),
         Object::Ratnum(r) => todo!(),
+        _ => panic!(),
+    }
+}
+
+pub fn truncate(gc: &mut Box<Gc>, obj: Object) -> Object {
+    assert!(obj.is_real());
+    match obj {
+        Object::Fixnum(_) | Object::Bignum(_) => obj,
+        Object::Flonum(f) => f.truncate(),
+        Object::Ratnum(r) => r.truncate(gc),
         _ => panic!(),
     }
 }
