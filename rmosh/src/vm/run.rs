@@ -1,7 +1,7 @@
 use crate::{
     equal::Equal,
     number_cmp_op,
-    numbers::{number_div, SchemeError, number_eq},
+    numbers::{number_div, number_eq, SchemeError, number_lt},
     objects::{Closure, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -341,7 +341,8 @@ impl Vm {
                     number_cmp_op!(<=, self);
                 }
                 Op::NumberLt => {
-                    number_cmp_op!(<, self);
+                    let op_result = number_lt(self.pop(), self.ac);
+                    self.set_return_value(Object::make_bool(op_result));
                 }
                 Op::NumberMul => match (self.pop(), self.ac) {
                     (Object::Fixnum(a), Object::Fixnum(b)) => {
