@@ -8,7 +8,7 @@ use num_rational::Rational64;
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::{
-    gc::{Gc, GcHeader, ObjectType, GcRef},
+    gc::{Gc, GcHeader, GcRef, ObjectType},
     objects::Object,
 };
 
@@ -202,7 +202,7 @@ impl Ratnum {
         }
     }
 
-    pub fn fx_div(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+    pub fn div_by_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
         } else {
@@ -213,7 +213,16 @@ impl Ratnum {
                 Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
             }
         }
-    }    
+    }
+
+    pub fn fx_div(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+        let r = Rational64::new_raw(fx as i64, 1) / self.ratio;
+        if r.is_integer() {
+            Ok(Object::Fixnum(*r.numer() as isize))
+        } else {
+            Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
+        }
+    }
 
     pub fn fx_lt(&self, f: isize) -> bool {
         match self.to_isize() {
@@ -255,7 +264,6 @@ impl Ratnum {
         } else {
             Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
         }
-
     }
 }
 
@@ -456,7 +464,7 @@ pub fn number_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sc
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::fx_div(gc, fx1, fx2),
         (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => r.fx_div(gc, fx),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.fx_div(fx),
@@ -469,7 +477,7 @@ pub fn number_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sc
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => r.fx_div(gc, fx),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => r.div_by_fx(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
         (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
