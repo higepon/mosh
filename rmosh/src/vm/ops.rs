@@ -1,36 +1,12 @@
 use crate::{
     gc::GcRef,
-    numbers::number_add,
+    numbers::{number_add, number_eq, number_ge, number_gt, number_le, number_lt},
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
 };
 
 use super::Vm;
-
-#[macro_export]
-macro_rules! branch_number_cmp_op {
-    ($op:tt, $self:ident) => {
-        {
-            let skip_offset = $self.isize_operand();
-            match ($self.pop(), $self.ac) {
-                (Object::Fixnum(lhs), Object::Fixnum(rhs)) => {
-                    let op_result = lhs $op rhs;
-                    $self.set_return_value(Object::make_bool(op_result));
-                    if op_result {
-                        // go to then.
-                    } else {
-                        // Branch and jump to else.
-                        $self.pc = $self.jump($self.pc, skip_offset - 1);
-                    }
-                }
-                obj => {
-                    panic!("{}: numbers requierd but got {:?}",  stringify!($op), obj);
-                }
-            }
-        }
-    };
-}
 
 #[macro_export]
 macro_rules! number_cmp_op {
@@ -320,5 +296,65 @@ impl Vm {
         self.set_return_value(Object::Closure(c));
         self.sp = self.dec(self.sp, num_free_vars);
         self.pc = self.jump(self.pc, size as isize - 6);
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_eq_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = number_eq(self.pop(), self.ac);
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_gt_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = number_gt(self.pop(), self.ac);
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_lt_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = number_lt(self.pop(), self.ac);
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_ge_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = number_ge(self.pop(), self.ac);
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_le_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = number_le(self.pop(), self.ac);
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
     }
 }

@@ -1,5 +1,4 @@
 use crate::{
-    branch_number_cmp_op,
     equal::Equal,
     number_cmp_op,
     numbers::{number_div, SchemeError},
@@ -39,16 +38,16 @@ impl Vm {
             match op {
                 Op::CompileError => todo!(),
                 Op::BranchNotLe => {
-                    branch_number_cmp_op!(<=, self);
+                    self.branch_not_le_op();
                 }
                 Op::BranchNotGe => {
-                    branch_number_cmp_op!(>=, self);
+                    self.branch_not_ge_op();
                 }
                 Op::BranchNotLt => {
-                    branch_number_cmp_op!(<, self);
+                    self.branch_not_lt_op();
                 }
                 Op::BranchNotGt => {
-                    branch_number_cmp_op!(>, self);
+                    self.branch_not_gt_op();
                 }
                 Op::BranchNotNull => {
                     let skip_offset = self.isize_operand();
@@ -62,7 +61,7 @@ impl Vm {
                     }
                 }
                 Op::BranchNotNumberEqual => {
-                    branch_number_cmp_op!(==, self);
+                    self.branch_not_eq_op();
                 }
                 Op::BranchNotEq => {
                     let skip_offset = self.isize_operand();
@@ -684,14 +683,14 @@ impl Vm {
                     self.refer_local_op(n);
                     self.push_op();
                     self.constant_op();
-                    branch_number_cmp_op!(<=, self);
+                    self.branch_not_le_op();
                 }
                 Op::ReferLocalPushConstantBranchNotGe => {
                     let n = self.isize_operand();
                     self.refer_local_op(n);
                     self.push_op();
                     self.constant_op();
-                    branch_number_cmp_op!(>=, self);
+                    self.branch_not_ge_op();
                 }
                 Op::ReferLocalPushConstantBranchNotNumberEqual => todo!(),
                 Op::ReferLocalBranchNotNull => {
@@ -703,7 +702,7 @@ impl Vm {
                 Op::ReferLocalBranchNotLt => {
                     let n = self.isize_operand();
                     self.refer_local_op(n);
-                    branch_number_cmp_op!(<, self);
+                    self.branch_not_lt_op();
                 }
                 Op::ReferFreeCall => {
                     let n = self.usize_operand();

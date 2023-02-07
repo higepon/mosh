@@ -3362,7 +3362,8 @@ fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "inexact?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(!args[0].is_exact())
 }
 fn exact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exact";
@@ -3602,7 +3603,8 @@ fn is_complex(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_real(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_real())
 }
 
 fn is_integer(vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -3812,14 +3814,13 @@ fn is_odd(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "odd?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn abs(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn abs(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "abs";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Fixnum(n) => Object::Fixnum(n.abs()),
-        _ => {
-            panic!("{}: number required but got {}", name, args[0])
-        }
+    if args[0].is_real() {
+        numbers::abs(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: real number required but got {}", name, args[0])
     }
 }
 fn div(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -3889,7 +3890,7 @@ fn log(_vm: &mut Vm, args: &mut [Object]) -> Object {
         if !n.is_number() {
             panic!("{}: number required but got {}", name, n);
         }
-        if numbers::is_exact_zero(n) {
+        if n.is_exact_zero() {
             panic!("{} nonzero required but got {}", name, n);
         } else {
             return numbers::log(n);

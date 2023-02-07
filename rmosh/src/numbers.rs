@@ -5,7 +5,7 @@ use std::{
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, Signed, ToPrimitive};
 
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -60,6 +60,16 @@ impl Flonum {
     #[inline(always)]
     pub fn add(&self, other: &Flonum) -> Object {
         Object::Flonum(Flonum::new(self.value() + other.value()))
+    }
+
+    #[inline(always)]
+    pub fn gt(&self, other: &Flonum) -> bool {
+        self.value() > other.value()
+    }
+
+    #[inline(always)]
+    pub fn abs(&self) -> Object {
+        Object::Flonum(Flonum::new(self.value().abs()))
     }
 
     pub fn fx_add(&self, fx: isize) -> Object {
@@ -191,6 +201,10 @@ impl Ratnum {
             Some(v) => v == f,
             None => false,
         }
+    }
+
+    pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
+        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.abs())))
     }
 
     pub fn fx_add(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
@@ -332,6 +346,10 @@ impl Bignum {
             Some(v) => v < **fl,
             None => false,
         }
+    }
+
+    pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
+        Object::Bignum(gc.alloc(Bignum::new(self.value.abs())))
     }
 
     pub fn fx_mul(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
@@ -522,6 +540,104 @@ pub fn number_mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         _ => todo!(),
     }
 }
+
+pub fn number_gt(n1: Object, n2: Object) -> bool {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(f), Object::Fixnum(fl)) => f > fl,
+        (Object::Fixnum(f), Object::Flonum(fl)) => todo!(),
+        (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
+        (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(f)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.gt(&fl2),
+        (Object::Flonum(fl), Object::Ratnum(r)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(c)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
+        (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(c)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
+        (Object::Ratnum(r), Object::Flonum(fl)) => todo!(),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
+        (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Compnum(c), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(c), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(c1), Object::Compnum(c2)) => todo!(),
+        _ => todo!(),
+    }
+}
+pub fn number_ge(n1: Object, n2: Object) -> bool {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(f), Object::Fixnum(fl)) => f >= fl,
+        (Object::Fixnum(f), Object::Flonum(fl)) => todo!(),
+        (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
+        (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(f)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => todo!(),
+        (Object::Flonum(fl), Object::Ratnum(r)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(c)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
+        (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(c)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
+        (Object::Ratnum(r), Object::Flonum(fl)) => todo!(),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
+        (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Compnum(c), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(c), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(c1), Object::Compnum(c2)) => todo!(),
+        _ => todo!(),
+    }
+}
+
+pub fn number_le(n1: Object, n2: Object) -> bool {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(f), Object::Fixnum(fl)) => f <= fl,
+        (Object::Fixnum(f), Object::Flonum(fl)) => todo!(),
+        (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
+        (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(f)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => todo!(),
+        (Object::Flonum(fl), Object::Ratnum(r)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(c)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
+        (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(c)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
+        (Object::Ratnum(r), Object::Flonum(fl)) => todo!(),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
+        (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Compnum(c), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(c), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(c1), Object::Compnum(c2)) => todo!(),
+        _ => todo!(),
+    }
+}
 pub fn number_eq(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
@@ -647,22 +763,15 @@ pub fn log(n: Object) -> Object {
     }
 }
 
-pub fn is_exact_zero(n: Object) -> bool {
-    is_zero(n) && is_exact(n)
-}
-
-fn is_exact(n: Object) -> bool {
-    assert!(n.is_number());
+pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_real());
     match n {
-        Object::Fixnum(_) | Object::Bignum(_) | Object::Ratnum(_) => true,
-        Object::Flonum(_) => false,
-        Object::Compnum(c) => is_exact(c.real) && is_exact(c.imag),
+        Object::Fixnum(fx) => Object::Fixnum(fx.abs()),
+        Object::Flonum(fl) => fl.abs(),
+        Object::Bignum(b) => b.abs(gc),
+        Object::Ratnum(r) => r.abs(gc),
         _ => panic!(),
     }
-}
-
-fn is_zero(n: Object) -> bool {
-    number_eq(Object::Fixnum(0), n)
 }
 
 fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
@@ -708,7 +817,7 @@ fn is_integer(gc: &mut Box<Gc>, obj: Object) -> bool {
     assert!(obj.is_number());
     match obj {
         Object::Flonum(f) if f.is_nan() || f.is_infinite() => false,
-        Object::Compnum(c) => is_exact_zero(c.imag) && is_integer(gc, c.real),
+        Object::Compnum(c) => c.imag.is_exact_zero() && c.real.is_integer(gc),
         _ => number_eq(denominator(gc, obj), Object::Fixnum(1)),
     }
 }
@@ -759,5 +868,14 @@ impl Object {
             || self.is_bignum()
             || (self.is_flonum() && self.to_flonum().is_rational())
             || self.is_ratnum()
+    }
+    #[inline(always)]
+    pub fn is_exact_zero(&self) -> bool {
+        self.is_zero() && self.is_exact()
+    }
+
+    #[inline(always)]
+    fn is_zero(&self) -> bool {
+        number_eq(Object::Fixnum(0), *self)
     }
 }
