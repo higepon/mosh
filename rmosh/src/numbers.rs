@@ -68,6 +68,11 @@ impl Flonum {
     }
 
     #[inline(always)]
+    pub fn div(&self, other: &Flonum) -> Result<Object, SchemeError> {
+        Ok(Object::Flonum(Flonum::new(self.value() / other.value())))
+    }
+
+    #[inline(always)]
     pub fn gt(&self, other: &Flonum) -> bool {
         self.value() > other.value()
     }
@@ -535,7 +540,7 @@ pub fn number_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sc
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.fx_div(fx),
-        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.div(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
