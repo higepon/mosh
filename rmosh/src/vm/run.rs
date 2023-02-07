@@ -1,7 +1,7 @@
 use crate::{
     equal::Equal,
     number_cmp_op,
-    numbers::{number_div, SchemeError},
+    numbers::{number_div, SchemeError, number_eq},
     objects::{Closure, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -328,7 +328,8 @@ impl Vm {
                     self.number_add_op();
                 }
                 Op::NumberEqual => {
-                    number_cmp_op!(==, self);
+                    let op_result = number_eq(self.pop(), self.ac);
+                    self.set_return_value(Object::make_bool(op_result));
                 }
                 Op::NumberGe => {
                     number_cmp_op!(>=, self);
