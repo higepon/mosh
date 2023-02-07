@@ -1,6 +1,6 @@
 use crate::{
     gc::GcRef,
-    numbers::{number_add, number_eq, number_ge, number_gt, number_le, number_lt},
+    numbers::{number_add, number_eq, number_ge, number_gt, number_le, number_lt, number_sub},
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
@@ -240,14 +240,10 @@ impl Vm {
 
     #[inline(always)]
     pub(super) fn number_sub_op(&mut self) {
-        match (self.pop(), self.ac) {
-            (Object::Fixnum(a), Object::Fixnum(b)) => {
-                self.set_return_value(Object::Fixnum(a - b));
-            }
-            (a, b) => {
-                panic!("-: numbers required but got {:?} {:?}", a, b);
-            }
-        }
+        let lhs = self.pop();
+        let rhs = self.ac;
+        let result = number_sub(&mut self.gc, lhs, rhs);
+        self.set_return_value(result);
     }
 
     #[inline(always)]

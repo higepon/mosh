@@ -472,6 +472,38 @@ pub fn number_add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         _ => todo!(),
     }
 }
+pub fn number_sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => todo!(),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => todo!(),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => todo!(),
+        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => todo!(),
+        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(fx)) =>todo!(), 
+        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
+        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        _ => todo!(),
+    }
+}
 
 pub enum SchemeError {
     Div0,
