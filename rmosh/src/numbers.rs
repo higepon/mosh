@@ -332,7 +332,7 @@ impl Ratnum {
 
 impl Display for Ratnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<ratnum {}>", self.ratio)
+        write!(f, "{}", self.ratio)
     }
 }
 

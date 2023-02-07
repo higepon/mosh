@@ -445,7 +445,7 @@ pub trait TextOutputPort {
                     break;
                 }
             } else {
-                print!("{}", c)
+                self.put_string(&format!("{}", c)).ok();
             }
         }
     }
