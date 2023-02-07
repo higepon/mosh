@@ -2929,7 +2929,7 @@ fn number_mul(vm: &mut Vm, args: &mut [Object]) -> Object {
             if !obj.is_number() {
                 panic!("{}: number required but got {}", name, obj)
             }
-            ret = numbers::number_mul(&mut vm.gc, ret, *obj);
+            ret = numbers::mul(&mut vm.gc, ret, *obj);
         }
         ret
     }
@@ -2939,7 +2939,7 @@ fn number_div(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc_at_least!(name, args, 1);
     let argc = args.len();
     if argc == 1 {
-        match numbers::number_div(&mut vm.gc, Object::Fixnum(1), args[0]) {
+        match numbers::div(&mut vm.gc, Object::Fixnum(1), args[0]) {
             Ok(value) => value,
             Err(SchemeError::Div0) => {
                 panic!("/: division by zero {}", args[0])
@@ -2975,7 +2975,7 @@ fn min(_vm: &mut Vm, args: &mut [Object]) -> Object {
         if obj.is_flonum() && obj.to_flonum().is_nan() {
             return *obj;
         }
-        if numbers::number_lt(*obj, min) {
+        if numbers::lt(*obj, min) {
             min = *obj;
         }
     }

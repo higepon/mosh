@@ -1,6 +1,6 @@
 use crate::{
     gc::GcRef,
-    numbers::{number_add, number_eq, number_ge, number_gt, number_le, number_lt, number_sub},
+    numbers::{add, eq, ge, number_gt, le, lt, sub},
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
@@ -43,7 +43,7 @@ impl Vm {
                 self.set_return_value(Object::Fixnum(a + b));
             }
             (a, b) => {
-                let val = number_add(&mut self.gc, a, b);
+                let val = add(&mut self.gc, a, b);
                 self.set_return_value(val);
             }
         }
@@ -242,7 +242,7 @@ impl Vm {
     pub(super) fn number_sub_op(&mut self) {
         let lhs = self.pop();
         let rhs = self.ac;
-        let result = number_sub(&mut self.gc, lhs, rhs);
+        let result = sub(&mut self.gc, lhs, rhs);
         self.set_return_value(result);
     }
 
@@ -297,7 +297,7 @@ impl Vm {
     #[inline(always)]
     pub(super) fn branch_not_eq_op(&mut self) {
         let skip_offset = self.isize_operand();
-        let op_result = number_eq(self.pop(), self.ac);
+        let op_result = eq(self.pop(), self.ac);
         if op_result {
             // go to then.
         } else {
@@ -321,7 +321,7 @@ impl Vm {
     #[inline(always)]
     pub(super) fn branch_not_lt_op(&mut self) {
         let skip_offset = self.isize_operand();
-        let op_result = number_lt(self.pop(), self.ac);
+        let op_result = lt(self.pop(), self.ac);
         if op_result {
             // go to then.
         } else {
@@ -333,7 +333,7 @@ impl Vm {
     #[inline(always)]
     pub(super) fn branch_not_ge_op(&mut self) {
         let skip_offset = self.isize_operand();
-        let op_result = number_ge(self.pop(), self.ac);
+        let op_result = ge(self.pop(), self.ac);
         if op_result {
             // go to then.
         } else {
@@ -345,7 +345,7 @@ impl Vm {
     #[inline(always)]
     pub(super) fn branch_not_le_op(&mut self) {
         let skip_offset = self.isize_operand();
-        let op_result = number_le(self.pop(), self.ac);
+        let op_result = le(self.pop(), self.ac);
         if op_result {
             // go to then.
         } else {

@@ -1,7 +1,7 @@
 use crate::{
     equal::Equal,
     number_cmp_op,
-    numbers::{number_div, number_eq, SchemeError, number_lt, number_mul},
+    numbers::{div, eq, SchemeError, lt, mul},
     objects::{Closure, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -328,7 +328,7 @@ impl Vm {
                     self.number_add_op();
                 }
                 Op::NumberEqual => {
-                    let op_result = number_eq(self.pop(), self.ac);
+                    let op_result = eq(self.pop(), self.ac);
                     self.set_return_value(Object::make_bool(op_result));
                 }
                 Op::NumberGe => {
@@ -341,20 +341,20 @@ impl Vm {
                     number_cmp_op!(<=, self);
                 }
                 Op::NumberLt => {
-                    let op_result = number_lt(self.pop(), self.ac);
+                    let op_result = lt(self.pop(), self.ac);
                     self.set_return_value(Object::make_bool(op_result));
                 }
                 Op::NumberMul => {
                     let lhs = self.pop();
                     let rhs = self.ac;
-                    let op_result = number_mul(&mut self.gc, lhs, rhs);
+                    let op_result = mul(&mut self.gc, lhs, rhs);
                     self.set_return_value(op_result);
 
                 },
                 Op::NumberDiv => {
                     let n = self.pop();
                     let d = self.ac;
-                    match number_div(&mut self.gc, n, d) {
+                    match div(&mut self.gc, n, d) {
                         Ok(result) => self.set_return_value(result),
                         Err(SchemeError::Div0) => {
                             panic!("/: division by zero {} {}", n, d)

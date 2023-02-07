@@ -240,6 +240,15 @@ impl Ratnum {
         }
     }
 
+    pub fn fx_mul(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
+        let r = self.ratio * Rational64::new_raw(fx as i64, 1);
+        if r.is_integer() {
+            Object::Fixnum(*r.numer() as isize)
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+        }
+    }    
+
     pub fn div_by_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
@@ -487,15 +496,15 @@ impl Compnum {
     }
 
     pub fn is_real(&self) -> bool {
-        number_eq(self.imag, Object::Fixnum(0)) && self.imag.is_exact()
+        eq(self.imag, Object::Fixnum(0)) && self.imag.is_exact()
     }
 
     pub fn obj_eq(&self, o: Object) -> bool {
         assert!(o.is_fixnum() || o.is_bignum() || o.is_flonum() || o.is_ratnum());
-        number_eq(self.imag, Object::Fixnum(0)) && number_eq(self.real, o)
+        eq(self.imag, Object::Fixnum(0)) && eq(self.real, o)
     }
     pub fn eq(&self, other: &Compnum) -> bool {
-        number_eq(self.real, other.real) && number_eq(other.imag, other.imag)
+        eq(self.real, other.real) && eq(other.imag, other.imag)
     }
 }
 
@@ -506,7 +515,7 @@ impl Display for Compnum {
 }
 
 /// Number functions.
-pub fn number_add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -538,7 +547,7 @@ pub fn number_add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         _ => todo!(),
     }
 }
-pub fn number_sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -574,7 +583,7 @@ pub fn number_sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
 pub enum SchemeError {
     Div0,
 }
-pub fn number_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -606,7 +615,7 @@ pub fn number_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sc
         _ => todo!(),
     }
 }
-pub fn number_mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -625,7 +634,7 @@ pub fn number_mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
-        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => r.fx_mul(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.mul(gc, r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
@@ -671,7 +680,7 @@ pub fn number_gt(n1: Object, n2: Object) -> bool {
         _ => todo!(),
     }
 }
-pub fn number_ge(n1: Object, n2: Object) -> bool {
+pub fn ge(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -704,7 +713,7 @@ pub fn number_ge(n1: Object, n2: Object) -> bool {
     }
 }
 
-pub fn number_le(n1: Object, n2: Object) -> bool {
+pub fn le(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -736,7 +745,7 @@ pub fn number_le(n1: Object, n2: Object) -> bool {
         _ => todo!(),
     }
 }
-pub fn number_eq(n1: Object, n2: Object) -> bool {
+pub fn eq(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -769,7 +778,7 @@ pub fn number_eq(n1: Object, n2: Object) -> bool {
     }
 }
 
-pub fn number_lt(n1: Object, n2: Object) -> bool {
+pub fn lt(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -981,7 +990,7 @@ fn is_integer(gc: &mut Box<Gc>, obj: Object) -> bool {
     match obj {
         Object::Flonum(f) if f.is_nan() || f.is_infinite() => false,
         Object::Compnum(c) => c.imag.is_exact_zero() && c.real.is_integer(gc),
-        _ => number_eq(denominator(gc, obj), Object::Fixnum(1)),
+        _ => eq(denominator(gc, obj), Object::Fixnum(1)),
     }
 }
 
@@ -1039,6 +1048,6 @@ impl Object {
 
     #[inline(always)]
     fn is_zero(&self) -> bool {
-        number_eq(Object::Fixnum(0), *self)
+        eq(Object::Fixnum(0), *self)
     }
 }
