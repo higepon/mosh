@@ -913,6 +913,22 @@ pub fn truncate(gc: &mut Box<Gc>, obj: Object) -> Object {
     }
 }
 
+pub fn exact(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(_) | Object::Bignum(_) | Object::Ratnum(_) => {
+            n
+        }
+        Object::Flonum(fl) => fl.to_exact(gc),
+        Object::Compnum(c) => {
+            let real = exact(gc, c.real);
+            let imag = exact(gc, c.imag);
+            Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+        }
+        _ => panic!()
+    }
+}
+
 fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
     assert!(obj.is_number());
     match obj {

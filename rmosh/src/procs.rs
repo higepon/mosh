@@ -3365,9 +3365,10 @@ fn is_inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     Object::make_bool(!args[0].is_exact())
 }
-fn exact(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn exact(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exact";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    numbers::exact(&mut vm.gc, args[0])
 }
 fn inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "inexact";
