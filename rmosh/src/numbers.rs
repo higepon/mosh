@@ -381,6 +381,12 @@ impl Bignum {
             None => false,
         }
     }
+    pub fn fx_ge(&self, f: isize) -> bool {
+        match self.to_isize() {
+            Some(v) => v >= f,
+            None => false,
+        }
+    }
     pub fn eqv(&self, other: &Bignum) -> bool {
         self.value.eq(&other.value)
     }
@@ -702,7 +708,7 @@ pub fn ge(n1: Object, n2: Object) -> bool {
         (Object::Flonum(fl), Object::Ratnum(r)) => todo!(),
         (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
         (Object::Flonum(_), Object::Compnum(c)) => todo!(),
-        (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => b.fx_ge(fx),
         (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
         (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
         (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
