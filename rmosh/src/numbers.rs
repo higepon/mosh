@@ -369,27 +369,41 @@ impl Bignum {
             value: value,
         }
     }
+    pub fn sub(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
+        let result = self.value.clone() - other.value.clone();
+        match result.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        }
+    }
     pub fn fx_eqv(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v == f,
             None => false,
         }
     }
-    pub fn fx_lt(&self, f: isize) -> bool {
+    pub fn fx_lt(&self, fx: isize) -> bool {
         match self.to_isize() {
-            Some(v) => v < f,
-            None => false,
+            Some(v) => v < fx,
+            None => match BigInt::from_isize(fx) {
+                Some(bv) => self.value < bv,
+                None => panic!(),
+            },
         }
     }
-    pub fn fx_ge(&self, f: isize) -> bool {
+    pub fn fx_ge(&self, fx: isize) -> bool {
         match self.to_isize() {
-            Some(v) => v >= f,
-            None => false,
+            Some(v) => v >= fx,
+            None => match BigInt::from_isize(fx) {
+                Some(bv) => self.value >= bv,
+                None => panic!(),
+            },
         }
     }
     pub fn eqv(&self, other: &Bignum) -> bool {
         self.value.eq(&other.value)
     }
+
     pub fn fl_eqv(&self, fl: &Flonum) -> bool {
         match self.to_f64() {
             Some(v) => v == **fl,
@@ -482,13 +496,13 @@ impl Bignum {
 
 impl Display for Bignum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<bignum>")
+        write!(f, "{}", self.value)
     }
 }
 
 impl Debug for Bignum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<bignum>")
+        write!(f, "{}", self.value)
     }
 }
 
@@ -578,7 +592,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.sub(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
