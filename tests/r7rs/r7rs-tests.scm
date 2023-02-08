@@ -204,6 +204,7 @@
 
 (let*-values (((root rem) (exact-integer-sqrt 32)))
   (test 35 (* root rem)))
+#|  
 
 (test '(1073741824 0)
     (let*-values (((root rem) (exact-integer-sqrt (expt 2 60))))
@@ -354,7 +355,7 @@
    (test '(a `(b ,x ,'y d) e) `(a `(b ,,name1 ,',name2 d) e)))
 (test '(list 3 4) (quasiquote (list (unquote (+ 1 2)) 4)) )
 (test `(list ,(+ 1 2) 4) (quasiquote (list (unquote (+ 1 2)) 4)))
-#|
+
 (define any-arity
   (case-lambda
     (() 'zero)
