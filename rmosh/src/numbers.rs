@@ -504,15 +504,15 @@ impl Compnum {
     }
 
     pub fn is_real(&self) -> bool {
-        eq(self.imag, Object::Fixnum(0)) && self.imag.is_exact()
+        eqv(self.imag, Object::Fixnum(0)) && self.imag.is_exact()
     }
 
     pub fn obj_eqv(&self, o: Object) -> bool {
         assert!(o.is_fixnum() || o.is_bignum() || o.is_flonum() || o.is_ratnum());
-        eq(self.imag, Object::Fixnum(0)) && eq(self.real, o)
+        eqv(self.imag, Object::Fixnum(0)) && eqv(self.real, o)
     }
     pub fn eqv(&self, other: &Compnum) -> bool {
-        eq(self.real, other.real) && eq(other.imag, other.imag)
+        eqv(self.real, other.real) && eqv(other.imag, other.imag)
     }
 }
 
@@ -753,7 +753,7 @@ pub fn le(n1: Object, n2: Object) -> bool {
         _ => todo!(),
     }
 }
-pub fn eq(n1: Object, n2: Object) -> bool {
+pub fn eqv(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -996,7 +996,7 @@ fn is_integer(gc: &mut Box<Gc>, obj: Object) -> bool {
     match obj {
         Object::Flonum(f) if f.is_nan() || f.is_infinite() => false,
         Object::Compnum(c) => c.imag.is_exact_zero() && c.real.is_integer(gc),
-        _ => eq(denominator(gc, obj), Object::Fixnum(1)),
+        _ => eqv(denominator(gc, obj), Object::Fixnum(1)),
     }
 }
 
@@ -1054,6 +1054,6 @@ impl Object {
 
     #[inline(always)]
     fn is_zero(&self) -> bool {
-        eq(Object::Fixnum(0), *self)
+        eqv(Object::Fixnum(0), *self)
     }
 }

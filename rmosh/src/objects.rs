@@ -289,7 +289,7 @@ impl Object {
                     if (is_exact1 && !is_exact2) || (!is_exact1 && is_exact2) {
                         false
                     } else {
-                        numbers::eq(*self, *other)
+                        numbers::eqv(*self, *other)
                     }
                 }
             } else {
