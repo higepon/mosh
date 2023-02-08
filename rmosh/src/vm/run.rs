@@ -1,7 +1,7 @@
 use crate::{
     equal::Equal,
     number_cmp_op,
-    numbers::{div, eqv, lt, mul, SchemeError},
+    numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError},
     objects::{Closure, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -332,17 +332,44 @@ impl Vm {
                     self.set_return_value(Object::make_bool(op_result));
                 }
                 Op::NumberGe => {
-                    number_cmp_op!(>=, self);
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = ge(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!(">=: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
                 Op::NumberGt => {
-                    number_cmp_op!(>, self);
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = gt(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!(">: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
                 Op::NumberLe => {
-                    number_cmp_op!(<=, self);
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = le(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!("<=: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
                 Op::NumberLt => {
-                    let op_result = lt(self.pop(), self.ac);
-                    self.set_return_value(Object::make_bool(op_result));
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = lt(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!("<: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
                 Op::NumberMul => {
                     let lhs = self.pop();
