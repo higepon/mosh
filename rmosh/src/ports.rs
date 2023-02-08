@@ -195,6 +195,8 @@ pub trait TextOutputPort {
             Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id),
             Object::ByteVector(_)
             | Object::Closure(_)
+            | Object::Continuation(_)
+            | Object::ContinuationStack(_)
             | Object::Vox(_)
             | Object::ProgramCounter(_)
             | Object::ObjectPointer(_)
@@ -337,6 +339,8 @@ pub trait TextOutputPort {
                 | Object::Char(_)
                 | Object::Closure(_)
                 | Object::Compnum(_)
+                | Object::Continuation(_)
+                | Object::ContinuationStack(_)                                
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::False

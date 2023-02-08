@@ -103,6 +103,12 @@ impl FaslWriter {
             Object::Compnum(_r) => {
                 todo!();
             }
+            Object::Continuation(_r) => {
+                todo!();
+            }
+            Object::ContinuationStack(_r) => {
+                todo!();
+            }                        
             Object::Ratnum(_r) => {
                 todo!();
             }
@@ -187,6 +193,8 @@ impl FaslWriter {
             match o {
                 Object::ByteVector(_)
                 | Object::Closure(_)
+                | Object::Continuation(_)
+                | Object::ContinuationStack(_)
                 | Object::Vox(_)
                 | Object::ProgramCounter(_)
                 | Object::ObjectPointer(_)

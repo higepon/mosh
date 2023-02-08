@@ -375,6 +375,8 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
+            Object::Continuation(_) => todo!(),
+            Object::ContinuationStack(_) => todo!(),
             Object::FileInputPort(port) => {
                 self.mark_heap_object(port);
             }

@@ -23,6 +23,8 @@ pub enum Object {
     ByteVector(GcRef<ByteVector>),
     Char(char),
     Closure(GcRef<Closure>),
+    Continuation(GcRef<Continuation>),
+    ContinuationStack(GcRef<ContinuationStack>),
     Compnum(GcRef<Compnum>),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
@@ -326,6 +328,12 @@ impl Debug for Object {
             Object::Bignum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::Continuation(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            } 
+            Object::ContinuationStack(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            }                       
             Object::Ratnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -457,6 +465,12 @@ impl Display for Object {
             Object::Bignum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::Continuation(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            } 
+            Object::ContinuationStack(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            }                   
             Object::Ratnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -1004,6 +1018,45 @@ impl Display for Regexp {
         write!(f, "#<regexp>")
     }
 }
+
+/// Continuation.
+pub struct Continuation {
+    pub header: GcHeader,
+}
+
+impl Continuation {}
+
+impl fmt::Debug for Continuation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("#<continuation>")
+    }
+}
+
+impl Display for Continuation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<continuation>")
+    }
+}
+
+/// Continuation.
+pub struct ContinuationStack {
+    pub header: GcHeader,
+}
+
+impl ContinuationStack {}
+
+impl fmt::Debug for ContinuationStack {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("#<continuation>")
+    }
+}
+
+impl Display for ContinuationStack {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<continuation>")
+    }
+}
+
 /// Closure
 #[derive(Debug)]
 pub struct Closure {
