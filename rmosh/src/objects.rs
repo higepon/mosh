@@ -1022,9 +1022,21 @@ impl Display for Regexp {
 /// Continuation.
 pub struct Continuation {
     pub header: GcHeader,
+    shift_size: isize,
+    pub stack: Object,
+    pub winders: Object,
 }
 
-impl Continuation {}
+impl Continuation {
+    pub fn new(shift_size: isize, stack: Object, winders: Object) -> Self {
+        Self {
+            header:  GcHeader::new(ObjectType::Continuation),
+            shift_size: shift_size,
+            stack: stack,
+            winders: winders
+        }
+    }    
+}
 
 impl fmt::Debug for Continuation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1041,9 +1053,19 @@ impl Display for Continuation {
 /// Continuation.
 pub struct ContinuationStack {
     pub header: GcHeader,
+    pub data: Vec<Object>,
 }
 
-impl ContinuationStack {}
+impl ContinuationStack {
+    pub fn new(source: &[Object]) -> Self {
+        let mut c = Self {
+            header:  GcHeader::new(ObjectType::ContinuationStack),
+            data: vec![]
+        };
+        c.data.extend(source);
+        c
+    }
+}
 
 impl fmt::Debug for ContinuationStack {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

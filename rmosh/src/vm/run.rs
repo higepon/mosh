@@ -2,7 +2,7 @@ use crate::{
     equal::Equal,
     number_cmp_op,
     numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError},
-    objects::{Closure, Object, Pair, Vox},
+    objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
 };
@@ -303,9 +303,17 @@ impl Vm {
                     self.pc = self.jump(self.pc, jump_offset - 1);
                 }
                 Op::MakeContinuation => {
-                    let _n = self.isize_operand();
-                    let dummy = self.gc.new_string("TODO:continuation");
-                    self.set_return_value(dummy);
+                    let n = self.isize_operand();
+                    let source_stack = &self.stack[0..self.stack_len()];
+                    let c_stack = Object::ContinuationStack(
+                        self.gc.alloc(ContinuationStack::new(source_stack)),
+                    );
+                    let c = Object::Continuation(self.gc.alloc(Continuation::new(
+                        n,
+                        c_stack,
+                        self.dynamic_winders,
+                    )));
+                    self.set_return_value(c);
                 }
                 Op::MakeVector => match self.pop() {
                     Object::Fixnum(size) => {
