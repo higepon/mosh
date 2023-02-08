@@ -298,6 +298,7 @@ impl Vm {
     pub(super) fn branch_not_eq_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = eq(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
         if op_result {
             // go to then.
         } else {
@@ -310,6 +311,7 @@ impl Vm {
     pub(super) fn branch_not_gt_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = number_gt(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
         if op_result {
             // go to then.
         } else {
@@ -322,6 +324,7 @@ impl Vm {
     pub(super) fn branch_not_lt_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = lt(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
         if op_result {
             // go to then.
         } else {
@@ -334,6 +337,7 @@ impl Vm {
     pub(super) fn branch_not_ge_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = ge(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
         if op_result {
             // go to then.
         } else {
@@ -346,6 +350,7 @@ impl Vm {
     pub(super) fn branch_not_le_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = le(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
         if op_result {
             // go to then.
         } else {
