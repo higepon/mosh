@@ -376,6 +376,13 @@ impl Bignum {
             None => Object::Bignum(gc.alloc(Bignum::new(result))),
         }
     }
+    pub fn mul(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
+        let result = self.value.clone() * other.value.clone();
+        match result.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        }
+    }    
     pub fn fx_eqv(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v == f,
@@ -660,7 +667,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.mul(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => r.fx_mul(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),

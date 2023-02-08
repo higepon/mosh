@@ -216,7 +216,7 @@
 (test '(815238614083298888 443242361398135744)
     (let*-values (((root rem) (exact-integer-sqrt (expt 2 119))))
       (list root rem)))
-#| 
+
 (test '(1152921504606846976 0)
     (let*-values (((root rem) (exact-integer-sqrt (expt 2 120))))
       (list root rem)))
@@ -292,7 +292,7 @@
   (lambda (stream) (cdr (force stream))))
 
 (test 2 (head (tail (tail integers))))
-
+#| 
 (define (stream-filter p? s)
   (delay-force
    (if (null? (force s))
