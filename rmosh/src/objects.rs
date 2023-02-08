@@ -1,6 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
-use crate::numbers::{Bignum, Compnum, Flonum, Ratnum};
+use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -278,15 +278,25 @@ impl Object {
         }
     }
 
-    // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Object::Fixnum(a), Object::Fixnum(b)) => {
-                return a == b;
+        if self.is_number() {
+            if other.is_number() {
+                if self.is_flonum() && other.is_fixnum() {
+                    self.to_flonum().eq(&other.to_flonum())
+                } else {
+                    let is_exact1 = self.is_exact();
+                    let is_exact2 = other.is_exact();
+                    if (is_exact1 && !is_exact2) || (!is_exact1 && is_exact2) {
+                        false
+                    } else {
+                        numbers::eq(*self, *other)
+                    }
+                }
+            } else {
+                false
             }
-            _ => {
-                return self.eq(other);
-            }
+        } else {
+            self.eq(&other)
         }
     }
 

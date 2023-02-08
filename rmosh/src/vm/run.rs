@@ -1,7 +1,7 @@
 use crate::{
     equal::Equal,
     number_cmp_op,
-    numbers::{div, eq, SchemeError, lt, mul},
+    numbers::{div, eq, lt, mul, SchemeError},
     objects::{Closure, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -349,8 +349,7 @@ impl Vm {
                     let rhs = self.ac;
                     let op_result = mul(&mut self.gc, lhs, rhs);
                     self.set_return_value(op_result);
-
-                },
+                }
                 Op::NumberDiv => {
                     let n = self.pop();
                     let d = self.ac;

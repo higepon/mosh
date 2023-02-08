@@ -1,6 +1,6 @@
 use crate::{
     gc::GcRef,
-    numbers::{add, eq, ge, number_gt, le, lt, sub},
+    numbers::{add, eq, ge, gt, le, lt, sub},
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
@@ -310,7 +310,7 @@ impl Vm {
     #[inline(always)]
     pub(super) fn branch_not_gt_op(&mut self) {
         let skip_offset = self.isize_operand();
-        let op_result = number_gt(self.pop(), self.ac);
+        let op_result = gt(self.pop(), self.ac);
         self.set_return_value(Object::make_bool(op_result));
         if op_result {
             // go to then.

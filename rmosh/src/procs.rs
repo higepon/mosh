@@ -1335,7 +1335,6 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Object {
             (Object::String(s), _) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[1..]);
-                println!("final format=<{}>", &port.string());
                 return vm.gc.new_string(&port.string());
             }
             _ => {}
