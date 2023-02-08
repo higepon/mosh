@@ -234,6 +234,13 @@ impl Object {
             panic!("Not a Object::Pair")
         }
     }
+    pub fn to_continuation_stack(self) -> GcRef<ContinuationStack> {
+        if let Self::ContinuationStack(c) = self {
+            c
+        } else {
+            panic!("Not a Object::Pair")
+        }
+    }    
     pub fn car_unchecked(self) -> Object {
         self.to_pair().car
     }
@@ -1064,6 +1071,13 @@ impl ContinuationStack {
         };
         c.data.extend(source);
         c
+    }
+
+    pub fn restore(&self, dest: &mut Vec<Object>) -> usize {
+        for (index, element) in self.data.iter().enumerate() {
+            dest[index] = *element;
+        }
+        self.data.len()
     }
 }
 

@@ -35,7 +35,7 @@ fn main() {
         vargs.push(vm.gc.new_string(&args[i]));
     }
     //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
-    vargs.push(vm.gc.new_string("/root/fib.scm"));
+    vargs.push(vm.gc.new_string("/root/cont.scm"));
     let vargs = vm.gc.listn(&vargs);
     vm.enable_r7rs(vargs);
 }

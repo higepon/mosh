@@ -447,7 +447,25 @@ impl Vm {
                     let n = self.isize_operand();
                     self.refer_local_op(n)
                 }
-                Op::RestoreContinuation => todo!(),
+                Op::RestoreContinuation => {
+                    self.num_values = self.usize_operand();
+                    if self.num_values != 0 {
+                        for i in 0..self.num_values - 1 {
+                            self.values[i] = self.index(self.sp, (self.num_values - i - 2) as isize);
+                        }
+                        self.ac = self.index(self.sp, self.num_values as isize -  1);
+                    }
+
+                    let c_stack = self.operand().to_continuation_stack();
+                    let restored_size = c_stack.restore(&mut self.stack);
+                    self.sp = self.stack.as_mut_ptr();
+                    self.sp = self.inc(self.sp, restored_size as isize);
+
+                    let depth = 0;
+                    let diff = self.isize_operand();
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
+                    self.return_n(0);
+                },
                 Op::Return => {
                     let n = self.isize_operand();
                     self.return_n(n);
@@ -804,7 +822,9 @@ impl Vm {
                         );
                     }
                 },
-                Op::DynamicWinders => todo!(),
+                Op::DynamicWinders => {
+                    self.set_return_value(self.dynamic_winders);
+                }
                 Op::TailCall => {
                     let depth = self.isize_operand();
                     let diff = self.isize_operand();
