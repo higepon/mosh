@@ -1022,7 +1022,7 @@ impl Display for Regexp {
 /// Continuation.
 pub struct Continuation {
     pub header: GcHeader,
-    shift_size: isize,
+    pub shift_size: isize,
     pub stack: Object,
     pub winders: Object,
 }
