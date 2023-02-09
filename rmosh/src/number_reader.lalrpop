@@ -1,5 +1,6 @@
 use crate::gc::Gc;
 use crate::number_lexer;
+use crate::numbers::exact;
 use crate::numbers::Bignum;
 use crate::numbers::Compnum;
 use crate::numbers::Flonum;
@@ -16,7 +17,21 @@ pub Number: Object = {
 }
 
 Number10: Object = {
-    Prefix10? <c: Complex10> => c,
+    <e: Prefix10?> <c: Complex10> => {
+        match e {
+            Some(is_exact) => {
+                if is_exact {
+                    exact(gc, c)
+                } else {
+                    c
+                }
+            },
+            None => {
+                c
+            }
+        }
+
+    },
 }
 
 Prefix10: bool = {

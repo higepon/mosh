@@ -119,27 +119,15 @@ impl Flonum {
     }
 
     pub fn eqv_fx(&self, fx: isize) -> bool {
-        if self.is_infinite() || self.is_nan() {
-            false
-        } else {
-            (fx as f64) == self.value()
-        }
+        (fx as f64) == self.value()
     }
 
-    pub fn gt_fx(&self, f: isize) -> bool {
-        if self.is_infinite() || self.is_nan() {
-            false
-        } else {
-            (f as f64) > self.value()
-        }
+    pub fn gt_fx(&self, fx: isize) -> bool {
+        self.value() > (fx as f64)
     }
 
-    pub fn lt_fx(&self, f: isize) -> bool {
-        if self.is_infinite() || self.is_nan() {
-            false
-        } else {
-            (f as f64) < self.value()
-        }
+    pub fn lt_fx(&self, fx: isize) -> bool {
+        self.value() < (fx as f64)
     }
 
     pub fn gt_rat(&self, r: &GcRef<Ratnum>) -> bool {
@@ -740,7 +728,7 @@ pub fn gt(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
-        (Object::Fixnum(f), Object::Fixnum(fl)) => f > fl,
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1 > fx2,
         (Object::Fixnum(f), Object::Flonum(fl)) => todo!(),
         (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
         (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
