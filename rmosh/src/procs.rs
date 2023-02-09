@@ -2923,10 +2923,26 @@ fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "=";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_add(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn number_add(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "+";
-    panic!("{}({}) not implemented", name, args.len());
+    let argc = args.len();
+    if argc == 0 {
+        Object::Fixnum(0)
+    } else if argc == 1 {
+        if args[0].is_number() {
+            args[0]
+        } else {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    } else {
+        let mut ret = Object::Fixnum(0);
+        for arg in args.iter() {
+            ret = numbers::add(&mut vm.gc, ret, *arg);
+        }
+        ret
+    }
 }
+
 fn nuber_sub(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "-";
     panic!("{}({}) not implemented", name, args.len());

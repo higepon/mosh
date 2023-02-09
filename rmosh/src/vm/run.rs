@@ -451,9 +451,10 @@ impl Vm {
                     self.num_values = self.usize_operand();
                     if self.num_values != 0 {
                         for i in 0..self.num_values - 1 {
-                            self.values[i] = self.index(self.sp, (self.num_values - i - 2) as isize);
+                            self.values[i] =
+                                self.index(self.sp, (self.num_values - i - 2) as isize);
                         }
-                        self.ac = self.index(self.sp, self.num_values as isize -  1);
+                        self.ac = self.index(self.sp, self.num_values as isize - 1);
                     }
 
                     let c_stack = self.operand().to_continuation_stack();
@@ -465,7 +466,7 @@ impl Vm {
                     let diff = self.isize_operand();
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     self.return_n(0);
-                },
+                }
                 Op::Return => {
                     let n = self.isize_operand();
                     self.return_n(n);
@@ -563,8 +564,10 @@ impl Vm {
                         } else {
                             self.gc.list1(self.ac)
                         };
-                        for i in 0..self.num_values - 1 {
-                            ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                        if self.num_values >= 1 {
+                            for i in 0..self.num_values - 1 {
+                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                            }
                         }
                         self.push(ret);
                     // (receive (a b . c) ...)

@@ -459,7 +459,7 @@
           (begin expr dots)))))))
 (be-like-begin3 sequence3)
 (test 5 (sequence3 2 3 4 5))
-#| 
+
 ;; ellipsis escape
 (define-syntax elli-esc-1
   (syntax-rules ()
@@ -871,7 +871,7 @@
 (test #f (negative? +inf.0))
 (test #t (negative? -inf.0))
 (test #f (negative? +nan.0))
-
+#| 
 (test #f (odd? 0))
 (test #t (odd? 1))
 (test #t (odd? -1))
