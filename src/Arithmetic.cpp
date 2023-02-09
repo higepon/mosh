@@ -886,7 +886,8 @@ Object Arithmetic::numerator(Object n)
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"
 
-Object Arithmetic::denominator(Object n)
+Object Arithmetic::
+denominator(Object n)
 {
 //    VM_LOG1("n=~a", n);
     MOSH_ASSERT(n.isRational());

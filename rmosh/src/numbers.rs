@@ -119,7 +119,7 @@ impl Flonum {
     }
 
     pub fn eqv_fx(&self, fx: isize) -> bool {
-        if self.is_finite() || self.is_nan() {
+        if self.is_infinite() || self.is_nan() {
             false
         } else {
             (fx as f64) == self.value()
@@ -127,7 +127,7 @@ impl Flonum {
     }
 
     pub fn gt_fx(&self, f: isize) -> bool {
-        if self.is_finite() || self.is_nan() {
+        if self.is_infinite() || self.is_nan() {
             false
         } else {
             (f as f64) > self.value()
@@ -135,7 +135,7 @@ impl Flonum {
     }
 
     pub fn lt_fx(&self, f: isize) -> bool {
-        if self.is_finite() || self.is_nan() {
+        if self.is_infinite() || self.is_nan() {
             false
         } else {
             (f as f64) < self.value()
@@ -1045,7 +1045,9 @@ fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
         Object::Ratnum(r) => r.denom(),
         Object::Flonum(fl) => {
             let m = fl.to_exact(gc);
+            println!("m={}", m);
             let denom = denominator(gc, m);
+            println!("denom={}", denom);
             inexact(gc, denom)
         }
         _ => Object::Fixnum(1),
