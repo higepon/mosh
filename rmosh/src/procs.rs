@@ -3416,9 +3416,14 @@ fn exact(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     numbers::exact(&mut vm.gc, args[0])
 }
-fn inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn inexact(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "inexact";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::inexact(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
 fn is_nan(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "nan?";
