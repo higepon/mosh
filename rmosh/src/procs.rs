@@ -3810,19 +3810,23 @@ fn bytevector_ieee_double_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> 
     let name: &str = "bytevector-ieee-double-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_even(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_even(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "even?";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Fixnum(n) => Object::make_bool(n % 2 == 0),
-        _ => {
-            panic!("{}: required number but got {}", name, args[0]);
-        }
+    if args[0].is_integer(&mut vm.gc) {
+        Object::make_bool(args[0].is_even())
+    } else {
+        panic!("{}: integer value required but got {}", name, args[0])
     }
 }
-fn is_odd(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_odd(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "odd?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_integer(&mut vm.gc) {
+        Object::make_bool(!args[0].is_even())
+    } else {
+        panic!("{}: integer value required but got {}", name, args[0])
+    }
 }
 fn abs(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "abs";

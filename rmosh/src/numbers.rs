@@ -43,6 +43,11 @@ impl Flonum {
     }
 
     #[inline(always)]
+    pub fn is_even(&self) -> bool {
+        self.value() * 0.5 == (self.value() * 0.5).floor()
+    }
+
+    #[inline(always)]
     pub fn value(&self) -> f64 {
         unsafe { self.value }
     }
@@ -369,6 +374,14 @@ impl Bignum {
             value: value,
         }
     }
+    pub fn eqv(&self, other: &Bignum) -> bool {
+        self.value.eq(&other.value)
+    }
+    pub fn is_even(&self) -> bool {
+        let r = (self.value.clone() % BigInt::from(2)).to_isize().unwrap();
+        r == 0
+    }
+
     pub fn sub(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         let result = self.value.clone() - other.value.clone();
         match result.to_isize() {
@@ -382,7 +395,7 @@ impl Bignum {
             Some(v) => Object::Fixnum(v),
             None => Object::Bignum(gc.alloc(Bignum::new(result))),
         }
-    }    
+    }
     pub fn fx_eqv(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v == f,
@@ -406,9 +419,6 @@ impl Bignum {
                 None => panic!(),
             },
         }
-    }
-    pub fn eqv(&self, other: &Bignum) -> bool {
-        self.value.eq(&other.value)
     }
 
     pub fn fl_eqv(&self, fl: &Flonum) -> bool {
@@ -1082,5 +1092,15 @@ impl Object {
     #[inline(always)]
     fn is_zero(&self) -> bool {
         eqv(Object::Fixnum(0), *self)
+    }
+
+    pub fn is_even(&self) -> bool {
+        match *self {
+            Object::Fixnum(fx) => fx % 2 == 0,
+            Object::Bignum(b) => b.is_even(),
+            Object::Flonum(fl) => fl.is_even(),
+            Object::Compnum(c) => c.real.is_even(),
+            _ => panic!(),
+        }
     }
 }

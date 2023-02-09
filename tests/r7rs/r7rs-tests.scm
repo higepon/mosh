@@ -292,7 +292,7 @@
   (lambda (stream) (cdr (force stream))))
 
 (test 2 (head (tail (tail integers))))
-#| 
+
 (define (stream-filter p? s)
   (delay-force
    (if (null? (force s))
@@ -459,7 +459,7 @@
           (begin expr dots)))))))
 (be-like-begin3 sequence3)
 (test 5 (sequence3 2 3 4 5))
-
+#| 
 ;; ellipsis escape
 (define-syntax elli-esc-1
   (syntax-rules ()
