@@ -142,12 +142,12 @@ impl Flonum {
         }
     }
 
-    pub fn le_rat(&self, r: &GcRef<Ratnum>) -> bool {
+    pub fn gt_rat(&self, r: &GcRef<Ratnum>) -> bool {
         match r.ratio.to_f64() {
-            Some(v) => self.value() <= v,
+            Some(v) => self.value() > v,
             None => false,
-        } 
-    }    
+        }
+    }
 
     pub fn is_rational(&self) -> bool {
         !self.is_nan() && !self.is_infinite()
@@ -308,9 +308,16 @@ impl Ratnum {
             None => false,
         }
     }
-    pub fn lf_fl(&self, fl: &Flonum) -> bool {
+    pub fn lt_fl(&self, fl: &Flonum) -> bool {
         match self.to_f64() {
             Some(v) => v < **fl,
+            None => false,
+        }
+    }
+
+    pub fn gt_fl(&self, fl: &Flonum) -> bool {
+        match self.to_f64() {
+            Some(v) => v > **fl,
             None => false,
         }
     }
@@ -603,7 +610,7 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::add_fx2(gc, fx1, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fl.add_fx(fx),
         (Object::Fixnum(fx), Object::Ratnum(r)) => r.add_fx(gc, fx),
-        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Bignum(b)) => b.add_fx(gc, fx),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.add_fx(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.add(&fl2),
@@ -702,7 +709,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::mul_fx2(gc, fx1, fx2),
         (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => r.mul_fx(gc, fx),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(_), Object::Fixnum(_)) => todo!(),
@@ -740,7 +747,7 @@ pub fn gt(n1: Object, n2: Object) -> bool {
         (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.gt_fx(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.gt(&fl2),
-        (Object::Flonum(fl), Object::Ratnum(r)) => todo!(),
+        (Object::Flonum(fl), Object::Ratnum(r)) => fl.gt_rat(&r),
         (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
         (Object::Flonum(_), Object::Compnum(c)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
@@ -749,7 +756,7 @@ pub fn gt(n1: Object, n2: Object) -> bool {
         (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
         (Object::Bignum(_), Object::Compnum(c)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
-        (Object::Ratnum(r), Object::Flonum(fl)) => todo!(),
+        (Object::Ratnum(r), Object::Flonum(fl)) => r.gt_fl(&fl),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
         (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
@@ -764,67 +771,13 @@ pub fn gt(n1: Object, n2: Object) -> bool {
 pub fn ge(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
-    match (n1, n2) {
-        (Object::Fixnum(f), Object::Fixnum(fl)) => f >= fl,
-        (Object::Fixnum(f), Object::Flonum(fl)) => todo!(),
-        (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
-        (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
-        (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
-        (Object::Flonum(fl), Object::Fixnum(f)) => todo!(),
-        (Object::Flonum(fl1), Object::Flonum(fl2)) => todo!(),
-        (Object::Flonum(fl), Object::Ratnum(r)) => todo!(),
-        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
-        (Object::Flonum(_), Object::Compnum(c)) => todo!(),
-        (Object::Bignum(b), Object::Fixnum(fx)) => b.ge_fx(fx),
-        (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
-        (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
-        (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
-        (Object::Bignum(_), Object::Compnum(c)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
-        (Object::Ratnum(r), Object::Flonum(fl)) => todo!(),
-        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
-        (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
-        (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
-        (Object::Compnum(c), Object::Fixnum(_)) => todo!(),
-        (Object::Compnum(c), Object::Flonum(_)) => todo!(),
-        (Object::Compnum(c), Object::Ratnum(_)) => todo!(),
-        (Object::Compnum(c), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(c1), Object::Compnum(c2)) => todo!(),
-        _ => todo!(),
-    }
+    !lt(n1, n2)
 }
 
 pub fn le(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
-    match (n1, n2) {
-        (Object::Fixnum(f), Object::Fixnum(fl)) => f <= fl,
-        (Object::Fixnum(f), Object::Flonum(fl)) => todo!(),
-        (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
-        (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
-        (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
-        (Object::Flonum(fl), Object::Fixnum(f)) => todo!(),
-        (Object::Flonum(fl1), Object::Flonum(fl2)) => todo!(),
-        (Object::Flonum(fl), Object::Ratnum(r)) => fl.le_rat(&r),
-        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
-        (Object::Flonum(_), Object::Compnum(c)) => todo!(),
-        (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
-        (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
-        (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
-        (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
-        (Object::Bignum(_), Object::Compnum(c)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
-        (Object::Ratnum(r), Object::Flonum(fl)) => todo!(),
-        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
-        (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
-        (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
-        (Object::Compnum(c), Object::Fixnum(_)) => todo!(),
-        (Object::Compnum(c), Object::Flonum(_)) => todo!(),
-        (Object::Compnum(c), Object::Ratnum(_)) => todo!(),
-        (Object::Compnum(c), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(c1), Object::Compnum(c2)) => todo!(),
-        _ => todo!(),
-    }
+    !gt(n1, n2)
 }
 pub fn eqv(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
@@ -869,14 +822,14 @@ pub fn lt(n1: Object, n2: Object) -> bool {
         (Object::Fixnum(f), Object::Bignum(b)) => b.lt_fx(f),
         (Object::Flonum(fl), Object::Fixnum(f)) => fl.lt_fx(f),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.lt(&fl2),
-        (Object::Flonum(fl), Object::Ratnum(r)) => r.lf_fl(&fl),
+        (Object::Flonum(fl), Object::Ratnum(r)) => r.lt_fl(&fl),
         (Object::Flonum(fl), Object::Bignum(b)) => b.lt_fl(&fl),
         (Object::Bignum(b), Object::Fixnum(f)) => b.lt_fx(f),
         (Object::Bignum(b), Object::Flonum(fl)) => b.lt_fl(&fl),
         (Object::Bignum(b), Object::Ratnum(r)) => r.bi_lt(&b),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.lt(&b2),
         (Object::Ratnum(r), Object::Fixnum(f)) => r.lt_fx(f),
-        (Object::Ratnum(r), Object::Flonum(fl)) => r.lf_fl(&fl),
+        (Object::Ratnum(r), Object::Flonum(fl)) => r.lt_fl(&fl),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.lt(&r2),
         (Object::Ratnum(r), Object::Bignum(b)) => r.bi_lt(&b),
         _ => todo!(),
