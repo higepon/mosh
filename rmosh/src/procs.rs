@@ -3396,7 +3396,7 @@ fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "imag-part";
     check_argc!(name, args, 1);
     if args[0].is_number() {
-        real(args[0])
+        imag(args[0])
     } else {
         panic!("{}: number required but got {}", name, args[0]);
     }
