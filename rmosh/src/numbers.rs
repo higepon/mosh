@@ -905,6 +905,14 @@ pub fn real(n: Object) -> Object {
     }
 }
 
+pub fn imag(n: Object) -> Object {
+    match n {
+        Object::Compnum(c) => c.imag,
+        x if x.is_number() => Object::Fixnum(0),
+        _ => todo!(),
+    }
+}
+
 pub fn to_string(n: Object, radix: usize) -> String {
     assert!(radix == 2 || radix == 8 || radix == 10 || radix == 16);
     match n {

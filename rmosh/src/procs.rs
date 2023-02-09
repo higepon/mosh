@@ -3394,7 +3394,12 @@ fn real_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "imag-part";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        real(args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0]);
+    }
 }
 fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exact?";
@@ -3417,15 +3422,27 @@ fn inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_nan(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "nan?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(match args[0] {
+        Object::Flonum(fl) => fl.is_nan(),
+        _ => false,
+    })
 }
 fn is_infinite(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "infinite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(match args[0] {
+        Object::Flonum(fl) => fl.is_infinite(),
+        _ => false,
+    })
 }
 fn is_finite(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "finite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(match args[0] {
+        Object::Flonum(fl) => fl.is_finite(),
+        _ => true,
+    })
 }
 fn real_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real->flonum";
