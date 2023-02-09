@@ -13,7 +13,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, Flonum, SchemeError},
+    numbers::{self, real, Flonum, SchemeError},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -3349,7 +3349,7 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Object {
 
 fn is_rational(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rational?";
-    check_argc!(name, args,1);
+    check_argc!(name, args, 1);
     Object::make_bool(args[0].is_rational())
 }
 fn is_flonum(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -3385,7 +3385,12 @@ fn make_rectangular(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn real_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real-part";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        real(args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0]);
+    }
 }
 fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "imag-part";

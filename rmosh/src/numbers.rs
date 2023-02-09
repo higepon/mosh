@@ -897,6 +897,14 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     }
 }
 
+pub fn real(n: Object) -> Object {
+    match n {
+        Object::Compnum(c) => c.real,
+        x if x.is_number() => x,
+        _ => todo!(),
+    }
+}
+
 pub fn to_string(n: Object, radix: usize) -> String {
     assert!(radix == 2 || radix == 8 || radix == 10 || radix == 16);
     match n {
