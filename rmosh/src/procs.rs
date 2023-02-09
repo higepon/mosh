@@ -3349,7 +3349,8 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Object {
 
 fn is_rational(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rational?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args,1);
+    Object::make_bool(args[0].is_rational())
 }
 fn is_flonum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "flonum?";
@@ -3635,7 +3636,8 @@ fn bitwise_arithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_complex(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "complex?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_complex())
 }
 fn is_real(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real?";
