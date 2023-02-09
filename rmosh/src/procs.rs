@@ -1105,11 +1105,21 @@ fn string(vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn number_to_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "number->string";
-    check_argc!(name, args, 1);
-    match args[0] {
-        Object::Fixnum(n) => vm.gc.new_string(&format!("{}", n)[..]),
-        v => {
-            panic!("{}: number required but got {}", name, v)
+    check_argc_between!(name, args, 1, 3);
+    let argc = args.len();
+    let n = args[0];
+    if argc == 1 {
+        vm.gc.new_string(&numbers::to_string(n, 10))
+    } else {
+        let radix = args[1];
+        if !radix.is_fixnum() {
+            panic!("{}: radix number required but got {}", name, radix);
+        }
+        let radix = radix.to_isize();
+        if radix == 2 || radix == 8 || radix == 10 || radix == 16 {
+            vm.gc.new_string(&numbers::to_string(n, radix as usize))
+        } else {
+            panic!("{}: unsupported radix {}", name, args[1]);
         }
     }
 }

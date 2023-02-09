@@ -897,6 +897,26 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     }
 }
 
+pub fn to_string(n: Object, radix: usize) -> String {
+    assert!(radix == 2 || radix == 8 || radix == 10 || radix == 16);
+    match n {
+        Object::Fixnum(fx) if radix == 2 => {
+            format!("{:b}", fx)
+        }
+        Object::Fixnum(fx) if radix == 8 => {
+            format!("{:o}", fx)
+        }
+        Object::Fixnum(fx) if radix == 10 => {
+            format!("{}", fx)
+        }
+        Object::Fixnum(fx) if radix == 16 => {
+            format!("{:x}", fx)
+        }
+
+        _ => panic!(),
+    }
+}
+
 fn fx_log(n: isize) -> Object {
     if n == 1 {
         // Exact 0.
