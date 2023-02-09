@@ -233,21 +233,21 @@ impl Vm {
                     code.push(Object::Instruction(Op::ConstantPush));
                     code.push(c.winders);
                     code.push(Object::Instruction(Op::DynamicWinders));
-                    code.push(Object::Instruction(Op::BranchNotEq));                    
+                    code.push(Object::Instruction(Op::BranchNotEq));
                     code.push(Object::Fixnum(3));
-                    code.push(Object::Instruction(Op::LocalJmp));                    
+                    code.push(Object::Instruction(Op::LocalJmp));
                     code.push(Object::Fixnum(8));
-                    code.push(Object::Instruction(Op::Frame));                    
-                    code.push(Object::Fixnum(6));                    
+                    code.push(Object::Instruction(Op::Frame));
+                    code.push(Object::Fixnum(6));
                     code.push(Object::Instruction(Op::ConstantPush));
                     code.push(c.winders);
-                    code.push(Object::Instruction(Op::ReferGlobalCall));                    
+                    code.push(Object::Instruction(Op::ReferGlobalCall));
                     code.push(self.gc.symbol_intern("perform-dynamic-wind"));
-                    code.push(Object::Fixnum(1)); 
-                    code.push(Object::Instruction(Op::RestoreContinuation));                      
-                    code.push(Object::Fixnum(argc)); 
-                    code.push(c.stack);  
-                    code.push(Object::Fixnum(c.shift_size));        
+                    code.push(Object::Fixnum(1));
+                    code.push(Object::Instruction(Op::RestoreContinuation));
+                    code.push(Object::Fixnum(argc));
+                    code.push(c.stack);
+                    code.push(Object::Fixnum(c.shift_size));
                     self.pc = code.as_ptr();
                 }
                 _ => {

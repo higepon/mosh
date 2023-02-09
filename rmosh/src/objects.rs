@@ -240,7 +240,7 @@ impl Object {
         } else {
             panic!("Not a Object::Pair")
         }
-    }    
+    }
     pub fn car_unchecked(self) -> Object {
         self.to_pair().car
     }
@@ -337,10 +337,10 @@ impl Debug for Object {
             }
             Object::Continuation(c) => {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
-            } 
+            }
             Object::ContinuationStack(c) => {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
-            }                       
+            }
             Object::Ratnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -474,10 +474,10 @@ impl Display for Object {
             }
             Object::Continuation(c) => {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
-            } 
+            }
             Object::ContinuationStack(c) => {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
-            }                   
+            }
             Object::Ratnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -1037,12 +1037,12 @@ pub struct Continuation {
 impl Continuation {
     pub fn new(shift_size: isize, stack: Object, winders: Object) -> Self {
         Self {
-            header:  GcHeader::new(ObjectType::Continuation),
+            header: GcHeader::new(ObjectType::Continuation),
             shift_size: shift_size,
             stack: stack,
-            winders: winders
+            winders: winders,
         }
-    }    
+    }
 }
 
 impl fmt::Debug for Continuation {
@@ -1066,8 +1066,8 @@ pub struct ContinuationStack {
 impl ContinuationStack {
     pub fn new(source: &[Object]) -> Self {
         let mut c = Self {
-            header:  GcHeader::new(ObjectType::ContinuationStack),
-            data: vec![]
+            header: GcHeader::new(ObjectType::ContinuationStack),
+            data: vec![],
         };
         c.data.extend(source);
         c

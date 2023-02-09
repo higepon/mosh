@@ -340,7 +340,7 @@ pub trait TextOutputPort {
                 | Object::Closure(_)
                 | Object::Compnum(_)
                 | Object::Continuation(_)
-                | Object::ContinuationStack(_)                                
+                | Object::ContinuationStack(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::False

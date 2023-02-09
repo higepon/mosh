@@ -14,8 +14,8 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
-    ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
-    Vector, Vox, Continuation, ContinuationStack,
+    ByteVector, Closure, Continuation, ContinuationStack, EqHashtable, Object, Pair, Procedure,
+    SString, SimpleStruct, Symbol, Vector, Vox,
 };
 
 use crate::ports::FileInputPort;
@@ -545,13 +545,13 @@ impl Gc {
                 let c: &Continuation = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(c.stack);
                 self.mark_object(c.winders);
-            }   
+            }
             ObjectType::ContinuationStack => {
                 let c: &ContinuationStack = unsafe { mem::transmute(pointer.as_ref()) };
                 for obj in c.data.iter() {
                     self.mark_object(*obj);
                 }
-            }                        
+            }
             ObjectType::BinaryFileInputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
@@ -582,8 +582,8 @@ impl Gc {
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
         use crate::numbers::{Bignum, Compnum, Ratnum};
-        use crate::objects::ContinuationStack;
         use crate::objects::Continuation;
+        use crate::objects::ContinuationStack;
         use crate::ports::{
             BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
             StringInputPort, StringOutputPort,
@@ -618,11 +618,11 @@ impl Gc {
             ObjectType::Continuation => {
                 let n: &Continuation = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
-            }         
+            }
             ObjectType::ContinuationStack => {
                 let n: &ContinuationStack = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
-            }                      
+            }
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(closure)

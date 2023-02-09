@@ -108,7 +108,7 @@ impl FaslWriter {
             }
             Object::ContinuationStack(_r) => {
                 todo!();
-            }                        
+            }
             Object::Ratnum(_r) => {
                 todo!();
             }
