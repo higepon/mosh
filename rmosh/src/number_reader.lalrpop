@@ -85,11 +85,13 @@ UReal10: Object = {
         println!("uinteger10 parse={}", <>);
         match isize::from_str(&<>) {
             Ok(n) => {
+                println!("{}(fixnum)", n);
                 Object::Fixnum(n)
             }
             Err(err) => {
                 match BigInt::from_str(&<>) {
                     Ok(b) => {
+                        println!("{}(bignum)", b);
                         Object::Bignum(gc.alloc(Bignum::new(b)))
                     },
                     Err(err2) => {
@@ -112,6 +114,7 @@ UReal10: Object = {
     Decimal10 => {
         match f64::from_str(&<>) {
             Ok(n) => {
+                println!("{}(flonum)", n);
                 Object::Flonum(Flonum::new(n))
             },
             Err(err) => todo!(),

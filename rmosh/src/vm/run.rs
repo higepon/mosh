@@ -1,6 +1,5 @@
 use crate::{
     equal::Equal,
-    number_cmp_op,
     numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,

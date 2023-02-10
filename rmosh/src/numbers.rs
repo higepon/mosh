@@ -119,7 +119,15 @@ impl Flonum {
     }
 
     pub fn eqv_fx(&self, fx: isize) -> bool {
-        (fx as f64) == self.value()
+        // No data loss.
+        if (fx as f64) as isize == fx {
+            fx as f64 == self.value()
+        } else {
+            match (BigInt::from_f64(self.value()), BigInt::from_isize(fx)) {
+                (Some(b1), Some(b2)) => b1 == b2,
+                _ => false,
+            }
+        }
     }
 
     pub fn gt_fx(&self, fx: isize) -> bool {
@@ -1033,9 +1041,7 @@ fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
         Object::Ratnum(r) => r.denom(),
         Object::Flonum(fl) => {
             let m = fl.to_exact(gc);
-            println!("m={}", m);
             let denom = denominator(gc, m);
-            println!("denom={}", denom);
             inexact(gc, denom)
         }
         _ => Object::Fixnum(1),
