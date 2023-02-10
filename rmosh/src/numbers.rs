@@ -26,6 +26,7 @@ trait FixnumExt {
 
     fn add_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object;
     fn mul_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object;
+    fn div_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Result<Object, SchemeError>;
 }
 impl FixnumExt for isize {
     // Fixnum vs Fixnum
@@ -112,6 +113,14 @@ impl FixnumExt for isize {
             Object::Fixnum(*r.numer() as isize)
         } else {
             Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+        }
+    }
+    fn div_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Result<Object, SchemeError> {
+        let r = Rational64::new_raw(self as i64, 1) / r.ratio;
+        if r.is_integer() {
+            Ok(Object::Fixnum(*r.numer() as isize))
+        } else {
+            Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
         }
     }
 }
@@ -380,7 +389,7 @@ impl Ratnum {
     }
     */
 
-    pub fn div_by_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+    pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
         } else {
@@ -392,16 +401,16 @@ impl Ratnum {
             }
         }
     }
-
-    pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
-        let r = Rational64::new_raw(fx as i64, 1) / self.ratio;
-        if r.is_integer() {
-            Ok(Object::Fixnum(*r.numer() as isize))
-        } else {
-            Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
+    /*
+        pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+            let r = Rational64::new_raw(fx as i64, 1) / self.ratio;
+            if r.is_integer() {
+                Ok(Object::Fixnum(*r.numer() as isize))
+            } else {
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
+            }
         }
-    }
-
+    */
     pub fn lt_fx(&self, f: isize) -> bool {
         match self.to_isize() {
             Some(v) => v < f,
@@ -822,7 +831,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.div(gc, fx2),
         (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Fixnum(fx), Object::Ratnum(r)) => r.div_fx(gc, fx),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => fx.div_rat(gc, &r),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.div_fx(fx),
@@ -835,7 +844,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => r.div_by_fx(gc, fx),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => r.div_fx(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
         (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
