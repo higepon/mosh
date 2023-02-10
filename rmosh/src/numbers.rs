@@ -12,6 +12,61 @@ use crate::{
     objects::Object,
 };
 
+// Fixnum.
+trait FixnumExt {
+    fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
+
+    fn add_fl(self, fl: &Flonum) -> Object;
+    fn sub_fl(self, fl: &Flonum) -> Object;
+
+    fn add_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
+
+    fn add_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object;
+}
+impl FixnumExt for isize {
+    fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object {
+        match self.checked_add(fx) {
+            Some(value) => Object::Fixnum(value),
+            None => {
+                let b1 = BigInt::from_isize(self).unwrap();
+                let b2 = BigInt::from_isize(fx).unwrap();
+                let b = b1 + b2;
+                Object::Bignum(gc.alloc(Bignum::new(b)))
+            }
+        }
+    }
+
+    // Fixnum vs Flonum
+    fn add_fl(self, fl: &Flonum) -> Object {
+        let f = (self as f64) + fl.value();
+        Object::Flonum(Flonum::new(f))
+    }
+    fn sub_fl(self, fl: &Flonum) -> Object {
+        let f = (self as f64) - fl.value();
+        Object::Flonum(Flonum::new(f))
+    }
+
+    // Fixnum vs Bignum
+    fn add_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
+        let other = BigInt::from_isize(self).unwrap();
+        let result = b.value.clone() + other;
+        match result.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        }
+    }
+
+    // Fixnum vs Ratnum
+    fn add_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
+        let r = r.ratio + Rational64::new_raw(self as i64, 1);
+        if r.is_integer() {
+            Object::Fixnum(*r.numer() as isize)
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+        }
+    }
+}
+
 // Float number
 // We use this struct which wraps f64.
 // Because we can't implement Hash for f64.
@@ -101,11 +156,12 @@ impl Flonum {
     pub fn abs(&self) -> Object {
         Object::Flonum(Flonum::new(self.value().abs()))
     }
-
+    /*
     pub fn add_fx(&self, fx: isize) -> Object {
         let f = (fx as f64) + self.value();
         Object::Flonum(Flonum::new(f))
     }
+    */
 
     pub fn div_fx(&self, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
@@ -132,6 +188,9 @@ impl Flonum {
 
     pub fn gt_fx(&self, fx: isize) -> bool {
         self.value() > (fx as f64)
+    }
+    pub fn le_fx(&self, fx: isize) -> bool {
+        self.value() <= (fx as f64)
     }
 
     pub fn lt_fx(&self, fx: isize) -> bool {
@@ -251,16 +310,16 @@ impl Ratnum {
     pub fn truncate(&self, gc: &mut Box<Gc>) -> Object {
         Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.trunc())))
     }
-
-    pub fn add_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
-        let r = self.ratio + Rational64::new_raw(fx as i64, 1);
-        if r.is_integer() {
-            Object::Fixnum(*r.numer() as isize)
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+    /*
+        pub fn add_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
+            let r = self.ratio + Rational64::new_raw(fx as i64, 1);
+            if r.is_integer() {
+                Object::Fixnum(*r.numer() as isize)
+            } else {
+                Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+            }
         }
-    }
-
+    */
     pub fn mul_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         let r = self.ratio * Rational64::new_raw(fx as i64, 1);
         if r.is_integer() {
@@ -332,7 +391,7 @@ impl Ratnum {
         }
     }
 
-    pub fn add(&self, gc: &mut Box<Gc>, other: GcRef<Ratnum>) -> Object {
+    pub fn add(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
         let r = self.ratio + other.ratio;
         if r.is_integer() {
             Object::Fixnum(r.to_isize().unwrap())
@@ -419,6 +478,7 @@ impl Bignum {
             None => Object::Bignum(gc.alloc(Bignum::new(result))),
         }
     }
+    /*
     pub fn add_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         let other = BigInt::from_isize(fx).unwrap();
         let result = self.value.clone() + other;
@@ -426,7 +486,7 @@ impl Bignum {
             Some(v) => Object::Fixnum(v),
             None => Object::Bignum(gc.alloc(Bignum::new(result))),
         }
-    }
+    }*/
     pub fn sub_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         let other = BigInt::from_isize(fx).unwrap();
         let result = self.value.clone() - other;
@@ -462,17 +522,13 @@ impl Bignum {
 
     pub fn eqv_fl(&self, fl: &Flonum) -> bool {
         match BigInt::from_f64(fl.value()) {
-            Some(b) => {
-                b == self.value
-            },
+            Some(b) => b == self.value,
             None => false,
         }
     }
     pub fn lt_fl(&self, fl: &Flonum) -> bool {
         match BigInt::from_f64(fl.value()) {
-            Some(b) => {
-                b < self.value
-            },
+            Some(b) => b < self.value,
             None => false,
         }
     }
@@ -514,19 +570,19 @@ impl Bignum {
             }
         }
     }
-
-    pub fn add_fx2(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
-        match fx1.checked_add(fx2) {
-            Some(value) => Object::Fixnum(value),
-            None => {
-                let b1 = BigInt::from_isize(fx1).unwrap();
-                let b2 = BigInt::from_isize(fx2).unwrap();
-                let b = b1 + b2;
-                Object::Bignum(gc.alloc(Bignum::new(b)))
+    /*
+        pub fn add_fx2(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
+            match fx1.checked_add(fx2) {
+                Some(value) => Object::Fixnum(value),
+                None => {
+                    let b1 = BigInt::from_isize(fx1).unwrap();
+                    let b2 = BigInt::from_isize(fx2).unwrap();
+                    let b = b1 + b2;
+                    Object::Bignum(gc.alloc(Bignum::new(b)))
+                }
             }
         }
-    }
-
+    */
     pub fn sub_fx2(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
         match fx1.checked_sub(fx2) {
             Some(value) => Object::Fixnum(value),
@@ -607,24 +663,24 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
-        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::add_fx2(gc, fx1, fx2),
-        (Object::Fixnum(fx), Object::Flonum(fl)) => fl.add_fx(fx),
-        (Object::Fixnum(fx), Object::Ratnum(r)) => r.add_fx(gc, fx),
-        (Object::Fixnum(fx), Object::Bignum(b)) => b.add_fx(gc, fx),
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.add(gc, fx2),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => fx.add_fl(&fl),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => fx.add_rat(gc, &r),
+        (Object::Fixnum(fx), Object::Bignum(b)) => fx.add_big(gc, &b),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => fl.add_fx(fx),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fx.add_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.add(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(b), Object::Fixnum(fx)) => b.add_fx(gc, fx),
+        (Object::Bignum(b), Object::Fixnum(fx)) => fx.add_big(gc, &b),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => r.add_fx(gc, fx),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => fx.add_rat(gc, &r),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.add(gc, r2),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.add(gc, &r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
         (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
@@ -640,7 +696,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::sub_fx2(gc, fx1, fx2),
-        (Object::Fixnum(fx), Object::Flonum(fl)) => todo!(),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => fx.sub_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
@@ -741,7 +797,7 @@ pub fn gt(n1: Object, n2: Object) -> bool {
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1 > fx2,
-        (Object::Fixnum(f), Object::Flonum(fl)) => todo!(),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => fl.le_fx(fx),
         (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
         (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(c)) => todo!(),

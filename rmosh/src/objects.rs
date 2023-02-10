@@ -290,7 +290,7 @@ impl Object {
     pub fn eqv(&self, other: &Self) -> bool {
         if self.is_number() {
             if other.is_number() {
-                if self.is_flonum() && other.is_fixnum() {
+                if self.is_flonum() && other.is_flonum() {
                     self.to_flonum().eq(&other.to_flonum())
                 } else {
                     let is_exact1 = self.is_exact();
