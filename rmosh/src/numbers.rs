@@ -45,6 +45,10 @@ trait FixnumExt {
     fn eq_rat(self, r: &Ratnum) -> bool;
     fn lt_rat(self, r: &Ratnum) -> bool;
     fn gt_rat(self, r: &Ratnum) -> bool;
+
+    // Arith
+    fn log(self) -> Object;
+    fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
     // Fixnum vs Fixnum
@@ -230,6 +234,45 @@ impl FixnumExt for isize {
         match r.to_isize() {
             Some(rv) => self > rv,
             None => false,
+        }
+    }
+
+    // Arith
+    fn log(self) -> Object {
+        if self == 1 {
+            // Exact 0.
+            Object::Fixnum(0)
+        } else {
+            Object::Flonum(Flonum::new((self as f64).ln()))
+        }
+    }
+    fn sqrt(self, gc: &mut Box<Gc>) -> Object {
+        if self == 0 {
+            return Object::Fixnum(0);
+        } else if self > 0 {
+            let root = (self as f64).sqrt();
+            let root_as_int = root.floor() as isize;
+            // exact
+            if root_as_int * root_as_int == self {
+                Object::Fixnum(root_as_int)
+            } else {
+                Object::Flonum(Flonum::new(root))
+            }
+        } else {
+            // negative
+            let root = (-self as f64).sqrt();
+            let root_as_int = root.floor() as isize;
+            // exact
+            if root_as_int * root_as_int == -self {
+                Object::Compnum(
+                    gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(root_as_int))),
+                )
+            } else {
+                Object::Compnum(gc.alloc(Compnum::new(
+                    Object::Flonum(Flonum::new(0.0)),
+                    Object::Flonum(Flonum::new(root)),
+                )))
+            }
         }
     }
 }
@@ -999,19 +1042,10 @@ pub fn to_string(n: Object, radix: usize) -> String {
     }
 }
 
-fn fx_log(n: isize) -> Object {
-    if n == 1 {
-        // Exact 0.
-        Object::Fixnum(0)
-    } else {
-        Object::Flonum(Flonum::new((n as f64).ln()))
-    }
-}
-
 pub fn log(n: Object) -> Object {
     assert!(n.is_number());
     match n {
-        Object::Fixnum(fx) => fx_log(fx),
+        Object::Fixnum(fx) => fx.log(),
         Object::Compnum(_) => todo!(),
         _ => todo!(),
     }
@@ -1028,37 +1062,9 @@ pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
     }
 }
 
-fn fx_sqrt(gc: &mut Box<Gc>, fx: isize) -> Object {
-    if fx == 0 {
-        return Object::Fixnum(0);
-    } else if fx > 0 {
-        let root = (fx as f64).sqrt();
-        let root_as_int = root.floor() as isize;
-        // exact
-        if root_as_int * root_as_int == fx {
-            Object::Fixnum(root_as_int)
-        } else {
-            Object::Flonum(Flonum::new(root))
-        }
-    } else {
-        // negative
-        let root = (-fx as f64).sqrt();
-        let root_as_int = root.floor() as isize;
-        // exact
-        if root_as_int * root_as_int == -fx {
-            Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(root_as_int))))
-        } else {
-            Object::Compnum(gc.alloc(Compnum::new(
-                Object::Flonum(Flonum::new(0.0)),
-                Object::Flonum(Flonum::new(root)),
-            )))
-        }
-    }
-}
-
 pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
     match obj {
-        Object::Fixnum(fx) => fx_sqrt(gc, fx),
+        Object::Fixnum(fx) => fx.sqrt(gc),
         Object::Flonum(fl) => fl.sqrt(),
         Object::Bignum(b) => b.sqrt(gc),
         Object::Compnum(c) => todo!(),
