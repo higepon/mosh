@@ -951,49 +951,6 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
     }
 }
 
-pub fn gt(n1: Object, n2: Object) -> bool {
-    assert!(n1.is_number());
-    assert!(n2.is_number());
-    match (n1, n2) {
-        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1 > fx2,
-        (Object::Fixnum(fx), Object::Flonum(fl)) => fl.le_fx(fx),
-        (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
-        (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
-        (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => fl.gt_fx(fx),
-        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.gt(&fl2),
-        (Object::Flonum(fl), Object::Ratnum(r)) => fl.gt_rat(&r),
-        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
-        (Object::Flonum(_), Object::Compnum(c)) => todo!(),
-        (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
-        (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
-        (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
-        (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
-        (Object::Bignum(_), Object::Compnum(c)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
-        (Object::Ratnum(r), Object::Flonum(fl)) => r.gt_fl(&fl),
-        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
-        (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
-        (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
-        (Object::Compnum(c), Object::Fixnum(_)) => todo!(),
-        (Object::Compnum(c), Object::Flonum(_)) => todo!(),
-        (Object::Compnum(c), Object::Ratnum(_)) => todo!(),
-        (Object::Compnum(c), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(c1), Object::Compnum(c2)) => todo!(),
-        _ => todo!(),
-    }
-}
-pub fn ge(n1: Object, n2: Object) -> bool {
-    assert!(n1.is_number());
-    assert!(n2.is_number());
-    !lt(n1, n2)
-}
-
-pub fn le(n1: Object, n2: Object) -> bool {
-    assert!(n1.is_number());
-    assert!(n2.is_number());
-    !gt(n1, n2)
-}
 pub fn eqv(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
@@ -1027,6 +984,7 @@ pub fn eqv(n1: Object, n2: Object) -> bool {
     }
 }
 
+
 pub fn lt(n1: Object, n2: Object) -> bool {
     assert!(n1.is_number());
     assert!(n2.is_number());
@@ -1050,6 +1008,52 @@ pub fn lt(n1: Object, n2: Object) -> bool {
         _ => todo!(),
     }
 }
+
+pub fn ge(n1: Object, n2: Object) -> bool {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    !lt(n1, n2)
+}
+
+pub fn gt(n1: Object, n2: Object) -> bool {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1 > fx2,
+        (Object::Fixnum(fx), Object::Flonum(fl)) => fl.le_fx(fx),
+        (Object::Fixnum(f), Object::Ratnum(r)) => todo!(),
+        (Object::Fixnum(f), Object::Bignum(b)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fl.gt_fx(fx),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.gt(&fl2),
+        (Object::Flonum(fl), Object::Ratnum(r)) => fl.gt_rat(&r),
+        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(c)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(f)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => todo!(),
+        (Object::Bignum(b), Object::Ratnum(r)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(c)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(f)) => todo!(),
+        (Object::Ratnum(r), Object::Flonum(fl)) => r.gt_fl(&fl),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => todo!(),
+        (Object::Ratnum(r), Object::Bignum(b)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(c)) => todo!(),
+        (Object::Compnum(c), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(c), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(c1), Object::Compnum(c2)) => todo!(),
+        _ => todo!(),
+    }
+}
+
+pub fn le(n1: Object, n2: Object) -> bool {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    !gt(n1, n2)
+}
+
 
 pub fn exp(_gc: &mut Box<Gc>, n: Object) -> Object {
     match n {
