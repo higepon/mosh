@@ -871,7 +871,7 @@
 (test #f (negative? +inf.0))
 (test #t (negative? -inf.0))
 (test #f (negative? +nan.0))
-#| 
+
 (test #f (odd? 0))
 (test #t (odd? 1))
 (test #t (odd? -1))
@@ -938,7 +938,7 @@
 (test 288 (lcm 32 -36))
 (test 288.0 (lcm 32.0 -36))
 (test 1 (lcm))
-
+#| 
 (test 3 (numerator (/ 6 4)))
 (test 2 (denominator (/ 6 4)))
 (test 2.0 (denominator (inexact (/ 6 4))))

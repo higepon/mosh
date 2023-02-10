@@ -13,7 +13,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, real, Flonum, SchemeError, imag},
+    numbers::{self, imag, real, Flonum, SchemeError},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -2984,22 +2984,34 @@ fn number_div(vm: &mut Vm, args: &mut [Object]) -> Object {
         todo!();
     }
 }
-fn max(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn max(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "max";
     check_argc_at_least!(name, args, 1);
-    let mut current_max = isize::MIN;
-    for i in 0..args.len() {
-        let arg = args[i];
-        if let Object::Fixnum(n) = arg {
-            if n > current_max {
-                current_max = n;
+    let mut max_num = Object::Flonum(Flonum::new(f64::NEG_INFINITY));
+    let mut is_exact = true;
+    for n in args.iter() {
+        if n.is_real() {
+            let is_flonum = n.is_flonum();
+            if is_flonum && n.to_flonum().is_nan() {
+                return *n;
+            }
+            if is_flonum {
+                is_exact = false;
+            }
+            if numbers::gt(*n, max_num) {
+                max_num = *n;
             }
         } else {
-            panic!("{}: number required but got {}", name, arg);
+            panic!("{}: real number required but got {}", name, n);
         }
     }
-    return Object::Fixnum(current_max);
+    if is_exact {
+        max_num
+    } else {
+        numbers::inexact(&mut vm.gc, max_num)
+    }
 }
+
 fn min(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "min";
     let mut min = Object::Flonum(Flonum::new(f64::INFINITY));
