@@ -15,6 +15,7 @@ use crate::{
 // Fixnum.
 trait FixnumExt {
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
+    fn sub(self, gc: &mut Box<Gc>, fx: isize) -> Object;
 
     fn add_fl(self, fl: &Flonum) -> Object;
     fn sub_fl(self, fl: &Flonum) -> Object;
@@ -24,6 +25,7 @@ trait FixnumExt {
     fn add_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object;
 }
 impl FixnumExt for isize {
+    // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object {
         match self.checked_add(fx) {
             Some(value) => Object::Fixnum(value),
@@ -31,6 +33,17 @@ impl FixnumExt for isize {
                 let b1 = BigInt::from_isize(self).unwrap();
                 let b2 = BigInt::from_isize(fx).unwrap();
                 let b = b1 + b2;
+                Object::Bignum(gc.alloc(Bignum::new(b)))
+            }
+        }
+    }
+    fn sub(self, gc: &mut Box<Gc>, fx: isize) -> Object {
+        match self.checked_sub(fx) {
+            Some(value) => Object::Fixnum(value),
+            None => {
+                let b1 = BigInt::from_isize(self).unwrap();
+                let b2 = BigInt::from_isize(fx).unwrap();
+                let b = b1 - b2;
                 Object::Bignum(gc.alloc(Bignum::new(b)))
             }
         }
@@ -399,7 +412,7 @@ impl Ratnum {
             Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
         }
     }
-    pub fn sub(&self, gc: &mut Box<Gc>, other: GcRef<Ratnum>) -> Object {
+    pub fn sub(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
         let r = self.ratio - other.ratio;
         if r.is_integer() {
             Object::Fixnum(r.to_isize().unwrap())
@@ -583,6 +596,7 @@ impl Bignum {
             }
         }
     */
+    /*
     pub fn sub_fx2(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Object {
         match fx1.checked_sub(fx2) {
             Some(value) => Object::Fixnum(value),
@@ -594,6 +608,7 @@ impl Bignum {
             }
         }
     }
+    */
     pub fn div_fx2(gc: &mut Box<Gc>, fx1: isize, fx2: isize) -> Result<Object, SchemeError> {
         if fx2 == 0 {
             Err(SchemeError::Div0)
@@ -695,7 +710,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
-        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Bignum::sub_fx2(gc, fx1, fx2),
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.sub(gc, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.sub_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
@@ -712,7 +727,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.sub(gc, r2),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.sub(gc, &r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
         (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
