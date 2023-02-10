@@ -181,13 +181,13 @@ impl PartialEq for Flonum {
 
 impl Display for Flonum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.value())
+        write!(f, "{:e}", self.value())
     }
 }
 
 impl Debug for Flonum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.value())
+        write!(f, "{:e}", self.value())
     }
 }
 
@@ -461,14 +461,18 @@ impl Bignum {
     }
 
     pub fn eqv_fl(&self, fl: &Flonum) -> bool {
-        match self.to_f64() {
-            Some(v) => v == **fl,
+        match BigInt::from_f64(fl.value()) {
+            Some(b) => {
+                b == self.value
+            },
             None => false,
         }
     }
     pub fn lt_fl(&self, fl: &Flonum) -> bool {
-        match self.to_f64() {
-            Some(v) => v < **fl,
+        match BigInt::from_f64(fl.value()) {
+            Some(b) => {
+                b < self.value
+            },
             None => false,
         }
     }
