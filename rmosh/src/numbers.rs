@@ -352,6 +352,10 @@ impl Flonum {
     }
 
     // Flonum vs Fixnum.
+    pub fn sub_fx(&self, fx: isize) -> Object {
+        let value = self.value() - (fx as f64);
+        Object::Flonum(Flonum::new(value))
+    }
     pub fn div_fx(&self, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
@@ -770,7 +774,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.sub_rat(gc, &r),
         (Object::Fixnum(fx), Object::Bignum(b)) => fx.sub_big(gc, &b),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fl.sub_fx(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.sub(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),

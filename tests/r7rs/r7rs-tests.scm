@@ -600,7 +600,7 @@
       ((_ x)
        '(x ...))))
   (test '(100 ...) (elli-lit-1 100))))
-#|
+
 ;; bad ellipsis
 #|
 (test 'error
@@ -1002,7 +1002,7 @@
 (test -1.5707963267949 (atan -1.0 0.0))
 (test -0.785398163397448 (atan -1.0 1.0))
 ;; (test undefined (atan 0.0 0.0))
-
+#|
 (test 1764 (square 42))
 (test 4 (square 2))
 
