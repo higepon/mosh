@@ -4238,7 +4238,7 @@ fn quotient(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 2);
     match numbers::quotient(&mut vm.gc, args[0], args[1]) {
         Ok(v) => v,
-        Err(SchemeError::NoneZeroRequired) => {
+        Err(SchemeError::NonZeroRequired) => {
             panic!(
                 "{}: none zero required but got {} {}",
                 name, args[0], args[1]
@@ -4252,7 +4252,7 @@ fn remainder(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 2);
     match numbers::remainder(&mut vm.gc, args[0], args[1]) {
         Ok(v) => v,
-        Err(SchemeError::NoneZeroRequired) => {
+        Err(SchemeError::NonZeroRequired) => {
             panic!(
                 "{}: none zero required but got {} {}",
                 name, args[0], args[1]
@@ -4265,7 +4265,7 @@ fn modulo(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "modulo";
     match numbers::modulo(&mut vm.gc, args[0], args[1]) {
         Ok(v) => v,
-        Err(SchemeError::NoneZeroRequired) => {
+        Err(SchemeError::NonZeroRequired) => {
             panic!(
                 "{}: none zero required but got {} {}",
                 name, args[0], args[1]

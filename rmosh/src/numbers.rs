@@ -848,7 +848,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
 
 pub enum SchemeError {
     Div0,
-    NoneZeroRequired,
+    NonZeroRequired,
 }
 pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
@@ -1031,13 +1031,13 @@ pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sche
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), _) if fx1 == 0 => Ok(Object::Fixnum(0)),
-        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NoneZeroRequired),
+        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NonZeroRequired),
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Ok(Object::Fixnum(fx1 / fx2)),
         (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Flonum(_), Object::Fixnum(fx)) if fx == 0 => Err(SchemeError::NoneZeroRequired),
+        (Object::Flonum(_), Object::Fixnum(fx)) if fx == 0 => Err(SchemeError::NonZeroRequired),
         (Object::Flonum(fl), Object::Fixnum(fx)) => Ok(Object::Flonum(Flonum::new(
             (fl.value() / fx.to_f64().unwrap()).trunc(),
         ))),
@@ -1072,9 +1072,17 @@ pub fn remainder(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sch
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), _) if fx1 == 0 => Ok(Object::Fixnum(0)),
-        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NoneZeroRequired),
+        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NonZeroRequired),
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Ok(Object::Fixnum(fx1 % fx2)),
-        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => {
+            if fl.value() == 0.0 {
+                Err(SchemeError::NonZeroRequired)
+            } else {
+                Ok(Object::Flonum(Flonum::new(
+                    fx.to_f64().unwrap().rem(fl.value()),
+                )))
+            }
+        }
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
@@ -1111,14 +1119,14 @@ pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Scheme
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), _) if fx1 == 0 => Ok(Object::Fixnum(0)),
-        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NoneZeroRequired),
+        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NonZeroRequired),
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => {
             let mut r = fx1 % fx2;
             if r == 0 {
                 return Ok(Object::Fixnum(0));
             }
             if fx2 > 0 && r > 0 {
-                r = r+ fx2
+                r = r + fx2
             }
             Ok(Object::Fixnum(r))
         }
