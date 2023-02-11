@@ -4261,9 +4261,18 @@ fn remainder(vm: &mut Vm, args: &mut [Object]) -> Object {
         _ => panic!(),
     }
 }
-fn modulo(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn modulo(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "modulo";
-    panic!("{}({}) not implemented", name, args.len());
+    match numbers::modulo(&mut vm.gc, args[0], args[1]) {
+        Ok(v) => v,
+        Err(SchemeError::NoneZeroRequired) => {
+            panic!(
+                "{}: none zero required but got {} {}",
+                name, args[0], args[1]
+            )
+        }
+        _ => panic!(),
+    }
 }
 fn open_file_input_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-input/output-port";

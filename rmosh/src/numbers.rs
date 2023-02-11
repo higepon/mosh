@@ -1106,6 +1106,54 @@ pub fn remainder(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sch
     }
 }
 
+pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(fx1), _) if fx1 == 0 => Ok(Object::Fixnum(0)),
+        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NoneZeroRequired),
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => {
+            let mut r = fx1 % fx2;
+            if r == 0 {
+                return Ok(Object::Fixnum(0));
+            }
+            if fx2 > 0 && r > 0 {
+                r = r+ fx2
+            }
+            Ok(Object::Fixnum(r))
+        }
+        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Fixnum(fx)) if fx == 0 => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => Ok(Object::Flonum(Flonum::new(
+            fl.value().rem(fx.to_f64().unwrap()),
+        ))),
+
+        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
+        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        _ => todo!(),
+    }
+}
+
 pub fn real(n: Object) -> Object {
     match n {
         Object::Compnum(c) => c.real,
