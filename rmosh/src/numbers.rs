@@ -1343,6 +1343,18 @@ impl Object {
     }
 
     #[inline(always)]
+    pub fn is_integer_valued(&self, gc: &mut Box<Gc>) -> bool {
+        if self.is_integer(gc) {
+            true
+        } else if self.is_compnum() {
+            let c = self.to_compnum();
+            c.imag.is_zero() && c.real.is_integer_valued(gc)
+        } else {
+            false
+        }
+    }
+
+    #[inline(always)]
     pub fn is_real(&self) -> bool {
         self.is_fixnum()
             || self.is_bignum()

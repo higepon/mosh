@@ -3698,9 +3698,14 @@ fn is_rational_valued(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rational-valued?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_integer_valued(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_integer_valued(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer-valued?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        Object::make_bool(args[0].is_integer_valued(&mut vm.gc))
+    } else {
+        Object::False
+    }
 }
 fn is_fxequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fx=?";
