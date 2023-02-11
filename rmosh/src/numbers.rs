@@ -25,7 +25,7 @@ trait FixnumExt {
     fn sub_fl(self, fl: &Flonum) -> Object;
     fn mul_fl(self, fl: &Flonum) -> Object;
     fn div_fl(self, fl: &Flonum) -> Result<Object, SchemeError>;
-    fn eq_fl(self, fl: &Flonum) -> bool;
+    fn eqv_fl(self, fl: &Flonum) -> bool;
     fn lt_fl(self, fl: &Flonum) -> bool;
     fn gt_fl(self, fl: &Flonum) -> bool;
 
@@ -33,7 +33,7 @@ trait FixnumExt {
     fn add_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
     fn sub_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
     fn mul_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
-    fn eq_big(self, b: &Bignum) -> bool;
+    fn eqv_big(self, b: &Bignum) -> bool;
     fn lt_big(self, b: &Bignum) -> bool;
     fn gt_big(self, b: &Bignum) -> bool;
 
@@ -42,7 +42,7 @@ trait FixnumExt {
     fn sub_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object;
     fn mul_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object;
     fn div_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Result<Object, SchemeError>;
-    fn eq_rat(self, r: &Ratnum) -> bool;
+    fn eqv_rat(self, r: &Ratnum) -> bool;
     fn lt_rat(self, r: &Ratnum) -> bool;
     fn gt_rat(self, r: &Ratnum) -> bool;
 
@@ -117,7 +117,7 @@ impl FixnumExt for isize {
         let f = (self as f64) * fl.value();
         Ok(Object::Flonum(Flonum::new(f)))
     }
-    fn eq_fl(self, fl: &Flonum) -> bool {
+    fn eqv_fl(self, fl: &Flonum) -> bool {
         // No data loss.
         if (self as f64) as isize == self {
             self as f64 == fl.value()
@@ -160,7 +160,7 @@ impl FixnumExt for isize {
             None => Object::Bignum(gc.alloc(Bignum::new(result))),
         }
     }
-    fn eq_big(self, b: &Bignum) -> bool {
+    fn eqv_big(self, b: &Bignum) -> bool {
         match b.to_isize() {
             Some(v) => v == self,
             None => false,
@@ -168,18 +168,18 @@ impl FixnumExt for isize {
     }
     fn lt_big(self, b: &Bignum) -> bool {
         match b.to_isize() {
-            Some(v) => v < self,
+            Some(v) => self < v,
             None => match BigInt::from_isize(self) {
-                Some(bv) => b.value < bv,
+                Some(self_value) => self_value < b.value,
                 None => panic!(),
             },
         }
     }
     fn gt_big(self, b: &Bignum) -> bool {
         match b.to_isize() {
-            Some(v) => v > self,
+            Some(v) => self > v,
             None => match BigInt::from_isize(self) {
-                Some(bv) => b.value > bv,
+                Some(self_value) => self_value > b.value,
                 None => panic!(),
             },
         }
@@ -218,7 +218,7 @@ impl FixnumExt for isize {
             Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
         }
     }
-    fn eq_rat(self, r: &Ratnum) -> bool {
+    fn eqv_rat(self, r: &Ratnum) -> bool {
         match r.to_isize() {
             Some(v) => v == self,
             None => false,
@@ -343,7 +343,7 @@ impl Flonum {
     }
 
     #[inline(always)]
-    pub fn eq(&self, other: &Flonum) -> bool {
+    pub fn eqv(&self, other: &Flonum) -> bool {
         self.value() == other.value()
     }
     #[inline(always)]
@@ -364,7 +364,7 @@ impl Flonum {
     }
 
     // Flonum vs Ratnum
-    pub fn eq_rat(&self, r: &GcRef<Ratnum>) -> bool {
+    pub fn eqv_rat(&self, r: &GcRef<Ratnum>) -> bool {
         match r.to_f64() {
             Some(v) => v == self.value(),
             None => false,
@@ -384,7 +384,7 @@ impl Flonum {
     }
 
     // Flonum vs Bignum
-    pub fn eq_big(&self, b: &GcRef<Bignum>) -> bool {
+    pub fn eqv_big(&self, b: &GcRef<Bignum>) -> bool {
         match BigInt::from_f64(self.value()) {
             Some(b2) => b2 == b.value,
             None => false,
@@ -531,7 +531,7 @@ impl Ratnum {
         }
     }
 
-    pub fn eq(&self, other: &Ratnum) -> bool {
+    pub fn eqv(&self, other: &Ratnum) -> bool {
         self.ratio.eq(&other.ratio)
     }
 
@@ -613,7 +613,7 @@ impl Bignum {
         }
     }
 
-    pub fn eq(&self, other: &Bignum) -> bool {
+    pub fn eqv(&self, other: &Bignum) -> bool {
         self.value.eq(&other.value)
     }
 
@@ -629,7 +629,7 @@ impl Bignum {
     }
 
     // Bignum vs Ratnum.
-    pub fn eq_rat(&self, r: &Ratnum) -> bool {
+    pub fn eqv_rat(&self, r: &Ratnum) -> bool {
         match (self.to_f64(), r.to_f64()) {
             (Some(l), Some(r)) => l == r,
             _ => false,
@@ -708,7 +708,7 @@ impl Compnum {
             imag: imag,
         }
     }
-    pub fn eq(&self, other: &Compnum) -> bool {
+    pub fn eqv(&self, other: &Compnum) -> bool {
         eqv(self.real, other.real) && eqv(other.imag, other.imag)
     }
 
@@ -716,7 +716,7 @@ impl Compnum {
         eqv(self.imag, Object::Fixnum(0)) && self.imag.is_exact()
     }
 
-    pub fn eq_real(&self, o: Object) -> bool {
+    pub fn eqv_real(&self, o: Object) -> bool {
         assert!(o.is_fixnum() || o.is_bignum() || o.is_flonum() || o.is_ratnum());
         eqv(self.imag, Object::Fixnum(0)) && eqv(self.real, o)
     }
@@ -868,30 +868,30 @@ pub fn eqv(n1: Object, n2: Object) -> bool {
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1 == fx2,
-        (Object::Fixnum(fx), Object::Flonum(fl)) => fx.eq_fl(&fl),
-        (Object::Fixnum(fx), Object::Ratnum(r)) => fx.eq_rat(&r),
-        (Object::Fixnum(fx), Object::Bignum(b)) => fx.eq_big(&b),
-        (Object::Fixnum(_), Object::Compnum(c)) => c.eq_real(n1),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => fx.eq_fl(&fl),
-        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.eq(&fl2),
-        (Object::Flonum(fl), Object::Ratnum(r)) => fl.eq_rat(&r),
-        (Object::Flonum(fl), Object::Bignum(b)) => fl.eq_big(&b),
-        (Object::Flonum(_), Object::Compnum(c)) => c.eq_real(n1),
-        (Object::Bignum(b), Object::Fixnum(fx)) => fx.eq_big(&b),
-        (Object::Bignum(b), Object::Flonum(fl)) => fl.eq_big(&b),
-        (Object::Bignum(b), Object::Ratnum(r)) => b.eq_rat(&r),
-        (Object::Bignum(b1), Object::Bignum(b2)) => b1.eq(&b2),
-        (Object::Bignum(_), Object::Compnum(c)) => c.eq_real(n1),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => fx.eq_rat(&r),
-        (Object::Ratnum(r), Object::Flonum(fl)) => fl.eq_rat(&r),
-        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.eq(&r2),
-        (Object::Ratnum(r), Object::Bignum(b)) => b.eq_rat(&r),
-        (Object::Ratnum(_), Object::Compnum(c)) => c.eq_real(n1),
-        (Object::Compnum(c), Object::Fixnum(_)) => c.eq_real(n2),
-        (Object::Compnum(c), Object::Flonum(_)) => c.eq_real(n2),
-        (Object::Compnum(c), Object::Ratnum(_)) => c.eq_real(n2),
-        (Object::Compnum(c), Object::Bignum(_)) => c.eq_real(n2),
-        (Object::Compnum(c1), Object::Compnum(c2)) => c1.eq(&c2),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => fx.eqv_fl(&fl),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => fx.eqv_rat(&r),
+        (Object::Fixnum(fx), Object::Bignum(b)) => fx.eqv_big(&b),
+        (Object::Fixnum(_), Object::Compnum(c)) => c.eqv_real(n1),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fx.eqv_fl(&fl),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.eqv(&fl2),
+        (Object::Flonum(fl), Object::Ratnum(r)) => fl.eqv_rat(&r),
+        (Object::Flonum(fl), Object::Bignum(b)) => fl.eqv_big(&b),
+        (Object::Flonum(_), Object::Compnum(c)) => c.eqv_real(n1),
+        (Object::Bignum(b), Object::Fixnum(fx)) => fx.eqv_big(&b),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.eqv_big(&b),
+        (Object::Bignum(b), Object::Ratnum(r)) => b.eqv_rat(&r),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.eqv(&b2),
+        (Object::Bignum(_), Object::Compnum(c)) => c.eqv_real(n1),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => fx.eqv_rat(&r),
+        (Object::Ratnum(r), Object::Flonum(fl)) => fl.eqv_rat(&r),
+        (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.eqv(&r2),
+        (Object::Ratnum(r), Object::Bignum(b)) => b.eqv_rat(&r),
+        (Object::Ratnum(_), Object::Compnum(c)) => c.eqv_real(n1),
+        (Object::Compnum(c), Object::Fixnum(_)) => c.eqv_real(n2),
+        (Object::Compnum(c), Object::Flonum(_)) => c.eqv_real(n2),
+        (Object::Compnum(c), Object::Ratnum(_)) => c.eqv_real(n2),
+        (Object::Compnum(c), Object::Bignum(_)) => c.eqv_real(n2),
+        (Object::Compnum(c1), Object::Compnum(c2)) => c1.eqv(&c2),
         _ => todo!(),
     }
 }
@@ -904,18 +904,18 @@ pub fn lt(n1: Object, n2: Object) -> bool {
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.lt_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.lt_rat(&r),
         (Object::Fixnum(fx), Object::Bignum(b)) => fx.lt_big(&b),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => !fx.lt_fl(&fl),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fx.gt_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.lt(&fl2),
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.lt_rat(&r),
         (Object::Flonum(fl), Object::Bignum(b)) => fl.lt_big(&b),
-        (Object::Bignum(b), Object::Fixnum(fx)) => !fx.lt_big(&b),
-        (Object::Bignum(b), Object::Flonum(fl)) => !fl.lt_big(&b),
+        (Object::Bignum(b), Object::Fixnum(fx)) => fx.gt_big(&b),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.gt_big(&b),
         (Object::Bignum(b), Object::Ratnum(r)) => b.lt_rat(&r),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.lt(&b2),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => !fx.lt_rat(&r),
-        (Object::Ratnum(r), Object::Flonum(fl)) => !fl.lt_rat(&r),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => fx.gt_rat(&r),
+        (Object::Ratnum(r), Object::Flonum(fl)) => fl.gt_rat(&r),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.lt(&r2),
-        (Object::Ratnum(r), Object::Bignum(b)) => !b.lt_rat(&r),
+        (Object::Ratnum(r), Object::Bignum(b)) => b.gt_rat(&r),
         _ => todo!(),
     }
 }
@@ -934,18 +934,18 @@ pub fn gt(n1: Object, n2: Object) -> bool {
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.gt_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.gt_rat(&r),
         (Object::Fixnum(fx), Object::Bignum(b)) => fx.gt_big(&b),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => !fx.gt_fl(&fl),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fx.lt_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.gt(&fl2),
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.gt_rat(&r),
         (Object::Flonum(fl), Object::Bignum(b)) => fl.gt_big(&b),
-        (Object::Bignum(b), Object::Fixnum(fx)) => !fx.gt_big(&b),
+        (Object::Bignum(b), Object::Fixnum(fx)) => fx.lt_big(&b),
         (Object::Bignum(b), Object::Flonum(fl)) => !fl.gt_big(&b),
         (Object::Bignum(b), Object::Ratnum(r)) => b.gt_rat(&r),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.gt(&b2),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => !fx.gt_rat(&r),
-        (Object::Ratnum(r), Object::Flonum(fl)) => !fl.gt_rat(&r),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => fx.lt_rat(&r),
+        (Object::Ratnum(r), Object::Flonum(fl)) => fl.lt_rat(&r),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.gt(&r2),
-        (Object::Ratnum(r), Object::Bignum(b)) => !b.gt_rat(&r),
+        (Object::Ratnum(r), Object::Bignum(b)) => b.lt_rat(&r),
         _ => todo!(),
     }
 }
