@@ -206,6 +206,13 @@ impl Object {
             panic!("Not a Object::Flonum")
         }
     }
+    pub fn to_bignum(self) -> GcRef<Bignum> {
+        if let Self::Bignum(b) = self {
+            b
+        } else {
+            panic!("Not a Object::Bignum")
+        }
+    }    
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c

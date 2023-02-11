@@ -13,7 +13,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, imag, integer_div, real, Flonum, SchemeError},
+    numbers::{self, imag, integer_div, log2, real, Flonum, SchemeError},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -3995,7 +3995,7 @@ fn exp(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: number required but got {}", name, args[0])
     }
 }
-fn log(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn log(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "log";
     check_argc_between!(name, args, 1, 2);
     let argc = args.len();
@@ -4007,10 +4007,21 @@ fn log(_vm: &mut Vm, args: &mut [Object]) -> Object {
         if n.is_exact_zero() {
             panic!("{} nonzero required but got {}", name, n);
         } else {
-            return numbers::log(n);
+            return numbers::log(&mut vm.gc, n);
         }
     } else {
-        todo!();
+        let n1 = args[0];
+        let n2 = args[1];
+        if n1.is_exact_zero() && n2.is_exact_zero() {
+            panic!("{}: nonzero reauired but got {} {}", name, n1, n2);
+        }
+        match log2(&mut vm.gc, n1, n2) {
+            Ok(ret) => ret,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by zero {} {}", name, n1, n2)
+            }
+            _ => panic!(),
+        }
     }
 }
 

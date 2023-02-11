@@ -1328,13 +1328,33 @@ pub fn to_string(n: Object, radix: usize) -> String {
     }
 }
 
-pub fn log(n: Object) -> Object {
+pub fn log(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     match n {
         Object::Fixnum(fx) => fx.log(),
         Object::Compnum(_) => todo!(),
-        _ => todo!(),
+        _ => {
+            let value = real_to_f64(n);
+            if value.is_infinite() && n.is_bignum() && gt(n, Object::Fixnum(0)) {
+                let ret = n.to_bignum().sqrt(gc);
+                let lhs = log(gc, ret);
+                let rhs = log(gc, ret);
+                add(gc, lhs, rhs)
+            } else if value >= 0.0 {
+                Object::Flonum(Flonum::new(value.ln()))
+            } else {
+                let real = Object::Flonum(Flonum::new((-value).ln()));
+                let imag = Object::Flonum(Flonum::new(0.0f64.atan2(value)));
+                Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+            }
+        }
     }
+}
+
+pub fn log2(gc: &mut Box<Gc>, n1: Object, n2: Object) ->  Result<Object, SchemeError>  {
+    let lhs = log(gc, n1);
+    let rhs = log(gc, n2);
+    div(gc, lhs, rhs)
 }
 
 pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
