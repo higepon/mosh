@@ -562,6 +562,10 @@ impl Ratnum {
         Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.abs())))
     }
 
+    pub fn floor(&self, gc: &mut Box<Gc>) -> Object {
+        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.floor())))
+    }
+
     pub fn truncate(&self, gc: &mut Box<Gc>) -> Object {
         Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.trunc())))
     }
@@ -844,6 +848,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
 
 pub enum SchemeError {
     Div0,
+    NoneZeroRequired,
 }
 pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
@@ -1021,6 +1026,41 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     }
 }
 
+pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+    assert!(n1.is_number());
+    assert!(n2.is_number());
+    match (n1, n2) {
+        (Object::Fixnum(fx1), _) if fx1 == 0 => Ok(Object::Fixnum(0)),
+        (Object::Fixnum(_), Object::Fixnum(fx2)) if fx2 == 0 => Err(SchemeError::NoneZeroRequired),
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Ok(Object::Fixnum(fx1 / fx2)),
+        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
+        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(_), Object::Compnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        _ => todo!(),
+    }
+}
+
 pub fn real(n: Object) -> Object {
     match n {
         Object::Compnum(c) => c.real,
@@ -1082,7 +1122,7 @@ pub fn floor(gc: &mut Box<Gc>, n: Object) -> Object {
     match n {
         Object::Fixnum(_) | Object::Bignum(_) => n,
         Object::Flonum(fl) => fl.floor(),
-        Object::Ratnum(r) => todo!(),
+        Object::Ratnum(r) => r.floor(gc),
         _ => panic!(),
     }
 }

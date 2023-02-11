@@ -2979,6 +2979,7 @@ fn number_div(vm: &mut Vm, args: &mut [Object]) -> Object {
             Err(SchemeError::Div0) => {
                 panic!("/: division by zero {}", args[0])
             }
+            _ => panic!(),
         }
     } else {
         todo!();
@@ -4232,25 +4233,18 @@ fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "transcoder-error-handling-mode";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn quotient(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn quotient(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "quotient";
     check_argc!(name, args, 2);
-    match (args[0], args[1]) {
-        (Object::Fixnum(x), Object::Fixnum(y)) => {
-            if x == 0 {
-                Object::Fixnum(0)
-            } else if y == 0 {
-                panic!("{}: must be non-zero", name)
-            } else {
-                Object::Fixnum(x / y)
-            }
-        }
-        _ => {
+    match numbers::quotient(&mut vm.gc, args[0], args[1]) {
+        Ok(v) => v,
+        Err(SchemeError::NoneZeroRequired) => {
             panic!(
-                "{}: number and number required but got {} {}",
+                "{}: none zero required but got {} {}",
                 name, args[0], args[1]
             )
         }
+        _ => panic!(),
     }
 }
 fn remainder(_vm: &mut Vm, args: &mut [Object]) -> Object {

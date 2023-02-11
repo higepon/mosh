@@ -392,6 +392,7 @@ impl Vm {
                         Err(SchemeError::Div0) => {
                             panic!("/: division by zero {} {}", n, d)
                         }
+                        _ => panic!(),
                     }
                 }
                 Op::NumberSub => {
