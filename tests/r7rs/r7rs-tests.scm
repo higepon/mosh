@@ -965,9 +965,9 @@
 (test -1 (round -7/10))
 
 (test 1/3 (rationalize (exact .3) 1/10))
-#|
-(test #i1/3 (rationalize .3 1/10))
 
+(test #i1/3 (rationalize .3 1/10))
+#|
 (test 1.0 (inexact (exp 0))) ;; may return exact number
 (test 20.0855369231877 (exp 3))
 

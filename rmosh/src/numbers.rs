@@ -131,7 +131,7 @@ impl FixnumExt for isize {
         Object::Flonum(Flonum::new(f))
     }
     fn div_fl(self, fl: &Flonum) -> Result<Object, SchemeError> {
-        let f = (self as f64) * fl.value();
+        let f = (self as f64) / fl.value();
         Ok(Object::Flonum(Flonum::new(f)))
     }
     fn eqv_fl(self, fl: &Flonum) -> bool {
