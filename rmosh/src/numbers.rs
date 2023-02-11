@@ -359,6 +359,15 @@ impl Flonum {
         Ok(Object::Flonum(Flonum::new(self.value() / other.value())))
     }
 
+    pub fn integer_div(&self, other: &Flonum) -> Result<Object, SchemeError> {
+        let ret = if other.value() > 0.0 {
+            (self.value() / other.value()).floor()
+        } else {
+            (self.value() / (-other.value())).floor()
+        };
+        Ok(Object::Flonum(Flonum::new(ret)))
+    }
+
     #[inline(always)]
     pub fn eqv(&self, other: &Flonum) -> bool {
         self.value() == other.value()
@@ -835,7 +844,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.mul(gc, fx2),
-        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => fx.mul_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.mul_rat(gc, &r),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(c)) => c.mul_real(gc, n1),
@@ -873,7 +882,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.div(gc, fx2),
-        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Flonum(fl)) => fx.div_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.div_rat(gc, &r),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
@@ -904,24 +913,44 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
 pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_real());
     assert!(n2.is_real());
-    match (n1, n2) {
-        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.integer_div(fx2),
-        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Fixnum(fx), Object::Ratnum(r)) => todo!(),
-        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => todo!(),
-        (Object::Flonum(fl1), Object::Flonum(fl2)) => todo!(),
-        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
-        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => todo!(),
-        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
-        _ => todo!(),
+
+    if n1.is_flonum() {
+        let f = n1.to_flonum();
+        if f.is_infinite() || f.is_nan() {
+            return Err(SchemeError::NanOrInfinite);
+        }
+    }
+
+    if n2.is_fixnum() {
+        let fx = n2.to_isize();
+        if fx == 0 {
+            return Err(SchemeError::Div0);
+        }
+    }
+
+    if n2.is_flonum() {
+        let f = n2.to_flonum();
+        if 0.0 == f.value() {
+            return Err(SchemeError::Div0);
+        }
+    }
+
+    if n1.is_fixnum() && n2.is_fixnum() {
+        return n1.to_isize().integer_div(n2.to_isize());
+    } else if n1.is_flonum() && n2.is_flonum() {
+        n1.to_flonum().integer_div(&n2.to_flonum())
+    } else {
+        let ret;
+        if n2.is_negative() {
+            let r = negate(gc, n2);
+            let r = div(gc, n1, r)?;
+            let r = floor(gc, r);
+            ret = negate(gc, r);
+        } else {
+            let r = div(gc, n1, n2)?;
+            ret = floor(gc, r);
+        }
+        return Ok(ret);
     }
 }
 
@@ -1281,6 +1310,11 @@ pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
     }
 }
 
+pub fn negate(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_real());
+    mul(gc, Object::Fixnum(-1), n)
+}
+
 pub fn truncate(gc: &mut Box<Gc>, obj: Object) -> Object {
     assert!(obj.is_real());
     match obj {
@@ -1420,6 +1454,11 @@ impl Object {
     #[inline(always)]
     fn is_zero(&self) -> bool {
         eqv(Object::Fixnum(0), *self)
+    }
+
+    #[inline(always)]
+    fn is_negative(&self) -> bool {
+        lt(*self, Object::Fixnum(0))
     }
 
     pub fn is_even(&self) -> bool {
