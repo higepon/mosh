@@ -236,21 +236,21 @@ impl FixnumExt for isize {
         }
     }
     fn eqv_rat(self, r: &Ratnum) -> bool {
-        match r.to_isize() {
-            Some(v) => v == self,
+        match Rational64::from_isize(self) {
+            Some(self_r) => self_r == r.ratio,
             None => false,
         }
     }
     fn lt_rat(self, r: &Ratnum) -> bool {
-        match r.to_isize() {
-            Some(rv) => self < rv,
-            None => false,
+        match Rational64::from_isize(self) {
+            Some(self_r) => self_r < r.ratio,
+            None => todo!(),
         }
     }
     fn gt_rat(self, r: &Ratnum) -> bool {
-        match r.to_isize() {
-            Some(rv) => self > rv,
-            None => false,
+        match Rational64::from_isize(self) {
+            Some(self_r) => self_r > r.ratio,
+            None => todo!(),
         }
     }
 
@@ -593,6 +593,15 @@ impl Ratnum {
     }
 
     // Ratnum vs Fixnum
+    pub fn sub_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
+        let r = self.ratio - Rational64::new_raw(fx as i64, 1);
+        if r.is_integer() {
+            Object::Fixnum(*r.numer() as isize)
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
+        }
+    }
+
     pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
@@ -855,7 +864,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.sub(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
-        (Object::Ratnum(r), Object::Fixnum(fx)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => r.sub_fx(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.sub(gc, &r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
