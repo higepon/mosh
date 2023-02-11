@@ -19,6 +19,7 @@ trait FixnumExt {
     fn sub(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn mul(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn div(self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError>;
+    fn integer_div(self, fx: isize) -> Result<Object, SchemeError>;
 
     // Fixnum vs Flonum
     fn add_fl(self, fl: &Flonum) -> Object;
@@ -98,6 +99,22 @@ impl FixnumExt for isize {
                 Ok(Object::Ratnum(gc.alloc(r)))
             }
         }
+    }
+    fn integer_div(self, fx: isize) -> Result<Object, SchemeError> {
+        if fx == 0 {
+            return Err(SchemeError::Div0);
+        }
+        let ret;
+        if self == 0 {
+            ret = 0;
+        } else if self > 0 {
+            ret = self / fx;
+        } else if fx > 0 {
+            ret = (self - fx + 1) / fx;
+        } else {
+            ret = (self + fx + 1) / fx;
+        }
+        Ok(Object::Fixnum(ret))
     }
 
     // Fixnum vs Flonum
@@ -822,7 +839,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.mul_rat(gc, &r),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(c)) => c.mul_real(gc, n1),
-        (Object::Flonum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => fx.mul_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.mul(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
@@ -849,6 +866,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
 pub enum SchemeError {
     Div0,
     NonZeroRequired,
+    NanOrInfinite,
 }
 pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
@@ -879,6 +897,30 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
         (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Compnum(_), Object::Bignum(_)) => todo!(),
         (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        _ => todo!(),
+    }
+}
+
+pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+    assert!(n1.is_real());
+    assert!(n2.is_real());
+    match (n1, n2) {
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.integer_div(fx2),
+        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Ratnum(r)) => todo!(),
+        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => todo!(),
+        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Fixnum(fx)) => todo!(),
+        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         _ => todo!(),
     }
 }

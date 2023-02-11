@@ -13,7 +13,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, imag, real, Flonum, SchemeError},
+    numbers::{self, imag, real, Flonum, SchemeError, integer_div},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -3910,29 +3910,24 @@ fn abs(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: real number required but got {}", name, args[0])
     }
 }
-fn div(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn div(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "div";
     check_argc!(name, args, 2);
-    match args {
-        [Object::Fixnum(_), Object::Fixnum(0)] => {
-            panic!("{}: division by zero", name)
-        }
-        [Object::Fixnum(x), Object::Fixnum(y)] => {
-            let ret;
-            if *x == 0 {
-                ret = 0;
-            } else if *x > 0 {
-                ret = *x / *y;
-            } else if *y > 0 {
-                ret = (*x - *y + 1) / *y;
-            } else {
-                ret = (*x + *y + 1) / *y;
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_real() && n2.is_real() {
+        match integer_div(&mut vm.gc, n1, n2) {
+            Ok(v) => v,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by 0 is not defined", name)
+            },
+            Err(SchemeError::NanOrInfinite) => {
+                panic!("{}: nan.0 or inifite not allowed", name)
             }
-            return Object::Fixnum(ret);
+            _ => panic!()
         }
-        _ => {
-            panic!("{}: numbers required but got {:?}", name, args)
-        }
+    } else {
+        panic!("{}: real numbers required but got {} {}", name, n1, n2);
     }
 }
 fn div0(_vm: &mut Vm, args: &mut [Object]) -> Object {
