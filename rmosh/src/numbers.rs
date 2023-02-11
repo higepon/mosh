@@ -1037,10 +1037,16 @@ pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sche
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Flonum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Flonum(_), Object::Fixnum(fx)) if fx == 0 => Err(SchemeError::NoneZeroRequired),
+        (Object::Flonum(fl), Object::Fixnum(fx)) => Ok(Object::Flonum(Flonum::new(
+            (fl.value() / fx.to_f64().unwrap()).trunc(),
+        ))),
+
         (Object::Flonum(_), Object::Flonum(_)) => todo!(),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => Ok(Object::Flonum(Flonum::new(
+            (fl.value() / b.value.to_f64().unwrap()).trunc(),
+        ))),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
