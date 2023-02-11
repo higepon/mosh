@@ -1364,7 +1364,7 @@ pub fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
     }
 }
 
-fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
+pub fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
     assert!(obj.is_rational());
     match obj {
         Object::Ratnum(r) => r.denom(),
@@ -1374,6 +1374,19 @@ fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
             inexact(gc, denom)
         }
         _ => Object::Fixnum(1),
+    }
+}
+
+pub fn numerator(gc: &mut Box<Gc>, obj: Object) -> Object {
+    assert!(obj.is_rational());
+    match obj {
+        Object::Ratnum(r) => r.numer(),
+        Object::Flonum(fl) => {
+            let m = fl.to_exact(gc);
+            let denom = numerator(gc, m);
+            inexact(gc, denom)
+        }
+        _ => obj
     }
 }
 

@@ -13,7 +13,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, imag, real, Flonum, SchemeError, integer_div},
+    numbers::{self, imag, integer_div, real, Flonum, SchemeError},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -3920,11 +3920,11 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> Object {
             Ok(v) => v,
             Err(SchemeError::Div0) => {
                 panic!("{}: div by 0 is not defined", name)
-            },
+            }
             Err(SchemeError::NanOrInfinite) => {
                 panic!("{}: nan.0 or inifite not allowed", name)
             }
-            _ => panic!()
+            _ => panic!(),
         }
     } else {
         panic!("{}: real numbers required but got {} {}", name, n1, n2);
@@ -3934,13 +3934,23 @@ fn div0(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "div0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn numerator(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn numerator(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "numerator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_rational() {
+        numbers::numerator(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: rational number requied but got {}", name, args[0])
+    }
 }
-fn denominator(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn denominator(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "denominator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_rational() {
+        numbers::denominator(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: rational number requied but got {}", name, args[0])
+    }
 }
 fn floor(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "floor";
