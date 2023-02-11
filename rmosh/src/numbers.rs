@@ -434,6 +434,11 @@ impl Flonum {
     }
 
     #[inline(always)]
+    pub fn ceiling(&self) -> Object {
+        Object::Flonum(Flonum::new(self.value().ceil()))
+    }    
+
+    #[inline(always)]
     pub fn floor(&self) -> Object {
         Object::Flonum(Flonum::new(self.value().floor()))
     }
@@ -586,6 +591,10 @@ impl Ratnum {
 
     pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
         Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.abs())))
+    }
+
+    pub fn ceiling(&self, gc: &mut Box<Gc>) -> Object {
+        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.ceil())))
     }
 
     pub fn floor(&self, gc: &mut Box<Gc>) -> Object {
@@ -1285,6 +1294,16 @@ pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Flonum(fl) => fl.abs(),
         Object::Bignum(b) => b.abs(gc),
         Object::Ratnum(r) => r.abs(gc),
+        _ => panic!(),
+    }
+}
+
+pub fn ceiling(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_real());
+    match n {
+        Object::Fixnum(_) | Object::Bignum(_) => n,
+        Object::Flonum(fl) => fl.ceiling(),
+        Object::Ratnum(r) => r.ceiling(gc),
         _ => panic!(),
     }
 }
