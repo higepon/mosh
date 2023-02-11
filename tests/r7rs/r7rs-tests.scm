@@ -967,7 +967,7 @@
 (test 1/3 (rationalize (exact .3) 1/10))
 
 (test #i1/3 (rationalize .3 1/10))
-#|
+
 (test 1.0 (inexact (exp 0))) ;; may return exact number
 (test 20.0855369231877 (exp 3))
 
@@ -1070,7 +1070,7 @@
 (test #f (boolean=? #t #t #f))
 
 (test-end)
-
+#|
 (test-begin "6.4 Lists")
 
 (let* ((x (list 'a 'b 'c))

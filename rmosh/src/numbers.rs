@@ -48,6 +48,7 @@ trait FixnumExt {
     fn gt_rat(self, r: &Ratnum) -> bool;
 
     // Arith
+    fn exp(self) -> Object;
     fn log(self) -> Object;
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
@@ -255,6 +256,14 @@ impl FixnumExt for isize {
     }
 
     // Arith
+    fn exp(self) -> Object {
+        if self == 0 {
+            // Exact 1.
+            Object::Fixnum(1)
+        } else {
+            Object::Flonum(Flonum::new((self as f64).exp()))
+        }
+    }
     fn log(self) -> Object {
         if self == 1 {
             // Exact 0.
@@ -804,8 +813,17 @@ impl Compnum {
         let imag = mul(gc, self.imag, n);
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     }
-}
 
+    pub fn exp(&self, gc: &mut Box<Gc>) -> Object {
+        let real = real_to_f64(self.real);
+        let imag = real_to_f64(self.imag);
+        let r = real.exp();
+
+        let re = Object::Flonum(Flonum::new(r * imag.cos()));
+        let im = Object::Flonum(Flonum::new(r * imag.sin()));
+        Object::Compnum(gc.alloc(Compnum::new(re, im)))
+    }
+}
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}+/-{}i", self.real.to_string(), self.imag.to_string())
@@ -1086,10 +1104,12 @@ pub fn le(n1: Object, n2: Object) -> bool {
     !gt(n1, n2)
 }
 
-pub fn exp(_gc: &mut Box<Gc>, n: Object) -> Object {
+pub fn exp(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
     match n {
-        Object::Flonum(fl) => Object::Flonum(Flonum::new(fl.value().exp())),
-        _ => todo!(),
+        Object::Fixnum(fx) => fx.exp(),
+        Object::Compnum(c) => c.exp(gc),
+        _ => Object::Flonum(Flonum::new(real_to_f64(n).exp())),
     }
 }
 
@@ -1456,6 +1476,23 @@ fn is_integer(gc: &mut Box<Gc>, obj: Object) -> bool {
         Object::Flonum(f) if f.is_nan() || f.is_infinite() => false,
         Object::Compnum(c) => c.imag.is_exact_zero() && c.real.is_integer(gc),
         _ => eqv(denominator(gc, obj), Object::Fixnum(1)),
+    }
+}
+
+pub fn real_to_f64(n: Object) -> f64 {
+    //assert!(n.is_real_valued());
+    match n {
+        Object::Fixnum(fx) => fx as f64,
+        Object::Flonum(fl) => fl.value(),
+        Object::Bignum(b) => match b.to_f64() {
+            Some(v) => v,
+            None => todo!(),
+        },
+        Object::Ratnum(r) => match r.to_f64() {
+            Some(v) => v,
+            None => todo!(),
+        },
+        _ => panic!(),
     }
 }
 
