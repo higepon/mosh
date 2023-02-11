@@ -212,7 +212,7 @@
 (test '(1518500249 3000631951)
     (let*-values (((root rem) (exact-integer-sqrt (expt 2 61))))
       (list root rem)))
-#|
+
 (test '(815238614083298888 443242361398135744)
     (let*-values (((root rem) (exact-integer-sqrt (expt 2 119))))
       (list root rem)))
@@ -600,7 +600,7 @@
       ((_ x)
        '(x ...))))
   (test '(100 ...) (elli-lit-1 100))))
-
+#|
 ;; bad ellipsis
 #|
 (test 'error
