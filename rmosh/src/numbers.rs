@@ -394,6 +394,18 @@ impl Flonum {
     }
 
     // Flonum vs Ratnum
+    pub fn add_rat(&self, r: &GcRef<Ratnum>) -> Object {
+        match r.to_f64() {
+            Some(rv) => Object::Flonum(Flonum::new(self.value() + rv)),
+            None => todo!(),
+        }
+    }
+    pub fn sub_rat(&self, r: &GcRef<Ratnum>) -> Object {
+        match r.to_f64() {
+            Some(rv) => Object::Flonum(Flonum::new(self.value() - rv)),
+            None => todo!(),
+        }
+    }
     pub fn eqv_rat(&self, r: &GcRef<Ratnum>) -> bool {
         match r.to_f64() {
             Some(v) => v == self.value(),
@@ -803,7 +815,7 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.add_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.add(&fl2),
-        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Ratnum(r)) => fl.add_rat(&r),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.add_big(gc, &b),
@@ -835,7 +847,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.sub_fx(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.sub(&fl2),
-        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Ratnum(r)) => fl.sub_rat(&r),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => b.sub_fx(gc, fx),
@@ -1214,7 +1226,7 @@ pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Scheme
             if r == 0 {
                 return Ok(Object::Fixnum(0));
             }
-            if fx2 > 0 && r > 0 {
+            if (fx2 > 0 && r <= 0) || (fx2 <= 0 && r > 0) {
                 r = r + fx2
             }
             Ok(Object::Fixnum(r))
