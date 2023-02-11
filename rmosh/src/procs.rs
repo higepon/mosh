@@ -3941,9 +3941,14 @@ fn denominator(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "denominator";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn floor(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn floor(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "floor";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_real() {
+        numbers::floor(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: real number required but got {}", name, args[0])
+    }
 }
 fn ceiling(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "ceiling";

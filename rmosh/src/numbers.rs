@@ -408,6 +408,11 @@ impl Flonum {
     }
 
     #[inline(always)]
+    pub fn floor(&self) -> Object {
+        Object::Flonum(Flonum::new(self.value().floor()))
+    }
+
+    #[inline(always)]
     pub fn sqrt(&self) -> Object {
         Object::Flonum(Flonum::new(self.value().sqrt()))
     }
@@ -812,7 +817,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.mul_rat(gc, &r),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Compnum(c)) => c.mul_real(gc, n1),
         (Object::Flonum(_), Object::Fixnum(_)) => todo!(),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.mul(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
@@ -1068,6 +1073,16 @@ pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Flonum(fl) => fl.abs(),
         Object::Bignum(b) => b.abs(gc),
         Object::Ratnum(r) => r.abs(gc),
+        _ => panic!(),
+    }
+}
+
+pub fn floor(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_real());
+    match n {
+        Object::Fixnum(_) | Object::Bignum(_) => n,
+        Object::Flonum(fl) => fl.floor(),
+        Object::Ratnum(r) => todo!(),
         _ => panic!(),
     }
 }
