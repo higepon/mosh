@@ -436,11 +436,16 @@ impl Flonum {
     #[inline(always)]
     pub fn ceiling(&self) -> Object {
         Object::Flonum(Flonum::new(self.value().ceil()))
-    }    
+    }
 
     #[inline(always)]
     pub fn floor(&self) -> Object {
         Object::Flonum(Flonum::new(self.value().floor()))
+    }
+
+    #[inline(always)]
+    pub fn round(&self) -> Object {
+        Object::Flonum(Flonum::new(self.value().round()))
     }
 
     #[inline(always)]
@@ -599,6 +604,10 @@ impl Ratnum {
 
     pub fn floor(&self, gc: &mut Box<Gc>) -> Object {
         Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.floor())))
+    }
+
+    pub fn round(&self, gc: &mut Box<Gc>) -> Object {
+        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.round())))
     }
 
     pub fn truncate(&self, gc: &mut Box<Gc>) -> Object {
@@ -1318,6 +1327,16 @@ pub fn floor(gc: &mut Box<Gc>, n: Object) -> Object {
     }
 }
 
+pub fn round(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_real());
+    match n {
+        Object::Fixnum(_) | Object::Bignum(_) => n,
+        Object::Flonum(fl) => fl.round(),
+        Object::Ratnum(r) => r.round(gc),
+        _ => panic!(),
+    }
+}
+
 pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
     match obj {
         Object::Fixnum(fx) => fx.sqrt(gc),
@@ -1405,7 +1424,7 @@ pub fn numerator(gc: &mut Box<Gc>, obj: Object) -> Object {
             let denom = numerator(gc, m);
             inexact(gc, denom)
         }
-        _ => obj
+        _ => obj,
     }
 }
 

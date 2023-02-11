@@ -3977,10 +3977,15 @@ fn truncate(vm: &mut Vm, args: &mut [Object]) -> Object {
     }
     numbers::truncate(&mut vm.gc, args[0])
 }
-fn round(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn round(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "round";
-    panic!("{}({}) not implemented", name, args.len());
+    if args[0].is_real() {
+        numbers::round(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: real number requied but got {}", name, args[0])
+    }
 }
+
 fn exp(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exp";
     check_argc!(name, args, 1);
