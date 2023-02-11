@@ -720,9 +720,15 @@ impl Compnum {
         eqv(self.imag, Object::Fixnum(0)) && self.imag.is_exact()
     }
 
-    pub fn eqv_real(&self, o: Object) -> bool {
-        assert!(o.is_fixnum() || o.is_bignum() || o.is_flonum() || o.is_ratnum());
-        eqv(self.imag, Object::Fixnum(0)) && eqv(self.real, o)
+    pub fn eqv_real(&self, n: Object) -> bool {
+        assert!(n.is_fixnum() || n.is_bignum() || n.is_flonum() || n.is_ratnum());
+        eqv(self.imag, Object::Fixnum(0)) && eqv(self.real, n)
+    }
+    pub fn mul_real(&self, gc: &mut Box<Gc>, n: Object) -> Object {
+        assert!(n.is_fixnum() || n.is_bignum() || n.is_flonum() || n.is_ratnum());
+        let real = mul(gc, self.real, n);
+        let imag = mul(gc, self.imag, n);
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     }
 }
 
