@@ -4088,9 +4088,14 @@ fn sqrt(vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 1);
     numbers::sqrt(&mut vm.gc, args[0])
 }
-fn magnitude(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn magnitude(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "magnitude";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::magnitude(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
 fn angle(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "angle";

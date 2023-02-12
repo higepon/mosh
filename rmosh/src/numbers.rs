@@ -948,6 +948,13 @@ impl Compnum {
             mul(gc, Object::Flonum(Flonum::new(r.sqrt())), c)
         }
     }
+
+    pub fn magnitude(&self, gc: &mut Box<Gc>) -> Object {
+        let x = mul(gc, self.real, self.real);
+        let y = mul(gc, self.imag, self.imag);
+        let z = add(gc, x, y);
+        sqrt(gc, z)
+    }
 }
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1581,6 +1588,21 @@ pub fn atan2(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     } else {
         let r = f64::atan2(real_to_f64(n1), real_to_f64(n2));
         Object::Flonum(Flonum::new(r))
+    }
+}
+
+pub fn magnitude(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
+    if n.is_real() {
+        if n.is_negative() {
+            negate(gc, n)
+        } else {
+            n
+        }
+    } else if n.is_compnum() {
+        n.to_compnum().magnitude(gc)
+    } else {
+        panic!()
     }
 }
 
