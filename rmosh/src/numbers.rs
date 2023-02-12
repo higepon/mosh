@@ -1253,11 +1253,15 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
             }
             _ => todo!(),
         },
-        (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Fixnum(_), Object::Flonum(fl)) => {
+            let fl1 = real_to_f64(n1);            
+            let fl2 = fl.value();
+            Object::Flonum(Flonum::new(fl1.powf(fl2)))            
+        }
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Flonum(fl), Object::Fixnum(fx)) => {
+        (Object::Flonum(fl), Object::Fixnum(_)) => {
             let fl1 = fl.value();
             let fl2 = real_to_f64(n2);
             Object::Flonum(Flonum::new(fl1.powf(fl2)))
