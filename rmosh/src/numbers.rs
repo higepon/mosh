@@ -54,7 +54,8 @@ trait FixnumExt {
     fn sin(self) -> Object;
     fn tan(self) -> Object;
     fn asin(self) -> Object;
-    fn acos(self) -> Object;    
+    fn acos(self) -> Object;
+    fn atan(self) -> Object;
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
@@ -291,7 +292,10 @@ impl FixnumExt for isize {
     }
     fn acos(self) -> Object {
         Object::Flonum(Flonum::new((self as f64).acos()))
-    }    
+    }
+    fn atan(self) -> Object {
+        Object::Flonum(Flonum::new((self as f64).atan()))
+    }
     fn sqrt(self, gc: &mut Box<Gc>) -> Object {
         if self == 0 {
             return Object::Fixnum(0);
@@ -892,7 +896,7 @@ impl Compnum {
         mul(gc, e, d)
     }
 
-        // arccos(z) = -i * log(z + sqrt(1-z*z)i)
+    // arccos(z) = -i * log(z + sqrt(1-z*z)i)
     pub fn acos(gc: &mut Box<Gc>, n: Object) -> Object {
         assert!(n.is_compnum());
         let square = mul(gc, n, n);
@@ -904,8 +908,21 @@ impl Compnum {
         let d = log(gc, d);
         let e = Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(-1))));
         mul(gc, e, d)
-    }    
-  
+    }
+
+    // atan(z) = (i/2)*log((i+z)/(i-z))
+    pub fn atan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
+        assert!(n.is_compnum());
+        let square = mul(gc, n, n);
+        let a = Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))));
+        let b = add(gc, a, n);
+        let c = sub(gc, a, n);
+        let d = div(gc, b, c)?;
+        let d = log(gc, d);
+        let e = div(gc, Object::Fixnum(1), Object::Fixnum(2))?;
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), e)));
+        Ok(mul(gc, e, d))
+    }
 }
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1510,6 +1527,27 @@ pub fn acos(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Compnum(c) => Compnum::acos(gc, n),
         _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).acos())),
         _ => panic!(),
+    }
+}
+
+pub fn atan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(fx) => Ok(fx.atan()),
+        Object::Compnum(c) => Compnum::atan(gc, n),
+        _ if n.is_real() => Ok(Object::Flonum(Flonum::new(real_to_f64(n).atan()))),
+        _ => panic!(),
+    }
+}
+
+pub fn atan2(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+    assert!(n1.is_real());
+    assert!(n2.is_real());
+    if n1.is_exact_zero() {
+        Object::Fixnum(0)
+    } else {
+        let r = f64::atan2(real_to_f64(n1), real_to_f64(n2));
+        Object::Flonum(Flonum::new(r))
     }
 }
 

@@ -4089,10 +4089,30 @@ fn angle(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "angle";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn atan(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn atan(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "atan";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    if argc == 1 {
+        let n = args[0];
+        match numbers::atan(&mut vm.gc, n) {
+            Ok(v) => v,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by zero {}", name, n)
+            }
+            _ => panic!(),
+        }
+    } else {
+        let n1 = args[0];
+        let n2 = args[1];
+        if n1.is_real() && n2.is_real() {
+            numbers::atan2(&mut vm.gc, n1, n2)
+        } else {
+            panic!("{}: real numbers required but got {} {}", name, n1, n2)
+        }
+    }
 }
+
 fn expt(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "expt";
     check_argc!(name, args, 2);
