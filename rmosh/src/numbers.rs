@@ -50,6 +50,7 @@ trait FixnumExt {
     // Arith
     fn exp(self) -> Object;
     fn log(self) -> Object;
+    fn sin(self) -> Object;
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
@@ -271,6 +272,9 @@ impl FixnumExt for isize {
         } else {
             Object::Flonum(Flonum::new((self as f64).ln()))
         }
+    }
+    fn sin(self) -> Object {
+        Object::Flonum(Flonum::new((self as f64).sin()))
     }
     fn sqrt(self, gc: &mut Box<Gc>) -> Object {
         if self == 0 {
@@ -823,6 +827,21 @@ impl Compnum {
         let im = Object::Flonum(Flonum::new(r * imag.sin()));
         Object::Compnum(gc.alloc(Compnum::new(re, im)))
     }
+
+    pub fn sin(&self, gc: &mut Box<Gc>) -> Object {
+        // cos(iy) = (e^-y + e^y) / 2
+        // sin(iy) = (e^-y - e^y) / 2i
+        // sin(z)  = sin(x+iy) = sin(x)cos(iy) + sin(iy)cos(x)
+        //         = sin(x) * ((e^-y + e^y) / 2) + cos(x) * ((e^-y - e^y) / 2i)
+        //         = sin(x) * ((e^-y + e^y) / 2) + cos(x) * ((e^y - e^-y) / 2) * i
+        let real = real_to_f64(self.real);
+        let imag = real_to_f64(self.imag);
+        let a = imag.exp();
+        let b = 1.0 / a;
+        let im = Object::Flonum(Flonum::new(real.sin() * (b + a) * 0.5));
+        let re = Object::Flonum(Flonum::new(real.cos() * (a - b) * 0.5));
+        Object::Compnum(gc.alloc(Compnum::new(re, im)))
+    }
 }
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1351,7 +1370,7 @@ pub fn log(gc: &mut Box<Gc>, n: Object) -> Object {
     }
 }
 
-pub fn log2(gc: &mut Box<Gc>, n1: Object, n2: Object) ->  Result<Object, SchemeError>  {
+pub fn log2(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     let lhs = log(gc, n1);
     let rhs = log(gc, n2);
     div(gc, lhs, rhs)
@@ -1375,6 +1394,17 @@ pub fn ceiling(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Flonum(fl) => fl.ceiling(),
         Object::Ratnum(r) => r.ceiling(gc),
         _ => panic!(),
+    }
+}
+
+pub fn sin(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(fx) => fx.sin(),
+        Object::Flonum(fl) => Object::Flonum(Flonum::new(fl.value().sin())),
+        Object::Compnum(c) => c.sin(gc),
+        _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).exp())),
+        _ => panic!()
     }
 }
 

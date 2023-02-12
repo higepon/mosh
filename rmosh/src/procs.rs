@@ -4025,9 +4025,14 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> Object {
     }
 }
 
-fn sin(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn sin(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::sin(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
 fn cos(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cos";
