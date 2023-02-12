@@ -149,6 +149,13 @@ impl Object {
         }
     }
 
+    pub fn is_string(&self) -> bool {
+        match self {
+            Object::String(_) => true,
+            _ => false,
+        }
+    }    
+
     pub fn is_input_port(&self) -> bool {
         match self {
             Object::FileInputPort(_) => true,

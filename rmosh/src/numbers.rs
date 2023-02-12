@@ -1871,7 +1871,7 @@ impl Object {
     fn is_real_valued(&self) -> bool {
         if self.is_real() {
             true
-        } else if (self.is_compnum()) {
+        } else if self.is_compnum() {
             let c = self.to_compnum();
             c.imag.is_zero()
         } else {

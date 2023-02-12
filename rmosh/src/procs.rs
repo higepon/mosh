@@ -13,7 +13,9 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, imag, integer_div, log2, real, Flonum, SchemeError, Compnum},
+    number_lexer::NumberLexer,
+    number_reader::NumberParser,
+    numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -1040,21 +1042,93 @@ fn string_to_symbol(vm: &mut Vm, args: &mut [Object]) -> Object {
         }
     }
 }
-fn string_to_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->number";
-    check_argc!(name, args, 1);
-    match args[0] {
-        Object::String(s) => match s.string.parse::<isize>() {
-            Ok(n) => Object::Fixnum(n),
-            Err(err) => {
-                panic!("{}: can't convert to numver {:?}", name, err)
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    if argc == 1 {
+        match args[0] {
+            Object::String(s) => {
+                let mut chars: Vec<char> = s.chars().collect();
+                chars.push('\0');
+                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+                    Ok(n) => n,
+                    Err(err) => panic!("{}: {:?}", name, err),
+                }
             }
-        },
-        v => {
-            panic!("{}: string required but got {}", name, v)
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
         }
+    } else {
+        let radix = args[1];
+        let mut prefix: String = "".to_string();
+        match radix {
+            Object::Fixnum(2) => {
+                prefix.push_str("#b");
+            }
+            Object::Fixnum(8) => {
+                prefix.push_str("#o");
+            }
+            Object::Fixnum(10) => (),
+            Object::Fixnum(16) => {
+                prefix.push_str("#x");
+            }
+            _ => {
+                panic!("{}: radix 2, 8, 10 or 16 required but got {}", name, radix)
+            }
+        }
+        match args[0] {
+            Object::String(s) => {
+                prefix.push_str(&s);
+                let mut chars: Vec<char> = prefix.chars().collect();
+                chars.push('\0');
+                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+                    Ok(n) => n,
+                    Err(err) => panic!("{}: {:?}", name, err),
+                }
+            }
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
+        }        
     }
 }
+/*
+checkArgumentLengthBetween(1, 2);
+argumentAsString(0, text);
+const ucs4string& numberString = text->data();
+if (argc == 1) {
+    return stringToNumber(numberString);
+} else {
+    argumentAsFixnum(1, radix);
+    switch (radix) {
+        case 2:
+        {
+            ucs4string text(UC("#b"));
+            text += numberString;
+            return stringToNumber(text);
+        }
+        case 8:
+        {
+            ucs4string text(UC("#o"));
+            text += numberString;
+            return stringToNumber(text);
+        }
+        case 10:
+            return stringToNumber(numberString);
+        case 16:
+        {
+            ucs4string text(UC("#x"));
+            text += numberString;
+            return stringToNumber(text);
+        }
+        default:
+            callAssertionViolationAfter(theVM, procedureName, UC("radix should be 2, 8, 10 ro 16"), L1(argv[1]));
+            return Object::Undef;
+    }
+}*/
+
 fn string_append(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-append";
     let mut ret = "".to_string();
@@ -4155,7 +4229,6 @@ fn make_polar(vm: &mut Vm, args: &mut [Object]) -> Object {
     } else {
         panic!("{}: numbers required but got {} {}", name, n1, n2);
     }
-    
 }
 fn string_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-copy";
