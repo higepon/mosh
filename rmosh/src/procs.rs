@@ -13,7 +13,7 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    numbers::{self, imag, integer_div, log2, real, Flonum, SchemeError},
+    numbers::{self, imag, integer_div, log2, real, Flonum, SchemeError, Compnum},
     objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
@@ -3392,9 +3392,16 @@ fn greatest_fixnum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     check_argc!(name, args, 0);
     Object::Fixnum(2_isize.pow(62) - 1)
 }
-fn make_rectangular(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn make_rectangular(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-rectangular";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_real() && n2.is_real() {
+        Object::Compnum(vm.gc.alloc(Compnum::new(n1, n2)))
+    } else {
+        panic!("{}: real numbers required but got {} {}", name, n1, n2);
+    }
 }
 fn real_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real-part";
