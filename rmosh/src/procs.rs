@@ -4135,9 +4135,17 @@ fn expt(vm: &mut Vm, args: &mut [Object]) -> Object {
     }
 }
 
-fn make_polar(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn make_polar(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-polar";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_number() && n2.is_number() {
+        numbers::make_polar(&mut vm.gc, n1, n2)
+    } else {
+        panic!("{}: numbers required but got {} {}", name, n1, n2);
+    }
+    
 }
 fn string_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-copy";

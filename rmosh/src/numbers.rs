@@ -1254,9 +1254,9 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
             _ => todo!(),
         },
         (Object::Fixnum(_), Object::Flonum(fl)) => {
-            let fl1 = real_to_f64(n1);            
+            let fl1 = real_to_f64(n1);
             let fl2 = fl.value();
-            Object::Flonum(Flonum::new(fl1.powf(fl2)))            
+            Object::Flonum(Flonum::new(fl1.powf(fl2)))
         }
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
@@ -1722,6 +1722,30 @@ pub fn real_to_f64(n: Object) -> f64 {
     }
 }
 
+pub fn make_polar(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+    assert!(n1.is_real_valued());
+    assert!(n2.is_real_valued());
+    let real = if n1.is_compnum() {
+        n1.to_compnum().real
+    } else {
+        n1
+    };
+    let imag = if n2.is_compnum() {
+        n2.to_compnum().imag
+    } else {
+        n2
+    };
+    if eqv(imag, Object::Fixnum(0)) {
+        real
+    } else {
+        let r = real_to_f64(real);
+        let a = real_to_f64(imag);
+        let lhs = Object::Flonum(Flonum::new(r * a.cos()));
+        let rhs = Object::Flonum(Flonum::new(r * a.sin()));
+        Object::Compnum(gc.alloc(Compnum::new(lhs, rhs)))
+    }
+}
+
 impl Object {
     #[inline(always)]
     pub fn is_exact(&self) -> bool {
@@ -1794,6 +1818,17 @@ impl Object {
     #[inline(always)]
     fn is_negative(&self) -> bool {
         lt(*self, Object::Fixnum(0))
+    }
+
+    fn is_real_valued(&self) -> bool {
+        if self.is_real() {
+            true
+        } else if (self.is_compnum()) {
+            let c = self.to_compnum();
+            c.imag.is_zero()
+        } else {
+            false
+        }
     }
 
     pub fn is_even(&self) -> bool {
