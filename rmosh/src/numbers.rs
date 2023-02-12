@@ -53,6 +53,8 @@ trait FixnumExt {
     fn cos(self) -> Object;
     fn sin(self) -> Object;
     fn tan(self) -> Object;
+    fn asin(self) -> Object;
+    fn acos(self) -> Object;    
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
@@ -284,6 +286,12 @@ impl FixnumExt for isize {
     fn tan(self) -> Object {
         Object::Flonum(Flonum::new((self as f64).tan()))
     }
+    fn asin(self) -> Object {
+        Object::Flonum(Flonum::new((self as f64).asin()))
+    }
+    fn acos(self) -> Object {
+        Object::Flonum(Flonum::new((self as f64).acos()))
+    }    
     fn sqrt(self, gc: &mut Box<Gc>) -> Object {
         if self == 0 {
             return Object::Fixnum(0);
@@ -870,6 +878,34 @@ impl Compnum {
         let rhs = self.cos(gc);
         div(gc, lhs, rhs)
     }
+
+    pub fn asin(gc: &mut Box<Gc>, n: Object) -> Object {
+        assert!(n.is_compnum());
+        let square = mul(gc, n, n);
+        let a = sub(gc, Object::Fixnum(1), square);
+        let b = sqrt(gc, a);
+        let c = Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))));
+        let c = mul(gc, c, n);
+        let d = add(gc, b, c);
+        let d = log(gc, d);
+        let e = Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(-1))));
+        mul(gc, e, d)
+    }
+
+        // arccos(z) = -i * log(z + sqrt(1-z*z)i)
+    pub fn acos(gc: &mut Box<Gc>, n: Object) -> Object {
+        assert!(n.is_compnum());
+        let square = mul(gc, n, n);
+        let a = sub(gc, Object::Fixnum(1), square);
+        let b = sqrt(gc, a);
+        let c = Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))));
+        let c = mul(gc, c, b);
+        let d = add(gc, n, c);
+        let d = log(gc, d);
+        let e = Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(-1))));
+        mul(gc, e, d)
+    }    
+  
 }
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1453,6 +1489,26 @@ pub fn tan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
         Object::Fixnum(fx) => Ok(fx.tan()),
         Object::Compnum(c) => c.tan(gc),
         _ if n.is_real() => Ok(Object::Flonum(Flonum::new(real_to_f64(n).tan()))),
+        _ => panic!(),
+    }
+}
+
+pub fn asin(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(fx) => fx.asin(),
+        Object::Compnum(c) => Compnum::asin(gc, n),
+        _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).asin())),
+        _ => panic!(),
+    }
+}
+
+pub fn acos(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(fx) => fx.acos(),
+        Object::Compnum(c) => Compnum::acos(gc, n),
+        _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).acos())),
         _ => panic!(),
     }
 }
