@@ -52,7 +52,7 @@ trait FixnumExt {
     fn log(self) -> Object;
     fn cos(self) -> Object;
     fn sin(self) -> Object;
-    fn tan(self) -> Object;    
+    fn tan(self) -> Object;
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
@@ -283,7 +283,7 @@ impl FixnumExt for isize {
     }
     fn tan(self) -> Object {
         Object::Flonum(Flonum::new((self as f64).tan()))
-    }    
+    }
     fn sqrt(self, gc: &mut Box<Gc>) -> Object {
         if self == 0 {
             return Object::Fixnum(0);

@@ -212,7 +212,7 @@ impl Object {
         } else {
             panic!("Not a Object::Bignum")
         }
-    }    
+    }
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
