@@ -4097,9 +4097,14 @@ fn magnitude(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: number required but got {}", name, args[0])
     }
 }
-fn angle(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn angle(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "angle";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::angle(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
 fn atan(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "atan";

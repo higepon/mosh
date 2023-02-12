@@ -955,6 +955,13 @@ impl Compnum {
         let z = add(gc, x, y);
         sqrt(gc, z)
     }
+
+    // theta = atan2(imaginary, real)
+    pub fn angle(&self) -> Object {
+        let re = real_to_f64(self.real);
+        let im = real_to_f64(self.imag);
+        Object::Flonum(Flonum::new(f64::atan2(im, re)))
+    }
 }
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1601,6 +1608,25 @@ pub fn magnitude(gc: &mut Box<Gc>, n: Object) -> Object {
         }
     } else if n.is_compnum() {
         n.to_compnum().magnitude(gc)
+    } else {
+        panic!()
+    }
+}
+
+pub fn angle(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
+    if n.is_real() {
+        if n.is_negative() {
+            Object::Flonum(Flonum::new(-1.0f64.acos()))
+        } else {
+            if n.is_flonum() {
+                Object::Flonum(Flonum::new(0.0))
+            } else {
+                Object::Fixnum(0)
+            }
+        }
+    } else if n.is_compnum() {
+        n.to_compnum().angle()
     } else {
         panic!()
     }
