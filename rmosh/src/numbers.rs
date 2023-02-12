@@ -923,6 +923,31 @@ impl Compnum {
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), e)));
         Ok(mul(gc, e, d))
     }
+
+    // \sqrt{r}e^{\frac{i\theta}{2}}
+    pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
+        let real = real_to_f64(self.real);
+        let imag = real_to_f64(self.imag);
+        if imag == 0.0 {
+            if real >= 0.0 {
+                Object::Flonum(Flonum::new(real.sqrt()))
+            } else {
+                let re = Object::Flonum(Flonum::new(0.0));
+                let im = Object::Flonum(Flonum::new(real.abs().sqrt()));
+                Object::Compnum(gc.alloc(Compnum::new(re, im)))
+            }
+        } else {
+            let r = (real * real + imag * imag).sqrt();
+            let theta = f64::atan2(imag, real);
+
+            let c = Object::Compnum(gc.alloc(Compnum::new(
+                Object::Fixnum(0),
+                Object::Flonum(Flonum::new(0.5 * theta)),
+            )));
+            let c = exp(gc, c);
+            mul(gc, Object::Flonum(Flonum::new(r.sqrt())), c)
+        }
+    }
 }
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1576,7 +1601,7 @@ pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
         Object::Fixnum(fx) => fx.sqrt(gc),
         Object::Flonum(fl) => fl.sqrt(),
         Object::Bignum(b) => b.sqrt(gc),
-        Object::Compnum(c) => todo!(),
+        Object::Compnum(c) => c.sqrt(gc),
         Object::Ratnum(r) => todo!(),
         _ => panic!(),
     }
