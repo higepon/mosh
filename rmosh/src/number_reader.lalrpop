@@ -8,12 +8,14 @@ use crate::numbers::Ratnum;
 use crate::objects::Object;
 use std::str::FromStr;
 use num_bigint::BigInt;
+use num_traits::Num;
 
 grammar(gc: &mut Box<Gc>);
 
 // R7RS small 7.1.2. External representations
 pub Number: Object = {
     Number10,
+    Number16,
 }
 
 Number10: Object = {
@@ -34,10 +36,30 @@ Number10: Object = {
     },
 }
 
+Number16: Object = {
+    <is_exact: Prefix16> <c: Complex16> => {
+        if is_exact {
+            exact(gc, c)
+        } else {
+            c
+        }
+    }
+}
+
 Prefix10: bool = {
     Radix10 <e: Exactness> => e,
     <e: Exactness> Radix10 => e,
     Exactness,
+}
+
+Prefix16: bool = {
+    Radix16 <e: Exactness?> => {
+        match e {
+            Some(is_exact) => is_exact,
+            None => false,
+        }
+    },
+    <is_exact: Exactness> Radix16 => is_exact,
 }
 
 Exactness: bool = {
@@ -47,6 +69,10 @@ Exactness: bool = {
 
 Radix10 = {
     "#d"
+}
+
+Radix16 = {
+    "#x"
 }
 
 Complex10: Object = {
@@ -69,6 +95,26 @@ Complex10: Object = {
     },
 }
 
+Complex16: Object = {
+    Real16,
+    <real: Real16> "+" <imag: UReal16> "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+    },
+    <real: Real16> "-" <imag: UReal16> "i" => {
+        let imag = imag.neg(gc);
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+    },
+    <real: Real16> "+" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(1))))
+    },
+    <real: Real16> "+inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
+    },    
+    <real: Real16> "-" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
+    },
+}
+
 Real10: Object = {
     UReal10,
     "+" <ureal10: UReal10> => {
@@ -78,6 +124,16 @@ Real10: Object = {
         ureal10.neg(gc)
     },
     InfNan,
+}
+
+Real16: Object = {
+    UReal16,
+    "+" <ureal16: UReal16> => {
+        ureal16
+    },
+    "-" <ureal16: UReal16> => {
+        ureal16.neg(gc)
+    },
 }
 
 UReal10: Object = {
@@ -122,34 +178,78 @@ UReal10: Object = {
     }
 }
 
+UReal16: Object = {
+    UInteger16 => {
+        println!("uinteger16 parse={}", <>);
+        match isize::from_str_radix(&<>, 16) {
+            Ok(n) => {
+                println!("{}(fixnum)", n);
+                Object::Fixnum(n)
+            }
+            Err(err) => {
+                match BigInt::from_str_radix(&<>, 16) {
+                    Ok(b) => {
+                        println!("{}(bignum)", b);
+                        Object::Bignum(gc.alloc(Bignum::new(b)))
+                    },
+                    Err(err2) => {
+                        todo!("err {:?} {:?}", err, err2);
+                    }
+                }
+            }
+        }
+    },
+    <numer: UInteger16> "/" <denom: UInteger16> => {
+        match (isize::from_str_radix(&numer, 16), isize::from_str_radix(&denom, 16)) {
+            (Ok(n), Ok(d)) => {
+                Object::Ratnum(gc.alloc(Ratnum::new(n, d)))
+            }
+            _ => {
+                todo!();
+            }
+        }
+    },
+}
+
+
 Decimal10: String = {
     <uinteger10: UInteger10> <suffix: Suffix> => {
         uinteger10 + &suffix
     },
-    "." <digits: "digit10" +> <suffix: Suffix ?> => {
+    "." <digits:  Digit10 +> <suffix: Suffix ?> => {
         ".".to_owned() + &digits.join("") + &suffix.unwrap_or("".to_string())
     },
-    <digits: "digit10" +> "." <digits2: "digit10" *> <suffix: Suffix ?> => {
+    <digits:  Digit10 +> "." <digits2:  Digit10 *> <suffix: Suffix ?> => {
         digits.join("") + &"." + &digits2.join("") + &suffix.unwrap_or("".to_string())
     },
 }
 
 Suffix: String = {
-    "e" "+" <digits: "digit10" +> => {
+    "e" "+" <digits:  Digit10 +> => {
         "e+".to_owned() + &digits.join("")
     },
-    "e" "-" <digits: "digit10" +> => {
+    "e" "-" <digits:  Digit10 +> => {
         "e-".to_owned() + &digits.join("")
     },
-    "e" <digits: "digit10" +> => {
+    "e" <digits:  Digit10 +> => {
         "e".to_owned() + &digits.join("")
     },
 }
 
 UInteger10: String = {
-    <digits: "digit10" +> => {
+    <digits: Digit10 +> => {
         digits.join("")
     }
+}
+
+UInteger16: String = {
+    <digits: Digit16 +> => {
+        digits.join("")
+    },
+    /* hack to recognize #x1000 */
+    <digits: Digit10 +> => {
+        digits.join("")
+    }    
 }
 
 InfNan: Object = {
@@ -167,6 +267,19 @@ InfNan: Object = {
     },
 }
 
+Digit10: String = {
+    <s:"digit"> => {
+        s.to_string()
+    }
+}
+
+Digit16: String = {
+    <s:"hex_digit"> => {
+        s.to_string()
+    }
+}
+
+
 extern {
     type Location = usize;
     type Error = number_lexer::NumberLexicalError;
@@ -176,15 +289,17 @@ extern {
         "." => number_lexer::Token::Dot,
         "/" => number_lexer::Token::Slash,
         "#d" => number_lexer::Token::Radix10,
+        "#x" => number_lexer::Token::Radix16,        
         "#e" => number_lexer::Token::Exact,
         "#i" => number_lexer::Token::Inexact,
         "+" => number_lexer::Token::Plus,
-        "digit10" => number_lexer::Token::Digit10 { value: <String> },
+        "digit" => number_lexer::Token::Digit { value: <String> },
+        "hex_digit" => number_lexer::Token::HexDigit { value: <String> },        
         "e" => number_lexer::Token::Exponent,
         "i" => number_lexer::Token::Imag,
         "+inf.0" => number_lexer::Token::PlusInf,
         "-inf.0" => number_lexer::Token::MinusInf,
         "+nan.0" => number_lexer::Token::PlusNan,
         "-nan.0" => number_lexer::Token::MinusNan,
-    }
+    }  
 }

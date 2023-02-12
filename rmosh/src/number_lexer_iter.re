@@ -50,10 +50,7 @@ impl<'input> Iterator for NumberLexer<'input> {
                     "+inf.0" { return self.with_location(Token::PlusInf); }
                     "-inf.0" { return self.with_location(Token::MinusInf); }
                     "+nan.0" { return self.with_location(Token::PlusNan); }
-                    "-nan.0" { return self.with_location(Token::MinusNan); }                
-                    DIGIT_10 {
-                        return self.with_location(Token::Digit10 { value: self.extract_token() });
-                    }
+                    "-nan.0" { return self.with_location(Token::MinusNan); }
                     "/" { return self.with_location(Token::Slash); }
                     "+" { return self.with_location(Token::Plus); }
                     "-" { return self.with_location(Token::Minus); }
@@ -61,8 +58,15 @@ impl<'input> Iterator for NumberLexer<'input> {
                     "e" { return self.with_location(Token::Exponent); }
                     "i" { return self.with_location(Token::Imag); }
                     "#d" { return self.with_location(Token::Radix10); }
+                    "#x" { return self.with_location(Token::Radix16); }
                     "#e" { return self.with_location(Token::Exact); }
                     "#i" { return self.with_location(Token::Inexact); }
+                    DIGIT {
+                        return self.with_location(Token::Digit { value: self.extract_token() });
+                    }
+                    HEX_DIGIT {
+                        return self.with_location(Token::HexDigit { value: self.extract_token() });
+                    }
                     "EOS" { return None; }
                     $ { return None; }
                     * { return Some(Err(NumberLexicalError {

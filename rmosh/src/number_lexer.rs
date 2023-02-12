@@ -1,7 +1,9 @@
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
-    Digit10 { value: String },
+    Digit { value: String },
+    HexDigit { value: String },    
     Radix10,
+    Radix16,    
     Dot,
     Exact,
     Exponent,
