@@ -4034,13 +4034,29 @@ fn sin(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: number required but got {}", name, args[0])
     }
 }
-fn cos(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn cos(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cos";
-    panic!("{}({}) not implemented", name, args.len());
+    if args[0].is_number() {
+        numbers::cos(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn tan(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn tan(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "tan";
-    panic!("{}({}) not implemented", name, args.len());
+    if args[0].is_number() {
+        match numbers::tan(&mut vm.gc, args[0]) {
+            Ok(v) => v,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by zero {}", name, args[0])
+            }
+            Err(_) => {
+                panic!()
+            }
+        }
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
 fn asin(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "asin";

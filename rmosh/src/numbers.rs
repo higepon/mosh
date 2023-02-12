@@ -50,7 +50,9 @@ trait FixnumExt {
     // Arith
     fn exp(self) -> Object;
     fn log(self) -> Object;
+    fn cos(self) -> Object;
     fn sin(self) -> Object;
+    fn tan(self) -> Object;    
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
@@ -273,9 +275,15 @@ impl FixnumExt for isize {
             Object::Flonum(Flonum::new((self as f64).ln()))
         }
     }
+    fn cos(self) -> Object {
+        Object::Flonum(Flonum::new((self as f64).cos()))
+    }
     fn sin(self) -> Object {
         Object::Flonum(Flonum::new((self as f64).sin()))
     }
+    fn tan(self) -> Object {
+        Object::Flonum(Flonum::new((self as f64).tan()))
+    }    
     fn sqrt(self, gc: &mut Box<Gc>) -> Object {
         if self == 0 {
             return Object::Fixnum(0);
@@ -828,6 +836,21 @@ impl Compnum {
         Object::Compnum(gc.alloc(Compnum::new(re, im)))
     }
 
+    pub fn cos(&self, gc: &mut Box<Gc>) -> Object {
+        // cos(iy) = (e^-y + e^y) / 2
+        // sin(iy) = (e^-y - e^y) / 2i
+        // cos(z)  = cos(x+iy) = cos(x)cos(iy) - sin(x)sin(iy)
+        //         = cos(x) * (e^-y + e^y) / 2 - sin(x) * (e^-y - e^y) / 2i
+        //         = cos(x) * (e^-y + e^y) / 2 + sin(x) * ((e^-y - e^y) / 2) * i
+        let real = real_to_f64(self.real);
+        let imag = real_to_f64(self.imag);
+        let a = imag.exp();
+        let b = 1.0 / a;
+        let im = Object::Flonum(Flonum::new(real.cos() * (b + a) * 0.5));
+        let re = Object::Flonum(Flonum::new(real.sin() * (b - a) * 0.5));
+        Object::Compnum(gc.alloc(Compnum::new(re, im)))
+    }
+
     pub fn sin(&self, gc: &mut Box<Gc>) -> Object {
         // cos(iy) = (e^-y + e^y) / 2
         // sin(iy) = (e^-y - e^y) / 2i
@@ -841,6 +864,11 @@ impl Compnum {
         let im = Object::Flonum(Flonum::new(real.sin() * (b + a) * 0.5));
         let re = Object::Flonum(Flonum::new(real.cos() * (a - b) * 0.5));
         Object::Compnum(gc.alloc(Compnum::new(re, im)))
+    }
+    pub fn tan(&self, gc: &mut Box<Gc>) -> Result<Object, SchemeError> {
+        let lhs = self.sin(gc);
+        let rhs = self.cos(gc);
+        div(gc, lhs, rhs)
     }
 }
 impl Display for Compnum {
@@ -1397,14 +1425,35 @@ pub fn ceiling(gc: &mut Box<Gc>, n: Object) -> Object {
     }
 }
 
+pub fn cos(gc: &mut Box<Gc>, n: Object) -> Object {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(fx) => fx.cos(),
+        Object::Flonum(fl) => Object::Flonum(Flonum::new(fl.value().cos())),
+        Object::Compnum(c) => c.cos(gc),
+        _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).cos())),
+        _ => panic!(),
+    }
+}
+
 pub fn sin(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     match n {
         Object::Fixnum(fx) => fx.sin(),
         Object::Flonum(fl) => Object::Flonum(Flonum::new(fl.value().sin())),
         Object::Compnum(c) => c.sin(gc),
-        _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).exp())),
-        _ => panic!()
+        _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).sin())),
+        _ => panic!(),
+    }
+}
+
+pub fn tan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
+    assert!(n.is_number());
+    match n {
+        Object::Fixnum(fx) => Ok(fx.tan()),
+        Object::Compnum(c) => c.tan(gc),
+        _ if n.is_real() => Ok(Object::Flonum(Flonum::new(real_to_f64(n).tan()))),
+        _ => panic!(),
     }
 }
 
