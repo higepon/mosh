@@ -1,6 +1,7 @@
 use crate::gc::Gc;
 use crate::number_lexer;
 use crate::numbers::exact;
+use crate::numbers::inexact;
 use crate::numbers::Bignum;
 use crate::numbers::Compnum;
 use crate::numbers::Flonum;
@@ -25,7 +26,7 @@ Number10: Object = {
                 if is_exact {
                     exact(gc, c)
                 } else {
-                    c
+                    inexact(gc, c)
                 }
             },
             None => {
@@ -41,7 +42,7 @@ Number16: Object = {
         if is_exact {
             exact(gc, c)
         } else {
-            c
+            inexact(gc, c)
         }
     }
 }

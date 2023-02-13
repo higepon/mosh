@@ -441,7 +441,10 @@ impl Flonum {
     }
     pub fn eqv_rat(&self, r: &GcRef<Ratnum>) -> bool {
         match r.to_f64() {
-            Some(v) => v == self.value(),
+            Some(v) => {
+                println!("eqv_rat {} {}", v, self.value());
+                v == self.value()
+            },
             None => false,
         }
     }
