@@ -4511,7 +4511,22 @@ fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
 
 fn list_tail(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "list-tail";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let index = args[1];
+    if !index.is_fixnum() || index.to_isize() < 0 {
+        panic!("{}: number index > 0 required but got {}", name, index);
+    }
+    let mut index = index.to_isize();
+    let mut obj = args[0];
+    while index >= 0 {
+        if obj.is_pair() {
+            obj = obj.cdr_unchecked();
+        } else {
+            panic!("{}: proper list required but got {}", name, obj);
+        }
+        index -= 1;
+    }
+    obj
 }
 fn time_usage(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "time-usage";

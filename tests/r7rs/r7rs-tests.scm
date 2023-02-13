@@ -1070,7 +1070,7 @@
 (test #f (boolean=? #t #t #f))
 
 (test-end)
-#|
+
 (test-begin "6.4 Lists")
 
 (let* ((x (list 'a 'b 'c))
@@ -1171,7 +1171,7 @@
   (test #f (eq? (cddr l1) (cddr l2))))
 
 (test-end)
-
+#|
 (test-begin "6.5 Symbols")
 
 (test #t (symbol? 'foo))
