@@ -38,11 +38,18 @@ Number10: Object = {
 }
 
 Number16: Object = {
-    <is_exact: Prefix16> <c: Complex16> => {
-        if is_exact {
-            exact(gc, c)
-        } else {
-            inexact(gc, c)
+    <e: Prefix16> <c: Complex16> => {
+        match e {
+            Some(is_exact) => {
+                if is_exact {
+                    exact(gc, c)
+                } else {
+                    inexact(gc, c)
+                }
+            },
+            None => {
+                c
+            }
         }
     }
 }
@@ -53,14 +60,14 @@ Prefix10: bool = {
     Exactness,
 }
 
-Prefix16: bool = {
+Prefix16: Option<bool> = {
     Radix16 <e: Exactness?> => {
         match e {
-            Some(is_exact) => is_exact,
-            None => false,
+            Some(is_exact) => Some(is_exact),
+            None => None,
         }
     },
-    <is_exact: Exactness> Radix16 => is_exact,
+    <is_exact: Exactness> Radix16 => Some(is_exact),
 }
 
 Exactness: bool = {
