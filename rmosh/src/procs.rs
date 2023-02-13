@@ -3004,8 +3004,19 @@ fn number_ge(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "=";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::eqv(args[i], args[i + 1]) {
+                continue;
+            }
+        } else {
+            return Object::False;
+        }
+    }
+    Object::True
 }
+
 fn number_add(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "+";
     let argc = args.len();
