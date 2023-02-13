@@ -4499,7 +4499,7 @@ fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
             }
         },
         _ => {
-            panic!("{}: number required but got {}", name, args[0])
+            panic!("{}: number required but got {}", name, args[1])
         }
     }
     if obj.is_pair() {

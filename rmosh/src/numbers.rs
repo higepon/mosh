@@ -212,35 +212,19 @@ impl FixnumExt for isize {
     // Fixnum vs Ratnum
     fn add_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
         let r = r.ratio + Rational64::new_raw(self as i64, 1);
-        if r.is_integer() {
-            Object::Fixnum(*r.numer() as isize)
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
-        }
+        Object::from_ratio(gc, &r)
     }
     fn sub_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
         let r = r.ratio - Rational64::new_raw(self as i64, 1);
-        if r.is_integer() {
-            Object::Fixnum(*r.numer() as isize)
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
-        }
+        Object::from_ratio(gc, &r)
     }
     fn mul_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
         let r = r.ratio * Rational64::new_raw(self as i64, 1);
-        if r.is_integer() {
-            Object::Fixnum(*r.numer() as isize)
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
-        }
+        Object::from_ratio(gc, &r)
     }
     fn div_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Result<Object, SchemeError> {
         let r = Rational64::new_raw(self as i64, 1) / r.ratio;
-        if r.is_integer() {
-            Ok(Object::Fixnum(*r.numer() as isize))
-        } else {
-            Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
-        }
+        Ok(Object::from_ratio(gc, &r))
     }
     fn eqv_rat(self, r: &Ratnum) -> bool {
         match Rational64::from_isize(self) {
@@ -444,7 +428,7 @@ impl Flonum {
             Some(v) => {
                 println!("eqv_rat {} {}", v, self.value());
                 v == self.value()
-            },
+            }
             None => false,
         }
     }
@@ -517,7 +501,7 @@ impl Flonum {
 
     pub fn to_exact(&self, gc: &mut Box<Gc>) -> Object {
         match Rational64::from_f64(**self) {
-            Some(r) => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))),
+            Some(r) => Object::from_ratio(gc, &r),
             None => {
                 todo!()
             }
@@ -600,28 +584,16 @@ impl Ratnum {
 
     pub fn add(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
         let r = self.ratio + other.ratio;
-        if r.is_integer() {
-            Object::Fixnum(r.to_isize().unwrap())
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
-        }
+        Object::from_ratio(gc, &r)
     }
 
     pub fn sub(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
         let r = self.ratio - other.ratio;
-        if r.is_integer() {
-            Object::Fixnum(r.to_isize().unwrap())
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
-        }
+        Object::from_ratio(gc, &r)
     }
     pub fn mul(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
         let r = self.ratio * other.ratio;
-        if r.is_integer() {
-            Object::Fixnum(r.to_isize().unwrap())
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
-        }
+        Object::from_ratio(gc, &r)
     }
 
     pub fn eqv(&self, other: &Ratnum) -> bool {
@@ -631,11 +603,7 @@ impl Ratnum {
     // Ratnum vs Fixnum
     pub fn sub_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         let r = self.ratio - Rational64::new_raw(fx as i64, 1);
-        if r.is_integer() {
-            Object::Fixnum(*r.numer() as isize)
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r)))
-        }
+        Object::from_ratio(gc, &r)
     }
 
     pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
@@ -643,11 +611,7 @@ impl Ratnum {
             Err(SchemeError::Div0)
         } else {
             let r = self.ratio / Rational64::new_raw(fx as i64, 1);
-            if r.is_integer() {
-                Ok(Object::Fixnum(*r.numer() as isize))
-            } else {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(r))))
-            }
+            Ok(Object::from_ratio(gc, &r))
         }
     }
 
@@ -1889,6 +1853,17 @@ impl Object {
             Object::Flonum(fl) => fl.is_even(),
             Object::Compnum(c) => c.real.is_even(),
             _ => panic!(),
+        }
+    }
+
+    pub fn from_ratio(gc: &mut Box<Gc>, r: &Rational64) -> Object {
+        if r.is_integer() {
+            match r.to_isize() {
+                Some(v) => Object::Fixnum(v),
+                None => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(*r))),
+            }
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(*r)))
         }
     }
 }

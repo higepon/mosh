@@ -337,6 +337,46 @@ impl Object {
             _ => todo!(),
         }
     }
+
+    pub fn obj_type(&self) -> String {
+        match self {
+            Object::Bignum(_) => todo!(),
+            Object::BinaryFileInputPort(_) => todo!(),
+            Object::BinaryFileOutputPort(_) => todo!(),
+            Object::ByteVector(_) => todo!(),
+            Object::Char(_) => todo!(),
+            Object::Closure(_) => todo!(),
+            Object::Continuation(_) => todo!(),
+            Object::ContinuationStack(_) => todo!(),
+            Object::Compnum(_) => todo!(),
+            Object::Eof => todo!(),
+            Object::EqHashtable(_) => todo!(),
+            Object::False => todo!(),
+            Object::FileInputPort(_) => todo!(),
+            Object::FileOutputPort(_) => todo!(),
+            Object::Fixnum(_) => todo!(),
+            Object::Flonum(_) => todo!(),
+            Object::Instruction(_) => todo!(),
+            Object::Nil => todo!(),
+            Object::ObjectPointer(_) => todo!(),
+            Object::Pair(_) => todo!(),
+            Object::Procedure(_) => todo!(),
+            Object::ProgramCounter(_) => todo!(),
+            Object::Ratnum(_) => todo!(),
+            Object::Regexp(_) => todo!(),
+            Object::SimpleStruct(_) => todo!(),
+            Object::StdErrorPort(_) => todo!(),
+            Object::StdOutputPort(_) => todo!(),
+            Object::String(_) => todo!(),
+            Object::StringInputPort(_) => todo!(),
+            Object::StringOutputPort(_) => todo!(),
+            Object::Symbol(_) => todo!(),
+            Object::True => todo!(),
+            Object::Unspecified => todo!(),
+            Object::Vector(_) => todo!(),
+            Object::Vox(_) => todo!(),
+        }
+    }
 }
 
 // For HashMap<Object, Object>
