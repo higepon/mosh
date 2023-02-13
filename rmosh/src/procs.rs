@@ -4529,7 +4529,7 @@ fn list_tail(_vm: &mut Vm, args: &mut [Object]) -> Object {
     }
     let mut index = index.to_isize();
     let mut obj = args[0];
-    while index >= 0 {
+    while index > 0 {
         if obj.is_pair() {
             obj = obj.cdr_unchecked();
         } else {
