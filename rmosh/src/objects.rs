@@ -97,7 +97,13 @@ impl Object {
             _ => false,
         }
     }
-
+    pub fn is_boolean(&self) -> bool {
+        match self {
+            Object::True => true,
+            Object::False => true,            
+            _ => false,
+        }
+    }
     pub fn is_bignum(&self) -> bool {
         match self {
             Object::Bignum(_) => true,

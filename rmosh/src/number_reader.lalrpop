@@ -246,7 +246,7 @@ UInteger16: String = {
     <digits: Digit16 +> => {
         digits.join("")
     },
-    /* hack to recognize #x1000 */
+    // hack to recognize #x1000.
     <digits: Digit10 +> => {
         digits.join("")
     }    

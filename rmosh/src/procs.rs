@@ -1091,7 +1091,7 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> Object {
             _ => {
                 panic!("{}: string required but got {}", name, args[0])
             }
-        }        
+        }
     }
 }
 /*
@@ -1805,7 +1805,16 @@ fn is_symbolequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_booleanequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "boolean=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    let argc = args.len();
+    for i in 0..argc - 1 {
+        if args[i].is_boolean() && args[i + 1].is_boolean() && args[i].eq(&args[i + 1]) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    Object::True
 }
 fn is_vector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector?";
