@@ -660,6 +660,28 @@ impl ByteVector {
         }
     }
 
+    pub fn from_list(list: Object) -> Option<Self> {
+        let mut v: Vec<u8> = vec![];
+        let mut obj = list;
+        loop {
+            match obj {
+                Object::Pair(p) => match p.car {
+                    Object::Fixnum(fx) if fx >= 0 && fx <= 255 => {
+                        v.push(fx as u8);
+                        obj = p.cdr;
+                    }
+                    _ => {
+                        return None;
+                    }
+                },
+                Object::Nil => {
+                    return Some(Self::new(&v));
+                }
+                _ => return None,
+            }
+        }
+    }
+
     pub fn ref_u8(&self, i: usize) -> u8 {
         self.data[i]
     }

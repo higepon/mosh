@@ -3303,9 +3303,17 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: bytevector required but got {}", name, args[0])
     }
 }
-fn u8_list_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "u8-list->bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match ByteVector::from_list(args[0]) {
+        Some(bv) => {
+            Object::ByteVector(vm.gc.alloc(bv))
+        },
+        None => {
+            panic!("{}: u8 list required but got {}", name, args[0])
+        }
+    }
 }
 fn bytevector_u16_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-u16-ref";
