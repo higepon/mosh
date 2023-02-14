@@ -1801,7 +1801,24 @@ fn cddr(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_symbolequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "symbol=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_symbol() && args[i + 1].is_symbol() {
+            if args[i].eq(&args[i + 1]) {
+                continue;
+            } else {
+                return Object::False;
+            }
+        } else {
+            panic!(
+                "{}: symbol required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
+        }
+    }
+    Object::True
 }
 fn is_booleanequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "boolean=?";

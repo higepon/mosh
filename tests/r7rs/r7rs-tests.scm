@@ -1171,7 +1171,7 @@
   (test #f (eq? (cddr l1) (cddr l2))))
 
 (test-end)
-#|
+
 (test-begin "6.5 Symbols")
 
 (test #t (symbol? 'foo))
@@ -1198,7 +1198,7 @@
                    (symbol->string (string->symbol "K. Harper, M.D."))))
 
 (test-end)
-
+#|
 (test-begin "6.6 Characters")
 
 (test #t (char? #\a))
