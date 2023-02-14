@@ -2171,7 +2171,11 @@ fn sys_get_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-length";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(bv) => Object::Fixnum(bv.len() as isize),
+        _ => panic!("{} bytevector required but got {}", name, args[0]),
+    }
 }
 fn standard_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "standard-input-port";
@@ -3236,18 +3240,22 @@ fn native_endianness(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-bytevector";
     check_argc_between!(name, args, 1, 2);
-    if args.len() == 1 {
-        match args[0] {
-            Object::Fixnum(len) => {
-                let v: Vec<u8> = vec![0; len as usize];
-                Object::ByteVector(vm.gc.alloc(ByteVector::new(&v)))
-            }
-            _ => {
-                panic!("{}: number required but got {}", name, args[0])
-            }
-        }
+    let value: u8 = if args.len() == 1 {
+        0
     } else {
-        todo!();
+        match args[1] {
+            Object::Fixnum(n) if n >= 0 && n <= 255 => n as u8,
+            _ => panic!("{}: u8 value required but got {}", name, args[1]),
+        }
+    };
+    match args[0] {
+        Object::Fixnum(len) => {
+            let v: Vec<u8> = vec![value; len as usize];
+            Object::ByteVector(vm.gc.alloc(ByteVector::new(&v)))
+        }
+        _ => {
+            panic!("{}: number required but got {}", name, args[0])
+        }
     }
 }
 
