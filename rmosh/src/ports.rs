@@ -127,10 +127,18 @@ impl StringInputPort {
     }
 
     pub fn read_char(&mut self) -> Option<char> {
-        let mut chars = self.source.chars();
-        let ret = chars.nth(self.idx);
-        self.idx = self.idx + 1;
-        ret
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let mut chars = self.source.chars();
+                let ret = chars.nth(self.idx);
+                self.idx = self.idx + 1;
+                ret
+            }
+        }
     }
 
     pub fn lookahead_char(&mut self) -> Option<char> {
@@ -138,16 +146,14 @@ impl StringInputPort {
             Some(ch) => {
                 self.ahead_char = None;
                 Some(ch)
-            } None => {
-                self.read_char()
             }
+            None => self.read_char(),
         }
     }
 
     pub fn unget_char(&mut self, c: char) {
         assert!(self.ahead_char == None);
         self.ahead_char = Some(c);
-
     }
 }
 
