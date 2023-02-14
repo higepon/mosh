@@ -4349,7 +4349,14 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn vector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector-fill!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args[0] {
+        Object::Vector(mut v) => v.fill(args[1]),
+        _ => {
+            panic!("{}: vector required but got {}", name, args[0])
+        }
+    }
+    Object::Unspecified
 }
 fn ungensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "ungensym";

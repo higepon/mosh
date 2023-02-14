@@ -100,7 +100,7 @@ impl Object {
     pub fn is_boolean(&self) -> bool {
         match self {
             Object::True => true,
-            Object::False => true,            
+            Object::False => true,
             _ => false,
         }
     }
@@ -160,7 +160,7 @@ impl Object {
             Object::String(_) => true,
             _ => false,
         }
-    }    
+    }
 
     pub fn is_input_port(&self) -> bool {
         match self {
@@ -625,6 +625,10 @@ impl Vector {
 
     pub fn len(&self) -> usize {
         self.data.len()
+    }
+
+    pub fn fill(&mut self, obj: Object) {
+        self.data.fill(obj);
     }
 }
 
