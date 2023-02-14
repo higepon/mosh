@@ -3009,9 +3009,16 @@ fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> Object {
         if args[i].is_number() && args[i + 1].is_number() {
             if numbers::eqv(args[i], args[i + 1]) {
                 continue;
+            } else {
+                return Object::False;
             }
         } else {
-            return Object::False;
+            panic!(
+                "{}: number required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
         }
     }
     Object::True
