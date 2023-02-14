@@ -2106,7 +2106,21 @@ fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-u8-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match (args[0], args[1], args[2]) {
+        (Object::ByteVector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
+            if (index as usize) < bv.len() && v >= 0 && v <= 255 =>
+        {
+            bv.set_u8_unchecked(index as usize, v as u8);
+            Object::Unspecified
+        }
+        _ => {
+            panic!(
+                "{}: bytevector index u8 value required but got {}, {} and {}",
+                name, args[0], args[1], args[2]
+            );
+        }
+    }
 }
 fn is_port_has_port_position(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "port-has-port-position?";

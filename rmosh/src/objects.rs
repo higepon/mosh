@@ -688,7 +688,11 @@ impl ByteVector {
 
     pub fn ref_u8_unchecked(&self, i: usize) -> u8 {
         self.data[i]
-    }    
+    }
+
+    pub fn set_u8_unchecked(&mut self, i: usize, v: u8) {
+        self.data[i] = v;
+    }
 
     pub fn equal(&self, other: &ByteVector) -> bool {
         self.data == other.data
