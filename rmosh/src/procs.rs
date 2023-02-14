@@ -3283,7 +3283,38 @@ fn bytevector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-copy!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+
+    match (args[0], args[1], args[2], args[3], args[4]) {
+        (
+            Object::ByteVector(src),
+            Object::Fixnum(src_start),
+            Object::ByteVector(mut dst),
+            Object::Fixnum(dst_start),
+            Object::Fixnum(k),
+        ) => {
+            if (src_start <= src_start + k)
+                && (src_start + k <= (src.len() as isize))
+                && (0 <= dst_start)
+                && (dst_start + k <= (dst.len() as isize))
+            {
+                for i in 0..k {
+                    let dst_idx = (dst_start + i) as usize;
+                    let src_idx = (src_start + i) as usize;
+                    dst.data[dst_idx] = src.data[src_idx];
+                }
+            } else {
+                panic!("{}: invalid range", name)
+            }
+        }
+        _ => {
+            panic!(
+                "{}: (bv1 start1 bv2 start2 k) required but got {}, {}, {}, {} and {}",
+                name, args[0], args[1], args[2], args[3], args[4]
+            );
+        }
+    }
+    Object::Unspecified
 }
 fn bytevector_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-copy";
