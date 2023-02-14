@@ -3233,9 +3233,22 @@ fn native_endianness(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "native-endianness";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args.len() == 1 {
+        match args[0] {
+            Object::Fixnum(len) => {
+                let v: Vec<u8> = vec![0; len as usize];
+                Object::ByteVector(vm.gc.alloc(ByteVector::new(&v)))
+            }
+            _ => {
+                panic!("{}: number required but got {}", name, args[0])
+            }
+        }
+    } else {
+        todo!();
+    }
 }
 
 fn is_bytevectorequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -4328,7 +4341,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
                     let end = len as usize;
                     Object::String(vm.gc.alloc(SString::new(&s.string[start..end])))
                 } else {
-                    let end = args[1];
+                    let end = args[2];
                     if !end.is_fixnum() {
                         panic!("{}: number required but got {}", name, args[1]);
                     }

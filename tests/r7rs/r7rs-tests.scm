@@ -1553,7 +1553,7 @@
     (let ((vec (vector 1 2 3 4 5))) (vector-copy! vec 3 vec 0 2) vec))
 
 (test-end)
-#|
+
 (test-begin "6.9 Bytevectors")
 
 (test #t (bytevector? #u8()))
@@ -1629,7 +1629,7 @@
 (test #u8(#xCE #xBB) (string->utf8 "λ"))
 
 (test-end)
-
+#|
 (test-begin "6.10 Control Features")
 
 (test #t (procedure? car))
