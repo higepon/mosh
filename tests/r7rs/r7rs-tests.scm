@@ -1198,7 +1198,7 @@
                    (symbol->string (string->symbol "K. Harper, M.D."))))
 
 (test-end)
-#|
+
 (test-begin "6.6 Characters")
 
 (test #t (char? #\a))
@@ -1553,7 +1553,7 @@
     (let ((vec (vector 1 2 3 4 5))) (vector-copy! vec 3 vec 0 2) vec))
 
 (test-end)
-
+#|
 (test-begin "6.9 Bytevectors")
 
 (test #t (bytevector? #u8()))

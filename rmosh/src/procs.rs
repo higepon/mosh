@@ -1529,13 +1529,27 @@ fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string=?";
-    check_argc!(name, args, 2);
-    match args {
-        [Object::String(s1), Object::String(s2)] => Object::make_bool(s1.string.eq(&s2.string)),
-        _ => {
-            panic!("{}: string required but got {:?}", name, args);
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        match (args[i], args[i + 1]) {
+            (Object::String(s1), Object::String(s2)) => {
+                if s1.string.eq(&s2.string) {
+                    continue;
+                } else {
+                    return Object::False;
+                }
+            }
+            _ => {
+                panic!(
+                    "{}: string required but got {} {}",
+                    name,
+                    args[i],
+                    args[i + 1]
+                );
+            }
         }
     }
+    Object::True
 }
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "caaaar";
