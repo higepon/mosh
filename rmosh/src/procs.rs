@@ -16,7 +16,7 @@ use crate::{
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
-    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
+    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct, SString},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
         StringOutputPort, TextInputPort, TextOutputPort,
@@ -4300,9 +4300,22 @@ fn make_polar(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: numbers required but got {} {}", name, n1, n2);
     }
 }
-fn string_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn string_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-copy";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 3);
+    let argc = args.len();
+    if argc == 1 {
+        match args[0] {
+            Object::String(s) => {
+                Object::String(vm.gc.alloc(SString::new(&s.string)))
+            },
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
+        }
+    } else {
+        todo!()
+    }
 }
 fn vector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector-fill!";
