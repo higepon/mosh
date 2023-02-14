@@ -3277,7 +3277,19 @@ fn bytevector_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-u8-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::ByteVector(bv), Object::Fixnum(index)) => match bv.ref_u8(index as usize) {
+            Some(v) => Object::Fixnum(*v as isize),
+            None => panic!("{}: index out of range {}", name, index),
+        },
+        _ => {
+            panic!(
+                "{}: bytevector and index required but got {} and {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 
 fn bytevector_s8_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -3294,9 +3306,10 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> Object {
     let mut ret = Object::Nil;
     if let Object::ByteVector(bv) = args[0] {
         for i in 0..bv.len() {
-            ret = vm
-                .gc
-                .cons(Object::Fixnum(bv.ref_u8(bv.len() - i - 1) as isize), ret);
+            ret = vm.gc.cons(
+                Object::Fixnum(bv.ref_u8_unchecked(bv.len() - i - 1) as isize),
+                ret,
+            );
         }
         ret
     } else {
@@ -3307,9 +3320,7 @@ fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "u8-list->bytevector";
     check_argc!(name, args, 1);
     match ByteVector::from_list(args[0]) {
-        Some(bv) => {
-            Object::ByteVector(vm.gc.alloc(bv))
-        },
+        Some(bv) => Object::ByteVector(vm.gc.alloc(bv)),
         None => {
             panic!("{}: u8 list required but got {}", name, args[0])
         }

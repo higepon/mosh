@@ -682,9 +682,13 @@ impl ByteVector {
         }
     }
 
-    pub fn ref_u8(&self, i: usize) -> u8 {
-        self.data[i]
+    pub fn ref_u8(&self, i: usize) -> Option<&u8> {
+        self.data.get(i)
     }
+
+    pub fn ref_u8_unchecked(&self, i: usize) -> u8 {
+        self.data[i]
+    }    
 
     pub fn equal(&self, other: &ByteVector) -> bool {
         self.data == other.data
