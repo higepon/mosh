@@ -694,6 +694,10 @@ impl ByteVector {
         self.data[i] = v;
     }
 
+    pub fn copy(&self) -> Self{
+        Self::new(&self.data)
+    }
+
     pub fn equal(&self, other: &ByteVector) -> bool {
         self.data == other.data
     }

@@ -3285,9 +3285,15 @@ fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-copy!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn bytevector_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-copy";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(bv) => Object::ByteVector(vm.gc.alloc(bv.copy())),
+        _ => {
+            panic!("{}: bytevector required but got {}", name, args[0])
+        }
+    }
 }
 fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-u8-ref";
