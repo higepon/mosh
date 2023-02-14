@@ -4312,7 +4312,39 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
             }
         }
     } else {
-        todo!()
+        match args[0] {
+            Object::String(s) => {
+                let start = args[1];
+                if !start.is_fixnum() {
+                    panic!("{}: number required but got {}", name, args[1]);
+                }
+                let start = start.to_isize();
+                let len = s.string.len() as isize;
+                if start < 0 || start > len {
+                    panic!("{}: start out of range {}", name, args[1]);
+                }
+                if argc == 2 {
+                    let start = start as usize;
+                    let end = len as usize;
+                    Object::String(vm.gc.alloc(SString::new(&s.string[start..end])))
+                } else {
+                    let end = args[1];
+                    if !end.is_fixnum() {
+                        panic!("{}: number required but got {}", name, args[1]);
+                    }
+                    let end = end.to_isize();
+                    if end < 0 || start > end || end > len {
+                        panic!("{}: end out of range {}", name, args[1]);
+                    }
+                    let start = start as usize;
+                    let end = end as usize;
+                    Object::String(vm.gc.alloc(SString::new(&s.string[start..end])))
+                }
+            }
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
+        }
     }
 }
 fn vector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
