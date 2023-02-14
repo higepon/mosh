@@ -16,7 +16,7 @@ use crate::{
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
-    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct, SString},
+    objects::{ByteVector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
         StringOutputPort, TextInputPort, TextOutputPort,
@@ -3173,8 +3173,8 @@ fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
             Some(c) => {
                 port.unget_char(c);
                 Object::Char(c)
-            },
-            None => Object::Eof
+            }
+            None => Object::Eof,
         },
         _ => {
             panic!("{}: port required but got {}", name, args[0]);
@@ -4306,9 +4306,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let argc = args.len();
     if argc == 1 {
         match args[0] {
-            Object::String(s) => {
-                Object::String(vm.gc.alloc(SString::new(&s.string)))
-            },
+            Object::String(s) => Object::String(vm.gc.alloc(SString::new(&s.string))),
             _ => {
                 panic!("{}: string required but got {}", name, args[0])
             }
