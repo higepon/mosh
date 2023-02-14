@@ -3167,7 +3167,19 @@ fn get_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "lookahead-char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::StringInputPort(mut port) => match port.lookahead_char() {
+            Some(c) => {
+                port.unget_char(c);
+                Object::Char(c)
+            },
+            None => Object::Eof
+        },
+        _ => {
+            panic!("{}: port required but got {}", name, args[0]);
+        }
+    }
 }
 fn get_string_n(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-string-n";
