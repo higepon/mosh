@@ -76,6 +76,43 @@ impl Vm {
         return self.ac;
     }
 
+    fn set_after_trigger3(
+        &mut self,
+        closure: Object,
+        arg1: Object,
+        arg2: Object,
+        arg3: Object,
+    ) -> Object {
+        self.make_frame(self.pc);
+        self.trigger3_code[10] = closure;
+        self.trigger3_code[7] = arg3;
+        self.trigger3_code[4] = arg2;
+        self.trigger3_code[1] = arg1;
+        self.pc = self.trigger3_code.as_ptr();
+        return self.ac;
+    }
+
+    pub(super) fn raise_after3(
+        &mut self,
+        closure_name: &str,
+        who: Object,
+        message: Object,
+        irritants: Object,
+    ) -> Object {
+        let symbol = self.gc.symbol_intern(closure_name).to_symbol();
+        match self.globals.get(&symbol) {
+            // The exception system is ready to use.
+            Some(closure) => {
+                self.set_after_trigger3(*closure, who, message, irritants);
+            },
+            None => {
+                // print the error then exit.
+                todo!();
+            }
+        }
+        Object::Unspecified
+    }
+
     fn call_by_name(&mut self, name: Object, arg: Object) -> Object {
         self.call_by_name_code[3] = arg;
         self.call_by_name_code[6] = name;

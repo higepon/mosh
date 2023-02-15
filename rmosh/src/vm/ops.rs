@@ -1,7 +1,7 @@
 use crate::{
     gc::GcRef,
     numbers::{add, eqv, ge, gt, le, lt, sub},
-    objects::{Closure, Object, Symbol},
+    objects::{Closure, Object, SString, Symbol},
     op::Op,
     procs::{self},
 };
@@ -77,7 +77,10 @@ impl Vm {
                 self.set_return_value(pair.car);
             }
             obj => {
-                self.arg_err("car", "pair", obj);
+                // self.arg_err("car", "pair", obj);
+                let who = Object::False;
+                let message = Object::String(self.gc.alloc(SString::new("hige")));
+                self.raise_after3("assertion-violation", who, message, Object::Nil);
             }
         }
     }

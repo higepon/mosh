@@ -76,6 +76,7 @@ pub struct Vm {
     pub should_load_compiler: bool,
     pub compiled_programs: Vec<Object>,
     pub trigger0_code: Vec<Object>,
+    pub trigger3_code: Vec<Object>,    
     pub eval_code_array: Vec<Vec<Object>>,
     pub eval_ret_code: Vec<Object>,
     pub ret_code: Vec<Object>,
@@ -111,6 +112,7 @@ impl Vm {
             is_initialized: false,
             compiled_programs: vec![],
             trigger0_code: vec![],
+            trigger3_code: vec![],            
             eval_code_array: vec![],
             eval_ret_code: vec![],
             ret_code: vec![],
@@ -130,6 +132,23 @@ impl Vm {
         ret.trigger0_code.push(Object::Instruction(Op::Return));
         ret.trigger0_code.push(Object::Fixnum(0));
         ret.trigger0_code.push(Object::Instruction(Op::Halt));
+
+        ret.trigger3_code.push(Object::Instruction(Op::Constant));
+        ret.trigger3_code.push(Object::Unspecified);
+        ret.trigger3_code.push(Object::Instruction(Op::Push));    
+        ret.trigger3_code.push(Object::Instruction(Op::Constant));
+        ret.trigger3_code.push(Object::Unspecified);
+        ret.trigger3_code.push(Object::Instruction(Op::Push));    
+        ret.trigger3_code.push(Object::Instruction(Op::Constant));
+        ret.trigger3_code.push(Object::Unspecified);
+        ret.trigger3_code.push(Object::Instruction(Op::Push));    
+        ret.trigger3_code.push(Object::Instruction(Op::Constant));
+        ret.trigger3_code.push(Object::Unspecified);
+        ret.trigger3_code.push(Object::Instruction(Op::Call));
+        ret.trigger3_code.push(Object::Fixnum(3));
+        ret.trigger3_code.push(Object::Instruction(Op::Return));
+        ret.trigger3_code.push(Object::Fixnum(0));
+        ret.trigger3_code.push(Object::Instruction(Op::Halt));
 
         ret.call_by_name_code.push(Object::Instruction(Op::Frame));
         ret.call_by_name_code.push(Object::Fixnum(8));
