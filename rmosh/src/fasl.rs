@@ -8,7 +8,8 @@ use num_traits::FromPrimitive;
 
 use crate::{
     gc::{Gc, GcRef},
-    objects::{EqHashtable, Object, SimpleStruct, Float},
+    numbers::Flonum,
+    objects::{EqHashtable, Object, SimpleStruct},
     ports::BinaryFileOutputPort,
 };
 
@@ -29,7 +30,7 @@ enum Tag {
     EqHashtable = 12,
     DefineShared = 13,
     LookupShared = 14,
-    Float = 15,
+    Flonum = 15,
 }
 
 // S-expression serializer.
@@ -61,22 +62,22 @@ impl FaslWriter {
             None => Object::False,
         };
         if seen_state.is_true() {
-            seen.insert(obj, Object::Number(*shared_id));
+            seen.insert(obj, Object::Fixnum(*shared_id));
             self.put_tag(port, Tag::DefineShared)?;
             port.put_u32(*shared_id as u32)?;
-            seen.insert(obj, Object::Number(*shared_id));
+            seen.insert(obj, Object::Fixnum(*shared_id));
             *shared_id += 1;
             // We don't return here and write the object.
         } else if seen_state.is_number() {
             self.put_tag(port, Tag::LookupShared)?;
-            port.put_u32(seen_state.to_number() as u32)?;
+            port.put_u32(seen_state.to_isize() as u32)?;
             return Ok(());
         }
         match obj {
             Object::ByteVector(_) => todo!(),
             Object::Char(c) => {
-                self.put_tag(port, Tag::Char)?;                
-                port.put_u32(c as u32)?;                
+                self.put_tag(port, Tag::Char)?;
+                port.put_u32(c as u32)?;
             }
             Object::Closure(_) => todo!(),
             Object::Eof => todo!(),
@@ -92,10 +93,27 @@ impl FaslWriter {
             Object::False => {
                 self.put_tag(port, Tag::False)?;
             }
-            Object::Float(f) => {
-                println!("WARNING: dummy float fasl write");
-                self.put_tag(port, Tag::Float)?;
-                port.put_u64(f.value() as u64)?;                
+            Object::Flonum(f) => {
+                self.put_tag(port, Tag::Flonum)?;
+                port.put_u64(f.u64_value())?;
+            }
+            Object::Bignum(_r) => {
+                todo!();
+            }
+            Object::Compnum(_r) => {
+                todo!();
+            }
+            Object::Continuation(_r) => {
+                todo!();
+            }
+            Object::ContinuationStack(_r) => {
+                todo!();
+            }
+            Object::Ratnum(_r) => {
+                todo!();
+            }
+            Object::Regexp(_r) => {
+                todo!();
             }
             Object::StringInputPort(_) => todo!(),
             Object::FileInputPort(_) => todo!(),
@@ -112,7 +130,7 @@ impl FaslWriter {
             Object::Nil => {
                 self.put_tag(port, Tag::Nil)?;
             }
-            Object::Number(n) => {
+            Object::Fixnum(n) => {
                 self.put_tag(port, Tag::Fixnum)?;
                 port.put_u64(n as u64)?;
             }
@@ -175,6 +193,8 @@ impl FaslWriter {
             match o {
                 Object::ByteVector(_)
                 | Object::Closure(_)
+                | Object::Continuation(_)
+                | Object::ContinuationStack(_)
                 | Object::Vox(_)
                 | Object::ProgramCounter(_)
                 | Object::ObjectPointer(_)
@@ -184,10 +204,14 @@ impl FaslWriter {
                 | Object::Char(_)
                 | Object::EqHashtable(_)
                 | Object::False
-                | Object::Float(_)
+                | Object::Flonum(_)
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
+                | Object::Bignum(_)
+                | Object::Compnum(_)
+                | Object::Ratnum(_)
+                | Object::Regexp(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::FileOutputPort(_)
@@ -198,7 +222,7 @@ impl FaslWriter {
                 | Object::Nil
                 | Object::Symbol(_)
                 | Object::String(_)
-                | Object::Number(_) => return,
+                | Object::Fixnum(_) => return,
                 Object::Pair(p) => {
                     let val = match seen.get(&o) {
                         Some(v) => *v,
@@ -368,7 +392,7 @@ impl FaslReader<'_> {
             Tag::EqHashtable => self.read_eq_hashtable(gc),
             Tag::DefineShared => self.read_define_shared(gc),
             Tag::LookupShared => self.read_lookup_shared(gc),
-            Tag::Float => self.read_float(),
+            Tag::Flonum => self.read_float(),
         }
     }
 
@@ -403,15 +427,15 @@ impl FaslReader<'_> {
         let mut buf = [0; 8];
         self.bytes.read_exact(&mut buf)?;
         let n = isize::from_le_bytes(buf);
-        Ok(Object::Number(n))
+        Ok(Object::Fixnum(n))
     }
 
     fn read_float(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 8];
         self.bytes.read_exact(&mut buf)?;
-        let n = f64::from_le_bytes(buf);
-        Ok(Object::Float(Float::new(n)))
-    }    
+        let n = u64::from_le_bytes(buf);
+        Ok(Object::Flonum(Flonum::new_from_64(n)))
+    }
 
     fn read_symbol(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let mut buf = [0; 2];
@@ -547,7 +571,7 @@ pub mod tests {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
         };
-        let expected = Object::Number(3);
+        let expected = Object::Fixnum(3);
         let obj = fasl.read_sexp(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }

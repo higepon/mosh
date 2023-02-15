@@ -19,8 +19,8 @@ pub struct Equal {
 impl Equal {
     pub fn new() -> Self {
         Self {
-            k0: Object::Number(400),
-            kb: Object::Number(-40),
+            k0: Object::Fixnum(400),
+            kb: Object::Fixnum(-40),
         }
     }
     pub fn is_equal(&self, gc: &mut Box<Gc>, x: &Object, y: &Object) -> bool {
@@ -35,10 +35,10 @@ impl Equal {
         if k.is_false() {
             return false;
         }
-        if k.to_number() > 0 {
+        if k.to_isize() > 0 {
             return true;
         } else {
-            self.is_interleave(gc, x, y, Object::Number(0))
+            self.is_interleave(gc, x, y, Object::Fixnum(0))
         }
     }
 
@@ -73,15 +73,11 @@ impl Equal {
         }
         match (x, y) {
             (Object::Pair(pair1), Object::Pair(pair2)) => {
-                if k.to_number() <= 0 {
+                if k.to_isize() <= 0 {
                     return k;
                 } else {
-                    let k2 = self.is_pre(
-                        gc,
-                        &pair1.car,
-                        &pair2.car,
-                        Object::Number(k.to_number() - 1),
-                    );
+                    let k2 =
+                        self.is_pre(gc, &pair1.car, &pair2.car, Object::Fixnum(k.to_isize() - 1));
                     if k2.is_false() {
                         return Object::False;
                     }
@@ -103,14 +99,14 @@ impl Equal {
                 let mut i: usize = 0;
                 let mut k = k;
                 loop {
-                    if i == n || k.to_number() <= 0 {
+                    if i == n || k.to_isize() <= 0 {
                         return k;
                     } else {
                         let k2 = self.is_pre(
                             gc,
                             &v1.data[i],
                             &v2.data[i],
-                            Object::Number(k.to_number() - 1),
+                            Object::Fixnum(k.to_isize() - 1),
                         );
                         if k2.is_false() {
                             return Object::False;
@@ -240,7 +236,7 @@ impl Equal {
         };
         if bx.is_false() {
             if by.is_false() {
-                let b = Object::Vox(gc.alloc(Vox::new(Object::Number(1))));
+                let b = Object::Vox(gc.alloc(Vox::new(Object::Fixnum(1))));
                 hm.insert(*x, b);
                 hm.insert(*y, b);
                 return Object::False;
@@ -261,13 +257,13 @@ impl Equal {
             }
             let nx = rx.to_vox().value;
             let ny = ry.to_vox().value;
-            if nx.to_number() > ny.to_number() {
+            if nx.to_isize() > ny.to_isize() {
                 ry.to_vox().value = rx;
-                rx.to_vox().value = Object::Number(nx.to_number() + ny.to_number());
+                rx.to_vox().value = Object::Fixnum(nx.to_isize() + ny.to_isize());
                 return Object::False;
             } else {
                 rx.to_vox().value = ry;
-                ry.to_vox().value = Object::Number(ny.to_number() + nx.to_number());
+                ry.to_vox().value = Object::Fixnum(ny.to_isize() + nx.to_isize());
                 return Object::False;
             }
         }
@@ -285,10 +281,10 @@ impl Equal {
         y: &Object,
         k: Object,
     ) -> Object {
-        if k.to_number() <= 0 {
+        if k.to_isize() <= 0 {
             if k == self.kb {
                 let mut rng = rand::thread_rng();
-                let next_k = Object::Number(rng.gen::<isize>() % (2 * self.k0.to_number()));
+                let next_k = Object::Fixnum(rng.gen::<isize>() % (2 * self.k0.to_isize()));
                 return self.is_fast(gc, hashmap, &x, &y, next_k);
             } else {
                 return self.is_slow(gc, hashmap, x, y, k);
@@ -337,14 +333,14 @@ impl Equal {
         match (x, y) {
             (Object::Pair(pair1), Object::Pair(pair2)) => {
                 if !self.call_union_find(gc, hashmap, x, y).is_false() {
-                    return Object::Number(0);
+                    return Object::Fixnum(0);
                 } else {
                     let k = self.is_e(
                         gc,
                         hashmap,
                         &pair1.car,
                         &pair2.car,
-                        Object::Number(k.to_number() - 1),
+                        Object::Fixnum(k.to_isize() - 1),
                     );
                     if k.is_false() {
                         return Object::False;
@@ -365,7 +361,7 @@ impl Equal {
                     return Object::False;
                 }
                 if !self.call_union_find(gc, hashmap, x, y).is_false() {
-                    return Object::Number(0);
+                    return Object::Fixnum(0);
                 }
                 let mut i: usize = 0;
                 let mut k = k;
@@ -434,7 +430,7 @@ impl Equal {
         y: &Object,
         k: Object,
     ) -> Object {
-        let mut k = Object::Number(k.to_number() - 1);
+        let mut k = Object::Fixnum(k.to_isize() - 1);
         if x == y {
             return k;
         }

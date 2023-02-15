@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
-    ptr::{null, null_mut}, env,
+    env,
+    ptr::{null, null_mut},
 };
 
 // Sub module definitions.
@@ -21,7 +22,7 @@ use crate::{
     psyntax,
 };
 
-const STACK_SIZE: usize = 8192;
+const STACK_SIZE: usize = 65536;
 const MAX_NUM_VALUES: usize = 256;
 
 struct Registers {
@@ -49,7 +50,7 @@ pub struct Vm {
     // Program counter
     pc: *const Object,
     // The stack.
-    stack: [Object; STACK_SIZE],
+    stack: Vec<Object>,
     // accumulator register.
     pub ac: Object,
     // display closure register.
@@ -92,7 +93,7 @@ impl Vm {
     pub fn new() -> Self {
         let mut ret = Self {
             gc: Box::new(Gc::new()),
-            stack: [Object::Unspecified; STACK_SIZE],
+            stack: vec![Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
             expected: Object::Unspecified,
@@ -125,13 +126,13 @@ impl Vm {
         ret.trigger0_code.push(Object::Instruction(Op::Constant));
         ret.trigger0_code.push(Object::Unspecified);
         ret.trigger0_code.push(Object::Instruction(Op::Call));
-        ret.trigger0_code.push(Object::Number(0));
+        ret.trigger0_code.push(Object::Fixnum(0));
         ret.trigger0_code.push(Object::Instruction(Op::Return));
-        ret.trigger0_code.push(Object::Number(0));
+        ret.trigger0_code.push(Object::Fixnum(0));
         ret.trigger0_code.push(Object::Instruction(Op::Halt));
 
         ret.call_by_name_code.push(Object::Instruction(Op::Frame));
-        ret.call_by_name_code.push(Object::Number(8));
+        ret.call_by_name_code.push(Object::Fixnum(8));
         ret.call_by_name_code
             .push(Object::Instruction(Op::Constant));
         ret.call_by_name_code.push(Object::Unspecified);
@@ -140,7 +141,7 @@ impl Vm {
             .push(Object::Instruction(Op::ReferGlobal));
         ret.call_by_name_code.push(Object::Unspecified);
         ret.call_by_name_code.push(Object::Instruction(Op::Call));
-        ret.call_by_name_code.push(Object::Number(1));
+        ret.call_by_name_code.push(Object::Fixnum(1));
         ret.call_by_name_code.push(Object::Instruction(Op::Halt));
 
         ret
@@ -276,7 +277,7 @@ impl Vm {
     }
 
     fn load_compiler(&mut self) -> Object {
-        let mut fasl = FaslReader{
+        let mut fasl = FaslReader {
             bytes: compiler::U8_ARRAY,
             shared_objects: &mut HashMap::new(),
         };

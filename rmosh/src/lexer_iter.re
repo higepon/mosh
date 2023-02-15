@@ -62,7 +62,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
     REAL_10                = (SIGN UREAL_10) | INF_NAN;
     RADIX_10               = "#d" ?;
-    COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
     UINTEGER_16            = DIGIT_16 +;
@@ -92,6 +92,9 @@ impl<'input> Iterator for Lexer<'input> {
                     RIGHT_PAREN { return self.with_location(Token::RightParen); }
                     TRUE  { return self.with_location(Token::True); }
                     FALSE { return self.with_location(Token::False); }
+                    NUM_10 {
+                        return self.with_location(Token::Number10{value: self.extract_token()});
+                    }                    
                     IDENTIFIER {
                         return self.with_location(Token::Identifier { value: self.extract_token() });
                     }
@@ -100,9 +103,6 @@ impl<'input> Iterator for Lexer<'input> {
                     }                
                     STRING {
                         return self.with_location(Token::String{value: self.extract_string()});
-                    }
-                    NUM_10 {
-                        return self.with_location(Token::Number10{value: self.extract_token()});
                     }
                     NUM_16 {
                         return self.with_location(Token::Number16{value: self.extract_token()});

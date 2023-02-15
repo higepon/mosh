@@ -81,30 +81,30 @@ fn call0() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(14),
+        Object::Fixnum(14),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(0),
+        Object::Fixnum(10),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(4),
+        Object::Fixnum(0),
+        Object::Fixnum(4),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -121,37 +121,37 @@ fn call1() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let sym1 = vm.gc.symbol_intern("a");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(21),
+        Object::Fixnum(21),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Closure),
-        Object::Number(14),
-        Object::Number(1),
+        Object::Fixnum(14),
+        Object::Fixnum(1),
         Object::False,
-        Object::Number(0),
-        Object::Number(6),
+        Object::Fixnum(0),
+        Object::Fixnum(6),
         list1,
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::NumberAdd),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(2);
+    let expected = Object::Fixnum(2);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -169,40 +169,40 @@ fn call2() {
     let sym1 = vm.gc.symbol_intern("a");
     let sym2 = vm.gc.symbol_intern("b");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1, sym2]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(24),
+        Object::Fixnum(24),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Closure),
-        Object::Number(14),
-        Object::Number(2),
+        Object::Fixnum(14),
+        Object::Fixnum(2),
         Object::False,
-        Object::Number(0),
-        Object::Number(7),
+        Object::Fixnum(0),
+        Object::Fixnum(7),
         list1,
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::NumberAdd),
         Object::Instruction(Op::Return),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Call),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -218,12 +218,12 @@ fn define0() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::DefineGlobal),
         vm.gc.symbol_intern("a"),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -239,20 +239,20 @@ fn if0() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Test),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::LocalJmp),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(2);
+    let expected = Object::Fixnum(2);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -270,18 +270,18 @@ fn if1() {
         Object::Instruction(Op::Constant),
         Object::False,
         Object::Instruction(Op::Test),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::LocalJmp),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -299,11 +299,11 @@ fn if2() {
         Object::Instruction(Op::Constant),
         Object::False,
         Object::Instruction(Op::Test),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
         Object::False,
         Object::Instruction(Op::LocalJmp),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
         Object::True,
         Object::Instruction(Op::Halt),
@@ -326,19 +326,19 @@ fn let0() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(0);
+    let expected = Object::Fixnum(0);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -354,26 +354,26 @@ fn let1() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::NumberAdd),
         Object::Instruction(Op::Leave),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -389,37 +389,37 @@ fn nested_let0() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Display),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::NumberAdd),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -435,58 +435,58 @@ fn nested_let1() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::LetFrame),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Display),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::LetFrame),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Display),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferFree),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::NumberAdd),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::NumberAdd),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(6);
+    let expected = Object::Fixnum(6);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -523,11 +523,11 @@ fn test5() {
         Object::Instruction(Op::Constant),
         Object::False,
         Object::Instruction(Op::Test),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
         Object::False,
         Object::Instruction(Op::LocalJmp),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
         Object::True,
         Object::Instruction(Op::Halt),
@@ -551,33 +551,33 @@ fn test6() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let sym1 = vm.gc.symbol_intern("a");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(17),
+        Object::Fixnum(17),
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(1),
+        Object::Fixnum(10),
+        Object::Fixnum(1),
         Object::False,
-        Object::Number(0),
-        Object::Number(5),
+        Object::Fixnum(0),
+        Object::Fixnum(5),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -594,43 +594,43 @@ fn test7() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let sym1 = vm.gc.symbol_intern("a");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(25),
+        Object::Fixnum(25),
         Object::Instruction(Op::Constant),
-        Object::Number(6),
+        Object::Fixnum(6),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Closure),
-        Object::Number(18),
-        Object::Number(1),
+        Object::Fixnum(18),
+        Object::Fixnum(1),
         Object::False,
-        Object::Number(0),
-        Object::Number(5),
+        Object::Fixnum(0),
+        Object::Fixnum(5),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Test),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
-        Object::Number(7),
+        Object::Fixnum(7),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(7);
+    let expected = Object::Fixnum(7);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -646,30 +646,30 @@ fn test8() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(14),
+        Object::Fixnum(14),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(0),
+        Object::Fixnum(10),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(4),
+        Object::Fixnum(0),
+        Object::Fixnum(4),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -686,33 +686,33 @@ fn test9() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let sym1 = vm.gc.symbol_intern("a");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(17),
+        Object::Fixnum(17),
         Object::Instruction(Op::Constant),
-        Object::Number(101),
+        Object::Fixnum(101),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(1),
+        Object::Fixnum(10),
+        Object::Fixnum(1),
         Object::False,
-        Object::Number(0),
-        Object::Number(5),
+        Object::Fixnum(0),
+        Object::Fixnum(5),
         list1,
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(101);
+    let expected = Object::Fixnum(101);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -729,47 +729,47 @@ fn test10() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
     let str1 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
-    let list2 = vm.gc.listn(&[str1, Object::Number(1)]);
+    let list2 = vm.gc.listn(&[str1, Object::Fixnum(1)]);
     let list3 = vm.gc.listn(&[list2, sym0]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(27),
+        Object::Fixnum(27),
         Object::Instruction(Op::Frame),
-        Object::Number(23),
+        Object::Fixnum(23),
         Object::Instruction(Op::Closure),
-        Object::Number(19),
-        Object::Number(0),
+        Object::Fixnum(19),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(4),
+        Object::Fixnum(0),
+        Object::Fixnum(4),
         list1,
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(0),
+        Object::Fixnum(10),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(4),
+        Object::Fixnum(0),
+        Object::Fixnum(4),
         list3,
         Object::Instruction(Op::Constant),
-        Object::Number(102),
+        Object::Fixnum(102),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(102);
+    let expected = Object::Fixnum(102);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -785,17 +785,17 @@ fn test119() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::BranchNotLe),
-        Object::Number(7),
+        Object::Fixnum(7),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::NumberLe),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
@@ -816,17 +816,17 @@ fn test112() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::BranchNotGe),
-        Object::Number(7),
+        Object::Fixnum(7),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::NumberGe),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
@@ -847,17 +847,17 @@ fn test117() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::BranchNotLt),
-        Object::Number(7),
+        Object::Fixnum(7),
         Object::Instruction(Op::Constant),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::NumberLt),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
@@ -878,17 +878,17 @@ fn test110() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::BranchNotGt),
-        Object::Number(7),
+        Object::Fixnum(7),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::NumberGt),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
@@ -909,17 +909,17 @@ fn test71() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::BranchNotNumberEqual),
-        Object::Number(7),
+        Object::Fixnum(7),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::NumberEqual),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
@@ -943,46 +943,46 @@ fn test197() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::Constant),
         sym0,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::LetFrame),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
         sym1,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::BranchNotEqv),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
         sym1,
         Object::Instruction(Op::LocalJmp),
-        Object::Number(13),
+        Object::Fixnum(13),
         Object::Instruction(Op::Constant),
         sym0,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::BranchNotEqv),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
         sym0,
         Object::Instruction(Op::LocalJmp),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Undef),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
@@ -1004,32 +1004,32 @@ fn test144() {
     let mut vm = Vm::new();
 
     let list0 = vm.gc.listn(&[
-        Object::Number(1),
-        Object::Number(2),
-        Object::Number(3),
-        Object::Number(4),
+        Object::Fixnum(1),
+        Object::Fixnum(2),
+        Object::Fixnum(3),
+        Object::Fixnum(4),
     ]);
     let list1 = vm
         .gc
-        .listn(&[Object::Number(1), Object::Number(2), Object::Number(3)]);
-    let list2 = vm.gc.listn(&[Object::Number(4)]);
+        .listn(&[Object::Fixnum(1), Object::Fixnum(2), Object::Fixnum(3)]);
+    let list2 = vm.gc.listn(&[Object::Fixnum(4)]);
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Constant),
         list1,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
         list2,
         Object::Instruction(Op::Append2),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
     let expected = list0;
@@ -1048,66 +1048,66 @@ fn test58() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Box),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Enter),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::LetFrame),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Display),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Closure),
-        Object::Number(15),
-        Object::Number(0),
+        Object::Fixnum(15),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(1),
-        Object::Number(4),
+        Object::Fixnum(1),
+        Object::Fixnum(4),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::AssignFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Frame),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Leave),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1123,34 +1123,34 @@ fn test80() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(18),
+        Object::Fixnum(18),
         Object::Instruction(Op::Closure),
-        Object::Number(14),
-        Object::Number(0),
+        Object::Fixnum(14),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(4),
+        Object::Fixnum(0),
+        Object::Fixnum(4),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::AssignGlobal),
         vm.gc.symbol_intern("a"),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("a"),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(4);
+    let expected = Object::Fixnum(4);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1167,40 +1167,40 @@ fn test14() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let sym1 = vm.gc.symbol_intern("a");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(24),
+        Object::Fixnum(24),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Closure),
-        Object::Number(17),
-        Object::Number(1),
+        Object::Fixnum(17),
+        Object::Fixnum(1),
         Object::False,
-        Object::Number(0),
-        Object::Number(5),
+        Object::Fixnum(0),
+        Object::Fixnum(5),
         list1,
         Object::Instruction(Op::Box),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Constant),
-        Object::Number(12),
+        Object::Fixnum(12),
         Object::Instruction(Op::AssignLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(12);
+    let expected = Object::Fixnum(12);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1216,15 +1216,15 @@ fn test28() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Cons),
         Object::Instruction(Op::Car),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(2);
+    let expected = Object::Fixnum(2);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1240,15 +1240,15 @@ fn test29() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Cons),
         Object::Instruction(Op::Cdr),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1310,10 +1310,10 @@ fn test287() {
 fn test169() {
     let mut vm = Vm::new();
 
-    let list0 = vm.gc.listn(&[Object::Number(3)]);
-    let list1 = vm.gc.listn(&[Object::Number(1), Object::Number(2), list0]);
-    let list2 = vm.gc.listn(&[Object::Number(3)]);
-    let list3 = vm.gc.listn(&[Object::Number(1), Object::Number(2), list2]);
+    let list0 = vm.gc.listn(&[Object::Fixnum(3)]);
+    let list1 = vm.gc.listn(&[Object::Fixnum(1), Object::Fixnum(2), list0]);
+    let list2 = vm.gc.listn(&[Object::Fixnum(3)]);
+    let list3 = vm.gc.listn(&[Object::Fixnum(1), Object::Fixnum(2), list2]);
 
     let ops = vec![
         Object::Instruction(Op::Constant),
@@ -1340,7 +1340,7 @@ fn test187() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
         Object::Nil,
@@ -1348,7 +1348,7 @@ fn test187() {
         Object::Instruction(Op::VectorLength),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1364,7 +1364,7 @@ fn test101() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Not),
         Object::Instruction(Op::Halt),
     ];
@@ -1404,14 +1404,14 @@ fn test199() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::NumberMul),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(6);
+    let expected = Object::Fixnum(6);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1427,30 +1427,30 @@ fn test318() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::NumberDiv),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::NumberDiv),
         Object::Instruction(Op::NumberSub),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::NumberDiv),
         Object::Instruction(Op::NumberSub),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(0);
+    let expected = Object::Fixnum(0);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1468,32 +1468,32 @@ fn test195() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::ReferFree),
-        Object::Number(35),
+        Object::Fixnum(35),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Display),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Frame),
-        Object::Number(8),
+        Object::Fixnum(8),
         Object::Instruction(Op::Constant),
         str0,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReadChar),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReadChar),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
     ];
@@ -1513,52 +1513,52 @@ fn test185() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
-    let pair0 = vm.gc.cons(Object::Number(3), Object::Number(2));
+    let pair0 = vm.gc.cons(Object::Fixnum(3), Object::Fixnum(2));
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(40),
+        Object::Fixnum(40),
         Object::Instruction(Op::Closure),
-        Object::Number(36),
-        Object::Number(0),
+        Object::Fixnum(36),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(6),
+        Object::Fixnum(0),
+        Object::Fixnum(6),
         list1,
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Undef),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Box),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Cons),
         Object::Instruction(Op::AssignLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::SetCar),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
@@ -1579,52 +1579,52 @@ fn test184() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
-    let pair0 = vm.gc.cons(Object::Number(1), Object::Number(3));
+    let pair0 = vm.gc.cons(Object::Fixnum(1), Object::Fixnum(3));
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(40),
+        Object::Fixnum(40),
         Object::Instruction(Op::Closure),
-        Object::Number(36),
-        Object::Number(0),
+        Object::Fixnum(36),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(6),
+        Object::Fixnum(0),
+        Object::Fixnum(6),
         list1,
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Undef),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Box),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Cons),
         Object::Instruction(Op::AssignLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::SetCdr),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
@@ -1667,17 +1667,17 @@ fn test220() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Values),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Test),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
         Object::True,
         Object::Instruction(Op::Halt),
@@ -1702,74 +1702,74 @@ fn test221() {
     let sym2 = vm.gc.symbol_intern("b");
     let str0 = vm.gc.new_string("(input string port)");
     let str1 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
-    let list2 = vm.gc.listn(&[str1, Object::Number(1)]);
+    let list2 = vm.gc.listn(&[str1, Object::Fixnum(1)]);
     let list3 = vm.gc.listn(&[list2, sym0, sym1, sym2]);
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::ReferFree),
-        Object::Number(152),
+        Object::Fixnum(152),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Display),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Frame),
-        Object::Number(19),
+        Object::Fixnum(19),
         Object::Instruction(Op::Closure),
-        Object::Number(15),
-        Object::Number(0),
+        Object::Fixnum(15),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(5),
+        Object::Fixnum(0),
+        Object::Fixnum(5),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Values),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Receive),
-        Object::Number(0),
-        Object::Number(1),
+        Object::Fixnum(0),
+        Object::Fixnum(1),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Frame),
-        Object::Number(20),
+        Object::Fixnum(20),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(2),
+        Object::Fixnum(10),
+        Object::Fixnum(2),
         Object::False,
-        Object::Number(0),
-        Object::Number(6),
+        Object::Fixnum(0),
+        Object::Fixnum(6),
         list3,
         Object::Instruction(Op::ReferLocal),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Return),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Call),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(5);
+    let expected = Object::Fixnum(5);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1783,7 +1783,7 @@ fn test221() {
 fn test213() {
     let mut vm = Vm::new();
 
-    let vec0 = vm.gc.new_vector(&vec![Object::Number(3)]);
+    let vec0 = vm.gc.new_vector(&vec![Object::Fixnum(3)]);
 
     let ops = vec![
         Object::Instruction(Op::Constant),
@@ -1807,7 +1807,7 @@ fn test217() {
 
     let ops = vec![
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
         Object::Nil,
@@ -1818,47 +1818,47 @@ fn test217() {
         vm.gc.symbol_intern("z"),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::VectorSet),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("z"),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::VectorSet),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
         Object::Nil,
         Object::Instruction(Op::MakeVector),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::NullP),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("z"),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::VectorSet),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("z"),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::Constant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::VectorRef),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1875,32 +1875,32 @@ fn test11() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let sym1 = vm.gc.symbol_intern("a");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1]);
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(16),
+        Object::Fixnum(16),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(101),
+        Object::Fixnum(101),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(1),
+        Object::Fixnum(10),
+        Object::Fixnum(1),
         Object::False,
-        Object::Number(0),
-        Object::Number(5),
+        Object::Fixnum(0),
+        Object::Fixnum(5),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(102),
+        Object::Fixnum(102),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(102);
+    let expected = Object::Fixnum(102);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1916,25 +1916,25 @@ fn test318_2() {
 
     let ops = vec![
         Object::Instruction(Op::ConstantPush),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::NumberDiv),
         Object::Instruction(Op::PushConstant),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::PushConstant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::NumberDiv),
         Object::Instruction(Op::NumberSubPush),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::NumberDiv),
         Object::Instruction(Op::NumberSub),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(0);
+    let expected = Object::Fixnum(0);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -1952,19 +1952,19 @@ fn test191() {
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(6),
+        Object::Fixnum(6),
         Object::Instruction(Op::ConstantPush),
         sym0,
         Object::Instruction(Op::ReferFreeCall),
-        Object::Number(89),
-        Object::Number(1),
+        Object::Fixnum(89),
+        Object::Fixnum(1),
         Object::Instruction(Op::PushFrame),
-        Object::Number(6),
+        Object::Fixnum(6),
         Object::Instruction(Op::ConstantPush),
         sym0,
         Object::Instruction(Op::ReferFreeCall),
-        Object::Number(89),
-        Object::Number(1),
+        Object::Fixnum(89),
+        Object::Fixnum(1),
         Object::Instruction(Op::Eq),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
@@ -1986,57 +1986,57 @@ fn test55() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Box),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::LetFrame),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocalPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Display),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(0),
+        Object::Fixnum(10),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(4),
+        Object::Fixnum(0),
+        Object::Fixnum(4),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::PushEnter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::AssignFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Frame),
-        Object::Number(6),
+        Object::Fixnum(6),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Call),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(4);
+    let expected = Object::Fixnum(4);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -2052,38 +2052,38 @@ fn test62() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocalPushConstant),
-        Object::Number(0),
-        Object::Number(10),
+        Object::Fixnum(0),
+        Object::Fixnum(10),
         Object::Instruction(Op::BranchNotNumberEqual),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::LocalJmp),
-        Object::Number(11),
+        Object::Fixnum(11),
         Object::Instruction(Op::ReferLocalPushConstant),
-        Object::Number(0),
-        Object::Number(1),
+        Object::Fixnum(0),
+        Object::Fixnum(1),
         Object::Instruction(Op::NumberAddPush),
         Object::Instruction(Op::Shiftj),
-        Object::Number(1),
-        Object::Number(1),
-        Object::Number(-1),
+        Object::Fixnum(1),
+        Object::Fixnum(1),
+        Object::Fixnum(-1),
         Object::Instruction(Op::LocalJmp),
-        Object::Number(-18),
+        Object::Fixnum(-18),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(10);
+    let expected = Object::Fixnum(10);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -2099,43 +2099,43 @@ fn test133() {
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::ReferFreePush),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Display),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Constant),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::Cons),
         Object::Instruction(Op::PushEnter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Test),
-        Object::Number(10),
+        Object::Fixnum(10),
         Object::Instruction(Op::Frame),
-        Object::Number(12),
+        Object::Fixnum(12),
         Object::Instruction(Op::ReferLocalPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReferFreeCall),
-        Object::Number(0),
-        Object::Number(1),
+        Object::Fixnum(0),
+        Object::Fixnum(1),
         Object::Instruction(Op::LocalJmp),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::Constant),
         Object::False,
         Object::Instruction(Op::Constant),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(1);
+    let expected = Object::Fixnum(1);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -2152,81 +2152,81 @@ fn test63() {
     let sym0 = vm.gc.symbol_intern("lambda");
     let sym1 = vm.gc.symbol_intern("i");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0, sym1]);
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::ConstantPush),
         Object::Nil,
         Object::Instruction(Op::Box),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Enter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::ReferLocalPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReferLocalPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Display),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::ReferLocalPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Closure),
-        Object::Number(26),
-        Object::Number(1),
+        Object::Fixnum(26),
+        Object::Fixnum(1),
         Object::False,
-        Object::Number(1),
-        Object::Number(8),
+        Object::Fixnum(1),
+        Object::Fixnum(8),
         list1,
         Object::Instruction(Op::ReferLocalPushConstantBranchNotGe),
-        Object::Number(0),
-        Object::Number(1000),
-        Object::Number(5),
+        Object::Fixnum(0),
+        Object::Fixnum(1000),
+        Object::Fixnum(5),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocalPushConstant),
-        Object::Number(0),
-        Object::Number(1),
+        Object::Fixnum(0),
+        Object::Fixnum(1),
         Object::Instruction(Op::NumberAddPush),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::TailCall),
-        Object::Number(1),
-        Object::Number(1),
+        Object::Fixnum(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Return),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::PushEnter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::AssignFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Frame),
-        Object::Number(8),
+        Object::Fixnum(8),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ReferFree),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Indirect),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(1000);
+    let expected = Object::Fixnum(1000);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -2244,27 +2244,27 @@ fn test205() {
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(8),
+        Object::Fixnum(8),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::ConstantPush),
         Object::Char('c'),
         Object::Instruction(Op::ReferFreeCall),
-        Object::Number(17),
-        Object::Number(2),
+        Object::Fixnum(17),
+        Object::Fixnum(2),
         Object::Instruction(Op::DefineGlobal),
         vm.gc.symbol_intern("str1"),
         Object::Instruction(Op::Frame),
-        Object::Number(10),
+        Object::Fixnum(10),
         Object::Instruction(Op::ReferGlobalPush),
         vm.gc.symbol_intern("str1"),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ConstantPush),
         Object::Char('b'),
         Object::Instruction(Op::ReferFreeCall),
-        Object::Number(18),
-        Object::Number(3),
+        Object::Fixnum(18),
+        Object::Fixnum(3),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("str1"),
         Object::Instruction(Op::Halt),
@@ -2287,45 +2287,45 @@ fn test60() {
 
     let sym0 = vm.gc.symbol_intern("lambda");
     let str0 = vm.gc.new_string("(input string port)");
-    let list0 = vm.gc.listn(&[str0, Object::Number(1)]);
+    let list0 = vm.gc.listn(&[str0, Object::Fixnum(1)]);
     let list1 = vm.gc.listn(&[list0, sym0]);
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(2),
+        Object::Fixnum(2),
         Object::Instruction(Op::LetFrame),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Closure),
-        Object::Number(10),
-        Object::Number(0),
+        Object::Fixnum(10),
+        Object::Fixnum(0),
         Object::False,
-        Object::Number(0),
-        Object::Number(4),
+        Object::Fixnum(0),
+        Object::Fixnum(4),
         list1,
         Object::Instruction(Op::Constant),
-        Object::Number(100),
+        Object::Fixnum(100),
         Object::Instruction(Op::Return),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::PushEnter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::PushEnter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Frame),
-        Object::Number(4),
+        Object::Fixnum(4),
         Object::Instruction(Op::ReferLocalCall),
-        Object::Number(0),
-        Object::Number(0),
+        Object::Fixnum(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
         Object::Instruction(Op::Nop),
         Object::Instruction(Op::Nop),
     ];
-    let expected = Object::Number(100);
+    let expected = Object::Fixnum(100);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -2341,14 +2341,14 @@ fn test187_2() {
 
     let ops = vec![
         Object::Instruction(Op::ConstantPush),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::Constant),
         Object::Nil,
         Object::Instruction(Op::MakeVector),
         Object::Instruction(Op::VectorLength),
         Object::Instruction(Op::Halt),
     ];
-    let expected = Object::Number(3);
+    let expected = Object::Fixnum(3);
     test_ops_with_size(
         &mut vm,
         ops,
@@ -2370,37 +2370,37 @@ fn test271() {
     let str5 = vm.gc.new_string("Sue");
     let list0 = vm.gc.listn(&[str0, str1]);
     let list1 = vm.gc.listn(&[
-        Object::Number(2),
-        Object::Number(2),
-        Object::Number(2),
-        Object::Number(2),
+        Object::Fixnum(2),
+        Object::Fixnum(2),
+        Object::Fixnum(2),
+        Object::Fixnum(2),
     ]);
     let list2 = vm.gc.listn(&[str4, str5]);
-    let vec0 = vm.gc.new_vector(&vec![Object::Number(0), list0, str2]);
+    let vec0 = vm.gc.new_vector(&vec![Object::Fixnum(0), list0, str2]);
 
     let ops = vec![
         Object::Instruction(Op::LetFrame),
-        Object::Number(5),
+        Object::Fixnum(5),
         Object::Instruction(Op::ConstantPush),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::ConstantPush),
         list1,
         Object::Instruction(Op::Constant),
         str3,
         Object::Instruction(Op::Vector),
-        Object::Number(3),
+        Object::Fixnum(3),
         Object::Instruction(Op::PushEnter),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::ReferLocalPushConstant),
-        Object::Number(0),
-        Object::Number(1),
+        Object::Fixnum(0),
+        Object::Fixnum(1),
         Object::Instruction(Op::PushConstant),
         list2,
         Object::Instruction(Op::VectorSet),
         Object::Instruction(Op::ReferLocal),
-        Object::Number(0),
+        Object::Fixnum(0),
         Object::Instruction(Op::Leave),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
     let expected = vec0;
@@ -2418,25 +2418,25 @@ fn test_compiler2() {
     vm.should_load_compiler = true;
 
     let plus = vm.gc.symbol_intern("+");
-    let code = vm.gc.list3(plus, Object::Number(121), Object::Number(20));
+    let code = vm.gc.list3(plus, Object::Fixnum(121), Object::Fixnum(20));
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(8),
+        Object::Fixnum(8),
         Object::Instruction(Op::Constant),
         code,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("compile"),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
-            vm.expected = Object::Number(141);
+            vm.expected = Object::Fixnum(141);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
             let e = Equal::new();
@@ -2456,21 +2456,21 @@ fn test_compiler() {
 
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(8),
+        Object::Fixnum(8),
         Object::Instruction(Op::Constant),
-        Object::Number(121),
+        Object::Fixnum(121),
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("compile"),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
-            vm.expected = Object::Number(121);
+            vm.expected = Object::Fixnum(121);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
             let e = Equal::new();
@@ -2496,21 +2496,21 @@ fn test_compiler3() {
     let sexp = read(&mut vm.gc, "((lambda (a) a) 3)").unwrap();
     let ops = vec![
         Object::Instruction(Op::Frame),
-        Object::Number(8),
+        Object::Fixnum(8),
         Object::Instruction(Op::Constant),
         sexp,
         Object::Instruction(Op::Push),
         Object::Instruction(Op::ReferGlobal),
         vm.gc.symbol_intern("compile-no-optimize"),
         Object::Instruction(Op::Call),
-        Object::Number(1),
+        Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len());
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len());
-            vm.expected = Object::Number(3);
+            vm.expected = Object::Fixnum(3);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
             let e = Equal::new();

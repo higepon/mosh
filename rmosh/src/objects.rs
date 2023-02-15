@@ -1,5 +1,6 @@
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
+use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
@@ -13,76 +14,42 @@ use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
 
-// We use this Float which wraps f64.
-// Because we can't implement Hash for f64.
-#[derive(Copy, Clone)]
-pub union Float {
-    value: f64,
-    u64_value: u64,
-}
-
-impl std::hash::Hash for Float {
-    fn hash<H>(&self, state: &mut H)
-    where
-        H: std::hash::Hasher,
-    {
-        state.write_u64(unsafe { self.u64_value });
-        state.finish();
-    }
-}
-
-impl Float {
-    pub fn new(value: f64) -> Self {
-        Self { value: value }
-    }
-    #[inline(always)]
-    pub fn value(&self) -> f64 {
-        unsafe { self.value }
-    }
-}
-
-impl PartialEq for Float {
-    fn eq(&self, other: &Float) -> bool {
-        unsafe { self.u64_value == other.u64_value }
-    }
-}
-
-impl Display for Float {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.value())
-    }
-}
-
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
+    Bignum(GcRef<Bignum>),
+    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
+    BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
     ByteVector(GcRef<ByteVector>),
     Char(char),
     Closure(GcRef<Closure>),
+    Continuation(GcRef<Continuation>),
+    ContinuationStack(GcRef<ContinuationStack>),
+    Compnum(GcRef<Compnum>),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
-    Float(Float),
-    StringInputPort(GcRef<StringInputPort>),
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
-    BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
-    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
-    StdOutputPort(GcRef<StdOutputPort>),
-    StdErrorPort(GcRef<StdErrorPort>),
-    StringOutputPort(GcRef<StringOutputPort>),
+    Fixnum(isize),
+    Flonum(Flonum),
     Instruction(Op),
     Nil,
-    Number(isize),
+    ObjectPointer(*mut Object),
     Pair(GcRef<Pair>),
     Procedure(GcRef<Procedure>),
+    ProgramCounter(*const Object),
+    Ratnum(GcRef<Ratnum>),
+    Regexp(GcRef<Regexp>),
     SimpleStruct(GcRef<SimpleStruct>),
+    StdErrorPort(GcRef<StdErrorPort>),
+    StdOutputPort(GcRef<StdOutputPort>),
     String(GcRef<SString>),
+    StringInputPort(GcRef<StringInputPort>),
+    StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
     True,
     Unspecified,
-    ObjectPointer(*mut Object),
-    ProgramCounter(*const Object),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
@@ -130,14 +97,50 @@ impl Object {
             _ => false,
         }
     }
-
-    pub fn is_number(&self) -> bool {
+    pub fn is_boolean(&self) -> bool {
         match self {
-            Object::Number(_) => true,
+            Object::True => true,
+            Object::False => true,
+            _ => false,
+        }
+    }
+    pub fn is_bignum(&self) -> bool {
+        match self {
+            Object::Bignum(_) => true,
             _ => false,
         }
     }
 
+    pub fn is_fixnum(&self) -> bool {
+        match self {
+            Object::Fixnum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_flonum(&self) -> bool {
+        match self {
+            Object::Flonum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_ratnum(&self) -> bool {
+        match self {
+            Object::Ratnum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_compnum(&self) -> bool {
+        match self {
+            Object::Compnum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_regexp(&self) -> bool {
+        match self {
+            Object::Regexp(_) => true,
+            _ => false,
+        }
+    }
     pub fn is_nil(&self) -> bool {
         match self {
             Object::Nil => true,
@@ -148,6 +151,13 @@ impl Object {
     pub fn is_symbol(&self) -> bool {
         match self {
             Object::Symbol(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_string(&self) -> bool {
+        match self {
+            Object::String(_) => true,
             _ => false,
         }
     }
@@ -188,11 +198,11 @@ impl Object {
             }
         }
     }
-    pub fn to_number(self) -> isize {
-        if let Self::Number(n) = self {
+    pub fn to_isize(self) -> isize {
+        if let Self::Fixnum(n) = self {
             n
         } else {
-            panic!("Not a Object::Number")
+            panic!("Not a Object::Fixnum but {}", self)
         }
     }
     pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {
@@ -200,6 +210,27 @@ impl Object {
             e
         } else {
             panic!("Not a Object::EqHashtable")
+        }
+    }
+    pub fn to_flonum(self) -> Flonum {
+        if let Self::Flonum(fl) = self {
+            fl
+        } else {
+            panic!("Not a Object::Flonum")
+        }
+    }
+    pub fn to_bignum(self) -> GcRef<Bignum> {
+        if let Self::Bignum(b) = self {
+            b
+        } else {
+            panic!("Not a Object::Bignum")
+        }
+    }
+    pub fn to_compnum(self) -> GcRef<Compnum> {
+        if let Self::Compnum(c) = self {
+            c
+        } else {
+            panic!("Not a Object::Compnum")
         }
     }
     pub fn to_simple_struct(self) -> GcRef<SimpleStruct> {
@@ -219,6 +250,13 @@ impl Object {
     pub fn to_pair(self) -> GcRef<Pair> {
         if let Self::Pair(p) = self {
             p
+        } else {
+            panic!("Not a Object::Pair")
+        }
+    }
+    pub fn to_continuation_stack(self) -> GcRef<ContinuationStack> {
+        if let Self::ContinuationStack(c) = self {
+            c
         } else {
             panic!("Not a Object::Pair")
         }
@@ -269,15 +307,74 @@ impl Object {
         }
     }
 
-    // TODO: Implement eqv?
     pub fn eqv(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Object::Number(a), Object::Number(b)) => {
-                return a == b;
+        if self.is_number() {
+            if other.is_number() {
+                if self.is_flonum() && other.is_flonum() {
+                    self.to_flonum().eqv(&other.to_flonum())
+                } else {
+                    let is_exact1 = self.is_exact();
+                    let is_exact2 = other.is_exact();
+                    if (is_exact1 && !is_exact2) || (!is_exact1 && is_exact2) {
+                        false
+                    } else {
+                        numbers::eqv(*self, *other)
+                    }
+                }
+            } else {
+                false
             }
-            _ => {
-                return self.eq(other);
-            }
+        } else {
+            self.eq(&other)
+        }
+    }
+
+    pub fn neg(&self, gc: &mut Box<Gc>) -> Self {
+        match self {
+            Object::Fixnum(n) => Object::Fixnum(n * -1),
+            Object::Flonum(f) => Object::Flonum(Flonum::new(f.value() * -1.0)),
+            Object::Ratnum(r) => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(-r.ratio))),
+            _ => todo!(),
+        }
+    }
+
+    pub fn obj_type(&self) -> String {
+        match self {
+            Object::Bignum(_) => todo!(),
+            Object::BinaryFileInputPort(_) => todo!(),
+            Object::BinaryFileOutputPort(_) => todo!(),
+            Object::ByteVector(_) => todo!(),
+            Object::Char(_) => todo!(),
+            Object::Closure(_) => todo!(),
+            Object::Continuation(_) => todo!(),
+            Object::ContinuationStack(_) => todo!(),
+            Object::Compnum(_) => todo!(),
+            Object::Eof => todo!(),
+            Object::EqHashtable(_) => todo!(),
+            Object::False => todo!(),
+            Object::FileInputPort(_) => todo!(),
+            Object::FileOutputPort(_) => todo!(),
+            Object::Fixnum(_) => todo!(),
+            Object::Flonum(_) => todo!(),
+            Object::Instruction(_) => todo!(),
+            Object::Nil => todo!(),
+            Object::ObjectPointer(_) => todo!(),
+            Object::Pair(_) => todo!(),
+            Object::Procedure(_) => todo!(),
+            Object::ProgramCounter(_) => todo!(),
+            Object::Ratnum(_) => todo!(),
+            Object::Regexp(_) => todo!(),
+            Object::SimpleStruct(_) => todo!(),
+            Object::StdErrorPort(_) => todo!(),
+            Object::StdOutputPort(_) => todo!(),
+            Object::String(_) => todo!(),
+            Object::StringInputPort(_) => todo!(),
+            Object::StringOutputPort(_) => todo!(),
+            Object::Symbol(_) => todo!(),
+            Object::True => todo!(),
+            Object::Unspecified => todo!(),
+            Object::Vector(_) => todo!(),
+            Object::Vox(_) => todo!(),
         }
     }
 }
@@ -294,6 +391,21 @@ impl Debug for Object {
             }
             Object::StdErrorPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::Bignum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Continuation(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            }
+            Object::ContinuationStack(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            }
+            Object::Ratnum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Compnum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
@@ -313,13 +425,16 @@ impl Debug for Object {
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::Regexp(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
-            Object::Float(n) => {
+            Object::Flonum(n) => {
                 write!(f, "{}", n)
             }
-            Object::Number(n) => {
+            Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
             Object::Instruction(op) => {
@@ -411,10 +526,28 @@ impl Display for Object {
             Object::Char(c) => {
                 write!(f, "{}", c)
             }
-            Object::Float(n) => {
+            Object::Flonum(n) => {
                 write!(f, "{}", n)
             }
-            Object::Number(n) => {
+            Object::Bignum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Continuation(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            }
+            Object::ContinuationStack(c) => {
+                write!(f, "{}", unsafe { c.pointer.as_ref() })
+            }
+            Object::Ratnum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Compnum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Regexp(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }
+            Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
             Object::Instruction(op) => {
@@ -493,6 +626,10 @@ impl Vector {
     pub fn len(&self) -> usize {
         self.data.len()
     }
+
+    pub fn fill(&mut self, obj: Object) {
+        self.data.fill(obj);
+    }
 }
 
 impl Display for Vector {
@@ -523,8 +660,42 @@ impl ByteVector {
         }
     }
 
-    pub fn ref_u8(&self, i: usize) -> u8 {
+    pub fn from_list(list: Object) -> Option<Self> {
+        let mut v: Vec<u8> = vec![];
+        let mut obj = list;
+        loop {
+            match obj {
+                Object::Pair(p) => match p.car {
+                    Object::Fixnum(fx) if fx >= 0 && fx <= 255 => {
+                        v.push(fx as u8);
+                        obj = p.cdr;
+                    }
+                    _ => {
+                        return None;
+                    }
+                },
+                Object::Nil => {
+                    return Some(Self::new(&v));
+                }
+                _ => return None,
+            }
+        }
+    }
+
+    pub fn ref_u8(&self, i: usize) -> Option<&u8> {
+        self.data.get(i)
+    }
+
+    pub fn ref_u8_unchecked(&self, i: usize) -> u8 {
         self.data[i]
+    }
+
+    pub fn set_u8_unchecked(&mut self, i: usize, v: u8) {
+        self.data[i] = v;
+    }
+
+    pub fn copy(&self) -> Self{
+        Self::new(&self.data)
     }
 
     pub fn equal(&self, other: &ByteVector) -> bool {
@@ -934,6 +1105,92 @@ impl Display for Procedure {
     }
 }
 
+/// Regexp.
+pub struct Regexp {
+    pub header: GcHeader,
+}
+
+impl Regexp {}
+
+impl fmt::Debug for Regexp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("#<regexp>")
+    }
+}
+
+impl Display for Regexp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<regexp>")
+    }
+}
+
+/// Continuation.
+pub struct Continuation {
+    pub header: GcHeader,
+    pub shift_size: isize,
+    pub stack: Object,
+    pub winders: Object,
+}
+
+impl Continuation {
+    pub fn new(shift_size: isize, stack: Object, winders: Object) -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::Continuation),
+            shift_size: shift_size,
+            stack: stack,
+            winders: winders,
+        }
+    }
+}
+
+impl fmt::Debug for Continuation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("#<continuation>")
+    }
+}
+
+impl Display for Continuation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<continuation>")
+    }
+}
+
+/// Continuation.
+pub struct ContinuationStack {
+    pub header: GcHeader,
+    pub data: Vec<Object>,
+}
+
+impl ContinuationStack {
+    pub fn new(source: &[Object]) -> Self {
+        let mut c = Self {
+            header: GcHeader::new(ObjectType::ContinuationStack),
+            data: vec![],
+        };
+        c.data.extend(source);
+        c
+    }
+
+    pub fn restore(&self, dest: &mut Vec<Object>) -> usize {
+        for (index, element) in self.data.iter().enumerate() {
+            dest[index] = *element;
+        }
+        self.data.len()
+    }
+}
+
+impl fmt::Debug for ContinuationStack {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("#<continuation>")
+    }
+}
+
+impl Display for ContinuationStack {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<continuation>")
+    }
+}
+
 /// Closure
 #[derive(Debug)]
 pub struct Closure {
@@ -1095,9 +1352,9 @@ pub mod tests {
     fn test_procedure() {
         let mut vm = Vm::new();
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
-        let mut stack = [Object::Number(1), Object::Number(2)];
+        let mut stack = [Object::Fixnum(1), Object::Fixnum(2)];
         match (p.func)(&mut vm, &mut stack[0..1]) {
-            Object::Number(1) => {}
+            Object::Fixnum(1) => {}
             _ => {
                 panic!("Wrong return value");
             }
@@ -1106,7 +1363,7 @@ pub mod tests {
 
     #[test]
     fn test_simple_to_string() {
-        assert_eq!("101", Object::Number(101).to_string());
+        assert_eq!("101", Object::Fixnum(101).to_string());
         assert_eq!("#t", Object::True.to_string());
         assert_eq!("#f", Object::False.to_string());
         assert_eq!("()", Object::Nil.to_string());
@@ -1149,7 +1406,7 @@ pub mod tests {
 
     #[test]
     fn test_stack_pointer_to_string() {
-        let obj = Object::Number(10);
+        let obj = Object::Fixnum(10);
         let pointer: *mut Object = &obj as *const Object as *mut Object;
         let stack_pointer = Object::ObjectPointer(pointer);
         let re = Regex::new(r"^#<stack pointer\s[^>]+>$").unwrap();
@@ -1159,7 +1416,7 @@ pub mod tests {
     #[test]
     fn test_vox_to_string() {
         let mut gc = Gc::new();
-        let vox = gc.alloc(Vox::new(Object::Number(101)));
+        let vox = gc.alloc(Vox::new(Object::Fixnum(101)));
         let vox = Object::Vox(vox);
         assert_eq!("#<vox 101>", vox.to_string());
 
@@ -1173,24 +1430,24 @@ pub mod tests {
     #[test]
     fn test_dot_pair_to_string() {
         let mut gc = Gc::new();
-        let pair = gc.cons(Object::Number(1), Object::Number(2));
+        let pair = gc.cons(Object::Fixnum(1), Object::Fixnum(2));
         assert_eq!("(1 . 2)", pair.to_string());
     }
 
     #[test]
     fn test_simple_pair_to_string() {
         let mut gc = Gc::new();
-        let pair1 = gc.cons(Object::Number(2), Object::Nil);
-        let pair2 = gc.cons(Object::Number(1), pair1);
+        let pair1 = gc.cons(Object::Fixnum(2), Object::Nil);
+        let pair2 = gc.cons(Object::Fixnum(1), pair1);
         assert_eq!("(1 2)", pair2.to_string());
     }
 
     #[test]
     fn test_pair_to_string() {
         let mut gc = Gc::new();
-        let pair1 = gc.cons(Object::Number(3), Object::Nil);
-        let pair2 = gc.cons(Object::Number(2), pair1);
-        let pair3 = gc.cons(Object::Number(1), pair2);
+        let pair1 = gc.cons(Object::Fixnum(3), Object::Nil);
+        let pair2 = gc.cons(Object::Fixnum(2), pair1);
+        let pair3 = gc.cons(Object::Fixnum(1), pair2);
         assert_eq!("(1 2 3)", pair3.to_string());
     }
 
@@ -1226,12 +1483,12 @@ pub mod tests {
         let mut a = SString::new("abc");
         *a = "def".to_owned();
         assert_eq!("def".to_string(), a.string);
-    }    
+    }
 
     #[test]
     fn test_vector_to_string() {
         let mut gc = Gc::new();
-        let data = vec![Object::Number(1), Object::Number(2)];
+        let data = vec![Object::Fixnum(1), Object::Fixnum(2)];
         let v = gc.new_vector(&data);
         assert_eq!("#(1 2)", v.to_string());
     }

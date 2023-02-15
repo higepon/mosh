@@ -1,8 +1,10 @@
 use std::{
+    collections::HashMap,
     env::{self, current_dir, current_exe},
     fs::{self, File, OpenOptions},
     path::Path,
-    time::{SystemTime, UNIX_EPOCH}, collections::HashMap,
+    process,
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 /// Scheme procedures written in Rust.
@@ -11,7 +13,10 @@ use crate::{
     equal::Equal,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
-    objects::{ByteVector, EqHashtable, Object, Pair, SimpleStruct},
+    number_lexer::NumberLexer,
+    number_reader::NumberParser,
+    numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
+    objects::{ByteVector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
         StringOutputPort, TextInputPort, TextOutputPort,
@@ -847,11 +852,7 @@ macro_rules! check_argc_between {
 fn is_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "number?";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Number(_) => Object::True,
-        Object::Float(_) => Object::True,        
-        _ => Object::False,
-    }
+    Object::make_bool(args[0].is_number())
 }
 fn cons(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cons";
@@ -965,8 +966,7 @@ fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp?";
     check_argc!(name, args, 1);
-    println!("{} dummy implementation {} {}", name, args[0], args[0].to_string());
-    Object::False
+    Object::make_bool(args[0].is_regexp())
 }
 fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "regexp->string";
@@ -996,8 +996,8 @@ fn make_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-string";
     check_argc_between!(name, args, 1, 2);
     match args {
-        [Object::Number(n)] => vm.gc.new_string(&" ".repeat(*n as usize)),
-        [Object::Number(n), Object::Char(c)] => {
+        [Object::Fixnum(n)] => vm.gc.new_string(&" ".repeat(*n as usize)),
+        [Object::Fixnum(n), Object::Char(c)] => {
             vm.gc.new_string(&*c.to_string().repeat(*n as usize))
         }
         _ => {
@@ -1009,7 +1009,7 @@ fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-set!";
     check_argc!(name, args, 3);
     match args {
-        [Object::String(mut s), Object::Number(idx), Object::Char(c)] => {
+        [Object::String(mut s), Object::Fixnum(idx), Object::Char(c)] => {
             let idx = *idx as usize;
             s.string.replace_range(idx..idx + 1, &c.to_string());
             Object::Unspecified
@@ -1026,7 +1026,7 @@ fn string_length(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-length";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::String(s) => Object::Number(s.string.chars().count().try_into().unwrap()),
+        Object::String(s) => Object::Fixnum(s.string.chars().count().try_into().unwrap()),
         v => {
             panic!("{}: string required but got {}", name, v)
         }
@@ -1042,21 +1042,93 @@ fn string_to_symbol(vm: &mut Vm, args: &mut [Object]) -> Object {
         }
     }
 }
-fn string_to_number(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string->number";
-    check_argc!(name, args, 1);
-    match args[0] {
-        Object::String(s) => match s.string.parse::<isize>() {
-            Ok(n) => Object::Number(n),
-            Err(err) => {
-                panic!("{}: can't convert to numver {:?}", name, err)
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    if argc == 1 {
+        match args[0] {
+            Object::String(s) => {
+                let mut chars: Vec<char> = s.chars().collect();
+                chars.push('\0');
+                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+                    Ok(n) => n,
+                    Err(err) => panic!("{}: {:?}", name, err),
+                }
             }
-        },
-        v => {
-            panic!("{}: string required but got {}", name, v)
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
+        }
+    } else {
+        let radix = args[1];
+        let mut prefix: String = "".to_string();
+        match radix {
+            Object::Fixnum(2) => {
+                prefix.push_str("#b");
+            }
+            Object::Fixnum(8) => {
+                prefix.push_str("#o");
+            }
+            Object::Fixnum(10) => (),
+            Object::Fixnum(16) => {
+                prefix.push_str("#x");
+            }
+            _ => {
+                panic!("{}: radix 2, 8, 10 or 16 required but got {}", name, radix)
+            }
+        }
+        match args[0] {
+            Object::String(s) => {
+                prefix.push_str(&s);
+                let mut chars: Vec<char> = prefix.chars().collect();
+                chars.push('\0');
+                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+                    Ok(n) => n,
+                    Err(err) => panic!("{}: {:?}", name, err),
+                }
+            }
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
         }
     }
 }
+/*
+checkArgumentLengthBetween(1, 2);
+argumentAsString(0, text);
+const ucs4string& numberString = text->data();
+if (argc == 1) {
+    return stringToNumber(numberString);
+} else {
+    argumentAsFixnum(1, radix);
+    switch (radix) {
+        case 2:
+        {
+            ucs4string text(UC("#b"));
+            text += numberString;
+            return stringToNumber(text);
+        }
+        case 8:
+        {
+            ucs4string text(UC("#o"));
+            text += numberString;
+            return stringToNumber(text);
+        }
+        case 10:
+            return stringToNumber(numberString);
+        case 16:
+        {
+            ucs4string text(UC("#x"));
+            text += numberString;
+            return stringToNumber(text);
+        }
+        default:
+            callAssertionViolationAfter(theVM, procedureName, UC("radix should be 2, 8, 10 ro 16"), L1(argv[1]));
+            return Object::Undef;
+    }
+}*/
+
 fn string_append(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-append";
     let mut ret = "".to_string();
@@ -1107,11 +1179,21 @@ fn string(vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn number_to_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "number->string";
-    check_argc!(name, args, 1);
-    match args[0] {
-        Object::Number(n) => vm.gc.new_string(&format!("{}", n)[..]),
-        v => {
-            panic!("{}: number required but got {}", name, v)
+    check_argc_between!(name, args, 1, 3);
+    let argc = args.len();
+    let n = args[0];
+    if argc == 1 {
+        vm.gc.new_string(&numbers::to_string(n, 10))
+    } else {
+        let radix = args[1];
+        if !radix.is_fixnum() {
+            panic!("{}: radix number required but got {}", name, radix);
+        }
+        let radix = radix.to_isize();
+        if radix == 2 || radix == 8 || radix == 10 || radix == 16 {
+            vm.gc.new_string(&numbers::to_string(n, radix as usize))
+        } else {
+            panic!("{}: unsupported radix {}", name, args[1]);
         }
     }
 }
@@ -1191,9 +1273,11 @@ fn get_environment_variables(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-environment-variables";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_equal(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_equal(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "equal?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let e = Equal::new();
+    Object::make_bool(e.is_equal(&mut vm.gc, &args[0], &args[1]))
 }
 fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-string-input-port";
@@ -1235,8 +1319,8 @@ fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "digit->integer";
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
-        (Object::Char(c), Object::Number(radix)) => match c.to_digit(radix as u32) {
-            Some(v) => Object::Number(v as isize),
+        (Object::Char(c), Object::Fixnum(radix)) => match c.to_digit(radix as u32) {
+            Some(v) => Object::Fixnum(v as isize),
             None => {
                 panic!("{}: could not convert ({}, {})", name, args[0], args[1]);
             }
@@ -1288,7 +1372,7 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "char->integer";
     check_argc!(name, args, 1);
     if let Object::Char(c) = args[0] {
-        Object::Number(c as isize)
+        Object::Fixnum(c as isize)
     } else {
         panic!("{}: char required but got {}", name, args[0]);
     }
@@ -1296,7 +1380,7 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer->char";
     check_argc!(name, args, 1);
-    if let Object::Number(n) = args[0] {
+    if let Object::Fixnum(n) = args[0] {
         match char::from_u32(n as u32) {
             Some(c) => Object::Char(c),
             None => {
@@ -1445,13 +1529,27 @@ fn gensym(vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string=?";
-    check_argc!(name, args, 2);
-    match args {
-        [Object::String(s1), Object::String(s2)] => Object::make_bool(s1.string.eq(&s2.string)),
-        _ => {
-            panic!("{}: string required but got {:?}", name, args);
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        match (args[i], args[i + 1]) {
+            (Object::String(s1), Object::String(s2)) => {
+                if s1.string.eq(&s2.string) {
+                    continue;
+                } else {
+                    return Object::False;
+                }
+            }
+            _ => {
+                panic!(
+                    "{}: string required but got {} {}",
+                    name,
+                    args[i],
+                    args[i + 1]
+                );
+            }
         }
     }
+    Object::True
 }
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "caaaar";
@@ -1717,11 +1815,37 @@ fn cddr(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_symbolequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "symbol=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_symbol() && args[i + 1].is_symbol() {
+            if args[i].eq(&args[i + 1]) {
+                continue;
+            } else {
+                return Object::False;
+            }
+        } else {
+            panic!(
+                "{}: symbol required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
+        }
+    }
+    Object::True
 }
 fn is_booleanequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "boolean=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    let argc = args.len();
+    for i in 0..argc - 1 {
+        if args[i].is_boolean() && args[i + 1].is_boolean() && args[i].eq(&args[i + 1]) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    Object::True
 }
 fn is_vector(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector?";
@@ -1832,7 +1956,7 @@ fn string_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-ref";
     check_argc!(name, args, 2);
     match args {
-        [Object::String(s), Object::Number(idx)] => {
+        [Object::String(s), Object::Fixnum(idx)] => {
             let idx = *idx as usize;
             match s.string.chars().nth(idx) {
                 Some(c) => Object::Char(c),
@@ -1982,7 +2106,21 @@ fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-u8-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match (args[0], args[1], args[2]) {
+        (Object::ByteVector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
+            if (index as usize) < bv.len() && v >= 0 && v <= 255 =>
+        {
+            bv.set_u8_unchecked(index as usize, v as u8);
+            Object::Unspecified
+        }
+        _ => {
+            panic!(
+                "{}: bytevector index u8 value required but got {}, {} and {}",
+                name, args[0], args[1], args[2]
+            );
+        }
+    }
 }
 fn is_port_has_port_position(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "port-has-port-position?";
@@ -2034,7 +2172,8 @@ fn make_transcoder(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn eof_object(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "eof-object";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Object::Eof
 }
 fn sys_open_bytevector_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sys-open-bytevector-output-port";
@@ -2046,7 +2185,11 @@ fn sys_get_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-length";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(bv) => Object::Fixnum(bv.len() as isize),
+        _ => panic!("{} bytevector required but got {}", name, args[0]),
+    }
 }
 fn standard_input_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "standard-input-port";
@@ -2308,12 +2451,36 @@ fn assoc(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn assv(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "assv";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let obj = args[0];
+    let list = args[1];
+    if !list.is_list() {
+        panic!("{}: list required but got {}", name, list);
+    }
+    let mut o = list;
+    loop {
+        if o.is_nil() {
+            break;
+        }
+        if obj.eqv(&o.car_unchecked().car_unchecked()) {
+            return o.car_unchecked();
+        }
+        o = o.cdr_unchecked();
+    }
+    Object::False
 }
 fn exit(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exit";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => process::exit(fx as i32),
+        Object::False => process::exit(-1),
+        _ => {
+            panic!("{}: integer or boolean required but got {}", name, args[0])
+        }
+    }
 }
+
 fn macroexpand_1(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "macroexpand-1";
     panic!("{}({}) not implemented", name, args.len());
@@ -2657,7 +2824,7 @@ fn length(_vm: &mut Vm, args: &mut [Object]) -> Object {
             }
         }
     }
-    Object::Number(len)
+    Object::Fixnum(len)
 }
 fn list_to_vector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "list->vector";
@@ -2782,7 +2949,7 @@ fn hashtable_size(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "hashtable-size";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::EqHashtable(hashtable) => Object::Number(hashtable.size() as isize),
+        Object::EqHashtable(hashtable) => Object::Fixnum(hashtable.size() as isize),
         _ => {
             panic!("{}: hashtable required but got {:?}", name, args)
         }
@@ -2886,43 +3053,131 @@ fn number_ge(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "=";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::eqv(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Object::False;
+            }
+        } else {
+            panic!(
+                "{}: number required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
+        }
+    }
+    Object::True
 }
-fn number_add(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+fn number_add(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "+";
-    panic!("{}({}) not implemented", name, args.len());
+    let argc = args.len();
+    if argc == 0 {
+        Object::Fixnum(0)
+    } else if argc == 1 {
+        if args[0].is_number() {
+            args[0]
+        } else {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    } else {
+        let mut ret = Object::Fixnum(0);
+        for arg in args.iter() {
+            ret = numbers::add(&mut vm.gc, ret, *arg);
+        }
+        ret
+    }
 }
+
 fn nuber_sub(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "-";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn number_mul(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn number_mul(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "*";
-    panic!("{}({}) not implemented", name, args.len());
+    let argc = args.len();
+    if argc == 0 {
+        Object::Fixnum(1)
+    } else if argc == 1 {
+        if args[0].is_number() {
+            args[0]
+        } else {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    } else {
+        let mut ret = Object::Fixnum(1);
+        for obj in args {
+            if !obj.is_number() {
+                panic!("{}: number required but got {}", name, obj)
+            }
+            ret = numbers::mul(&mut vm.gc, ret, *obj);
+        }
+        ret
+    }
 }
-fn number_div(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn number_div(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "/";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let argc = args.len();
+    if argc == 1 {
+        match numbers::div(&mut vm.gc, Object::Fixnum(1), args[0]) {
+            Ok(value) => value,
+            Err(SchemeError::Div0) => {
+                panic!("/: division by zero {}", args[0])
+            }
+            _ => panic!(),
+        }
+    } else {
+        todo!();
+    }
 }
-fn max(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn max(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "max";
     check_argc_at_least!(name, args, 1);
-    let mut current_max = isize::MIN;
-    for i in 0..args.len() {
-        let arg = args[i];
-        if let Object::Number(n) = arg {
-            if n > current_max {
-                current_max = n;
+    let mut max_num = Object::Flonum(Flonum::new(f64::NEG_INFINITY));
+    let mut is_exact = true;
+    for n in args.iter() {
+        if n.is_real() {
+            let is_flonum = n.is_flonum();
+            if is_flonum && n.to_flonum().is_nan() {
+                return *n;
+            }
+            if is_flonum {
+                is_exact = false;
+            }
+            if numbers::gt(*n, max_num) {
+                max_num = *n;
             }
         } else {
-            panic!("{}: number required but got {}", name, arg);
+            panic!("{}: real number required but got {}", name, n);
         }
     }
-    return Object::Number(current_max);
+    if is_exact {
+        max_num
+    } else {
+        numbers::inexact(&mut vm.gc, max_num)
+    }
 }
+
 fn min(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "min";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut min = Object::Flonum(Flonum::new(f64::INFINITY));
+    for obj in args {
+        if !obj.is_number() {
+            panic!("{}: number required but got {}", name, obj);
+        }
+        if obj.is_flonum() && obj.to_flonum().is_nan() {
+            return *obj;
+        }
+        if numbers::lt(*obj, min) {
+            min = *obj;
+        }
+    }
+    return min;
 }
 fn get_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-char";
@@ -2930,7 +3185,19 @@ fn get_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "lookahead-char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::StringInputPort(mut port) => match port.lookahead_char() {
+            Some(c) => {
+                port.unget_char(c);
+                Object::Char(c)
+            }
+            None => Object::Eof,
+        },
+        _ => {
+            panic!("{}: port required but got {}", name, args[0]);
+        }
+    }
 }
 fn get_string_n(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "get-string-n";
@@ -2984,9 +3251,26 @@ fn native_endianness(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "native-endianness";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let value: u8 = if args.len() == 1 {
+        0
+    } else {
+        match args[1] {
+            Object::Fixnum(n) if n >= 0 && n <= 255 => n as u8,
+            _ => panic!("{}: u8 value required but got {}", name, args[1]),
+        }
+    };
+    match args[0] {
+        Object::Fixnum(len) => {
+            let v: Vec<u8> = vec![value; len as usize];
+            Object::ByteVector(vm.gc.alloc(ByteVector::new(&v)))
+        }
+        _ => {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    }
 }
 
 fn is_bytevectorequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -2999,15 +3283,72 @@ fn bytevector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-copy!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+
+    match (args[0], args[1], args[2], args[3], args[4]) {
+        (
+            Object::ByteVector(src),
+            Object::Fixnum(src_start),
+            Object::ByteVector(mut dst),
+            Object::Fixnum(dst_start),
+            Object::Fixnum(k),
+        ) => {
+            if (src_start <= src_start + k)
+                && (src_start + k <= (src.len() as isize))
+                && (0 <= dst_start)
+                && (dst_start + k <= (dst.len() as isize))
+            {
+                if dst == src && dst_start > src_start {
+                    for i in (0..k).rev() {
+                        let dst_idx = (dst_start + i) as usize;
+                        let src_idx = (src_start + i) as usize;
+                        dst.data[dst_idx] = src.data[src_idx];
+                    }
+                } else {
+                    for i in 0..k {
+                        let dst_idx = (dst_start + i) as usize;
+                        let src_idx = (src_start + i) as usize;
+                        dst.data[dst_idx] = src.data[src_idx];
+                    }
+                }
+            } else {
+                panic!("{}: invalid range", name)
+            }
+        }
+        _ => {
+            panic!(
+                "{}: (bv1 start1 bv2 start2 k) required but got {}, {}, {}, {} and {}",
+                name, args[0], args[1], args[2], args[3], args[4]
+            );
+        }
+    }
+    Object::Unspecified
 }
-fn bytevector_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn bytevector_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-copy";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(bv) => Object::ByteVector(vm.gc.alloc(bv.copy())),
+        _ => {
+            panic!("{}: bytevector required but got {}", name, args[0])
+        }
+    }
 }
 fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-u8-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::ByteVector(bv), Object::Fixnum(index)) => match bv.ref_u8(index as usize) {
+            Some(v) => Object::Fixnum(*v as isize),
+            None => panic!("{}: index out of range {}", name, index),
+        },
+        _ => {
+            panic!(
+                "{}: bytevector and index required but got {} and {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 
 fn bytevector_s8_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
@@ -3024,18 +3365,25 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> Object {
     let mut ret = Object::Nil;
     if let Object::ByteVector(bv) = args[0] {
         for i in 0..bv.len() {
-            ret = vm
-                .gc
-                .cons(Object::Number(bv.ref_u8(bv.len() - i - 1) as isize), ret);
+            ret = vm.gc.cons(
+                Object::Fixnum(bv.ref_u8_unchecked(bv.len() - i - 1) as isize),
+                ret,
+            );
         }
         ret
     } else {
         panic!("{}: bytevector required but got {}", name, args[0])
     }
 }
-fn u8_list_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "u8-list->bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match ByteVector::from_list(args[0]) {
+        Some(bv) => Object::ByteVector(vm.gc.alloc(bv)),
+        None => {
+            panic!("{}: u8 list required but got {}", name, args[0])
+        }
+    }
 }
 fn bytevector_u16_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "bytevector-u16-ref";
@@ -3150,9 +3498,20 @@ fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: string required but got {}", name, args[0]);
     }
 }
-fn utf8_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "utf8->string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(bv) => match std::str::from_utf8(&bv.data) {
+            Ok(s) => Object::String(vm.gc.alloc(SString::new(&s))),
+            Err(err) => {
+                panic!("{}: {}", name, err)
+            }
+        },
+        _ => {
+            panic!("{}: bytevector required bug got {}", name, args[0])
+        }
+    }
 }
 fn null_terminated_bytevector_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "null-terminated-bytevector->string";
@@ -3207,7 +3566,7 @@ fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-instruction";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Number(n) => {
+        Object::Fixnum(n) => {
             Object::Instruction(FromPrimitive::from_u8(n as u8).expect("unknown Op"))
         }
         _ => {
@@ -3257,7 +3616,8 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Object {
 
 fn is_rational(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rational?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_rational())
 }
 fn is_flonum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "flonum?";
@@ -3279,52 +3639,89 @@ fn fixnum_width(_vm: &mut Vm, args: &mut [Object]) -> Object {
 fn least_fixnum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);
-    Object::Number(-(2_isize.pow(62)))
+    Object::Fixnum(-(2_isize.pow(62)))
 }
 fn greatest_fixnum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);
-    Object::Number(2_isize.pow(62) - 1)
+    Object::Fixnum(2_isize.pow(62) - 1)
 }
-fn make_rectangular(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn make_rectangular(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-rectangular";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_real() && n2.is_real() {
+        Object::Compnum(vm.gc.alloc(Compnum::new(n1, n2)))
+    } else {
+        panic!("{}: real numbers required but got {} {}", name, n1, n2);
+    }
 }
 fn real_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real-part";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        real(args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0]);
+    }
 }
 fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "imag-part";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        imag(args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0]);
+    }
 }
 fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exact?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_exact())
 }
 fn is_inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "inexact?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(!args[0].is_exact())
 }
-fn exact(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn exact(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exact";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    numbers::exact(&mut vm.gc, args[0])
 }
-fn inexact(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn inexact(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "inexact";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::inexact(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
 fn is_nan(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "nan?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(match args[0] {
+        Object::Flonum(fl) => fl.is_nan(),
+        _ => false,
+    })
 }
 fn is_infinite(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "infinite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(match args[0] {
+        Object::Flonum(fl) => fl.is_infinite(),
+        _ => false,
+    })
 }
 fn is_finite(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "finite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(match args[0] {
+        Object::Flonum(fl) => fl.is_finite(),
+        _ => true,
+    })
 }
 fn real_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real->flonum";
@@ -3540,16 +3937,19 @@ fn bitwise_arithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn is_complex(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "complex?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_complex())
 }
 fn is_real(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_real())
 }
 
-fn is_integer(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_integer(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Object::make_bool(args[0].is_integer(&mut vm.gc))
 }
 fn is_real_valued(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "real-valued?";
@@ -3559,9 +3959,14 @@ fn is_rational_valued(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "rational-valued?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_integer_valued(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_integer_valued(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "integer-valued?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        Object::make_bool(args[0].is_integer_valued(&mut vm.gc))
+    } else {
+        Object::False
+    }
 }
 fn is_fxequal(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "fx=?";
@@ -3739,142 +4144,329 @@ fn bytevector_ieee_double_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> 
     let name: &str = "bytevector-ieee-double-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_even(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_even(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "even?";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Number(n) => Object::make_bool(n % 2 == 0),
-        _ => {
-            panic!("{}: required number but got {}", name, args[0]);
-        }
+    if args[0].is_integer(&mut vm.gc) {
+        Object::make_bool(args[0].is_even())
+    } else {
+        panic!("{}: integer value required but got {}", name, args[0])
     }
 }
-fn is_odd(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn is_odd(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "odd?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_integer(&mut vm.gc) {
+        Object::make_bool(!args[0].is_even())
+    } else {
+        panic!("{}: integer value required but got {}", name, args[0])
+    }
 }
-fn abs(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn abs(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "abs";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Number(n) => Object::Number(n.abs()),
-        _ => {
-            panic!("{}: number required but got {}", name, args[0])
-        }
+    if args[0].is_real() {
+        numbers::abs(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: real number required but got {}", name, args[0])
     }
 }
-fn div(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn div(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "div";
     check_argc!(name, args, 2);
-    match args {
-        [Object::Number(_), Object::Number(0)] => {
-            panic!("{}: division by zero", name)
-        }
-        [Object::Number(x), Object::Number(y)] => {
-            let ret;
-            if *x == 0 {
-                ret = 0;
-            } else if *x > 0 {
-                ret = *x / *y;
-            } else if *y > 0 {
-                ret = (*x - *y + 1) / *y;
-            } else {
-                ret = (*x + *y + 1) / *y;
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_real() && n2.is_real() {
+        match integer_div(&mut vm.gc, n1, n2) {
+            Ok(v) => v,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by 0 is not defined", name)
             }
-            return Object::Number(ret);
+            Err(SchemeError::NanOrInfinite) => {
+                panic!("{}: nan.0 or inifite not allowed", name)
+            }
+            _ => panic!(),
         }
-        _ => {
-            panic!("{}: numbers required but got {:?}", name, args)
-        }
+    } else {
+        panic!("{}: real numbers required but got {} {}", name, n1, n2);
     }
 }
 fn div0(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "div0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn numerator(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn numerator(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "numerator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_rational() {
+        numbers::numerator(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: rational number requied but got {}", name, args[0])
+    }
 }
-fn denominator(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn denominator(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "denominator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_rational() {
+        numbers::denominator(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: rational number requied but got {}", name, args[0])
+    }
 }
-fn floor(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn floor(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "floor";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_real() {
+        numbers::floor(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: real number required but got {}", name, args[0])
+    }
 }
-fn ceiling(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn ceiling(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "ceiling";
-    panic!("{}({}) not implemented", name, args.len());
+    if args[0].is_real() {
+        numbers::ceiling(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: real number requied but got {}", name, args[0])
+    }
 }
-fn truncate(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn truncate(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "truncate";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if !args[0].is_real() {
+        panic!("{}: real number required but got {}", name, args[0])
+    }
+    numbers::truncate(&mut vm.gc, args[0])
 }
-fn round(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn round(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "round";
-    panic!("{}({}) not implemented", name, args.len());
+    if args[0].is_real() {
+        numbers::round(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: real number requied but got {}", name, args[0])
+    }
 }
-fn exp(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+fn exp(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "exp";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::exp(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn log(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn log(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "log";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    if argc == 1 {
+        let n = args[0];
+        if !n.is_number() {
+            panic!("{}: number required but got {}", name, n);
+        }
+        if n.is_exact_zero() {
+            panic!("{} nonzero required but got {}", name, n);
+        } else {
+            return numbers::log(&mut vm.gc, n);
+        }
+    } else {
+        let n1 = args[0];
+        let n2 = args[1];
+        if n1.is_exact_zero() && n2.is_exact_zero() {
+            panic!("{}: nonzero reauired but got {} {}", name, n1, n2);
+        }
+        match log2(&mut vm.gc, n1, n2) {
+            Ok(ret) => ret,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by zero {} {}", name, n1, n2)
+            }
+            _ => panic!(),
+        }
+    }
 }
-fn sin(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+fn sin(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::sin(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn cos(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn cos(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "cos";
-    panic!("{}({}) not implemented", name, args.len());
+    if args[0].is_number() {
+        numbers::cos(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn tan(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn tan(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "tan";
-    panic!("{}({}) not implemented", name, args.len());
+    if args[0].is_number() {
+        match numbers::tan(&mut vm.gc, args[0]) {
+            Ok(v) => v,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by zero {}", name, args[0])
+            }
+            Err(_) => {
+                panic!()
+            }
+        }
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn asin(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn asin(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "asin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::asin(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn acos(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn acos(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "acos";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::acos(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn sqrt(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn sqrt(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "sqrt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    numbers::sqrt(&mut vm.gc, args[0])
 }
-fn magnitude(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn magnitude(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "magnitude";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::magnitude(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn angle(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn angle(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "angle";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_number() {
+        numbers::angle(&mut vm.gc, args[0])
+    } else {
+        panic!("{}: number required but got {}", name, args[0])
+    }
 }
-fn atan(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn atan(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "atan";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    if argc == 1 {
+        let n = args[0];
+        match numbers::atan(&mut vm.gc, n) {
+            Ok(v) => v,
+            Err(SchemeError::Div0) => {
+                panic!("{}: div by zero {}", name, n)
+            }
+            _ => panic!(),
+        }
+    } else {
+        let n1 = args[0];
+        let n2 = args[1];
+        if n1.is_real() && n2.is_real() {
+            numbers::atan2(&mut vm.gc, n1, n2)
+        } else {
+            panic!("{}: real numbers required but got {} {}", name, n1, n2)
+        }
+    }
 }
-fn expt(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+fn expt(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "expt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_number() && n2.is_number() {
+        if n2.is_bignum() {
+            panic!("{}: number ({}, {}) too big", name, n1, n2);
+        }
+        numbers::expt(&mut vm.gc, n1, n2)
+    } else {
+        panic!("{}: numbers required but got {} and {}", name, n1, n2);
+    }
 }
-fn make_polar(_vm: &mut Vm, args: &mut [Object]) -> Object {
+
+fn make_polar(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-polar";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if n1.is_number() && n2.is_number() {
+        numbers::make_polar(&mut vm.gc, n1, n2)
+    } else {
+        panic!("{}: numbers required but got {} {}", name, n1, n2);
+    }
 }
-fn string_copy(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn string_copy(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "string-copy";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 3);
+    let argc = args.len();
+    if argc == 1 {
+        match args[0] {
+            Object::String(s) => Object::String(vm.gc.alloc(SString::new(&s.string))),
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
+        }
+    } else {
+        match args[0] {
+            Object::String(s) => {
+                let start = args[1];
+                if !start.is_fixnum() {
+                    panic!("{}: number required but got {}", name, args[1]);
+                }
+                let start = start.to_isize();
+                let len = s.string.len() as isize;
+                if start < 0 || start > len {
+                    panic!("{}: start out of range {}", name, args[1]);
+                }
+                if argc == 2 {
+                    let start = start as usize;
+                    let end = len as usize;
+                    Object::String(vm.gc.alloc(SString::new(&s.string[start..end])))
+                } else {
+                    let end = args[2];
+                    if !end.is_fixnum() {
+                        panic!("{}: number required but got {}", name, args[1]);
+                    }
+                    let end = end.to_isize();
+                    if end < 0 || start > end || end > len {
+                        panic!("{}: end out of range {}", name, args[1]);
+                    }
+                    let start = start as usize;
+                    let end = end as usize;
+                    Object::String(vm.gc.alloc(SString::new(&s.string[start..end])))
+                }
+            }
+            _ => {
+                panic!("{}: string required but got {}", name, args[0])
+            }
+        }
+    }
 }
 fn vector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "vector-fill!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match args[0] {
+        Object::Vector(mut v) => v.fill(args[1]),
+        _ => {
+            panic!("{}: vector required but got {}", name, args[0])
+        }
+    }
+    Object::Unspecified
 }
 fn ungensym(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "ungensym";
@@ -4054,51 +4646,46 @@ fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "transcoder-error-handling-mode";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn quotient(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn quotient(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "quotient";
     check_argc!(name, args, 2);
-    match (args[0], args[1]) {
-        (Object::Number(x), Object::Number(y)) => {
-            if x == 0 {
-                Object::Number(0)
-            } else if y == 0 {
-                panic!("{}: must be non-zero", name)
-            } else {
-                Object::Number(x / y)
-            }
-        }
-        _ => {
+    match numbers::quotient(&mut vm.gc, args[0], args[1]) {
+        Ok(v) => v,
+        Err(SchemeError::NonZeroRequired) => {
             panic!(
-                "{}: number and number required but got {} {}",
+                "{}: none zero required but got {} {}",
                 name, args[0], args[1]
             )
         }
+        _ => panic!(),
     }
 }
-fn remainder(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn remainder(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "remainder";
     check_argc!(name, args, 2);
-    match (args[0], args[1]) {
-        (Object::Number(x), Object::Number(y)) => {
-            if x == 0 {
-                Object::Number(0)
-            } else if y == 0 {
-                panic!("{}: must be non-zero", name)
-            } else {
-                Object::Number(x % y)
-            }
-        }
-        _ => {
+    match numbers::remainder(&mut vm.gc, args[0], args[1]) {
+        Ok(v) => v,
+        Err(SchemeError::NonZeroRequired) => {
             panic!(
-                "{}: number and number required but got {} {}",
+                "{}: none zero required but got {} {}",
                 name, args[0], args[1]
             )
         }
+        _ => panic!(),
     }
 }
-fn modulo(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn modulo(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "modulo";
-    panic!("{}({}) not implemented", name, args.len());
+    match numbers::modulo(&mut vm.gc, args[0], args[1]) {
+        Ok(v) => v,
+        Err(SchemeError::NonZeroRequired) => {
+            panic!(
+                "{}: none zero required but got {} {}",
+                name, args[0], args[1]
+            )
+        }
+        _ => panic!(),
+    }
 }
 fn open_file_input_output_port(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "open-file-input/output-port";
@@ -4118,11 +4705,49 @@ fn put_datum(_vm: &mut Vm, args: &mut [Object]) -> Object {
 }
 fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "list-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let mut obj = args[0];
+    match args[1] {
+        Object::Fixnum(mut index) => loop {
+            index -= 1;
+            if index < 0 {
+                break;
+            }
+            if let Object::Pair(p) = obj {
+                obj = p.cdr;
+            } else {
+                panic!("{}: pair required but got {}", name, obj)
+            }
+        },
+        _ => {
+            panic!("{}: number required but got {}", name, args[1])
+        }
+    }
+    if obj.is_pair() {
+        obj.car_unchecked()
+    } else {
+        panic!("{}: pair required but got {}", name, obj)
+    }
 }
+
 fn list_tail(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "list-tail";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let index = args[1];
+    if !index.is_fixnum() || index.to_isize() < 0 {
+        panic!("{}: number index > 0 required but got {}", name, index);
+    }
+    let mut index = index.to_isize();
+    let mut obj = args[0];
+    while index > 0 {
+        if obj.is_pair() {
+            obj = obj.cdr_unchecked();
+        } else {
+            panic!("{}: proper list required but got {}", name, obj);
+        }
+        index -= 1;
+    }
+    obj
 }
 fn time_usage(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "time-usage";
@@ -4349,7 +4974,7 @@ fn file_stat_mtime(_vm: &mut Vm, args: &mut [Object]) -> Object {
             .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
             .as_secs();
 
-        Object::Number(mtime_seconds as isize)
+        Object::Fixnum(mtime_seconds as isize)
     } else {
         panic!("{}: file path required but got {}", name, args[0])
     }
@@ -4546,7 +5171,7 @@ fn make_simple_struct(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "make-simple-struct";
     check_argc!(name, args, 3);
     match args[1] {
-        Object::Number(len) => {
+        Object::Fixnum(len) => {
             let mut s = vm.gc.alloc(SimpleStruct::new(args[0], len as usize));
             s.initialize(args[2]);
             Object::SimpleStruct(s)
@@ -4564,7 +5189,7 @@ fn simple_struct_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "simple-struct-set!";
     check_argc!(name, args, 3);
     match (args[0], args[1]) {
-        (Object::SimpleStruct(mut s), Object::Number(index)) => {
+        (Object::SimpleStruct(mut s), Object::Fixnum(index)) => {
             s.set(index as usize, args[2]);
             Object::Unspecified
         }
@@ -4618,7 +5243,7 @@ fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> Object {
         }
         if is_same_marks_raw(
             mark_mul,
-            mark_mul_mul.to_vector().data[si.car_unchecked().to_number() as usize],
+            mark_mul_mul.to_vector().data[si.car_unchecked().to_isize() as usize],
         ) {
             return si.car_unchecked();
         }
@@ -4743,7 +5368,7 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> Object {
                         continue;
                     } else {
                         return rib.to_simple_struct().field(2).to_vector().data
-                            [i.to_number() as usize];
+                            [i.to_isize() as usize];
                     }
                 } else {
                     let mut sym_mul = rib.to_simple_struct().field(0);

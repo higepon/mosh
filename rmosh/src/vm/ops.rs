@@ -1,5 +1,6 @@
 use crate::{
     gc::GcRef,
+    numbers::{add, eqv, ge, gt, le, lt, sub},
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
@@ -8,35 +9,11 @@ use crate::{
 use super::Vm;
 
 #[macro_export]
-macro_rules! branch_number_cmp_op {
-    ($op:tt, $self:ident) => {
-        {
-            let skip_offset = $self.isize_operand();
-            match ($self.pop(), $self.ac) {
-                (Object::Number(lhs), Object::Number(rhs)) => {
-                    let op_result = lhs $op rhs;
-                    $self.set_return_value(Object::make_bool(op_result));
-                    if op_result {
-                        // go to then.
-                    } else {
-                        // Branch and jump to else.
-                        $self.pc = $self.jump($self.pc, skip_offset - 1);
-                    }
-                }
-                obj => {
-                    panic!("{}: numbers requierd but got {:?}",  stringify!($op), obj);
-                }
-            }
-        }
-    };
-}
-
-#[macro_export]
 macro_rules! number_cmp_op {
     ($op:tt, $self:ident) => {
         {
             match ($self.pop(), $self.ac) {
-                (Object::Number(l), Object::Number(r)) => {
+                (Object::Fixnum(l), Object::Fixnum(r)) => {
                     $self.set_return_value(Object::make_bool(l $op r))
                 }
                 obj => {
@@ -62,11 +39,12 @@ impl Vm {
     #[inline(always)]
     pub(super) fn number_add_op(&mut self) {
         match (self.pop(), self.ac) {
-            (Object::Number(a), Object::Number(b)) => {
-                self.set_return_value(Object::Number(a + b));
+            (Object::Fixnum(a), Object::Fixnum(b)) => {
+                self.set_return_value(Object::Fixnum(a + b));
             }
             (a, b) => {
-                panic!("+: numbers required but got {:?} {:?}", a, b);
+                let val = add(&mut self.gc, a, b);
+                self.set_return_value(val);
             }
         }
     }
@@ -224,7 +202,7 @@ impl Vm {
                     } else if procedure.func as usize == procs::eval as usize {
                         self.eval_ret_code = vec![];
                         self.eval_ret_code.push(Object::Instruction(Op::Return));
-                        self.eval_ret_code.push(Object::Number(argc));
+                        self.eval_ret_code.push(Object::Fixnum(argc));
 
                         self.pc = self.eval_ret_code.as_ptr();
                         (procedure.func)(self, args);
@@ -233,10 +211,11 @@ impl Vm {
                         // self.cl = self.ac
                         self.ret_code = vec![];
                         self.ret_code.push(Object::Instruction(Op::Return));
-                        self.ret_code.push(Object::Number(argc));
+                        self.ret_code.push(Object::Fixnum(argc));
 
                         self.pc = self.ret_code.as_ptr();
                         /*
+                        // debug
                         let free_vars = default_free_vars(&mut self.gc);
                         for free_var in free_vars {
                             if free_var.to_procedure().func as usize == procedure.func as usize {
@@ -246,6 +225,30 @@ impl Vm {
                         */
                         self.ac = (procedure.func)(self, args);
                     }
+                }
+                Object::Continuation(c) => {
+                    self.eval_code_array.push(vec![]);
+                    let code = self.eval_code_array.last_mut().unwrap();
+
+                    code.push(Object::Instruction(Op::ConstantPush));
+                    code.push(c.winders);
+                    code.push(Object::Instruction(Op::DynamicWinders));
+                    code.push(Object::Instruction(Op::BranchNotEq));
+                    code.push(Object::Fixnum(3));
+                    code.push(Object::Instruction(Op::LocalJmp));
+                    code.push(Object::Fixnum(8));
+                    code.push(Object::Instruction(Op::Frame));
+                    code.push(Object::Fixnum(6));
+                    code.push(Object::Instruction(Op::ConstantPush));
+                    code.push(c.winders);
+                    code.push(Object::Instruction(Op::ReferGlobalCall));
+                    code.push(self.gc.symbol_intern("perform-dynamic-wind"));
+                    code.push(Object::Fixnum(1));
+                    code.push(Object::Instruction(Op::RestoreContinuation));
+                    code.push(Object::Fixnum(argc));
+                    code.push(c.stack);
+                    code.push(Object::Fixnum(c.shift_size));
+                    self.pc = code.as_ptr();
                 }
                 _ => {
                     panic!("can't call {:?}", self.ac);
@@ -262,14 +265,10 @@ impl Vm {
 
     #[inline(always)]
     pub(super) fn number_sub_op(&mut self) {
-        match (self.pop(), self.ac) {
-            (Object::Number(a), Object::Number(b)) => {
-                self.set_return_value(Object::Number(a - b));
-            }
-            (a, b) => {
-                panic!("-: numbers required but got {:?} {:?}", a, b);
-            }
-        }
+        let lhs = self.pop();
+        let rhs = self.ac;
+        let result = sub(&mut self.gc, lhs, rhs);
+        self.set_return_value(result);
     }
 
     #[inline(always)]
@@ -286,7 +285,7 @@ impl Vm {
         // ======== sp ==========
         //
         // where pc* = pc + skip_offset -1
-        let skip_offset = self.operand().to_number();
+        let skip_offset = self.operand().to_isize();
         let next_pc = self.jump(self.pc, skip_offset - 1);
         self.make_frame(next_pc);
     }
@@ -318,5 +317,70 @@ impl Vm {
         self.set_return_value(Object::Closure(c));
         self.sp = self.dec(self.sp, num_free_vars);
         self.pc = self.jump(self.pc, size as isize - 6);
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_eq_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = eqv(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_gt_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = gt(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_lt_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = lt(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_ge_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = ge(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
+    }
+
+    #[inline(always)]
+    pub(super) fn branch_not_le_op(&mut self) {
+        let skip_offset = self.isize_operand();
+        let op_result = le(self.pop(), self.ac);
+        self.set_return_value(Object::make_bool(op_result));
+        if op_result {
+            // go to then.
+        } else {
+            // Branch and jump to else.
+            self.pc = self.jump(self.pc, skip_offset - 1);
+        }
     }
 }

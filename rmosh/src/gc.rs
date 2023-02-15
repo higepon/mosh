@@ -14,9 +14,10 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::objects::{
-    ByteVector, Closure, EqHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol,
-    Vector, Vox,
+    ByteVector, Closure, Continuation, ContinuationStack, EqHashtable, Object, Pair, Procedure,
+    SString, SimpleStruct, Symbol, Vector, Vox,
 };
+
 use crate::ports::FileInputPort;
 use crate::vm::Vm;
 
@@ -71,21 +72,26 @@ impl<T> DerefMut for GcRef<T> {
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ObjectType {
+    Bignum,
+    BinaryFileInputPort,
+    BinaryFileOutputPort,
     ByteVector,
     Closure,
+    Compnum,
+    Continuation,
+    ContinuationStack,
     EqHashtable,
-    BinaryFileOutputPort,
-    BinaryFileInputPort,
-    FileOutputPort,
     FileInputPort,
-    StdOutputPort,
-    StdErrorPort,
-    StringInputPort,
-    StringOutputPort,
+    FileOutputPort,
     Pair,
     Procedure,
+    Ratnum,
     SimpleStruct,
+    StdErrorPort,
+    StdOutputPort,
     String,
+    StringInputPort,
+    StringOutputPort,
     Symbol,
     Vector,
     Vox,
@@ -243,7 +249,7 @@ impl Gc {
     pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> Object {
         let mut u8_vec: Vec<u8> = vec![];
         for obj in objects {
-            if let Object::Number(n) = obj {
+            if let Object::Fixnum(n) = obj {
                 if *n >= 0 && *n <= 255 {
                     u8_vec.push(*n as u8);
                 } else {
@@ -371,6 +377,8 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
+            Object::Continuation(_) => todo!(),
+            Object::ContinuationStack(_) => todo!(),
             Object::FileInputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -388,8 +396,12 @@ impl Gc {
             Object::StdOutputPort(_) => {}
             Object::StdErrorPort(_) => {}
             Object::Nil => {}
-            Object::Float(_) => {}
-            Object::Number(_) => {}
+            Object::Flonum(_) => {}
+            Object::Fixnum(_) => {}
+            Object::Compnum(_) => {}
+            Object::Bignum(_) => {}
+            Object::Ratnum(_) => {}
+            Object::Regexp(_) => {}
             Object::Instruction(_) => {}
             Object::ObjectPointer(_) => {}
             Object::ProgramCounter(_) => {}
@@ -529,6 +541,17 @@ impl Gc {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.parsed);
             }
+            ObjectType::Continuation => {
+                let c: &Continuation = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(c.stack);
+                self.mark_object(c.winders);
+            }
+            ObjectType::ContinuationStack => {
+                let c: &ContinuationStack = unsafe { mem::transmute(pointer.as_ref()) };
+                for obj in c.data.iter() {
+                    self.mark_object(*obj);
+                }
+            }
             ObjectType::BinaryFileInputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
@@ -539,6 +562,9 @@ impl Gc {
             ObjectType::String => {}
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
+            ObjectType::Ratnum => {}
+            ObjectType::Bignum => {}
+            ObjectType::Compnum => {}
             ObjectType::ByteVector => {}
         }
     }
@@ -555,6 +581,9 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
+        use crate::numbers::{Bignum, Compnum, Ratnum};
+        use crate::objects::Continuation;
+        use crate::objects::ContinuationStack;
         use crate::ports::{
             BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
             StringInputPort, StringOutputPort,
@@ -573,6 +602,26 @@ impl Gc {
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(sstring)
+            }
+            ObjectType::Bignum => {
+                let n: &Bignum = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }
+            ObjectType::Ratnum => {
+                let n: &Ratnum = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }
+            ObjectType::Compnum => {
+                let n: &Compnum = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }
+            ObjectType::Continuation => {
+                let n: &Continuation = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }
+            ObjectType::ContinuationStack => {
+                let n: &ContinuationStack = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
             }
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(header) };

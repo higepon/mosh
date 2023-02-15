@@ -11,7 +11,7 @@ use super::Vm;
 impl Vm {
     // Main entry point for eval.
     pub fn eval_after(&mut self, sexp: Object) -> Object {
-        //println!("eval={}", sexp);
+        //println!("eval_after={}", sexp);
         let name = self.gc.symbol_intern("compile-w/o-halt");
         let v = self.call_by_name(name, sexp).to_vector();
         let code_size = v.len();
@@ -25,7 +25,7 @@ impl Vm {
             eval_code.push(v.data[i]);
         }
         eval_code.push(Object::Instruction(Op::Return));
-        eval_code.push(Object::Number(0));
+        eval_code.push(Object::Fixnum(0));
         // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
@@ -54,7 +54,7 @@ impl Vm {
             eval_code.push(v.data[i]);
         }
         eval_code.push(Object::Instruction(Op::Return));
-        eval_code.push(Object::Number(0));
+        eval_code.push(Object::Fixnum(0));
         // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
@@ -67,7 +67,7 @@ impl Vm {
         ));
 
         return self.set_after_trigger0(Object::Closure(c));
-    }    
+    }
 
     fn set_after_trigger0(&mut self, closure: Object) -> Object {
         self.make_frame(self.pc);

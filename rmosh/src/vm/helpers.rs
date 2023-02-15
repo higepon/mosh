@@ -50,7 +50,7 @@ impl Vm {
 
     #[inline(always)]
     pub(super) fn isize_operand(&mut self) -> isize {
-        self.operand().to_number()
+        self.operand().to_isize()
     }
 
     #[inline(always)]
@@ -60,7 +60,7 @@ impl Vm {
 
     #[inline(always)]
     pub(super) fn usize_operand(&mut self) -> usize {
-        self.operand().to_number() as usize
+        self.operand().to_isize() as usize
     }
 
     #[inline(always)]

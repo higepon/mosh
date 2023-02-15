@@ -1,8 +1,7 @@
 use crate::{
-    branch_number_cmp_op,
     equal::Equal,
-    number_cmp_op,
-    objects::{Closure, Object, Pair, Vox},
+    numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError},
+    objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
 };
@@ -38,16 +37,16 @@ impl Vm {
             match op {
                 Op::CompileError => todo!(),
                 Op::BranchNotLe => {
-                    branch_number_cmp_op!(<=, self);
+                    self.branch_not_le_op();
                 }
                 Op::BranchNotGe => {
-                    branch_number_cmp_op!(>=, self);
+                    self.branch_not_ge_op();
                 }
                 Op::BranchNotLt => {
-                    branch_number_cmp_op!(<, self);
+                    self.branch_not_lt_op();
                 }
                 Op::BranchNotGt => {
-                    branch_number_cmp_op!(>, self);
+                    self.branch_not_gt_op();
                 }
                 Op::BranchNotNull => {
                     let skip_offset = self.isize_operand();
@@ -61,7 +60,7 @@ impl Vm {
                     }
                 }
                 Op::BranchNotNumberEqual => {
-                    branch_number_cmp_op!(==, self);
+                    self.branch_not_eq_op();
                 }
                 Op::BranchNotEq => {
                     let skip_offset = self.isize_operand();
@@ -303,12 +302,20 @@ impl Vm {
                     self.pc = self.jump(self.pc, jump_offset - 1);
                 }
                 Op::MakeContinuation => {
-                    let _n = self.isize_operand();
-                    let dummy = self.gc.new_string("TODO:continuation");
-                    self.set_return_value(dummy);
+                    let n = self.isize_operand();
+                    let source_stack = &self.stack[0..self.stack_len()];
+                    let c_stack = Object::ContinuationStack(
+                        self.gc.alloc(ContinuationStack::new(source_stack)),
+                    );
+                    let c = Object::Continuation(self.gc.alloc(Continuation::new(
+                        n,
+                        c_stack,
+                        self.dynamic_winders,
+                    )));
+                    self.set_return_value(c);
                 }
                 Op::MakeVector => match self.pop() {
-                    Object::Number(size) => {
+                    Object::Fixnum(size) => {
                         let v = vec![self.ac; size as usize];
                         let v = self.gc.new_vector(&v);
                         self.set_return_value(v);
@@ -328,36 +335,66 @@ impl Vm {
                     self.number_add_op();
                 }
                 Op::NumberEqual => {
-                    number_cmp_op!(==, self);
+                    let op_result = eqv(self.pop(), self.ac);
+                    self.set_return_value(Object::make_bool(op_result));
                 }
                 Op::NumberGe => {
-                    number_cmp_op!(>=, self);
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = ge(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!(">=: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
                 Op::NumberGt => {
-                    number_cmp_op!(>, self);
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = gt(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!(">: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
                 Op::NumberLe => {
-                    number_cmp_op!(<=, self);
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = le(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!("<=: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
                 Op::NumberLt => {
-                    number_cmp_op!(<, self);
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    if lhs.is_number() && rhs.is_number() {
+                        let op_result = lt(lhs, rhs);
+                        self.set_return_value(Object::make_bool(op_result));
+                    } else {
+                        panic!("<: numbers required but got {} {}", lhs, rhs);
+                    }
                 }
-                Op::NumberMul => match (self.pop(), self.ac) {
-                    (Object::Number(a), Object::Number(b)) => {
-                        self.set_return_value(Object::Number(a * b));
+                Op::NumberMul => {
+                    let lhs = self.pop();
+                    let rhs = self.ac;
+                    let op_result = mul(&mut self.gc, lhs, rhs);
+                    self.set_return_value(op_result);
+                }
+                Op::NumberDiv => {
+                    let n = self.pop();
+                    let d = self.ac;
+                    match div(&mut self.gc, n, d) {
+                        Ok(result) => self.set_return_value(result),
+                        Err(SchemeError::Div0) => {
+                            panic!("/: division by zero {} {}", n, d)
+                        }
+                        _ => panic!(),
                     }
-                    (a, b) => {
-                        panic!("+: numbers required but got {:?} {:?}", a, b);
-                    }
-                },
-                Op::NumberDiv => match (self.pop(), self.ac) {
-                    (Object::Number(a), Object::Number(b)) => {
-                        self.set_return_value(Object::Number(a / b));
-                    }
-                    (a, b) => {
-                        panic!("/: numbers required but got {:?} {:?}", a, b);
-                    }
-                },
+                }
                 Op::NumberSub => {
                     self.number_sub_op();
                 }
@@ -410,7 +447,26 @@ impl Vm {
                     let n = self.isize_operand();
                     self.refer_local_op(n)
                 }
-                Op::RestoreContinuation => todo!(),
+                Op::RestoreContinuation => {
+                    self.num_values = self.usize_operand();
+                    if self.num_values != 0 {
+                        for i in 0..self.num_values - 1 {
+                            self.values[i] =
+                                self.index(self.sp, (self.num_values - i - 2) as isize);
+                        }
+                        self.ac = self.index(self.sp, self.num_values as isize - 1);
+                    }
+
+                    let c_stack = self.operand().to_continuation_stack();
+                    let restored_size = c_stack.restore(&mut self.stack);
+                    self.sp = self.stack.as_mut_ptr();
+                    self.sp = self.inc(self.sp, restored_size as isize);
+
+                    let depth = 0;
+                    let diff = self.isize_operand();
+                    self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
+                    self.return_n(0);
+                }
                 Op::Return => {
                     let n = self.isize_operand();
                     self.return_n(n);
@@ -508,8 +564,10 @@ impl Vm {
                         } else {
                             self.gc.list1(self.ac)
                         };
-                        for i in 0..self.num_values - 1 {
-                            ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                        if self.num_values >= 1 {
+                            for i in 0..self.num_values - 1 {
+                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                            }
                         }
                         self.push(ret);
                     // (receive (a b . c) ...)
@@ -556,7 +614,7 @@ impl Vm {
                 }
                 Op::VectorLength => match self.ac {
                     Object::Vector(v) => {
-                        self.set_return_value(Object::Number(v.len() as isize));
+                        self.set_return_value(Object::Fixnum(v.len() as isize));
                     }
                     obj => {
                         self.arg_err("vector-length", "vector", obj);
@@ -571,7 +629,7 @@ impl Vm {
                     }
                 },
                 Op::VectorRef => match (self.pop(), self.ac) {
-                    (Object::Vector(v), Object::Number(idx)) => {
+                    (Object::Vector(v), Object::Fixnum(idx)) => {
                         let idx = idx as usize;
                         if idx < v.data.len() {
                             self.set_return_value(v.data[idx]);
@@ -590,7 +648,7 @@ impl Vm {
                     let n = self.pop();
                     let obj = self.pop();
                     match (obj, n) {
-                        (Object::Vector(mut v), Object::Number(idx)) => {
+                        (Object::Vector(mut v), Object::Fixnum(idx)) => {
                             let idx = idx as usize;
                             if idx < v.data.len() {
                                 v.data[idx] = self.ac;
@@ -681,14 +739,14 @@ impl Vm {
                     self.refer_local_op(n);
                     self.push_op();
                     self.constant_op();
-                    branch_number_cmp_op!(<=, self);
+                    self.branch_not_le_op();
                 }
                 Op::ReferLocalPushConstantBranchNotGe => {
                     let n = self.isize_operand();
                     self.refer_local_op(n);
                     self.push_op();
                     self.constant_op();
-                    branch_number_cmp_op!(>=, self);
+                    self.branch_not_ge_op();
                 }
                 Op::ReferLocalPushConstantBranchNotNumberEqual => todo!(),
                 Op::ReferLocalBranchNotNull => {
@@ -700,7 +758,7 @@ impl Vm {
                 Op::ReferLocalBranchNotLt => {
                     let n = self.isize_operand();
                     self.refer_local_op(n);
-                    branch_number_cmp_op!(<, self);
+                    self.branch_not_lt_op();
                 }
                 Op::ReferFreeCall => {
                     let n = self.usize_operand();
@@ -757,7 +815,7 @@ impl Vm {
                     self.set_return_value(vec);
                 }
                 Op::SimpleStructRef => match (self.pop(), self.ac) {
-                    (Object::SimpleStruct(s), Object::Number(idx)) => {
+                    (Object::SimpleStruct(s), Object::Fixnum(idx)) => {
                         self.set_return_value(s.data[idx as usize]);
                     }
                     (obj1, obj2) => {
@@ -767,7 +825,9 @@ impl Vm {
                         );
                     }
                 },
-                Op::DynamicWinders => todo!(),
+                Op::DynamicWinders => {
+                    self.set_return_value(self.dynamic_winders);
+                }
                 Op::TailCall => {
                     let depth = self.isize_operand();
                     let diff = self.isize_operand();

@@ -111,6 +111,7 @@ pub struct StringInputPort {
     pub header: GcHeader,
     source: String,
     idx: usize,
+    ahead_char: Option<char>,
     pub parsed: Object,
 }
 
@@ -120,15 +121,39 @@ impl StringInputPort {
             header: GcHeader::new(ObjectType::StringInputPort),
             source: source.to_owned(),
             idx: 0,
+            ahead_char: None,
             parsed: Object::Unspecified,
         }
     }
 
     pub fn read_char(&mut self) -> Option<char> {
-        let mut chars = self.source.chars();
-        let ret = chars.nth(self.idx);
-        self.idx = self.idx + 1;
-        ret
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let mut chars = self.source.chars();
+                let ret = chars.nth(self.idx);
+                self.idx = self.idx + 1;
+                ret
+            }
+        }
+    }
+
+    pub fn lookahead_char(&mut self) -> Option<char> {
+        match self.ahead_char {
+            Some(ch) => {
+                self.ahead_char = None;
+                Some(ch)
+            }
+            None => self.read_char(),
+        }
+    }
+
+    pub fn unget_char(&mut self, c: char) {
+        assert!(self.ahead_char == None);
+        self.ahead_char = Some(c);
     }
 }
 
@@ -183,11 +208,11 @@ pub trait TextOutputPort {
             None => Object::False,
         };
         if seen_state.is_true() {
-            seen.insert(obj, Object::Number(*shared_id));
+            seen.insert(obj, Object::Fixnum(*shared_id));
             self.put_string(&format!("#{}=", shared_id))?;
             *shared_id += 1;
         } else if seen_state.is_number() {
-            return self.put_string(&format!("#{}#", seen_state.to_number()));
+            return self.put_string(&format!("#{}#", seen_state.to_isize()));
         }
         match obj {
             Object::Pair(p) => self.display_pair(p, seen, shared_id),
@@ -195,6 +220,8 @@ pub trait TextOutputPort {
             Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id),
             Object::ByteVector(_)
             | Object::Closure(_)
+            | Object::Continuation(_)
+            | Object::ContinuationStack(_)
             | Object::Vox(_)
             | Object::ProgramCounter(_)
             | Object::ObjectPointer(_)
@@ -203,8 +230,12 @@ pub trait TextOutputPort {
             | Object::Procedure(_)
             | Object::Char(_)
             | Object::EqHashtable(_)
+            | Object::Bignum(_)
+            | Object::Compnum(_)
+            | Object::Ratnum(_)
+            | Object::Regexp(_)
             | Object::False
-            | Object::Float(_)
+            | Object::Flonum(_)
             | Object::StringInputPort(_)
             | Object::FileInputPort(_)
             | Object::Eof
@@ -218,7 +249,7 @@ pub trait TextOutputPort {
             | Object::Nil
             | Object::Symbol(_)
             | Object::String(_)
-            | Object::Number(_) => self.as_display(obj),
+            | Object::Fixnum(_) => self.as_display(obj),
         }
     }
 
@@ -327,31 +358,37 @@ pub trait TextOutputPort {
         loop {
             match o {
                 Object::ByteVector(_)
-                | Object::Closure(_)
-                | Object::Vox(_)
-                | Object::ProgramCounter(_)
-                | Object::ObjectPointer(_)
-                | Object::Unspecified
-                | Object::True
-                | Object::Procedure(_)
-                | Object::Char(_)
-                | Object::EqHashtable(_)
-                | Object::False
-                | Object::Float(_)
-                | Object::StringInputPort(_)
-                | Object::FileInputPort(_)
-                | Object::Eof
+                | Object::Bignum(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
+                | Object::Char(_)
+                | Object::Closure(_)
+                | Object::Compnum(_)
+                | Object::Continuation(_)
+                | Object::ContinuationStack(_)
+                | Object::Eof
+                | Object::EqHashtable(_)
+                | Object::False
+                | Object::FileInputPort(_)
                 | Object::FileOutputPort(_)
-                | Object::StringOutputPort(_)
-                | Object::StdOutputPort(_)
-                | Object::StdErrorPort(_)
+                | Object::Flonum(_)
                 | Object::Instruction(_)
                 | Object::Nil
-                | Object::Symbol(_)
+                | Object::ObjectPointer(_)
+                | Object::Procedure(_)
+                | Object::ProgramCounter(_)
+                | Object::Ratnum(_)
+                | Object::Regexp(_)
+                | Object::StdErrorPort(_)
+                | Object::StdOutputPort(_)
                 | Object::String(_)
-                | Object::Number(_) => return,
+                | Object::StringInputPort(_)
+                | Object::StringOutputPort(_)
+                | Object::Symbol(_)
+                | Object::True
+                | Object::Unspecified
+                | Object::Vox(_)
+                | Object::Fixnum(_) => return,
                 Object::Pair(p) => {
                     let val = match seen.get(&o) {
                         Some(v) => *v,
@@ -437,7 +474,7 @@ pub trait TextOutputPort {
                     break;
                 }
             } else {
-                print!("{}", c)
+                self.put_string(&format!("{}", c)).ok();
             }
         }
     }
@@ -592,7 +629,7 @@ impl StringOutputPort {
 
 impl Display for StringOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<file-output-port>")
+        write!(f, "#<string-output-port>")
     }
 }
 
