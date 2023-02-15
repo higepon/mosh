@@ -19,7 +19,7 @@ use crate::{
     op::Op,
     ports::{ReadError, StdErrorPort, StdOutputPort, TextInputPort},
     procs::default_free_vars,
-    psyntax,
+    psyntax, error,
 };
 
 const STACK_SIZE: usize = 65536;
@@ -147,7 +147,7 @@ impl Vm {
         ret
     }
 
-    pub fn enable_r7rs(&mut self, args: Object) -> Object {
+    pub fn enable_r7rs(&mut self, args: Object) -> error::Result<Object> {
         let mut fasl = FaslReader {
             bytes: psyntax::U8_ARRAY,
             shared_objects: &mut HashMap::new(),

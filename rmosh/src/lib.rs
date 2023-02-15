@@ -14,6 +14,7 @@ pub mod ports;
 pub mod procs;
 pub mod psyntax;
 pub mod vm;
+pub mod error;
 
 #[macro_use]
 extern crate lalrpop_util;

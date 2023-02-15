@@ -1,5 +1,6 @@
 use crate::{
     equal::Equal,
+    error,
     numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
@@ -9,7 +10,7 @@ use crate::{
 use super::{Vm, MAX_NUM_VALUES};
 
 impl Vm {
-    pub fn run(&mut self, ops: *const Object, ops_len: usize) -> Object {
+    pub fn run(&mut self, ops: *const Object, ops_len: usize) -> error::Result<Object> {
         if !self.is_initialized {
             self.sp = self.stack.as_mut_ptr();
             self.fp = self.sp;
@@ -26,7 +27,7 @@ impl Vm {
 
         // Clean up so that GC can sweep them.
         self.reset_roots();
-        ret
+        Ok(ret)
     }
 
     pub(super) fn run_ops(&mut self, ops: *const Object) -> Object {

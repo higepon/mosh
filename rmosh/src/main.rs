@@ -24,6 +24,7 @@ pub mod ports;
 pub mod procs;
 pub mod psyntax;
 pub mod vm;
+pub mod error;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
