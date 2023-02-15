@@ -3298,10 +3298,18 @@ fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> Object {
                 && (0 <= dst_start)
                 && (dst_start + k <= (dst.len() as isize))
             {
-                for i in 0..k {
-                    let dst_idx = (dst_start + i) as usize;
-                    let src_idx = (src_start + i) as usize;
-                    dst.data[dst_idx] = src.data[src_idx];
+                if dst == src && dst_start > src_start {
+                    for i in (0..k).rev() {
+                        let dst_idx = (dst_start + i) as usize;
+                        let src_idx = (src_start + i) as usize;
+                        dst.data[dst_idx] = src.data[src_idx];
+                    }
+                } else {
+                    for i in 0..k {
+                        let dst_idx = (dst_start + i) as usize;
+                        let src_idx = (src_start + i) as usize;
+                        dst.data[dst_idx] = src.data[src_idx];
+                    }
                 }
             } else {
                 panic!("{}: invalid range", name)
