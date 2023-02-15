@@ -3490,9 +3490,20 @@ fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> Object {
         panic!("{}: string required but got {}", name, args[0]);
     }
 }
-fn utf8_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
+fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "utf8->string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::ByteVector(bv) => match std::str::from_utf8(&bv.data) {
+            Ok(s) => Object::String(vm.gc.alloc(SString::new(&s))),
+            Err(err) => {
+                panic!("{}: {}", name, err)
+            }
+        },
+        _ => {
+            panic!("{}: bytevector required bug got {}", name, args[0])
+        }
+    }
 }
 fn null_terminated_bytevector_to_string(_vm: &mut Vm, args: &mut [Object]) -> Object {
     let name: &str = "null-terminated-bytevector->string";
