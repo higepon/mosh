@@ -1629,7 +1629,7 @@
 (test #u8(#xCE #xBB) (string->utf8 "λ"))
 
 (test-end)
-#|
+
 (test-begin "6.10 Control Features")
 
 (test #t (procedure? car))
@@ -1640,6 +1640,7 @@
 
 (test 7 (apply + (list 3 4)))
 (test 7 (apply + 3 4 (list)))
+#|
 (test-error (apply +)) ;; not enough args
 (test-error (apply + 3)) ;; final arg not a list
 (test-error (apply + 3 4)) ;; final arg not a list
