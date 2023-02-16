@@ -1,9 +1,10 @@
 use crate::{
+    error,
     gc::GcRef,
     numbers::{add, eqv, ge, gt, le, lt, sub},
-    objects::{Closure, Object, SString, Symbol},
+    objects::{Closure, Object, Symbol},
     op::Op,
-    procs::{self}, error,
+    procs::{self},
 };
 
 use super::Vm;
@@ -71,18 +72,25 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn car_op(&mut self) {
+    pub(super) fn car_op(&mut self) -> error::Result<Object> {
         match self.ac {
             Object::Pair(pair) => {
                 self.set_return_value(pair.car);
+                Ok(Object::Unspecified)
             }
-            obj => {
-                // self.arg_err("car", "pair", obj);
-                let who = Object::False;
-                let message = Object::String(self.gc.alloc(SString::new("car car")));
-                self.raise_after3("assertion-violation", who, message, Object::Nil);
-            }
+            obj => self.assertion_violation("car", "pair required", obj),
         }
+    }
+
+    pub(super) fn assertion_violation(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        self.raise_after3("assertion-violation", who, message, irritants)
     }
 
     #[inline(always)]
@@ -116,7 +124,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn call_op(&mut self, argc: isize)  -> error::Result<Object>{
+    pub(super) fn call_op(&mut self, argc: isize) -> error::Result<Object> {
         let mut argc = argc;
         'call: loop {
             match self.ac {
@@ -165,7 +173,8 @@ impl Vm {
                     // We convert apply call to Op::Call.
                     if procedure.func as usize == procs::apply as usize {
                         if argc == 1 {
-                            panic!("apply: need two or more arguments but only 1 argument");
+                            self.assertion_violation("apply", "need two or more arguments but only 1 argument", Object::Nil)?;
+                            return Ok(Object::Unspecified);
                         }
                         self.sp = self.dec(self.sp, argc);
                         self.ac = args[0];

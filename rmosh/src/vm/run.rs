@@ -103,7 +103,7 @@ impl Vm {
                 }
                 Op::Call => {
                     let argc = self.isize_operand();
-                    self.call_op(argc);
+                    self.call_op(argc)?;
                 }
                 Op::Apply => todo!(),
                 Op::Push => {
@@ -167,7 +167,7 @@ impl Vm {
                     }
                 },
                 Op::Car => {
-                    self.car_op();
+                    self.car_op()?;
                 }
                 Op::Cdar => match self.ac {
                     Object::Pair(pair) => match pair.car {
@@ -694,7 +694,7 @@ impl Vm {
                     self.frame_op();
                 }
                 Op::CarPush => {
-                    self.car_op();
+                    self.car_op()?;
                     self.push_op();
                 }
                 Op::CdrPush => {
@@ -717,7 +717,7 @@ impl Vm {
                     let symbol = self.symbol_operand();
                     let argc = self.isize_operand();
                     self.refer_global_op(symbol);
-                    self.call_op(argc);
+                    self.call_op(argc)?;
                 }
                 Op::ReferFreePush => {
                     let n = self.usize_operand();
@@ -765,7 +765,7 @@ impl Vm {
                     let n = self.usize_operand();
                     let argc = self.isize_operand();
                     self.refer_free_op(n);
-                    self.call_op(argc);
+                    self.call_op(argc)?;
                 }
                 Op::ReferGlobalPush => {
                     let symbol = self.symbol_operand();
@@ -777,7 +777,7 @@ impl Vm {
                     let n = self.isize_operand();
                     let argc = self.isize_operand();
                     self.refer_local_op(n);
-                    self.call_op(argc);
+                    self.call_op(argc)?;
                 }
                 Op::LocalCall => {
                     let argc = self.isize_operand();
@@ -834,7 +834,7 @@ impl Vm {
                     let diff = self.isize_operand();
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let argc = depth;
-                    self.call_op(argc);
+                    self.call_op(argc)?;
                 }
                 Op::LocalTailCall => {
                     let depth = self.isize_operand();

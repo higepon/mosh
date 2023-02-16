@@ -880,7 +880,6 @@ impl Compnum {
     // atan(z) = (i/2)*log((i+z)/(i-z))
     pub fn atan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
         assert!(n.is_compnum());
-        let square = mul(gc, n, n);
         let a = Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))));
         let b = add(gc, a, n);
         let c = sub(gc, a, n);
@@ -1270,7 +1269,7 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     }
 }
 
-pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn quotient(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1311,7 +1310,7 @@ pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sche
     }
 }
 
-pub fn remainder(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn remainder(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1337,7 +1336,7 @@ pub fn remainder(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sch
 
         (Object::Flonum(_), Object::Flonum(_)) => todo!(),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
@@ -1358,7 +1357,7 @@ pub fn remainder(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sch
     }
 }
 
-pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn modulo(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1385,7 +1384,7 @@ pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Scheme
 
         (Object::Flonum(_), Object::Flonum(_)) => todo!(),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Flonum(fl), Object::Bignum(b)) => todo!(),
+        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
@@ -1528,7 +1527,7 @@ pub fn asin(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     match n {
         Object::Fixnum(fx) => fx.asin(),
-        Object::Compnum(c) => Compnum::asin(gc, n),
+        Object::Compnum(_c) => Compnum::asin(gc, n),
         _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).asin())),
         _ => panic!(),
     }
@@ -1538,7 +1537,7 @@ pub fn acos(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     match n {
         Object::Fixnum(fx) => fx.acos(),
-        Object::Compnum(c) => Compnum::acos(gc, n),
+        Object::Compnum(_c) => Compnum::acos(gc, n),
         _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).acos())),
         _ => panic!(),
     }
@@ -1548,13 +1547,13 @@ pub fn atan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
     assert!(n.is_number());
     match n {
         Object::Fixnum(fx) => Ok(fx.atan()),
-        Object::Compnum(c) => Compnum::atan(gc, n),
+        Object::Compnum(_c) => Compnum::atan(gc, n),
         _ if n.is_real() => Ok(Object::Flonum(Flonum::new(real_to_f64(n).atan()))),
         _ => panic!(),
     }
 }
 
-pub fn atan2(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+pub fn atan2(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n1.is_real());
     assert!(n2.is_real());
     if n1.is_exact_zero() {
@@ -1580,7 +1579,7 @@ pub fn magnitude(gc: &mut Box<Gc>, n: Object) -> Object {
     }
 }
 
-pub fn angle(gc: &mut Box<Gc>, n: Object) -> Object {
+pub fn angle(_gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     if n.is_real() {
         if n.is_negative() {
@@ -1625,7 +1624,7 @@ pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
         Object::Flonum(fl) => fl.sqrt(),
         Object::Bignum(b) => b.sqrt(gc),
         Object::Compnum(c) => c.sqrt(gc),
-        Object::Ratnum(r) => todo!(),
+        Object::Ratnum(_r) => todo!(),
         _ => panic!(),
     }
 }

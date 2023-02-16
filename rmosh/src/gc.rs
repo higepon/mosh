@@ -583,8 +583,6 @@ impl Gc {
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
         use crate::numbers::{Bignum, Compnum, Ratnum};
-        use crate::objects::Continuation;
-        use crate::objects::ContinuationStack;
         use crate::ports::{
             BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
             StringInputPort, StringOutputPort,
