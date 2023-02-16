@@ -19,7 +19,7 @@ impl Vm {
             self.initialize_free_vars(ops, ops_len);
 
             // Load the base library.
-            self.load_compiler();
+            self.load_compiler()?;
             self.is_initialized = true;
         }
         // Run the program.

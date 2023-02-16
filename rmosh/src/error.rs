@@ -12,6 +12,16 @@ pub struct Error {
     irritants: Object,
 }
 
+impl Error {
+    pub fn new(who: Object, message: Object, irritants: Object) -> Self {
+        Self {
+            who: who,
+            message: message,
+            irritants: irritants,
+        }
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(

@@ -11,7 +11,7 @@ use std::{
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     equal::Equal,
-    error,
+    error::{self, Error},
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
     number_lexer::NumberLexer,
@@ -3044,13 +3044,11 @@ fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> error::Result<O
 }
 fn throw(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "throw";
-    println!("{} tentative called", name);
-    println!("{} called", name);
-    for i in 0..args.len() {
-        println!("  arg={}", args[i]);
-    }
+    check_argc!(name, args, 1);
+    let message = Object::String(vm.gc.alloc(SString::new("hige2")));
 
-    Ok(vm.gc.new_string("return value of throw"))
+// todo: this is not correct.
+    Err(Error::new(Object::False,message, args[0]))
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "<";
