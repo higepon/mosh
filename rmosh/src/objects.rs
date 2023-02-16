@@ -1,3 +1,4 @@
+use crate::error;
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
@@ -694,7 +695,7 @@ impl ByteVector {
         self.data[i] = v;
     }
 
-    pub fn copy(&self) -> Self{
+    pub fn copy(&self) -> Self {
         Self::new(&self.data)
     }
 
@@ -1079,12 +1080,12 @@ impl Display for Symbol {
 /// Procedures written in Rust.
 pub struct Procedure {
     pub header: GcHeader,
-    pub func: fn(&mut Vm, &mut [Object]) -> Object,
+    pub func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>,
     pub name: String,
 }
 
 impl Procedure {
-    pub fn new(func: fn(&mut Vm, &mut [Object]) -> Object, name: String) -> Self {
+    pub fn new(func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
@@ -1316,9 +1317,9 @@ pub mod tests {
     use regex::Regex;
 
     // Helpers.
-    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> Object {
+    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         assert_eq!(args.len(), 1);
-        args[0]
+        Ok(args[0])
     }
 
     /*
@@ -1354,7 +1355,7 @@ pub mod tests {
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
         let mut stack = [Object::Fixnum(1), Object::Fixnum(2)];
         match (p.func)(&mut vm, &mut stack[0..1]) {
-            Object::Fixnum(1) => {}
+            Ok(Object::Fixnum(1)) => {}
             _ => {
                 panic!("Wrong return value");
             }

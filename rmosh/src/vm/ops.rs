@@ -3,7 +3,7 @@ use crate::{
     numbers::{add, eqv, ge, gt, le, lt, sub},
     objects::{Closure, Object, SString, Symbol},
     op::Op,
-    procs::{self},
+    procs::{self}, error,
 };
 
 use super::Vm;
@@ -116,7 +116,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn call_op(&mut self, argc: isize) {
+    pub(super) fn call_op(&mut self, argc: isize)  -> error::Result<Object>{
         let mut argc = argc;
         'call: loop {
             match self.ac {
@@ -208,7 +208,7 @@ impl Vm {
                         self.eval_ret_code.push(Object::Fixnum(argc));
 
                         self.pc = self.eval_ret_code.as_ptr();
-                        (procedure.func)(self, args);
+                        (procedure.func)(self, args)?;
                     } else {
                         // TODO: Take care of cl.
                         // self.cl = self.ac
@@ -226,7 +226,7 @@ impl Vm {
                             }
                         }
                         */
-                        self.ac = (procedure.func)(self, args);
+                        self.ac = (procedure.func)(self, args)?;
                     }
                 }
                 Object::Continuation(c) => {
@@ -259,6 +259,7 @@ impl Vm {
             }
             break;
         }
+        Ok(Object::Unspecified)
     }
 
     #[inline(always)]

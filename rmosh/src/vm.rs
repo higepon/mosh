@@ -12,14 +12,14 @@ mod ops;
 mod run;
 
 use crate::{
-    compiler,
+    compiler, error,
     fasl::FaslReader,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
     ports::{ReadError, StdErrorPort, StdOutputPort, TextInputPort},
     procs::default_free_vars,
-    psyntax, error,
+    psyntax,
 };
 
 const STACK_SIZE: usize = 65536;
@@ -76,7 +76,7 @@ pub struct Vm {
     pub should_load_compiler: bool,
     pub compiled_programs: Vec<Object>,
     pub trigger0_code: Vec<Object>,
-    pub trigger3_code: Vec<Object>,    
+    pub trigger3_code: Vec<Object>,
     pub eval_code_array: Vec<Vec<Object>>,
     pub eval_ret_code: Vec<Object>,
     pub ret_code: Vec<Object>,
@@ -112,7 +112,7 @@ impl Vm {
             is_initialized: false,
             compiled_programs: vec![],
             trigger0_code: vec![],
-            trigger3_code: vec![],            
+            trigger3_code: vec![],
             eval_code_array: vec![],
             eval_ret_code: vec![],
             ret_code: vec![],
@@ -135,13 +135,13 @@ impl Vm {
 
         ret.trigger3_code.push(Object::Instruction(Op::Constant));
         ret.trigger3_code.push(Object::Unspecified);
-        ret.trigger3_code.push(Object::Instruction(Op::Push));    
+        ret.trigger3_code.push(Object::Instruction(Op::Push));
         ret.trigger3_code.push(Object::Instruction(Op::Constant));
         ret.trigger3_code.push(Object::Unspecified);
-        ret.trigger3_code.push(Object::Instruction(Op::Push));    
+        ret.trigger3_code.push(Object::Instruction(Op::Push));
         ret.trigger3_code.push(Object::Instruction(Op::Constant));
         ret.trigger3_code.push(Object::Unspecified);
-        ret.trigger3_code.push(Object::Instruction(Op::Push));    
+        ret.trigger3_code.push(Object::Instruction(Op::Push));
         ret.trigger3_code.push(Object::Instruction(Op::Constant));
         ret.trigger3_code.push(Object::Unspecified);
         ret.trigger3_code.push(Object::Instruction(Op::Call));
@@ -295,7 +295,7 @@ impl Vm {
         self.dc = Object::Closure(display);
     }
 
-    fn load_compiler(&mut self) -> Object {
+    fn load_compiler(&mut self) -> error::Result<Object> {
         let mut fasl = FaslReader {
             bytes: compiler::U8_ARRAY,
             shared_objects: &mut HashMap::new(),

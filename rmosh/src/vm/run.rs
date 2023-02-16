@@ -27,10 +27,10 @@ impl Vm {
 
         // Clean up so that GC can sweep them.
         self.reset_roots();
-        Ok(ret)
+        ret
     }
 
-    pub(super) fn run_ops(&mut self, ops: *const Object) -> Object {
+    pub(super) fn run_ops(&mut self, ops: *const Object) ->  error::Result<Object> {
         self.pc = ops;
         loop {
             let op: Op = unsafe { *self.pc }.to_instruction();
@@ -850,7 +850,7 @@ impl Vm {
             self.print_vm(op);
             //self.pc = self.jump(self.pc, 1);
         }
-        self.ac
+        Ok(self.ac)
     }
 
     #[cfg(feature = "debug_log_vm")]

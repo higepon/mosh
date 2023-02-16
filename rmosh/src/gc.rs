@@ -13,6 +13,7 @@ use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
+use crate::error;
 use crate::objects::{
     ByteVector, Closure, Continuation, ContinuationStack, EqHashtable, Object, Pair, Procedure,
     SString, SimpleStruct, Symbol, Vector, Vox,
@@ -230,7 +231,7 @@ impl Gc {
 
     pub fn new_procedure(
         &mut self,
-        func: fn(&mut Vm, &mut [Object]) -> Object,
+        func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>,
         name: &str,
     ) -> Object {
         Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
