@@ -2369,7 +2369,9 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
                     match FileInputPort::open(&path.string) {
                         Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
                         Err(err) => {
-                            panic!("{}: {} {}", name, path.string, err)
+                            let who = vm.gc.new_string(name);
+                            let message = vm.gc.new_string(&format!("{}", err));
+                            return Err(error::Error::new(who, message, vm.gc.list1(args[0])));
                         }
                     }
                 } else if buffer_mode.string.eq("none") {
@@ -2530,7 +2532,7 @@ fn is_procedure(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "procedure?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Procedure(_) | Object::Closure(_) => Ok(Object::True),
+        Object::Procedure(_) | Object::Closure(_) | Object::Continuation(_) => Ok(Object::True),
         _ => Ok(Object::False),
     }
 }

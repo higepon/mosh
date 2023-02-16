@@ -1784,7 +1784,7 @@
             (reverse path)))))
 
 (test-end)
-#|
+
 (test-begin "6.11 Exceptions")
 
 (test 65
@@ -1803,6 +1803,7 @@
 
 (test #f
     (file-error? (guard (exn (else exn)) (error "BOOM!"))))
+#|
 (test #t
     (file-error? (guard (exn (else exn)) (open-input-file " no such file "))))
 
