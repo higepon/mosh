@@ -104,7 +104,7 @@ impl Vm {
             globals: HashMap::new(),
             lib_compiler: vec![],
             lib_psyntax: vec![],
-            dynamic_winders: Object::Unspecified,
+            dynamic_winders: Object::Nil,
             num_values: 0,
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),

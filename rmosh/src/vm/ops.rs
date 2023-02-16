@@ -173,7 +173,11 @@ impl Vm {
                     // We convert apply call to Op::Call.
                     if procedure.func as usize == procs::apply as usize {
                         if argc == 1 {
-                            self.assertion_violation("apply", "need two or more arguments but only 1 argument", Object::Nil)?;
+                            self.assertion_violation(
+                                "apply",
+                                "need two or more arguments but only 1 argument",
+                                Object::Nil,
+                            )?;
                             return Ok(Object::Unspecified);
                         }
                         self.sp = self.dec(self.sp, argc);
@@ -184,10 +188,12 @@ impl Vm {
                             if i == argc - 1 {
                                 let mut last_pair = args[i as usize];
                                 if !last_pair.is_list() {
-                                    panic!(
-                                        "apply: last arguments shoulbe proper list but got {}",
-                                        last_pair
-                                    );
+                                    self.assertion_violation(
+                                        "apply",
+                                        "last arguments shoulbe proper list but got",
+                                        last_pair,
+                                    )?;
+                                    return Ok(Object::Unspecified);
                                 }
                                 let mut j: isize = 0;
                                 loop {

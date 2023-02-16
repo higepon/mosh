@@ -2271,7 +2271,9 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
                 panic!("{}: {} {}", name, path, err);
             }
         };
-        Ok(Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(file))))
+        Ok(Object::BinaryFileOutputPort(
+            vm.gc.alloc(BinaryFileOutputPort::new(file)),
+        ))
     } else {
         let file_options = match args[1] {
             Object::SimpleStruct(s) => s.field(1),
@@ -2283,9 +2285,15 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         let sym_no_create = vm.gc.symbol_intern("no-create");
         let sym_no_truncate = vm.gc.symbol_intern("no-truncate");
         let sym_no_fail = vm.gc.symbol_intern("no-fail");
-        let no_create_p = !memq(vm, &mut [sym_no_create, file_options]).unwrap().is_false();
-        let no_truncate_p = !memq(vm, &mut [sym_no_truncate, file_options]).unwrap().is_false();
-        let no_fail_p = !memq(vm, &mut [sym_no_fail, file_options]).unwrap().is_false();
+        let no_create_p = !memq(vm, &mut [sym_no_create, file_options])
+            .unwrap()
+            .is_false();
+        let no_truncate_p = !memq(vm, &mut [sym_no_truncate, file_options])
+            .unwrap()
+            .is_false();
+        let no_fail_p = !memq(vm, &mut [sym_no_fail, file_options])
+            .unwrap()
+            .is_false();
 
         if file_exists && empty_p {
             panic!("{}: file already exists {}", name, path)
@@ -2323,7 +2331,9 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
                 panic!("{}: {} {}", name, path, err);
             }
         };
-        Ok(Object::FileOutputPort(vm.gc.alloc(FileOutputPort::new(file))))
+        Ok(Object::FileOutputPort(
+            vm.gc.alloc(FileOutputPort::new(file)),
+        ))
     }
 }
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2338,7 +2348,9 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
                 Ok(file) => file,
                 Err(err) => panic!("{}: {} {}", name, args[0], err),
             };
-            Ok(Object::BinaryFileInputPort(vm.gc.alloc(BinaryFileInputPort::new(file))))
+            Ok(Object::BinaryFileInputPort(
+                vm.gc.alloc(BinaryFileInputPort::new(file)),
+            ))
         } else {
             panic!("{}: path required but got {}", name, args[0]);
         }
@@ -2819,11 +2831,12 @@ fn code_builder_put_insn_arg2_destructive(
     let name: &str = "code-builder-put-insn-arg2!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn length(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "length";
     check_argc!(name, args, 1);
     if !Pair::is_list(args[0]) {
-        panic!("{}: list require bug got {}", name, args[0]);
+        vm.print_stack();
+        panic!("{}: list require but got {}", name, args[0]);
     }
     let mut len = 0;
     let mut obj = args[0];
@@ -3047,8 +3060,8 @@ fn throw(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let message = Object::String(vm.gc.alloc(SString::new("hige2")));
 
-// todo: this is not correct.
-    Err(Error::new(Object::False,message, args[0]))
+    // todo: this is not correct.
+    Err(Error::new(Object::False, message, args[0]))
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "<";
@@ -3526,7 +3539,9 @@ fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf8";
     check_argc!(name, args, 1);
     if let Object::String(s) = args[0] {
-        Ok(Object::ByteVector(vm.gc.alloc(ByteVector::new(&s.string.as_bytes().to_vec()))))
+        Ok(Object::ByteVector(
+            vm.gc.alloc(ByteVector::new(&s.string.as_bytes().to_vec())),
+        ))
     } else {
         panic!("{}: string required but got {}", name, args[0]);
     }
@@ -3602,9 +3617,9 @@ fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     let name: &str = "make-instruction";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::Fixnum(n) => {
-            Ok(Object::Instruction(FromPrimitive::from_u8(n as u8).expect("unknown Op")))
-        }
+        Object::Fixnum(n) => Ok(Object::Instruction(
+            FromPrimitive::from_u8(n as u8).expect("unknown Op"),
+        )),
         _ => {
             panic!("{}: number requred but got {}", name, args[0])
         }
@@ -3724,7 +3739,7 @@ fn is_inexact(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn exact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "exact";
     check_argc!(name, args, 1);
-Ok(    numbers::exact(&mut vm.gc, args[0]))
+    Ok(numbers::exact(&mut vm.gc, args[0]))
 }
 fn inexact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "inexact";
@@ -3974,18 +3989,18 @@ fn bitwise_arithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> error::Result<
 fn is_complex(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "complex?";
     check_argc!(name, args, 1);
-Ok(    Object::make_bool(args[0].is_complex()))
+    Ok(Object::make_bool(args[0].is_complex()))
 }
 fn is_real(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real?";
     check_argc!(name, args, 1);
-Ok(    Object::make_bool(args[0].is_real()))
+    Ok(Object::make_bool(args[0].is_real()))
 }
 
 fn is_integer(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "integer?";
     check_argc!(name, args, 1);
-Ok(    Object::make_bool(args[0].is_integer(&mut vm.gc)))
+    Ok(Object::make_bool(args[0].is_integer(&mut vm.gc)))
 }
 fn is_real_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real-valued?";
@@ -4284,7 +4299,7 @@ fn truncate(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if !args[0].is_real() {
         panic!("{}: real number required but got {}", name, args[0])
     }
-Ok(    numbers::truncate(&mut vm.gc, args[0]))
+    Ok(numbers::truncate(&mut vm.gc, args[0]))
 }
 fn round(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "round";
@@ -4388,7 +4403,7 @@ fn acos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn sqrt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "sqrt";
     check_argc!(name, args, 1);
-Ok(    numbers::sqrt(&mut vm.gc, args[0]))
+    Ok(numbers::sqrt(&mut vm.gc, args[0]))
 }
 fn magnitude(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "magnitude";
@@ -4484,7 +4499,9 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 if argc == 2 {
                     let start = start as usize;
                     let end = len as usize;
-                    Ok(Object::String(vm.gc.alloc(SString::new(&s.string[start..end]))))
+                    Ok(Object::String(
+                        vm.gc.alloc(SString::new(&s.string[start..end])),
+                    ))
                 } else {
                     let end = args[2];
                     if !end.is_fixnum() {
@@ -4496,7 +4513,9 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     }
                     let start = start as usize;
                     let end = end as usize;
-                    Ok(Object::String(vm.gc.alloc(SString::new(&s.string[start..end]))))
+                    Ok(Object::String(
+                        vm.gc.alloc(SString::new(&s.string[start..end])),
+                    ))
                 }
             }
             _ => {
@@ -4514,7 +4533,7 @@ fn vector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<O
             panic!("{}: vector required but got {}", name, args[0])
         }
     }
-Ok(    Object::Unspecified)
+    Ok(Object::Unspecified)
 }
 fn ungensym(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "ungensym";
@@ -4542,7 +4561,9 @@ fn is_fast_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fast-equal?";
     check_argc!(name, args, 2);
     let e = Equal::new();
-Ok(    Object::make_bool(e.is_equal(&mut vm.gc, &args[0], &args[1])))
+    Ok(Object::make_bool(
+        e.is_equal(&mut vm.gc, &args[0], &args[1]),
+    ))
 }
 fn native_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-eol-style";
@@ -4647,7 +4668,7 @@ fn ffi_error(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn host_os(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "host-os";
     check_argc!(name, args, 0);
-Ok(    vm.gc.new_string(env::consts::OS))
+    Ok(vm.gc.new_string(env::consts::OS))
 }
 fn is_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "output-port?";
@@ -4888,7 +4909,7 @@ fn vm_join_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
 }
 fn is_main_vm(_vm: &mut Vm, _args: &mut [Object]) -> error::Result<Object> {
     let _name: &str = "main-vm?";
-Ok(    Object::True)
+    Ok(Object::True)
 }
 fn vm_self(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "vm-self";
@@ -5427,8 +5448,9 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         subst_mul = subst_mul.cdr_unchecked();
                         continue;
                     } else {
-                        return Ok(rib.to_simple_struct().field(2).to_vector().data
-                            [i.to_isize() as usize]);
+                        return Ok(
+                            rib.to_simple_struct().field(2).to_vector().data[i.to_isize() as usize]
+                        );
                     }
                 } else {
                     let mut sym_mul = rib.to_simple_struct().field(0);

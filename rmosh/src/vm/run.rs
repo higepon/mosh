@@ -853,6 +853,12 @@ impl Vm {
         Ok(self.ac)
     }
 
+    pub fn print_stack(&self) {
+        for i in 0..self.stack_len() {
+            println!("{}", self.stack[i].to_short_string());
+        }        
+    }
+
     #[cfg(feature = "debug_log_vm")]
     fn print_vm(&mut self, op: Op) {
         println!("-----------------------------------------");

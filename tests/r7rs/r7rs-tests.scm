@@ -1642,7 +1642,7 @@
 (test 7 (apply + 3 4 (list)))
 
 (test-error (apply +)) ;; not enough args
-#|
+
 (test-error (apply + 3)) ;; final arg not a list
 (test-error (apply + 3 4)) ;; final arg not a list
 (test-error (apply + '(2 3 . 4))) ;; final arg is improper
@@ -1735,7 +1735,7 @@
    (lambda (i) (list-set! v i (* i i)))
    '#(0 1 2 3 4))
   v))
-
+#|
 (test -3 (call-with-current-continuation
   (lambda (exit)
     (for-each (lambda (x)
