@@ -1735,7 +1735,7 @@
    (lambda (i) (list-set! v i (* i i)))
    '#(0 1 2 3 4))
   v))
-#|
+
 (test -3 (call-with-current-continuation
   (lambda (exit)
     (for-each (lambda (x)
@@ -1784,7 +1784,7 @@
             (reverse path)))))
 
 (test-end)
-
+#|
 (test-begin "6.11 Exceptions")
 
 (test 65

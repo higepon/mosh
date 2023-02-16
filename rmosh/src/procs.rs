@@ -3121,9 +3121,24 @@ fn number_add(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 }
 
-fn nuber_sub(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn nuber_sub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "-";
-    panic!("{}({}) not implemented", name, args.len());
+    let argc = args.len();
+    if argc == 0 {
+        Ok(Object::Fixnum(0))
+    } else if argc == 1 {
+        if args[0].is_number() {
+            Ok(numbers::negate(&mut vm.gc, args[0]))
+        } else {
+            panic!("{}: number required but got {}", name, args[0])
+        }
+    } else {
+        let mut ret = args[0];
+        for i in 1..argc - 1 {
+            ret = numbers::sub(&mut vm.gc, ret, args[i]);
+        }
+        Ok(ret)
+    }
 }
 fn number_mul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "*";
