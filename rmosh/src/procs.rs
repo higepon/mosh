@@ -12,7 +12,6 @@ use std::{
 use crate::{
     as_bytevector,
     equal::Equal,
-    error::{self},
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
     number_lexer::NumberLexer,
@@ -24,7 +23,7 @@ use crate::{
         FileInputPort, FileOutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
         TextOutputPort,
     },
-    vm::Vm,
+    vm::Vm, error,
 };
 
 use num_traits::FromPrimitive;
