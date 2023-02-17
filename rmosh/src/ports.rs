@@ -66,6 +66,49 @@ pub trait TextInputPort {
     }
 }
 
+
+#[derive(Debug)]
+pub struct StdInputPort {
+    pub header: GcHeader,
+    pub parsed: Object,
+}
+
+impl StdInputPort {
+    pub fn new() -> Self {
+        StdInputPort {
+            header: GcHeader::new(ObjectType::StdInputPort),
+            parsed: Object::Unspecified,
+        }
+    }
+}
+
+impl Display for StdInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<std-input-port>")
+    }
+}
+
+impl Port for StdInputPort {
+    fn is_open(&self) -> bool {
+        true
+    }
+
+    fn close(&mut self) {
+    }
+}
+
+impl TextInputPort for StdInputPort {
+    fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
+        io::stdin().read_to_string(str)
+    }
+    fn set_parsed(&mut self, obj: Object) {
+        self.parsed = obj;
+    }
+    fn parsed(&self) -> Object {
+        self.parsed
+    }
+}
+
 #[derive(Debug)]
 pub struct FileInputPort {
     pub header: GcHeader,
@@ -269,6 +312,7 @@ pub trait TextOutputPort {
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
+            | Object::StdInputPort(_)            
             | Object::StdOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::Instruction(_)
@@ -408,6 +452,7 @@ pub trait TextOutputPort {
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
                 | Object::StdErrorPort(_)
+                | Object::StdInputPort(_)                
                 | Object::StdOutputPort(_)
                 | Object::String(_)
                 | Object::StringInputPort(_)

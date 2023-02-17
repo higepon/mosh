@@ -17,7 +17,7 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
-    ports::{ReadError, StdErrorPort, StdOutputPort, TextInputPort},
+    ports::{ReadError, StdErrorPort, StdOutputPort, TextInputPort, StdInputPort},
     procs::default_free_vars,
     psyntax,
 };
@@ -125,6 +125,7 @@ impl Vm {
         };
         ret.current_output_port = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
         ret.current_error_port = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
+        ret.current_input_port = Object::StdInputPort(ret.gc.alloc(StdInputPort::new()));
         ret.trigger0_code.push(Object::Instruction(Op::Constant));
         ret.trigger0_code.push(Object::Unspecified);
         ret.trigger0_code.push(Object::Instruction(Op::Call));

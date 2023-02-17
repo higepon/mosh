@@ -91,6 +91,7 @@ pub enum ObjectType {
     Ratnum,
     SimpleStruct,
     StdErrorPort,
+    StdInputPort,    
     StdOutputPort,
     String,
     StringInputPort,
@@ -402,6 +403,7 @@ impl Gc {
             }
             Object::StringInputPort(_) => {}
             Object::StringOutputPort(_) => {}
+            Object::StdInputPort(_) => {}            
             Object::StdOutputPort(_) => {}
             Object::StdErrorPort(_) => {}
             Object::Nil => {}
@@ -567,6 +569,7 @@ impl Gc {
             ObjectType::BinaryFileInputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
+            ObjectType::StdInputPort => {}            
             ObjectType::StdOutputPort => {}
             ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {}

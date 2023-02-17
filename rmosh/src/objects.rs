@@ -6,7 +6,7 @@ use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
     FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort,
-    TextOutputPort,
+    TextOutputPort, StdInputPort,
 };
 use crate::vm::Vm;
 
@@ -27,9 +27,9 @@ pub enum Object {
     BytevectorOutputPort(GcRef<BytevectorOutputPort>),
     Char(char),
     Closure(GcRef<Closure>),
+    Compnum(GcRef<Compnum>),
     Continuation(GcRef<Continuation>),
     ContinuationStack(GcRef<ContinuationStack>),
-    Compnum(GcRef<Compnum>),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
@@ -47,6 +47,7 @@ pub enum Object {
     Regexp(GcRef<Regexp>),
     SimpleStruct(GcRef<SimpleStruct>),
     StdErrorPort(GcRef<StdErrorPort>),
+    StdInputPort(GcRef<StdInputPort>),    
     StdOutputPort(GcRef<StdOutputPort>),
     String(GcRef<SString>),
     StringInputPort(GcRef<StringInputPort>),
@@ -184,6 +185,7 @@ impl Object {
         match self {
             Object::BinaryFileInputPort(_)
             | Object::FileInputPort(_)
+            | Object::StdInputPort(_)            
             | Object::StringInputPort(_) => true,
             _ => false,
         }
@@ -358,6 +360,7 @@ impl Object {
             | Object::FileInputPort(_)
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
+            | Object::StdInputPort(_)            
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -381,6 +384,7 @@ impl Object {
             Object::FileInputPort(_)
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
+            | Object::StdInputPort(_)            
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -449,6 +453,7 @@ impl Object {
             Object::Regexp(_) => todo!(),
             Object::SimpleStruct(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
+            Object::StdInputPort(_) => todo!(),            
             Object::StdOutputPort(_) => todo!(),
             Object::String(_) => todo!(),
             Object::StringInputPort(_) => todo!(),
@@ -472,6 +477,9 @@ impl Debug for Object {
             Object::StdOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::StdInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::StdErrorPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -509,9 +517,6 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::BinaryFileInputPort(port) => {
-                write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }
-            Object::BinaryFileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::FileOutputPort(port) => {
@@ -591,6 +596,9 @@ impl Debug for Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::StdInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::StdOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
