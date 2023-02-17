@@ -15,7 +15,7 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::error;
 use crate::objects::{
-    ByteVector, Closure, Continuation, ContinuationStack, EqHashtable, Object, Pair, Procedure,
+    Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, Object, Pair, Procedure,
     SString, SimpleStruct, Symbol, Vector, Vox,
 };
 
@@ -77,6 +77,7 @@ pub enum ObjectType {
     BinaryFileInputPort,
     BinaryFileOutputPort,
     ByteVector,
+    BytevectorInputPort,
     Closure,
     Compnum,
     Continuation,
@@ -260,8 +261,8 @@ impl Gc {
                 panic!("malformed bytevector");
             }
         }
-        let bv = self.alloc(ByteVector::new(&u8_vec));
-        Object::ByteVector(bv)
+        let bv = self.alloc(Bytevector::new(&u8_vec));
+        Object::Bytevector(bv)
     }
 
     pub fn new_eq_hashtable(&mut self) -> Object {
@@ -386,6 +387,9 @@ impl Gc {
             Object::BinaryFileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
+            Object::BytevectorInputPort(port) => {
+                self.mark_heap_object(port);
+            }            
             Object::BinaryFileInputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -429,7 +433,7 @@ impl Gc {
             Object::Pair(pair) => {
                 self.mark_heap_object(pair);
             }
-            Object::ByteVector(bytevector) => {
+            Object::Bytevector(bytevector) => {
                 self.mark_heap_object(bytevector);
             }
             Object::Vector(vector) => {
@@ -542,6 +546,7 @@ impl Gc {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.parsed);
             }
+
             ObjectType::Continuation => {
                 let c: &Continuation = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(c.stack);
@@ -553,6 +558,7 @@ impl Gc {
                     self.mark_object(*obj);
                 }
             }
+            ObjectType::BytevectorInputPort => {}
             ObjectType::BinaryFileInputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
@@ -671,7 +677,7 @@ impl Gc {
                 std::mem::size_of_val(s)
             }
             ObjectType::ByteVector => {
-                let v: &ByteVector = unsafe { mem::transmute(header) };
+                let v: &Bytevector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)
             }
             ObjectType::Vector => {

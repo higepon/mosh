@@ -4,8 +4,8 @@ use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
-    BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
-    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort,
+    BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, FileInputPort, FileOutputPort,
+    StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort,
 };
 use crate::vm::Vm;
 
@@ -21,7 +21,8 @@ pub enum Object {
     Bignum(GcRef<Bignum>),
     BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
-    ByteVector(GcRef<ByteVector>),
+    Bytevector(GcRef<Bytevector>),
+    BytevectorInputPort(GcRef<BytevectorInputPort>),
     Char(char),
     Closure(GcRef<Closure>),
     Continuation(GcRef<Continuation>),
@@ -88,6 +89,13 @@ impl Object {
     pub fn is_pair(&self) -> bool {
         match self {
             Object::Pair(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_bytevector(&self) -> bool {
+        match self {
+            Object::Bytevector(_) => true,
             _ => false,
         }
     }
@@ -285,6 +293,14 @@ impl Object {
         }
     }
 
+    pub fn to_bytevector(self) -> GcRef<Bytevector> {
+        if let Self::Bytevector(v) = self {
+            v
+        } else {
+            panic!("Not a Object::Bytevector")
+        }
+    }
+
     pub fn to_vox(self) -> GcRef<Vox> {
         if let Self::Vox(v) = self {
             v
@@ -382,7 +398,8 @@ impl Object {
             Object::Bignum(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
-            Object::ByteVector(_) => todo!(),
+            Object::Bytevector(_) => todo!(),
+            Object::BytevectorInputPort(_) => todo!(),
             Object::Char(_) => todo!(),
             Object::Closure(_) => todo!(),
             Object::Continuation(_) => todo!(),
@@ -434,6 +451,9 @@ impl Debug for Object {
             Object::Bignum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::BytevectorInputPort(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
             Object::Continuation(c) => {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
             }
@@ -524,7 +544,7 @@ impl Debug for Object {
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
             }
-            Object::ByteVector(bytevector) => {
+            Object::Bytevector(bytevector) => {
                 write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
@@ -551,6 +571,9 @@ impl Display for Object {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::BinaryFileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::BytevectorInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::FileOutputPort(port) => {
@@ -637,7 +660,7 @@ impl Display for Object {
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
             }
-            Object::ByteVector(bytevector) => {
+            Object::Bytevector(bytevector) => {
                 write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
@@ -686,14 +709,14 @@ impl Display for Vector {
 
 /// ByteVector
 #[derive(Debug)]
-pub struct ByteVector {
+pub struct Bytevector {
     pub header: GcHeader,
     pub data: Vec<u8>,
 }
 
-impl ByteVector {
+impl Bytevector {
     pub fn new(data: &Vec<u8>) -> Self {
-        ByteVector {
+        Bytevector {
             header: GcHeader::new(ObjectType::ByteVector),
             data: data.to_owned(),
         }
@@ -737,7 +760,7 @@ impl ByteVector {
         Self::new(&self.data)
     }
 
-    pub fn equal(&self, other: &ByteVector) -> bool {
+    pub fn equal(&self, other: &Bytevector) -> bool {
         self.data == other.data
     }
 
@@ -746,7 +769,7 @@ impl ByteVector {
     }
 }
 
-impl Display for ByteVector {
+impl Display for Bytevector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#vu8(")?;
         for i in 0..self.data.len() {

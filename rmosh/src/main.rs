@@ -22,6 +22,7 @@ pub mod objects;
 pub mod op;
 pub mod ports;
 pub mod procs;
+pub mod procs_util;
 pub mod psyntax;
 pub mod vm;
 pub mod error;

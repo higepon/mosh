@@ -1,3 +1,4 @@
+use crate::gc::Gc;
 use crate::objects::Object;
 use core::fmt;
 use std::error;
@@ -20,6 +21,15 @@ impl Error {
             irritants: irritants,
         }
     }
+    pub fn new_from_string(gc: &mut Box<Gc>, who: &str, message: &str, irritants: Object) -> Self {
+        let who = gc.new_string(who);
+        let message = gc.new_string(message);        
+        Self {
+            who: who,
+            message: message,
+            irritants: irritants,
+        }
+    }    
 }
 
 impl Display for Error {

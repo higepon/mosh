@@ -217,7 +217,8 @@ pub trait TextOutputPort {
             Object::Pair(p) => self.display_pair(p, seen, shared_id),
             Object::Vector(v) => self.display_vector(v, seen, shared_id),
             Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id),
-            Object::ByteVector(_)
+            Object::Bytevector(_)
+            | Object::BytevectorInputPort(_)            
             | Object::Closure(_)
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
@@ -356,10 +357,11 @@ pub trait TextOutputPort {
         let mut o = obj;
         loop {
             match o {
-                Object::ByteVector(_)
+                Object::Bytevector(_)
                 | Object::Bignum(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
+                | Object::BytevectorInputPort(_)                
                 | Object::Char(_)
                 | Object::Closure(_)
                 | Object::Compnum(_)
@@ -478,6 +480,30 @@ pub trait TextOutputPort {
         }
     }
 }
+
+// BytevectorInputPort
+#[derive(Debug)]
+pub struct BytevectorInputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+}
+
+impl BytevectorInputPort {
+    pub fn new(_bv: &[u8]) -> Self {
+        BytevectorInputPort {
+            header: GcHeader::new(ObjectType::BytevectorInputPort),
+            is_closed: false,
+        }
+    }
+}
+
+
+impl Display for BytevectorInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<bytevector-input-port>")
+    }
+}
+
 
 // BinaryFileInputPort
 #[derive(Debug)]

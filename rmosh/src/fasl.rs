@@ -74,7 +74,8 @@ impl FaslWriter {
             return Ok(());
         }
         match obj {
-            Object::ByteVector(_) => todo!(),
+            Object::Bytevector(_) => todo!(),
+            Object::BytevectorInputPort(_) => todo!(),            
             Object::Char(c) => {
                 self.put_tag(port, Tag::Char)?;
                 port.put_u32(c as u32)?;
@@ -191,7 +192,8 @@ impl FaslWriter {
         let mut o = obj;
         loop {
             match o {
-                Object::ByteVector(_)
+                Object::Bytevector(_)
+                | Object::BytevectorInputPort(_)                
                 | Object::Closure(_)
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)

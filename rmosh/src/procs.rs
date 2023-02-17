@@ -17,12 +17,12 @@ use crate::{
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
-    objects::{ByteVector, EqHashtable, Object, Pair, SString, SimpleStruct},
+    objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
         StringOutputPort, TextInputPort, TextOutputPort,
     },
-    vm::Vm,
+    vm::Vm, as_bytevector,
 };
 
 use num_traits::FromPrimitive;
@@ -2113,7 +2113,7 @@ fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
     let name: &str = "bytevector-u8-set!";
     check_argc!(name, args, 3);
     match (args[0], args[1], args[2]) {
-        (Object::ByteVector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
+        (Object::Bytevector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
             if (index as usize) < bv.len() && v >= 0 && v <= 255 =>
         {
             bv.set_u8_unchecked(index as usize, v as u8);
@@ -2195,7 +2195,7 @@ fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "bytevector-length";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::ByteVector(bv) => Ok(Object::Fixnum(bv.len() as isize)),
+        Object::Bytevector(bv) => Ok(Object::Fixnum(bv.len() as isize)),
         _ => panic!("{} bytevector required but got {}", name, args[0]),
     }
 }
@@ -3267,7 +3267,7 @@ fn is_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::ByteVector(_) => Ok(Object::True),
+        Object::Bytevector(_) => Ok(Object::True),
         _ => Ok(Object::False),
     }
 }
@@ -3309,7 +3309,7 @@ fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Fixnum(len) => {
             let v: Vec<u8> = vec![value; len as usize];
-            Ok(Object::ByteVector(vm.gc.alloc(ByteVector::new(&v))))
+            Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&v))))
         }
         _ => {
             panic!("{}: number required but got {}", name, args[0])
@@ -3331,9 +3331,9 @@ fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Resu
 
     match (args[0], args[1], args[2], args[3], args[4]) {
         (
-            Object::ByteVector(src),
+            Object::Bytevector(src),
             Object::Fixnum(src_start),
-            Object::ByteVector(mut dst),
+            Object::Bytevector(mut dst),
             Object::Fixnum(dst_start),
             Object::Fixnum(k),
         ) => {
@@ -3372,7 +3372,7 @@ fn bytevector_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-copy";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::ByteVector(bv) => Ok(Object::ByteVector(vm.gc.alloc(bv.copy()))),
+        Object::Bytevector(bv) => Ok(Object::Bytevector(vm.gc.alloc(bv.copy()))),
         _ => {
             panic!("{}: bytevector required but got {}", name, args[0])
         }
@@ -3382,7 +3382,7 @@ fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "bytevector-u8-ref";
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
-        (Object::ByteVector(bv), Object::Fixnum(index)) => match bv.ref_u8(index as usize) {
+        (Object::Bytevector(bv), Object::Fixnum(index)) => match bv.ref_u8(index as usize) {
             Some(v) => Ok(Object::Fixnum(*v as isize)),
             None => panic!("{}: index out of range {}", name, index),
         },
@@ -3407,7 +3407,7 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     let name: &str = "bytevector->u8-list";
     check_argc!(name, args, 1);
     let mut ret = Object::Nil;
-    if let Object::ByteVector(bv) = args[0] {
+    if let Object::Bytevector(bv) = args[0] {
         for i in 0..bv.len() {
             ret = vm.gc.cons(
                 Object::Fixnum(bv.ref_u8_unchecked(bv.len() - i - 1) as isize),
@@ -3422,8 +3422,8 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
 fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "u8-list->bytevector";
     check_argc!(name, args, 1);
-    match ByteVector::from_list(args[0]) {
-        Some(bv) => Ok(Object::ByteVector(vm.gc.alloc(bv))),
+    match Bytevector::from_list(args[0]) {
+        Some(bv) => Ok(Object::Bytevector(vm.gc.alloc(bv))),
         None => {
             panic!("{}: u8 list required but got {}", name, args[0])
         }
@@ -3555,8 +3555,8 @@ fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf8";
     check_argc!(name, args, 1);
     if let Object::String(s) = args[0] {
-        Ok(Object::ByteVector(
-            vm.gc.alloc(ByteVector::new(&s.string.as_bytes().to_vec())),
+        Ok(Object::Bytevector(
+            vm.gc.alloc(Bytevector::new(&s.string.as_bytes().to_vec())),
         ))
     } else {
         panic!("{}: string required but got {}", name, args[0]);
@@ -3566,7 +3566,7 @@ fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf8->string";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::ByteVector(bv) => match std::str::from_utf8(&bv.data) {
+        Object::Bytevector(bv) => match std::str::from_utf8(&bv.data) {
             Ok(s) => Ok(Object::String(vm.gc.alloc(SString::new(&s)))),
             Err(err) => {
                 panic!("{}: {}", name, err)
@@ -4029,6 +4029,7 @@ fn is_rational_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
 fn is_integer_valued(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "integer-valued?";
     check_argc!(name, args, 1);
+
     if args[0].is_number() {
         Ok(Object::make_bool(args[0].is_integer_valued(&mut vm.gc)))
     } else {
@@ -4638,10 +4639,16 @@ fn lookahead_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-u8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn open_bytevector_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+
+fn open_bytevector_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-bytevector-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    panic!("bv={}", bv);
+    Ok(Object::Unspecified)
+
 }
+
 fn ffi_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "%ffi-open";
     panic!("{}({}) not implemented", name, args.len());
