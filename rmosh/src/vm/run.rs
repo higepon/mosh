@@ -9,6 +9,21 @@ use crate::{
 
 use super::{Vm, MAX_NUM_VALUES};
 
+// Raise an exception or exit with the exception raised in Scheme world.
+// In R7RS mode we raise the exception in Scheme worled.
+// Otherwise print the exception and exit.
+#[macro_export]
+macro_rules! raise_or_exit {
+    ($self:ident, $call:expr) => {{
+        match $call {
+            Ok(_) => { Object::Unspecified }
+            Err(e) => {
+                $self.assertion_violation_err(e)?
+            }
+        };
+    }};
+}
+
 impl Vm {
     pub fn run(&mut self, ops: *const Object, ops_len: usize) -> error::Result<Object> {
         if !self.is_initialized {
@@ -30,7 +45,7 @@ impl Vm {
         ret
     }
 
-    pub(super) fn run_ops(&mut self, ops: *const Object) ->  error::Result<Object> {
+    pub(super) fn run_ops(&mut self, ops: *const Object) -> error::Result<Object> {
         self.pc = ops;
         loop {
             let op: Op = unsafe { *self.pc }.to_instruction();
@@ -103,7 +118,7 @@ impl Vm {
                 }
                 Op::Call => {
                     let argc = self.isize_operand();
-                    self.call_op(argc)?;
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::Apply => todo!(),
                 Op::Push => {
@@ -408,7 +423,7 @@ impl Vm {
                         port = self.ac;
                     }
                     match port {
-                        Object::FileInputPort(mut port) => match port.read(&mut self.gc) {
+                        Object::FileInputPort(mut p) => match p.read(&mut self.gc) {
                             Ok(obj) => {
                                 self.set_return_value(obj);
                             }
@@ -416,8 +431,16 @@ impl Vm {
                                 panic!("read: error {:?}", err)
                             }
                         },
+                        Object::StringInputPort(mut p) => match p.read(&mut self.gc) {
+                            Ok(obj) => {
+                                self.set_return_value(obj);
+                            }
+                            Err(err) => {
+                                self.assertion_violation("read", &format!("{:?}", err), port)?;
+                            }
+                        },                        
                         _ => {
-                            panic!("read: input port required but got {}", port)
+                            self.assertion_violation("read", "input port required", port)?;
                         }
                     }
                 }
@@ -717,7 +740,7 @@ impl Vm {
                     let symbol = self.symbol_operand();
                     let argc = self.isize_operand();
                     self.refer_global_op(symbol);
-                    self.call_op(argc)?;
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::ReferFreePush => {
                     let n = self.usize_operand();
@@ -765,7 +788,7 @@ impl Vm {
                     let n = self.usize_operand();
                     let argc = self.isize_operand();
                     self.refer_free_op(n);
-                    self.call_op(argc)?;
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::ReferGlobalPush => {
                     let symbol = self.symbol_operand();
@@ -777,7 +800,7 @@ impl Vm {
                     let n = self.isize_operand();
                     let argc = self.isize_operand();
                     self.refer_local_op(n);
-                    self.call_op(argc)?;
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::LocalCall => {
                     let argc = self.isize_operand();
@@ -834,7 +857,7 @@ impl Vm {
                     let diff = self.isize_operand();
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let argc = depth;
-                    self.call_op(argc)?;
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::LocalTailCall => {
                     let depth = self.isize_operand();
@@ -856,7 +879,7 @@ impl Vm {
     pub fn print_stack(&self) {
         for i in 0..self.stack_len() {
             println!("{}", self.stack[i].to_short_string());
-        }        
+        }
     }
 
     #[cfg(feature = "debug_log_vm")]

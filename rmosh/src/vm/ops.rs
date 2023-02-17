@@ -93,6 +93,10 @@ impl Vm {
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
+    pub(super) fn assertion_violation_err(&mut self, err: error::Error) -> error::Result<Object> {
+        self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
+    }
+
     #[inline(always)]
     pub(super) fn refer_local_op(&mut self, n: isize) {
         let obj = self.refer_local(n);
@@ -242,7 +246,7 @@ impl Vm {
                         }
                         */
                         self.ac = (procedure.func)(self, args)?;
-                    }
+                    }  
                 }
                 Object::Continuation(c) => {
                     self.eval_code_array.push(vec![]);

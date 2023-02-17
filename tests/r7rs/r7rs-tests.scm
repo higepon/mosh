@@ -1803,7 +1803,7 @@
 
 (test #f
     (file-error? (guard (exn (else exn)) (error "BOOM!"))))
-#|
+
 (test #t
     (file-error? (guard (exn (else exn)) (open-input-file " no such file "))))
 
@@ -1862,7 +1862,7 @@
                     23)))))
   (test "should be a number" (get-output-string out))
   (test 65 value))
-
+#|
 ;; From SRFI-34 "Examples" section - #3
 (define (test-exception-handler-3 v out)
   (guard (condition

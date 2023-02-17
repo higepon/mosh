@@ -7,9 +7,9 @@ use std::fmt::Display;
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Error {
-    who: Object,
-    message: Object,
-    irritants: Object,
+    pub who: Object,
+    pub message: Object,
+    pub irritants: Object,
 }
 
 impl Error {
@@ -29,7 +29,7 @@ impl Display for Error {
             "who: {} message: {} irritants {}",
             self.who.to_string(),
             self.message.to_string(),
-            self.irritants.to_simple_struct()
+            self.irritants.to_string(),
         )
     }
 }
@@ -41,7 +41,7 @@ impl Debug for Error {
             "who: {} message: {} irritants {}",
             self.who.to_string(),
             self.message.to_string(),
-            self.irritants.to_simple_struct()
+            self.irritants.to_string(),
         )
     }
 }

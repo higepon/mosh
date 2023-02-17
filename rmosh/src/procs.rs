@@ -3057,13 +3057,12 @@ fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> error::Result<O
     let name: &str = "hashtable-hash-function";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn throw(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+// When non-continuable, we just print it and exit.
+fn throw(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "throw";
     check_argc!(name, args, 1);
-    let message = Object::String(vm.gc.alloc(SString::new("hige2")));
-
-    // todo: this is not correct.
-    Err(Error::new(Object::False, message, args[0]))
+    eprintln!("{}", args[0]);
+    process::exit(-1);
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "<";
