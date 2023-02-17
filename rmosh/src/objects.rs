@@ -195,6 +195,7 @@ impl Object {
         match self {
             Object::BinaryFileInputPort(_)
             | Object::BinaryFileOutputPort(_)
+            | Object::BytevectorOutputPort(_)            
             | Object::BytevectorInputPort(_) => true,
             _ => false,
         }
