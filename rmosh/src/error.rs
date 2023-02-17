@@ -21,9 +21,10 @@ impl Error {
             irritants: irritants,
         }
     }
-    pub fn new_from_string(gc: &mut Box<Gc>, who: &str, message: &str, irritants: Object) -> Self {
+    pub fn new_from_string(gc: &mut Box<Gc>, who: &str, message: &str, irritants: &[Object]) -> Self {
         let who = gc.new_string(who);
         let message = gc.new_string(message);        
+        let irritants = gc.listn(irritants);
         Self {
             who: who,
             message: message,

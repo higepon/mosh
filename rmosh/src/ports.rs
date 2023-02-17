@@ -17,6 +17,12 @@ use crate::{
     reader::DatumParser,
 };
 
+// Trait for
+pub trait Port {
+    fn is_open(&self) -> bool;
+    fn close(&mut self);
+}
+
 // Trait for TextInputPort.
 pub trait TextInputPort {
     // The only methods you have to implement.
@@ -81,15 +87,21 @@ impl FileInputPort {
         let file = File::open(path)?;
         Ok(FileInputPort::new(file))
     }
-
-    pub fn close(&mut self) {
-        self.is_closed = true;
-    }
 }
 
 impl Display for FileInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<file-input-port>")
+    }
+}
+
+impl Port for FileInputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+
+    fn close(&mut self) {
+        self.is_closed = true;
     }
 }
 
@@ -175,6 +187,14 @@ impl TextInputPort for StringInputPort {
     }
 }
 
+impl Port for StringInputPort {
+    fn is_open(&self) -> bool {
+        true
+    }
+
+    fn close(&mut self) {}
+}
+
 // Trait for TextOutputPort.
 pub trait TextOutputPort {
     // The only method you have to implement :)
@@ -219,7 +239,7 @@ pub trait TextOutputPort {
             Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id),
             Object::Bytevector(_)
             | Object::BytevectorInputPort(_)
-            | Object::BytevectorOutputPort(_)            
+            | Object::BytevectorOutputPort(_)
             | Object::Closure(_)
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
@@ -363,7 +383,7 @@ pub trait TextOutputPort {
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::BytevectorInputPort(_)
-                | Object::BytevectorOutputPort(_)                
+                | Object::BytevectorOutputPort(_)
                 | Object::Char(_)
                 | Object::Closure(_)
                 | Object::Compnum(_)
@@ -501,6 +521,15 @@ impl BytevectorInputPort {
     }
 }
 
+impl Port for BytevectorInputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
 impl Display for BytevectorInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<bytevector-input-port>")
@@ -522,6 +551,15 @@ impl BytevectorOutputPort {
             is_closed: false,
             data: vec![],
         }
+    }
+}
+
+impl Port for BytevectorOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
     }
 }
 
@@ -557,6 +595,15 @@ impl BinaryFileInputPort {
     }
 }
 
+impl Port for BinaryFileInputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
 impl Display for BinaryFileInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<binary-file-input-port {:?}>", self.file)
@@ -579,8 +626,13 @@ impl FileOutputPort {
             file: file,
         }
     }
+}
 
-    pub fn close(&mut self) {
+impl Port for FileOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
         self.is_closed = true;
     }
 }
@@ -610,6 +662,13 @@ impl StdOutputPort {
     }
 }
 
+impl Port for StdOutputPort {
+    fn is_open(&self) -> bool {
+        true
+    }
+    fn close(&mut self) {}
+}
+
 impl Display for StdOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<std-output-port>")
@@ -634,6 +693,13 @@ impl StdErrorPort {
             header: GcHeader::new(ObjectType::StdErrorPort),
         }
     }
+}
+
+impl Port for StdErrorPort {
+    fn is_open(&self) -> bool {
+        true
+    }
+    fn close(&mut self) {}
 }
 
 impl Display for StdErrorPort {
@@ -675,6 +741,15 @@ impl StringOutputPort {
 
     pub fn string(&self) -> String {
         self.string.to_owned()
+    }
+}
+
+impl Port for StringOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
     }
 }
 
@@ -729,6 +804,14 @@ impl BinaryFileOutputPort {
     }
 }
 
+impl Port for BinaryFileOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
 impl Display for BinaryFileOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<binary-file-output-port>")

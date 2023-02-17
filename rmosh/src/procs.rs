@@ -12,7 +12,7 @@ use std::{
 use crate::{
     as_bytevector,
     equal::Equal,
-    error::{self, Error},
+    error::{self},
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
     number_lexer::NumberLexer,
@@ -20,8 +20,9 @@ use crate::{
     numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
-        BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, FileInputPort,
-        FileOutputPort, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort, BytevectorOutputPort,
+        BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
+        FileInputPort, FileOutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
+        TextOutputPort,
     },
     vm::Vm,
 };
@@ -2189,7 +2190,9 @@ fn sys_open_bytevector_output_port(vm: &mut Vm, args: &mut [Object]) -> error::R
     check_argc_max!(name, args, 1);
     let argc = args.len();
     if argc == 0 || args[0].is_false() {
-        Ok(Object::BytevectorOutputPort(vm.gc.alloc(BytevectorOutputPort::new())))
+        Ok(Object::BytevectorOutputPort(
+            vm.gc.alloc(BytevectorOutputPort::new()),
+        ))
     } else {
         todo!()
     }
@@ -2399,14 +2402,26 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         todo!();
     }
 }
-fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn close_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-input-port";
-    if let Object::FileInputPort(mut port) = args[0] {
-        port.close();
-        Ok(Object::Unspecified)
-    } else {
-        panic!("{}: required input-port but got {}", name, args[0]);
+    check_argc!(name, args, 1);
+    let port = args[0];
+    if !port.is_input_port() {
+        return Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "input_port required",
+            &[args[0]],
+        ));
     }
+    match args[0] {
+        Object::BinaryFileInputPort(mut port) => port.close(),
+        Object::BytevectorInputPort(mut port) => port.close(),
+        Object::FileInputPort(mut port) => port.close(),
+        Object::StringInputPort(mut port) => port.close(),
+        _ => panic!(),
+    }
+    Ok(Object::Unspecified)
 }
 fn vector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "vector";
@@ -3612,30 +3627,32 @@ fn utf32_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf32->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn close_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn close_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-port";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::FileInputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        Object::FileOutputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        Object::BinaryFileInputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        Object::BinaryFileOutputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        _ => {
-            panic!("{}: required input-port but got {}", name, args[0]);
-        }
+    let port = args[0];
+    if !port.is_port() {
+        return Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "port required",
+            &[args[0]],
+        ));
     }
+    match args[0] {
+        Object::BinaryFileInputPort(mut port) => port.close(),
+        Object::BinaryFileOutputPort(mut port) => port.close(),
+        Object::BytevectorInputPort(mut port) => port.close(),
+        Object::BytevectorOutputPort(mut port) => port.close(),
+        Object::FileInputPort(mut port) => port.close(),
+        Object::FileOutputPort(mut port) => port.close(),
+        Object::StdErrorPort(mut port) => port.close(),
+        Object::StdOutputPort(mut port) => port.close(),
+        Object::StringInputPort(mut port) => port.close(),
+        Object::StringOutputPort(mut port) => port.close(),
+        _ => panic!(),
+    }
+    Ok(Object::Unspecified)
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-instruction";
@@ -5701,9 +5718,30 @@ fn set_current_error_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> erro
     let name: &str = "set-current-error-port!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_port_open(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-open?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::make_bool(match args[0] {
+        Object::BinaryFileInputPort(port) => port.is_open(),
+        Object::BinaryFileOutputPort(port) => port.is_open(),
+        Object::BytevectorInputPort(port) => port.is_open(),
+        Object::BytevectorOutputPort(port) => port.is_open(),
+        Object::FileInputPort(port) => port.is_open(),
+        Object::FileOutputPort(port) => port.is_open(),
+        Object::StdErrorPort(port) => port.is_open(),
+        Object::StdOutputPort(port) => port.is_open(),
+        Object::StringInputPort(port) => port.is_open(),
+        Object::StringOutputPort(port) => port.is_open(),
+        _ => {
+            let irritants = vm.gc.list1(args[0]);
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "port required",
+                &[irritants],
+            ));
+        }
+    }))
 }
 fn make_f64array(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-f64array";
