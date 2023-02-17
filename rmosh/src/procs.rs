@@ -5562,9 +5562,9 @@ fn sexp_map_debug(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "sexp-map/debug";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn write_ss(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
-    let name: &str = "write/ss";
-    panic!("{}({}) not implemented", name, args.len());
+fn write_ss(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    let _name: &str = "write/ss";
+    write(vm, args)
 }
 fn monapi_message_send(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "%monapi-message-send";

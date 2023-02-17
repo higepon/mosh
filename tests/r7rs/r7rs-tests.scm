@@ -1862,7 +1862,7 @@
                     23)))))
   (test "should be a number" (get-output-string out))
   (test 65 value))
-#|
+
 ;; From SRFI-34 "Examples" section - #3
 (define (test-exception-handler-3 v out)
   (guard (condition
@@ -1935,7 +1935,7 @@
          (raise (list (cons 'd 24)))))))
 
 (test-end)
-
+#|
 (test-begin "6.12 Environments and evaluation")
 
 ;; (test 21 (eval '(* 7 3) (scheme-report-environment 5)))
