@@ -246,7 +246,7 @@ impl Vm {
                         }
                         */
                         self.ac = (procedure.func)(self, args)?;
-                    }  
+                    }
                 }
                 Object::Continuation(c) => {
                     self.eval_code_array.push(vec![]);

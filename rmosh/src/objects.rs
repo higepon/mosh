@@ -4,8 +4,9 @@ use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
-    BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, FileInputPort, FileOutputPort,
-    StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, BytevectorOutputPort,
+    BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
+    FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort,
+    TextOutputPort,
 };
 use crate::vm::Vm;
 
@@ -23,7 +24,7 @@ pub enum Object {
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
     Bytevector(GcRef<Bytevector>),
     BytevectorInputPort(GcRef<BytevectorInputPort>),
-    BytevectorOutputPort(GcRef<BytevectorOutputPort>),    
+    BytevectorOutputPort(GcRef<BytevectorOutputPort>),
     Char(char),
     Closure(GcRef<Closure>),
     Continuation(GcRef<Continuation>),
@@ -410,7 +411,7 @@ impl Object {
             Object::BinaryFileOutputPort(_) => todo!(),
             Object::Bytevector(_) => todo!(),
             Object::BytevectorInputPort(_) => todo!(),
-            Object::BytevectorOutputPort(_) => todo!(),            
+            Object::BytevectorOutputPort(_) => todo!(),
             Object::Char(_) => todo!(),
             Object::Closure(_) => todo!(),
             Object::Continuation(_) => todo!(),
@@ -467,7 +468,7 @@ impl Debug for Object {
             }
             Object::BytevectorOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
-            }            
+            }
             Object::Continuation(c) => {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
             }
@@ -497,7 +498,7 @@ impl Debug for Object {
             }
             Object::BinaryFileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -595,7 +596,7 @@ impl Display for Object {
             }
             Object::BytevectorOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

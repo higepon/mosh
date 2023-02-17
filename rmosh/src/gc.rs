@@ -78,7 +78,7 @@ pub enum ObjectType {
     BinaryFileOutputPort,
     ByteVector,
     BytevectorInputPort,
-    BytevectorOutputPort,    
+    BytevectorOutputPort,
     Closure,
     Compnum,
     Continuation,
@@ -390,10 +390,10 @@ impl Gc {
             }
             Object::BytevectorInputPort(port) => {
                 self.mark_heap_object(port);
-            }      
+            }
             Object::BytevectorOutputPort(port) => {
                 self.mark_heap_object(port);
-            }                      
+            }
             Object::BinaryFileInputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -563,7 +563,7 @@ impl Gc {
                 }
             }
             ObjectType::BytevectorInputPort => {}
-            ObjectType::BytevectorOutputPort => {}            
+            ObjectType::BytevectorOutputPort => {}
             ObjectType::BinaryFileInputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}

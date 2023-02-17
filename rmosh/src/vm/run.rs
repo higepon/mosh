@@ -16,10 +16,8 @@ use super::{Vm, MAX_NUM_VALUES};
 macro_rules! raise_or_exit {
     ($self:ident, $call:expr) => {{
         match $call {
-            Ok(_) => { Object::Unspecified }
-            Err(e) => {
-                $self.assertion_violation_err(e)?
-            }
+            Ok(_) => Object::Unspecified,
+            Err(e) => $self.assertion_violation_err(e)?,
         };
     }};
 }
@@ -438,7 +436,7 @@ impl Vm {
                             Err(err) => {
                                 self.assertion_violation("read", &format!("{:?}", err), port)?;
                             }
-                        },                        
+                        },
                         _ => {
                             self.assertion_violation("read", "input port required", port)?;
                         }

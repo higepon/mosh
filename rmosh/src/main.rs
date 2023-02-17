@@ -11,6 +11,7 @@ lalrpop_mod!(pub number_reader); // synthesized by LALRPOP
 pub mod alloc;
 pub mod compiler;
 pub mod equal;
+pub mod error;
 pub mod fasl;
 pub mod gc;
 pub mod lexer;
@@ -25,7 +26,6 @@ pub mod procs;
 pub mod procs_util;
 pub mod psyntax;
 pub mod vm;
-pub mod error;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
