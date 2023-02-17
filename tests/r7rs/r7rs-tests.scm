@@ -1935,7 +1935,7 @@
          (raise (list (cons 'd 24)))))))
 
 (test-end)
-#|
+
 (test-begin "6.12 Environments and evaluation")
 
 ;; (test 21 (eval '(* 7 3) (scheme-report-environment 5)))
@@ -2067,7 +2067,7 @@
   (let ((out (open-output-string)))
     (flush-output-port out)
     (get-output-string out)))
-
+#|
 (test #t (eof-object? (read-u8 (open-input-bytevector #u8()))))
 (test 1 (read-u8 (open-input-bytevector #u8(1 2 3))))
 

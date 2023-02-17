@@ -163,10 +163,11 @@ impl Object {
         }
     }
 
-    pub fn is_input_port(&self) -> bool {
+    pub fn is_input_port(self) -> bool {
         match self {
-            Object::FileInputPort(_) => true,
-            Object::StringInputPort(_) => true,
+            Object::BinaryFileInputPort(_)
+            | Object::FileInputPort(_)
+            | Object::StringInputPort(_) => true,
             _ => false,
         }
     }
@@ -305,6 +306,43 @@ impl Object {
             p
         } else {
             panic!("Not a Object::Procedure but {}", self)
+        }
+    }
+
+    pub fn is_port(self) -> bool {
+        match self {
+            Object::BinaryFileInputPort(_)
+            | Object::BinaryFileOutputPort(_)
+            | Object::FileInputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StringInputPort(_)
+            | Object::StringOutputPort(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_output_port(self) -> bool {
+        match self {
+            Object::BinaryFileOutputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StringOutputPort(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_textual_port(self) -> bool {
+        match self {
+            Object::FileInputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StringInputPort(_)
+            | Object::StringOutputPort(_) => true,
+            _ => false,
         }
     }
 

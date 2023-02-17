@@ -4627,7 +4627,8 @@ fn is_binary_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "input-port?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::make_bool(args[0].is_input_port()))
 }
 fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-eof?";
@@ -4688,15 +4689,18 @@ fn host_os(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "output-port?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::make_bool(args[0].is_output_port()))
 }
 fn is_textual_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "textual-port?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::make_bool(args[0].is_textual_port()))
 }
 fn is_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::make_bool(args[0].is_port()))
 }
 fn port_transcoder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-transcoder";
