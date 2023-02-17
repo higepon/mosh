@@ -10,6 +10,7 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
+    as_bytevector,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
@@ -19,10 +20,10 @@ use crate::{
     numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
-        BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
-        StringOutputPort, TextInputPort, TextOutputPort, BytevectorInputPort,
+        BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, FileInputPort,
+        FileOutputPort, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort, BytevectorOutputPort,
     },
-    vm::Vm, as_bytevector,
+    vm::Vm,
 };
 
 use num_traits::FromPrimitive;
@@ -2183,10 +2184,17 @@ fn eof_object(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 0);
     Ok(Object::Eof)
 }
-fn sys_open_bytevector_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn sys_open_bytevector_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "sys-open-bytevector-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_max!(name, args, 1);
+    let argc = args.len();
+    if argc == 0 || args[0].is_false() {
+        Ok(Object::BytevectorOutputPort(vm.gc.alloc(BytevectorOutputPort::new())))
+    } else {
+        todo!()
+    }
 }
+
 fn sys_get_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "sys-get-bytevector";
     panic!("{}({}) not implemented", name, args.len());
@@ -4645,7 +4653,9 @@ fn open_bytevector_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result
     let name: &str = "open-bytevector-input-port";
     check_argc_between!(name, args, 1, 2);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    Ok(Object::BytevectorInputPort(vm.gc.alloc(BytevectorInputPort::new(&bv.data))))
+    Ok(Object::BytevectorInputPort(
+        vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
+    ))
 }
 
 fn ffi_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
