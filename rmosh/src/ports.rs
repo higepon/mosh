@@ -166,6 +166,7 @@ pub struct StringInputPort {
     source: String,
     idx: usize,
     ahead_char: Option<char>,
+    is_closed: bool,    
     pub parsed: Object,
 }
 
@@ -176,6 +177,7 @@ impl StringInputPort {
             source: source.to_owned(),
             idx: 0,
             ahead_char: None,
+            is_closed:false,            
             parsed: Object::Unspecified,
         }
     }
@@ -232,10 +234,12 @@ impl TextInputPort for StringInputPort {
 
 impl Port for StringInputPort {
     fn is_open(&self) -> bool {
-        true
+        !self.is_closed
     }
 
-    fn close(&mut self) {}
+    fn close(&mut self) {
+        self.is_closed = true
+    }
 }
 
 // Trait for TextOutputPort.
