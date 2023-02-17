@@ -200,6 +200,11 @@ pub trait TextOutputPort {
     // The only method you have to implement :)
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error>;
 
+    // (write-char c).
+    fn write_char(&mut self, c: char) -> Result<(), std::io::Error> {
+        self.put_string(&c.to_string())
+    }
+
     // (write obj): Machine readable print.
     fn write(&mut self, obj: Object) -> Result<(), std::io::Error> {
         let mut shared_id = 1;

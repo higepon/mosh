@@ -649,6 +649,14 @@ impl Gc {
                 let port: &BinaryFileInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
+            ObjectType::BytevectorInputPort => {
+                let port: &BytevectorInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }       
+            ObjectType::BytevectorOutputPort => {
+                let port: &BytevectorOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }                     
             ObjectType::BinaryFileOutputPort => {
                 let port: &BinaryFileOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)

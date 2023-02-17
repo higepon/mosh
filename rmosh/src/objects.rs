@@ -128,6 +128,13 @@ impl Object {
             _ => false,
         }
     }
+    
+    pub fn is_char(&self) -> bool {
+        match self {
+            Object::Char(_) => true,
+            _ => false,
+        }
+    }
     pub fn is_flonum(&self) -> bool {
         match self {
             Object::Flonum(_) => true,
@@ -224,6 +231,14 @@ impl Object {
             n
         } else {
             panic!("Not a Object::Fixnum but {}", self)
+        }
+    }
+
+    pub fn to_char(self) -> char {
+        if let Self::Char(c) = self {
+            c
+        } else {
+            panic!("Not a Object::Char but {}", self)
         }
     }
     pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {

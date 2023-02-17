@@ -36,8 +36,8 @@ fn main() {
     for i in 1..args.len() {
         vargs.push(vm.gc.new_string(&args[i]));
     }
-    //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
-    vargs.push(vm.gc.new_string("/root/cont.sc"));
+    vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
+    //vargs.push(vm.gc.new_string("/root/cont.sc"));
     let vargs = vm.gc.listn(&vargs);
     match vm.enable_r7rs(vargs) {
         Ok(_ret) => println!("normal exit"),

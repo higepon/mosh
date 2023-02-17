@@ -10,8 +10,9 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector,
+    as_bytevector, as_char99,
     equal::Equal,
+    error,
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
     number_lexer::NumberLexer,
@@ -23,7 +24,7 @@ use crate::{
         FileInputPort, FileOutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
         TextOutputPort,
     },
-    vm::Vm, error,
+    vm::Vm,
 };
 
 use num_traits::FromPrimitive;
@@ -4751,9 +4752,33 @@ fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn write_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "write-char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    eprintln!("write-char1");    
+    let c = as_char99!(name, args, 0, &mut vm.gc);
+    eprintln!("write-char2");        
+    if args.len() == 1 {
+        todo!();
+    } else {
+        eprintln!("write-char");
+        let result = match args[1] {
+            Object::FileOutputPort(mut port) => port.write_char(c),
+            Object::StdErrorPort(mut port) => port.write_char(c),
+            Object::StdOutputPort(mut port) => port.write_char(c),
+            Object::StringOutputPort(mut port) => port.write_char(c),
+            _ => panic!(),
+        };
+        match result {
+            Ok(_) => Ok(Object::Unspecified),
+            Err(_) => Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "write-char failed",
+                &[args[0]],
+            )),
+        }
+    }
 }
 fn transcoder_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-codec";
