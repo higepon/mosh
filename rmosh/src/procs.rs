@@ -20,7 +20,7 @@ use crate::{
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StringInputPort,
-        StringOutputPort, TextInputPort, TextOutputPort,
+        StringOutputPort, TextInputPort, TextOutputPort, BytevectorInputPort,
     },
     vm::Vm, as_bytevector,
 };
@@ -4624,7 +4624,8 @@ fn set_current_directory_destructive(_vm: &mut Vm, args: &mut [Object]) -> error
 }
 fn is_binary_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "binary-port?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::make_bool(args[0].is_binary_port()))
 }
 fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "input-port?";
@@ -4644,9 +4645,7 @@ fn open_bytevector_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result
     let name: &str = "open-bytevector-input-port";
     check_argc_between!(name, args, 1, 2);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    panic!("bv={}", bv);
-    Ok(Object::Unspecified)
-
+    Ok(Object::BytevectorInputPort(vm.gc.alloc(BytevectorInputPort::new(&bv.data))))
 }
 
 fn ffi_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

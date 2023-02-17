@@ -180,6 +180,15 @@ impl Object {
         }
     }
 
+    pub fn is_binary_port(self) -> bool {
+        match self {
+            Object::BinaryFileInputPort(_)
+            | Object::BinaryFileOutputPort(_)
+            | Object::BytevectorInputPort(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_unspecified(&self) -> bool {
         match self {
             Object::Unspecified => true,
