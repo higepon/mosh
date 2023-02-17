@@ -10,6 +10,7 @@ use lalrpop_util::ParseError;
 
 pub type ReadError = ParseError<usize, lexer::Token, LexicalError>;
 
+use crate::error;
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self, LexicalError},
@@ -243,13 +244,17 @@ impl Port for StringInputPort {
 }
 
 // Trait for TextOutputPort.
-pub trait TextOutputPort {
+pub trait TextOutputPort: Port {
     // The only method you have to implement :)
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error>;
 
     // (write-char c).
     fn write_char(&mut self, c: char) -> Result<(), std::io::Error> {
-        self.put_string(&c.to_string())
+        if self.is_open() {
+            self.put_string(&c.to_string())
+        } else {
+            Err(io::Error::new(io::ErrorKind::Other, "port is closed"))
+        }
     }
 
     // (write obj): Machine readable print.
