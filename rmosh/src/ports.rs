@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Write, BufReader, BufWriter};
 use std::{
     collections::HashMap,
     fmt::{self, Display},
@@ -110,7 +110,7 @@ impl TextInputPort for StdInputPort {
 #[derive(Debug)]
 pub struct FileInputPort {
     pub header: GcHeader,
-    pub file: File,
+    pub reader: BufReader<File>,
     is_closed: bool,
     pub parsed: Object,
 }
@@ -119,7 +119,7 @@ impl FileInputPort {
     fn new(file: File) -> Self {
         FileInputPort {
             header: GcHeader::new(ObjectType::FileInputPort),
-            file: file,
+            reader: BufReader::new(file),
             is_closed: false,
             parsed: Object::Unspecified,
         }
@@ -148,7 +148,7 @@ impl Port for FileInputPort {
 
 impl TextInputPort for FileInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
-        self.file.read_to_string(str)
+        self.reader.read_to_string(str)
     }
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
@@ -670,7 +670,7 @@ impl Display for BinaryFileInputPort {
 #[derive(Debug)]
 pub struct FileOutputPort {
     pub header: GcHeader,
-    file: File,
+    writer: BufWriter<File>,
     is_closed: bool,
 }
 
@@ -679,7 +679,7 @@ impl FileOutputPort {
         FileOutputPort {
             header: GcHeader::new(ObjectType::FileOutputPort),
             is_closed: false,
-            file: file,
+            writer: BufWriter::new(file),
         }
     }
 }
@@ -689,6 +689,7 @@ impl Port for FileOutputPort {
         !self.is_closed
     }
     fn close(&mut self) {
+        self.writer.flush().unwrap();
         self.is_closed = true;
     }
 }
@@ -701,7 +702,7 @@ impl Display for FileOutputPort {
 
 impl TextOutputPort for FileOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
-        write!(self.file, "{}", s)
+        write!(self.writer, "{}", s)
     }
 }
 
