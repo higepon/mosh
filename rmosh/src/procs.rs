@@ -3327,7 +3327,7 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let n = as_usize!(name, args, 1, &mut vm.gc);
     let mut s = String::new();
-    let result = match args[1] {
+    let result = match args[0] {
         Object::FileInputPort(mut p) => p.read_n_to_string(&mut s, n),
         Object::StdInputPort(mut p) => p.read_n_to_string(&mut s, n),
         Object::StringInputPort(mut p) => p.read_n_to_string(&mut s, n),
