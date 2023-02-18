@@ -434,11 +434,11 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.assertion_violation("read", &format!("{:?}", err), port)?;
+                                self.raise_read_error("read", &format!("{:?}", err), port)?;
                             }
                         },
                         _ => {
-                            self.assertion_violation("read", "input port required", port)?;
+                            self.raise_read_error("read", "input port required", port)?;
                         }
                     }
                 }

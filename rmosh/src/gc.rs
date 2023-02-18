@@ -599,7 +599,7 @@ impl Gc {
         use crate::numbers::{Bignum, Compnum, Ratnum};
         use crate::ports::{
             BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
-            StringInputPort, StringOutputPort,
+            StringInputPort, StringOutputPort, BytevectorOutputPort, BytevectorInputPort, StdInputPort
         };
 
         let object_type = object_ptr.obj_type;
@@ -676,6 +676,10 @@ impl Gc {
                 let port: &StdOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
             }
+            ObjectType::StdInputPort => {
+                let port: &StdInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(port)
+            }            
             ObjectType::StdErrorPort => {
                 let port: &StdErrorPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)

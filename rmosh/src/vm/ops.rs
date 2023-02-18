@@ -97,6 +97,17 @@ impl Vm {
         self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
     }
 
+    pub(super) fn raise_read_error(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        self.raise_after3("raise-i/o-read-error", who, message, irritants)
+    }
+
     #[inline(always)]
     pub(super) fn refer_local_op(&mut self, n: isize) {
         let obj = self.refer_local(n);
