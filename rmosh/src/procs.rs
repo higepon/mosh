@@ -20,9 +20,9 @@ use crate::{
     numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
-        BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
-        FileInputPort, FileOutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
-        TextOutputPort,
+        BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BytevectorInputPort,
+        BytevectorOutputPort, FileInputPort, FileOutputPort, Port, StringInputPort,
+        StringOutputPort, TextInputPort, TextOutputPort,
     },
     vm::Vm,
 };
@@ -2112,9 +2112,26 @@ fn make_custom_textual_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::
     let name: &str = "make-custom-textual-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-u8";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let mut buf: Vec<u8> = vec![0; 1];
+    let result = match args[0] {
+        Object::BytevectorInputPort(mut port) => port.read(&mut buf),
+        Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
+        _ => {
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "binary input port required",
+                &[args[0]],
+            ));
+        }
+    };
+    match result {
+        Ok(_size) => Ok(Object::Fixnum(buf[0] as isize)),
+        Err(_) => Ok(Object::Eof),
+    }
 }
 fn put_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-u8";

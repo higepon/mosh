@@ -2067,7 +2067,7 @@
   (let ((out (open-output-string)))
     (flush-output-port out)
     (get-output-string out)))
-#|
+
 (test #t (eof-object? (read-u8 (open-input-bytevector #u8()))))
 (test 1 (read-u8 (open-input-bytevector #u8(1 2 3))))
 
@@ -2283,7 +2283,7 @@
 (test-write-syntax "|+NaN.0abc|" '|+NaN.0abc|)
 
 (test-end)
-
+#|
 (test-begin "Numeric syntax")
 
 ;; Numeric syntax adapted from Peter Bex's tests.

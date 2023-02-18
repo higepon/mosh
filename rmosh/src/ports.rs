@@ -18,7 +18,7 @@ use crate::{
     reader::DatumParser,
 };
 
-// Trait for
+// Trait for Port.
 pub trait Port {
     fn is_open(&self) -> bool;
     fn close(&mut self);
@@ -716,12 +716,18 @@ pub trait TextOutputPort: Port {
     }
 }
 
+// Trait for Port.
+pub trait BinaryInputPort {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>;
+}
+
 // BytevectorInputPort
 #[derive(Debug)]
 pub struct BytevectorInputPort {
     pub header: GcHeader,
     is_closed: bool,
-    _data: Vec<u8>,
+    idx: usize,
+    data: Vec<u8>,
 }
 
 impl BytevectorInputPort {
@@ -729,7 +735,8 @@ impl BytevectorInputPort {
         BytevectorInputPort {
             header: GcHeader::new(ObjectType::BytevectorInputPort),
             is_closed: false,
-            _data: data.to_owned(),
+            idx: 0,
+            data: data.to_owned(),
         }
     }
 }
@@ -740,6 +747,16 @@ impl Port for BytevectorInputPort {
     }
     fn close(&mut self) {
         self.is_closed = true;
+    }
+}
+
+impl BinaryInputPort for BytevectorInputPort {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        let size = min(buf.len(), self.data.len() - self.idx);
+        for i in 0..size {
+            buf[i] = self.data[self.idx + i];
+        }
+        Ok(size)
     }
 }
 
@@ -786,7 +803,7 @@ impl Display for BytevectorOutputPort {
 #[derive(Debug)]
 pub struct BinaryFileInputPort {
     pub header: GcHeader,
-    file: File,
+    pub reader: BufReader<File>,
     is_closed: bool,
 }
 
@@ -795,12 +812,12 @@ impl BinaryFileInputPort {
         BinaryFileInputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputPort),
             is_closed: false,
-            file: file,
+            reader: BufReader::new(file),
         }
     }
 
     pub fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
-        self.file.read_to_end(buf)
+        self.reader.read_to_end(buf)
     }
 
     pub fn close(&mut self) {
@@ -817,9 +834,15 @@ impl Port for BinaryFileInputPort {
     }
 }
 
+impl BinaryInputPort for BinaryFileInputPort {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.reader.read(buf)
+    }
+}
+
 impl Display for BinaryFileInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<binary-file-input-port {:?}>", self.file)
+        write!(f, "#<binary-file-input-port {:?}>", self.reader.get_ref())
     }
 }
 
