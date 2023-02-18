@@ -3278,9 +3278,28 @@ fn get_string_all(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-all";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_line(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-line";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let mut s = String::new();
+    let result = match args[0] {
+        Object::FileInputPort(mut p) => p.read_line(&mut s),
+        Object::StdInputPort(mut p) => p.read_line(&mut s),
+        Object::StringInputPort(mut p) => p.read_line(&mut s),
+        _ => {
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "text input port required",
+                &[args[0]],
+            ));
+        }
+    };
+
+    match result {
+        Ok(_) => Ok(vm.gc.new_string(&s)),
+        Err(_) => Ok(Object::Eof),
+    }
 }
 fn get_datum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-datum";

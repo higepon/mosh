@@ -1,4 +1,4 @@
-use std::io::{Write, BufReader, BufWriter};
+use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::{
     collections::HashMap,
     fmt::{self, Display},
@@ -27,6 +27,7 @@ pub trait Port {
 pub trait TextInputPort {
     // The only methods you have to implement.
     fn read_to_string(&mut self, str: &mut String) -> io::Result<usize>;
+    fn read_line(&mut self, str: &mut String) -> io::Result<usize>;
     fn set_parsed(&mut self, obj: Object);
     fn parsed(&self) -> Object;
 
@@ -99,6 +100,10 @@ impl TextInputPort for StdInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         io::stdin().read_to_string(str)
     }
+    fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
+        io::stdin().lock().read_line(str)
+    }
+
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -148,6 +153,9 @@ impl Port for FileInputPort {
 
 impl TextInputPort for FileInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
+        self.reader.read_to_string(str)
+    }
+    fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
         self.reader.read_to_string(str)
     }
     fn set_parsed(&mut self, obj: Object) {
@@ -222,6 +230,20 @@ impl TextInputPort for StringInputPort {
         str.push_str(&self.source);
         Ok(self.source.len())
     }
+    fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
+        let s = &self.source[self.idx..];
+        println!("trying to read \"{}\" \"{}\"", s, self.source);
+        match s.lines().next() {
+            Some(line) => {
+                str.push_str(line);
+                // line doesn't include \n so we add 1 here.
+                self.idx += line.len() + 1;
+                Ok(line.len() + 1)
+            }
+            None => Err(io::Error::new(io::ErrorKind::Other, "can't read line")),
+        }
+    }
+
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
