@@ -64,7 +64,7 @@ pub trait TextInputPort {
             self.set_parsed(self.parsed().cdr_unchecked());
             return Ok(obj);
         }
-    }
+    }    
 }
 
 

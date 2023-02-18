@@ -2002,7 +2002,7 @@
 
 (test #t (eof-object? (read-char (open-input-string ""))))
 (test #\a (read-char (open-input-string "abc")))
-#|
+
 (test #t (eof-object? (read-line (open-input-string ""))))
 (test "abc" (read-line (open-input-string "abc")))
 (test "abc" (read-line (open-input-string "abc\ndef\n")))
@@ -2067,7 +2067,7 @@
   (let ((out (open-output-string)))
     (flush-output-port out)
     (get-output-string out)))
-
+#|
 (test #t (eof-object? (read-u8 (open-input-bytevector #u8()))))
 (test 1 (read-u8 (open-input-bytevector #u8(1 2 3))))
 
