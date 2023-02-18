@@ -10,7 +10,7 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_usize,
+    as_bytevector, as_char, as_sstring, as_usize,
     equal::Equal,
     error,
     fasl::{FaslReader, FaslWriter},
@@ -1252,7 +1252,7 @@ fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     };
     match result {
         Some(c) => Ok(Object::Char(c)),
-        None => Ok(Object::Eof)
+        None => Ok(Object::Eof),
     }
 }
 fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2120,10 +2120,40 @@ fn put_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-u8";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn put_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn put_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 4);
+    let argc = args.len();
+    let str = as_sstring!(name, args, 1, &mut vm.gc);
+    let start = if argc >= 3 {
+        as_usize!(name, args, 2, &mut vm.gc)
+    } else {
+        0
+    };
+    let count = if argc >= 4 {
+        as_usize!(name, args, 3, &mut vm.gc)
+    } else {
+        str.len()
+    };
+    let str = &str[start..count];
+    let result = match args[0] {
+        Object::FileOutputPort(mut port) => port.put_string(str),
+        Object::StdErrorPort(mut port) => port.put_string(str),
+        Object::StdOutputPort(mut port) => port.put_string(str),
+        Object::StringOutputPort(mut port) => port.put_string(str),
+        _ => panic!("{}", args[1]),
+    };
+    match result {
+        Ok(_) => Ok(Object::Unspecified),
+        Err(e) => Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            &format!("{:?}", e),
+            &[args[0]],
+        )),
+    }
 }
+
 fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flush-output-port";
     panic!("{}({}) not implemented", name, args.len());
@@ -3276,9 +3306,7 @@ fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     match args[0] {
         Object::StringInputPort(mut port) => match port.lookahead_char() {
-            Some(c) => {
-                  Ok(Object::Char(c))
-            }
+            Some(c) => Ok(Object::Char(c)),
             None => Ok(Object::Eof),
         },
         _ => {

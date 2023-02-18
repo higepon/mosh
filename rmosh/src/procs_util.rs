@@ -31,6 +31,22 @@ macro_rules! as_char {
 }
 
 #[macro_export]
+macro_rules! as_sstring {
+    ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
+        let o = $args[$i];
+        if !o.is_string() {
+            return Err(error::Error::new_from_string(
+                $gc,
+                $name,
+                "string required",
+                &[o],
+            ));
+        }
+        o.to_sstring()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_usize {
     ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
         let o = $args[$i];

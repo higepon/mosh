@@ -258,6 +258,13 @@ impl Object {
             panic!("Not a Object::Flonum")
         }
     }
+    pub fn to_sstring(self) -> GcRef<SString> {
+        if let Self::String(s) = self {
+            s
+        } else {
+            panic!("Not a Object::String")
+        }
+    }    
     pub fn to_bignum(self) -> GcRef<Bignum> {
         if let Self::Bignum(b) = self {
             b
