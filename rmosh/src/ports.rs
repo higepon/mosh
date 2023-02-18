@@ -369,6 +369,7 @@ impl TextInputPort for StringInputPort {
         let s = &self.source[self.idx..];
         match s.lines().next() {
             Some(line) => {
+                println!("**** s=<{:?}>LINE=<{}>", s.chars(), line);
                 str.push_str(line);
                 // line doesn't include \n so we add 1 here.
                 self.idx += line.len() + 1;
