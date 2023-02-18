@@ -2298,9 +2298,29 @@ fn standard_error_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     let name: &str = "standard-error-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_bytevector_n(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-n";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let size = as_usize!(name, args, 1, &mut vm.gc);
+    let mut buf: Vec<u8> = vec![0; size];
+    let result = match args[0] {
+        Object::BytevectorInputPort(mut port) => port.read(&mut buf),
+        Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
+        _ => {
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "binary input port required",
+                &[args[0]],
+            ));
+        }
+    };
+    match result {
+        Ok(_size) => Ok(Object::Bytevector(
+            vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec().into())),
+        )),
+        Err(_) => Ok(Object::Eof),
+    }
 }
 
 /*

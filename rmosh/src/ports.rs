@@ -756,6 +756,7 @@ impl BinaryInputPort for BytevectorInputPort {
         for i in 0..size {
             buf[i] = self.data[self.idx + i];
         }
+        self.idx += size;
         Ok(size)
     }
 }
