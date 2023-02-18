@@ -5,8 +5,8 @@ use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
-    FileInputPort, FileOutputPort, StdErrorPort, StdOutputPort, StringInputPort, StringOutputPort,
-    TextOutputPort, StdInputPort,
+    FileInputPort, FileOutputPort, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
+    StringOutputPort, TextOutputPort,
 };
 use crate::vm::Vm;
 
@@ -47,7 +47,7 @@ pub enum Object {
     Regexp(GcRef<Regexp>),
     SimpleStruct(GcRef<SimpleStruct>),
     StdErrorPort(GcRef<StdErrorPort>),
-    StdInputPort(GcRef<StdInputPort>),    
+    StdInputPort(GcRef<StdInputPort>),
     StdOutputPort(GcRef<StdOutputPort>),
     String(GcRef<SString>),
     StringInputPort(GcRef<StringInputPort>),
@@ -129,7 +129,7 @@ impl Object {
             _ => false,
         }
     }
-    
+
     pub fn is_char(&self) -> bool {
         match self {
             Object::Char(_) => true,
@@ -185,7 +185,7 @@ impl Object {
         match self {
             Object::BinaryFileInputPort(_)
             | Object::FileInputPort(_)
-            | Object::StdInputPort(_)            
+            | Object::StdInputPort(_)
             | Object::StringInputPort(_) => true,
             _ => false,
         }
@@ -195,7 +195,7 @@ impl Object {
         match self {
             Object::BinaryFileInputPort(_)
             | Object::BinaryFileOutputPort(_)
-            | Object::BytevectorOutputPort(_)            
+            | Object::BytevectorOutputPort(_)
             | Object::BytevectorInputPort(_) => true,
             _ => false,
         }
@@ -361,7 +361,7 @@ impl Object {
             | Object::FileInputPort(_)
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
-            | Object::StdInputPort(_)            
+            | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -385,7 +385,7 @@ impl Object {
             Object::FileInputPort(_)
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
-            | Object::StdInputPort(_)            
+            | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -454,7 +454,7 @@ impl Object {
             Object::Regexp(_) => todo!(),
             Object::SimpleStruct(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
-            Object::StdInputPort(_) => todo!(),            
+            Object::StdInputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
             Object::String(_) => todo!(),
             Object::StringInputPort(_) => todo!(),
@@ -480,7 +480,7 @@ impl Debug for Object {
             }
             Object::StdInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::StdErrorPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -599,7 +599,7 @@ impl Display for Object {
         match self {
             Object::StdInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::StdOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

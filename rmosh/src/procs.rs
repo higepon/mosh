@@ -4755,9 +4755,9 @@ fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "write-char";
     check_argc_between!(name, args, 1, 2);
-    eprintln!("write-char1");    
+    eprintln!("write-char1");
     let c = as_char99!(name, args, 0, &mut vm.gc);
-    eprintln!("write-char2");        
+    eprintln!("write-char2");
     if args.len() == 1 {
         todo!();
     } else {

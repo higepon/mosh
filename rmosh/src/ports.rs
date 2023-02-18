@@ -10,7 +10,6 @@ use lalrpop_util::ParseError;
 
 pub type ReadError = ParseError<usize, lexer::Token, LexicalError>;
 
-use crate::error;
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self, LexicalError},
@@ -64,9 +63,8 @@ pub trait TextInputPort {
             self.set_parsed(self.parsed().cdr_unchecked());
             return Ok(obj);
         }
-    }    
+    }
 }
-
 
 #[derive(Debug)]
 pub struct StdInputPort {
@@ -94,8 +92,7 @@ impl Port for StdInputPort {
         true
     }
 
-    fn close(&mut self) {
-    }
+    fn close(&mut self) {}
 }
 
 impl TextInputPort for StdInputPort {
@@ -167,7 +164,7 @@ pub struct StringInputPort {
     source: String,
     idx: usize,
     ahead_char: Option<char>,
-    is_closed: bool,    
+    is_closed: bool,
     pub parsed: Object,
 }
 
@@ -178,7 +175,7 @@ impl StringInputPort {
             source: source.to_owned(),
             idx: 0,
             ahead_char: None,
-            is_closed:false,            
+            is_closed: false,
             parsed: Object::Unspecified,
         }
     }
@@ -321,7 +318,7 @@ pub trait TextOutputPort: Port {
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
-            | Object::StdInputPort(_)            
+            | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::Instruction(_)
@@ -461,7 +458,7 @@ pub trait TextOutputPort: Port {
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
                 | Object::StdErrorPort(_)
-                | Object::StdInputPort(_)                
+                | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
                 | Object::String(_)
                 | Object::StringInputPort(_)
@@ -567,7 +564,7 @@ pub trait TextOutputPort: Port {
 pub struct BytevectorInputPort {
     pub header: GcHeader,
     is_closed: bool,
-    data: Vec<u8>,
+    _data: Vec<u8>,
 }
 
 impl BytevectorInputPort {
@@ -575,7 +572,7 @@ impl BytevectorInputPort {
         BytevectorInputPort {
             header: GcHeader::new(ObjectType::BytevectorInputPort),
             is_closed: false,
-            data: data.to_owned(),
+            _data: data.to_owned(),
         }
     }
 }
@@ -600,7 +597,7 @@ impl Display for BytevectorInputPort {
 pub struct BytevectorOutputPort {
     pub header: GcHeader,
     is_closed: bool,
-    data: Vec<u8>,
+    _data: Vec<u8>,
 }
 
 impl BytevectorOutputPort {
@@ -608,7 +605,7 @@ impl BytevectorOutputPort {
         BytevectorOutputPort {
             header: GcHeader::new(ObjectType::BytevectorOutputPort),
             is_closed: false,
-            data: vec![],
+            _data: vec![],
         }
     }
 }

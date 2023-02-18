@@ -122,7 +122,7 @@ impl FaslWriter {
             Object::FileOutputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
-            Object::StdInputPort(_) => todo!(),            
+            Object::StdInputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StringOutputPort(_) => todo!(),

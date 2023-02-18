@@ -29,4 +29,3 @@ macro_rules! as_char99 {
         o.to_char()
     }};
 }
-

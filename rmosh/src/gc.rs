@@ -91,7 +91,7 @@ pub enum ObjectType {
     Ratnum,
     SimpleStruct,
     StdErrorPort,
-    StdInputPort,    
+    StdInputPort,
     StdOutputPort,
     String,
     StringInputPort,
@@ -403,7 +403,7 @@ impl Gc {
             }
             Object::StringInputPort(_) => {}
             Object::StringOutputPort(_) => {}
-            Object::StdInputPort(_) => {}            
+            Object::StdInputPort(_) => {}
             Object::StdOutputPort(_) => {}
             Object::StdErrorPort(_) => {}
             Object::Nil => {}
@@ -569,7 +569,7 @@ impl Gc {
             ObjectType::BinaryFileInputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
-            ObjectType::StdInputPort => {}            
+            ObjectType::StdInputPort => {}
             ObjectType::StdOutputPort => {}
             ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {}
@@ -598,8 +598,9 @@ impl Gc {
     fn free(&mut self, object_ptr: &mut GcHeader) {
         use crate::numbers::{Bignum, Compnum, Ratnum};
         use crate::ports::{
-            BinaryFileInputPort, BinaryFileOutputPort, FileOutputPort, StdErrorPort, StdOutputPort,
-            StringInputPort, StringOutputPort, BytevectorOutputPort, BytevectorInputPort, StdInputPort
+            BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
+            FileOutputPort, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
+            StringOutputPort,
         };
 
         let object_type = object_ptr.obj_type;
@@ -655,11 +656,11 @@ impl Gc {
             ObjectType::BytevectorInputPort => {
                 let port: &BytevectorInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
-            }       
+            }
             ObjectType::BytevectorOutputPort => {
                 let port: &BytevectorOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
-            }                     
+            }
             ObjectType::BinaryFileOutputPort => {
                 let port: &BinaryFileOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
@@ -679,7 +680,7 @@ impl Gc {
             ObjectType::StdInputPort => {
                 let port: &StdInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
-            }            
+            }
             ObjectType::StdErrorPort => {
                 let port: &StdErrorPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(port)
