@@ -2156,7 +2156,15 @@ fn put_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 
 fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flush-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::FileOutputPort(mut port) => port.flush(),
+        Object::StdErrorPort(mut port) => port.flush(),
+        Object::StdOutputPort(mut port) => port.flush(),
+        Object::StringOutputPort(mut port) => port.flush(),
+        _ => panic!("{}", args[0]),
+    };
+    Ok(Object::Unspecified)
 }
 fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "output-port-buffer-mode";

@@ -398,8 +398,8 @@ impl Port for StringInputPort {
 
 // Trait for TextOutputPort.
 pub trait TextOutputPort: Port {
-    // The only method you have to implement :)
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error>;
+    fn flush(&mut self);
 
     // (write-char c).
     fn write_char(&mut self, c: char) -> Result<(), std::io::Error> {
@@ -860,6 +860,9 @@ impl TextOutputPort for FileOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         write!(self.writer, "{}", s)
     }
+    fn flush(&mut self) {
+        self.writer.flush().unwrap_or(())
+    }
 }
 
 // StdOutputPort
@@ -893,6 +896,10 @@ impl TextOutputPort for StdOutputPort {
         print!("{}", s);
         Ok(())
     }
+    fn flush(&mut self) {
+        // There's nothing we can do here if flush resutns error.
+        io::stdout().flush().unwrap_or(())
+    }
 }
 
 // StdOutputPort
@@ -925,6 +932,10 @@ impl TextOutputPort for StdErrorPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         eprint!("{}", s);
         Ok(())
+    }
+    fn flush(&mut self) {
+        // There's nothing we can do here if flush resutns error.
+        io::stdout().flush().unwrap_or(())
     }
 }
 
@@ -977,6 +988,7 @@ impl TextOutputPort for StringOutputPort {
         self.string.push_str(s);
         Ok(())
     }
+    fn flush(&mut self) {}
 }
 
 // BinaryFileOutputPort
