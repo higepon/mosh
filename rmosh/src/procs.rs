@@ -10,7 +10,7 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char99,
+    as_bytevector, as_char, as_usize,
     equal::Equal,
     error,
     fasl::{FaslReader, FaslWriter},
@@ -3266,10 +3266,37 @@ fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     }
 }
-fn get_string_n(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-n";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n = as_usize!(name, args, 1, &mut vm.gc);
+    let mut s = String::new();
+    let result = match args[1] {
+        Object::FileInputPort(mut p) => p.read_n_to_string(&mut s, n),
+        Object::StdInputPort(mut p) => p.read_n_to_string(&mut s, n),
+        Object::StringInputPort(mut p) => p.read_n_to_string(&mut s, n),
+        _ => {
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "text input port required",
+                &[args[0]],
+            ));
+        }
+    };
+
+    match result {
+        Ok(_) => {
+            if s.len() > 0 {
+                Ok(vm.gc.new_string(&s))
+            } else {
+                Ok(Object::Eof)
+            }
+        }
+        Err(_) => Ok(Object::Eof),
+    }
 }
+
 fn get_string_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-n!";
     panic!("{}({}) not implemented", name, args.len());
@@ -4775,7 +4802,7 @@ fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "write-char";
     check_argc_between!(name, args, 1, 2);
     eprintln!("write-char1");
-    let c = as_char99!(name, args, 0, &mut vm.gc);
+    let c = as_char!(name, args, 0, &mut vm.gc);
     eprintln!("write-char2");
     if args.len() == 1 {
         todo!();

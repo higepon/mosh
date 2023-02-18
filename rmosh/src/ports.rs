@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::{
     collections::HashMap,
@@ -27,6 +28,7 @@ pub trait Port {
 pub trait TextInputPort {
     // The only methods you have to implement.
     fn read_to_string(&mut self, str: &mut String) -> io::Result<usize>;
+    fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize>;
     fn read_line(&mut self, str: &mut String) -> io::Result<usize>;
     fn set_parsed(&mut self, obj: Object);
     fn parsed(&self) -> Object;
@@ -100,6 +102,22 @@ impl TextInputPort for StdInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         io::stdin().read_to_string(str)
     }
+    fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
+        let mut buf = vec![0; n];
+        match io::stdin().read(&mut buf) {
+            Ok(_) => {
+                // TODO: This doesn't work for non ascii.
+                match std::str::from_utf8(&buf) {
+                    Ok(s) => {
+                        str.push_str(s);
+                        Ok(str.len())
+                    }
+                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+                }
+            }
+            Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+        }
+    }
     fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
         io::stdin().lock().read_line(str)
     }
@@ -154,6 +172,22 @@ impl Port for FileInputPort {
 impl TextInputPort for FileInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         self.reader.read_to_string(str)
+    }
+    fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
+        let mut buf = vec![0; n];
+        match self.reader.read(&mut buf) {
+            Ok(_) => {
+                // TODO: This doesn't work for non ascii.
+                match std::str::from_utf8(&buf) {
+                    Ok(s) => {
+                        str.push_str(s);
+                        Ok(str.len())
+                    }
+                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+                }
+            }
+            Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+        }
     }
     fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
         self.reader.read_to_string(str)
@@ -229,6 +263,12 @@ impl TextInputPort for StringInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         str.push_str(&self.source);
         Ok(self.source.len())
+    }
+    fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
+        let end = min(self.source.len(), self.idx + n);
+        let s = &self.source[self.idx..end];
+        str.push_str(&s);
+        Ok(s.len())
     }
     fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
         let s = &self.source[self.idx..];
