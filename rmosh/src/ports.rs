@@ -232,7 +232,6 @@ impl TextInputPort for StringInputPort {
     }
     fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
         let s = &self.source[self.idx..];
-        println!("trying to read \"{}\" \"{}\"", s, self.source);
         match s.lines().next() {
             Some(line) => {
                 str.push_str(line);
