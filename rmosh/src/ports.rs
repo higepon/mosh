@@ -29,6 +29,10 @@ pub trait TextInputPort {
     // The only methods you have to implement.
     fn read_to_string(&mut self, str: &mut String) -> io::Result<usize>;
     fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize>;
+    fn read_char(&mut self) -> Option<char>;
+    fn ahead_char(&self) -> Option<char>;
+    fn set_ahead_char(&mut self, c: Option<char>);
+
     fn read_line(&mut self, str: &mut String) -> io::Result<usize>;
     fn set_parsed(&mut self, obj: Object);
     fn parsed(&self) -> Object;
@@ -67,18 +71,38 @@ pub trait TextInputPort {
             return Ok(obj);
         }
     }
+
+    fn lookahead_char(&mut self) -> Option<char> {
+        match self.ahead_char() {
+            Some(ch) => Some(ch),
+            None => match self.read_char() {
+                Some(c) => {
+                    self.unget_char(c);
+                    Some(c)
+                }
+                None => None,
+            },
+        }
+    }
+
+    fn unget_char(&mut self, c: char) {
+        assert!(self.ahead_char() == None);
+        self.set_ahead_char(Some(c));
+    }
 }
 
 #[derive(Debug)]
 pub struct StdInputPort {
     pub header: GcHeader,
     pub parsed: Object,
+    ahead_char: Option<char>,
 }
 
 impl StdInputPort {
     pub fn new() -> Self {
         StdInputPort {
             header: GcHeader::new(ObjectType::StdInputPort),
+            ahead_char: None,
             parsed: Object::Unspecified,
         }
     }
@@ -101,6 +125,36 @@ impl Port for StdInputPort {
 impl TextInputPort for StdInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         io::stdin().read_to_string(str)
+    }
+    fn read_char(&mut self) -> Option<char> {
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let mut str = String::new();
+                match self.read_n_to_string(&mut str, 1) {
+                    Ok(_) => {
+                        if str.len() == 0 {
+                            None
+                        } else {
+                            let mut chars = str.chars();
+                            chars.nth(0)
+                        }
+                    }
+                    Err(_) => None,
+                }
+            }
+        }
+    }
+
+    fn ahead_char(&self) -> Option<char> {
+        self.ahead_char
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        self.ahead_char = c;
     }
     fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
         let mut buf = vec![0; n];
@@ -135,6 +189,7 @@ pub struct FileInputPort {
     pub header: GcHeader,
     pub reader: BufReader<File>,
     is_closed: bool,
+    ahead_char: Option<char>,
     pub parsed: Object,
 }
 
@@ -144,6 +199,7 @@ impl FileInputPort {
             header: GcHeader::new(ObjectType::FileInputPort),
             reader: BufReader::new(file),
             is_closed: false,
+            ahead_char: None,
             parsed: Object::Unspecified,
         }
     }
@@ -173,6 +229,37 @@ impl TextInputPort for FileInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         self.reader.read_to_string(str)
     }
+
+    fn ahead_char(&self) -> Option<char> {
+        self.ahead_char
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        self.ahead_char = c;
+    }
+
+    fn read_char(&mut self) -> Option<char> {
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let mut str = String::new();
+                match self.read_n_to_string(&mut str, 1) {
+                    Ok(_) => {
+                        if str.len() == 0 {
+                            None
+                        } else {
+                            let mut chars = str.chars();
+                            chars.nth(0)
+                        }
+                    }
+                    Err(_) => None,
+                }
+            }
+        }
+    }
     fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
         let mut buf = vec![0; n];
         match self.reader.read(&mut buf) {
@@ -192,6 +279,7 @@ impl TextInputPort for FileInputPort {
     fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
         self.reader.read_to_string(str)
     }
+
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -236,21 +324,6 @@ impl StringInputPort {
             }
         }
     }
-
-    pub fn lookahead_char(&mut self) -> Option<char> {
-        match self.ahead_char {
-            Some(ch) => {
-                self.ahead_char = None;
-                Some(ch)
-            }
-            None => self.read_char(),
-        }
-    }
-
-    pub fn unget_char(&mut self, c: char) {
-        assert!(self.ahead_char == None);
-        self.ahead_char = Some(c);
-    }
 }
 
 impl Display for StringInputPort {
@@ -263,6 +336,28 @@ impl TextInputPort for StringInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         str.push_str(&self.source);
         Ok(self.source.len())
+    }
+
+    fn ahead_char(&self) -> Option<char> {
+        self.ahead_char
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        self.ahead_char = c;
+    }
+    fn read_char(&mut self) -> Option<char> {
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let mut chars = self.source.chars();
+                let ret = chars.nth(self.idx);
+                self.idx = self.idx + 1;
+                ret
+            }
+        }
     }
     fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
         let end = min(self.source.len(), self.idx + n);

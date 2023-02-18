@@ -1230,9 +1230,30 @@ fn read_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "read-char";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn peek_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "peek-char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_max!(name, args, 1);
+    let port = if args.len() == 0 {
+        vm.current_input_port()
+    } else {
+        args[0]
+    };
+    let result = match port {
+        Object::FileInputPort(mut p) => p.lookahead_char(),
+        Object::StringInputPort(mut p) => p.lookahead_char(),
+        _ => {
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "text input port required",
+                &[port],
+            ));
+        }
+    };
+    match result {
+        Some(c) => Ok(Object::Char(c)),
+        None => Ok(Object::Eof)
+    }
 }
 fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "char=?";
@@ -3256,8 +3277,7 @@ fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::StringInputPort(mut port) => match port.lookahead_char() {
             Some(c) => {
-                port.unget_char(c);
-                Ok(Object::Char(c))
+                  Ok(Object::Char(c))
             }
             None => Ok(Object::Eof),
         },
