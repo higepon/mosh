@@ -21,8 +21,8 @@ use crate::{
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
-        BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, Port,
-        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort, OutputPort,
+        BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, OutputPort, Port,
+        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
     },
     vm::Vm,
 };
@@ -2212,7 +2212,7 @@ fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         Object::StdErrorPort(mut port) => port.flush(),
         Object::StdOutputPort(mut port) => port.flush(),
         Object::StringOutputPort(mut port) => port.flush(),
-        Object::BytevectorOutputPort(mut port) => port.flush(),        
+        Object::BytevectorOutputPort(mut port) => port.flush(),
         _ => panic!("{}", args[0]),
     };
     Ok(Object::Unspecified)

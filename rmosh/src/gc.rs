@@ -253,7 +253,7 @@ impl Gc {
     pub fn new_bytevector_u8(&mut self, values: &Vec<u8>) -> Object {
         let bv = self.alloc(Bytevector::new(&values));
         Object::Bytevector(bv)
-    }    
+    }
 
     pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> Object {
         let mut u8_vec: Vec<u8> = vec![];

@@ -167,12 +167,12 @@ impl<'input> Lexer<'input> {
                            (*ch3 as u32) ==  0x0085 || // next line
                            (*ch3 as u32) ==  0x2028 || // line separator
                            (*ch3 as u32) ==  0x0020 || // <Unicode Zs>
-                           (*ch3 as u32) ==  0x00a0 || 
+                           (*ch3 as u32) ==  0x00a0 ||
                            (*ch3 as u32) ==  0x1680 ||
                            (*ch3 as u32) ==  0x180e ||
-                           (*ch3 as u32) ==  0x202f || 
+                           (*ch3 as u32) ==  0x202f ||
                            (*ch3 as u32) ==  0x205f ||
-                           (*ch3 as u32) ==  0x3000 ||                           
+                           (*ch3 as u32) ==  0x3000 ||
                            ((0x2000 <= (*ch3 as u32)) && (((*ch3 as u32)) <= 0x200a))
                         {
                             i += 1;
