@@ -20,9 +20,9 @@ use crate::{
     numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
-        BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BytevectorInputPort,
-        BytevectorOutputPort, FileInputPort, FileOutputPort, Port, StringInputPort,
-        StringOutputPort, TextInputPort, TextOutputPort,
+        BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
+        BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, Port,
+        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
     },
     vm::Vm,
 };
@@ -2133,9 +2133,42 @@ fn get_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Err(_) => Ok(Object::Eof),
     }
 }
-fn put_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn put_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-u8";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let value = as_usize!(name, args, 1, &mut vm.gc);
+
+    match u8::from_usize(value) {
+        Some(value) => {
+            let result = match args[0] {
+                Object::BytevectorOutputPort(mut port) => port.put_u8(value),
+                Object::BinaryFileOutputPort(mut port) => port.put_u8(value),
+                _ => {
+                    return Err(error::Error::new_from_string(
+                        &mut vm.gc,
+                        name,
+                        "binary output port required",
+                        &[args[0]],
+                    ));
+                }
+            };
+            match result {
+                Ok(_size) => Ok(Object::Unspecified),
+                Err(err) => Err(error::Error::new_from_string(
+                    &mut vm.gc,
+                    name,
+                    &format!("{:?}", err),
+                    &[args[0], args[1]],
+                )),
+            }
+        }
+        None => Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "u8 value required",
+            &[args[1]],
+        )),
+    }
 }
 fn put_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-string";

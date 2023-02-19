@@ -10,7 +10,7 @@ use crate::{
     gc::{Gc, GcRef},
     numbers::Flonum,
     objects::{EqHashtable, Object, SimpleStruct},
-    ports::BinaryFileOutputPort,
+    ports::{BinaryFileOutputPort, BinaryOutputPort},
 };
 
 #[derive(FromPrimitive)]

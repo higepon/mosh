@@ -765,12 +765,33 @@ impl Display for BytevectorInputPort {
     }
 }
 
+// Trait for binary output port.
+pub trait BinaryOutputPort {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize>;
+
+    fn put_u8(&mut self, value: u8) -> io::Result<usize> {
+        self.write(&[value])
+    }
+
+    fn put_u16(&mut self, value: u16) -> io::Result<usize> {
+        self.write(&value.to_le_bytes())
+    }
+
+    fn put_u32(&mut self, value: u32) -> io::Result<usize> {
+        self.write(&value.to_le_bytes())
+    }
+
+    fn put_u64(&mut self, value: u64) -> io::Result<usize> {
+        self.write(&value.to_le_bytes())
+    }    
+}
+
 // BytevectorOutputPort
 #[derive(Debug)]
 pub struct BytevectorOutputPort {
     pub header: GcHeader,
     is_closed: bool,
-    _data: Vec<u8>,
+    data: Vec<u8>,
 }
 
 impl BytevectorOutputPort {
@@ -778,7 +799,7 @@ impl BytevectorOutputPort {
         BytevectorOutputPort {
             header: GcHeader::new(ObjectType::BytevectorOutputPort),
             is_closed: false,
-            _data: vec![],
+            data: vec![],
         }
     }
 }
@@ -789,6 +810,13 @@ impl Port for BytevectorOutputPort {
     }
     fn close(&mut self) {
         self.is_closed = true;
+    }
+}
+
+impl BinaryOutputPort for BytevectorOutputPort {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.data.extend_from_slice(buf);
+        Ok(buf.len())
     }
 }
 
@@ -1031,23 +1059,8 @@ impl BinaryFileOutputPort {
         }
     }
 
-    pub fn put_u8(&mut self, value: u8) -> io::Result<usize> {
-        self.writer.write(&[value])
-    }
-
-    pub fn put_u16(&mut self, value: u16) -> io::Result<usize> {
-        self.writer.write(&value.to_le_bytes())
-    }
-
-    pub fn put_u32(&mut self, value: u32) -> io::Result<usize> {
-        self.writer.write(&value.to_le_bytes())
-    }
-
-    pub fn put_u64(&mut self, value: u64) -> io::Result<usize> {
-        self.writer.write(&value.to_le_bytes())
-    }
-
     pub fn close(&mut self) {
+        self.writer.flush().unwrap_or(());
         self.is_closed = true;
     }
 }
@@ -1061,6 +1074,13 @@ impl Port for BinaryFileOutputPort {
         self.is_closed = true;
     }
 }
+
+impl BinaryOutputPort for BinaryFileOutputPort {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.writer.write(buf)
+    }
+}
+
 impl Display for BinaryFileOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<binary-file-output-port>")
