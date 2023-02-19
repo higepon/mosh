@@ -345,8 +345,8 @@ impl Gc {
             self.current_alloc_size += alloc_size;
 
             let boxed = Box::new(object);
-            let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
-            let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
+            let mut pointer = NonNull::new_unchecked(Box::into_raw(boxed));
+            let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_mut());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
 
