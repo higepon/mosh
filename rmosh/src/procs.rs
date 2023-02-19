@@ -22,7 +22,7 @@ use crate::{
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, Port,
-        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
+        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort, OutputPort,
     },
     vm::Vm,
 };
@@ -2212,6 +2212,7 @@ fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         Object::StdErrorPort(mut port) => port.flush(),
         Object::StdOutputPort(mut port) => port.flush(),
         Object::StringOutputPort(mut port) => port.flush(),
+        Object::BytevectorOutputPort(mut port) => port.flush(),        
         _ => panic!("{}", args[0]),
     };
     Ok(Object::Unspecified)
@@ -4953,9 +4954,51 @@ fn native_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     check_argc!(name, args, 0);
     return Ok(vm.gc.new_string("TODO: native-transcoder"));
 }
-fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn put_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 4);
+    let bv = as_bytevector!(name, args, 1, &mut vm.gc);
+    let start = if args.len() >= 3 {
+        as_usize!(name, args, 2, &mut vm.gc)
+    } else {
+        0
+    };
+    let count = if args.len() >= 4 {
+        as_usize!(name, args, 3, &mut vm.gc)
+    } else {
+        bv.len()
+    };
+    if bv.len() < start + count {
+        return Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "Bytevector must have a length of at least start + count.",
+            &[args[1], args[2]],
+        ));
+    }
+
+    let buf = &bv.data[start..start + count];
+    let result = match args[0] {
+        Object::BytevectorOutputPort(mut port) => port.write(buf),
+        Object::BinaryFileOutputPort(mut port) => port.write(buf),
+        _ => {
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "binary output port required",
+                &[args[0]],
+            ));
+        }
+    };
+    match result {
+        Ok(_size) => Ok(Object::Unspecified),
+        Err(err) => Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            &format!("{:?}", err),
+            &[args[0], args[1]],
+        )),
+    }
 }
 fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-char";

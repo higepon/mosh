@@ -24,6 +24,10 @@ pub trait Port {
     fn close(&mut self);
 }
 
+pub trait OutputPort: Port {
+    fn flush(&mut self);
+}
+
 // Trait for TextInputPort.
 pub trait TextInputPort {
     // The only methods you have to implement.
@@ -822,6 +826,10 @@ impl BinaryOutputPort for BytevectorOutputPort {
         self.data.extend_from_slice(buf);
         Ok(buf.len())
     }
+}
+
+impl OutputPort for BytevectorOutputPort {
+    fn flush(&mut self) {}
 }
 
 impl Display for BytevectorOutputPort {
