@@ -753,7 +753,7 @@ impl Port for BytevectorInputPort {
 impl BinaryInputPort for BytevectorInputPort {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let size = min(buf.len(), self.data.len() - self.idx);
-        buf[0..size].copy_from_slice(&self.data[self.idx..self.idx+size]);
+        buf[0..size].copy_from_slice(&self.data[self.idx..self.idx + size]);
         self.idx += size;
         Ok(size)
     }

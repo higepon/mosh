@@ -2224,9 +2224,37 @@ fn set_port_position_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
     let name: &str = "set-port-position!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_bytevector_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_bytevector_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-n!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 1, &mut vm.gc);
+    let start = as_usize!(name, args, 2, &mut vm.gc);
+    let count = as_usize!(name, args, 3, &mut vm.gc);
+    if bv.len() < start + count {
+        return Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "bytevector must be a bytevector with at least start + count elements.",
+            &[args[2], args[3]],
+        ));
+    }
+    let buf = &mut bv.data[start..start + count];
+    let result = match args[0] {
+        Object::BytevectorInputPort(mut port) => port.read(buf),
+        Object::BinaryFileInputPort(mut port) => port.read(buf),
+        _ => {
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "binary input port required",
+                &[args[0]],
+            ));
+        }
+    };
+    match result {
+        Ok(_size) => Ok(Object::Fixnum(buf[0] as isize)),
+        Err(_) => Ok(Object::Eof),
+    }
 }
 fn get_bytevector_some(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-some";
