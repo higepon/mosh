@@ -541,6 +541,7 @@ impl Debug for Flonum {
 }
 
 /// Rational number.
+#[repr(C)]
 pub struct Ratnum {
     pub header: GcHeader,
     pub ratio: Rational64,
@@ -649,6 +650,7 @@ impl Debug for Ratnum {
 }
 
 /// Big number.
+#[repr(C)]
 pub struct Bignum {
     pub header: GcHeader,
     pub value: BigInt,
@@ -772,6 +774,7 @@ impl Debug for Bignum {
 
 /// Complex number.
 #[derive(Debug)]
+#[repr(C)]
 pub struct Compnum {
     pub header: GcHeader,
     real: Object,

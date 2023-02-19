@@ -96,6 +96,7 @@ pub trait TextInputPort {
 }
 
 #[derive(Debug)]
+#[repr(C)]
 pub struct StdInputPort {
     pub header: GcHeader,
     pub parsed: Object,
@@ -189,6 +190,7 @@ impl TextInputPort for StdInputPort {
 }
 
 #[derive(Debug)]
+#[repr(C)]
 pub struct FileInputPort {
     pub header: GcHeader,
     pub reader: BufReader<File>,
@@ -293,6 +295,7 @@ impl TextInputPort for FileInputPort {
 }
 
 #[derive(Debug)]
+#[repr(C)]
 pub struct StringInputPort {
     pub header: GcHeader,
     source: String,
@@ -727,6 +730,7 @@ pub trait BinaryInputPort {
 
 // BytevectorInputPort
 #[derive(Debug)]
+#[repr(C)]
 pub struct BytevectorInputPort {
     pub header: GcHeader,
     is_closed: bool,
@@ -792,6 +796,7 @@ pub trait BinaryOutputPort {
 
 // BytevectorOutputPort
 #[derive(Debug)]
+#[repr(C)]
 pub struct BytevectorOutputPort {
     pub header: GcHeader,
     is_closed: bool,
@@ -840,6 +845,7 @@ impl Display for BytevectorOutputPort {
 
 // BinaryFileInputPort
 #[derive(Debug)]
+#[repr(C)]
 pub struct BinaryFileInputPort {
     pub header: GcHeader,
     pub reader: BufReader<File>,
@@ -887,6 +893,7 @@ impl Display for BinaryFileInputPort {
 
 // FileOutputPort
 #[derive(Debug)]
+#[repr(C)]
 pub struct FileOutputPort {
     pub header: GcHeader,
     writer: BufWriter<File>,
@@ -929,6 +936,7 @@ impl TextOutputPort for FileOutputPort {
 }
 
 // StdOutputPort
+#[repr(C)]
 pub struct StdOutputPort {
     pub header: GcHeader,
 }
@@ -966,6 +974,7 @@ impl TextOutputPort for StdOutputPort {
 }
 
 // StdOutputPort
+#[repr(C)]
 pub struct StdErrorPort {
     pub header: GcHeader,
 }
@@ -1004,6 +1013,7 @@ impl TextOutputPort for StdErrorPort {
 
 // StringOutputPort
 #[derive(Debug)]
+#[repr(C)]
 pub struct StringOutputPort {
     pub header: GcHeader,
     string: String,
@@ -1056,6 +1066,7 @@ impl TextOutputPort for StringOutputPort {
 
 // BinaryFileOutputPort
 #[derive(Debug)]
+#[repr(C)]
 pub struct BinaryFileOutputPort {
     pub header: GcHeader,
     pub writer: BufWriter<File>,

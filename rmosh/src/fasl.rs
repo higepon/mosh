@@ -668,6 +668,7 @@ pub mod tests {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
         };
+
         let sym = gc.symbol_intern("a");
         let expected = gc.cons(sym, Object::Nil);
         let obj = fasl.read_sexp(&mut gc).unwrap();

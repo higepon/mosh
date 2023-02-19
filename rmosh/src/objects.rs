@@ -724,6 +724,7 @@ impl Display for Object {
 
 /// Vector
 #[derive(Debug)]
+#[repr(C)]
 pub struct Vector {
     pub header: GcHeader,
     pub data: Vec<Object>,
@@ -761,6 +762,7 @@ impl Display for Vector {
 
 /// ByteVector
 #[derive(Debug)]
+#[repr(C)]
 pub struct Bytevector {
     pub header: GcHeader,
     pub data: Vec<u8>,
@@ -836,6 +838,7 @@ impl Display for Bytevector {
 
 /// SimpleStruct
 #[derive(Debug)]
+#[repr(C)]
 pub struct SimpleStruct {
     pub header: GcHeader,
     pub name: Object,
@@ -894,6 +897,7 @@ impl Display for SimpleStruct {
 
 /// Cons cell
 #[derive(Debug)]
+#[repr(C)]
 pub struct Pair {
     pub header: GcHeader,
     pub car: Object,
@@ -1101,6 +1105,7 @@ impl PartialEq for Pair {
 
 /// Vox
 #[derive(Debug)]
+#[repr(C)]
 pub struct Vox {
     pub header: GcHeader,
     pub value: Object,
@@ -1122,6 +1127,7 @@ impl Display for Vox {
 }
 
 /// SString (Sceheme String)
+#[repr(C)]
 pub struct SString {
     pub header: GcHeader,
     pub string: String,
@@ -1169,6 +1175,7 @@ impl DerefMut for SString {
 }
 
 /// Symbol
+#[repr(C)]
 #[derive(Debug)]
 pub struct Symbol {
     pub header: GcHeader,
@@ -1191,6 +1198,7 @@ impl Display for Symbol {
 }
 
 /// Procedures written in Rust.
+#[repr(C)]
 pub struct Procedure {
     pub header: GcHeader,
     pub func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>,
@@ -1220,6 +1228,7 @@ impl Display for Procedure {
 }
 
 /// Regexp.
+#[repr(C)]
 pub struct Regexp {
     pub header: GcHeader,
 }
@@ -1239,6 +1248,7 @@ impl Display for Regexp {
 }
 
 /// Continuation.
+#[repr(C)]
 pub struct Continuation {
     pub header: GcHeader,
     pub shift_size: isize,
@@ -1270,6 +1280,8 @@ impl Display for Continuation {
 }
 
 /// Continuation.
+
+#[repr(C)]
 pub struct ContinuationStack {
     pub header: GcHeader,
     pub data: Vec<Object>,
@@ -1307,6 +1319,7 @@ impl Display for ContinuationStack {
 
 /// Closure
 #[derive(Debug)]
+#[repr(C)]
 pub struct Closure {
     pub header: GcHeader,
     pub ops: *const Object,
@@ -1352,6 +1365,7 @@ impl Display for Closure {
 
 /// EqHashtable
 #[derive(Debug)]
+#[repr(C)]
 pub struct EqHashtable {
     pub header: GcHeader,
     pub hash_map: HashMap<Object, Object>,
@@ -1611,6 +1625,7 @@ pub mod tests {
         fn read(&self);
     }
 
+    #[repr(C)]
     struct StringInputPort {}
 
     impl Drop for StringInputPort {
