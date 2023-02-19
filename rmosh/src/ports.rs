@@ -1082,8 +1082,14 @@ impl Port for BinaryFileOutputPort {
         !self.is_closed
     }
     fn close(&mut self) {
-        self.writer.flush().unwrap_or(());
+        self.flush();
         self.is_closed = true;
+    }
+}
+
+impl OutputPort for BinaryFileOutputPort {
+    fn flush(&mut self) {
+        self.writer.flush().unwrap_or(())
     }
 }
 
