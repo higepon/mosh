@@ -2335,9 +2335,18 @@ fn sys_open_bytevector_output_port(vm: &mut Vm, args: &mut [Object]) -> error::R
     }
 }
 
-fn sys_get_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn sys_get_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "sys-get-bytevector";
     check_argc!(name, args, 1);
+    match args[0] {
+        Object::BytevectorOutputPort(port) => Ok(port.to_bytevector(&mut vm.gc)),
+        _ => Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "bytevector output port required",
+            &[args[0]],
+        )),
+    }
 }
 fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-length";

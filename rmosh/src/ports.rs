@@ -802,6 +802,10 @@ impl BytevectorOutputPort {
             data: vec![],
         }
     }
+
+    pub fn to_bytevector(&self, gc: &mut Box<Gc>) -> Object {
+        gc.new_bytevector_u8(&self.data)
+    }
 }
 
 impl Port for BytevectorOutputPort {
