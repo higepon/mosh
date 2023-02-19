@@ -34,7 +34,7 @@ pub struct NumberLexer<'input> {
 // - Fix range in Some.
 impl<'input> NumberLexer<'input> {
     pub fn new(input: &'input [char]) -> Self {
-        println!("number lexer for <{:?}>", input);
+        //println!("number lexer for <{:?}>", input);
         Self {
             s: input,
             cursor: 0,

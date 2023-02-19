@@ -97,7 +97,7 @@ Complex10: Object = {
     },
     <real: Real10> "+inf.0" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
-    },    
+    },
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
@@ -117,7 +117,7 @@ Complex16: Object = {
     },
     <real: Real16> "+inf.0" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
-    },    
+    },
     <real: Real16> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
@@ -146,16 +146,13 @@ Real16: Object = {
 
 UReal10: Object = {
     UInteger10 => {
-        println!("uinteger10 parse={}", <>);
         match isize::from_str(&<>) {
             Ok(n) => {
-                println!("{}(fixnum)", n);
                 Object::Fixnum(n)
             }
             Err(err) => {
                 match BigInt::from_str(&<>) {
                     Ok(b) => {
-                        println!("{}(bignum)", b);
                         Object::Bignum(gc.alloc(Bignum::new(b)))
                     },
                     Err(err2) => {
@@ -178,7 +175,6 @@ UReal10: Object = {
     Decimal10 => {
         match f64::from_str(&<>) {
             Ok(n) => {
-                println!("{}(flonum)", n);
                 Object::Flonum(Flonum::new(n))
             },
             Err(err) => todo!(),
@@ -188,16 +184,13 @@ UReal10: Object = {
 
 UReal16: Object = {
     UInteger16 => {
-        println!("uinteger16 parse={}", <>);
         match isize::from_str_radix(&<>, 16) {
             Ok(n) => {
-                println!("{}(fixnum)", n);
                 Object::Fixnum(n)
             }
             Err(err) => {
                 match BigInt::from_str_radix(&<>, 16) {
                     Ok(b) => {
-                        println!("{}(bignum)", b);
                         Object::Bignum(gc.alloc(Bignum::new(b)))
                     },
                     Err(err2) => {
@@ -257,7 +250,7 @@ UInteger16: String = {
     // hack to recognize #x1000.
     <digits: Digit10 +> => {
         digits.join("")
-    }    
+    }
 }
 
 InfNan: Object = {
@@ -297,17 +290,17 @@ extern {
         "." => number_lexer::Token::Dot,
         "/" => number_lexer::Token::Slash,
         "#d" => number_lexer::Token::Radix10,
-        "#x" => number_lexer::Token::Radix16,        
+        "#x" => number_lexer::Token::Radix16,
         "#e" => number_lexer::Token::Exact,
         "#i" => number_lexer::Token::Inexact,
         "+" => number_lexer::Token::Plus,
         "digit" => number_lexer::Token::Digit { value: <String> },
-        "hex_digit" => number_lexer::Token::HexDigit { value: <String> },        
+        "hex_digit" => number_lexer::Token::HexDigit { value: <String> },
         "e" => number_lexer::Token::Exponent,
         "i" => number_lexer::Token::Imag,
         "+inf.0" => number_lexer::Token::PlusInf,
         "-inf.0" => number_lexer::Token::MinusInf,
         "+nan.0" => number_lexer::Token::PlusNan,
         "-nan.0" => number_lexer::Token::MinusNan,
-    }  
+    }
 }

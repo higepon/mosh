@@ -104,7 +104,7 @@ Symbol: Object = {
 
 Number: Object = {
     <s: "number10"> => {
-        println!("NUMBER parse {}", s);
+        //println!("NUMBER parse {}", s);
         let mut chars: Vec<char> = s.chars().collect();
         chars.push('\0');
         match NumberParser::new().parse(gc, NumberLexer::new(&chars)) {

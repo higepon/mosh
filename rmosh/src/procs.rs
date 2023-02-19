@@ -2129,7 +2129,8 @@ fn get_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     };
     match result {
-        Ok(_size) => Ok(Object::Fixnum(buf[0] as isize)),
+        Ok(0) => Ok(Object::Eof),
+        Ok(_) => Ok(Object::Fixnum(buf[0] as isize)),
         Err(_) => Ok(Object::Eof),
     }
 }
