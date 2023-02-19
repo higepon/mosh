@@ -323,8 +323,8 @@ impl Gc {
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
             let boxed = Box::new(object);
-            let pointer = NonNull::new_unchecked(Box::into_raw(boxed));
-            let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_ref());
+            let mut pointer = NonNull::new_unchecked(Box::into_raw(boxed));
+            let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_mut());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
             GcRef { pointer }
