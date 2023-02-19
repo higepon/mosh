@@ -783,7 +783,7 @@ pub trait BinaryOutputPort {
 
     fn put_u64(&mut self, value: u64) -> io::Result<usize> {
         self.write(&value.to_le_bytes())
-    }    
+    }
 }
 
 // BytevectorOutputPort

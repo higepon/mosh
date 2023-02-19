@@ -122,14 +122,13 @@ impl<'input> Lexer<'input> {
                 } else if *ch2 == 't' {
                     ret.push(9 as char);
                 } else if *ch2 == 'x' {
-
                     let mut current_ch = 0 as char;
                     loop {
-                        let hex_ch =  match chars.get(i) {
+                        let hex_ch = match chars.get(i) {
                             Some(c) => c,
                             None => {
                                 eprintln!("invalid \\x in string end");
-                                break
+                                break;
                             }
                         };
                         i += 1;
@@ -157,13 +156,11 @@ impl<'input> Lexer<'input> {
                     // <intraline whitespace>*
                     // NB: Lexical syntax has already checked by the scanner.
                     loop {
-                        let ch3 =  match chars.get(i) {
+                        let ch3 = match chars.get(i) {
                             Some(c) => c,
-                            None => {
-                                break
-                            }
+                            None => break,
                         };
-                        // <line ending> 
+                        // <line ending>
                         if *ch3 == '\r' ||
                            *ch3 == '\n' ||
                            *ch3 == '\t' || // <intraline whitespace>
@@ -176,13 +173,14 @@ impl<'input> Lexer<'input> {
                            (*ch3 as u32) ==  0x202f || 
                            (*ch3 as u32) ==  0x205f ||
                            (*ch3 as u32) ==  0x3000 ||                           
-                           ((0x2000 <= (*ch3 as u32)) && (((*ch3 as u32)) <= 0x200a)) {
-                            i += 1; 
-                            continue;   
-                           } else {
+                           ((0x2000 <= (*ch3 as u32)) && (((*ch3 as u32)) <= 0x200a))
+                        {
+                            i += 1;
+                            continue;
+                        } else {
                             i -= 1;
                             break;
-                           }
+                        }
                     }
                 }
             } else {

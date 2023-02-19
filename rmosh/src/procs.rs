@@ -2337,7 +2337,7 @@ fn sys_open_bytevector_output_port(vm: &mut Vm, args: &mut [Object]) -> error::R
 
 fn sys_get_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "sys-get-bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
 }
 fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-length";

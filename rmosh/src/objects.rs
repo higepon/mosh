@@ -264,7 +264,7 @@ impl Object {
         } else {
             panic!("Not a Object::String")
         }
-    }    
+    }
     pub fn to_bignum(self) -> GcRef<Bignum> {
         if let Self::Bignum(b) = self {
             b
