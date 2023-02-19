@@ -1018,7 +1018,7 @@ impl TextOutputPort for StringOutputPort {
 #[derive(Debug)]
 pub struct BinaryFileOutputPort {
     pub header: GcHeader,
-    file: File,
+    pub writer: BufWriter<File>,
     is_closed: bool,
 }
 
@@ -1027,24 +1027,24 @@ impl BinaryFileOutputPort {
         BinaryFileOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileOutputPort),
             is_closed: false,
-            file: file,
+            writer: BufWriter::new(file),
         }
     }
 
     pub fn put_u8(&mut self, value: u8) -> io::Result<usize> {
-        self.file.write(&[value])
+        self.writer.write(&[value])
     }
 
     pub fn put_u16(&mut self, value: u16) -> io::Result<usize> {
-        self.file.write(&value.to_le_bytes())
+        self.writer.write(&value.to_le_bytes())
     }
 
     pub fn put_u32(&mut self, value: u32) -> io::Result<usize> {
-        self.file.write(&value.to_le_bytes())
+        self.writer.write(&value.to_le_bytes())
     }
 
     pub fn put_u64(&mut self, value: u64) -> io::Result<usize> {
-        self.file.write(&value.to_le_bytes())
+        self.writer.write(&value.to_le_bytes())
     }
 
     pub fn close(&mut self) {
@@ -1057,6 +1057,7 @@ impl Port for BinaryFileOutputPort {
         !self.is_closed
     }
     fn close(&mut self) {
+        self.writer.flush().unwrap_or(());
         self.is_closed = true;
     }
 }
