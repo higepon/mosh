@@ -2287,7 +2287,8 @@ fn get_bytevector_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
         }
     };
     match result {
-        Ok(_size) => Ok(Object::Fixnum(buf[0] as isize)),
+        Ok(0) => Ok(Object::Eof),
+        Ok(size) => Ok(Object::Fixnum(size as isize)),
         Err(_) => Ok(Object::Eof),
     }
 }
@@ -2388,7 +2389,8 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     };
     match result {
-        Ok(_size) => Ok(Object::Bytevector(
+        Ok(0) => Ok(Object::Eof),
+        Ok(size) => Ok(Object::Bytevector(
             vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec().into())),
         )),
         Err(_) => Ok(Object::Eof),

@@ -769,7 +769,8 @@ impl BinaryInputPort for BytevectorInputPort {
 
 impl Display for BytevectorInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<bytevector-input-port>")
+        // Don't change this name. This is used in u8-ready?
+        write!(f, "#<byte-array-input-port>")
     }
 }
 
