@@ -534,7 +534,7 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Char(c) => {
-                write!(f, "{}", c)
+                write!(f, "{:?}", c)
             }
             Object::Flonum(n) => {
                 write!(f, "{}", n)
@@ -558,7 +558,7 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
             Object::String(s) => {
-                write!(f, "{}", unsafe { s.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { s.pointer.as_ref() })
             }
             Object::Symbol(symbol) => {
                 write!(f, "{}", unsafe { symbol.pointer.as_ref() })
@@ -588,13 +588,13 @@ impl Debug for Object {
                 write!(f, "#<procedure {}>", proc.name)
             }
             Object::Vector(vector) => {
-                write!(f, "{}", unsafe { vector.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { vector.pointer.as_ref() })
             }
             Object::Bytevector(bytevector) => {
-                write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
-                write!(f, "{}", unsafe { s.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { s.pointer.as_ref() })
             }
         }
     }
@@ -1148,9 +1148,83 @@ impl Display for SString {
     }
 }
 
+fn put_char_handle_special(f: &mut fmt::Formatter<'_>, c: char, in_string: bool) -> fmt::Result {
+    const SPACE: char = '\u{20}';
+    const DEL: char = '\u{7F}';
+    if (c != '\u{a}'
+        && c != '\u{d}'
+        && c != '\t'
+        && c != '\u{7}'
+        && c != '\u{8}'
+        && c != '\u{B}'
+        && c != '\u{C}'
+        && c < SPACE)
+        || c == DEL
+        || c == '\u{80}'
+        || c == '\u{ff}'
+        || c == '\u{D7FF}'
+        || c == '\u{E000}'
+        || c == '\u{10FFFF}'
+    {
+        if in_string {
+            write!(f, "\\x{:x}", c as u32)
+        } else {
+            write!(f, "x{:x}", c as u32)
+        }
+    } else {
+        write!(f, "{}", c)
+    }
+}
+
 impl Debug for SString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "\"{}\"", self.string)
+        const DOUBLE_QUOTE: char = '"';
+        const ESCAPE: char = '\\';
+        write!(f, "{}", DOUBLE_QUOTE)?;
+        for ch in self.chars() {
+            match ch {
+                DOUBLE_QUOTE => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "{}", DOUBLE_QUOTE)?;
+                }
+                ESCAPE => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "{}", ESCAPE)?;
+                }
+                '\n' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "n")?;
+                }
+                '\u{7}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "a")?;
+                }
+                '\u{8}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "b")?;
+                }
+                '\t' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "t")?;
+                }
+                '\u{B}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "v")?;
+                }
+                '\r' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "r")?;
+                }
+                '\u{C}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "f")?;
+                }
+                _ => {
+                    put_char_handle_special(f, ch, true)?;
+                }
+            }
+        }
+        write!(f, "{}", DOUBLE_QUOTE)
     }
 }
 

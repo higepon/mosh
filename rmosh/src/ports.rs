@@ -423,7 +423,7 @@ pub trait TextOutputPort: Port {
         let mut shared_id = 1;
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
-        self.display_one(obj, &mut seen, &mut shared_id)
+        self.display_one(obj, &mut seen, &mut shared_id, false)
     }
 
     // (display obj): Human readable print.
@@ -431,7 +431,7 @@ pub trait TextOutputPort: Port {
         let mut shared_id = 1;
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
-        self.display_one(obj, &mut seen, &mut shared_id)
+        self.display_one(obj, &mut seen, &mut shared_id, true)
     }
 
     fn display_one(
@@ -439,6 +439,7 @@ pub trait TextOutputPort: Port {
         obj: Object,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
+        human_readable: bool,
     ) -> Result<(), std::io::Error> {
         let seen_state = match seen.get(&obj) {
             Some(val) => *val,
@@ -452,9 +453,9 @@ pub trait TextOutputPort: Port {
             return self.put_string(&format!("#{}#", seen_state.to_isize()));
         }
         match obj {
-            Object::Pair(p) => self.display_pair(p, seen, shared_id),
-            Object::Vector(v) => self.display_vector(v, seen, shared_id),
-            Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id),
+            Object::Pair(p) => self.display_pair(p, seen, shared_id, human_readable),
+            Object::Vector(v) => self.display_vector(v, seen, shared_id, human_readable),
+            Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id, human_readable),
             Object::Bytevector(_)
             | Object::BytevectorInputPort(_)
             | Object::BytevectorOutputPort(_)
@@ -489,7 +490,13 @@ pub trait TextOutputPort: Port {
             | Object::Nil
             | Object::Symbol(_)
             | Object::String(_)
-            | Object::Fixnum(_) => self.as_display(obj),
+            | Object::Fixnum(_) => {
+                if human_readable {
+                    self.as_display(obj)
+                } else {
+                    self.as_write(obj)
+                }
+            }
         }
     }
 
@@ -517,6 +524,7 @@ pub trait TextOutputPort: Port {
         p: GcRef<Pair>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
+        human_readable: bool,
     ) -> Result<(), std::io::Error> {
         let mut p = p;
         let abbreviated =
@@ -526,7 +534,7 @@ pub trait TextOutputPort: Port {
         } else {
             self.put_string("(")?;
         }
-        self.display_one(p.car, seen, shared_id)?;
+        self.display_one(p.car, seen, shared_id, human_readable)?;
 
         let mut obj = p.cdr;
         loop {
@@ -537,7 +545,7 @@ pub trait TextOutputPort: Port {
             match obj {
                 Object::Pair(pair) if seen_state.is_false() => {
                     self.put_string(" ")?;
-                    self.display_one(pair.car, seen, shared_id)?;
+                    self.display_one(pair.car, seen, shared_id, human_readable)?;
                     obj = pair.cdr;
                 }
                 Object::Nil => {
@@ -545,7 +553,7 @@ pub trait TextOutputPort: Port {
                 }
                 _ => {
                     self.put_string(" . ")?;
-                    self.display_one(obj, seen, shared_id)?;
+                    self.display_one(obj, seen, shared_id, human_readable)?;
                     break;
                 }
             }
@@ -561,15 +569,20 @@ pub trait TextOutputPort: Port {
         self.put_string(&format!("{}", obj))
     }
 
+    fn as_write(&mut self, obj: Object) -> Result<(), std::io::Error> {
+        self.put_string(&format!("{:?}", obj))
+    }
+
     fn display_vector(
         &mut self,
         v: GcRef<Vector>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
+        human_readable: bool,
     ) -> Result<(), std::io::Error> {
         self.put_string("#(")?;
         for i in 0..v.len() {
-            self.display_one(v.data[i], seen, shared_id)?;
+            self.display_one(v.data[i], seen, shared_id, human_readable)?;
             if i != v.len() - 1 {
                 self.put_string(" ")?;
             }
@@ -582,10 +595,11 @@ pub trait TextOutputPort: Port {
         s: GcRef<SimpleStruct>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
+        human_readable: bool,
     ) -> Result<(), std::io::Error> {
         self.put_string("#<simple-stuct ")?;
         for i in 0..s.len() {
-            self.display_one(s.field(i), seen, shared_id)?;
+            self.display_one(s.field(i), seen, shared_id, human_readable)?;
             if i != s.len() - 1 {
                 self.put_string(" ")?;
             }
