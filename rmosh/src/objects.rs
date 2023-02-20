@@ -186,6 +186,7 @@ impl Object {
             Object::BinaryFileInputPort(_)
             | Object::FileInputPort(_)
             | Object::StdInputPort(_)
+            | Object::BytevectorInputPort(_)            
             | Object::StringInputPort(_) => true,
             _ => false,
         }
@@ -591,7 +592,7 @@ impl Debug for Object {
                 write!(f, "{:?}", unsafe { vector.pointer.as_ref() })
             }
             Object::Bytevector(bytevector) => {
-                write!(f, "{:?}", unsafe { bytevector.pointer.as_ref() })
+                write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
                 write!(f, "{:?}", unsafe { s.pointer.as_ref() })
