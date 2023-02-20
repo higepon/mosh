@@ -2852,7 +2852,15 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "read";
     let argc = args.len();
     if argc == 0 {
-        Ok(vm.read().unwrap())
+        match vm.read() {
+            Ok(obj) => Ok(obj),
+            Err(e) => Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                &format!("{:?}", e),
+                &[],
+            )),
+        }
     } else if argc == 1 {
         match args[0] {
             Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {

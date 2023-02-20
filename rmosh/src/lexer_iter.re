@@ -53,7 +53,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     DIGIT_10               = DIGIT;
     DIGIT_16               = HEX_DIGIT;
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
-    EXACTNESS              = ("#"[ie])?;
+    EXACTNESS              = ("#"[ieIE])?;
     SIGN                   = [\+\-]?;
     EXPONENT_MARKER        = "e";
     SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;

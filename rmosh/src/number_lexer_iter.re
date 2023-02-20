@@ -56,11 +56,11 @@ impl<'input> Iterator for NumberLexer<'input> {
                     "-" { return self.with_location(Token::Minus); }
                     "." { return self.with_location(Token::Dot); }
                     "e" { return self.with_location(Token::Exponent); }
-                    "i" { return self.with_location(Token::Imag); }
+                    'i' { return self.with_location(Token::Imag); }
                     "#d" { return self.with_location(Token::Radix10); }
                     "#x" { return self.with_location(Token::Radix16); }
                     "#e" { return self.with_location(Token::Exact); }
-                    "#i" { return self.with_location(Token::Inexact); }
+                    '#i' { return self.with_location(Token::Inexact); }
                     DIGIT {
                         return self.with_location(Token::Digit { value: self.extract_token() });
                     }

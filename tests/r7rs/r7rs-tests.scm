@@ -2283,7 +2283,7 @@
 (test-write-syntax "|+NaN.0abc|" '|+NaN.0abc|)
 
 (test-end)
-#|
+
 (test-begin "Numeric syntax")
 
 ;; Numeric syntax adapted from Peter Bex's tests.
@@ -2323,7 +2323,9 @@
 (test-numeric-syntax "-1" -1)
 (test-numeric-syntax "#i1" 1.0 "1.0" "1.")
 (test-numeric-syntax "#I1" 1.0 "1.0" "1.")
+#|
 (test-numeric-syntax "#i-1" -1.0 "-1.0" "-1.")
+
 ;; Decimal
 (test-numeric-syntax "1.0" 1.0 "1.0" "1.")
 (test-numeric-syntax "1." 1.0 "1.0" "1.")
