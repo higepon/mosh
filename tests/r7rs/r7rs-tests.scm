@@ -2261,7 +2261,7 @@
      (let ((out (open-output-string)))
        (write obj-expr out)
        (test expect-str (get-output-string out))))))
-#|
+
 (test-write-syntax "|.|" '|.|)
 (test-write-syntax "|a b|" '|a b|)
 (test-write-syntax "|,a|" '|,a|)
@@ -2283,7 +2283,7 @@
 (test-write-syntax "|+NaN.0abc|" '|+NaN.0abc|)
 
 (test-end)
-
+#|
 (test-begin "Numeric syntax")
 
 ;; Numeric syntax adapted from Peter Bex's tests.
