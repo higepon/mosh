@@ -419,22 +419,79 @@ pub trait TextOutputPort: Port {
     }
 
     // (write obj): Machine readable print.
-    fn write(&mut self, obj: Object) -> Result<(), std::io::Error> {
+    fn write(&mut self, obj: Object, shared_aware: bool) -> Result<(), std::io::Error> {
+        if shared_aware {
         let mut shared_id = 1;
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
-        self.display_one(obj, &mut seen, &mut shared_id, false)
+        self.display_shared_one(obj, &mut seen, &mut shared_id, false)
+        } else {
+            self.display_one(obj, false)
+        }
     }
 
     // (display obj): Human readable print.
-    fn display(&mut self, obj: Object) -> Result<(), std::io::Error> {
-        let mut shared_id = 1;
-        let mut seen: HashMap<Object, Object> = HashMap::new();
-        self.scan(obj, &mut seen);
-        self.display_one(obj, &mut seen, &mut shared_id, true)
+    fn display(&mut self, obj: Object, shared_aware: bool) -> Result<(), std::io::Error> {
+        if shared_aware {
+            let mut shared_id = 1;
+            let mut seen: HashMap<Object, Object> = HashMap::new();
+            self.scan(obj, &mut seen);
+            self.display_shared_one(obj, &mut seen, &mut shared_id, true)
+        } else {
+            self.display_one(obj, true)
+        }
     }
 
-    fn display_one(
+    fn display_one(&mut self, obj: Object, human_readable: bool) -> Result<(), std::io::Error> {
+        match obj {
+            Object::Pair(p) => self.display_pair(p, human_readable),
+            Object::Vector(v) => self.display_vector(v, human_readable),
+            Object::SimpleStruct(s) => self.display_struct(s, human_readable),
+            Object::Bytevector(_)
+            | Object::BytevectorInputPort(_)
+            | Object::BytevectorOutputPort(_)
+            | Object::Closure(_)
+            | Object::Continuation(_)
+            | Object::ContinuationStack(_)
+            | Object::Vox(_)
+            | Object::ProgramCounter(_)
+            | Object::ObjectPointer(_)
+            | Object::Unspecified
+            | Object::True
+            | Object::Procedure(_)
+            | Object::Char(_)
+            | Object::EqHashtable(_)
+            | Object::Bignum(_)
+            | Object::Compnum(_)
+            | Object::Ratnum(_)
+            | Object::Regexp(_)
+            | Object::False
+            | Object::Flonum(_)
+            | Object::StringInputPort(_)
+            | Object::FileInputPort(_)
+            | Object::Eof
+            | Object::BinaryFileInputPort(_)
+            | Object::BinaryFileOutputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::StringOutputPort(_)
+            | Object::StdInputPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::Instruction(_)
+            | Object::Nil
+            | Object::Symbol(_)
+            | Object::String(_)
+            | Object::Fixnum(_) => {
+                if human_readable {
+                    self.as_display(obj)
+                } else {
+                    self.as_write(obj)
+                }
+            }
+        }
+    }
+
+    fn display_shared_one(
         &mut self,
         obj: Object,
         seen: &mut HashMap<Object, Object>,
@@ -453,9 +510,11 @@ pub trait TextOutputPort: Port {
             return self.put_string(&format!("#{}#", seen_state.to_isize()));
         }
         match obj {
-            Object::Pair(p) => self.display_pair(p, seen, shared_id, human_readable),
-            Object::Vector(v) => self.display_vector(v, seen, shared_id, human_readable),
-            Object::SimpleStruct(s) => self.display_struct(s, seen, shared_id, human_readable),
+            Object::Pair(p) => self.display_shared_pair(p, seen, shared_id, human_readable),
+            Object::Vector(v) => self.display_shared_vector(v, seen, shared_id, human_readable),
+            Object::SimpleStruct(s) => {
+                self.display_shared_struct(s, seen, shared_id, human_readable)
+            }
             Object::Bytevector(_)
             | Object::BytevectorInputPort(_)
             | Object::BytevectorOutputPort(_)
@@ -519,7 +578,43 @@ pub trait TextOutputPort: Port {
         return false;
     }
 
-    fn display_pair(
+    fn display_pair(&mut self, p: GcRef<Pair>, human_readable: bool) -> Result<(), std::io::Error> {
+        let mut p = p;
+        let abbreviated =
+            p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
+        if abbreviated {
+            p = p.cdr.to_pair();
+        } else {
+            self.put_string("(")?;
+        }
+        self.display_one(p.car, human_readable)?;
+
+        let mut obj = p.cdr;
+        loop {
+            match obj {
+                Object::Pair(pair) => {
+                    self.put_string(" ")?;
+                    self.display_one(pair.car, human_readable)?;
+                    obj = pair.cdr;
+                }
+                Object::Nil => {
+                    break;
+                }
+                _ => {
+                    self.put_string(" . ")?;
+                    self.display_one(obj, human_readable)?;
+                    break;
+                }
+            }
+        }
+        if !abbreviated {
+            return self.put_string(")");
+        } else {
+            Ok(())
+        }
+    }
+
+    fn display_shared_pair(
         &mut self,
         p: GcRef<Pair>,
         seen: &mut HashMap<Object, Object>,
@@ -534,7 +629,7 @@ pub trait TextOutputPort: Port {
         } else {
             self.put_string("(")?;
         }
-        self.display_one(p.car, seen, shared_id, human_readable)?;
+        self.display_shared_one(p.car, seen, shared_id, human_readable)?;
 
         let mut obj = p.cdr;
         loop {
@@ -545,7 +640,7 @@ pub trait TextOutputPort: Port {
             match obj {
                 Object::Pair(pair) if seen_state.is_false() => {
                     self.put_string(" ")?;
-                    self.display_one(pair.car, seen, shared_id, human_readable)?;
+                    self.display_shared_one(pair.car, seen, shared_id, human_readable)?;
                     obj = pair.cdr;
                 }
                 Object::Nil => {
@@ -553,7 +648,7 @@ pub trait TextOutputPort: Port {
                 }
                 _ => {
                     self.put_string(" . ")?;
-                    self.display_one(obj, seen, shared_id, human_readable)?;
+                    self.display_shared_one(obj, seen, shared_id, human_readable)?;
                     break;
                 }
             }
@@ -576,13 +671,28 @@ pub trait TextOutputPort: Port {
     fn display_vector(
         &mut self,
         v: GcRef<Vector>,
+        human_readable: bool,
+    ) -> Result<(), std::io::Error> {
+        self.put_string("#(")?;
+        for i in 0..v.len() {
+            self.display_one(v.data[i], human_readable)?;
+            if i != v.len() - 1 {
+                self.put_string(" ")?;
+            }
+        }
+        self.put_string(")")
+    }
+
+    fn display_shared_vector(
+        &mut self,
+        v: GcRef<Vector>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
     ) -> Result<(), std::io::Error> {
         self.put_string("#(")?;
         for i in 0..v.len() {
-            self.display_one(v.data[i], seen, shared_id, human_readable)?;
+            self.display_shared_one(v.data[i], seen, shared_id, human_readable)?;
             if i != v.len() - 1 {
                 self.put_string(" ")?;
             }
@@ -593,13 +703,28 @@ pub trait TextOutputPort: Port {
     fn display_struct(
         &mut self,
         s: GcRef<SimpleStruct>,
+        human_readable: bool,
+    ) -> Result<(), std::io::Error> {
+        self.put_string("#<simple-stuct ")?;
+        for i in 0..s.len() {
+            self.display_one(s.field(i), human_readable)?;
+            if i != s.len() - 1 {
+                self.put_string(" ")?;
+            }
+        }
+        self.put_string(">")
+    }
+
+    fn display_shared_struct(
+        &mut self,
+        s: GcRef<SimpleStruct>,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
     ) -> Result<(), std::io::Error> {
         self.put_string("#<simple-stuct ")?;
         for i in 0..s.len() {
-            self.display_one(s.field(i), seen, shared_id, human_readable)?;
+            self.display_shared_one(s.field(i), seen, shared_id, human_readable)?;
             if i != s.len() - 1 {
                 self.put_string(" ")?;
             }
@@ -711,15 +836,17 @@ pub trait TextOutputPort: Port {
             if c == '~' {
                 if let Some(c) = chars.next() {
                     if c == 'a' || c == 'd' || c == 'e' {
+                        let shared_aware = false;
                         if i < args.len() {
-                            self.display(args[i]).ok();
+                            self.display(args[i], shared_aware).ok();
                             i += 1;
                         } else {
                             panic!("format: not enough arguments");
                         }
                     } else if c == 's' {
+                        let shared_aware = false;
                         if i < args.len() {
-                            self.write(args[i]).ok();
+                            self.write(args[i], shared_aware).ok();
                             i += 1;
                         } else {
                             panic!("format: not enough arguments");

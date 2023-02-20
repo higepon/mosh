@@ -61,8 +61,9 @@ pub enum Object {
 
 impl Object {
     pub fn to_string(&self) -> String {
+        const SHARED_AWARE: bool = false;
         let mut port = StringOutputPort::new();
-        port.display(*self).ok();
+        port.display(*self, SHARED_AWARE).ok();
         port.string()
     }
 

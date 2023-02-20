@@ -946,15 +946,16 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     } else {
         args[1]
     };
+    let shared_aware = false;
     match port {
         Object::StringOutputPort(mut port) => {
-            port.display(args[0]).ok();
+            port.display(args[0], shared_aware).ok();
         }
         Object::StdOutputPort(mut port) => {
-            port.display(args[0]).ok();
+            port.display(args[0], shared_aware).ok();
         }
         Object::StdErrorPort(mut port) => {
-            port.display(args[0]).ok();
+            port.display(args[0], shared_aware).ok();
         }
         _ => {
             println!("{}: port required but got {}", name, port)
@@ -1515,18 +1516,19 @@ fn write(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     } else {
         args[1]
     };
+    let shared_aware = false;
     match port {
         Object::StringOutputPort(mut port) => {
-            port.write(args[0]).ok();
+            port.write(args[0], shared_aware).ok();
         }
         Object::StdOutputPort(mut port) => {
-            port.write(args[0]).ok();
+            port.write(args[0], shared_aware).ok();
         }
         Object::StdErrorPort(mut port) => {
-            port.write(args[0]).ok();
+            port.write(args[0], shared_aware).ok();
         }
         Object::FileOutputPort(mut port) => {
-            port.write(args[0]).ok();
+            port.write(args[0], shared_aware).ok();
         }
         _ => {
             println!("{}: port required but got {} {}", name, port, args[0])
@@ -5879,8 +5881,33 @@ fn sexp_map_debug(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     panic!("{}({}) not implemented", name, args.len());
 }
 fn write_ss(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
-    let _name: &str = "write/ss";
-    write(vm, args)
+    let name: &str = "write/ss";
+    check_argc_between!(name, args, 1, 2);
+    let argc = args.len();
+    let port = if argc == 1 {
+        vm.current_output_port()
+    } else {
+        args[1]
+    };
+    let shared_aware = true;
+    match port {
+        Object::StringOutputPort(mut port) => {
+            port.write(args[0], shared_aware).ok();
+        }
+        Object::StdOutputPort(mut port) => {
+            port.write(args[0], shared_aware).ok();
+        }
+        Object::StdErrorPort(mut port) => {
+            port.write(args[0], shared_aware).ok();
+        }
+        Object::FileOutputPort(mut port) => {
+            port.write(args[0], shared_aware).ok();
+        }
+        _ => {
+            println!("{}: port required but got {} {}", name, port, args[0])
+        }
+    }
+    Ok(Object::Unspecified)
 }
 fn monapi_message_send(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "%monapi-message-send";
