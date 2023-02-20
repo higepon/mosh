@@ -19,7 +19,7 @@ use crate::number_lexer::{NumberLexer, Token, NumberLexicalError};
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
     EXACTNESS              = ("#"[ie])?;
     SIGN                   = [\+\-]?;
-    EXPONENT_MARKER        = "e";
+    EXPONENT_MARKER        = [eEsSfFdDlL];
     SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
     UINTEGER_10            = DIGIT_10 +;
     DECIMAL_10             = (UINTEGER_10 SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX);
@@ -55,7 +55,7 @@ impl<'input> Iterator for NumberLexer<'input> {
                     "+" { return self.with_location(Token::Plus); }
                     "-" { return self.with_location(Token::Minus); }
                     "." { return self.with_location(Token::Dot); }
-                    "e" { return self.with_location(Token::Exponent); }
+                    EXPONENT_MARKER { return self.with_location(Token::Exponent); }
                     'i' { return self.with_location(Token::Imag); }
                     "#d" { return self.with_location(Token::Radix10); }
                     "#x" { return self.with_location(Token::Radix16); }

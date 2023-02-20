@@ -6,7 +6,7 @@ test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture # -- --test-threads 1
 	grep "not implemented" src/procs.rs | wc -l
 	grep "Object {" src/procs.rs | wc -l
-	cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture  -Zmiri-ignore-leaks
+	cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture # -Zmiri-ignore-leaks
 
 test-scheme:
 	mosh --loadpath=./scripts/ tests/rust_sexp.scm

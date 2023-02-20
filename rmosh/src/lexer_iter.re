@@ -55,7 +55,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
     EXACTNESS              = ("#"[ieIE])?;
     SIGN                   = [\+\-]?;
-    EXPONENT_MARKER        = "e";
+    EXPONENT_MARKER        = [eEsSfFdDlL];
     SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
     UINTEGER_10            = DIGIT_10 +;
     DECIMAL_10             = (UINTEGER_10 SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX);

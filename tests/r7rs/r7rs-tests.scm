@@ -2323,7 +2323,6 @@
 (test-numeric-syntax "-1" -1)
 (test-numeric-syntax "#i1" 1.0 "1.0" "1.")
 (test-numeric-syntax "#I1" 1.0 "1.0" "1.")
-#|
 (test-numeric-syntax "#i-1" -1.0 "-1.0" "-1.")
 
 ;; Decimal
@@ -2381,6 +2380,7 @@
 (test-numeric-syntax "0-1i" (make-rectangular 0 -1) "-i" "-1i" "0-i" "0-1i")
 (test-numeric-syntax "+2i" (make-rectangular 0 2) "2i" "+2i" "0+2i")
 (test-numeric-syntax "-2i" (make-rectangular 0 -2) "-2i" "0-2i")
+#|  
 ;; Decimal-notation complex numbers (rectangular notation)
 (test-numeric-syntax "1.0+2i" (make-rectangular 1.0 2) "1.0+2.0i" "1.0+2i" "1.+2i" "1.+2.i")
 (test-numeric-syntax "1+2.0i" (make-rectangular 1 2.0) "1.0+2.0i" "1+2.0i" "1.+2.i" "1+2.i")
@@ -2393,6 +2393,7 @@
 ;; Mixed fractional/decimal notation complex numbers (rectangular notation)
 (test-numeric-syntax "0.5+3/4i" (make-rectangular 0.5 (/ 3 4))
   "0.5+0.75i" ".5+.75i" "0.5+3/4i" ".5+3/4i" "500.0e-3+750.0e-3i")
+
 ;; Complex NaN, Inf (rectangular notation)
 ;;(test-numeric-syntax "+nan.0+nan.0i" (make-rectangular the-nan the-nan) "+NaN.0+NaN.0i")
 (test-numeric-syntax "+inf.0+inf.0i" (make-rectangular +inf.0 +inf.0) "+Inf.0+Inf.0i")
