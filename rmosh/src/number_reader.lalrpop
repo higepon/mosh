@@ -6,6 +6,7 @@ use crate::numbers::Bignum;
 use crate::numbers::Compnum;
 use crate::numbers::Flonum;
 use crate::numbers::Ratnum;
+use crate::ports;
 use crate::objects::Object;
 use std::str::FromStr;
 use num_bigint::BigInt;
@@ -280,10 +281,9 @@ Digit16: String = {
     }
 }
 
-
 extern {
     type Location = usize;
-    type Error = number_lexer::NumberLexicalError;
+    type Error = ports::ReadError2;
 
     enum number_lexer::Token {
         "-" => number_lexer::Token::Minus,

@@ -187,7 +187,7 @@ impl Object {
             Object::BinaryFileInputPort(_)
             | Object::FileInputPort(_)
             | Object::StdInputPort(_)
-            | Object::BytevectorInputPort(_)            
+            | Object::BytevectorInputPort(_)
             | Object::StringInputPort(_) => true,
             _ => false,
         }

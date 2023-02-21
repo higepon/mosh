@@ -1,8 +1,12 @@
+use lalrpop_util::ParseError;
+use rmosh::number_lexer::NumberLexer;
+use rmosh::ports::ReadError;
 use rmosh::{
     equal::Equal,
     gc::Gc,
+    number_reader::NumberParser,
     objects::Object,
-    ports::{ReadError, StringInputPort, TextInputPort},
+    ports::{ReadError2, StringInputPort, TextInputPort},
     vm::Vm,
 };
 
@@ -328,5 +332,29 @@ fn parse_special_chars() {
     {
         let obj = read(&mut vm.gc, "#\\tab").unwrap();
         assert_equal!(vm.gc, Object::Char('\t'), obj);
+    }
+}
+
+#[test]
+fn propagate_lexer_error() {
+    // Lexter finds an invalid token and bubble up the error to the parser.
+    let s = "?3";
+    let mut vm = Vm::new();
+    let mut chars: Vec<char> = s.chars().collect();
+    chars.push('\0');
+    match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+        Ok(_) => {
+            assert!(false);
+        }
+        Err(ParseError::User {
+            error: ReadError2::InvalidToken { start, end, token },
+        }) => {
+            assert_eq!(0, start);
+            assert_eq!(1, end);
+            assert_eq!("?", token);
+        }
+        _ => {
+            assert!(false);
+        }
     }
 }

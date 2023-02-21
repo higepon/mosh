@@ -9,6 +9,15 @@ use std::{
 
 use lalrpop_util::ParseError;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ReadError2 {
+    InvalidToken {
+        start: usize,
+        end: usize,
+        token: String,
+    },
+}
+
 pub type ReadError = ParseError<usize, lexer::Token, LexicalError>;
 
 use crate::{
@@ -421,10 +430,10 @@ pub trait TextOutputPort: Port {
     // (write obj): Machine readable print.
     fn write(&mut self, obj: Object, shared_aware: bool) -> Result<(), std::io::Error> {
         if shared_aware {
-        let mut shared_id = 1;
-        let mut seen: HashMap<Object, Object> = HashMap::new();
-        self.scan(obj, &mut seen);
-        self.display_shared_one(obj, &mut seen, &mut shared_id, false)
+            let mut shared_id = 1;
+            let mut seen: HashMap<Object, Object> = HashMap::new();
+            self.scan(obj, &mut seen);
+            self.display_shared_one(obj, &mut seen, &mut shared_id, false)
         } else {
             self.display_one(obj, false)
         }

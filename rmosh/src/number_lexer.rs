@@ -1,3 +1,5 @@
+use crate::ports::ReadError2;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
     Digit { value: String },
@@ -19,7 +21,7 @@ pub enum Token {
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, NumberLexicalError>;
+pub type LexerItem = Spanned<Token, usize, ReadError2>;
 
 #[derive(Clone, Debug)]
 pub struct NumberLexer<'input> {
@@ -53,9 +55,11 @@ impl<'input> NumberLexer<'input> {
     }
 }
 
+/*
 #[derive(Clone, Debug, PartialEq)]
 pub struct NumberLexicalError {
     pub start: usize,
     pub end: usize,
     pub token: String,
 }
+*/
