@@ -97,9 +97,10 @@ pub trait TextInputPort {
                 Err(ParseError::InvalidToken { location }) => {
                     return Err(ReadError::LalrpopInvalidToken { location: location })
                 }
-                Err(ParseError::UnrecognizedEOF { location, expected: _ }) => {
-                    return Err(ReadError::UnrecognizedEOF { location: location })
-                }
+                Err(ParseError::UnrecognizedEOF {
+                    location,
+                    expected: _,
+                }) => return Err(ReadError::UnrecognizedEOF { location: location }),
                 Err(ParseError::UnrecognizedToken { token, expected: _ }) => {
                     return Err(ReadError::UnrecognizedToken { token: token.1 })
                 }
