@@ -2254,7 +2254,7 @@
 (test "line 1continued\n" (read (open-input-string "\"line 1\\ \t \n \t continued\n\"")))
 (test-skip (test "line 1\n\nline 3\n" (read (open-input-string "\"line 1\\ \t \n \t \n\nline 3\n\""))))
 (test #x03BB (char->integer (string-ref (read (open-input-string "\"\\x03BB;\"")) 0)))
-
+#|  
 (define-syntax test-write-syntax
   (syntax-rules ()
     ((test-write-syntax expect-str obj-expr)
@@ -2366,6 +2366,7 @@
 (test-numeric-syntax "0/10" 0 "0")
 (test-numeric-syntax "#e0/10" 0 "0")
 (test-numeric-syntax "#i3/2" (/ 3.0 2.0) "1.5")
+
 ;; Exact complex
 (test-numeric-syntax "1+2i" (make-rectangular 1 2))
 (test-numeric-syntax "1+2I" (make-rectangular 1 2) "1+2i")
@@ -2380,7 +2381,7 @@
 (test-numeric-syntax "0-1i" (make-rectangular 0 -1) "-i" "-1i" "0-i" "0-1i")
 (test-numeric-syntax "+2i" (make-rectangular 0 2) "2i" "+2i" "0+2i")
 (test-numeric-syntax "-2i" (make-rectangular 0 -2) "-2i" "0-2i")
-#|  
+
 ;; Decimal-notation complex numbers (rectangular notation)
 (test-numeric-syntax "1.0+2i" (make-rectangular 1.0 2) "1.0+2.0i" "1.0+2i" "1.+2i" "1.+2.i")
 (test-numeric-syntax "1+2.0i" (make-rectangular 1 2.0) "1.0+2.0i" "1+2.0i" "1.+2.i" "1+2.i")

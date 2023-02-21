@@ -1,6 +1,6 @@
 use crate::ports::ReadError;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token {
     AbbrevQuasiquote,
     AbbrevQuote,

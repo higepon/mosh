@@ -21,10 +21,23 @@ pub enum ReadError {
         token: String,
         description: String,
     },
+    LalrpopInvalidToken {
+        location: usize,
+    },
+    UnrecognizedEOF {
+        location: usize,
+    },
+    UnrecognizedToken {
+        token: Token,
+    },
+    ExtraToken {
+        token: Token,
+    },
 }
 
 use lalrpop_util::ParseError;
 
+use crate::lexer::Token;
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
@@ -81,7 +94,18 @@ pub trait TextInputPort {
                 Err(ParseError::User { error }) => {
                     return Err(error);
                 }
-                _ => todo!(),
+                Err(ParseError::InvalidToken { location }) => {
+                    return Err(ReadError::LalrpopInvalidToken { location: location })
+                }
+                Err(ParseError::UnrecognizedEOF { location, expected: _ }) => {
+                    return Err(ReadError::UnrecognizedEOF { location: location })
+                }
+                Err(ParseError::UnrecognizedToken { token, expected: _ }) => {
+                    return Err(ReadError::UnrecognizedToken { token: token.1 })
+                }
+                Err(ParseError::ExtraToken { token }) => {
+                    return Err(ReadError::ExtraToken { token: token.1 })
+                }
             }
         }
         if self.parsed().is_nil() {
