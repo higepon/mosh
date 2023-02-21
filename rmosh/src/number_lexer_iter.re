@@ -1,6 +1,6 @@
 use crate::lexer::Spanned;
 use crate::number_lexer::{NumberLexer, Token};
-use crate::ports::ReadError2;
+use crate::ports::ReadError;
 
 /*!re2c
     re2c:define:YYCTYPE = usize; // We have Vec<char> and treat char as usize.
@@ -41,7 +41,7 @@ use crate::ports::ReadError2;
 */
 
 impl<'input> Iterator for NumberLexer<'input> {
-    type Item = Spanned<Token, usize, ReadError2>;
+    type Item = Spanned<Token, usize, ReadError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -70,7 +70,7 @@ impl<'input> Iterator for NumberLexer<'input> {
                     }
                     "EOS" { return None; }
                     $ { return None; }
-                    * { return Some(Err(ReadError2::InvalidToken {
+                    * { return Some(Err(ReadError::InvalidToken {
                             start: self.tok,
                             end: self.cursor,
                             token: self.extract_token()

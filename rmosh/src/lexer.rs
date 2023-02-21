@@ -1,4 +1,4 @@
-use crate::ports::ReadError2;
+use crate::ports::ReadError;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
@@ -27,7 +27,7 @@ pub enum Token {
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, ReadError2>;
+pub type LexerItem = Spanned<Token, usize, ReadError>;
 
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {

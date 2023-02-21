@@ -135,7 +135,7 @@ Boolean: Object = {
 
 extern {
     type Location = usize;
-    type Error = ports::ReadError2;
+    type Error = ports::ReadError;
 
     enum lexer::Token {
         "'" => lexer::Token::AbbrevQuote,

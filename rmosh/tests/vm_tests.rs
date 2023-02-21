@@ -4,7 +4,7 @@ use rmosh::{
     gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    ports::{ReadError2, StringInputPort, TextInputPort},
+    ports::{ReadError, StringInputPort, TextInputPort},
     vm::Vm,
 };
 
@@ -2483,7 +2483,7 @@ fn test_compiler() {
     }
 }
 
-fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError2> {
+fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
     let mut port = StringInputPort::new(s);
     port.read(gc)
 }

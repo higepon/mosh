@@ -7,7 +7,7 @@ use crate::numbers::Compnum;
 use crate::numbers::Flonum;
 use crate::numbers::Ratnum;
 use crate::ports;
-use crate::ports::ReadError2;
+use crate::ports::ReadError;
 use crate::objects::Object;
 use std::str::FromStr;
 use num_bigint::BigInt;
@@ -160,7 +160,7 @@ UReal10: Object = {
                     },
                     Err(err2) => {
                         Err(ParseError::User {
-                            error: ReadError2::NumberParseError { token: <>, description: err2.to_string() }
+                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
                         })
                     }
                 }
@@ -174,12 +174,12 @@ UReal10: Object = {
             }
             (Err(err), _) => {
                 Err(ParseError::User {
-                    error: ReadError2::NumberParseError { token: numer, description: err.to_string() }
+                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
                 })                
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
-                    error: ReadError2::NumberParseError { token: denom, description: err.to_string() }
+                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
                 })                
             }  
         }
@@ -191,7 +191,7 @@ UReal10: Object = {
             },
             Err(err) => {
                 Err(ParseError::User {
-                    error: ReadError2::NumberParseError { token: <>, description: err.to_string() }
+                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }
                 })                
             }
         }
@@ -211,7 +211,7 @@ UReal16: Object = {
                     },
                     Err(err2) => {
                         Err(ParseError::User {
-                            error: ReadError2::NumberParseError { token: <>, description: err2.to_string() }
+                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
                         })   
                     }
                 }
@@ -225,12 +225,12 @@ UReal16: Object = {
             }
             (Err(err), _) => {
                 Err(ParseError::User {
-                    error: ReadError2::NumberParseError { token: numer, description: err.to_string() }
+                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
                 })                
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
-                    error: ReadError2::NumberParseError { token: denom, description: err.to_string() }
+                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
                 })                
             }  
         }
@@ -307,7 +307,7 @@ Digit16: String = {
 
 extern {
     type Location = usize;
-    type Error = ports::ReadError2;
+    type Error = ports::ReadError;
 
     enum number_lexer::Token {
         "-" => number_lexer::Token::Minus,

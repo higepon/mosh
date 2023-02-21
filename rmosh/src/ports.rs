@@ -8,7 +8,7 @@ use std::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ReadError2 {
+pub enum ReadError {
     ContentNotFound {
         description: String,
     },
@@ -58,14 +58,14 @@ pub trait TextInputPort {
     // (read ...)
     // LALRPOP doesn't support multiple calls of parse.
     // We parse all S-Expressions once then store them.
-    fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError2> {
+    fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError> {
         //
         if self.parsed().is_unspecified() {
             let mut s = String::new();
             match self.read_to_string(&mut s) {
                 Ok(_) => {}
                 Err(err) => {
-                    return Err(ReadError2::ContentNotFound {
+                    return Err(ReadError::ContentNotFound {
                         description: err.to_string(),
                     });
                 }
@@ -77,11 +77,11 @@ pub trait TextInputPort {
             match DatumParser::new().parse(gc, lexer::Lexer::new(&chars)) {
                 Ok(parsed) => {
                     self.set_parsed(parsed);
-                },
+                }
                 Err(ParseError::User { error }) => {
                     return Err(error);
-                },
-                _ => todo!()
+                }
+                _ => todo!(),
             }
         }
         if self.parsed().is_nil() {

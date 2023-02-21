@@ -5,11 +5,11 @@ use rmosh::{
     gc::Gc,
     number_reader::NumberParser,
     objects::Object,
-    ports::{ReadError2, StringInputPort, TextInputPort},
+    ports::{ReadError, StringInputPort, TextInputPort},
     vm::Vm,
 };
 
-fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError2> {
+fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
     let mut port = StringInputPort::new(s);
     port.read(gc)
 }
@@ -346,7 +346,7 @@ fn propagate_lexer_error() {
             assert!(false);
         }
         Err(ParseError::User {
-            error: ReadError2::InvalidToken { start, end, token },
+            error: ReadError::InvalidToken { start, end, token },
         }) => {
             assert_eq!(0, start);
             assert_eq!(1, end);
