@@ -184,12 +184,16 @@ UReal10: Object = {
             }  
         }
     },
-    Decimal10 => {
+    Decimal10 =>? {
         match f64::from_str(&<>) {
             Ok(n) => {
-                Object::Flonum(Flonum::new(n))
+                Ok(Object::Flonum(Flonum::new(n)))
             },
-            Err(err) => todo!(),
+            Err(err) => {
+                Err(ParseError::User {
+                    error: ReadError2::NumberParseError { token: <>, description: err.to_string() }
+                })                
+            }
         }
     }
 }
