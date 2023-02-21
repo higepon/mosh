@@ -160,21 +160,28 @@ UReal10: Object = {
                     },
                     Err(err2) => {
                         Err(ParseError::User {
-                            error: ReadError2::BigIntParseError { token: <>, description: err2.to_string() }
+                            error: ReadError2::NumberParseError { token: <>, description: err2.to_string() }
                         })
                     }
                 }
             }
         }
     },
-    <numer: UInteger10> "/" <denom: UInteger10> => {
+    <numer: UInteger10> "/" <denom: UInteger10> =>? {
         match (isize::from_str(&numer), isize::from_str(&denom)) {
             (Ok(n), Ok(d)) => {
-                Object::Ratnum(gc.alloc(Ratnum::new(n, d)))
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
             }
-            _ => {
-                todo!();
+            (Err(err), _) => {
+                Err(ParseError::User {
+                    error: ReadError2::NumberParseError { token: numer, description: err.to_string() }
+                })                
             }
+            (_, Err(err)) => {
+                Err(ParseError::User {
+                    error: ReadError2::NumberParseError { token: denom, description: err.to_string() }
+                })                
+            }  
         }
     },
     Decimal10 => {

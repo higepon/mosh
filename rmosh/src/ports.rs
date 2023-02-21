@@ -17,10 +17,10 @@ pub enum ReadError2 {
         end: usize,
         token: String,
     },
-    BigIntParseError {
+    NumberParseError {
         token: String,
-        description: String,
-    }
+        description: String,        
+    }    
 }
 
 pub type ReadError = ParseError<usize, lexer::Token, LexicalError>;
