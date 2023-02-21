@@ -100,7 +100,9 @@ Character: Object = {
 
 
 Symbol: Object = {
-    "identifier" => gc.symbol_intern(&<>)
+    "identifier" => {
+        gc.symbol_intern(&ports::read_symbol(&<>))
+    }
 }
 
 Number: Object = {

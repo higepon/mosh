@@ -1299,3 +1299,85 @@ impl Display for BinaryFileOutputPort {
         write!(f, "#<binary-file-output-port>")
     }
 }
+
+// Read helpers
+pub fn read_symbol(s: &str) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    let mut ret = String::new();
+    let mut i: usize = 0;
+    loop {
+        let ch = match chars.get(i) {
+            Some(c) => c,
+            None => break,
+        };
+        i += 1;
+        if *ch == '\\' {
+            let ch2 = match chars.get(i) {
+                Some(c) => c,
+                None => break,
+            };
+            i += 1;
+            if *ch2 == 'x' {
+                let mut current_ch = 0 as char;
+                loop {
+                    let hex_ch = match chars.get(i) {
+                        Some(c) => c,
+                        None => {
+                            eprintln!("invalid \\x in symbol end");
+                            break;
+                        }
+                    };
+                    i += 1;
+                    if *hex_ch == ';' {
+                        ret.push(current_ch);
+                        break;
+                    } else if hex_ch.is_digit(10) {
+                        let lhs = (current_ch as u32) << 4;
+                        let rhs = (*hex_ch as u32) - ('0' as u32);
+                        current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
+                    } else if 'a' <= *hex_ch && *hex_ch <= 'f' {
+                        let lhs = (current_ch as u32) << 4;
+                        let rhs = (*hex_ch as u32) - ('a' as u32) + 10;
+                        current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
+                    } else if 'A' <= *hex_ch && *hex_ch <= 'F' {
+                        let lhs = (current_ch as u32) << 4;
+                        let rhs = (*hex_ch as u32) - ('A' as u32) + 10;
+                        current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
+                    } else {
+                        eprintln!("invalid \\x in symbol {}", hex_ch);
+                    }
+                }
+            } else if *ch2 == '"' {
+                ret.push('"');
+            } else {
+                ret.push(*ch);
+                ret.push(*ch2);
+            }
+        } else {
+            ret.push(*ch);
+        }
+    }
+    let is_bar_symbol = ret.len() > 2 && match (ret.chars().next(), ret.chars().last()) {
+        (Some('|'), Some('|')) => true,
+        _ => false,
+    };
+    if is_bar_symbol {
+        let raw_symbol = &ret[1..ret.len() - 2];
+        if has_only_alphabets(raw_symbol) {
+            return raw_symbol.to_string();
+        } else {
+            return ret;
+        }
+    } else {
+        ret
+    }
+}
+
+fn has_only_alphabets(s: &str) -> bool {
+    for c in s.chars() {
+        if !c.is_alphabetic() {
+            return false;
+        }
+    }
+    return true;
+}

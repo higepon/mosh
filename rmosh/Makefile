@@ -7,7 +7,7 @@ test: src/lexer_iter.rs src/number_lexer_iter.rs
 	grep "not implemented" src/procs.rs | wc -l
 	grep "Object {" src/procs.rs | wc -l
 	# Always run tests using miri to catch errors early.
-	cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture -- --Zmiri-ignore-leaks
+	MIRIFLAGS="-Zmiri-symbolic-alignment-check -Zmiri-ignore-leaks" cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --
 
 test-scheme:
 	mosh --loadpath=./scripts/ tests/rust_sexp.scm

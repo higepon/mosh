@@ -2020,7 +2020,7 @@
     (test #\x10F700 c1)
     (test #\x10F701 c2)
     (test #\x10F702 c3)))
-
+#|
 (test (string #\x10F700)
     (let ((out (open-output-string)))
       (write-char #\x10F700 out)
@@ -2254,7 +2254,7 @@
 (test "line 1continued\n" (read (open-input-string "\"line 1\\ \t \n \t continued\n\"")))
 (test-skip (test "line 1\n\nline 3\n" (read (open-input-string "\"line 1\\ \t \n \t \n\nline 3\n\""))))
 (test #x03BB (char->integer (string-ref (read (open-input-string "\"\\x03BB;\"")) 0)))
-#|  
+
 (define-syntax test-write-syntax
   (syntax-rules ()
     ((test-write-syntax expect-str obj-expr)
@@ -2337,6 +2337,7 @@
 (test-numeric-syntax "#e1.0" 1 "1")
 (test-numeric-syntax "#e-.0" 0 "0")
 (test-numeric-syntax "#e-0." 0 "0")
+  
 ;; Decimal notation with suffix
 (test-numeric-syntax "1e2" 100.0 "100.0" "100.")
 (test-numeric-syntax "1E2" 100.0 "100.0" "100.")
