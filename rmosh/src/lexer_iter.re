@@ -1,4 +1,5 @@
-use crate::lexer::{Lexer, Spanned, Token, LexicalError};
+use crate::lexer::{Lexer, Spanned, Token};
+use crate::ports::ReadError2;
 
 /*!re2c
     re2c:define:YYCTYPE = usize; // We have Vec<char> and treat char as usize.
@@ -79,7 +80,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
 */
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Spanned<Token, usize, LexicalError>;
+    type Item = Spanned<Token, usize, ReadError2>;
 
     fn next(&mut self) -> Option<Self::Item> {       
         loop {
@@ -190,7 +191,7 @@ impl<'input> Iterator for Lexer<'input> {
                         break 'lex;
                     }
                     $ { return None; }
-                    * { return Some(Err(LexicalError {
+                    * { return Some(Err(ReadError2::InvalidToken {
                             start: self.tok,
                             end: self.cursor,
                             token: self.extract_token()

@@ -7,11 +7,11 @@ use std::{
     io::{self, Read},
 };
 
-use lalrpop_util::ParseError;
-
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ReadError2 {
+    ContentNotFound {
+        description: String,
+    },
     InvalidToken {
         start: usize,
         end: usize,
@@ -19,15 +19,15 @@ pub enum ReadError2 {
     },
     NumberParseError {
         token: String,
-        description: String,        
-    }    
+        description: String,
+    },
 }
 
-pub type ReadError = ParseError<usize, lexer::Token, LexicalError>;
+use lalrpop_util::ParseError;
 
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
-    lexer::{self, LexicalError},
+    lexer::{self},
     objects::{Object, Pair, SimpleStruct, Vector},
     reader::DatumParser,
 };
@@ -58,19 +58,15 @@ pub trait TextInputPort {
     // (read ...)
     // LALRPOP doesn't support multiple calls of parse.
     // We parse all S-Expressions once then store them.
-    fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError> {
+    fn read(&mut self, gc: &mut Box<Gc>) -> Result<Object, ReadError2> {
         //
         if self.parsed().is_unspecified() {
             let mut s = String::new();
             match self.read_to_string(&mut s) {
                 Ok(_) => {}
                 Err(err) => {
-                    return Err(ParseError::User {
-                        error: LexicalError {
-                            start: 0,
-                            end: 0,
-                            token: err.to_string(),
-                        },
+                    return Err(ReadError2::ContentNotFound {
+                        description: err.to_string(),
                     });
                 }
             }
@@ -78,8 +74,15 @@ pub trait TextInputPort {
             // re2c assumes null terminated string.
             let s = s + ")\0";
             let chars: Vec<char> = s.chars().collect();
-
-            self.set_parsed(DatumParser::new().parse(gc, lexer::Lexer::new(&chars))?);
+            match DatumParser::new().parse(gc, lexer::Lexer::new(&chars)) {
+                Ok(parsed) => {
+                    self.set_parsed(parsed);
+                },
+                Err(ParseError::User { error }) => {
+                    return Err(error);
+                },
+                _ => todo!()
+            }
         }
         if self.parsed().is_nil() {
             return Ok(Object::Eof);

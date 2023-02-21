@@ -17,7 +17,7 @@ use crate::{
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
-    ports::{ReadError, StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
+    ports::{ReadError2, StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
     procs::default_free_vars,
     psyntax,
 };
@@ -261,7 +261,7 @@ impl Vm {
         self.current_input_port = port;
     }
 
-    pub fn read(&mut self) -> Result<Object, ReadError> {
+    pub fn read(&mut self) -> Result<Object, ReadError2> {
         match self.current_input_port {
             Object::FileInputPort(mut port) => port.read(&mut self.gc),
             _ => {

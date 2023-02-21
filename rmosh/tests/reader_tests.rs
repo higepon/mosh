@@ -1,6 +1,5 @@
 use lalrpop_util::ParseError;
 use rmosh::number_lexer::NumberLexer;
-use rmosh::ports::ReadError;
 use rmosh::{
     equal::Equal,
     gc::Gc,
@@ -10,7 +9,7 @@ use rmosh::{
     vm::Vm,
 };
 
-fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
+fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError2> {
     let mut port = StringInputPort::new(s);
     port.read(gc)
 }

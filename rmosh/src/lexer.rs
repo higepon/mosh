@@ -1,3 +1,5 @@
+use crate::ports::ReadError2;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
     AbbrevQuasiquote,
@@ -25,7 +27,7 @@ pub enum Token {
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, LexicalError>;
+pub type LexerItem = Spanned<Token, usize, ReadError2>;
 
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {
@@ -194,11 +196,4 @@ impl<'input> Lexer<'input> {
         // Remove #/ and /
         self.s[self.tok + 2..self.cursor - 1].iter().collect()
     }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct LexicalError {
-    pub start: usize,
-    pub end: usize,
-    pub token: String,
 }

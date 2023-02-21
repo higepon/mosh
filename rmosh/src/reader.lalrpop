@@ -1,6 +1,7 @@
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
+use crate::ports;
 use crate::number_reader::NumberParser;
 use crate::number_lexer::NumberLexer;
 
@@ -134,7 +135,7 @@ Boolean: Object = {
 
 extern {
     type Location = usize;
-    type Error = lexer::LexicalError;
+    type Error = ports::ReadError2;
 
     enum lexer::Token {
         "'" => lexer::Token::AbbrevQuote,
