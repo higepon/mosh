@@ -7,10 +7,12 @@ use crate::numbers::Compnum;
 use crate::numbers::Flonum;
 use crate::numbers::Ratnum;
 use crate::ports;
+use crate::ports::ReadError2;
 use crate::objects::Object;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use num_traits::Num;
+use lalrpop_util::ParseError;
 
 grammar(gc: &mut Box<Gc>);
 
@@ -146,18 +148,20 @@ Real16: Object = {
 }
 
 UReal10: Object = {
-    UInteger10 => {
+    UInteger10 =>? {
         match isize::from_str(&<>) {
             Ok(n) => {
-                Object::Fixnum(n)
+                Ok(Object::Fixnum(n))
             }
             Err(err) => {
                 match BigInt::from_str(&<>) {
                     Ok(b) => {
-                        Object::Bignum(gc.alloc(Bignum::new(b)))
+                        Ok(Object::Bignum(gc.alloc(Bignum::new(b))))
                     },
                     Err(err2) => {
-                        todo!("err {:?} {:?}", err, err2);
+                        Err(ParseError::User {
+                            error: ReadError2::BigIntParseError { token: <>, description: err2.to_string() }
+                        })
                     }
                 }
             }

@@ -9,6 +9,7 @@ use std::{
 
 use lalrpop_util::ParseError;
 
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ReadError2 {
     InvalidToken {
@@ -16,6 +17,10 @@ pub enum ReadError2 {
         end: usize,
         token: String,
     },
+    BigIntParseError {
+        token: String,
+        description: String,
+    }
 }
 
 pub type ReadError = ParseError<usize, lexer::Token, LexicalError>;
