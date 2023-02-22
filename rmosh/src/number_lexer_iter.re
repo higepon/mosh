@@ -1,5 +1,6 @@
 use crate::lexer::Spanned;
-use crate::number_lexer::{NumberLexer, Token};
+use crate::number_lexer::NumberLexer;
+use crate::lexer::Token;
 use crate::ports::ReadError;
 
 /*!re2c
@@ -26,14 +27,14 @@ use crate::ports::ReadError;
     DECIMAL_10             = (UINTEGER_10 SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX);
     UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
     REAL_10                = (SIGN UREAL_10) | INF_NAN;
-    RADIX_10               = "#d" ?;
+    RADIX_10               = '#d' ?;
     COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
     UINTEGER_16            = DIGIT_16 +;
     UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16);
     REAL_16                = (SIGN UREAL_16) | INF_NAN;
-    RADIX_16               = "#x" ?;
+    RADIX_16               = '#x' ?;
     COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 'i') | (REAL_16 [\+\-] INF_NAN 'i') | (REAL_16 [\+\-] 'i') | ([\+\-] UREAL_16 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
     NUM_16                 = PREFIX_16 COMPLEX_16;
@@ -58,8 +59,8 @@ impl<'input> Iterator for NumberLexer<'input> {
                     "." { return self.with_location(Token::Dot); }
                     EXPONENT_MARKER { return self.with_location(Token::Exponent); }
                     'i' { return self.with_location(Token::Imag); }
-                    "#d" { return self.with_location(Token::Radix10); }
-                    "#x" { return self.with_location(Token::Radix16); }
+                    '#d' { return self.with_location(Token::Radix10); }
+                    '#x' { return self.with_location(Token::Radix16); }
                     "#e" { return self.with_location(Token::Exact); }
                     '#i' { return self.with_location(Token::Inexact); }
                     DIGIT {

@@ -23,7 +23,7 @@ pub Number: Object = {
 }
 
 Number10: Object = {
-    <e: Prefix10?> <c: Complex10> => {
+    <e: Prefix10> <c: Complex10> => {
         match e {
             Some(is_exact) => {
                 if is_exact {
@@ -57,10 +57,11 @@ Number16: Object = {
     }
 }
 
-Prefix10: bool = {
-    Radix10 <e: Exactness> => e,
-    <e: Exactness> Radix10 => e,
-    Exactness,
+Prefix10: Option<bool> = {
+    Radix10 <e: Exactness> => Some(e),
+    <e: Exactness> Radix10 => Some(e),
+    Radix10 => None,
+    <e: Exactness> => Some(e),
 }
 
 Prefix16: Option<bool> = {
@@ -101,8 +102,23 @@ Complex10: Object = {
     <real: Real10> "+inf.0" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
     },
+    <real: Real10> "-inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: NEG_INFINITY)))))
+    },    
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
+    },
+    "+" <real: Real10> "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), real)))
+    },
+    "-" <real: Real10> "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), real)))
+    },    
+    "+" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))))
+    },
+    "-" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))))
     },
 }
 
@@ -175,13 +191,13 @@ UReal10: Object = {
             (Err(err), _) => {
                 Err(ParseError::User {
                     error: ReadError::NumberParseError { token: numer, description: err.to_string() }
-                })                
+                })
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
                     error: ReadError::NumberParseError { token: denom, description: err.to_string() }
-                })                
-            }  
+                })
+            }
         }
     },
     Decimal10 =>? {
@@ -192,7 +208,7 @@ UReal10: Object = {
             Err(err) => {
                 Err(ParseError::User {
                     error: ReadError::NumberParseError { token: <>, description: err.to_string() }
-                })                
+                })
             }
         }
     }
@@ -212,7 +228,7 @@ UReal16: Object = {
                     Err(err2) => {
                         Err(ParseError::User {
                             error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
-                        })   
+                        })
                     }
                 }
             }
@@ -226,13 +242,13 @@ UReal16: Object = {
             (Err(err), _) => {
                 Err(ParseError::User {
                     error: ReadError::NumberParseError { token: numer, description: err.to_string() }
-                })                
+                })
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
                     error: ReadError::NumberParseError { token: denom, description: err.to_string() }
-                })                
-            }  
+                })
+            }
         }
     },
 }

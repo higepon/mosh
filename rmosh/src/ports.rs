@@ -29,6 +29,7 @@ pub enum ReadError {
     },
     UnrecognizedToken {
         token: Token,
+        expected: Vec<String>,        
     },
     ExtraToken {
         token: Token,
@@ -84,9 +85,11 @@ pub trait TextInputPort {
                 }
             }
             let s = "(".to_string() + &s;
+            println!("TRY to read {}", s);
             // re2c assumes null terminated string.
             let s = s + ")\0";
             let chars: Vec<char> = s.chars().collect();
+
             match DatumParser::new().parse(gc, lexer::Lexer::new(&chars)) {
                 Ok(parsed) => {
                     self.set_parsed(parsed);
@@ -101,8 +104,8 @@ pub trait TextInputPort {
                     location,
                     expected: _,
                 }) => return Err(ReadError::UnrecognizedEOF { location: location }),
-                Err(ParseError::UnrecognizedToken { token, expected: _ }) => {
-                    return Err(ReadError::UnrecognizedToken { token: token.1 })
+                Err(ParseError::UnrecognizedToken { token, expected }) => {
+                    return Err(ReadError::UnrecognizedToken { token: token.1, expected: expected })
                 }
                 Err(ParseError::ExtraToken { token }) => {
                     return Err(ReadError::ExtraToken { token: token.1 })
