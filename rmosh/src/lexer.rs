@@ -154,14 +154,17 @@ impl<'input> Lexer<'input> {
                         }
                     }
                 } else {
+                    i -= 1;
                     // <intraline whitespace>*<line ending>
                     // <intraline whitespace>*
                     // NB: Lexical syntax has already checked by the scanner.
                     loop {
+              
                         let ch3 = match chars.get(i) {
                             Some(c) => c,
                             None => break,
                         };
+
                         // <line ending>
                         if *ch3 == '\r' ||
                            *ch3 == '\n' ||
@@ -180,7 +183,6 @@ impl<'input> Lexer<'input> {
                             i += 1;
                             continue;
                         } else {
-                            i -= 1;
                             break;
                         }
                     }
