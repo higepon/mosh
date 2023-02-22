@@ -1362,7 +1362,7 @@ pub fn read_symbol(s: &str) -> String {
         _ => false,
     };
     if is_bar_symbol {
-        let raw_symbol = &ret[1..ret.len() - 2];
+        let raw_symbol = &ret[1..ret.len() - 1];
         if has_only_alphabets(raw_symbol) {
             return raw_symbol.to_string();
         } else {

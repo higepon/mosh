@@ -563,7 +563,7 @@ impl Debug for Object {
                 write!(f, "{:?}", unsafe { s.pointer.as_ref() })
             }
             Object::Symbol(symbol) => {
-                write!(f, "{}", unsafe { symbol.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { symbol.pointer.as_ref() })
             }
             Object::Eof => {
                 write!(f, "#<eof>")
@@ -1252,7 +1252,6 @@ impl DerefMut for SString {
 
 /// Symbol
 #[repr(C)]
-#[derive(Debug)]
 pub struct Symbol {
     pub header: GcHeader,
     pub string: String,
@@ -1268,6 +1267,13 @@ impl Symbol {
 }
 
 impl Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.string)
+    }
+}
+
+
+impl Debug for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.string)
     }
