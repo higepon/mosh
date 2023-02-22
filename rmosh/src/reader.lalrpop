@@ -36,9 +36,8 @@ List: Object = {
     // TODO: There should be a better way to skip datum comment.    
     "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => gc.listn(&objects),  
     "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => gc.listn(&objects),        
-    "(" <objects: Datum +> "." <last: Datum> ")" => {
-        gc.dot_pair(&objects, last)
-    }
+    "(" <objects: Datum +> "." <last: Datum> "#;" Datum ")" => gc.dot_pair(&objects, last),    
+    "(" <objects: Datum +> "." <last: Datum> ")" => gc.dot_pair(&objects, last),
 }
 
 ByteVector: Object = {
