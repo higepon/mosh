@@ -1,24 +1,4 @@
-use crate::ports::ReadError;
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Token {
-    Digit { value: String },
-    HexDigit { value: String },
-    Radix10,
-    Radix16,
-    Dot,
-    Exact,
-    Exponent,
-    Imag,
-    Inexact,
-    Minus,
-    MinusInf,
-    MinusNan,
-    Plus,
-    PlusInf,
-    PlusNan,
-    Slash,
-}
+use crate::{ports::ReadError, lexer::Token};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 pub type LexerItem = Spanned<Token, usize, ReadError>;

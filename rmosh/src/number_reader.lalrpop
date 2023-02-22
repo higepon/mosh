@@ -1,5 +1,5 @@
 use crate::gc::Gc;
-use crate::number_lexer;
+use crate::lexer;
 use crate::numbers::exact;
 use crate::numbers::inexact;
 use crate::numbers::Bignum;
@@ -309,22 +309,22 @@ extern {
     type Location = usize;
     type Error = ports::ReadError;
 
-    enum number_lexer::Token {
-        "-" => number_lexer::Token::Minus,
-        "." => number_lexer::Token::Dot,
-        "/" => number_lexer::Token::Slash,
-        "#d" => number_lexer::Token::Radix10,
-        "#x" => number_lexer::Token::Radix16,
-        "#e" => number_lexer::Token::Exact,
-        "#i" => number_lexer::Token::Inexact,
-        "+" => number_lexer::Token::Plus,
-        "digit" => number_lexer::Token::Digit { value: <String> },
-        "hex_digit" => number_lexer::Token::HexDigit { value: <String> },
-        "e" => number_lexer::Token::Exponent,
-        "i" => number_lexer::Token::Imag,
-        "+inf.0" => number_lexer::Token::PlusInf,
-        "-inf.0" => number_lexer::Token::MinusInf,
-        "+nan.0" => number_lexer::Token::PlusNan,
-        "-nan.0" => number_lexer::Token::MinusNan,
+    enum lexer::Token {
+        "-" => lexer::Token::Minus,
+        "." => lexer::Token::Dot,
+        "/" => lexer::Token::Slash,
+        "#d" => lexer::Token::Radix10,
+        "#x" => lexer::Token::Radix16,
+        "#e" => lexer::Token::Exact,
+        "#i" => lexer::Token::Inexact,
+        "+" => lexer::Token::Plus,
+        "digit" => lexer::Token::Digit { value: <String> },
+        "hex_digit" => lexer::Token::HexDigit { value: <String> },
+        "e" => lexer::Token::Exponent,
+        "i" => lexer::Token::Imag,
+        "+inf.0" => lexer::Token::PlusInf,
+        "-inf.0" => lexer::Token::MinusInf,
+        "+nan.0" => lexer::Token::PlusNan,
+        "-nan.0" => lexer::Token::MinusNan,
     }
 }

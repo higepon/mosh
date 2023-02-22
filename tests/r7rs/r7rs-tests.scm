@@ -2283,7 +2283,7 @@
 (test-write-syntax "|+NaN.0abc|" '|+NaN.0abc|)
 
 (test-end)
-#|
+
 (test-begin "Numeric syntax")
 
 ;; Numeric syntax adapted from Peter Bex's tests.
@@ -2447,7 +2447,7 @@
 ;;(test-numeric-syntax "#b10+11i" (make-rectangular 2 3) "2+3i")
 ;;(test-numeric-syntax "#e1.0+1.0i" (make-rectangular 1 1) "1+1i" "1+i")
 ;;(test-numeric-syntax "#i1.0+1.0i" (make-rectangular 1.0 1.0) "1.0+1.0i" "1.+1.i")
-
+#|
 (define-syntax test-precision
   (syntax-rules ()
     ((test-round-trip str alt ...)

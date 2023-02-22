@@ -24,6 +24,21 @@ pub enum Token {
     True,
     ByteVectorStart,
     VectorStart,
+    Digit { value: String },
+    HexDigit { value: String },
+    Radix10,
+    Radix16,
+    Exact,
+    Exponent,
+    Imag,
+    Inexact,
+    Minus,
+    MinusInf,
+    MinusNan,
+    Plus,
+    PlusInf,
+    PlusNan,
+    Slash,    
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
