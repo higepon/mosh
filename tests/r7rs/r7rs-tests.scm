@@ -2406,6 +2406,7 @@
 ;; Need to account for imprecision in write output.
 ;;(test-numeric-syntax "1@2" -0.416146836547142+0.909297426825682i "-0.416146836547142+0.909297426825682i")
 ;; Base prefixes
+
 (test-numeric-syntax "#x11" 17 "17")
 (test-numeric-syntax "#X11" 17 "17")
 (test-numeric-syntax "#d11" 11 "11")
@@ -2447,7 +2448,7 @@
 ;;(test-numeric-syntax "#b10+11i" (make-rectangular 2 3) "2+3i")
 ;;(test-numeric-syntax "#e1.0+1.0i" (make-rectangular 1 1) "1+1i" "1+i")
 ;;(test-numeric-syntax "#i1.0+1.0i" (make-rectangular 1.0 1.0) "1.0+1.0i" "1.+1.i")
-#|
+
 (define-syntax test-precision
   (syntax-rules ()
     ((test-round-trip str alt ...)
@@ -2547,6 +2548,7 @@
 
 
 (test-end)
+#|
 |#
 (test-end)
 

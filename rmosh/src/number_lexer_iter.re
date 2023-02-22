@@ -16,7 +16,9 @@ use crate::ports::ReadError;
     // Conforms to R7RS.
     DIGIT                  = [0-9];
     HEX_DIGIT              = DIGIT | [A-Fa-f];
+    OCT_DIGIT              = [0-7];
     DIGIT_10               = DIGIT;
+    DIGIT_8                = OCT_DIGIT;
     DIGIT_16               = HEX_DIGIT;
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
     EXACTNESS              = ("#"[ie])?;
@@ -31,6 +33,13 @@ use crate::ports::ReadError;
     COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 [\+\-] INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
+    UINTEGER_8             = DIGIT_8 +;
+    UREAL_8                = UINTEGER_8 | (UINTEGER_8 "/" UINTEGER_8);
+    REAL_8                 = (SIGN UREAL_8) | INF_NAN;
+    RADIX_8                = '#o' ?;
+    COMPLEX_8              = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 'i') | (REAL_8 [\+\-] INF_NAN 'i') | (REAL_8 [\+\-] 'i') | ([\+\-] UREAL_8 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    PREFIX_8               = (RADIX_8 EXACTNESS) | (EXACTNESS RADIX_8);
+    NUM_8                  = PREFIX_8 COMPLEX_8;
     UINTEGER_16            = DIGIT_16 +;
     UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16);
     REAL_16                = (SIGN UREAL_16) | INF_NAN;
@@ -60,12 +69,16 @@ impl<'input> Iterator for NumberLexer<'input> {
                     EXPONENT_MARKER { return self.with_location(Token::Exponent); }
                     'i' { return self.with_location(Token::Imag); }
                     '#d' { return self.with_location(Token::Radix10); }
+                    '#o' { return self.with_location(Token::Radix8); }
                     '#x' { return self.with_location(Token::Radix16); }
                     "#e" { return self.with_location(Token::Exact); }
                     '#i' { return self.with_location(Token::Inexact); }
                     DIGIT {
                         return self.with_location(Token::Digit { value: self.extract_token() });
                     }
+                    OCT_DIGIT {
+                        return self.with_location(Token::OctDigit { value: self.extract_token() });
+                    }                    
                     HEX_DIGIT {
                         return self.with_location(Token::HexDigit { value: self.extract_token() });
                     }

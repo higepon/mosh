@@ -19,6 +19,7 @@ grammar(gc: &mut Box<Gc>);
 // R7RS small 7.1.2. External representations
 pub Number: Object = {
     Number10,
+    Number8,
     Number16,
 }
 
@@ -56,11 +57,38 @@ Number16: Object = {
     }
 }
 
+Number8: Object = {
+    <e: Prefix8> <c: Complex8> => {
+        match e {
+            Some(is_exact) => {
+                if is_exact {
+                    exact(gc, c)
+                } else {
+                    inexact(gc, c)
+                }
+            },
+            None => {
+                c
+            }
+        }
+    }
+}
+
 Prefix10: Option<bool> = {
     Radix10 <e: Exactness> => Some(e),
     <e: Exactness> Radix10 => Some(e),
     Radix10 => None,
     <e: Exactness> => Some(e),
+}
+
+Prefix8: Option<bool> = {
+    Radix8 <e: Exactness?> => {
+        match e {
+            Some(is_exact) => Some(is_exact),
+            None => None,
+        }
+    },
+    <is_exact: Exactness> Radix8 => Some(is_exact),
 }
 
 Prefix16: Option<bool> = {
@@ -80,6 +108,10 @@ Exactness: bool = {
 
 Radix10 = {
     "#d"
+}
+
+Radix8 = {
+    "#o"
 }
 
 Radix16 = {
@@ -121,6 +153,26 @@ Complex10: Object = {
     },
 }
 
+Complex8: Object = {
+    Real8,
+    <real: Real8> "+" <imag: UReal8> "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+    },
+    <real: Real8> "-" <imag: UReal8> "i" => {
+        let imag = imag.neg(gc);
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+    },
+    <real: Real8> "+" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(1))))
+    },
+    <real: Real8> "+inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
+    },
+    <real: Real8> "-" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
+    },
+}
+
 Complex16: Object = {
     Real16,
     <real: Real16> "+" <imag: UReal16> "i" => {
@@ -150,6 +202,16 @@ Real10: Object = {
         ureal10.neg(gc)
     },
     InfNan,
+}
+
+Real8: Object = {
+    UReal8,
+    "+" <ureal8: UReal8> => {
+        ureal8
+    },
+    "-" <ureal8: UReal8> => {
+        ureal8.neg(gc)
+    },
 }
 
 Real16: Object = {
@@ -252,6 +314,44 @@ UReal16: Object = {
     },
 }
 
+UReal8: Object = {
+    UInteger8 =>? {
+        match isize::from_str_radix(&<>, 8) {
+            Ok(n) => {
+                Ok(Object::Fixnum(n))
+            }
+            Err(err) => {
+                match BigInt::from_str_radix(&<>, 8) {
+                    Ok(b) => {
+                        Ok(Object::Bignum(gc.alloc(Bignum::new(b))))
+                    },
+                    Err(err2) => {
+                        Err(ParseError::User {
+                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
+                        })
+                    }
+                }
+            }
+        }
+    },
+    <numer: UInteger8> "/" <denom: UInteger8> =>? {
+        match (isize::from_str_radix(&numer, 8), isize::from_str_radix(&denom, 8)) {
+            (Ok(n), Ok(d)) => {
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+            }
+            (Err(err), _) => {
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
+                })
+            }
+            (_, Err(err)) => {
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
+                })
+            }
+        }
+    },
+}
 
 Decimal10: String = {
     <uinteger10: UInteger10> <suffix: Suffix> => {
@@ -281,6 +381,16 @@ UInteger10: String = {
     <digits: Digit10 +> => {
         digits.join("")
     }
+}
+
+UInteger8: String = {
+    <digits: Digit8 +> => {
+        digits.join("")
+    },
+    // hack to recognize #o1000.
+    <digits: Digit10 +> => {
+        digits.join("")
+    }    
 }
 
 UInteger16: String = {
@@ -314,6 +424,12 @@ Digit10: String = {
     }
 }
 
+Digit8: String = {
+    <s:"oct_digit"> => {
+        s.to_string()
+    }
+}
+
 Digit16: String = {
     <s:"hex_digit"> => {
         s.to_string()
@@ -329,11 +445,13 @@ extern {
         "." => lexer::Token::Dot,
         "/" => lexer::Token::Slash,
         "#d" => lexer::Token::Radix10,
+        "#o" => lexer::Token::Radix8,        
         "#x" => lexer::Token::Radix16,
         "#e" => lexer::Token::Exact,
         "#i" => lexer::Token::Inexact,
         "+" => lexer::Token::Plus,
         "digit" => lexer::Token::Digit { value: <String> },
+        "oct_digit" => lexer::Token::OctDigit { value: <String> },        
         "hex_digit" => lexer::Token::HexDigit { value: <String> },
         "e" => lexer::Token::Exponent,
         "i" => lexer::Token::Imag,

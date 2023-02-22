@@ -52,6 +52,7 @@ use crate::ports::ReadError;
     REGEXP_ELEMENT         = "\\\/" | [^/];
     REGEXP                 = '#/' REGEXP_ELEMENT * '/';
     DIGIT_10               = DIGIT;
+    DIGIT_8                = [0-7];    
     DIGIT_16               = HEX_DIGIT;
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
     EXACTNESS              = ("#"[ieIE])?;
@@ -66,6 +67,13 @@ use crate::ports::ReadError;
     COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
+    UINTEGER_8             = DIGIT_8 +;
+    UREAL_8                = UINTEGER_8 | (UINTEGER_8 "/" UINTEGER_8);
+    REAL_8                 = (SIGN UREAL_8) | INF_NAN;
+    RADIX_8                = '#o' ?;
+    COMPLEX_8              = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 'i') | (REAL_8 [\+\-] INF_NAN 'i') | (REAL_8 [\+\-] 'i') | ([\+\-] UREAL_8 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    PREFIX_8               = (RADIX_8 EXACTNESS) | (EXACTNESS RADIX_8);
+    NUM_8                  = PREFIX_8 COMPLEX_8;       
     UINTEGER_16            = DIGIT_16 +;
     UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16);
     REAL_16                = (SIGN UREAL_16) | INF_NAN;
@@ -105,6 +113,9 @@ impl<'input> Iterator for Lexer<'input> {
                     STRING {
                         return self.with_location(Token::String{value: self.extract_string()});
                     }
+                    NUM_8 {
+                        return self.with_location(Token::Number8{value: self.extract_token()});
+                    }                      
                     NUM_16 {
                         return self.with_location(Token::Number16{value: self.extract_token()});
                     }                    

@@ -33,10 +33,10 @@ SimpleDatum: Object = {
 List: Object = {
     "(" <objects: Datum *> ")" => gc.listn(&objects),
     "(" <objects: Datum *> "#;" Datum ")" => gc.listn(&objects),
-    // TODO: There should be a better way to skip datum comment.    
-    "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => gc.listn(&objects),  
-    "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => gc.listn(&objects),        
-    "(" <objects: Datum +> "." <last: Datum> "#;" Datum ")" => gc.dot_pair(&objects, last),    
+    // TODO: There should be a better way to skip datum comment.
+    "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => gc.listn(&objects),
+    "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => gc.listn(&objects),
+    "(" <objects: Datum +> "." <last: Datum> "#;" Datum ")" => gc.dot_pair(&objects, last),
     "(" <objects: Datum +> "." <last: Datum> ")" => gc.dot_pair(&objects, last),
 }
 
@@ -111,6 +111,11 @@ Number: Object = {
         chars.push('\0');
         NumberParser::new().parse(gc, NumberLexer::new(&chars))
     },
+    <s: "number8"> =>? {
+        let mut chars: Vec<char> = s.chars().collect();
+        chars.push('\0');
+        NumberParser::new().parse(gc, NumberLexer::new(&chars))
+    },
     <s: "number16"> => {
         // #x123A => 123A
         if s.chars().nth(0) == Some('#') {
@@ -118,12 +123,12 @@ Number: Object = {
                 Ok(n) => Object::Fixnum(n),
                 Err(e) => {
                         panic!("Number parse error: {} in <{}>", e, s)
-                }                
+                }
             }
         } else {
             panic!("number16 parse error {}", s)
         }
-    }    
+    }
 }
 
 Boolean: Object = {
@@ -156,7 +161,8 @@ extern {
         "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
-        "number16" => lexer::Token::Number16 { value: <String> },        
+        "number8" => lexer::Token::Number8 { value: <String> },
+        "number16" => lexer::Token::Number16 { value: <String> },
         "regexp" => lexer::Token::Regexp { value: <String> },
         "string" => lexer::Token::String { value: <String> },
     }
