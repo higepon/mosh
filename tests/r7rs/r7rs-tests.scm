@@ -2020,7 +2020,7 @@
     (test #\x10F700 c1)
     (test #\x10F701 c2)
     (test #\x10F702 c3)))
-#|
+
 (test (string #\x10F700)
     (let ((out (open-output-string)))
       (write-char #\x10F700 out)
@@ -2283,7 +2283,7 @@
 (test-write-syntax "|+NaN.0abc|" '|+NaN.0abc|)
 
 (test-end)
-
+#|
 (test-begin "Numeric syntax")
 
 ;; Numeric syntax adapted from Peter Bex's tests.
