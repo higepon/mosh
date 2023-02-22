@@ -23,20 +23,19 @@ pub Number: Object = {
 }
 
 Number10: Object = {
-    <e: Prefix10> <c: Complex10> => {
+    <e: Prefix10?> <c: Complex10> => {
         match e {
-            Some(is_exact) => {
+            Some(Some(is_exact)) => {
                 if is_exact {
                     exact(gc, c)
                 } else {
                     inexact(gc, c)
                 }
             },
-            None => {
+            Some(None) | None => {
                 c
-            }
+            },
         }
-
     },
 }
 
