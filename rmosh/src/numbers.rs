@@ -536,6 +536,8 @@ impl Display for Flonum {
             } else {
                 write!(f, "-inf.0")
             }
+        } else if self.value().is_nan() {
+            write!(f, "+nan.0")
         } else {
             write!(f, "{:?}", self.value())
         }
