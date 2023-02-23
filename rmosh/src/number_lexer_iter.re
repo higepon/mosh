@@ -46,10 +46,10 @@ impl<'input> Iterator for NumberLexer<'input> {
                         marker.push_str(&token[1..token.len()]);
                         return self.with_location(Token::Exponent { value: marker });
                     }
-                    <*> "+inf.0" => INIT { return self.with_location(Token::PlusInf); }
-                    <*> "-inf.0" => INIT { return self.with_location(Token::MinusInf); }
-                    <*> "+nan.0" => INIT { return self.with_location(Token::PlusNan); }
-                    <*> "-nan.0" => INIT { return self.with_location(Token::MinusNan); }
+                    <*> '+inf.0' => INIT { return self.with_location(Token::PlusInf); }
+                    <*> '-inf.0' => INIT { return self.with_location(Token::MinusInf); }
+                    <*> '+nan.0' => INIT { return self.with_location(Token::PlusNan); }
+                    <*> '-nan.0' => INIT { return self.with_location(Token::MinusNan); }
                     <*> "/" { return self.with_location(Token::Slash); }
                     <*> "+" { return self.with_location(Token::Plus); }
                     <*> "-" { return self.with_location(Token::Minus); }

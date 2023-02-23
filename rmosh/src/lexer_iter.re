@@ -54,7 +54,7 @@ use crate::reader_util::ReadError;
     DIGIT_2                = [01];
     DIGIT_8                = [0-7];
     DIGIT_16               = HEX_DIGIT;
-    INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
+    INF_NAN                = '+inf.0' | '-inf.0' | '+nan.0' | '-nan.0';
     EXACTNESS              = ("#"[ieIE])?;
     SIGN                   = [\+\-]?;
     EXPONENT_MARKER        = [eEsSfFdDlL];
