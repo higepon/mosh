@@ -530,7 +530,15 @@ impl PartialEq for Flonum {
 
 impl Display for Flonum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.value())
+        if self.value().is_infinite() {
+            if self.value() >= 0.0 {
+                write!(f, "+inf.0")
+            } else {
+                write!(f, "-inf.0")
+            }
+        } else {
+            write!(f, "{:?}", self.value())
+        }
     }
 }
 
@@ -934,7 +942,15 @@ impl Compnum {
 }
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}+/-{}i", self.real.to_string(), self.imag.to_string())
+        if ge(self.imag, Object::Fixnum(0)) {
+            if self.imag.is_flonum() && self.imag.to_flonum().is_infinite() {
+                write!(f, "{}{}i", self.real.to_string(), self.imag.to_string())
+            } else {
+                write!(f, "{}+{}i", self.real.to_string(), self.imag.to_string())
+            }
+        } else {
+            write!(f, "{}{}i", self.real.to_string(), self.imag.to_string())            
+        }
     }
 }
 
