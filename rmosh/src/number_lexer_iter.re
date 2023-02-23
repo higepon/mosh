@@ -81,14 +81,14 @@ impl<'input> Iterator for NumberLexer<'input> {
                     <INIT, HEX> "." { return self.with_location(Token::Dot); }
                     <INIT, HEX> 'i' { return self.with_location(Token::Imag); }
                     <INIT, HEX> '#d' { return self.with_location(Token::Radix10); }
-                    <INIT, HEX> '#o' { return self.with_location(Token::Radix8); }
+                    <INIT, HEX> '#o' => OCT { return self.with_location(Token::Radix8); }
                     <INIT> '#x'=> HEX { return self.with_location(Token::Radix16); }
                     <INIT, HEX> '#i' { return self.with_location(Token::Inexact); }
                     <INIT, HEX> "#e" { return self.with_location(Token::Exact); }                                        
-                    <INIT, HEX> DIGIT {
+                    <INIT> DIGIT {
                         return self.with_location(Token::Digit { value: self.extract_token() });
                     }
-                    <INIT, HEX> OCT_DIGIT {
+                    <INIT, OCT> OCT_DIGIT {
                         return self.with_location(Token::OctDigit { value: self.extract_token() });
                     }                    
                     <INIT, HEX> HEX_DIGIT {
