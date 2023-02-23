@@ -1436,11 +1436,13 @@ pub fn to_string(n: Object, radix: usize) -> String {
         Object::Fixnum(fx) if radix == 10 => {
             format!("{}", fx)
         }
+        _ if radix == 10 => {
+            format!("{}", n.to_string())
+        }        
         Object::Fixnum(fx) if radix == 16 => {
             format!("{:x}", fx)
         }
-
-        _ => panic!(),
+        _ => panic!("invalid n={}, radix={}", n, radix),
     }
 }
 

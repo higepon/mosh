@@ -19,8 +19,9 @@ grammar(gc: &mut Box<Gc>);
 // R7RS small 7.1.2. External representations
 pub Number: Object = {
     Number10,
-    Number8,
     Number16,
+    Number2,
+    Number8,
 }
 
 Number10: Object = {
@@ -74,6 +75,23 @@ Number8: Object = {
     }
 }
 
+Number2: Object = {
+    <e: Prefix2> <c: Complex2> => {
+        match e {
+            Some(is_exact) => {
+                if is_exact {
+                    exact(gc, c)
+                } else {
+                    inexact(gc, c)
+                }
+            },
+            None => {
+                c
+            }
+        }
+    }
+}
+
 Prefix10: Option<bool> = {
     Radix10 <e: Exactness> => Some(e),
     <e: Exactness> Radix10 => Some(e),
@@ -89,6 +107,16 @@ Prefix8: Option<bool> = {
         }
     },
     <is_exact: Exactness> Radix8 => Some(is_exact),
+}
+
+Prefix2: Option<bool> = {
+    Radix2 <e: Exactness?> => {
+        match e {
+            Some(is_exact) => Some(is_exact),
+            None => None,
+        }
+    },
+    <is_exact: Exactness> Radix2 => Some(is_exact),
 }
 
 Prefix16: Option<bool> = {
@@ -114,6 +142,10 @@ Radix8 = {
     "#o"
 }
 
+Radix2 = {
+    "#b"
+}
+
 Radix16 = {
     "#x"
 }
@@ -135,7 +167,7 @@ Complex10: Object = {
     },
     <real: Real10> "-inf.0" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: NEG_INFINITY)))))
-    },    
+    },
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
@@ -144,7 +176,7 @@ Complex10: Object = {
     },
     "-" <real: Real10> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), real)))
-    },    
+    },
     "+" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))))
     },
@@ -169,6 +201,26 @@ Complex8: Object = {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
     },
     <real: Real8> "-" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
+    },
+}
+
+Complex2: Object = {
+    Real2,
+    <real: Real2> "+" <imag: UReal2> "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+    },
+    <real: Real2> "-" <imag: UReal2> "i" => {
+        let imag = imag.neg(gc);
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))
+    },
+    <real: Real2> "+" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(1))))
+    },
+    <real: Real2> "+inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: INFINITY)))))
+    },
+    <real: Real2> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
 }
@@ -211,6 +263,16 @@ Real8: Object = {
     },
     "-" <ureal8: UReal8> => {
         ureal8.neg(gc)
+    },
+}
+
+Real2: Object = {
+    UReal2,
+    "+" <ureal2: UReal2> => {
+        ureal2
+    },
+    "-" <ureal2: UReal2> => {
+        ureal2.neg(gc)
     },
 }
 
@@ -353,6 +415,45 @@ UReal8: Object = {
     },
 }
 
+UReal2: Object = {
+    UInteger2 =>? {
+        match isize::from_str_radix(&<>, 2) {
+            Ok(n) => {
+                Ok(Object::Fixnum(n))
+            }
+            Err(err) => {
+                match BigInt::from_str_radix(&<>, 2) {
+                    Ok(b) => {
+                        Ok(Object::Bignum(gc.alloc(Bignum::new(b))))
+                    },
+                    Err(err2) => {
+                        Err(ParseError::User {
+                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
+                        })
+                    }
+                }
+            }
+        }
+    },
+    <numer: UInteger2> "/" <denom: UInteger2> =>? {
+        match (isize::from_str_radix(&numer, 2), isize::from_str_radix(&denom, 2)) {
+            (Ok(n), Ok(d)) => {
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+            }
+            (Err(err), _) => {
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
+                })
+            }
+            (_, Err(err)) => {
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
+                })
+            }
+        }
+    },
+}
+
 Decimal10: String = {
     <uinteger10: UInteger10> <suffix: Suffix> => {
         uinteger10 + &suffix
@@ -367,24 +468,6 @@ Decimal10: String = {
 
 Suffix: String = {
     Exponent,
-    
-    //"e" "+" <digits:  Digit10 +> => {
-        //"e+".to_owned() + &digits.join("")
-    //},
-    //"e" "-" <digits:  Digit10 +> => {
-        //"e-".to_owned() + &digits.join("")
-    //},
-    //"e" <digits:  Digit10 +> => {
-        //"e".to_owned() + &digits.join("")
-    //},
-    // Lexer can't know if the middle "e" of #e1e100 is hexdigit or exponent.
-    //<digit16: Digit16>  <digits:  Digit10 +> => {
-      //  if digit16.eq("e") {
-            //"e".to_owned() + &digits.join("")
-        //} else {
-        //    panic!();
-      //  }
-    //},
 }
 
 UInteger10: String = {
@@ -397,20 +480,18 @@ UInteger8: String = {
     <digits: Digit8 +> => {
         digits.join("")
     },
-    // hack to recognize #o1000.
-    //<digits: Digit10 +> => {
-        //digits.join("")
-    //}    
+}
+
+UInteger2: String = {
+    <digits: Digit2 +> => {
+        digits.join("")
+    },
 }
 
 UInteger16: String = {
     <digits: Digit16 +> => {
         digits.join("")
     },
-    // hack to recognize #x1000.
-    //<digits: Digit10 +> => {
-      //  digits.join("")
-    //}*/
 }
 
 InfNan: Object = {
@@ -447,11 +528,16 @@ Digit8: String = {
     }
 }
 
+Digit2: String = {
+    <s:"bin_digit"> => {
+        s.to_string()
+    }
+}
+
 Digit16: String = {
     <s:"hex_digit"> => {
         s.to_string()
     },
-    Digit10,
 }
 
 extern {
@@ -463,13 +549,15 @@ extern {
         "." => lexer::Token::Dot,
         "/" => lexer::Token::Slash,
         "#d" => lexer::Token::Radix10,
-        "#o" => lexer::Token::Radix8,        
+        "#b" => lexer::Token::Radix2,        
+        "#o" => lexer::Token::Radix8,
         "#x" => lexer::Token::Radix16,
         "#e" => lexer::Token::Exact,
         "#i" => lexer::Token::Inexact,
         "+" => lexer::Token::Plus,
         "digit" => lexer::Token::Digit { value: <String> },
-        "oct_digit" => lexer::Token::OctDigit { value: <String> },        
+        "bin_digit" => lexer::Token::BinDigit { value: <String> },
+        "oct_digit" => lexer::Token::OctDigit { value: <String> },
         "hex_digit" => lexer::Token::HexDigit { value: <String> },
         "exponent" => lexer::Token::Exponent { value: <String> },
         "i" => lexer::Token::Imag,

@@ -106,6 +106,7 @@ Symbol: Object = {
 Number: Object = {
     <s: "number10"> =>? reader_util::read_number(gc, &s),
     <s: "number8"> =>? reader_util::read_number(gc, &s),
+    <s: "number2"> =>? reader_util::read_number(gc, &s),    
     <s: "number16"> =>? reader_util::read_number(gc, &s),
 }
 
@@ -140,6 +141,7 @@ extern {
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
         "number8" => lexer::Token::Number8 { value: <String> },
+        "number2" => lexer::Token::Number2 { value: <String> },        
         "number16" => lexer::Token::Number16 { value: <String> },
         "regexp" => lexer::Token::Regexp { value: <String> },
         "string" => lexer::Token::String { value: <String> },

@@ -24,7 +24,7 @@ gen-compiler:
 	cargo fmt
 
 src/lexer_iter.rs: src/lexer_iter.re
-	re2rust -c $< > $@
+	re2rust $< > $@
 
 src/number_lexer_iter.rs: src/number_lexer_iter.re
 	re2rust -c $< > $@
