@@ -171,17 +171,18 @@ Complex10: Object = {
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
-    "+" <real: Real10> "i" => {
-        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), real)))
+    "+" <imag: Real10> "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
     },
-    "-" <real: Real10> "i" => {
-        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), real)))
+    "-" <imag: Real10> "i" => {
+        let imag = imag.neg(gc);        
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
     },
     "+" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))))
     },
     "-" "i" => {
-        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(1))))
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(-1))))
     },
 }
 
