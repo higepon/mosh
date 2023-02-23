@@ -77,7 +77,7 @@ pub trait TextInputPort {
                 Err(ParseError::UnrecognizedToken { token, expected }) => {
                     let context_start = max(0, ((token.0 as isize) - 10) as usize);
                     // Show what is causing this error.
-                    let context = &s[context_start..token.2];
+                    let context = format!("reader: {}", &s[context_start..token.2]);                    
                     return Err(ReadError::UnrecognizedToken {
 
                         token: token.1, expected: expected, context:context.to_string()
