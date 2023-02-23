@@ -1,9 +1,8 @@
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
-use crate::ports;
-use crate::number_reader::NumberParser;
-use crate::number_lexer::NumberLexer;
+use crate::reader_util::ReadError;
+use crate::reader_util;
 
 grammar(gc: &mut Box<Gc>);
 
@@ -100,35 +99,14 @@ Character: Object = {
 
 Symbol: Object = {
     "identifier" => {
-        gc.symbol_intern(&ports::read_symbol(&<>))
+        gc.symbol_intern(&reader_util::read_symbol(&<>))
     }
 }
 
 Number: Object = {
-    <s: "number10"> =>? {
-        //println!("NUMBER parse {}", s);
-        let mut chars: Vec<char> = s.chars().collect();
-        chars.push('\0');
-        NumberParser::new().parse(gc, NumberLexer::new(&chars))
-    },
-    <s: "number8"> =>? {
-        let mut chars: Vec<char> = s.chars().collect();
-        chars.push('\0');
-        NumberParser::new().parse(gc, NumberLexer::new(&chars))
-    },
-    <s: "number16"> => {
-        // #x123A => 123A
-        if s.chars().nth(0) == Some('#') {
-            match isize::from_str_radix(&s[2..], 16) {
-                Ok(n) => Object::Fixnum(n),
-                Err(e) => {
-                        panic!("Number parse error: {} in <{}>", e, s)
-                }
-            }
-        } else {
-            panic!("number16 parse error {}", s)
-        }
-    }
+    <s: "number10"> =>? reader_util::read_number(gc, &s),
+    <s: "number8"> =>? reader_util::read_number(gc, &s),
+    <s: "number16"> =>? reader_util::read_number(gc, &s),
 }
 
 Boolean: Object = {
@@ -138,7 +116,7 @@ Boolean: Object = {
 
 extern {
     type Location = usize;
-    type Error = ports::ReadError;
+    type Error = ReadError;
 
     enum lexer::Token {
         "'" => lexer::Token::AbbrevQuote,

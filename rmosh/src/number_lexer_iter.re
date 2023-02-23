@@ -1,7 +1,7 @@
 use crate::lexer::Spanned;
 use crate::number_lexer::NumberLexer;
 use crate::lexer::Token;
-use crate::ports::ReadError;
+use crate::reader_util::ReadError;
 
 /*!re2c
     re2c:define:YYCTYPE = usize; // We have Vec<char> and treat char as usize.

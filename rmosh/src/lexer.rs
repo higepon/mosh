@@ -1,4 +1,4 @@
-use crate::ports::ReadError;
+use crate::reader_util::{ReadError, read_string};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token {
@@ -102,114 +102,7 @@ impl<'input> Lexer<'input> {
     pub fn extract_string(&self) -> String {
         // Remove double quotes.
         let s: String = self.s[self.tok + 1..self.cursor - 1].iter().collect();
-        let chars: Vec<char> = s.chars().collect();
-        let mut ret = String::new();
-        let mut i: usize = 0;
-        loop {
-            let ch = match chars.get(i) {
-                Some(c) => c,
-                None => break,
-            };
-            i += 1;
-            if *ch == '\\' {
-                let ch2 = match chars.get(i) {
-                    Some(c) => c,
-                    None => break,
-                };
-                i += 1;
-                if *ch2 == '"' {
-                    ret.push('"');
-                } else if *ch2 == '\\' {
-                    ret.push('\\');
-                } else if *ch2 == 'a' {
-                    ret.push(7 as char);
-                } else if *ch2 == 'b' {
-                    ret.push(8 as char);
-                } else if *ch2 == 't' {
-                    ret.push(9 as char);
-                } else if *ch2 == 'n' {
-                    ret.push(0xa as char);
-                } else if *ch2 == 'v' {
-                    ret.push(0xb as char);
-                } else if *ch2 == 'f' {
-                    ret.push(0xc as char);
-                } else if *ch2 == 'r' {
-                    ret.push(0xd as char);
-                } else if *ch2 == 't' {
-                    ret.push(9 as char);
-                } else if *ch2 == 't' {
-                    ret.push(9 as char);
-                } else if *ch2 == 't' {
-                    ret.push(9 as char);
-                } else if *ch2 == 'x' {
-                    let mut current_ch = 0 as char;
-                    loop {
-                        let hex_ch = match chars.get(i) {
-                            Some(c) => c,
-                            None => {
-                                eprintln!("invalid \\x in string end");
-                                break;
-                            }
-                        };
-                        i += 1;
-                        if *hex_ch == ';' {
-                            ret.push(current_ch);
-                            break;
-                        } else if hex_ch.is_digit(10) {
-                            let lhs = (current_ch as u32) << 4;
-                            let rhs = (*hex_ch as u32) - ('0' as u32);
-                            current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
-                        } else if 'a' <= *hex_ch && *hex_ch <= 'f' {
-                            let lhs = (current_ch as u32) << 4;
-                            let rhs = (*hex_ch as u32) - ('a' as u32) + 10;
-                            current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
-                        } else if 'A' <= *hex_ch && *hex_ch <= 'F' {
-                            let lhs = (current_ch as u32) << 4;
-                            let rhs = (*hex_ch as u32) - ('A' as u32) + 10;
-                            current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
-                        } else {
-                            eprintln!("invalid \\x instring {}", hex_ch);
-                        }
-                    }
-                } else {
-                    i -= 1;
-                    // <intraline whitespace>*<line ending>
-                    // <intraline whitespace>*
-                    // NB: Lexical syntax has already checked by the scanner.
-                    loop {
-              
-                        let ch3 = match chars.get(i) {
-                            Some(c) => c,
-                            None => break,
-                        };
-
-                        // <line ending>
-                        if *ch3 == '\r' ||
-                           *ch3 == '\n' ||
-                           *ch3 == '\t' || // <intraline whitespace>
-                           (*ch3 as u32) ==  0x0085 || // next line
-                           (*ch3 as u32) ==  0x2028 || // line separator
-                           (*ch3 as u32) ==  0x0020 || // <Unicode Zs>
-                           (*ch3 as u32) ==  0x00a0 ||
-                           (*ch3 as u32) ==  0x1680 ||
-                           (*ch3 as u32) ==  0x180e ||
-                           (*ch3 as u32) ==  0x202f ||
-                           (*ch3 as u32) ==  0x205f ||
-                           (*ch3 as u32) ==  0x3000 ||
-                           ((0x2000 <= (*ch3 as u32)) && (((*ch3 as u32)) <= 0x200a))
-                        {
-                            i += 1;
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-                }
-            } else {
-                ret.push(*ch)
-            }
-        }
-        ret
+        read_string(&s)
     }
 
     pub fn extract_regexp(&self) -> String {
