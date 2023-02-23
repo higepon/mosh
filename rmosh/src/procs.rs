@@ -1294,9 +1294,17 @@ fn get_environment_variable(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
         panic!("{}: string key required but got {}", name, args[0])
     }
 }
-fn get_environment_variables(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_environment_variables(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-environment-variables";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    let mut ret = Object::Nil;
+    for (key, value) in env::vars() {
+        let key = vm.gc.new_string(&key);
+        let value = vm.gc.new_string(&value);
+        let kons = vm.gc.cons(key, value);
+        ret = vm.gc.cons(kons, ret);
+    }   
+    Ok(ret)
 }
 fn is_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "equal?";
