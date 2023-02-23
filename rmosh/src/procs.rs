@@ -4848,7 +4848,12 @@ fn is_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn microseconds(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "microseconds";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    let now = SystemTime::now();
+
+    let since_epoch = now.duration_since(UNIX_EPOCH).expect("Time went backwards");
+    let microseconds = since_epoch.subsec_micros();
+    Ok(Object::Fixnum(microseconds as isize))
 }
 fn local_tz_offset(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "local-tz-offset";
