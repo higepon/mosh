@@ -10,6 +10,8 @@ use crate::reader_util::ReadError;
     re2c:define:YYBACKUP = "self.marker = self.cursor;";
     re2c:define:YYRESTORE = "self.cursor = self.marker;";
     re2c:define:YYLESSTHAN = "self.cursor >= self.limit";
+    re2c:define:YYGETCONDITION = "unsafe {cond}";
+    re2c:define:YYSETCONDITION = "unsafe {cond = @@;}";    
     re2c:yyfill:enable = 0;
     re2c:eof = 0;
 
@@ -23,7 +25,7 @@ use crate::reader_util::ReadError;
     INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
     EXACTNESS              = ("#"[ie])?;
     SIGN                   = [\+\-]?;
-    EXPONENT_MARKER        = [eEsSfFdDlL];
+    EXPONENT_MARKER        = [eEsSfFdDlL] [\+\-]? DIGIT_10+;
     SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
     UINTEGER_10            = DIGIT_10 +;
     DECIMAL_10             = (UINTEGER_10 SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX);
@@ -50,41 +52,48 @@ use crate::reader_util::ReadError;
     EOS                    = "\X0000";
 */
 
+/*!conditions:re2c*/
+static mut cond: usize = YYC_INIT;
+
 impl<'input> Iterator for NumberLexer<'input> {
     type Item = Spanned<Token, usize, ReadError>;
 
     fn next(&mut self) -> Option<Self::Item> {
+      
         loop {
             loop {
                 self.tok = self.cursor;
                 /*!re2c
-                    "+inf.0" { return self.with_location(Token::PlusInf); }
-                    "-inf.0" { return self.with_location(Token::MinusInf); }
-                    "+nan.0" { return self.with_location(Token::PlusNan); }
-                    "-nan.0" { return self.with_location(Token::MinusNan); }
-                    "/" { return self.with_location(Token::Slash); }
-                    "+" { return self.with_location(Token::Plus); }
-                    "-" { return self.with_location(Token::Minus); }
-                    "." { return self.with_location(Token::Dot); }
-                    EXPONENT_MARKER { return self.with_location(Token::Exponent); }
-                    'i' { return self.with_location(Token::Imag); }
-                    '#d' { return self.with_location(Token::Radix10); }
-                    '#o' { return self.with_location(Token::Radix8); }
-                    '#x' { return self.with_location(Token::Radix16); }
-                    "#e" { return self.with_location(Token::Exact); }
-                    '#i' { return self.with_location(Token::Inexact); }
-                    DIGIT {
+                    <INIT> EXPONENT_MARKER { return self.with_location(Token::Exponent { value: self.extract_token() }); }
+                    <INIT, HEX> "+inf.0" { return self.with_location(Token::PlusInf); }
+                    <INIT, HEX> "-inf.0" { return self.with_location(Token::MinusInf); }
+                    <INIT, HEX> "+nan.0" { return self.with_location(Token::PlusNan); }
+                    <INIT, HEX> "-nan.0" { return self.with_location(Token::MinusNan); }
+                    <INIT, HEX> "/" { return self.with_location(Token::Slash); }
+                    <INIT, HEX> "+" { return self.with_location(Token::Plus); }
+                    <INIT, HEX> "-" { return self.with_location(Token::Minus); }
+                    <INIT, HEX> "." { return self.with_location(Token::Dot); }
+                    <INIT, HEX> 'i' { return self.with_location(Token::Imag); }
+                    <INIT, HEX> '#d' { return self.with_location(Token::Radix10); }
+                    <INIT, HEX> '#o' { return self.with_location(Token::Radix8); }
+                    <INIT> '#x'=> HEX { println!("lex:radix16");        return self.with_location(Token::Radix16); }
+                    <INIT, HEX> '#i' { return self.with_location(Token::Inexact); }
+                    <INIT, HEX> "#e" { return self.with_location(Token::Exact); }                                        
+                    <INIT, HEX> DIGIT {
+                        println!("lex:ditit=<{}>", self.extract_token());
                         return self.with_location(Token::Digit { value: self.extract_token() });
                     }
-                    OCT_DIGIT {
+                    <INIT, HEX> OCT_DIGIT {
+                        println!("lex:oct_ditit=<{}>", self.extract_token());                        
                         return self.with_location(Token::OctDigit { value: self.extract_token() });
                     }                    
-                    HEX_DIGIT {
+                    <INIT, HEX> HEX_DIGIT {
+                        println!("lex:hex_ditit=<{}>", self.extract_token());
                         return self.with_location(Token::HexDigit { value: self.extract_token() });
                     }
-                    "EOS" { return None; }
-                    $ { return None; }
-                    * { return Some(Err(ReadError::InvalidToken {
+                    <*> "EOS" => INIT { return None; }
+                    <*> $ => INIT { return None; }
+                    <*> * => INIT { return Some(Err(ReadError::InvalidToken {
                             start: self.tok,
                             end: self.cursor,
                             token: self.extract_token()

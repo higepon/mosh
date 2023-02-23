@@ -5,7 +5,8 @@ use rmosh::{
     gc::Gc,
     number_reader::NumberParser,
     objects::Object,
-    ports::{ReadError, StringInputPort, TextInputPort},
+    ports::{StringInputPort, TextInputPort},
+    reader_util::ReadError,
     vm::Vm,
 };
 
@@ -200,6 +201,15 @@ fn parse_hex_chars() {
     {
         let obj = read(&mut vm.gc, "#\\x41").unwrap();
         assert_equal!(vm.gc, Object::Char('A'), obj);
+    }
+}
+
+#[test]
+fn parse_hex_number() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "#x7F").unwrap();
+        assert_equal!(vm.gc, Object::Fixnum(121), obj);
     }
 }
 

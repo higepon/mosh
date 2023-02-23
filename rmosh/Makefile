@@ -24,10 +24,10 @@ gen-compiler:
 	cargo fmt
 
 src/lexer_iter.rs: src/lexer_iter.re
-	re2rust $< > $@
+	re2rust -c $< > $@
 
 src/number_lexer_iter.rs: src/number_lexer_iter.re
-	re2rust $< > $@
+	re2rust -c $< > $@
 
 # Only for dev purpose
 update-psyntax:

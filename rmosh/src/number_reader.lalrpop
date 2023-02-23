@@ -366,15 +366,25 @@ Decimal10: String = {
 }
 
 Suffix: String = {
-    "e" "+" <digits:  Digit10 +> => {
-        "e+".to_owned() + &digits.join("")
-    },
-    "e" "-" <digits:  Digit10 +> => {
-        "e-".to_owned() + &digits.join("")
-    },
-    "e" <digits:  Digit10 +> => {
-        "e".to_owned() + &digits.join("")
-    },
+    Exponent,
+    
+    //"e" "+" <digits:  Digit10 +> => {
+        //"e+".to_owned() + &digits.join("")
+    //},
+    //"e" "-" <digits:  Digit10 +> => {
+        //"e-".to_owned() + &digits.join("")
+    //},
+    //"e" <digits:  Digit10 +> => {
+        //"e".to_owned() + &digits.join("")
+    //},
+    // Lexer can't know if the middle "e" of #e1e100 is hexdigit or exponent.
+    //<digit16: Digit16>  <digits:  Digit10 +> => {
+      //  if digit16.eq("e") {
+            //"e".to_owned() + &digits.join("")
+        //} else {
+        //    panic!();
+      //  }
+    //},
 }
 
 UInteger10: String = {
@@ -388,9 +398,9 @@ UInteger8: String = {
         digits.join("")
     },
     // hack to recognize #o1000.
-    <digits: Digit10 +> => {
-        digits.join("")
-    }    
+    //<digits: Digit10 +> => {
+        //digits.join("")
+    //}    
 }
 
 UInteger16: String = {
@@ -398,9 +408,9 @@ UInteger16: String = {
         digits.join("")
     },
     // hack to recognize #x1000.
-    <digits: Digit10 +> => {
-        digits.join("")
-    }
+    //<digits: Digit10 +> => {
+      //  digits.join("")
+    //}*/
 }
 
 InfNan: Object = {
@@ -418,6 +428,13 @@ InfNan: Object = {
     },
 }
 
+Exponent: String = {
+    <e:"exponent"> => {
+        e.to_string()
+    }
+}
+
+
 Digit10: String = {
     <s:"digit"> => {
         s.to_string()
@@ -433,7 +450,8 @@ Digit8: String = {
 Digit16: String = {
     <s:"hex_digit"> => {
         s.to_string()
-    }
+    },
+    Digit10,
 }
 
 extern {
@@ -453,7 +471,7 @@ extern {
         "digit" => lexer::Token::Digit { value: <String> },
         "oct_digit" => lexer::Token::OctDigit { value: <String> },        
         "hex_digit" => lexer::Token::HexDigit { value: <String> },
-        "e" => lexer::Token::Exponent,
+        "exponent" => lexer::Token::Exponent { value: <String> },
         "i" => lexer::Token::Imag,
         "+inf.0" => lexer::Token::PlusInf,
         "-inf.0" => lexer::Token::MinusInf,

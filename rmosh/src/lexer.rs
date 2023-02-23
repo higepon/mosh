@@ -32,7 +32,7 @@ pub enum Token {
     Radix8,    
     Radix16,
     Exact,
-    Exponent,
+    Exponent { value: String },
     Imag,
     Inexact,
     Minus,
