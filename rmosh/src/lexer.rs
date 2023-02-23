@@ -57,6 +57,7 @@ pub struct Lexer<'input> {
     pub marker: usize,
     pub limit: usize,
     pub tok: usize,
+    pub(super) is_fold_case: bool,
 }
 
 // TODO:
@@ -69,6 +70,7 @@ impl<'input> Lexer<'input> {
             marker: 0,
             tok: 0,
             limit: input.len() - 1,
+            is_fold_case: false,
         }
     }
 
@@ -78,7 +80,12 @@ impl<'input> Lexer<'input> {
     }
 
     pub fn extract_token(&self) -> String {
-        self.s[self.tok..self.cursor].iter().collect()
+        let token: String = self.s[self.tok..self.cursor].iter().collect();
+        if self.is_fold_case {
+            token.to_ascii_lowercase()
+        } else {
+            token
+        }
     }
 
     pub fn extract_character(&self) -> char {

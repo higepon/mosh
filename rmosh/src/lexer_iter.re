@@ -89,7 +89,7 @@ use crate::reader_util::ReadError;
     PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
     NUM_16                 = PREFIX_16 COMPLEX_16;
     EOS                    = "\X0000";
-    DIRECTIVE              = "#!fold-case" | "#!no-fold-case" | "#!r6rs";
+    DIRECTIVE              = "#!r6rs";
     DATUM_COMMENT          = "#;";
     COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
 */
@@ -197,6 +197,14 @@ impl<'input> Iterator for Lexer<'input> {
                     }
                     DATUM_COMMENT {
                         return self.with_location(Token::DatumComment);
+                    }
+                    "#!fold-case" {
+                        self.is_fold_case = true;
+                        continue 'lex;
+                    }
+                    "#!no-fold-case" {
+                        self.is_fold_case = false;
+                        continue 'lex;
                     }
                     DIRECTIVE {
                         continue 'lex;
