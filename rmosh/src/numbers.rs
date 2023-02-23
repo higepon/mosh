@@ -530,13 +530,13 @@ impl PartialEq for Flonum {
 
 impl Display for Flonum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:e}", self.value())
+        write!(f, "{:?}", self.value())
     }
 }
 
 impl Debug for Flonum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:e}", self.value())
+        write!(f, "{:?}", self.value())
     }
 }
 
