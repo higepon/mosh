@@ -18,9 +18,9 @@ use crate::{
     objects::{Closure, Object, Symbol},
     op::Op,
     ports::{StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
-    reader_util::ReadError,
     procs::default_free_vars,
     psyntax,
+    reader_util::ReadError,
 };
 
 const STACK_SIZE: usize = 65536;

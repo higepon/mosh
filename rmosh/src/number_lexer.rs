@@ -1,4 +1,4 @@
-use crate::{reader_util::ReadError, lexer::Token};
+use crate::{lexer::Token, reader_util::ReadError};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 pub type LexerItem = Spanned<Token, usize, ReadError>;

@@ -2545,11 +2545,9 @@
   (syntax-rules ()
     ((_ x) '_)))
 (test '_ (underscore4 1))
-
-
-(test-end)
 #|
-|#
 (test-end)
 
+(test-end)
+|#
 (test-results)

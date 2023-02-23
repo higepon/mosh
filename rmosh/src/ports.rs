@@ -1,4 +1,4 @@
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::{
     collections::HashMap,
@@ -7,14 +7,14 @@ use std::{
     io::{self, Read},
 };
 
-use lalrpop_util::ParseError;
 use crate::{
-    reader_util::ReadError,
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
     objects::{Object, Pair, SimpleStruct, Vector},
     reader::DatumParser,
+    reader_util::ReadError,
 };
+use lalrpop_util::ParseError;
 
 // Trait for Port.
 pub trait Port {
@@ -77,11 +77,12 @@ pub trait TextInputPort {
                 Err(ParseError::UnrecognizedToken { token, expected }) => {
                     let context_start = max(0, (token.0 as isize) - 10) as usize;
                     // Show what is causing this error.
-                    let context = format!("reader: {}", &s[context_start..token.2]);                    
+                    let context = format!("reader: {}", &s[context_start..token.2]);
                     return Err(ReadError::UnrecognizedToken {
-
-                        token: token.1, expected: expected, context:context.to_string()
-                    })
+                        token: token.1,
+                        expected: expected,
+                        context: context.to_string(),
+                    });
                 }
                 Err(ParseError::ExtraToken { token }) => {
                     return Err(ReadError::ExtraToken { token: token.1 })

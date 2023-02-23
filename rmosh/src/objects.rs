@@ -1272,7 +1272,6 @@ impl Display for Symbol {
     }
 }
 
-
 impl Debug for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.string)

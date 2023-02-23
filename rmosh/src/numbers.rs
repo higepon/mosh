@@ -1438,7 +1438,7 @@ pub fn to_string(n: Object, radix: usize) -> String {
         }
         _ if radix == 10 => {
             format!("{}", n.to_string())
-        }        
+        }
         Object::Fixnum(fx) if radix == 16 => {
             format!("{:x}", fx)
         }
