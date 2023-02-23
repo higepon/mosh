@@ -1303,7 +1303,7 @@ fn get_environment_variables(vm: &mut Vm, args: &mut [Object]) -> error::Result<
         let value = vm.gc.new_string(&value);
         let kons = vm.gc.cons(key, value);
         ret = vm.gc.cons(kons, ret);
-    }   
+    }
     Ok(ret)
 }
 fn is_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1388,9 +1388,19 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         panic!("{}: string required but got {}", name, args[0])
     }
 }
-fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn delete_file(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "delete-file";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let path = as_sstring!(name, args, 0, &mut vm.gc);
+    match fs::remove_file(&path.string) {
+        Ok(_) => Ok(Object::Unspecified),
+        Err(e) => Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            &format!("delete file failed {}", e.to_string()),
+            &[args[0]],
+        )),
+    }
 }
 fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-output-string";
