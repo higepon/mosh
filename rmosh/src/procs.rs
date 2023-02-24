@@ -3916,7 +3916,9 @@ fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     if let Object::BinaryFileOutputPort(mut port) = args[1] {
         let fasl = FaslWriter::new();
-        match fasl.write(&mut port, args[0]) {
+        let port = unsafe { port.pointer.as_mut() };
+        let bin_port: &mut dyn BinaryOutputPort = port;
+        match fasl.write(bin_port, args[0]) {
             Ok(()) => Ok(Object::Unspecified),
             Err(err) => {
                 panic!("{}: {} {} {}", name, err, args[0], args[1])

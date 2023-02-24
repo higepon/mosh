@@ -4,8 +4,8 @@ use rmosh::{
     gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    ports::{ReadError, StringInputPort, TextInputPort},
-    vm::Vm,
+    ports::{StringInputPort, TextInputPort},
+    vm::Vm, reader_util::ReadError,
 };
 
 pub static SIZE_OF_CLOSURE: usize = std::mem::size_of::<Closure>();

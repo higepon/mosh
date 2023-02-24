@@ -7,10 +7,10 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::{
-    gc::{Gc, GcRef},
+    gc::Gc,
     numbers::Flonum,
     objects::{EqHashtable, Object, SimpleStruct},
-    ports::{BinaryFileOutputPort, BinaryOutputPort},
+    ports::BinaryOutputPort,
 };
 
 #[derive(FromPrimitive)]
@@ -40,11 +40,7 @@ impl FaslWriter {
     pub fn new() -> Self {
         Self {}
     }
-    pub fn write(
-        &self,
-        port: &mut GcRef<BinaryFileOutputPort>,
-        obj: Object,
-    ) -> Result<(), io::Error> {
+    pub fn write(&self, port: &mut dyn BinaryOutputPort, obj: Object) -> Result<(), io::Error> {
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
         let mut shared_id = 1;
@@ -52,7 +48,7 @@ impl FaslWriter {
     }
     pub fn write_one(
         &self,
-        port: &mut GcRef<BinaryFileOutputPort>,
+        port: &mut dyn BinaryOutputPort,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         obj: Object,
@@ -186,7 +182,7 @@ impl FaslWriter {
         Ok(())
     }
 
-    fn put_tag(&self, port: &mut GcRef<BinaryFileOutputPort>, tag: Tag) -> Result<(), io::Error> {
+    fn put_tag(&self, port: &mut dyn BinaryOutputPort, tag: Tag) -> Result<(), io::Error> {
         port.put_u8(tag as u8)?;
         Ok(())
     }

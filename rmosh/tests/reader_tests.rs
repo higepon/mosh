@@ -209,7 +209,7 @@ fn parse_hex_number() {
     let mut vm = Vm::new();
     {
         let obj = read(&mut vm.gc, "#x7F").unwrap();
-        assert_equal!(vm.gc, Object::Fixnum(121), obj);
+        assert_equal!(vm.gc, Object::Fixnum(127), obj);
     }
 }
 
