@@ -33,7 +33,7 @@ pub enum Object {
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
-    DefinedShared(isize),    
+    DefinedShared(isize),
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
     Fixnum(isize),

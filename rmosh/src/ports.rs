@@ -141,7 +141,7 @@ pub trait TextInputPort {
                     }
                 }
             }
-            _ => ()
+            _ => (),
         }
     }
 

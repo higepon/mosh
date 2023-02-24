@@ -951,7 +951,7 @@ impl Display for Compnum {
                 write!(f, "{}+{}i", self.real.to_string(), self.imag.to_string())
             }
         } else {
-            write!(f, "{}{}i", self.real.to_string(), self.imag.to_string())            
+            write!(f, "{}{}i", self.real.to_string(), self.imag.to_string())
         }
     }
 }
