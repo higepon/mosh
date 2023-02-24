@@ -1014,7 +1014,7 @@ pub trait BinaryOutputPort {
 pub struct BytevectorOutputPort {
     pub header: GcHeader,
     is_closed: bool,
-    data: Vec<u8>,
+    pub data: Vec<u8>,
 }
 
 impl BytevectorOutputPort {
