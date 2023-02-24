@@ -92,6 +92,8 @@ use crate::reader_util::ReadError;
     DIRECTIVE              = "#!r6rs";
     DATUM_COMMENT          = "#;";
     COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
+    DEFINING_SHARED        = "#" DIGIT+ "=";
+    DEFINED_SHARED         = "#" DIGIT+ "#";    
 */
 
 impl<'input> Iterator for Lexer<'input> {
@@ -208,6 +210,12 @@ impl<'input> Iterator for Lexer<'input> {
                     }
                     DIRECTIVE {
                         continue 'lex;
+                    }
+                    DEFINED_SHARED {
+                        return self.with_location(Token::DefinedShared{value: self.extract_defined_shared()});
+                    }
+                    DEFINING_SHARED {
+                        return self.with_location(Token::DefiningShared{value: self.extract_defining_shared()});
                     }
                     DELIMITER {
                         continue 'lex;

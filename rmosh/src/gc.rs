@@ -453,6 +453,7 @@ impl Gc {
             Object::SimpleStruct(s) => {
                 self.mark_heap_object(s);
             }
+            Object::DefinedShared(_) => todo!(),
         }
     }
 

@@ -14,6 +14,8 @@ pub enum Token {
     ByteVectorStart,
     Character { value: char },
     DatumComment,
+    DefinedShared { value: String },
+    DefiningShared { value: String },
     Digit { value: String },
     Dot,
     Exact,
@@ -91,6 +93,15 @@ impl<'input> Lexer<'input> {
     pub fn extract_character(&self) -> char {
         // Actual character is at index = 2 #\a.
         self.s[self.tok + 2]
+    }
+
+    pub fn extract_defining_shared(&self) -> String {
+        self.s[self.tok + 1..self.cursor - 1].iter().collect()
+    }
+
+    pub fn extract_defined_shared(&self) -> String {
+        // #33#
+        self.s[self.tok + 1..self.cursor - 1].iter().collect()
     }
 
     pub fn extract_hex_character(&self) -> char {

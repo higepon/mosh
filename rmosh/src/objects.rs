@@ -33,6 +33,7 @@ pub enum Object {
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
+    DefinedShared(isize),    
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
     Fixnum(isize),
@@ -473,6 +474,7 @@ impl Object {
             Object::Unspecified => todo!(),
             Object::Vector(_) => todo!(),
             Object::Vox(_) => todo!(),
+            Object::DefinedShared(_) => todo!(),
         }
     }
 }
@@ -598,6 +600,7 @@ impl Debug for Object {
             Object::SimpleStruct(s) => {
                 write!(f, "{:?}", unsafe { s.pointer.as_ref() })
             }
+            Object::DefinedShared(_) => todo!(),
         }
     }
 }
@@ -720,6 +723,7 @@ impl Display for Object {
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
+            Object::DefinedShared(_) => todo!(),
         }
     }
 }

@@ -181,6 +181,7 @@ impl FaslWriter {
                 }
             }
             Object::Vox(_) => todo!(),
+            Object::DefinedShared(_) => todo!(),
         }
         Ok(())
     }
@@ -282,6 +283,7 @@ impl FaslWriter {
                     }
                     break;
                 }
+                Object::DefinedShared(_) => todo!(),
             }
         }
     }

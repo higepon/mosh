@@ -3,14 +3,23 @@ use crate::gc::Gc;
 use crate::lexer;
 use crate::reader_util::ReadError;
 use crate::reader_util;
+use std::collections::HashMap;
 
-grammar(gc: &mut Box<Gc>);
+grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<isize, Object>);
 
 // R7RS small 7.1.2. External representations
 pub Datum: Object = {
     SimpleDatum,
     CompoundDataum,
     "#;" Datum <datum: Datum> => datum,
+    <idx: "#1="> <datum: Datum> => {
+        let key = isize::from_str_radix(&idx, 10).unwrap();
+        shared_map.insert(key, datum);
+        datum
+    },
+    "#1#" => {
+        Object::DefinedShared(isize::from_str_radix(&<>, 10).unwrap())
+    }
 }
 
 CompoundDataum: Object = {
@@ -145,5 +154,7 @@ extern {
         "number16" => lexer::Token::Number16 { value: <String> },
         "regexp" => lexer::Token::Regexp { value: <String> },
         "string" => lexer::Token::String { value: <String> },
+        "#1=" => lexer::Token::DefiningShared { value: <String> },
+        "#1#" => lexer::Token::DefinedShared { value: <String> },        
     }
 }

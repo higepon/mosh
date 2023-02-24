@@ -1,4 +1,4 @@
-use std::cmp::{min, max};
+use std::cmp::{max, min};
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::{
     collections::HashMap,
@@ -7,14 +7,14 @@ use std::{
     io::{self, Read},
 };
 
-use lalrpop_util::ParseError;
 use crate::{
-    reader_util::ReadError,
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
     objects::{Object, Pair, SimpleStruct, Vector},
     reader::DatumParser,
+    reader_util::ReadError,
 };
+use lalrpop_util::ParseError;
 
 // Trait for Port.
 pub trait Port {
@@ -59,9 +59,13 @@ pub trait TextInputPort {
             // re2c assumes null terminated string.
             let s = s + ")\0";
             let chars: Vec<char> = s.chars().collect();
-
-            match DatumParser::new().parse(gc, lexer::Lexer::new(&chars)) {
+            // Whether if we found #1# style.
+            let mut shared_map: HashMap<isize, Object> = HashMap::new();
+            match DatumParser::new().parse(gc, &mut shared_map, lexer::Lexer::new(&chars)) {
                 Ok(parsed) => {
+                    if shared_map.len() > 0 {
+                        self.link_shared(gc, &shared_map, parsed);
+                    }
                     self.set_parsed(parsed);
                 }
                 Err(ParseError::User { error }) => {
@@ -77,11 +81,12 @@ pub trait TextInputPort {
                 Err(ParseError::UnrecognizedToken { token, expected }) => {
                     let context_start = max(0, (token.0 as isize) - 10) as usize;
                     // Show what is causing this error.
-                    let context = format!("reader: {}", &s[context_start..token.2]);                    
+                    let context = format!("reader: {}", &s[context_start..token.2]);
                     return Err(ReadError::UnrecognizedToken {
-
-                        token: token.1, expected: expected, context:context.to_string()
-                    })
+                        token: token.1,
+                        expected: expected,
+                        context: context.to_string(),
+                    });
                 }
                 Err(ParseError::ExtraToken { token }) => {
                     return Err(ReadError::ExtraToken { token: token.1 })
@@ -94,6 +99,49 @@ pub trait TextInputPort {
             let obj = self.parsed().car_unchecked();
             self.set_parsed(self.parsed().cdr_unchecked());
             return Ok(obj);
+        }
+    }
+
+    fn link_shared(&self, gc: &mut Box<Gc>, shared_map: &HashMap<isize, Object>, obj: Object) {
+        match obj {
+            Object::Pair(mut p) => {
+                if let Object::DefinedShared(index) = p.car {
+                    match shared_map.get(&index) {
+                        Some(v) => {
+                            p.car = *v;
+                        }
+                        None => panic!(),
+                    }
+                } else {
+                    self.link_shared(gc, shared_map, p.car);
+                }
+                if let Object::DefinedShared(index) = p.cdr {
+                    match shared_map.get(&index) {
+                        Some(v) => {
+                            p.cdr = *v;
+                        }
+                        None => panic!(),
+                    }
+                } else {
+                    self.link_shared(gc, shared_map, p.cdr);
+                }
+            }
+            Object::Vector(mut v) => {
+                for i in 0..v.len() {
+                    let obj = v.data[i];
+                    if let Object::DefinedShared(index) = obj {
+                        match shared_map.get(&index) {
+                            Some(value) => {
+                                v.data[i] = *value;
+                            }
+                            None => panic!(),
+                        }
+                    } else {
+                        self.link_shared(gc, shared_map, obj);
+                    }
+                }
+            }
+            _ => ()
         }
     }
 
@@ -509,6 +557,7 @@ pub trait TextOutputPort: Port {
                     self.as_write(obj)
                 }
             }
+            Object::DefinedShared(_) => todo!(),
         }
     }
 
@@ -577,6 +626,7 @@ pub trait TextOutputPort: Port {
                     self.as_write(obj)
                 }
             }
+            Object::DefinedShared(_) => todo!(),
         }
     }
 
@@ -845,6 +895,7 @@ pub trait TextOutputPort: Port {
                     }
                     break;
                 }
+                Object::DefinedShared(_) => todo!(),
             }
         }
     }
