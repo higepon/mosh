@@ -19,19 +19,18 @@ impl Vm {
         let code_size = v.len();
         let body_size = code_size + 2;
 
+        let mut code = v.data.clone();
+        code.push(Object::Instruction(Op::Return));
+        code.push(Object::Fixnum(0));
+
         // We allocate new code array for every eval calls.
         // We can't share them between multiple eval calls.
-        self.eval_code_array.push(vec![]);
-        let eval_code = self.eval_code_array.last_mut().unwrap();
-        for i in 0..code_size {
-            eval_code.push(v.data[i]);
-        }
-        eval_code.push(Object::Instruction(Op::Return));
-        eval_code.push(Object::Fixnum(0));
+        let code_ptr = self.allocate_code(&code);
+
         // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
-            eval_code.as_ptr(),
+            code_ptr,
             body_size,
             0,
             false,
@@ -48,19 +47,17 @@ impl Vm {
         let code_size = v.len();
         let body_size = code_size + 2;
 
+        let mut code = v.data.clone();
+        code.push(Object::Instruction(Op::Return));
+        code.push(Object::Fixnum(0));
+
         // We allocate new code array for every eval calls.
         // We can't share them between multiple eval calls.
-        self.eval_code_array.push(vec![]);
-        let eval_code = self.eval_code_array.last_mut().unwrap();
-        for i in 0..code_size {
-            eval_code.push(v.data[i]);
-        }
-        eval_code.push(Object::Instruction(Op::Return));
-        eval_code.push(Object::Fixnum(0));
+        let code_ptr = self.allocate_code(&code);
         // todo: Should share this!
         let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
-            eval_code.as_ptr(),
+            code_ptr,
             body_size,
             0,
             false,
@@ -74,15 +71,16 @@ impl Vm {
     fn set_after_trigger0(&mut self, closure: Object) -> error::Result<Object> {
         self.make_frame(self.pc);
 
-        self.eval_code_array.push(vec![]);
-        let trigger0_code = self.eval_code_array.last_mut().unwrap();
+        let mut code = vec![];
+        code.push(Object::Instruction(Op::Constant));
+        code.push(closure);
+        code.push(Object::Instruction(Op::Call));
+        code.push(Object::Fixnum(0));
+        code.push(Object::Instruction(Op::Return));
+        code.push(Object::Fixnum(0));
+        code.push(Object::Instruction(Op::Halt));
 
-        for x in self.trigger0_code.iter() {
-            trigger0_code.push(*x);
-        }
-
-        trigger0_code[1] = closure;
-        self.pc = trigger0_code.as_ptr();
+        self.pc = self.allocate_code(&code);
         return Ok(self.ac);
     }
 
@@ -95,19 +93,25 @@ impl Vm {
     ) -> error::Result<Object> {
         self.make_frame(self.pc);
 
-        self.eval_code_array.push(vec![]);
-        let trigger3_code = self.eval_code_array.last_mut().unwrap();
+        let mut code = vec![];
+        code.push(Object::Instruction(Op::Constant));
+        code.push(arg1);
+        code.push(Object::Instruction(Op::Push));
+        code.push(Object::Instruction(Op::Constant));
+        code.push(arg2);
+        code.push(Object::Instruction(Op::Push));
+        code.push(Object::Instruction(Op::Constant));
+        code.push(arg3);
+        code.push(Object::Instruction(Op::Push));
+        code.push(Object::Instruction(Op::Constant));
+        code.push(closure);
+        code.push(Object::Instruction(Op::Call));
+        code.push(Object::Fixnum(3));
+        code.push(Object::Instruction(Op::Return));
+        code.push(Object::Fixnum(0));
+        code.push(Object::Instruction(Op::Halt));
 
-        for x in self.trigger3_code.iter() {
-            trigger3_code.push(*x);
-        }
-
-
-        trigger3_code[10] = closure;
-        trigger3_code[7] = arg3;
-        trigger3_code[4] = arg2;
-        trigger3_code[1] = arg1;
-        self.pc = trigger3_code.as_ptr();
+        self.pc = self.allocate_code(&code);
         return Ok(self.ac);
     }
 

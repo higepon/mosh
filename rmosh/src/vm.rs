@@ -75,12 +75,7 @@ pub struct Vm {
     is_initialized: bool,
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
-    pub compiled_programs: Vec<Object>,
-    pub trigger0_code: Vec<Object>,
-    pub trigger3_code: Vec<Object>,
-    pub eval_code_array: Vec<Vec<Object>>,
-    pub eval_ret_code: Vec<Object>,
-    pub ret_code: Vec<Object>,
+    pub dynamic_code_array: Vec<Vec<Object>>,
     pub call_by_name_code: Vec<Object>,
     pub closure_for_evaluate: Object,
     current_input_port: Object,
@@ -111,12 +106,7 @@ impl Vm {
             rtds: HashMap::new(),
             should_load_compiler: false,
             is_initialized: false,
-            compiled_programs: vec![],
-            trigger0_code: vec![],
-            trigger3_code: vec![],
-            eval_code_array: vec![],
-            eval_ret_code: vec![],
-            ret_code: vec![],
+            dynamic_code_array: vec![],
             call_by_name_code: vec![],
             closure_for_evaluate: Object::Unspecified,
             current_input_port: Object::Unspecified,
@@ -127,30 +117,6 @@ impl Vm {
         ret.current_output_port = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
         ret.current_error_port = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
         ret.current_input_port = Object::StdInputPort(ret.gc.alloc(StdInputPort::new()));
-        ret.trigger0_code.push(Object::Instruction(Op::Constant));
-        ret.trigger0_code.push(Object::Unspecified);
-        ret.trigger0_code.push(Object::Instruction(Op::Call));
-        ret.trigger0_code.push(Object::Fixnum(0));
-        ret.trigger0_code.push(Object::Instruction(Op::Return));
-        ret.trigger0_code.push(Object::Fixnum(0));
-        ret.trigger0_code.push(Object::Instruction(Op::Halt));
-
-        ret.trigger3_code.push(Object::Instruction(Op::Constant));
-        ret.trigger3_code.push(Object::Unspecified);
-        ret.trigger3_code.push(Object::Instruction(Op::Push));
-        ret.trigger3_code.push(Object::Instruction(Op::Constant));
-        ret.trigger3_code.push(Object::Unspecified);
-        ret.trigger3_code.push(Object::Instruction(Op::Push));
-        ret.trigger3_code.push(Object::Instruction(Op::Constant));
-        ret.trigger3_code.push(Object::Unspecified);
-        ret.trigger3_code.push(Object::Instruction(Op::Push));
-        ret.trigger3_code.push(Object::Instruction(Op::Constant));
-        ret.trigger3_code.push(Object::Unspecified);
-        ret.trigger3_code.push(Object::Instruction(Op::Call));
-        ret.trigger3_code.push(Object::Fixnum(3));
-        ret.trigger3_code.push(Object::Instruction(Op::Return));
-        ret.trigger3_code.push(Object::Fixnum(0));
-        ret.trigger3_code.push(Object::Instruction(Op::Halt));
 
         ret.call_by_name_code.push(Object::Instruction(Op::Frame));
         ret.call_by_name_code.push(Object::Fixnum(8));

@@ -233,26 +233,12 @@ impl Vm {
                             }
                         }
                     } else if procedure.func as usize == procs::eval as usize {
-
-                        self.eval_code_array.push(vec![]);
-                        let eval_ret_code = self.eval_code_array.last_mut().unwrap();
-                
-         
-                        eval_ret_code.push(Object::Instruction(Op::Return));
-                        eval_ret_code.push(Object::Fixnum(argc));
-
-                        self.pc = eval_ret_code.as_ptr();
+                        self.pc = self.allocate_return_code(argc);
                         (procedure.func)(self, args)?;
                     } else {
                         // TODO: Take care of cl.
                         // self.cl = self.ac
-
-                        self.eval_code_array.push(vec![]);
-                        let ret_code = self.eval_code_array.last_mut().unwrap();                        
-                        ret_code.push(Object::Instruction(Op::Return));
-                        ret_code.push(Object::Fixnum(argc));
-
-                        self.pc = ret_code.as_ptr();
+                        self.pc = self.allocate_return_code(argc);
                         /*
                         // debug
                         let free_vars = default_free_vars(&mut self.gc);
@@ -266,9 +252,7 @@ impl Vm {
                     }
                 }
                 Object::Continuation(c) => {
-                    self.eval_code_array.push(vec![]);
-                    let code = self.eval_code_array.last_mut().unwrap();
-
+                    let mut code = vec![];
                     code.push(Object::Instruction(Op::ConstantPush));
                     code.push(c.winders);
                     code.push(Object::Instruction(Op::DynamicWinders));
@@ -287,7 +271,7 @@ impl Vm {
                     code.push(Object::Fixnum(argc));
                     code.push(c.stack);
                     code.push(Object::Fixnum(c.shift_size));
-                    self.pc = code.as_ptr();
+                    self.pc = self.allocate_code(&code);
                 }
                 _ => {
                     panic!("can't call {:?}", self.ac);

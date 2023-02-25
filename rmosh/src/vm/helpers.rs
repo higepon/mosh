@@ -1,6 +1,7 @@
 use crate::{
     gc::GcRef,
     objects::{Object, Symbol},
+    op::Op,
     vm::Vm,
 };
 
@@ -189,5 +190,23 @@ impl Vm {
                 .offset(self.saved_registers.fp_offset)
         };
         self.saved_registers.ac = Object::Unspecified;
+    }
+
+    // We have to alocate (return n) code dymaically because recursive calls can happen.
+    pub(super) fn allocate_return_code(&mut self, argc: isize) -> *const Object {
+        self.dynamic_code_array.push(vec![]);
+        let code = self.dynamic_code_array.last_mut().unwrap();
+        code.push(Object::Instruction(Op::Return));
+        code.push(Object::Fixnum(argc));
+        code.as_ptr()
+    }
+
+    pub(super) fn allocate_code(&mut self, src: &Vec<Object>) -> *const Object {
+        self.dynamic_code_array.push(vec![]);
+        let code = self.dynamic_code_array.last_mut().unwrap();
+        for obj in src.iter() {
+            code.push(*obj);
+        }
+        code.as_ptr()
     }
 }
