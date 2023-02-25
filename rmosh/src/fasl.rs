@@ -449,7 +449,21 @@ impl FaslReader {
                             }
                         }
                     }
-                    Object::SimpleStruct(_) => todo!(),
+                    Object::SimpleStruct(mut st) => {
+                        for i in 0..st.len() {
+                            let obj = st.field(i);
+                            if let Object::DefinedShared(index) = obj {
+                                match self.shared_objects.get(&index) {
+                                    Some(value) => {
+                                        st.set(i, *value);
+                                    }
+                                    None => panic!(),
+                                }
+                            } else {
+                                self.link_shared(seen, obj);
+                            }
+                        }
+                    }
                     _ => {}
                 }
             }
@@ -907,6 +921,57 @@ pub mod tests {
         assert_equal!(&mut gc, st.name, st2.name);
         assert_equal!(&mut gc, st.field(0), st2.field(0));
         assert_equal!(&mut gc, st.field(1), st2.field(1));
+        assert_equal!(&mut gc, st.field(2), st2.field(2));
+    }
+
+    #[test]
+    fn test_read_write_struct_shared() {
+        let mut gc = Box::new(Gc::new());
+        let name = gc.symbol_intern("struct_name");
+        let mut st = gc.alloc(SimpleStruct::new(name, 3));
+        let p = gc.cons(Object::Fixnum(1234), Object::Fixnum(5678));
+        st.set(0, p);
+        st.set(1, p);
+        st.set(2, gc.symbol_intern("hoge"));
+        let obj = Object::SimpleStruct(st);
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, obj).unwrap();
+
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let st2 = read_obj.to_simple_struct();
+        assert_eq!(st.len(), st2.len());
+        assert_equal!(&mut gc, st.name, st2.name);
+        assert_equal!(&mut gc, st.field(0), st2.field(0));
+        assert_equal!(&mut gc, st.field(1), st2.field(1));
+        assert_equal!(&mut gc, st.field(2), st2.field(2));
+    }
+
+    #[test]
+    fn test_read_write_struct_shared2() {
+        let mut gc = Box::new(Gc::new());
+        let name = gc.symbol_intern("struct_name");
+        let mut st = gc.alloc(SimpleStruct::new(name, 3));
+        let p = gc.cons(Object::Fixnum(1234), Object::Fixnum(5678));
+        p.to_pair().car = p;
+        st.set(0, p);
+        st.set(1, p);
+        st.set(2, gc.symbol_intern("hoge"));
+        let obj = Object::SimpleStruct(st);
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, obj).unwrap();
+
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let st2 = read_obj.to_simple_struct();
+        assert_eq!(st.len(), st2.len());
+        assert_equal!(&mut gc, st.name, st2.name);
         assert_equal!(&mut gc, st.field(2), st2.field(2));
     }
 
