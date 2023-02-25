@@ -605,7 +605,7 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
-                write!(f, "{:?}", unsafe { s.pointer.as_ref() })
+                write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
             Object::DefinedShared(_) => todo!(),
         }
