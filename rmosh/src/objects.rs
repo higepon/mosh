@@ -73,7 +73,7 @@ impl Object {
         let mut port = StringOutputPort::new();
         port.display(*self, SHARED_AWARE).ok();
         port.string()
-    }    
+    }
 
     pub fn to_short_string(&self) -> String {
         let s = self.to_string();
