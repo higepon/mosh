@@ -169,11 +169,7 @@ impl Vm {
     }
 
     pub fn enable_r7rs(&mut self, args: Object) -> error::Result<Object> {
-        let mut fasl = FaslReader {
-            bytes: psyntax::U8_ARRAY,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,            
-        };
+        let mut fasl = FaslReader::new(psyntax::U8_ARRAY);
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
             // Global variables.
@@ -299,11 +295,7 @@ impl Vm {
     }
 
     fn load_compiler(&mut self) -> error::Result<Object> {
-        let mut fasl = FaslReader {
-            bytes: compiler::U8_ARRAY,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,            
-        };
+        let mut fasl = FaslReader::new(compiler::U8_ARRAY);
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)
         } else {

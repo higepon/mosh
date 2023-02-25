@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     env::{self, current_dir, current_exe},
     fs::{self, File, OpenOptions},
     path::Path,
@@ -3934,12 +3933,8 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if let Object::BinaryFileInputPort(mut port) = args[0] {
         let mut content = Vec::new();
         port.read_to_end(&mut content).ok();
-        let mut fasl = FaslReader {
-            bytes: &content[..],
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,            
-        };
-        match fasl.read_sexp(&mut vm.gc) {
+        let mut fasl = FaslReader::new(&content[..]);
+        match fasl.read(&mut vm.gc) {
             Ok(sexp) => Ok(sexp),
             Err(err) => {
                 panic!("{}: {} {}", name, err, args[0])

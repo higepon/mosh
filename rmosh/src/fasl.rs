@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{self, Read},
+    io::{self, Cursor, Read},
 };
 
 use num_derive::FromPrimitive;
@@ -367,13 +367,20 @@ macro_rules! read_num3 {
 }
 
 // S-expression de-serializer.
-pub struct FaslReader<'a> {
-    pub bytes: &'a [u8],
-    pub shared_objects: &'a mut HashMap<u32, Object>,
-    pub link_needed: bool,
+pub struct FaslReader {
+    bytes: Cursor<Vec<u8>>,
+    shared_objects: HashMap<u32, Object>,
+    link_needed: bool,
 }
 
-impl FaslReader<'_> {
+impl FaslReader {
+    pub fn new(bytes: &[u8]) -> Self {
+        Self {
+            bytes: Cursor::new(bytes.to_vec()),
+            shared_objects: HashMap::new(),
+            link_needed: false,
+        }
+    }
     pub fn read_all_sexp(&mut self, gc: &mut Gc) -> Vec<Object> {
         let mut objects = vec![];
         loop {
@@ -449,7 +456,7 @@ impl FaslReader<'_> {
         }
     }
 
-    pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+    fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
             Tag::Char => self.read_char(),
@@ -638,8 +645,6 @@ impl FaslReader<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use std::collections::HashMap;
-
     use crate::{
         equal::Equal,
         gc::Gc,
@@ -681,11 +686,7 @@ pub mod tests {
     fn test_constant_number() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[0, 3, 0, 0, 0, 0, 0, 0, 0];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::Fixnum(3);
         let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -695,11 +696,7 @@ pub mod tests {
     fn test_constant_true() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[1];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::True;
         let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -709,11 +706,7 @@ pub mod tests {
     fn test_constant_false() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[2];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::False;
         let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -722,11 +715,7 @@ pub mod tests {
     fn test_constant_nil() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[3];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::Nil;
         let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -735,11 +724,7 @@ pub mod tests {
     fn test_constant_char() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[4, 97, 0, 0, 0];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::Char('a');
         let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -751,11 +736,7 @@ pub mod tests {
         let bytes: &[u8] = &[
             5, 5, 0, 104, 0, 0, 0, 101, 0, 0, 0, 108, 0, 0, 0, 108, 0, 0, 0, 111, 0, 0, 0,
         ];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = gc.symbol_intern("hello");
         let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -765,11 +746,7 @@ pub mod tests {
     fn test_constant_string() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[6, 3, 0, 97, 0, 0, 0, 98, 0, 0, 0, 99, 0, 0, 0];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = gc.new_string("abc");
         let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
@@ -779,12 +756,7 @@ pub mod tests {
     fn test_constant_simple_pair() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[7, 5, 1, 0, 97, 0, 0, 0, 3];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
-
+        let mut fasl = FaslReader::new(bytes);
         let sym = gc.symbol_intern("a");
         let expected = gc.cons(sym, Object::Nil);
         let obj = fasl.read(&mut gc).unwrap();
@@ -796,11 +768,7 @@ pub mod tests {
         let bport: &mut dyn BinaryOutputPort = &mut port;
         let writer = FaslWriter::new();
         writer.write(bport, obj).unwrap();
-        let mut reader = FaslReader {
-            bytes: &port.data,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut reader = FaslReader::new(&port.data);
         let read_obj = reader.read(gc).unwrap();
         assert_equal2!(gc, read_obj, obj);
     }
@@ -855,11 +823,7 @@ pub mod tests {
         let bport: &mut dyn BinaryOutputPort = &mut port;
         let writer = FaslWriter::new();
         writer.write(bport, p).unwrap();
-        let mut reader = FaslReader {
-            bytes: &port.data,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut reader = FaslReader::new(&port.data);
         let read_obj = reader.read(&mut gc).unwrap();
         let x = read_obj.cdr_unchecked();
         let y = p.cdr_unchecked();
@@ -920,11 +884,7 @@ pub mod tests {
         let bport: &mut dyn BinaryOutputPort = &mut port;
         let writer = FaslWriter::new();
         writer.write(bport, v).unwrap();
-        let mut reader = FaslReader {
-            bytes: &port.data,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut reader = FaslReader::new(&port.data);
         let read_obj = reader.read(&mut gc).unwrap();
         let x = read_obj.to_vector().data[1];
         let y = v.to_vector().data[1];
@@ -953,11 +913,7 @@ pub mod tests {
         let bport: &mut dyn BinaryOutputPort = &mut port;
         let writer = FaslWriter::new();
         writer.write(bport, hashtable).unwrap();
-        let mut reader = FaslReader {
-            bytes: &port.data,
-            shared_objects: &mut HashMap::new(),
-            link_needed: false,
-        };
+        let mut reader = FaslReader::new(&port.data);
         let read_obj = reader.read(&mut gc).unwrap();
         let v1 = read_obj
             .to_eq_hashtable()
