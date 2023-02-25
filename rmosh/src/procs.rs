@@ -5041,13 +5041,10 @@ fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "write-char";
     check_argc_between!(name, args, 1, 2);
-    eprintln!("write-char1");
     let c = as_char!(name, args, 0, &mut vm.gc);
-    eprintln!("write-char2");
     if args.len() == 1 {
         todo!();
     } else {
-        eprintln!("write-char");
         let result = match args[1] {
             Object::FileOutputPort(mut port) => port.write_char(c),
             Object::StdErrorPort(mut port) => port.write_char(c),
