@@ -233,20 +233,26 @@ impl Vm {
                             }
                         }
                     } else if procedure.func as usize == procs::eval as usize {
-                        self.eval_ret_code = vec![];
-                        self.eval_ret_code.push(Object::Instruction(Op::Return));
-                        self.eval_ret_code.push(Object::Fixnum(argc));
 
-                        self.pc = self.eval_ret_code.as_ptr();
+                        self.eval_code_array.push(vec![]);
+                        let eval_ret_code = self.eval_code_array.last_mut().unwrap();
+                
+         
+                        eval_ret_code.push(Object::Instruction(Op::Return));
+                        eval_ret_code.push(Object::Fixnum(argc));
+
+                        self.pc = eval_ret_code.as_ptr();
                         (procedure.func)(self, args)?;
                     } else {
                         // TODO: Take care of cl.
                         // self.cl = self.ac
-                        self.ret_code = vec![];
-                        self.ret_code.push(Object::Instruction(Op::Return));
-                        self.ret_code.push(Object::Fixnum(argc));
 
-                        self.pc = self.ret_code.as_ptr();
+                        self.eval_code_array.push(vec![]);
+                        let ret_code = self.eval_code_array.last_mut().unwrap();                        
+                        ret_code.push(Object::Instruction(Op::Return));
+                        ret_code.push(Object::Fixnum(argc));
+
+                        self.pc = ret_code.as_ptr();
                         /*
                         // debug
                         let free_vars = default_free_vars(&mut self.gc);

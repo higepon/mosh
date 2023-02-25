@@ -73,8 +73,16 @@ impl Vm {
 
     fn set_after_trigger0(&mut self, closure: Object) -> error::Result<Object> {
         self.make_frame(self.pc);
-        self.trigger0_code[1] = closure;
-        self.pc = self.trigger0_code.as_ptr();
+
+        self.eval_code_array.push(vec![]);
+        let trigger0_code = self.eval_code_array.last_mut().unwrap();
+
+        for x in self.trigger0_code.iter() {
+            trigger0_code.push(*x);
+        }
+
+        trigger0_code[1] = closure;
+        self.pc = trigger0_code.as_ptr();
         return Ok(self.ac);
     }
 
@@ -86,11 +94,20 @@ impl Vm {
         arg3: Object,
     ) -> error::Result<Object> {
         self.make_frame(self.pc);
-        self.trigger3_code[10] = closure;
-        self.trigger3_code[7] = arg3;
-        self.trigger3_code[4] = arg2;
-        self.trigger3_code[1] = arg1;
-        self.pc = self.trigger3_code.as_ptr();
+
+        self.eval_code_array.push(vec![]);
+        let trigger3_code = self.eval_code_array.last_mut().unwrap();
+
+        for x in self.trigger3_code.iter() {
+            trigger3_code.push(*x);
+        }
+
+
+        trigger3_code[10] = closure;
+        trigger3_code[7] = arg3;
+        trigger3_code[4] = arg2;
+        trigger3_code[1] = arg1;
+        self.pc = trigger3_code.as_ptr();
         return Ok(self.ac);
     }
 

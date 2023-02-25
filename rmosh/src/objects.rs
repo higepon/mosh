@@ -68,6 +68,13 @@ impl Object {
         port.string()
     }
 
+    pub fn to_string_ss(&self) -> String {
+        const SHARED_AWARE: bool = true;
+        let mut port = StringOutputPort::new();
+        port.display(*self, SHARED_AWARE).ok();
+        port.string()
+    }    
+
     pub fn to_short_string(&self) -> String {
         let s = self.to_string();
         s[..min(s.len(), 40)].to_string()
