@@ -591,7 +591,7 @@ impl FaslReader {
         for _ in 0..len {
             objs.push(self.read_sexp(gc)?);
         }
-        let name = self.read(gc)?;
+        let name = self.read_sexp(gc)?;
         let mut s = SimpleStruct::new(name, len as usize);
         for i in 0..len {
             s.set(i, objs[i]);
@@ -649,7 +649,7 @@ pub mod tests {
         equal::Equal,
         gc::Gc,
         numbers::Flonum,
-        objects::Object,
+        objects::{Object, SimpleStruct},
         op::Op,
         ports::{BinaryOutputPort, BytevectorOutputPort},
     };
@@ -658,20 +658,7 @@ pub mod tests {
 
     #[macro_export]
     macro_rules! assert_equal {
-        ($gc:ident, $lhs:ident, $rhs:ident) => {{
-            let e = Equal::new();
-            if e.is_equal(&mut $gc, &$lhs, &$rhs) {
-                assert!(true);
-            } else {
-                println!("{} is not equal to {}", $lhs, $rhs);
-                assert!(false);
-            }
-        }};
-    }
-
-    #[macro_export]
-    macro_rules! assert_equal2 {
-        ($gc:ident, $lhs:ident, $rhs:ident) => {{
+        ($gc:expr, $lhs:expr, $rhs:expr) => {{
             let e = Equal::new();
             if e.is_equal($gc, &$lhs, &$rhs) {
                 assert!(true);
@@ -689,7 +676,7 @@ pub mod tests {
         let mut fasl = FaslReader::new(bytes);
         let expected = Object::Fixnum(3);
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
@@ -699,7 +686,7 @@ pub mod tests {
         let mut fasl = FaslReader::new(bytes);
         let expected = Object::True;
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
@@ -709,7 +696,7 @@ pub mod tests {
         let mut fasl = FaslReader::new(bytes);
         let expected = Object::False;
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
     #[test]
     fn test_constant_nil() {
@@ -718,7 +705,7 @@ pub mod tests {
         let mut fasl = FaslReader::new(bytes);
         let expected = Object::Nil;
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
     #[test]
     fn test_constant_char() {
@@ -727,7 +714,7 @@ pub mod tests {
         let mut fasl = FaslReader::new(bytes);
         let expected = Object::Char('a');
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
@@ -739,7 +726,7 @@ pub mod tests {
         let mut fasl = FaslReader::new(bytes);
         let expected = gc.symbol_intern("hello");
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
@@ -749,7 +736,7 @@ pub mod tests {
         let mut fasl = FaslReader::new(bytes);
         let expected = gc.new_string("abc");
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
@@ -760,7 +747,7 @@ pub mod tests {
         let sym = gc.symbol_intern("a");
         let expected = gc.cons(sym, Object::Nil);
         let obj = fasl.read(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        assert_equal!(&mut gc, expected, obj);
     }
 
     fn test_read_write(gc: &mut Box<Gc>, obj: Object) {
@@ -770,7 +757,7 @@ pub mod tests {
         writer.write(bport, obj).unwrap();
         let mut reader = FaslReader::new(&port.data);
         let read_obj = reader.read(gc).unwrap();
-        assert_equal2!(gc, read_obj, obj);
+        assert_equal!(gc, read_obj, obj);
     }
 
     #[test]
@@ -827,7 +814,7 @@ pub mod tests {
         let read_obj = reader.read(&mut gc).unwrap();
         let x = read_obj.cdr_unchecked();
         let y = p.cdr_unchecked();
-        assert_equal!(gc, x, y);
+        assert_equal!(&mut gc, x, y);
         assert_eq!(read_obj.car_unchecked(), read_obj);
     }
 
@@ -850,19 +837,19 @@ pub mod tests {
     }
 
     #[test]
-    fn test_read_eof() {
+    fn test_read_write_eof() {
         let mut gc = Box::new(Gc::new());
         test_read_write(&mut gc, Object::Eof);
     }
 
     #[test]
-    fn test_read_nil() {
+    fn test_read_write_nil() {
         let mut gc = Box::new(Gc::new());
         test_read_write(&mut gc, Object::Nil);
     }
 
     #[test]
-    fn test_read_vector() {
+    fn test_read_write_vector() {
         let mut gc = Box::new(Gc::new());
         let v = gc.new_vector(&vec![
             Object::Fixnum(1234),
@@ -872,7 +859,7 @@ pub mod tests {
     }
 
     #[test]
-    fn test_read_vector_shared() {
+    fn test_read_write_vector_shared() {
         let mut gc = Box::new(Gc::new());
         let v = gc.new_vector(&vec![
             Object::Fixnum(1234),
@@ -888,18 +875,43 @@ pub mod tests {
         let read_obj = reader.read(&mut gc).unwrap();
         let x = read_obj.to_vector().data[1];
         let y = v.to_vector().data[1];
-        assert_equal!(gc, x, y);
+        assert_equal!(&mut gc, x, y);
         assert_eq!(read_obj.to_vector().data[0], read_obj);
     }
 
     #[test]
-    fn test_read_instruction() {
+    fn test_read_write_instruction() {
         let mut gc = Box::new(Gc::new());
         test_read_write(&mut gc, Object::Instruction(Op::Return));
     }
 
     #[test]
-    fn test_read_eq_hashtable() {
+    fn test_read_write_struct() {
+        let mut gc = Box::new(Gc::new());
+        let name = gc.symbol_intern("struct_name");
+        let mut st = gc.alloc(SimpleStruct::new(name, 3));
+        st.set(0, Object::Fixnum(1234));
+        st.set(1, Object::Unspecified);
+        st.set(2, gc.symbol_intern("hoge"));
+        let obj = Object::SimpleStruct(st);
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, obj).unwrap();
+
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let st2 = read_obj.to_simple_struct();
+        assert_eq!(st.len(), st2.len());
+        assert_equal!(&mut gc, st.name, st2.name);
+        assert_equal!(&mut gc, st.field(0), st2.field(0));
+        assert_equal!(&mut gc, st.field(1), st2.field(1));
+        assert_equal!(&mut gc, st.field(2), st2.field(2));
+    }
+
+    #[test]
+    fn test_read_write_eq_hashtable() {
         let mut gc = Box::new(Gc::new());
 
         let hashtable = gc.new_eq_hashtable();
@@ -921,7 +933,7 @@ pub mod tests {
         let v2 = hashtable
             .to_eq_hashtable()
             .get(Object::Fixnum(1356), Object::True);
-        assert_equal!(gc, v1, v2);
+        assert_equal!(&mut gc, v1, v2);
 
         let v1 = read_obj
             .to_eq_hashtable()
@@ -929,6 +941,6 @@ pub mod tests {
         let v2 = hashtable
             .to_eq_hashtable()
             .get(Object::Fixnum(1357), Object::True);
-        assert_equal!(gc, v1, v2);
+        assert_equal!(&mut gc, v1, v2);
     }
 }
