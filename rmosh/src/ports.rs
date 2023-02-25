@@ -60,7 +60,7 @@ pub trait TextInputPort {
             let s = s + ")\0";
             let chars: Vec<char> = s.chars().collect();
             // Whether if we found #1# style.
-            let mut shared_map: HashMap<isize, Object> = HashMap::new();
+            let mut shared_map: HashMap<u32, Object> = HashMap::new();
             match DatumParser::new().parse(gc, &mut shared_map, lexer::Lexer::new(&chars)) {
                 Ok(parsed) => {
                     if shared_map.len() > 0 {
@@ -102,7 +102,7 @@ pub trait TextInputPort {
         }
     }
 
-    fn link_shared(&self, gc: &mut Box<Gc>, shared_map: &HashMap<isize, Object>, obj: Object) {
+    fn link_shared(&self, gc: &mut Box<Gc>, shared_map: &HashMap<u32, Object>, obj: Object) {
         match obj {
             Object::Pair(mut p) => {
                 if let Object::DefinedShared(index) = p.car {

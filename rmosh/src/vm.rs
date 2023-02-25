@@ -172,6 +172,7 @@ impl Vm {
         let mut fasl = FaslReader {
             bytes: psyntax::U8_ARRAY,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,            
         };
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
@@ -301,6 +302,7 @@ impl Vm {
         let mut fasl = FaslReader {
             bytes: compiler::U8_ARRAY,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,            
         };
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)

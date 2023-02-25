@@ -3937,6 +3937,7 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let mut fasl = FaslReader {
             bytes: &content[..],
             shared_objects: &mut HashMap::new(),
+            link_needed: false,            
         };
         match fasl.read_sexp(&mut vm.gc) {
             Ok(sexp) => Ok(sexp),

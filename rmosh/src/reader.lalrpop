@@ -5,7 +5,7 @@ use crate::reader_util::ReadError;
 use crate::reader_util;
 use std::collections::HashMap;
 
-grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<isize, Object>);
+grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<u32, Object>);
 
 // R7RS small 7.1.2. External representations
 pub Datum: Object = {
@@ -13,12 +13,12 @@ pub Datum: Object = {
     CompoundDataum,
     "#;" Datum <datum: Datum> => datum,
     <idx: "#1="> <datum: Datum> => {
-        let key = isize::from_str_radix(&idx, 10).unwrap();
+        let key = u32::from_str_radix(&idx, 10).unwrap();
         shared_map.insert(key, datum);
         datum
     },
     "#1#" => {
-        Object::DefinedShared(isize::from_str_radix(&<>, 10).unwrap())
+        Object::DefinedShared(u32::from_str_radix(&<>, 10).unwrap())
     }
 }
 

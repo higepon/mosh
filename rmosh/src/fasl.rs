@@ -66,7 +66,7 @@ impl FaslWriter {
             seen.insert(obj, Object::Fixnum(*shared_id));
             *shared_id += 1;
             // We don't return here and write the object.
-        } else if seen_state.is_number() {
+        } else if seen_state.is_fixnum() {
             self.put_tag(port, Tag::LookupShared)?;
             port.put_u32(seen_state.to_isize() as u32)?;
             return Ok(());
@@ -298,8 +298,8 @@ impl FaslWriter {
 #[macro_export]
 macro_rules! read_sym_num {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let sym = $self.read_sexp($gc)?;
-        let m = $self.read_sexp($gc)?;
+        let sym = $self.read($gc)?;
+        let m = $self.read($gc)?;
         Ok(OpOld::$op(sym.to_symbol(), m.to_number()))
     }};
 }
@@ -307,8 +307,8 @@ macro_rules! read_sym_num {
 #[macro_export]
 macro_rules! read_num_constant {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let n = $self.read_sexp($gc)?;
-        let c = $self.read_sexp($gc)?;
+        let n = $self.read($gc)?;
+        let c = $self.read($gc)?;
         Ok(OpOld::$op(n.to_number(), c))
     }};
 }
@@ -316,9 +316,9 @@ macro_rules! read_num_constant {
 #[macro_export]
 macro_rules! read_num_constant_num {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let n = $self.read_sexp($gc)?;
-        let c = $self.read_sexp($gc)?;
-        let o = $self.read_sexp($gc)?;
+        let n = $self.read($gc)?;
+        let c = $self.read($gc)?;
+        let o = $self.read($gc)?;
         Ok(OpOld::$op(n.to_number(), c, o.to_number()))
     }};
 }
@@ -326,7 +326,7 @@ macro_rules! read_num_constant_num {
 #[macro_export]
 macro_rules! read_sym1 {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let s = $self.read_sexp($gc)?;
+        let s = $self.read($gc)?;
         Ok(OpOld::$op(s.to_symbol()))
     }};
 }
@@ -334,7 +334,7 @@ macro_rules! read_sym1 {
 #[macro_export]
 macro_rules! read_const1 {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let c = $self.read_sexp($gc)?;
+        let c = $self.read($gc)?;
         Ok(OpOld::$op(c))
     }};
 }
@@ -342,7 +342,7 @@ macro_rules! read_const1 {
 #[macro_export]
 macro_rules! read_num1 {
     ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
-        let m = $self.read_sexp($gc)?;
+        let m = $self.read($gc)?;
         Ok(OpOld::$op(m.to_number() as $size))
     }};
 }
@@ -350,8 +350,8 @@ macro_rules! read_num1 {
 #[macro_export]
 macro_rules! read_num2 {
     ($self:ident, $gc:ident, $op:ident, $size:ident, $size2:ident) => {{
-        let m = $self.read_sexp($gc)?;
-        let n = $self.read_sexp($gc)?;
+        let m = $self.read($gc)?;
+        let n = $self.read($gc)?;
         Ok(OpOld::$op(m.to_number() as $size, n.to_number() as $size2))
     }};
 }
@@ -359,9 +359,9 @@ macro_rules! read_num2 {
 #[macro_export]
 macro_rules! read_num3 {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let m = $self.read_sexp($gc)?;
-        let n = $self.read_sexp($gc)?;
-        let o = $self.read_sexp($gc)?;
+        let m = $self.read($gc)?;
+        let n = $self.read($gc)?;
+        let o = $self.read($gc)?;
         Ok(OpOld::$op(m.to_number(), n.to_number(), o.to_number()))
     }};
 }
@@ -370,13 +370,14 @@ macro_rules! read_num3 {
 pub struct FaslReader<'a> {
     pub bytes: &'a [u8],
     pub shared_objects: &'a mut HashMap<u32, Object>,
+    pub link_needed: bool,
 }
 
 impl FaslReader<'_> {
     pub fn read_all_sexp(&mut self, gc: &mut Gc) -> Vec<Object> {
         let mut objects = vec![];
         loop {
-            match self.read_sexp(gc) {
+            match self.read(gc) {
                 Ok(sexp) => {
                     objects.push(sexp);
                 }
@@ -386,6 +387,66 @@ impl FaslReader<'_> {
             }
         }
         objects
+    }
+
+    pub fn read(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let obj = self.read_sexp(gc)?;
+        if self.link_needed {
+            let mut seen: HashMap<Object, bool> = HashMap::new();
+            self.link_shared(&mut seen, obj);
+        }
+        Ok(obj)
+    }
+
+    fn link_shared(&self, seen: &mut HashMap<Object, bool>, obj: Object) {
+        println!("link shared");
+        match seen.get(&obj) {
+            Some(_) => return,
+            None => {
+                seen.insert(obj, true);
+                match obj {
+                    Object::Pair(mut p) => {
+                        if let Object::DefinedShared(index) = p.car {
+                            match self.shared_objects.get(&index) {
+                                Some(v) => {
+                                    p.car = *v;
+                                }
+                                None => panic!(),
+                            }
+                        } else {
+                            self.link_shared(seen, p.car);
+                        }
+                        if let Object::DefinedShared(index) = p.cdr {
+                            match self.shared_objects.get(&index) {
+                                Some(v) => {
+                                    p.cdr = *v;
+                                }
+                                None => panic!(),
+                            }
+                        } else {
+                            self.link_shared(seen, p.cdr);
+                        }
+                    }
+                    Object::Vector(mut v) => {
+                        for i in 0..v.len() {
+                            let obj = v.data[i];
+                            if let Object::DefinedShared(index) = obj {
+                                match self.shared_objects.get(&index) {
+                                    Some(value) => {
+                                        v.data[i] = *value;
+                                    }
+                                    None => panic!(),
+                                }
+                            } else {
+                                self.link_shared(seen, obj);
+                            }
+                        }
+                    }
+                    Object::SimpleStruct(_) => todo!(),
+                    _ => {}
+                }
+            }
+        }
     }
 
     pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
@@ -435,7 +496,10 @@ impl FaslReader<'_> {
         let uid = u32::from_le_bytes(buf);
         match self.shared_objects.get(&uid) {
             Some(v) => Ok(*v),
-            None => todo!(),
+            None => {
+                self.link_needed = true;
+                Ok(Object::DefinedShared(uid))
+            }
         }
     }
 
@@ -520,7 +584,7 @@ impl FaslReader<'_> {
         for _ in 0..len {
             objs.push(self.read_sexp(gc)?);
         }
-        let name = self.read_sexp(gc)?;
+        let name = self.read(gc)?;
         let mut s = SimpleStruct::new(name, len as usize);
         for i in 0..len {
             s.set(i, objs[i]);
@@ -620,9 +684,10 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
         let expected = Object::Fixnum(3);
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
 
@@ -633,9 +698,10 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
         let expected = Object::True;
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
 
@@ -646,9 +712,10 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
         let expected = Object::False;
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
     #[test]
@@ -658,9 +725,10 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
         let expected = Object::Nil;
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
     #[test]
@@ -670,9 +738,10 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
         let expected = Object::Char('a');
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
 
@@ -685,9 +754,10 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
         let expected = gc.symbol_intern("hello");
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
 
@@ -698,9 +768,10 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
         let expected = gc.new_string("abc");
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
 
@@ -711,11 +782,12 @@ pub mod tests {
         let mut fasl = FaslReader {
             bytes: bytes,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
 
         let sym = gc.symbol_intern("a");
         let expected = gc.cons(sym, Object::Nil);
-        let obj = fasl.read_sexp(&mut gc).unwrap();
+        let obj = fasl.read(&mut gc).unwrap();
         assert_equal!(gc, expected, obj);
     }
 
@@ -727,10 +799,9 @@ pub mod tests {
         let mut reader = FaslReader {
             bytes: &port.data,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
-        let read_obj = reader.read_sexp(gc).unwrap();
-        println!("obj={}", obj);
-        println!("read_obj={}", read_obj);
+        let read_obj = reader.read(gc).unwrap();
         assert_equal2!(gc, read_obj, obj);
     }
 
@@ -773,6 +844,29 @@ pub mod tests {
         let p = gc.cons(Object::Char('a'), Object::Fixnum(1234));
         test_read_write(&mut gc, p);
     }
+
+    #[test]
+    fn test_read_write_shared_pair() {
+        let mut gc = Box::new(Gc::new());
+
+        let p = gc.cons(Object::Char('a'), Object::Fixnum(1234));
+        p.to_pair().car = p;
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, p).unwrap();
+        let mut reader = FaslReader {
+            bytes: &port.data,
+            shared_objects: &mut HashMap::new(),
+            link_needed: false,
+        };
+        let read_obj = reader.read(&mut gc).unwrap();
+        let x = read_obj.cdr_unchecked();
+        let y = p.cdr_unchecked();
+        assert_equal!(gc, x, y);
+        assert_eq!(read_obj.car_unchecked(), read_obj);
+    }
+
     #[test]
     fn test_read_write_true() {
         let mut gc = Box::new(Gc::new());
@@ -814,6 +908,31 @@ pub mod tests {
     }
 
     #[test]
+    fn test_read_vector_shared() {
+        let mut gc = Box::new(Gc::new());
+        let v = gc.new_vector(&vec![
+            Object::Fixnum(1234),
+            Object::Flonum(Flonum::new(1.23)),
+        ]);
+        v.to_vector().data[0] = v;
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, v).unwrap();
+        let mut reader = FaslReader {
+            bytes: &port.data,
+            shared_objects: &mut HashMap::new(),
+            link_needed: false,
+        };
+        let read_obj = reader.read(&mut gc).unwrap();
+        let x = read_obj.to_vector().data[1];
+        let y = v.to_vector().data[1];
+        assert_equal!(gc, x, y);
+        assert_eq!(read_obj.to_vector().data[0], read_obj);
+    }
+
+    #[test]
     fn test_read_instruction() {
         let mut gc = Box::new(Gc::new());
         test_read_write(&mut gc, Object::Instruction(Op::Return));
@@ -837,8 +956,9 @@ pub mod tests {
         let mut reader = FaslReader {
             bytes: &port.data,
             shared_objects: &mut HashMap::new(),
+            link_needed: false,
         };
-        let read_obj = reader.read_sexp(&mut gc).unwrap();
+        let read_obj = reader.read(&mut gc).unwrap();
         let v1 = read_obj
             .to_eq_hashtable()
             .get(Object::Fixnum(1356), Object::False);
