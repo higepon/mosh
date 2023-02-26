@@ -163,6 +163,24 @@ impl Object {
             _ => false,
         }
     }
+    pub fn is_proecdure(&self) -> bool {
+        match self {
+            Object::Procedure(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_object_pointer(&self) -> bool {
+        match self {
+            Object::ObjectPointer(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_closure(&self) -> bool {
+        match self {
+            Object::Closure(_) => true,
+            _ => false,
+        }
+    }
     pub fn is_regexp(&self) -> bool {
         match self {
             Object::Regexp(_) => true,
@@ -560,7 +578,18 @@ impl Debug for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
+                let name;
+                if closure.src.is_false() {
+                    name = Object::False
+                } else {
+                    name = closure.src.cdr_unchecked();
+                }
+                write!(
+                    f,
+                    "#<closure {} {:?}>",
+                    name.to_string(),
+                    closure.pointer.as_ptr()
+                )
             }
             Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
@@ -683,7 +712,18 @@ impl Display for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
+                let name;
+                if closure.src.is_false() {
+                    name = Object::False
+                } else {
+                    name = closure.src.cdr_unchecked();
+                }
+                write!(
+                    f,
+                    "#<closure {} {:?}>",
+                    name.to_string(),
+                    closure.pointer.as_ptr()
+                )
             }
             Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())

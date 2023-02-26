@@ -145,8 +145,7 @@ impl Vm {
             match self.ac {
                 Object::Closure(closure) => {
                     self.dc = self.ac;
-                    // TODO:
-                    // self.cl = self.ac;
+                    self.cl = self.ac;
                     self.pc = closure.ops;
                     if closure.is_optional_arg {
                         let extra_len = argc - closure.argc;
@@ -181,7 +180,7 @@ impl Vm {
                     let start: usize = start as usize;
                     let uargc: usize = argc as usize;
                     let args = &mut self.stack[start..start + uargc];
-
+                    self.cl = self.ac;
                     // copying args here because we can't borrow.
                     let args = &mut args.to_owned()[..];
 
@@ -236,8 +235,7 @@ impl Vm {
                         self.pc = self.allocate_return_code(argc);
                         (procedure.func)(self, args)?;
                     } else {
-                        // TODO: Take care of cl.
-                        // self.cl = self.ac
+                        self.cl = self.ac;
                         self.pc = self.allocate_return_code(argc);
                         /*
                         // debug

@@ -807,8 +807,7 @@ impl Vm {
                     match self.ac {
                         Object::Closure(c) => {
                             self.dc = self.ac;
-                            // todo
-                            //self.cl = self.ac;
+                            self.cl = self.ac;
                             self.pc = c.ops;
                             self.fp = self.dec(self.sp, argc);
                         }
@@ -864,6 +863,7 @@ impl Vm {
                     let closure = self.ac.to_closure();
                     let argc = depth;
                     self.dc = self.ac;
+                    self.cl = self.ac;
                     self.pc = closure.ops;
                     self.fp = self.dec(self.sp, argc);
                 }

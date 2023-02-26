@@ -29,6 +29,7 @@ const MAX_NUM_VALUES: usize = 256;
 struct Registers {
     pub ac: Object,
     pub dc: Object,
+    pub cl: Object,
     pub pc: *const Object,
     pub sp_offset: isize,
     pub fp_offset: isize,
@@ -39,6 +40,7 @@ impl Registers {
         Self {
             ac: Object::Unspecified,
             dc: Object::Unspecified,
+            cl: Object::Unspecified,
             pc: null(),
             sp_offset: 0,
             fp_offset: 0,
@@ -54,6 +56,8 @@ pub struct Vm {
     stack: Vec<Object>,
     // accumulator register.
     pub ac: Object,
+    // current closure register, used for profiler.
+    cl: Object,
     // display closure register.
     dc: Object,
     // expected register to retain expected value for tests.
@@ -93,6 +97,7 @@ impl Vm {
             stack: vec![Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
+            cl: Object::Unspecified,
             expected: Object::Unspecified,
             pc: null_mut(),
             sp: null_mut(),

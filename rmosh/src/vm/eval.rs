@@ -150,6 +150,7 @@ impl Vm {
         self.closure_for_evaluate.to_closure().ops = ops;
         self.ac = self.closure_for_evaluate;
         self.dc = self.closure_for_evaluate;
+        self.cl = self.closure_for_evaluate;
         self.fp = null_mut();
         self.run_ops(ops)
     }

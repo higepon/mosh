@@ -46,6 +46,7 @@ impl Vm {
 
         self.gc.mark_object(self.saved_registers.ac);
         self.gc.mark_object(self.saved_registers.dc);
+        self.gc.mark_object(self.saved_registers.cl);        
 
         self.gc.mark_object(self.closure_for_evaluate);
 
