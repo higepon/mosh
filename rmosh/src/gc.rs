@@ -151,6 +151,12 @@ impl Gc {
         Object::Pair(pair)
     }
 
+    pub fn cons_src(&mut self, first: Object, second: Object, src: Object) -> Object {
+        let mut pair = self.alloc(Pair::new(first, second));
+        pair.src = src;
+        Object::Pair(pair)
+    }
+
     pub fn list1(&mut self, obj: Object) -> Object {
         self.cons(obj, Object::Nil)
     }
@@ -219,6 +225,14 @@ impl Gc {
         ret
     }
 
+    pub fn dot_pair_src(&mut self, objects: &[Object], last: Object, src: Object) -> Object {
+        let mut ret = last;
+        for obj in objects.iter().rev() {
+            ret = self.cons_src(*obj, ret, src);
+        }
+        ret
+    }    
+
     pub fn listn(&mut self, objects: &[Object]) -> Object {
         let mut ret = Object::Nil;
         for obj in objects.iter().rev() {
@@ -226,6 +240,15 @@ impl Gc {
         }
         ret
     }
+
+    pub fn listn_src (&mut self, objects: &[Object], src: Object) -> Object {
+        let mut ret = Object::Nil;
+        for obj in objects.iter().rev() {
+            ret = self.cons_src(*obj, ret, src);
+        }
+        ret
+    }
+
 
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);

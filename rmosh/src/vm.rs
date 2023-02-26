@@ -269,6 +269,7 @@ impl Vm {
     }
 
     fn load_compiler(&mut self) -> error::Result<Object> {
+        
         let mut fasl = FaslReader::new(compiler::U8_ARRAY);
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)

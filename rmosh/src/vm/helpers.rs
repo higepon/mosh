@@ -237,7 +237,7 @@ impl Vm {
                         let proc = closure.src.cdr_unchecked();
                         let location = closure.src.car_unchecked();
                         if location.is_false() {
-                            eprintln!("{}: <unknown location>", "todo:procedure name")
+                            eprintln!("{}: <unknown location>", proc)
                         } else {
                             let file = location.car_unchecked();
                             let lineno = location.cdr_unchecked().car_unchecked();

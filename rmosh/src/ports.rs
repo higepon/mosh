@@ -28,16 +28,18 @@ pub trait OutputPort: Port {
 
 // Trait for TextInputPort.
 pub trait TextInputPort {
-    // The only methods you have to implement.
+    // The methods you have to implement.
     fn read_to_string(&mut self, str: &mut String) -> io::Result<usize>;
     fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize>;
     fn read_char(&mut self) -> Option<char>;
     fn ahead_char(&self) -> Option<char>;
     fn set_ahead_char(&mut self, c: Option<char>);
+    fn input_src(&self) -> String;
 
     fn read_line(&mut self, str: &mut String) -> io::Result<usize>;
     fn set_parsed(&mut self, obj: Object);
     fn parsed(&self) -> Object;
+
 
     // (read ...)
     // LALRPOP doesn't support multiple calls of parse.
@@ -61,7 +63,7 @@ pub trait TextInputPort {
             let chars: Vec<char> = s.chars().collect();
             // Whether if we found #1# style.
             let mut shared_map: HashMap<u32, Object> = HashMap::new();
-            match DatumParser::new().parse(gc, &mut shared_map, lexer::Lexer::new(&chars)) {
+            match DatumParser::new().parse(gc, &mut shared_map, &self.input_src(), lexer::Lexer::new(&chars)) {
                 Ok(parsed) => {
                     if shared_map.len() > 0 {
                         self.link_shared(gc, &shared_map, parsed);
@@ -200,6 +202,9 @@ impl TextInputPort for StdInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         io::stdin().read_to_string(str)
     }
+    fn input_src(&self) -> String {
+        "#<stdin>".to_string()
+    }
     fn read_char(&mut self) -> Option<char> {
         match self.ahead_char {
             Some(c) => {
@@ -303,6 +308,10 @@ impl Port for FileInputPort {
 impl TextInputPort for FileInputPort {
     fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
         self.reader.read_to_string(str)
+    }
+
+    fn input_src(&self) -> String {
+        format!("{:?}", self.reader.get_ref())
     }
 
     fn ahead_char(&self) -> Option<char> {
@@ -413,6 +422,10 @@ impl TextInputPort for StringInputPort {
         str.push_str(&self.source);
         Ok(self.source.len())
     }
+
+    fn input_src(&self) -> String {
+        "#<string-input-port>".to_string()
+    }   
 
     fn ahead_char(&self) -> Option<char> {
         self.ahead_char
