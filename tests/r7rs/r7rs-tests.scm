@@ -845,7 +845,7 @@
   (test #t (if (and (<= a j) (< j (+ j 1)))
                (not (<= (+ j 1) a))
                #t)))
-(car 3)
+
 (test #t (zero? 0))
 (test #t (zero? 0.0))
 (test #t (zero? 0.0+0.0i))
