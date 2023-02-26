@@ -325,7 +325,7 @@ impl Object {
         if let Self::Pair(p) = self {
             p
         } else {
-            panic!("Not a Object::Pair")
+            panic!("Not a Object::Pair but got {}", self)
         }
     }
     pub fn to_continuation_stack(self) -> GcRef<ContinuationStack> {

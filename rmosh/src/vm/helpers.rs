@@ -233,26 +233,30 @@ impl Vm {
                 }
                 Object::Closure(closure) => {
                     eprint!("    {}. ", i);
-                    if closure.src.is_false() {
-                        eprintln!("{}: <unknown location>", "todo:procedure name")
-                    } else {
+                    if closure.src.is_pair() {
                         let proc = closure.src.cdr_unchecked();
-                        let file = closure.src.car_unchecked().car_unchecked();
-                        let lineno = closure.src.car_unchecked().cdr_unchecked().car_unchecked();
-                        // anonymous procedure
-                        let proc_name = proc.car_unchecked();
-                        if proc_name == self.gc.symbol_intern("lambda") {
-                            // format source information to follwing style
-                            // (lambda (arg1 arg2 arg3) ...)
-                            let args = proc.cdr_unchecked();
-                            let body = self.gc.symbol_intern("...");
-                            let proc_src = self.gc.listn(&[proc_name, args, body]);
-                            eprintln!("{}:  {}:{}", proc_src, file, lineno);
+                        let location = closure.src.car_unchecked();
+                        if location.is_false() {
+                            eprintln!("{}: <unknown location>", "todo:procedure name")
                         } else {
-                            eprintln!("{}:  {}:{}", proc_name, file, lineno);
+                            let file = location.car_unchecked();
+                            let lineno = location.cdr_unchecked().car_unchecked();
+                            // anonymous procedure
+                            let proc_name = proc.car_unchecked();
+                            if proc_name == self.gc.symbol_intern("lambda") {
+                                // format source information to follwing style
+                                // (lambda (arg1 arg2 arg3) ...)
+                                let args = proc.cdr_unchecked();
+                                let body = self.gc.symbol_intern("...");
+                                let proc_src = self.gc.listn(&[proc_name, args, body]);
+                                eprintln!("{}:  {}:{}", proc_src, file, lineno);
+                            } else {
+                                eprintln!("{}:  {}:{}", proc_name, file, lineno);
+                            }
                         }
+
+                        i += 1;
                     }
-                    i += 1;
                 }
                 _ => (),
             }
