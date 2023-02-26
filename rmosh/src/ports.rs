@@ -270,22 +270,24 @@ pub struct FileInputPort {
     pub reader: BufReader<File>,
     is_closed: bool,
     ahead_char: Option<char>,
+    path: String,
     pub parsed: Object,
 }
 
 impl FileInputPort {
-    fn new(file: File) -> Self {
+    fn new(file: File, path: &str) -> Self {
         FileInputPort {
             header: GcHeader::new(ObjectType::FileInputPort),
             reader: BufReader::new(file),
             is_closed: false,
             ahead_char: None,
+            path: path.to_string(),
             parsed: Object::Unspecified,
         }
     }
     pub fn open(path: &str) -> std::io::Result<FileInputPort> {
         let file = File::open(path)?;
-        Ok(FileInputPort::new(file))
+        Ok(FileInputPort::new(file, path))
     }
 }
 
@@ -311,7 +313,7 @@ impl TextInputPort for FileInputPort {
     }
 
     fn input_src(&self) -> String {
-        format!("{:?}", self.reader.get_ref())
+        self.path.to_string()
     }
 
     fn ahead_char(&self) -> Option<char> {
