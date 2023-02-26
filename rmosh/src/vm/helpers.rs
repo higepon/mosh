@@ -279,6 +279,9 @@ impl Vm {
             } else {
                 break;
             }
+            if i > 20 {
+                break;
+            }
         }
     }
 }
