@@ -254,13 +254,16 @@ impl Vm {
 
         display.prev = self.dc;
         let free_vars = default_free_vars(&mut self.gc);
+
+        let top_level = self.gc.symbol_intern("<top-level>");
+        let src = self.gc.list2(Object::False, top_level);
         self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
             null(),
             0,
             0,
             false,
             free_vars,
-            Object::False,
+            src,
         )));
         self.dc = Object::Closure(display);
     }
