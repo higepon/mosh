@@ -40,6 +40,21 @@ pub enum ReadError {
     },
 }
 
+pub fn count_lineno(content: &str, position: usize) -> usize {
+    let chars: Vec<char> = content.chars().collect();
+    let mut lineno: usize = 1;
+    for i in 0..chars.len() {
+        if i == position {
+            break;
+        }
+        let ch = chars[i];
+        if ch == '\n' {
+            lineno+=1;
+        }
+    }
+    lineno
+}
+
 pub fn read_number(
     gc: &mut Box<Gc>,
     s: &str,

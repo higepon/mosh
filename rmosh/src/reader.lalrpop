@@ -2,10 +2,11 @@ use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
 use crate::reader_util::ReadError;
+use crate::reader_util::count_lineno;
 use crate::reader_util;
 use std::collections::HashMap;
 
-grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<u32, Object>, input_src: &str);
+grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<u32, Object>, input_src: &str, content: &str);
 
 // R7RS small 7.1.2. External representations
 pub Datum: Object = {
@@ -39,35 +40,41 @@ SimpleDatum: Object = {
 }
 
 List: Object = {
-    "(" <objects: Datum *> ")" => {
+    <lo:@L> "(" <objects: Datum *> ")" => {
         let file = gc.new_string(input_src);
-        let src = gc.list2(file, Object::Fixnum(1234));
+        let lineno = count_lineno(content, lo);
+        let src = gc.list2(file, Object::Fixnum(lineno as isize));
         gc.listn_src(&objects, src)
     },
-    "(" <objects: Datum *> "#;" Datum ")" => {
+    <lo:@L> "(" <objects: Datum *> "#;" Datum ")" => {
         let file = gc.new_string(input_src);
-        let src = gc.list2(file, Object::Fixnum(1235));
+        let lineno = count_lineno(content, lo);        
+        let src = gc.list2(file, Object::Fixnum(lineno as isize));
         gc.listn_src(&objects, src)
     },
     // TODO: There should be a better way to skip datum comment.
-    "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => {
+    <lo:@L> "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => {
         let file = gc.new_string(input_src);
-        let src = gc.list2(file, Object::Fixnum(1236));
+        let lineno = count_lineno(content, lo);        
+        let src = gc.list2(file, Object::Fixnum(lineno as isize));
         gc.listn_src(&objects, src)
     },
-    "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => {
+    <lo:@L> "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => {
         let file = gc.new_string(input_src);
-        let src = gc.list2(file, Object::Fixnum(1237));
+        let lineno = count_lineno(content, lo);        
+        let src = gc.list2(file, Object::Fixnum(lineno as isize));
         gc.listn_src(&objects, src)
     },
-    "(" <objects: Datum +> "." <last: Datum> "#;" Datum ")" => {
+    <lo:@L> "(" <objects: Datum +> "." <last: Datum> "#;" Datum ")" => {
         let file = gc.new_string(input_src);
-        let src = gc.list2(file, Object::Fixnum(1238));
+        let lineno = count_lineno(content, lo);        
+        let src = gc.list2(file, Object::Fixnum(lineno as isize));
         gc.dot_pair_src(&objects, last, src)
     },
-    "(" <objects: Datum +> "." <last: Datum> ")" => {
+    <lo:@L> "(" <objects: Datum +> "." <last: Datum> ")" => {
         let file = gc.new_string(input_src);
-        let src = gc.list2(file, Object::Fixnum(1239));
+        let lineno = count_lineno(content, lo);        
+        let src = gc.list2(file, Object::Fixnum(lineno as isize));
         gc.dot_pair_src(&objects, last, src)
     }
 }
