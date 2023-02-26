@@ -34,22 +34,10 @@ impl Vm {
         self.gc.mark_object(self.current_error_port);
         self.gc.mark_object(self.current_output_port);
 
-        for &compiled in &self.compiled_programs {
-            self.gc.mark_object(compiled);
-        }
-
-        for &obj in &self.trigger0_code {
-            self.gc.mark_object(obj);
-        }
-
-        for eval_code in &self.eval_code_array {
+        for eval_code in &self.dynamic_code_array {
             for obj in eval_code {
                 self.gc.mark_object(*obj);
             }
-        }
-
-        for &obj in &self.eval_ret_code {
-            self.gc.mark_object(obj);
         }
 
         for &obj in &self.call_by_name_code {
@@ -58,6 +46,7 @@ impl Vm {
 
         self.gc.mark_object(self.saved_registers.ac);
         self.gc.mark_object(self.saved_registers.dc);
+        self.gc.mark_object(self.saved_registers.cl);
 
         self.gc.mark_object(self.closure_for_evaluate);
 

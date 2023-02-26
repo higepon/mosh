@@ -4,7 +4,8 @@ use rmosh::{
     gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    ports::{ReadError, StringInputPort, TextInputPort},
+    ports::{StringInputPort, TextInputPort},
+    reader_util::ReadError,
     vm::Vm,
 };
 
@@ -43,7 +44,7 @@ fn test_ops_with_size(vm: &mut Vm, ops: Vec<Object>, expected: Object, expected_
     // Keep reference so that it won't be freed.
     vm.expected = expected;
 
-    let ret = vm.run(ops.as_ptr(), ops.len());
+    let ret = vm.run(ops.as_ptr(), ops.len()).unwrap();
     // Remove reference to ret.
     vm.ac = Object::Unspecified;
     vm.mark_and_sweep();
@@ -2432,10 +2433,10 @@ fn test_compiler2() {
         Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
-    let ret = vm.run(ops.as_ptr(), ops.len());
+    let ret = vm.run(ops.as_ptr(), ops.len()).unwrap();
     match ret {
         Object::Vector(v) => {
-            let ret = vm.run(v.data.as_ptr(), v.data.len());
+            let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
             vm.expected = Object::Fixnum(141);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
@@ -2466,10 +2467,10 @@ fn test_compiler() {
         Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
-    let ret = vm.run(ops.as_ptr(), ops.len());
+    let ret = vm.run(ops.as_ptr(), ops.len()).unwrap();
     match ret {
         Object::Vector(v) => {
-            let ret = vm.run(v.data.as_ptr(), v.data.len());
+            let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
             vm.expected = Object::Fixnum(121);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;
@@ -2506,10 +2507,10 @@ fn test_compiler3() {
         Object::Fixnum(1),
         Object::Instruction(Op::Halt),
     ];
-    let ret = vm.run(ops.as_ptr(), ops.len());
+    let ret = vm.run(ops.as_ptr(), ops.len()).unwrap();
     match ret {
         Object::Vector(v) => {
-            let ret = vm.run(v.data.as_ptr(), v.data.len());
+            let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
             vm.expected = Object::Fixnum(3);
             // Remove reference to ret.
             vm.ac = Object::Unspecified;

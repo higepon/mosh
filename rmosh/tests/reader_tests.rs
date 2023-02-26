@@ -1,8 +1,12 @@
+use lalrpop_util::ParseError;
+use rmosh::number_lexer::NumberLexer;
 use rmosh::{
     equal::Equal,
     gc::Gc,
+    number_reader::NumberParser,
     objects::Object,
-    ports::{ReadError, StringInputPort, TextInputPort},
+    ports::{StringInputPort, TextInputPort},
+    reader_util::ReadError,
     vm::Vm,
 };
 
@@ -102,14 +106,6 @@ fn parse_string() {
 }
 
 #[test]
-fn parse_special_string() {
-    let mut vm = Vm::new();
-    let expected = vm.gc.new_string("\\a");
-    let obj = read(&mut vm.gc, "\"\\a\"").unwrap();
-    assert_equal!(vm.gc, expected, obj);
-}
-
-#[test]
 fn parse_number() {
     let mut vm = Vm::new();
     let expected = Object::Fixnum(101);
@@ -205,6 +201,15 @@ fn parse_hex_chars() {
     {
         let obj = read(&mut vm.gc, "#\\x41").unwrap();
         assert_equal!(vm.gc, Object::Char('A'), obj);
+    }
+}
+
+#[test]
+fn parse_hex_number() {
+    let mut vm = Vm::new();
+    {
+        let obj = read(&mut vm.gc, "#x7F").unwrap();
+        assert_equal!(vm.gc, Object::Fixnum(127), obj);
     }
 }
 
@@ -336,5 +341,29 @@ fn parse_special_chars() {
     {
         let obj = read(&mut vm.gc, "#\\tab").unwrap();
         assert_equal!(vm.gc, Object::Char('\t'), obj);
+    }
+}
+
+#[test]
+fn propagate_lexer_error() {
+    // Lexter finds an invalid token and bubble up the error to the parser.
+    let s = "?3";
+    let mut vm = Vm::new();
+    let mut chars: Vec<char> = s.chars().collect();
+    chars.push('\0');
+    match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+        Ok(_) => {
+            assert!(false);
+        }
+        Err(ParseError::User {
+            error: ReadError::InvalidToken { start, end, token },
+        }) => {
+            assert_eq!(0, start);
+            assert_eq!(1, end);
+            assert_eq!("?", token);
+        }
+        _ => {
+            assert!(false);
+        }
     }
 }

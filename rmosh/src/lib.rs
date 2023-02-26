@@ -1,6 +1,7 @@
 pub mod alloc;
 pub mod compiler;
 pub mod equal;
+pub mod error;
 pub mod fasl;
 pub mod gc;
 pub mod lexer;
@@ -12,7 +13,9 @@ pub mod objects;
 pub mod op;
 pub mod ports;
 pub mod procs;
+pub mod procs_util;
 pub mod psyntax;
+pub mod reader_util;
 pub mod vm;
 
 #[macro_use]

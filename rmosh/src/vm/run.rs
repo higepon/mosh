@@ -1,5 +1,6 @@
 use crate::{
     equal::Equal,
+    error,
     numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
@@ -8,8 +9,21 @@ use crate::{
 
 use super::{Vm, MAX_NUM_VALUES};
 
+// Raise an exception or exit with the exception raised in Scheme world.
+// In R7RS mode we raise the exception in Scheme worled.
+// Otherwise print the exception and exit.
+#[macro_export]
+macro_rules! raise_or_exit {
+    ($self:ident, $call:expr) => {{
+        match $call {
+            Ok(_) => Object::Unspecified,
+            Err(e) => $self.assertion_violation_err(e)?,
+        };
+    }};
+}
+
 impl Vm {
-    pub fn run(&mut self, ops: *const Object, ops_len: usize) -> Object {
+    pub fn run(&mut self, ops: *const Object, ops_len: usize) -> error::Result<Object> {
         if !self.is_initialized {
             self.sp = self.stack.as_mut_ptr();
             self.fp = self.sp;
@@ -18,7 +32,7 @@ impl Vm {
             self.initialize_free_vars(ops, ops_len);
 
             // Load the base library.
-            self.load_compiler();
+            self.load_compiler()?;
             self.is_initialized = true;
         }
         // Run the program.
@@ -29,7 +43,7 @@ impl Vm {
         ret
     }
 
-    pub(super) fn run_ops(&mut self, ops: *const Object) -> Object {
+    pub(super) fn run_ops(&mut self, ops: *const Object) -> error::Result<Object> {
         self.pc = ops;
         loop {
             let op: Op = unsafe { *self.pc }.to_instruction();
@@ -102,7 +116,7 @@ impl Vm {
                 }
                 Op::Call => {
                     let argc = self.isize_operand();
-                    self.call_op(argc);
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::Apply => todo!(),
                 Op::Push => {
@@ -166,7 +180,7 @@ impl Vm {
                     }
                 },
                 Op::Car => {
-                    self.car_op();
+                    self.car_op()?;
                 }
                 Op::Cdar => match self.ac {
                     Object::Pair(pair) => match pair.car {
@@ -407,7 +421,7 @@ impl Vm {
                         port = self.ac;
                     }
                     match port {
-                        Object::FileInputPort(mut port) => match port.read(&mut self.gc) {
+                        Object::FileInputPort(mut p) => match p.read(&mut self.gc) {
                             Ok(obj) => {
                                 self.set_return_value(obj);
                             }
@@ -415,8 +429,16 @@ impl Vm {
                                 panic!("read: error {:?}", err)
                             }
                         },
+                        Object::StringInputPort(mut p) => match p.read(&mut self.gc) {
+                            Ok(obj) => {
+                                self.set_return_value(obj);
+                            }
+                            Err(err) => {
+                                self.raise_read_error("read", &format!("{:?}", err), port)?;
+                            }
+                        },
                         _ => {
-                            panic!("read: input port required but got {}", port)
+                            self.raise_read_error("read", "input port required", port)?;
                         }
                     }
                 }
@@ -693,7 +715,7 @@ impl Vm {
                     self.frame_op();
                 }
                 Op::CarPush => {
-                    self.car_op();
+                    self.car_op()?;
                     self.push_op();
                 }
                 Op::CdrPush => {
@@ -716,7 +738,7 @@ impl Vm {
                     let symbol = self.symbol_operand();
                     let argc = self.isize_operand();
                     self.refer_global_op(symbol);
-                    self.call_op(argc);
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::ReferFreePush => {
                     let n = self.usize_operand();
@@ -764,7 +786,7 @@ impl Vm {
                     let n = self.usize_operand();
                     let argc = self.isize_operand();
                     self.refer_free_op(n);
-                    self.call_op(argc);
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::ReferGlobalPush => {
                     let symbol = self.symbol_operand();
@@ -776,7 +798,7 @@ impl Vm {
                     let n = self.isize_operand();
                     let argc = self.isize_operand();
                     self.refer_local_op(n);
-                    self.call_op(argc);
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::LocalCall => {
                     let argc = self.isize_operand();
@@ -785,8 +807,7 @@ impl Vm {
                     match self.ac {
                         Object::Closure(c) => {
                             self.dc = self.ac;
-                            // todo
-                            //self.cl = self.ac;
+                            self.cl = self.ac;
                             self.pc = c.ops;
                             self.fp = self.dec(self.sp, argc);
                         }
@@ -833,7 +854,7 @@ impl Vm {
                     let diff = self.isize_operand();
                     self.sp = self.shift_args_to_bottom(self.sp, depth, diff);
                     let argc = depth;
-                    self.call_op(argc);
+                    raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::LocalTailCall => {
                     let depth = self.isize_operand();
@@ -842,6 +863,7 @@ impl Vm {
                     let closure = self.ac.to_closure();
                     let argc = depth;
                     self.dc = self.ac;
+                    self.cl = self.ac;
                     self.pc = closure.ops;
                     self.fp = self.dec(self.sp, argc);
                 }
@@ -849,7 +871,13 @@ impl Vm {
             self.print_vm(op);
             //self.pc = self.jump(self.pc, 1);
         }
-        self.ac
+        Ok(self.ac)
+    }
+
+    pub fn print_stack(&self) {
+        for i in 0..self.stack_len() {
+            println!("{}", self.stack[i].to_short_string());
+        }
     }
 
     #[cfg(feature = "debug_log_vm")]

@@ -12,14 +12,15 @@ mod ops;
 mod run;
 
 use crate::{
-    compiler,
+    compiler, error,
     fasl::FaslReader,
     gc::{Gc, GcRef},
     objects::{Closure, Object, Symbol},
     op::Op,
-    ports::{ReadError, StdErrorPort, StdOutputPort, TextInputPort},
+    ports::{StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
     procs::default_free_vars,
     psyntax,
+    reader_util::ReadError,
 };
 
 const STACK_SIZE: usize = 65536;
@@ -28,6 +29,7 @@ const MAX_NUM_VALUES: usize = 256;
 struct Registers {
     pub ac: Object,
     pub dc: Object,
+    pub cl: Object,
     pub pc: *const Object,
     pub sp_offset: isize,
     pub fp_offset: isize,
@@ -38,6 +40,7 @@ impl Registers {
         Self {
             ac: Object::Unspecified,
             dc: Object::Unspecified,
+            cl: Object::Unspecified,
             pc: null(),
             sp_offset: 0,
             fp_offset: 0,
@@ -53,6 +56,8 @@ pub struct Vm {
     stack: Vec<Object>,
     // accumulator register.
     pub ac: Object,
+    // current closure register, used for profiler.
+    cl: Object,
     // display closure register.
     dc: Object,
     // expected register to retain expected value for tests.
@@ -74,11 +79,7 @@ pub struct Vm {
     is_initialized: bool,
     pub rtds: HashMap<Object, Object>,
     pub should_load_compiler: bool,
-    pub compiled_programs: Vec<Object>,
-    pub trigger0_code: Vec<Object>,
-    pub eval_code_array: Vec<Vec<Object>>,
-    pub eval_ret_code: Vec<Object>,
-    pub ret_code: Vec<Object>,
+    pub dynamic_code_array: Vec<Vec<Object>>,
     pub call_by_name_code: Vec<Object>,
     pub closure_for_evaluate: Object,
     current_input_port: Object,
@@ -96,6 +97,7 @@ impl Vm {
             stack: vec![Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
+            cl: Object::Unspecified,
             expected: Object::Unspecified,
             pc: null_mut(),
             sp: null_mut(),
@@ -103,17 +105,13 @@ impl Vm {
             globals: HashMap::new(),
             lib_compiler: vec![],
             lib_psyntax: vec![],
-            dynamic_winders: Object::Unspecified,
+            dynamic_winders: Object::Nil,
             num_values: 0,
             values: [Object::Unspecified; MAX_NUM_VALUES],
             rtds: HashMap::new(),
             should_load_compiler: false,
             is_initialized: false,
-            compiled_programs: vec![],
-            trigger0_code: vec![],
-            eval_code_array: vec![],
-            eval_ret_code: vec![],
-            ret_code: vec![],
+            dynamic_code_array: vec![],
             call_by_name_code: vec![],
             closure_for_evaluate: Object::Unspecified,
             current_input_port: Object::Unspecified,
@@ -123,13 +121,7 @@ impl Vm {
         };
         ret.current_output_port = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
         ret.current_error_port = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
-        ret.trigger0_code.push(Object::Instruction(Op::Constant));
-        ret.trigger0_code.push(Object::Unspecified);
-        ret.trigger0_code.push(Object::Instruction(Op::Call));
-        ret.trigger0_code.push(Object::Fixnum(0));
-        ret.trigger0_code.push(Object::Instruction(Op::Return));
-        ret.trigger0_code.push(Object::Fixnum(0));
-        ret.trigger0_code.push(Object::Instruction(Op::Halt));
+        ret.current_input_port = Object::StdInputPort(ret.gc.alloc(StdInputPort::new()));
 
         ret.call_by_name_code.push(Object::Instruction(Op::Frame));
         ret.call_by_name_code.push(Object::Fixnum(8));
@@ -147,11 +139,8 @@ impl Vm {
         ret
     }
 
-    pub fn enable_r7rs(&mut self, args: Object) -> Object {
-        let mut fasl = FaslReader {
-            bytes: psyntax::U8_ARRAY,
-            shared_objects: &mut HashMap::new(),
-        };
+    pub fn enable_r7rs(&mut self, args: Object) -> error::Result<Object> {
+        let mut fasl = FaslReader::new(psyntax::U8_ARRAY);
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
             // Global variables.
@@ -265,22 +254,23 @@ impl Vm {
 
         display.prev = self.dc;
         let free_vars = default_free_vars(&mut self.gc);
+
+        let top_level = self.gc.symbol_intern("<top-level>");
+        let src = self.gc.list2(Object::False, top_level);
         self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
             null(),
             0,
             0,
             false,
             free_vars,
-            Object::False,
+            src,
         )));
         self.dc = Object::Closure(display);
     }
 
-    fn load_compiler(&mut self) -> Object {
-        let mut fasl = FaslReader {
-            bytes: compiler::U8_ARRAY,
-            shared_objects: &mut HashMap::new(),
-        };
+    fn load_compiler(&mut self) -> error::Result<Object> {
+        
+        let mut fasl = FaslReader::new(compiler::U8_ARRAY);
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)
         } else {

@@ -1,6 +1,7 @@
 use crate::{
     gc::GcRef,
     objects::{Object, Symbol},
+    op::Op,
     vm::Vm,
 };
 
@@ -20,8 +21,8 @@ impl Vm {
                 panic!("not fp pointer but {}", obj)
             }
         }
-        // TODO: Take care of cl register.
-        // self.cl = index(sp, 1);
+
+        self.cl = self.index(sp, 1);
         self.dc = self.index(sp, 2);
         match self.index(sp, 3) {
             Object::ProgramCounter(next_pc) => {
@@ -67,8 +68,7 @@ impl Vm {
     pub(super) fn make_frame(&mut self, next_pc: *const Object) {
         self.push(Object::ProgramCounter(next_pc));
         self.push(self.dc);
-        // TODO: This should be cl register.
-        self.push(self.dc);
+        self.push(self.cl);
         self.push(Object::ObjectPointer(self.fp));
     }
 
@@ -169,6 +169,7 @@ impl Vm {
 
         self.saved_registers.ac = self.ac;
         self.saved_registers.dc = self.dc;
+        self.saved_registers.cl = self.cl;
         self.saved_registers.pc = self.pc;
         self.saved_registers.sp_offset = unsafe { self.sp.offset_from(self.stack.as_ptr()) };
         self.saved_registers.fp_offset = unsafe { self.fp.offset_from(self.stack.as_ptr()) };
@@ -177,6 +178,7 @@ impl Vm {
     pub(super) fn restore_registers(&mut self) {
         self.ac = self.saved_registers.ac;
         self.dc = self.saved_registers.dc;
+        self.cl = self.saved_registers.cl;
         self.pc = self.saved_registers.pc;
         self.sp = unsafe {
             self.stack
@@ -189,5 +191,94 @@ impl Vm {
                 .offset(self.saved_registers.fp_offset)
         };
         self.saved_registers.ac = Object::Unspecified;
+    }
+
+    // We have to alocate (return n) code dymaically because recursive calls can happen.
+    pub(super) fn allocate_return_code(&mut self, argc: isize) -> *const Object {
+        self.dynamic_code_array.push(vec![]);
+        let code = self.dynamic_code_array.last_mut().unwrap();
+        code.push(Object::Instruction(Op::Return));
+        code.push(Object::Fixnum(argc));
+        code.as_ptr()
+    }
+
+    pub(super) fn allocate_code(&mut self, src: &Vec<Object>) -> *const Object {
+        self.dynamic_code_array.push(vec![]);
+        let code = self.dynamic_code_array.last_mut().unwrap();
+        for obj in src.iter() {
+            code.push(*obj);
+        }
+        code.as_ptr()
+    }
+
+    pub fn show_stack_trace(&mut self) {
+        eprintln!(" Stack trace:");
+        let mut i = 1;
+        let mut fp = self.fp;
+        let mut cl = self.cl;
+        // ======================
+        //          pc*
+        // ======================
+        //          dc
+        // ======================
+        //          cl
+        // ======================
+        //          fp
+        // ======== sp ==========
+        loop {
+            match cl {
+                Object::Procedure(proc) => {
+                    eprintln!("    {}. {}: <subr>", i, proc.name);
+                    i += 1;
+                }
+                Object::Closure(closure) => {
+                    if closure.src.is_pair() {
+                        eprint!("    {}. ", i);                        
+                        let proc = closure.src.cdr_unchecked();
+                        let location = closure.src.car_unchecked();
+                        if location.is_false() {
+                            eprintln!("{}: <unknown location>", proc)
+                        } else {
+                            let file = location.car_unchecked();
+                            let lineno = location.cdr_unchecked().car_unchecked();
+                            // anonymous procedure
+                            let proc_name = proc.car_unchecked();
+                            if proc_name == self.gc.symbol_intern("lambda") {
+                                // format source information to follwing style
+                                // (lambda (arg1 arg2 arg3) ...)
+                                let args = proc.cdr_unchecked();
+                                let body = self.gc.symbol_intern("...");
+                                let proc_src = self.gc.listn(&[proc_name, args, body]);
+                                eprintln!("{}:  {}:{}", proc_src, file, lineno);
+                            } else {
+                                eprintln!("{}:  {}:{}", proc_name, file, lineno);
+                            }
+                        }
+                        i += 1;
+                    }
+                }
+                _ => (),
+            }
+            if fp > self.stack.as_mut_ptr() {
+                const CL_OFFSET: isize = 2;
+                const FP_OFFSET: isize = 1;
+                cl = unsafe { *self.dec(fp, CL_OFFSET) };
+
+                if !cl.is_closure() && !cl.is_proecdure() {
+                    break;
+                }
+
+                let next_fp = self.dec(fp, FP_OFFSET);
+                let next_fp_obj = unsafe { *next_fp };
+                match next_fp_obj {
+                    Object::ObjectPointer(pointer) => fp = pointer,
+                    _ => {
+                        panic!("object pointer expected but got {}", next_fp_obj)
+                    }
+                };
+            } else {
+                break;
+            }
+        }
     }
 }

@@ -1,31 +1,56 @@
-#[derive(Clone, Debug, PartialEq)]
+use crate::reader_util::{read_string, ReadError};
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token {
     AbbrevQuasiquote,
+    AbbrevQuasisyntax,
     AbbrevQuote,
+    AbbrevSyntax,
     AbbrevUnquote,
     AbbrevUnquoteSplicing,
-    AbbrevQuasisyntax,
-    AbbrevSyntax,
     AbbrevUnsyntax,
     AbbrevUnsyntaxSplicing,
+    BinDigit { value: String },
+    ByteVectorStart,
     Character { value: char },
     DatumComment,
+    DefinedShared { value: String },
+    DefiningShared { value: String },
+    Digit { value: String },
     Dot,
+    Exact,
+    Exponent { value: String },
     False,
+    HexDigit { value: String },
     Identifier { value: String },
+    Imag,
+    Inexact,
     LeftParen,
+    Minus,
+    MinusInf,
+    MinusNan,
     Number10 { value: String },
     Number16 { value: String },
-    RightParen,
+    Number8 { value: String },
+    Number2 { value: String },
+    OctDigit { value: String },
+    Plus,
+    PlusInf,
+    PlusNan,
+    Radix10,
+    Radix16,
+    Radix2,
+    Radix8,
     Regexp { value: String },
+    RightParen,
+    Slash,
     String { value: String },
     True,
-    ByteVectorStart,
     VectorStart,
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, LexicalError>;
+pub type LexerItem = Spanned<Token, usize, ReadError>;
 
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {
@@ -34,6 +59,7 @@ pub struct Lexer<'input> {
     pub marker: usize,
     pub limit: usize,
     pub tok: usize,
+    pub(super) is_fold_case: bool,
 }
 
 // TODO:
@@ -46,6 +72,7 @@ impl<'input> Lexer<'input> {
             marker: 0,
             tok: 0,
             limit: input.len() - 1,
+            is_fold_case: false,
         }
     }
 
@@ -55,12 +82,26 @@ impl<'input> Lexer<'input> {
     }
 
     pub fn extract_token(&self) -> String {
-        self.s[self.tok..self.cursor].iter().collect()
+        let token: String = self.s[self.tok..self.cursor].iter().collect();
+        if self.is_fold_case {
+            token.to_ascii_lowercase()
+        } else {
+            token
+        }
     }
 
     pub fn extract_character(&self) -> char {
         // Actual character is at index = 2 #\a.
         self.s[self.tok + 2]
+    }
+
+    pub fn extract_defining_shared(&self) -> String {
+        self.s[self.tok + 1..self.cursor - 1].iter().collect()
+    }
+
+    pub fn extract_defined_shared(&self) -> String {
+        // #33#
+        self.s[self.tok + 1..self.cursor - 1].iter().collect()
     }
 
     pub fn extract_hex_character(&self) -> char {
@@ -81,18 +122,12 @@ impl<'input> Lexer<'input> {
 
     pub fn extract_string(&self) -> String {
         // Remove double quotes.
-        self.s[self.tok + 1..self.cursor - 1].iter().collect()
+        let s: String = self.s[self.tok + 1..self.cursor - 1].iter().collect();
+        read_string(&s)
     }
 
     pub fn extract_regexp(&self) -> String {
         // Remove #/ and /
         self.s[self.tok + 2..self.cursor - 1].iter().collect()
     }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct LexicalError {
-    pub start: usize,
-    pub end: usize,
-    pub token: String,
 }

@@ -845,7 +845,7 @@
   (test #t (if (and (<= a j) (< j (+ j 1)))
                (not (<= (+ j 1) a))
                #t)))
-
+(car 3)
 (test #t (zero? 0))
 (test #t (zero? 0.0))
 (test #t (zero? 0.0+0.0i))
@@ -1640,8 +1640,9 @@
 
 (test 7 (apply + (list 3 4)))
 (test 7 (apply + 3 4 (list)))
-#|
+
 (test-error (apply +)) ;; not enough args
+
 (test-error (apply + 3)) ;; final arg not a list
 (test-error (apply + 3 4)) ;; final arg not a list
 (test-error (apply + '(2 3 . 4))) ;; final arg is improper
@@ -1802,6 +1803,7 @@
 
 (test #f
     (file-error? (guard (exn (else exn)) (error "BOOM!"))))
+
 (test #t
     (file-error? (guard (exn (else exn)) (open-input-file " no such file "))))
 
@@ -2322,6 +2324,7 @@
 (test-numeric-syntax "#i1" 1.0 "1.0" "1.")
 (test-numeric-syntax "#I1" 1.0 "1.0" "1.")
 (test-numeric-syntax "#i-1" -1.0 "-1.0" "-1.")
+
 ;; Decimal
 (test-numeric-syntax "1.0" 1.0 "1.0" "1.")
 (test-numeric-syntax "1." 1.0 "1.0" "1.")
@@ -2334,6 +2337,7 @@
 (test-numeric-syntax "#e1.0" 1 "1")
 (test-numeric-syntax "#e-.0" 0 "0")
 (test-numeric-syntax "#e-0." 0 "0")
+  
 ;; Decimal notation with suffix
 (test-numeric-syntax "1e2" 100.0 "100.0" "100.")
 (test-numeric-syntax "1E2" 100.0 "100.0" "100.")
@@ -2363,6 +2367,7 @@
 (test-numeric-syntax "0/10" 0 "0")
 (test-numeric-syntax "#e0/10" 0 "0")
 (test-numeric-syntax "#i3/2" (/ 3.0 2.0) "1.5")
+
 ;; Exact complex
 (test-numeric-syntax "1+2i" (make-rectangular 1 2))
 (test-numeric-syntax "1+2I" (make-rectangular 1 2) "1+2i")
@@ -2377,6 +2382,7 @@
 (test-numeric-syntax "0-1i" (make-rectangular 0 -1) "-i" "-1i" "0-i" "0-1i")
 (test-numeric-syntax "+2i" (make-rectangular 0 2) "2i" "+2i" "0+2i")
 (test-numeric-syntax "-2i" (make-rectangular 0 -2) "-2i" "0-2i")
+
 ;; Decimal-notation complex numbers (rectangular notation)
 (test-numeric-syntax "1.0+2i" (make-rectangular 1.0 2) "1.0+2.0i" "1.0+2i" "1.+2i" "1.+2.i")
 (test-numeric-syntax "1+2.0i" (make-rectangular 1 2.0) "1.0+2.0i" "1+2.0i" "1.+2.i" "1+2.i")
@@ -2389,6 +2395,7 @@
 ;; Mixed fractional/decimal notation complex numbers (rectangular notation)
 (test-numeric-syntax "0.5+3/4i" (make-rectangular 0.5 (/ 3 4))
   "0.5+0.75i" ".5+.75i" "0.5+3/4i" ".5+3/4i" "500.0e-3+750.0e-3i")
+
 ;; Complex NaN, Inf (rectangular notation)
 ;;(test-numeric-syntax "+nan.0+nan.0i" (make-rectangular the-nan the-nan) "+NaN.0+NaN.0i")
 (test-numeric-syntax "+inf.0+inf.0i" (make-rectangular +inf.0 +inf.0) "+Inf.0+Inf.0i")
@@ -2399,6 +2406,7 @@
 ;; Need to account for imprecision in write output.
 ;;(test-numeric-syntax "1@2" -0.416146836547142+0.909297426825682i "-0.416146836547142+0.909297426825682i")
 ;; Base prefixes
+
 (test-numeric-syntax "#x11" 17 "17")
 (test-numeric-syntax "#X11" 17 "17")
 (test-numeric-syntax "#d11" 11 "11")
@@ -2459,8 +2467,8 @@
            (eqv? n (string->number (car ls)))))))))
 
 (test-skip (test-precision "-1.7976931348623157e+308" "-inf.0"))
-(test-precision "4.940656458412465e-324" "4.94065645841247e-324" "5.0e-324" "0.0")
-(test-precision "9.881312916824931e-324" "9.88131291682493e-324" "1.0e-323" "0.0")
+(test-precision "4.940656458412465e-324" "4.94065645841247e-324" "5e-324" "5.0e-324" "0.0")
+(test-precision "9.881312916824931e-324" "9.88131291682493e-324" "1e-323" "1.0e-323" "0.0")
 (test-precision "1.48219693752374e-323" "1.5e-323" "0.0")
 (test-skip (test-precision "1.976262583364986e-323" "1.97626258336499e-323" "2.0e-323" "0.0"))
 (test-precision "2.470328229206233e-323" "2.47032822920623e-323" "2.5e-323" "0.0")
@@ -2537,10 +2545,9 @@
   (syntax-rules ()
     ((_ x) '_)))
 (test '_ (underscore4 1))
-
+#|
+(test-end)
 
 (test-end)
 |#
-(test-end)
-
 (test-results)

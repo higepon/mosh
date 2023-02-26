@@ -1,10 +1,12 @@
+use crate::error;
 use crate::gc::{Gc, GcRef};
 use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
-    BinaryFileInputPort, BinaryFileOutputPort, FileInputPort, FileOutputPort, StdErrorPort,
-    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort,
+    BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
+    FileInputPort, FileOutputPort, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
+    StringOutputPort, TextOutputPort,
 };
 use crate::vm::Vm;
 
@@ -20,15 +22,18 @@ pub enum Object {
     Bignum(GcRef<Bignum>),
     BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
-    ByteVector(GcRef<ByteVector>),
+    Bytevector(GcRef<Bytevector>),
+    BytevectorInputPort(GcRef<BytevectorInputPort>),
+    BytevectorOutputPort(GcRef<BytevectorOutputPort>),
     Char(char),
     Closure(GcRef<Closure>),
+    Compnum(GcRef<Compnum>),
     Continuation(GcRef<Continuation>),
     ContinuationStack(GcRef<ContinuationStack>),
-    Compnum(GcRef<Compnum>),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     False,
+    DefinedShared(u32),
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
     Fixnum(isize),
@@ -43,6 +48,7 @@ pub enum Object {
     Regexp(GcRef<Regexp>),
     SimpleStruct(GcRef<SimpleStruct>),
     StdErrorPort(GcRef<StdErrorPort>),
+    StdInputPort(GcRef<StdInputPort>),
     StdOutputPort(GcRef<StdOutputPort>),
     String(GcRef<SString>),
     StringInputPort(GcRef<StringInputPort>),
@@ -56,8 +62,16 @@ pub enum Object {
 
 impl Object {
     pub fn to_string(&self) -> String {
+        const SHARED_AWARE: bool = false;
         let mut port = StringOutputPort::new();
-        port.display(*self).ok();
+        port.display(*self, SHARED_AWARE).ok();
+        port.string()
+    }
+
+    pub fn to_string_ss(&self) -> String {
+        const SHARED_AWARE: bool = true;
+        let mut port = StringOutputPort::new();
+        port.display(*self, SHARED_AWARE).ok();
         port.string()
     }
 
@@ -91,6 +105,13 @@ impl Object {
         }
     }
 
+    pub fn is_bytevector(&self) -> bool {
+        match self {
+            Object::Bytevector(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_vox(&self) -> bool {
         match self {
             Object::Vox(_) => true,
@@ -117,6 +138,13 @@ impl Object {
             _ => false,
         }
     }
+
+    pub fn is_char(&self) -> bool {
+        match self {
+            Object::Char(_) => true,
+            _ => false,
+        }
+    }
     pub fn is_flonum(&self) -> bool {
         match self {
             Object::Flonum(_) => true,
@@ -132,6 +160,24 @@ impl Object {
     pub fn is_compnum(&self) -> bool {
         match self {
             Object::Compnum(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_proecdure(&self) -> bool {
+        match self {
+            Object::Procedure(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_object_pointer(&self) -> bool {
+        match self {
+            Object::ObjectPointer(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_closure(&self) -> bool {
+        match self {
+            Object::Closure(_) => true,
             _ => false,
         }
     }
@@ -162,10 +208,23 @@ impl Object {
         }
     }
 
-    pub fn is_input_port(&self) -> bool {
+    pub fn is_input_port(self) -> bool {
         match self {
-            Object::FileInputPort(_) => true,
-            Object::StringInputPort(_) => true,
+            Object::BinaryFileInputPort(_)
+            | Object::FileInputPort(_)
+            | Object::StdInputPort(_)
+            | Object::BytevectorInputPort(_)
+            | Object::StringInputPort(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_binary_port(self) -> bool {
+        match self {
+            Object::BinaryFileInputPort(_)
+            | Object::BinaryFileOutputPort(_)
+            | Object::BytevectorOutputPort(_)
+            | Object::BytevectorInputPort(_) => true,
             _ => false,
         }
     }
@@ -205,6 +264,14 @@ impl Object {
             panic!("Not a Object::Fixnum but {}", self)
         }
     }
+
+    pub fn to_char(self) -> char {
+        if let Self::Char(c) = self {
+            c
+        } else {
+            panic!("Not a Object::Char but {}", self)
+        }
+    }
     pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {
         if let Self::EqHashtable(e) = self {
             e
@@ -217,6 +284,13 @@ impl Object {
             fl
         } else {
             panic!("Not a Object::Flonum")
+        }
+    }
+    pub fn to_sstring(self) -> GcRef<SString> {
+        if let Self::String(s) = self {
+            s
+        } else {
+            panic!("Not a Object::String")
         }
     }
     pub fn to_bignum(self) -> GcRef<Bignum> {
@@ -251,7 +325,7 @@ impl Object {
         if let Self::Pair(p) = self {
             p
         } else {
-            panic!("Not a Object::Pair")
+            panic!("Not a Object::Pair but got {}", self)
         }
     }
     pub fn to_continuation_stack(self) -> GcRef<ContinuationStack> {
@@ -283,6 +357,14 @@ impl Object {
         }
     }
 
+    pub fn to_bytevector(self) -> GcRef<Bytevector> {
+        if let Self::Bytevector(v) = self {
+            v
+        } else {
+            panic!("Not a Object::Bytevector")
+        }
+    }
+
     pub fn to_vox(self) -> GcRef<Vox> {
         if let Self::Vox(v) = self {
             v
@@ -304,6 +386,45 @@ impl Object {
             p
         } else {
             panic!("Not a Object::Procedure but {}", self)
+        }
+    }
+
+    pub fn is_port(self) -> bool {
+        match self {
+            Object::BinaryFileInputPort(_)
+            | Object::BinaryFileOutputPort(_)
+            | Object::FileInputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::StdInputPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StringInputPort(_)
+            | Object::StringOutputPort(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_output_port(self) -> bool {
+        match self {
+            Object::BinaryFileOutputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StringOutputPort(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_textual_port(self) -> bool {
+        match self {
+            Object::FileInputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::StdInputPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StringInputPort(_)
+            | Object::StringOutputPort(_) => true,
+            _ => false,
         }
     }
 
@@ -343,7 +464,9 @@ impl Object {
             Object::Bignum(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
-            Object::ByteVector(_) => todo!(),
+            Object::Bytevector(_) => todo!(),
+            Object::BytevectorInputPort(_) => todo!(),
+            Object::BytevectorOutputPort(_) => todo!(),
             Object::Char(_) => todo!(),
             Object::Closure(_) => todo!(),
             Object::Continuation(_) => todo!(),
@@ -366,6 +489,7 @@ impl Object {
             Object::Regexp(_) => todo!(),
             Object::SimpleStruct(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
+            Object::StdInputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
             Object::String(_) => todo!(),
             Object::StringInputPort(_) => todo!(),
@@ -375,6 +499,7 @@ impl Object {
             Object::Unspecified => todo!(),
             Object::Vector(_) => todo!(),
             Object::Vox(_) => todo!(),
+            Object::DefinedShared(_) => todo!(),
         }
     }
 }
@@ -389,10 +514,19 @@ impl Debug for Object {
             Object::StdOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::StdInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::StdErrorPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Bignum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::BytevectorInputPort(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::BytevectorOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Continuation(c) => {
@@ -429,7 +563,7 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Char(c) => {
-                write!(f, "{}", c)
+                write!(f, "{:?}", c)
             }
             Object::Flonum(n) => {
                 write!(f, "{}", n)
@@ -444,7 +578,18 @@ impl Debug for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
+                let name;
+                if closure.src.is_false() {
+                    name = Object::False
+                } else {
+                    name = closure.src.cdr_unchecked();
+                }
+                write!(
+                    f,
+                    "#<closure {} {:?}>",
+                    name.to_string(),
+                    closure.pointer.as_ptr()
+                )
             }
             Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
@@ -453,10 +598,10 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
             Object::String(s) => {
-                write!(f, "{}", unsafe { s.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { s.pointer.as_ref() })
             }
             Object::Symbol(symbol) => {
-                write!(f, "{}", unsafe { symbol.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { symbol.pointer.as_ref() })
             }
             Object::Eof => {
                 write!(f, "#<eof>")
@@ -483,14 +628,15 @@ impl Debug for Object {
                 write!(f, "#<procedure {}>", proc.name)
             }
             Object::Vector(vector) => {
-                write!(f, "{}", unsafe { vector.pointer.as_ref() })
+                write!(f, "{:?}", unsafe { vector.pointer.as_ref() })
             }
-            Object::ByteVector(bytevector) => {
+            Object::Bytevector(bytevector) => {
                 write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
+            Object::DefinedShared(_) => todo!(),
         }
     }
 }
@@ -499,6 +645,9 @@ impl Debug for Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::StdInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::StdOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -514,6 +663,12 @@ impl Display for Object {
             Object::BinaryFileInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::BytevectorInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::BytevectorOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -557,7 +712,18 @@ impl Display for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                write!(f, "#<closure {:?}>", closure.pointer.as_ptr())
+                let name;
+                if closure.src.is_false() {
+                    name = Object::False
+                } else {
+                    name = closure.src.cdr_unchecked();
+                }
+                write!(
+                    f,
+                    "#<closure {} {:?}>",
+                    name.to_string(),
+                    closure.pointer.as_ptr()
+                )
             }
             Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
@@ -598,18 +764,20 @@ impl Display for Object {
             Object::Vector(vector) => {
                 write!(f, "{}", unsafe { vector.pointer.as_ref() })
             }
-            Object::ByteVector(bytevector) => {
+            Object::Bytevector(bytevector) => {
                 write!(f, "{}", unsafe { bytevector.pointer.as_ref() })
             }
             Object::SimpleStruct(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
+            Object::DefinedShared(_) => todo!(),
         }
     }
 }
 
 /// Vector
 #[derive(Debug)]
+#[repr(C)]
 pub struct Vector {
     pub header: GcHeader,
     pub data: Vec<Object>,
@@ -647,14 +815,15 @@ impl Display for Vector {
 
 /// ByteVector
 #[derive(Debug)]
-pub struct ByteVector {
+#[repr(C)]
+pub struct Bytevector {
     pub header: GcHeader,
     pub data: Vec<u8>,
 }
 
-impl ByteVector {
+impl Bytevector {
     pub fn new(data: &Vec<u8>) -> Self {
-        ByteVector {
+        Bytevector {
             header: GcHeader::new(ObjectType::ByteVector),
             data: data.to_owned(),
         }
@@ -694,11 +863,11 @@ impl ByteVector {
         self.data[i] = v;
     }
 
-    pub fn copy(&self) -> Self{
+    pub fn copy(&self) -> Self {
         Self::new(&self.data)
     }
 
-    pub fn equal(&self, other: &ByteVector) -> bool {
+    pub fn equal(&self, other: &Bytevector) -> bool {
         self.data == other.data
     }
 
@@ -707,7 +876,7 @@ impl ByteVector {
     }
 }
 
-impl Display for ByteVector {
+impl Display for Bytevector {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#vu8(")?;
         for i in 0..self.data.len() {
@@ -722,6 +891,7 @@ impl Display for ByteVector {
 
 /// SimpleStruct
 #[derive(Debug)]
+#[repr(C)]
 pub struct SimpleStruct {
     pub header: GcHeader,
     pub name: Object,
@@ -780,6 +950,7 @@ impl Display for SimpleStruct {
 
 /// Cons cell
 #[derive(Debug)]
+#[repr(C)]
 pub struct Pair {
     pub header: GcHeader,
     pub car: Object,
@@ -987,6 +1158,7 @@ impl PartialEq for Pair {
 
 /// Vox
 #[derive(Debug)]
+#[repr(C)]
 pub struct Vox {
     pub header: GcHeader,
     pub value: Object,
@@ -1008,6 +1180,7 @@ impl Display for Vox {
 }
 
 /// SString (Sceheme String)
+#[repr(C)]
 pub struct SString {
     pub header: GcHeader,
     pub string: String,
@@ -1028,9 +1201,83 @@ impl Display for SString {
     }
 }
 
+fn put_char_handle_special(f: &mut fmt::Formatter<'_>, c: char, in_string: bool) -> fmt::Result {
+    const SPACE: char = '\u{20}';
+    const DEL: char = '\u{7F}';
+    if (c != '\u{a}'
+        && c != '\u{d}'
+        && c != '\t'
+        && c != '\u{7}'
+        && c != '\u{8}'
+        && c != '\u{B}'
+        && c != '\u{C}'
+        && c < SPACE)
+        || c == DEL
+        || c == '\u{80}'
+        || c == '\u{ff}'
+        || c == '\u{D7FF}'
+        || c == '\u{E000}'
+        || c == '\u{10FFFF}'
+    {
+        if in_string {
+            write!(f, "\\x{:x}", c as u32)
+        } else {
+            write!(f, "x{:x}", c as u32)
+        }
+    } else {
+        write!(f, "{}", c)
+    }
+}
+
 impl Debug for SString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "\"{}\"", self.string)
+        const DOUBLE_QUOTE: char = '"';
+        const ESCAPE: char = '\\';
+        write!(f, "{}", DOUBLE_QUOTE)?;
+        for ch in self.chars() {
+            match ch {
+                DOUBLE_QUOTE => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "{}", DOUBLE_QUOTE)?;
+                }
+                ESCAPE => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "{}", ESCAPE)?;
+                }
+                '\n' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "n")?;
+                }
+                '\u{7}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "a")?;
+                }
+                '\u{8}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "b")?;
+                }
+                '\t' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "t")?;
+                }
+                '\u{B}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "v")?;
+                }
+                '\r' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "r")?;
+                }
+                '\u{C}' => {
+                    write!(f, "{}", ESCAPE)?;
+                    write!(f, "f")?;
+                }
+                _ => {
+                    put_char_handle_special(f, ch, true)?;
+                }
+            }
+        }
+        write!(f, "{}", DOUBLE_QUOTE)
     }
 }
 
@@ -1055,7 +1302,7 @@ impl DerefMut for SString {
 }
 
 /// Symbol
-#[derive(Debug)]
+#[repr(C)]
 pub struct Symbol {
     pub header: GcHeader,
     pub string: String,
@@ -1076,15 +1323,22 @@ impl Display for Symbol {
     }
 }
 
+impl Debug for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.string)
+    }
+}
+
 /// Procedures written in Rust.
+#[repr(C)]
 pub struct Procedure {
     pub header: GcHeader,
-    pub func: fn(&mut Vm, &mut [Object]) -> Object,
+    pub func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>,
     pub name: String,
 }
 
 impl Procedure {
-    pub fn new(func: fn(&mut Vm, &mut [Object]) -> Object, name: String) -> Self {
+    pub fn new(func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func: func,
@@ -1106,6 +1360,7 @@ impl Display for Procedure {
 }
 
 /// Regexp.
+#[repr(C)]
 pub struct Regexp {
     pub header: GcHeader,
 }
@@ -1125,6 +1380,7 @@ impl Display for Regexp {
 }
 
 /// Continuation.
+#[repr(C)]
 pub struct Continuation {
     pub header: GcHeader,
     pub shift_size: isize,
@@ -1156,6 +1412,8 @@ impl Display for Continuation {
 }
 
 /// Continuation.
+
+#[repr(C)]
 pub struct ContinuationStack {
     pub header: GcHeader,
     pub data: Vec<Object>,
@@ -1193,6 +1451,7 @@ impl Display for ContinuationStack {
 
 /// Closure
 #[derive(Debug)]
+#[repr(C)]
 pub struct Closure {
     pub header: GcHeader,
     pub ops: *const Object,
@@ -1238,6 +1497,7 @@ impl Display for Closure {
 
 /// EqHashtable
 #[derive(Debug)]
+#[repr(C)]
 pub struct EqHashtable {
     pub header: GcHeader,
     pub hash_map: HashMap<Object, Object>,
@@ -1316,9 +1576,9 @@ pub mod tests {
     use regex::Regex;
 
     // Helpers.
-    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> Object {
+    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         assert_eq!(args.len(), 1);
-        args[0]
+        Ok(args[0])
     }
 
     /*
@@ -1354,7 +1614,7 @@ pub mod tests {
         let p = vm.gc.alloc(Procedure::new(procedure1, "proc1".to_owned()));
         let mut stack = [Object::Fixnum(1), Object::Fixnum(2)];
         match (p.func)(&mut vm, &mut stack[0..1]) {
-            Object::Fixnum(1) => {}
+            Ok(Object::Fixnum(1)) => {}
             _ => {
                 panic!("Wrong return value");
             }
@@ -1497,6 +1757,7 @@ pub mod tests {
         fn read(&self);
     }
 
+    #[repr(C)]
     struct StringInputPort {}
 
     impl Drop for StringInputPort {

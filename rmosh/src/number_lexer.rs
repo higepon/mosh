@@ -1,25 +1,7 @@
-#[derive(Clone, Debug, PartialEq)]
-pub enum Token {
-    Digit { value: String },
-    HexDigit { value: String },    
-    Radix10,
-    Radix16,    
-    Dot,
-    Exact,
-    Exponent,
-    Imag,
-    Inexact,
-    Minus,
-    MinusInf,
-    MinusNan,
-    Plus,
-    PlusInf,
-    PlusNan,
-    Slash,
-}
+use crate::{lexer::Token, reader_util::ReadError};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, NumberLexicalError>;
+pub type LexerItem = Spanned<Token, usize, ReadError>;
 
 #[derive(Clone, Debug)]
 pub struct NumberLexer<'input> {
@@ -34,7 +16,7 @@ pub struct NumberLexer<'input> {
 // - Fix range in Some.
 impl<'input> NumberLexer<'input> {
     pub fn new(input: &'input [char]) -> Self {
-        println!("number lexer for <{:?}>", input);
+        //println!("number lexer for <{:?}>", input);
         Self {
             s: input,
             cursor: 0,
@@ -51,11 +33,4 @@ impl<'input> NumberLexer<'input> {
     pub fn extract_token(&self) -> String {
         self.s[self.tok..self.cursor].iter().collect()
     }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct NumberLexicalError {
-    pub start: usize,
-    pub end: usize,
-    pub token: String,
 }

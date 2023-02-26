@@ -1,4 +1,5 @@
-use crate::lexer::{Lexer, Spanned, Token, LexicalError};
+use crate::lexer::{Lexer, Spanned, Token};
+use crate::reader_util::ReadError;
 
 /*!re2c
     re2c:define:YYCTYPE = usize; // We have Vec<char> and treat char as usize.
@@ -9,7 +10,6 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     re2c:define:YYLESSTHAN = "self.cursor >= self.limit";
     re2c:yyfill:enable = 0;
     re2c:eof = 0;
-
     // Conforms to R7RS.
     ANY_CHARACTER          = [^];
     TRUE                   = "#t" | "#true";
@@ -31,7 +31,7 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     BYTEVECTOR_START       = "#u8(" | "#vu8(";
     DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | DOT;
     // Per R7RS Small Errata, we allow \\\\ and \\\" here.
-    MNEMONIC_ESCAPE        = ('\\' [abtnr\\\"]);
+    MNEMONIC_ESCAPE        = ('\\' [abtnr\\\\|"]);
     PECULIAR_IDENTIFIER    = EXPLICIT_SIGN | EXPLICIT_SIGN SIGN_SUBSEQUENT SUBSEQUENT * | EXPLICIT_SIGN "." DOT_SUBSEQUENT SUBSEQUENT * | "." DOT_SUBSEQUENT SUBSEQUENT *;
     SYMBOL_ELEMENT         = [^\|\\] | "\\|" | INLINE_HEX_ESCAPE | MNEMONIC_ESCAPE;
     IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
@@ -51,40 +51,58 @@ use crate::lexer::{Lexer, Spanned, Token, LexicalError};
     REGEXP_ELEMENT         = "\\\/" | [^/];
     REGEXP                 = '#/' REGEXP_ELEMENT * '/';
     DIGIT_10               = DIGIT;
+    DIGIT_2                = [01];
+    DIGIT_8                = [0-7];
     DIGIT_16               = HEX_DIGIT;
-    INF_NAN                = "+inf.0" | "-inf.0" | "+nan.0" | "-nan.0";
-    EXACTNESS              = ("#"[ie])?;
+    INF_NAN                = '+inf.0' | '-inf.0' | '+nan.0' | '-nan.0';
+    EXACTNESS              = ("#"[ieIE])?;
     SIGN                   = [\+\-]?;
-    EXPONENT_MARKER        = "e";
+    EXPONENT_MARKER        = [eEsSfFdDlL];
     SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
     UINTEGER_10            = DIGIT_10 +;
     DECIMAL_10             = (UINTEGER_10 SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX);
     UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
     REAL_10                = (SIGN UREAL_10) | INF_NAN;
-    RADIX_10               = "#d" ?;
+    RADIX_10               = '#d' ?;
     COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
+    UINTEGER_8             = DIGIT_8 +;
+    UREAL_8                = UINTEGER_8 | (UINTEGER_8 "/" UINTEGER_8);
+    REAL_8                 = (SIGN UREAL_8) | INF_NAN;
+    RADIX_8                = '#o' ?;
+    COMPLEX_8              = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 'i') | (REAL_8 [\+\-] INF_NAN 'i') | (REAL_8 [\+\-] 'i') | ([\+\-] UREAL_8 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    PREFIX_8               = (RADIX_8 EXACTNESS) | (EXACTNESS RADIX_8);
+    NUM_8                  = PREFIX_8 COMPLEX_8;
+    UINTEGER_2             = DIGIT_2 +;
+    UREAL_2                = UINTEGER_2 | (UINTEGER_2 "/" UINTEGER_2);
+    REAL_2                 = (SIGN UREAL_2) | INF_NAN;
+    RADIX_2                = '#b' ?;
+    COMPLEX_2              = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 'i') | (REAL_2 [\+\-] INF_NAN 'i') | (REAL_2 [\+\-] 'i') | ([\+\-] UREAL_2 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    PREFIX_2               = (RADIX_2 EXACTNESS) | (EXACTNESS RADIX_2);
+    NUM_2                  = PREFIX_2 COMPLEX_2;
     UINTEGER_16            = DIGIT_16 +;
     UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16);
     REAL_16                = (SIGN UREAL_16) | INF_NAN;
-    RADIX_16               = "#x" ?;
+    RADIX_16               = '#x' ?;
     COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 'i') | (REAL_16 [\+\-] INF_NAN 'i') | (REAL_16 [\+\-] 'i') | ([\+\-] UREAL_16 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
-    NUM_16                 = PREFIX_16 COMPLEX_16;    
+    NUM_16                 = PREFIX_16 COMPLEX_16;
     EOS                    = "\X0000";
-    DIRECTIVE              = "#!fold-case" | "#!no-fold-case" | "#!r6rs";
+    DIRECTIVE              = "#!r6rs";
     DATUM_COMMENT          = "#;";
     COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
+    DEFINING_SHARED        = "#" DIGIT+ "=";
+    DEFINED_SHARED         = "#" DIGIT+ "#";    
 */
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Spanned<Token, usize, LexicalError>;
+    type Item = Spanned<Token, usize, ReadError>;
 
-    fn next(&mut self) -> Option<Self::Item> {       
+    fn next(&mut self) -> Option<Self::Item> {
         loop {
             let should_skip_comment;
-            let mut comment_level = 1;             
+            let mut comment_level = 1;
             'lex: loop {
                 self.tok = self.cursor;
                 /*!re2c
@@ -94,19 +112,25 @@ impl<'input> Iterator for Lexer<'input> {
                     FALSE { return self.with_location(Token::False); }
                     NUM_10 {
                         return self.with_location(Token::Number10{value: self.extract_token()});
-                    }                    
+                    }
                     IDENTIFIER {
                         return self.with_location(Token::Identifier { value: self.extract_token() });
                     }
                     REGEXP {
                         return self.with_location(Token::Regexp { value: self.extract_regexp() });
-                    }                
+                    }
                     STRING {
                         return self.with_location(Token::String{value: self.extract_string()});
                     }
+                    NUM_2 {
+                        return self.with_location(Token::Number2{value: self.extract_token()});
+                    }
+                    NUM_8 {
+                        return self.with_location(Token::Number8{value: self.extract_token()});
+                    }
                     NUM_16 {
                         return self.with_location(Token::Number16{value: self.extract_token()});
-                    }                    
+                    }
                     DOT {
                         return self.with_location(Token::Dot);
                     }
@@ -176,8 +200,22 @@ impl<'input> Iterator for Lexer<'input> {
                     DATUM_COMMENT {
                         return self.with_location(Token::DatumComment);
                     }
+                    "#!fold-case" {
+                        self.is_fold_case = true;
+                        continue 'lex;
+                    }
+                    "#!no-fold-case" {
+                        self.is_fold_case = false;
+                        continue 'lex;
+                    }
                     DIRECTIVE {
                         continue 'lex;
+                    }
+                    DEFINED_SHARED {
+                        return self.with_location(Token::DefinedShared{value: self.extract_defined_shared()});
+                    }
+                    DEFINING_SHARED {
+                        return self.with_location(Token::DefiningShared{value: self.extract_defining_shared()});
                     }
                     DELIMITER {
                         continue 'lex;
@@ -190,7 +228,7 @@ impl<'input> Iterator for Lexer<'input> {
                         break 'lex;
                     }
                     $ { return None; }
-                    * { return Some(Err(LexicalError {
+                    * { return Some(Err(ReadError::InvalidToken {
                             start: self.tok,
                             end: self.cursor,
                             token: self.extract_token()
@@ -205,7 +243,7 @@ impl<'input> Iterator for Lexer<'input> {
                         if comment_level == 0 {
                             break 'skip_comment;
                         }
-                        continue 'skip_comment;   
+                        continue 'skip_comment;
                     }
                     "#|" {
                         comment_level += 1;
@@ -215,10 +253,10 @@ impl<'input> Iterator for Lexer<'input> {
                         return None;
                     }
                     ANY_CHARACTER {
-                        continue 'skip_comment;                   
-                    }            
-                    $ { return None; }            
-                    */                    
+                        continue 'skip_comment;
+                    }
+                    $ { return None; }
+                    */
                 }
             }
         }

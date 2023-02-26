@@ -1,16 +1,25 @@
 use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
-use crate::number_reader::NumberParser;
-use crate::number_lexer::NumberLexer;
+use crate::reader_util::ReadError;
+use crate::reader_util;
+use std::collections::HashMap;
 
-grammar(gc: &mut Box<Gc>);
+grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<u32, Object>, input_src: &str);
 
 // R7RS small 7.1.2. External representations
 pub Datum: Object = {
     SimpleDatum,
     CompoundDataum,
     "#;" Datum <datum: Datum> => datum,
+    <idx: "#1="> <datum: Datum> => {
+        let key = u32::from_str_radix(&idx, 10).unwrap();
+        shared_map.insert(key, datum);
+        datum
+    },
+    "#1#" => {
+        Object::DefinedShared(u32::from_str_radix(&<>, 10).unwrap())
+    }
 }
 
 CompoundDataum: Object = {
@@ -30,13 +39,36 @@ SimpleDatum: Object = {
 }
 
 List: Object = {
-    "(" <objects: Datum *> ")" => gc.listn(&objects),
-    "(" <objects: Datum *> "#;" Datum ")" => gc.listn(&objects),
-    // TODO: There should be a better way to skip datum comment.    
-    "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => gc.listn(&objects),  
-    "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => gc.listn(&objects),        
+    "(" <objects: Datum *> ")" => {
+        let file = gc.new_string(input_src);
+        let src = gc.list2(file, Object::Fixnum(1234));
+        gc.listn_src(&objects, src)
+    },
+    "(" <objects: Datum *> "#;" Datum ")" => {
+        let file = gc.new_string(input_src);
+        let src = gc.list2(file, Object::Fixnum(1235));
+        gc.listn_src(&objects, src)
+    },
+    // TODO: There should be a better way to skip datum comment.
+    "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => {
+        let file = gc.new_string(input_src);
+        let src = gc.list2(file, Object::Fixnum(1236));
+        gc.listn_src(&objects, src)
+    },
+    "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => {
+        let file = gc.new_string(input_src);
+        let src = gc.list2(file, Object::Fixnum(1237));
+        gc.listn_src(&objects, src)
+    },
+    "(" <objects: Datum +> "." <last: Datum> "#;" Datum ")" => {
+        let file = gc.new_string(input_src);
+        let src = gc.list2(file, Object::Fixnum(1238));
+        gc.dot_pair_src(&objects, last, src)
+    },
     "(" <objects: Datum +> "." <last: Datum> ")" => {
-        gc.dot_pair(&objects, last)
+        let file = gc.new_string(input_src);
+        let src = gc.list2(file, Object::Fixnum(1239));
+        gc.dot_pair_src(&objects, last, src)
     }
 }
 
@@ -99,32 +131,16 @@ Character: Object = {
 
 
 Symbol: Object = {
-    "identifier" => gc.symbol_intern(&<>)
+    "identifier" => {
+        gc.symbol_intern(&reader_util::read_symbol(&<>))
+    }
 }
 
 Number: Object = {
-    <s: "number10"> => {
-        println!("NUMBER parse {}", s);
-        let mut chars: Vec<char> = s.chars().collect();
-        chars.push('\0');
-        match NumberParser::new().parse(gc, NumberLexer::new(&chars)) {
-            Ok(n) => n,
-            Err(err) => todo!("{:?}", err)
-        }
-    },
-    <s: "number16"> => {
-        // #x123A => 123A
-        if s.chars().nth(0) == Some('#') {
-            match isize::from_str_radix(&s[2..], 16) {
-                Ok(n) => Object::Fixnum(n),
-                Err(e) => {
-                        panic!("Number parse error: {} in <{}>", e, s)
-                }                
-            }
-        } else {
-            panic!("number16 parse error {}", s)
-        }
-    }    
+    <s: "number10"> =>? reader_util::read_number(gc, &s),
+    <s: "number8"> =>? reader_util::read_number(gc, &s),
+    <s: "number2"> =>? reader_util::read_number(gc, &s),
+    <s: "number16"> =>? reader_util::read_number(gc, &s),
 }
 
 Boolean: Object = {
@@ -134,7 +150,7 @@ Boolean: Object = {
 
 extern {
     type Location = usize;
-    type Error = lexer::LexicalError;
+    type Error = ReadError;
 
     enum lexer::Token {
         "'" => lexer::Token::AbbrevQuote,
@@ -157,8 +173,12 @@ extern {
         "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
-        "number16" => lexer::Token::Number16 { value: <String> },        
+        "number8" => lexer::Token::Number8 { value: <String> },
+        "number2" => lexer::Token::Number2 { value: <String> },
+        "number16" => lexer::Token::Number16 { value: <String> },
         "regexp" => lexer::Token::Regexp { value: <String> },
         "string" => lexer::Token::String { value: <String> },
+        "#1=" => lexer::Token::DefiningShared { value: <String> },
+        "#1#" => lexer::Token::DefinedShared { value: <String> },
     }
 }

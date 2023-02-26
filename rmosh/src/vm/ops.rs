@@ -1,4 +1,5 @@
 use crate::{
+    error,
     gc::GcRef,
     numbers::{add, eqv, ge, gt, le, lt, sub},
     objects::{Closure, Object, Symbol},
@@ -71,15 +72,40 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn car_op(&mut self) {
+    pub(super) fn car_op(&mut self) -> error::Result<Object> {
         match self.ac {
             Object::Pair(pair) => {
                 self.set_return_value(pair.car);
+                Ok(Object::Unspecified)
             }
-            obj => {
-                self.arg_err("car", "pair", obj);
-            }
+            obj => self.assertion_violation("car", "pair required", obj),
         }
+    }
+
+    pub(super) fn assertion_violation(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        self.raise_after3("assertion-violation", who, message, irritants)
+    }
+
+    pub(super) fn assertion_violation_err(&mut self, err: error::Error) -> error::Result<Object> {
+        self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
+    }
+
+    pub(super) fn raise_read_error(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        self.raise_after3("raise-i/o-read-error", who, message, irritants)
     }
 
     #[inline(always)]
@@ -113,14 +139,13 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn call_op(&mut self, argc: isize) {
+    pub(super) fn call_op(&mut self, argc: isize) -> error::Result<Object> {
         let mut argc = argc;
         'call: loop {
             match self.ac {
                 Object::Closure(closure) => {
                     self.dc = self.ac;
-                    // TODO:
-                    // self.cl = self.ac;
+                    self.cl = self.ac;
                     self.pc = closure.ops;
                     if closure.is_optional_arg {
                         let extra_len = argc - closure.argc;
@@ -155,14 +180,19 @@ impl Vm {
                     let start: usize = start as usize;
                     let uargc: usize = argc as usize;
                     let args = &mut self.stack[start..start + uargc];
-
+                    self.cl = self.ac;
                     // copying args here because we can't borrow.
                     let args = &mut args.to_owned()[..];
 
                     // We convert apply call to Op::Call.
                     if procedure.func as usize == procs::apply as usize {
                         if argc == 1 {
-                            panic!("apply: need two or more arguments but only 1 argument");
+                            self.assertion_violation(
+                                "apply",
+                                "need two or more arguments but only 1 argument",
+                                Object::Nil,
+                            )?;
+                            return Ok(Object::Unspecified);
                         }
                         self.sp = self.dec(self.sp, argc);
                         self.ac = args[0];
@@ -172,10 +202,12 @@ impl Vm {
                             if i == argc - 1 {
                                 let mut last_pair = args[i as usize];
                                 if !last_pair.is_list() {
-                                    panic!(
-                                        "apply: last arguments shoulbe proper list but got {}",
-                                        last_pair
-                                    );
+                                    self.assertion_violation(
+                                        "apply",
+                                        "last arguments shoulbe proper list but got",
+                                        last_pair,
+                                    )?;
+                                    return Ok(Object::Unspecified);
                                 }
                                 let mut j: isize = 0;
                                 loop {
@@ -200,20 +232,11 @@ impl Vm {
                             }
                         }
                     } else if procedure.func as usize == procs::eval as usize {
-                        self.eval_ret_code = vec![];
-                        self.eval_ret_code.push(Object::Instruction(Op::Return));
-                        self.eval_ret_code.push(Object::Fixnum(argc));
-
-                        self.pc = self.eval_ret_code.as_ptr();
-                        (procedure.func)(self, args);
+                        self.pc = self.allocate_return_code(argc);
+                        (procedure.func)(self, args)?;
                     } else {
-                        // TODO: Take care of cl.
-                        // self.cl = self.ac
-                        self.ret_code = vec![];
-                        self.ret_code.push(Object::Instruction(Op::Return));
-                        self.ret_code.push(Object::Fixnum(argc));
-
-                        self.pc = self.ret_code.as_ptr();
+                        self.cl = self.ac;
+                        self.pc = self.allocate_return_code(argc);
                         /*
                         // debug
                         let free_vars = default_free_vars(&mut self.gc);
@@ -223,13 +246,11 @@ impl Vm {
                             }
                         }
                         */
-                        self.ac = (procedure.func)(self, args);
+                        self.ac = (procedure.func)(self, args)?;
                     }
                 }
                 Object::Continuation(c) => {
-                    self.eval_code_array.push(vec![]);
-                    let code = self.eval_code_array.last_mut().unwrap();
-
+                    let mut code = vec![];
                     code.push(Object::Instruction(Op::ConstantPush));
                     code.push(c.winders);
                     code.push(Object::Instruction(Op::DynamicWinders));
@@ -248,7 +269,7 @@ impl Vm {
                     code.push(Object::Fixnum(argc));
                     code.push(c.stack);
                     code.push(Object::Fixnum(c.shift_size));
-                    self.pc = code.as_ptr();
+                    self.pc = self.allocate_code(&code);
                 }
                 _ => {
                     panic!("can't call {:?}", self.ac);
@@ -256,6 +277,7 @@ impl Vm {
             }
             break;
         }
+        Ok(Object::Unspecified)
     }
 
     #[inline(always)]

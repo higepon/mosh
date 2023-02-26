@@ -1,16 +1,16 @@
 use std::{
     collections::HashMap,
-    io::{self, Read},
+    io::{self, Cursor, Read},
 };
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::{
-    gc::{Gc, GcRef},
+    gc::Gc,
     numbers::Flonum,
     objects::{EqHashtable, Object, SimpleStruct},
-    ports::BinaryFileOutputPort,
+    ports::BinaryOutputPort,
 };
 
 #[derive(FromPrimitive)]
@@ -31,6 +31,8 @@ enum Tag {
     DefineShared = 13,
     LookupShared = 14,
     Flonum = 15,
+    Bytevector = 16,
+    Eof = 17,
 }
 
 // S-expression serializer.
@@ -40,11 +42,7 @@ impl FaslWriter {
     pub fn new() -> Self {
         Self {}
     }
-    pub fn write(
-        &self,
-        port: &mut GcRef<BinaryFileOutputPort>,
-        obj: Object,
-    ) -> Result<(), io::Error> {
+    pub fn write(&self, port: &mut dyn BinaryOutputPort, obj: Object) -> Result<(), io::Error> {
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
         let mut shared_id = 1;
@@ -52,7 +50,7 @@ impl FaslWriter {
     }
     pub fn write_one(
         &self,
-        port: &mut GcRef<BinaryFileOutputPort>,
+        port: &mut dyn BinaryOutputPort,
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         obj: Object,
@@ -68,19 +66,29 @@ impl FaslWriter {
             seen.insert(obj, Object::Fixnum(*shared_id));
             *shared_id += 1;
             // We don't return here and write the object.
-        } else if seen_state.is_number() {
+        } else if seen_state.is_fixnum() {
             self.put_tag(port, Tag::LookupShared)?;
             port.put_u32(seen_state.to_isize() as u32)?;
             return Ok(());
         }
         match obj {
-            Object::ByteVector(_) => todo!(),
+            Object::Bytevector(bv) => {
+                self.put_tag(port, Tag::Bytevector)?;
+                port.put_u16(bv.len() as u16)?;
+                for e in bv.data.iter() {
+                    port.put_u8(*e)?;
+                }
+            }
+            Object::BytevectorInputPort(_) => todo!(),
+            Object::BytevectorOutputPort(_) => todo!(),
             Object::Char(c) => {
                 self.put_tag(port, Tag::Char)?;
                 port.put_u32(c as u32)?;
             }
             Object::Closure(_) => todo!(),
-            Object::Eof => todo!(),
+            Object::Eof => {
+                self.put_tag(port, Tag::Eof)?;
+            }
             Object::EqHashtable(t) => {
                 self.put_tag(port, Tag::EqHashtable)?;
                 port.put_u16(t.size() as u16)?;
@@ -120,6 +128,7 @@ impl FaslWriter {
             Object::FileOutputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
+            Object::StdInputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StringOutputPort(_) => todo!(),
@@ -178,11 +187,12 @@ impl FaslWriter {
                 }
             }
             Object::Vox(_) => todo!(),
+            Object::DefinedShared(_) => todo!(),
         }
         Ok(())
     }
 
-    fn put_tag(&self, port: &mut GcRef<BinaryFileOutputPort>, tag: Tag) -> Result<(), io::Error> {
+    fn put_tag(&self, port: &mut dyn BinaryOutputPort, tag: Tag) -> Result<(), io::Error> {
         port.put_u8(tag as u8)?;
         Ok(())
     }
@@ -191,7 +201,9 @@ impl FaslWriter {
         let mut o = obj;
         loop {
             match o {
-                Object::ByteVector(_)
+                Object::Bytevector(_)
+                | Object::BytevectorInputPort(_)
+                | Object::BytevectorOutputPort(_)
                 | Object::Closure(_)
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)
@@ -216,6 +228,7 @@ impl FaslWriter {
                 | Object::BinaryFileOutputPort(_)
                 | Object::FileOutputPort(_)
                 | Object::StringOutputPort(_)
+                | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
                 | Object::StdErrorPort(_)
                 | Object::Instruction(_)
@@ -276,6 +289,7 @@ impl FaslWriter {
                     }
                     break;
                 }
+                Object::DefinedShared(_) => todo!(),
             }
         }
     }
@@ -284,8 +298,8 @@ impl FaslWriter {
 #[macro_export]
 macro_rules! read_sym_num {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let sym = $self.read_sexp($gc)?;
-        let m = $self.read_sexp($gc)?;
+        let sym = $self.read($gc)?;
+        let m = $self.read($gc)?;
         Ok(OpOld::$op(sym.to_symbol(), m.to_number()))
     }};
 }
@@ -293,8 +307,8 @@ macro_rules! read_sym_num {
 #[macro_export]
 macro_rules! read_num_constant {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let n = $self.read_sexp($gc)?;
-        let c = $self.read_sexp($gc)?;
+        let n = $self.read($gc)?;
+        let c = $self.read($gc)?;
         Ok(OpOld::$op(n.to_number(), c))
     }};
 }
@@ -302,9 +316,9 @@ macro_rules! read_num_constant {
 #[macro_export]
 macro_rules! read_num_constant_num {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let n = $self.read_sexp($gc)?;
-        let c = $self.read_sexp($gc)?;
-        let o = $self.read_sexp($gc)?;
+        let n = $self.read($gc)?;
+        let c = $self.read($gc)?;
+        let o = $self.read($gc)?;
         Ok(OpOld::$op(n.to_number(), c, o.to_number()))
     }};
 }
@@ -312,7 +326,7 @@ macro_rules! read_num_constant_num {
 #[macro_export]
 macro_rules! read_sym1 {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let s = $self.read_sexp($gc)?;
+        let s = $self.read($gc)?;
         Ok(OpOld::$op(s.to_symbol()))
     }};
 }
@@ -320,7 +334,7 @@ macro_rules! read_sym1 {
 #[macro_export]
 macro_rules! read_const1 {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let c = $self.read_sexp($gc)?;
+        let c = $self.read($gc)?;
         Ok(OpOld::$op(c))
     }};
 }
@@ -328,7 +342,7 @@ macro_rules! read_const1 {
 #[macro_export]
 macro_rules! read_num1 {
     ($self:ident, $gc:ident, $op:ident, $size:ident) => {{
-        let m = $self.read_sexp($gc)?;
+        let m = $self.read($gc)?;
         Ok(OpOld::$op(m.to_number() as $size))
     }};
 }
@@ -336,8 +350,8 @@ macro_rules! read_num1 {
 #[macro_export]
 macro_rules! read_num2 {
     ($self:ident, $gc:ident, $op:ident, $size:ident, $size2:ident) => {{
-        let m = $self.read_sexp($gc)?;
-        let n = $self.read_sexp($gc)?;
+        let m = $self.read($gc)?;
+        let n = $self.read($gc)?;
         Ok(OpOld::$op(m.to_number() as $size, n.to_number() as $size2))
     }};
 }
@@ -345,24 +359,32 @@ macro_rules! read_num2 {
 #[macro_export]
 macro_rules! read_num3 {
     ($self:ident, $gc:ident, $op:ident) => {{
-        let m = $self.read_sexp($gc)?;
-        let n = $self.read_sexp($gc)?;
-        let o = $self.read_sexp($gc)?;
+        let m = $self.read($gc)?;
+        let n = $self.read($gc)?;
+        let o = $self.read($gc)?;
         Ok(OpOld::$op(m.to_number(), n.to_number(), o.to_number()))
     }};
 }
 
 // S-expression de-serializer.
-pub struct FaslReader<'a> {
-    pub bytes: &'a [u8],
-    pub shared_objects: &'a mut HashMap<u32, Object>,
+pub struct FaslReader {
+    bytes: Cursor<Vec<u8>>,
+    shared_objects: HashMap<u32, Object>,
+    link_needed: bool,
 }
 
-impl FaslReader<'_> {
+impl FaslReader {
+    pub fn new(bytes: &[u8]) -> Self {
+        Self {
+            bytes: Cursor::new(bytes.to_vec()),
+            shared_objects: HashMap::new(),
+            link_needed: false,
+        }
+    }
     pub fn read_all_sexp(&mut self, gc: &mut Gc) -> Vec<Object> {
         let mut objects = vec![];
         loop {
-            match self.read_sexp(gc) {
+            match self.read(gc) {
                 Ok(sexp) => {
                     objects.push(sexp);
                 }
@@ -374,7 +396,81 @@ impl FaslReader<'_> {
         objects
     }
 
-    pub fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+    pub fn read(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let obj = self.read_sexp(gc)?;
+        if self.link_needed {
+            let mut seen: HashMap<Object, bool> = HashMap::new();
+            self.link_shared(&mut seen, obj);
+        }
+        Ok(obj)
+    }
+
+    fn link_shared(&self, seen: &mut HashMap<Object, bool>, obj: Object) {
+        println!("link shared");
+        match seen.get(&obj) {
+            Some(_) => return,
+            None => {
+                seen.insert(obj, true);
+                match obj {
+                    Object::Pair(mut p) => {
+                        if let Object::DefinedShared(index) = p.car {
+                            match self.shared_objects.get(&index) {
+                                Some(v) => {
+                                    p.car = *v;
+                                }
+                                None => panic!(),
+                            }
+                        } else {
+                            self.link_shared(seen, p.car);
+                        }
+                        if let Object::DefinedShared(index) = p.cdr {
+                            match self.shared_objects.get(&index) {
+                                Some(v) => {
+                                    p.cdr = *v;
+                                }
+                                None => panic!(),
+                            }
+                        } else {
+                            self.link_shared(seen, p.cdr);
+                        }
+                    }
+                    Object::Vector(mut v) => {
+                        for i in 0..v.len() {
+                            let obj = v.data[i];
+                            if let Object::DefinedShared(index) = obj {
+                                match self.shared_objects.get(&index) {
+                                    Some(value) => {
+                                        v.data[i] = *value;
+                                    }
+                                    None => panic!(),
+                                }
+                            } else {
+                                self.link_shared(seen, obj);
+                            }
+                        }
+                    }
+                    Object::SimpleStruct(mut st) => {
+                        for i in 0..st.len() {
+                            let obj = st.field(i);
+                            if let Object::DefinedShared(index) = obj {
+                                match self.shared_objects.get(&index) {
+                                    Some(value) => {
+                                        st.set(i, *value);
+                                    }
+                                    None => panic!(),
+                                }
+                            } else {
+                                self.link_shared(seen, obj);
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    fn read_sexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let tag = self.read_tag()?;
         match tag {
             Tag::Char => self.read_char(),
@@ -393,6 +489,8 @@ impl FaslReader<'_> {
             Tag::DefineShared => self.read_define_shared(gc),
             Tag::LookupShared => self.read_lookup_shared(gc),
             Tag::Flonum => self.read_float(),
+            Tag::Bytevector => self.read_bytevector(gc),
+            Tag::Eof => Ok(Object::Eof),
         }
     }
 
@@ -419,7 +517,10 @@ impl FaslReader<'_> {
         let uid = u32::from_le_bytes(buf);
         match self.shared_objects.get(&uid) {
             Some(v) => Ok(*v),
-            None => todo!(),
+            None => {
+                self.link_needed = true;
+                Ok(Object::DefinedShared(uid))
+            }
         }
     }
 
@@ -480,6 +581,20 @@ impl FaslReader<'_> {
             objs.push(self.read_sexp(gc)?);
         }
         Ok(gc.new_vector(&objs))
+    }
+
+    fn read_bytevector(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf);
+        let mut vu8 = vec![];
+        let mut buf = [0; 1];
+
+        for _ in 0..len {
+            self.bytes.read_exact(&mut buf)?;
+            vu8.push(buf[0]);
+        }
+        Ok(gc.new_bytevector_u8(&vu8))
     }
 
     fn read_struct(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
@@ -544,17 +659,22 @@ impl FaslReader<'_> {
 /// Tests.
 #[cfg(test)]
 pub mod tests {
-    use std::collections::HashMap;
+    use crate::{
+        equal::Equal,
+        gc::Gc,
+        numbers::Flonum,
+        objects::{Object, SimpleStruct},
+        op::Op,
+        ports::{BinaryOutputPort, BytevectorOutputPort},
+    };
 
-    use crate::{equal::Equal, gc::Gc, objects::Object};
-
-    use super::FaslReader;
+    use super::{FaslReader, FaslWriter};
 
     #[macro_export]
     macro_rules! assert_equal {
-        ($gc:ident, $lhs:ident, $rhs:ident) => {{
+        ($gc:expr, $lhs:expr, $rhs:expr) => {{
             let e = Equal::new();
-            if e.is_equal(&mut $gc, &$lhs, &$rhs) {
+            if e.is_equal($gc, &$lhs, &$rhs) {
                 assert!(true);
             } else {
                 println!("{} is not equal to {}", $lhs, $rhs);
@@ -567,63 +687,48 @@ pub mod tests {
     fn test_constant_number() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[0, 3, 0, 0, 0, 0, 0, 0, 0];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::Fixnum(3);
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
     fn test_constant_true() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[1];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::True;
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
     fn test_constant_false() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[2];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::False;
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
     }
     #[test]
     fn test_constant_nil() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[3];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::Nil;
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
     }
     #[test]
     fn test_constant_char() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[4, 97, 0, 0, 0];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = Object::Char('a');
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
@@ -632,39 +737,275 @@ pub mod tests {
         let bytes: &[u8] = &[
             5, 5, 0, 104, 0, 0, 0, 101, 0, 0, 0, 108, 0, 0, 0, 108, 0, 0, 0, 111, 0, 0, 0,
         ];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = gc.symbol_intern("hello");
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
     fn test_constant_string() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[6, 3, 0, 97, 0, 0, 0, 98, 0, 0, 0, 99, 0, 0, 0];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let expected = gc.new_string("abc");
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
     }
 
     #[test]
     fn test_constant_simple_pair() {
         let mut gc = Box::new(Gc::new());
         let bytes: &[u8] = &[7, 5, 1, 0, 97, 0, 0, 0, 3];
-        let mut fasl = FaslReader {
-            bytes: bytes,
-            shared_objects: &mut HashMap::new(),
-        };
+        let mut fasl = FaslReader::new(bytes);
         let sym = gc.symbol_intern("a");
         let expected = gc.cons(sym, Object::Nil);
-        let obj = fasl.read_sexp(&mut gc).unwrap();
-        assert_equal!(gc, expected, obj);
+        let obj = fasl.read(&mut gc).unwrap();
+        assert_equal!(&mut gc, expected, obj);
+    }
+
+    fn test_read_write(gc: &mut Box<Gc>, obj: Object) {
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, obj).unwrap();
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(gc).unwrap();
+        assert_equal!(gc, read_obj, obj);
+    }
+
+    #[test]
+    fn test_read_write_fixnum() {
+        let mut gc = Box::new(Gc::new());
+        test_read_write(&mut gc, Object::Fixnum(123456789));
+    }
+
+    #[test]
+    fn test_read_write_flonum() {
+        let mut gc = Box::new(Gc::new());
+        test_read_write(&mut gc, Object::Flonum(Flonum::new(1.234)));
+    }
+
+    #[test]
+    fn test_read_write_symbol() {
+        let mut gc = Box::new(Gc::new());
+        let symbol = gc.symbol_intern("hello");
+        test_read_write(&mut gc, symbol);
+    }
+
+    #[test]
+    fn test_read_write_string() {
+        let mut gc = Box::new(Gc::new());
+        let s = gc.new_string("Hello");
+        test_read_write(&mut gc, s);
+    }
+
+    #[test]
+    fn test_read_write_char() {
+        let mut gc = Box::new(Gc::new());
+        let c = Object::Char('a');
+        test_read_write(&mut gc, c);
+    }
+
+    #[test]
+    fn test_read_write_pair() {
+        let mut gc = Box::new(Gc::new());
+        let p = gc.cons(Object::Char('a'), Object::Fixnum(1234));
+        test_read_write(&mut gc, p);
+    }
+
+    #[test]
+    fn test_read_write_shared_pair() {
+        let mut gc = Box::new(Gc::new());
+
+        let p = gc.cons(Object::Char('a'), Object::Fixnum(1234));
+        p.to_pair().car = p;
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, p).unwrap();
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let x = read_obj.cdr_unchecked();
+        let y = p.cdr_unchecked();
+        assert_equal!(&mut gc, x, y);
+        assert_eq!(read_obj.car_unchecked(), read_obj);
+    }
+
+    #[test]
+    fn test_read_write_true() {
+        let mut gc = Box::new(Gc::new());
+        test_read_write(&mut gc, Object::True);
+    }
+    #[test]
+    fn test_read_write_false() {
+        let mut gc = Box::new(Gc::new());
+        test_read_write(&mut gc, Object::False);
+    }
+
+    #[test]
+    fn test_read_write_bv() {
+        let mut gc = Box::new(Gc::new());
+        let bv = gc.new_bytevector_u8(&vec![3, 5, 8]);
+        test_read_write(&mut gc, bv);
+    }
+
+    #[test]
+    fn test_read_write_eof() {
+        let mut gc = Box::new(Gc::new());
+        test_read_write(&mut gc, Object::Eof);
+    }
+
+    #[test]
+    fn test_read_write_nil() {
+        let mut gc = Box::new(Gc::new());
+        test_read_write(&mut gc, Object::Nil);
+    }
+
+    #[test]
+    fn test_read_write_vector() {
+        let mut gc = Box::new(Gc::new());
+        let v = gc.new_vector(&vec![
+            Object::Fixnum(1234),
+            Object::Flonum(Flonum::new(1.23)),
+        ]);
+        test_read_write(&mut gc, v);
+    }
+
+    #[test]
+    fn test_read_write_vector_shared() {
+        let mut gc = Box::new(Gc::new());
+        let v = gc.new_vector(&vec![
+            Object::Fixnum(1234),
+            Object::Flonum(Flonum::new(1.23)),
+        ]);
+        v.to_vector().data[0] = v;
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, v).unwrap();
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let x = read_obj.to_vector().data[1];
+        let y = v.to_vector().data[1];
+        assert_equal!(&mut gc, x, y);
+        assert_eq!(read_obj.to_vector().data[0], read_obj);
+    }
+
+    #[test]
+    fn test_read_write_instruction() {
+        let mut gc = Box::new(Gc::new());
+        test_read_write(&mut gc, Object::Instruction(Op::Return));
+    }
+
+    #[test]
+    fn test_read_write_struct() {
+        let mut gc = Box::new(Gc::new());
+        let name = gc.symbol_intern("struct_name");
+        let mut st = gc.alloc(SimpleStruct::new(name, 3));
+        st.set(0, Object::Fixnum(1234));
+        st.set(1, Object::Unspecified);
+        st.set(2, gc.symbol_intern("hoge"));
+        let obj = Object::SimpleStruct(st);
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, obj).unwrap();
+
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let st2 = read_obj.to_simple_struct();
+        assert_eq!(st.len(), st2.len());
+        assert_equal!(&mut gc, st.name, st2.name);
+        assert_equal!(&mut gc, st.field(0), st2.field(0));
+        assert_equal!(&mut gc, st.field(1), st2.field(1));
+        assert_equal!(&mut gc, st.field(2), st2.field(2));
+    }
+
+    #[test]
+    fn test_read_write_struct_shared() {
+        let mut gc = Box::new(Gc::new());
+        let name = gc.symbol_intern("struct_name");
+        let mut st = gc.alloc(SimpleStruct::new(name, 3));
+        let p = gc.cons(Object::Fixnum(1234), Object::Fixnum(5678));
+        st.set(0, p);
+        st.set(1, p);
+        st.set(2, gc.symbol_intern("hoge"));
+        let obj = Object::SimpleStruct(st);
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, obj).unwrap();
+
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let st2 = read_obj.to_simple_struct();
+        assert_eq!(st.len(), st2.len());
+        assert_equal!(&mut gc, st.name, st2.name);
+        assert_equal!(&mut gc, st.field(0), st2.field(0));
+        assert_equal!(&mut gc, st.field(1), st2.field(1));
+        assert_equal!(&mut gc, st.field(2), st2.field(2));
+    }
+
+    #[test]
+    fn test_read_write_struct_shared2() {
+        let mut gc = Box::new(Gc::new());
+        let name = gc.symbol_intern("struct_name");
+        let mut st = gc.alloc(SimpleStruct::new(name, 3));
+        let p = gc.cons(Object::Fixnum(1234), Object::Fixnum(5678));
+        p.to_pair().car = p;
+        st.set(0, p);
+        st.set(1, p);
+        st.set(2, gc.symbol_intern("hoge"));
+        let obj = Object::SimpleStruct(st);
+
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, obj).unwrap();
+
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let st2 = read_obj.to_simple_struct();
+        assert_eq!(st.len(), st2.len());
+        assert_equal!(&mut gc, st.name, st2.name);
+        assert_equal!(&mut gc, st.field(2), st2.field(2));
+    }
+
+    #[test]
+    fn test_read_write_eq_hashtable() {
+        let mut gc = Box::new(Gc::new());
+
+        let hashtable = gc.new_eq_hashtable();
+        hashtable
+            .to_eq_hashtable()
+            .set(Object::Fixnum(1356), gc.symbol_intern("hello"));
+        hashtable
+            .to_eq_hashtable()
+            .set(Object::Fixnum(1357), gc.symbol_intern("hello2"));
+        let mut port = BytevectorOutputPort::new();
+        let bport: &mut dyn BinaryOutputPort = &mut port;
+        let writer = FaslWriter::new();
+        writer.write(bport, hashtable).unwrap();
+        let mut reader = FaslReader::new(&port.data);
+        let read_obj = reader.read(&mut gc).unwrap();
+        let v1 = read_obj
+            .to_eq_hashtable()
+            .get(Object::Fixnum(1356), Object::False);
+        let v2 = hashtable
+            .to_eq_hashtable()
+            .get(Object::Fixnum(1356), Object::True);
+        assert_equal!(&mut gc, v1, v2);
+
+        let v1 = read_obj
+            .to_eq_hashtable()
+            .get(Object::Fixnum(1357), Object::False);
+        let v2 = hashtable
+            .to_eq_hashtable()
+            .get(Object::Fixnum(1357), Object::True);
+        assert_equal!(&mut gc, v1, v2);
     }
 }

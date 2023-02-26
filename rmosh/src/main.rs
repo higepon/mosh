@@ -11,6 +11,7 @@ lalrpop_mod!(pub number_reader); // synthesized by LALRPOP
 pub mod alloc;
 pub mod compiler;
 pub mod equal;
+pub mod error;
 pub mod fasl;
 pub mod gc;
 pub mod lexer;
@@ -22,7 +23,9 @@ pub mod objects;
 pub mod op;
 pub mod ports;
 pub mod procs;
+pub mod procs_util;
 pub mod psyntax;
+pub mod reader_util;
 pub mod vm;
 
 fn main() {
@@ -37,5 +40,10 @@ fn main() {
     //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
     vargs.push(vm.gc.new_string("/root/cont.scm"));
     let vargs = vm.gc.listn(&vargs);
-    vm.enable_r7rs(vargs);
+    match vm.enable_r7rs(vargs) {
+        Ok(_ret) => println!("normal exit"),
+        Err(e) => {
+            println!("e={}", e);
+        }
+    }
 }
