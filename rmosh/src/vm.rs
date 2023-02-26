@@ -139,7 +139,7 @@ impl Vm {
         ret
     }
 
-    pub fn enable_r7rs(&mut self, args: Object) -> error::Result<Object> {
+pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {
         let mut fasl = FaslReader::new(psyntax::U8_ARRAY);
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
@@ -161,9 +161,14 @@ impl Vm {
             self.set_global_value(sym.to_symbol(), args);
 
             let sym = self.gc.symbol_intern("%loadpath");
-            // TODO: tentative.
-            let path = self.gc.new_string("/root/mosh.git/lib");
-            self.set_global_value(sym.to_symbol(), path);
+            let mut paths = String::new();
+            paths.push_str("/root/mosh.git/lib");
+            if let Some(loadpath) = loadpath {
+                paths.push(':');
+                paths.push_str(&loadpath);
+            }
+            let paths = self.gc.new_string(&paths);
+            self.set_global_value(sym.to_symbol(), paths);
 
             let sym = self.gc.symbol_intern("%vm-import-spec");
             self.set_global_value(sym.to_symbol(), Object::False);

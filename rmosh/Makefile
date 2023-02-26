@@ -12,6 +12,12 @@ test: src/lexer_iter.rs src/number_lexer_iter.rs
 test-scheme:
 	mosh --loadpath=./scripts/ tests/rust_sexp.scm
 
+r7rs-test:
+	time cargo run  ../tests/r7rs/r7rs-tests.scm	
+
+r6rs-test:
+	time cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
+
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm
 	make -C data
