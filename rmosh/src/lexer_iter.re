@@ -64,28 +64,28 @@ use crate::reader_util::ReadError;
     UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
     REAL_10                = (SIGN UREAL_10) | INF_NAN;
     RADIX_10               = '#d' ?;
-    COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 'i') | (REAL_10 INF_NAN 'i') | (REAL_10 [\+\-] 'i') | ([\+\-] UREAL_10 'i') | (INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
     NUM_10                 = PREFIX_10 COMPLEX_10;
     UINTEGER_8             = DIGIT_8 +;
     UREAL_8                = UINTEGER_8 | (UINTEGER_8 "/" UINTEGER_8);
     REAL_8                 = (SIGN UREAL_8) | INF_NAN;
     RADIX_8                = '#o' ?;
-    COMPLEX_8              = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 'i') | (REAL_8 [\+\-] INF_NAN 'i') | (REAL_8 [\+\-] 'i') | ([\+\-] UREAL_8 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    COMPLEX_8              = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 'i') | (REAL_8 INF_NAN 'i') | (REAL_8 [\+\-] 'i') | ([\+\-] UREAL_8 'i') | (INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_8               = (RADIX_8 EXACTNESS) | (EXACTNESS RADIX_8);
     NUM_8                  = PREFIX_8 COMPLEX_8;
     UINTEGER_2             = DIGIT_2 +;
     UREAL_2                = UINTEGER_2 | (UINTEGER_2 "/" UINTEGER_2);
     REAL_2                 = (SIGN UREAL_2) | INF_NAN;
     RADIX_2                = '#b' ?;
-    COMPLEX_2              = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 'i') | (REAL_2 [\+\-] INF_NAN 'i') | (REAL_2 [\+\-] 'i') | ([\+\-] UREAL_2 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    COMPLEX_2              = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 'i') | (REAL_2 INF_NAN 'i') | (REAL_2 [\+\-] 'i') | ([\+\-] UREAL_2 'i') | (INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_2               = (RADIX_2 EXACTNESS) | (EXACTNESS RADIX_2);
     NUM_2                  = PREFIX_2 COMPLEX_2;
     UINTEGER_16            = DIGIT_16 +;
     UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16);
     REAL_16                = (SIGN UREAL_16) | INF_NAN;
     RADIX_16               = '#x' ?;
-    COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 'i') | (REAL_16 [\+\-] INF_NAN 'i') | (REAL_16 [\+\-] 'i') | ([\+\-] UREAL_16 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
+    COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 'i') | (REAL_16 INF_NAN 'i') | (REAL_16 [\+\-] 'i') | ([\+\-] UREAL_16 'i') | ([\+\-] INF_NAN 'i') | ([\+\-] 'i');
     PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
     NUM_16                 = PREFIX_16 COMPLEX_16;
     EOS                    = "\X0000";
@@ -203,7 +203,7 @@ impl<'input> Iterator for Lexer<'input> {
                     "#," {
                         return self.with_location(Token::AbbrevUnsyntax);
                     }
-                    "#@" {
+                    "#,@" {
                         return self.with_location(Token::AbbrevUnsyntaxSplicing);
                     }
                     DATUM_COMMENT {

@@ -49,7 +49,12 @@ impl Vm {
             let op: Op = unsafe { *self.pc }.to_instruction();
             self.pc = self.jump(self.pc, 1);
             match op {
-                Op::CompileError => todo!(),
+                Op::CompileError => {
+                    let who = self.operand();
+                    let message = self.operand();
+                    let irritants = self.operand();
+                    self.assertion_violation_obj(who, message, irritants)?;
+                }
                 Op::BranchNotLe => {
                     self.branch_not_le_op();
                 }

@@ -55,6 +55,7 @@ impl<'input> Iterator for NumberLexer<'input> {
                     <*> "-" { return self.with_location(Token::Minus); }
                     <*> "." { return self.with_location(Token::Dot); }
                     <*> 'i' { return self.with_location(Token::Imag); }
+                    <*> "@" { return self.with_location(Token::At); }
                     <*> '#b' => BIN { return self.with_location(Token::Radix2); }
                     <*> '#d' { return self.with_location(Token::Radix10); }
                     <*> '#o' => OCT { return self.with_location(Token::Radix8); }
@@ -63,7 +64,7 @@ impl<'input> Iterator for NumberLexer<'input> {
                     <*> "#e" { return self.with_location(Token::Exact); }
                     <BIN> BIN_DIGIT {
                         return self.with_location(Token::BinDigit { value: self.extract_token() });
-                    }                       
+                    }
                     <*> DIGIT {
                         return self.with_location(Token::Digit { value: self.extract_token() });
                     }

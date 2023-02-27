@@ -93,6 +93,16 @@ impl Vm {
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
+
+    pub(super) fn assertion_violation_obj(
+        &mut self,
+        who: Object,
+        message: Object,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        self.raise_after3("assertion-violation", who, message, irritants)
+    }    
+
     pub(super) fn assertion_violation_err(&mut self, err: error::Error) -> error::Result<Object> {
         self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
     }

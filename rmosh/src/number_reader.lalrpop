@@ -1,5 +1,6 @@
 use crate::gc::Gc;
 use crate::lexer;
+use crate::numbers;
 use crate::numbers::exact;
 use crate::numbers::inexact;
 use crate::numbers::Bignum;
@@ -152,6 +153,9 @@ Radix16 = {
 
 Complex10: Object = {
     Real10,
+    <lhs: Real10> "@" <rhs: Real10> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },    
     <real: Real10> "+" <imag: UReal10> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -168,6 +172,12 @@ Complex10: Object = {
     <real: Real10> "-inf.0" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: NEG_INFINITY)))))
     },
+    "+inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Flonum(Flonum::new(f64:: INFINITY)))))
+    },
+    "-inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Flonum(Flonum::new(f64:: NEG_INFINITY)))))
+    },    
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
@@ -175,7 +185,7 @@ Complex10: Object = {
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
     },
     "-" <imag: Real10> "i" => {
-        let imag = imag.neg(gc);        
+        let imag = imag.neg(gc);
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
     },
     "+" "i" => {
@@ -188,6 +198,9 @@ Complex10: Object = {
 
 Complex8: Object = {
     Real8,
+    <lhs: Real8> "@" <rhs: Real8> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },        
     <real: Real8> "+" <imag: UReal8> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -208,6 +221,9 @@ Complex8: Object = {
 
 Complex2: Object = {
     Real2,
+    <lhs: Real2> "@" <rhs: Real2> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },        
     <real: Real2> "+" <imag: UReal2> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -228,6 +244,9 @@ Complex2: Object = {
 
 Complex16: Object = {
     Real16,
+    <lhs: Real16> "@" <rhs: Real16> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },        
     <real: Real16> "+" <imag: UReal16> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -550,12 +569,13 @@ extern {
         "." => lexer::Token::Dot,
         "/" => lexer::Token::Slash,
         "#d" => lexer::Token::Radix10,
-        "#b" => lexer::Token::Radix2,        
+        "#b" => lexer::Token::Radix2,
         "#o" => lexer::Token::Radix8,
         "#x" => lexer::Token::Radix16,
         "#e" => lexer::Token::Exact,
         "#i" => lexer::Token::Inexact,
         "+" => lexer::Token::Plus,
+        "@" => lexer::Token::At,
         "digit" => lexer::Token::Digit { value: <String> },
         "bin_digit" => lexer::Token::BinDigit { value: <String> },
         "oct_digit" => lexer::Token::OctDigit { value: <String> },

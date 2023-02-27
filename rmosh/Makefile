@@ -19,14 +19,15 @@ r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/reader.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/conditions.sps --loadpath=../tests/r6rs-test-suite/
-	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/r5rs.sps --loadpath=../tests/r6rs-test-suite/
-	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/eval.sps --loadpath=../tests/r6rs-test-suite/
+	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/syntax-case.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/base.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run-via-eval.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/simple.sps --loadpath=../tests/r6rs-test-suite/
-	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/syntax-case.sps --loadpath=../tests/r6rs-test-suite/
-	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/unicode.sps --loadpath=../tests/r6rs-test-suite/
+	
+	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/unicode.sps --loadpath=../tests/r6rs-test-suite/	
+	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/r5rs.sps --loadpath=../tests/r6rs-test-suite/
+	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/eval.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/exceptions.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/contrib.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/mutable-strings.sps --loadpath=../tests/r6rs-test-suite/
