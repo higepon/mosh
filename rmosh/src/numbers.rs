@@ -1868,6 +1868,18 @@ impl Object {
         }
     }
 
+    pub fn is_rational_valued(&self) -> bool {
+        assert!(self.is_number());
+        if self.is_rational() {
+            true
+        } else if self.is_compnum() {
+            let c = self.to_compnum();
+            c.imag.is_zero() && c.real.is_rational_valued()
+        } else {
+            false
+        }
+    }
+
     pub fn is_even(&self) -> bool {
         match *self {
             Object::Fixnum(fx) => fx % 2 == 0,

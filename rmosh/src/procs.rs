@@ -4359,7 +4359,13 @@ fn is_real_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_rational_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "rational-valued?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let n = args[0];
+    if n.is_number() && n.is_rational_valued() {
+        Ok(Object::True)
+    } else {
+        Ok(Object::False)
+    }
 }
 fn is_integer_valued(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "integer-valued?";
