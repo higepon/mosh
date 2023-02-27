@@ -93,7 +93,7 @@ use crate::reader_util::ReadError;
     DATUM_COMMENT          = "#;";
     COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS));
     DEFINING_SHARED        = "#" DIGIT+ "=";
-    DEFINED_SHARED         = "#" DIGIT+ "#";    
+    DEFINED_SHARED         = "#" DIGIT+ "#";
 */
 
 impl<'input> Iterator for Lexer<'input> {
@@ -146,16 +146,25 @@ impl<'input> Iterator for Lexer<'input> {
                     "#\\backspace" {
                         return self.with_location(Token::Character { value: char::from(8) });
                     }
+                    "#\\linefeed" {
+                        return self.with_location(Token::Character { value: char::from(0xa) });
+                    }
+                    "#\\vtab" {
+                        return self.with_location(Token::Character { value: char::from(0xb) });
+                    }
+                    "#\\page" {
+                        return self.with_location(Token::Character { value: char::from(0xc) });
+                    }
                     "#\\delete" {
                         return self.with_location(Token::Character { value: char::from(0x7f) });
                     }
-                    "#\\escape" {
+                    "#\\esc" | "#\\escape" {
                         return self.with_location(Token::Character { value: char::from(0x1b) });
                     }
                     "#\\newline" {
                         return self.with_location(Token::Character { value: '\n' });
                     }
-                    "#\\null" {
+                    "#\\nul" | "#\\null" {
                         return self.with_location(Token::Character { value: '\0' });
                     }
                     "#\\return" {
