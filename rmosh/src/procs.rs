@@ -953,6 +953,9 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::StdOutputPort(mut port) => {
             port.display(args[0], shared_aware).ok();
         }
+        Object::FileOutputPort(mut port) => {
+            port.display(args[0], shared_aware).ok();
+        }        
         Object::StdErrorPort(mut port) => {
             port.display(args[0], shared_aware).ok();
         }
@@ -1512,9 +1515,21 @@ fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> error
     vm.set_current_input_port(args[0]);
     Ok(Object::Unspecified)
 }
-fn set_current_output_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn set_current_output_port_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-current-output-port!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_textual_port() && args[0].is_output_port() {
+        vm.set_current_output_port(args[0]);
+    } else {
+        return Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "text output port required",
+            &[args[0]],
+        ));
+    }
+    Ok(Object::Unspecified)
+
 }
 fn is_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "char?";

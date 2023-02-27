@@ -235,6 +235,10 @@ pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::
         self.current_input_port = port;
     }
 
+    pub fn set_current_output_port(&mut self, port: Object) {
+        self.current_output_port = port;
+    }    
+
     pub fn read(&mut self) -> Result<Object, ReadError> {
         match self.current_input_port {
             Object::FileInputPort(mut port) => port.read(&mut self.gc),
