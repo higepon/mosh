@@ -423,6 +423,12 @@ impl Flonum {
             None => todo!(),
         }
     }
+    pub fn mul_rat(&self, r: &GcRef<Ratnum>) -> Object {
+        match r.to_f64() {
+            Some(rv) => Object::Flonum(Flonum::new(self.value() * rv)),
+            None => todo!(),
+        }
+    }    
     pub fn eqv_rat(&self, r: &GcRef<Ratnum>) -> bool {
         match r.to_f64() {
             Some(v) => {
@@ -1055,7 +1061,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(_), Object::Compnum(c)) => c.mul_real(gc, n1),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.mul_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.mul(&fl2),
-        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Ratnum(r)) => fl.mul_rat(&r),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.mul_big(gc, &b),
@@ -1064,7 +1070,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.mul(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.mul_rat(gc, &r),
-        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Flonum(fl)) => fl.mul_rat(&r),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.mul(gc, &r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
