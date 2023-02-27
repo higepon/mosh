@@ -446,6 +446,16 @@ impl Flonum {
     }
 
     // Flonum vs Bignum
+    pub fn add_big(&self, gc: &mut Box<Gc>, b: &GcRef<Bignum>) -> Object {
+        match BigInt::from_f64(self.value()) {
+            Some(bv) => Object::Bignum(gc.alloc(Bignum::new(bv + b.value.clone()))),
+            None => match b.to_f64() {
+                Some(fv) => Object::Flonum(Flonum::new(fv + self.value())),
+                None => panic!(),
+            },
+        }
+    }
+
     pub fn eqv_big(&self, b: &GcRef<Bignum>) -> bool {
         match BigInt::from_f64(self.value()) {
             Some(b2) => b2 == b.value,
@@ -721,7 +731,7 @@ impl Bignum {
     pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
-        } else {        
+        } else {
             let ret = self.value.clone().div(fx);
             match ret.to_isize() {
                 Some(v) => Ok(Object::Fixnum(v)),
@@ -981,10 +991,10 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.add_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.add(&fl2),
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.add_rat(&r),
-        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => fl.add_big(gc, &b),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.add_big(gc, &b),
-        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.add_big(gc, &b),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
