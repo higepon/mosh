@@ -113,7 +113,7 @@ impl FaslWriter {
                 self.put_tag(port, Tag::Bignum)?;                
                 let (sign, bytes) = b.value.to_bytes_le();
                 let sign = if sign == Sign::Minus { 1 } else if sign == Sign::NoSign { 2 } else { 3};
-                port.put_u8(sign);
+                port.put_u8(sign)?;
                 port.put_u16(bytes.len() as u16)?;
                 port.write(&bytes)?;
             }
