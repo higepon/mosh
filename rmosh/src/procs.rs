@@ -3287,7 +3287,24 @@ fn throw(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "<";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::lt(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            panic!(
+                "{}: number required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
+        }
+    }
+    Ok(Object::True)
 }
 fn number_le(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "<=";
@@ -3295,7 +3312,23 @@ fn number_le(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = ">";
-    panic!("{}({}) not implemented", name, args.len());
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::gt(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            panic!(
+                "{}: number required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
+        }
+    }
+    Ok(Object::True)
 }
 fn number_ge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = ">=";

@@ -17,6 +17,7 @@ r7rs-test:
 
 r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/reader.sps --loadpath=../tests/r6rs-test-suite/
+	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/conditions.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/r5rs.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/eval.sps --loadpath=../tests/r6rs-test-suite/
@@ -35,7 +36,6 @@ r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/control.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/hashtables.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/records/procedural.sps --loadpath=../tests/r6rs-test-suite/
-	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/enums.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/sorting.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/records/syntactic.sps --loadpath=../tests/r6rs-test-suite/
