@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Debug, Display},
-    ops::{Deref, DerefMut, Neg, Rem},
+    ops::{Deref, DerefMut, Div, Neg, Rem},
 };
 
 use num_bigint::BigInt;
@@ -18,7 +18,7 @@ trait FixnumExt {
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn sub(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn mul(self, gc: &mut Box<Gc>, fx: isize) -> Object;
-    fn div(self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError>;
+    fn div_fx(self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError>;
     fn integer_div(self, fx: isize) -> Result<Object, SchemeError>;
 
     // Fixnum vs Flonum
@@ -93,7 +93,7 @@ impl FixnumExt for isize {
             }
         }
     }
-    fn div(self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+    fn div_fx(self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
         } else if fx == 1 {
@@ -718,6 +718,18 @@ impl Bignum {
         }
     }
 
+    pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+        if fx == 0 {
+            Err(SchemeError::Div0)
+        } else {        
+            let ret = self.value.clone().div(fx);
+            match ret.to_isize() {
+                Some(v) => Ok(Object::Fixnum(v)),
+                None => Ok(Object::Bignum(gc.alloc(Bignum::new(ret)))),
+            }
+        }
+    }
+
     // Bignum vs Ratnum.
     pub fn eqv_rat(&self, r: &Ratnum) -> bool {
         match (self.to_f64(), r.to_f64()) {
@@ -1064,7 +1076,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
-        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.div(gc, fx2),
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.div_fx(gc, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.div_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.div_rat(gc, &r),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
@@ -1074,7 +1086,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => b.div_fx(gc, fx),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(_), Object::Bignum(_)) => todo!(),
