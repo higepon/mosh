@@ -1857,7 +1857,7 @@ impl Object {
         lt(*self, Object::Fixnum(0))
     }
 
-    fn is_real_valued(&self) -> bool {
+    pub fn is_real_valued(&self) -> bool {
         if self.is_real() {
             true
         } else if self.is_compnum() {

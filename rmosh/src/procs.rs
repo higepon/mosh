@@ -955,7 +955,7 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
         Object::FileOutputPort(mut port) => {
             port.display(args[0], shared_aware).ok();
-        }        
+        }
         Object::StdErrorPort(mut port) => {
             port.display(args[0], shared_aware).ok();
         }
@@ -1529,7 +1529,6 @@ fn set_current_output_port_destructive(vm: &mut Vm, args: &mut [Object]) -> erro
         ));
     }
     Ok(Object::Unspecified)
-
 }
 fn is_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "char?";
@@ -4350,7 +4349,13 @@ fn is_integer(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_real_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real-valued?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let n = args[0];
+    if n.is_number() && n.is_real_valued() {
+        Ok(Object::True)
+    } else {
+        Ok(Object::False)
+    }
 }
 fn is_rational_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "rational-valued?";
