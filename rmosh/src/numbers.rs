@@ -787,8 +787,8 @@ impl Debug for Bignum {
 #[repr(C)]
 pub struct Compnum {
     pub header: GcHeader,
-    real: Object,
-    imag: Object,
+    pub real: Object,
+    pub imag: Object,
 }
 
 impl Compnum {
@@ -1029,14 +1029,14 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.mul(gc, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.mul_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.mul_rat(gc, &r),
-        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Bignum(b)) => fx.mul_big(gc, &b),
         (Object::Fixnum(_), Object::Compnum(c)) => c.mul_real(gc, n1),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.mul_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.mul(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => fx.mul_big(gc, &b),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.mul(gc, &b2),

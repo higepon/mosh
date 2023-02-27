@@ -8,7 +8,7 @@ use num_traits::FromPrimitive;
 
 use crate::{
     gc::Gc,
-    numbers::Flonum,
+    numbers::{Flonum, Ratnum, Compnum},
     objects::{EqHashtable, Object, SimpleStruct},
     ports::BinaryOutputPort,
 };
@@ -33,6 +33,8 @@ enum Tag {
     Flonum = 15,
     Bytevector = 16,
     Eof = 17,
+    Ratnum = 18,
+    Compnum = 19,
 }
 
 // S-expression serializer.
@@ -108,8 +110,10 @@ impl FaslWriter {
             Object::Bignum(_r) => {
                 todo!();
             }
-            Object::Compnum(_r) => {
-                todo!();
+            Object::Compnum(c) => {
+                self.put_tag(port, Tag::Compnum)?;
+                self.write_one(port, seen, shared_id, c.real)?;
+                self.write_one(port, seen, shared_id, c.imag)?;
             }
             Object::Continuation(_r) => {
                 todo!();
@@ -117,11 +121,13 @@ impl FaslWriter {
             Object::ContinuationStack(_r) => {
                 todo!();
             }
-            Object::Ratnum(_r) => {
-                todo!();
+            Object::Ratnum(r) => {
+                self.put_tag(port, Tag::Ratnum)?;
+                port.put_i64(*r.ratio.numer())?;
+                port.put_i64(*r.ratio.denom())?;
             }
             Object::Regexp(_r) => {
-                todo!();
+                todo!()
             }
             Object::StringInputPort(_) => todo!(),
             Object::FileInputPort(_) => todo!(),
@@ -491,6 +497,8 @@ impl FaslReader {
             Tag::Flonum => self.read_float(),
             Tag::Bytevector => self.read_bytevector(gc),
             Tag::Eof => Ok(Object::Eof),
+            Tag::Ratnum => self.read_ratnum(gc),
+            Tag::Compnum => self.read_compnum(gc),
         }
     }
 
@@ -522,6 +530,14 @@ impl FaslReader {
                 Ok(Object::DefinedShared(uid))
             }
         }
+    }
+
+    fn read_ratnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 8];
+        self.bytes.read_exact(&mut buf)?;
+        let numer = isize::from_le_bytes(buf);
+        let denom = isize::from_le_bytes(buf);
+        Ok(Object::Ratnum(gc.alloc(Ratnum::new(numer, denom))))
     }
 
     fn read_fixnum(&mut self) -> Result<Object, io::Error> {
@@ -643,6 +659,12 @@ impl FaslReader {
         let first = self.read_sexp(gc)?;
         let second = self.read_sexp(gc)?;
         Ok(gc.cons(first, second))
+    }
+
+    fn read_compnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let real = self.read_sexp(gc)?;
+        let imag = self.read_sexp(gc)?;
+        Ok(Object::Compnum(gc.alloc(Compnum::new(real, imag))))
     }
 
     fn create_read_error(&self, reason: &str) -> io::Error {
