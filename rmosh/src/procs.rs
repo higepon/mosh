@@ -2679,9 +2679,26 @@ fn assq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     }
 }
-fn assoc(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn assoc(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "assoc";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let obj = args[0];
+    let list = args[1];
+    if !list.is_list() {
+        panic!("{}: list required but got {}", name, list);
+    }
+    let mut o = list;
+    loop {
+        if o.is_nil() {
+            break;
+        }
+        let e = Equal::new();
+        if e.is_equal(&mut vm.gc, &obj, &o.car_unchecked().car_unchecked()) {
+            return Ok(o.car_unchecked());
+        }
+        o = o.cdr_unchecked();
+    }
+    Ok(Object::False)
 }
 fn assv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "assv";
