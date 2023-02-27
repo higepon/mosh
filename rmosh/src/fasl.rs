@@ -3,12 +3,13 @@ use std::{
     io::{self, Cursor, Read},
 };
 
+use num_bigint::{Sign, BigInt};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::{
     gc::Gc,
-    numbers::{Flonum, Ratnum, Compnum},
+    numbers::{Flonum, Ratnum, Compnum, Bignum},
     objects::{EqHashtable, Object, SimpleStruct},
     ports::BinaryOutputPort,
 };
@@ -35,6 +36,7 @@ enum Tag {
     Eof = 17,
     Ratnum = 18,
     Compnum = 19,
+    Bignum = 20,
 }
 
 // S-expression serializer.
@@ -107,8 +109,13 @@ impl FaslWriter {
                 self.put_tag(port, Tag::Flonum)?;
                 port.put_u64(f.u64_value())?;
             }
-            Object::Bignum(_r) => {
-                todo!();
+            Object::Bignum(b) => {
+                self.put_tag(port, Tag::Bignum)?;                
+                let (sign, bytes) = b.value.to_bytes_le();
+                let sign = if sign == Sign::Minus { 1 } else if sign == Sign::NoSign { 2 } else { 3};
+                port.put_u8(sign);
+                port.put_u16(bytes.len() as u16)?;
+                port.write(&bytes)?;
             }
             Object::Compnum(c) => {
                 self.put_tag(port, Tag::Compnum)?;
@@ -499,6 +506,7 @@ impl FaslReader {
             Tag::Eof => Ok(Object::Eof),
             Tag::Ratnum => self.read_ratnum(gc),
             Tag::Compnum => self.read_compnum(gc),
+            Tag::Bignum => self.read_bignum(gc),
         }
     }
 
@@ -530,6 +538,22 @@ impl FaslReader {
                 Ok(Object::DefinedShared(uid))
             }
         }
+    }
+
+    fn read_bignum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 1];
+        self.bytes.read_exact(&mut buf)?;
+        let sign = buf[0]        ;
+        let sign =  if sign == 1 { Sign::Minus } else if sign == 2 { Sign::NoSign } else { Sign::Plus};
+        
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf);
+
+        let mut buf = vec![0; len as usize];
+        self.bytes.read_exact(&mut buf)?;        
+        let bigint = BigInt::from_bytes_le(sign, &buf);
+        Ok(Object::Bignum(gc.alloc(Bignum::new(bigint))))
     }
 
     fn read_ratnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
