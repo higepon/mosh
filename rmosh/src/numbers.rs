@@ -5,7 +5,7 @@ use std::{
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
-use num_traits::{FromPrimitive, Signed, ToPrimitive};
+use num_traits::{FromPrimitive, One, Signed, ToPrimitive};
 
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -859,6 +859,35 @@ impl Compnum {
         Object::Compnum(gc.alloc(Compnum::new(re, im)))
     }
 
+    // e^(z2log(z1))
+    pub fn expt(gc: &mut Box<Gc>, z1: Object, z2: Object) -> Object {
+        if z2.is_fixnum() {
+            let n = z2.to_isize();
+            if n == 0 {
+                Object::Fixnum(1)
+            } else if n > 0 {
+                let mut ret = z1;
+                for i in 0..n - 1 {
+                    ret = mul(gc, ret, z1);
+                }
+                ret
+            } else {
+                let mut ret = Object::Fixnum(1);
+                for i in 0..(-n) {
+                    match div(gc, ret, z1) {
+                        Ok(v) => ret = v,
+                        Err(_) => panic!(),
+                    }
+                }
+                ret
+            }
+        } else {
+            let x = log(gc, z1);
+            let x = mul(gc, z2, x);
+            exp(gc, x)
+        }
+    }
+
     pub fn log(&self, gc: &mut Box<Gc>) -> Object {
         let real = real_to_f64(self.real);
         let imag = real_to_f64(self.imag);
@@ -1291,12 +1320,27 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n2.is_number());
     assert!(!n2.is_bignum());
     match (n1, n2) {
-        (Object::Fixnum(f1), Object::Fixnum(f2)) => match (BigInt::from_isize(f1), f2 as u32) {
+        (Object::Fixnum(f1), Object::Fixnum(f2)) => match (BigInt::from_isize(f1), f2) {
             (Some(b1), b2) => {
-                let b = b1.pow(b2);
-                match b.to_isize() {
-                    Some(v) => Object::Fixnum(v),
-                    None => Object::Bignum(gc.alloc(Bignum::new(b))),
+                if f2 == 0 {
+                    Object::Fixnum(1)
+                } else if f2 > 0 {
+                    let b = b1.pow(b2 as u32);
+                    match b.to_isize() {
+                        Some(v) => Object::Fixnum(v),
+                        None => Object::Bignum(gc.alloc(Bignum::new(b))),
+                    }
+                } else {
+                    if f1 == 0 {
+                        return Object::Unspecified;
+                    }
+                    let b = b1.pow((f2 * -1) as u32);
+                    let one = BigInt::one();
+                    let ret = one / b;
+                    match ret.to_isize() {
+                        Some(v) => Object::Fixnum(v),
+                        None => Object::Bignum(gc.alloc(Bignum::new(ret))),
+                    }
                 }
             }
             _ => todo!(),
@@ -1308,7 +1352,17 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         }
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Compnum(c)) => {
+            if fx == 0 {
+                if c.real.is_negative() {
+                    Object::Unspecified
+                } else {
+                    Object::Fixnum(0)
+                }
+            } else {
+                Compnum::expt(gc, n1, n2)
+            }
+        }
         (Object::Flonum(fl), Object::Fixnum(_)) => {
             let fl1 = fl.value();
             let fl2 = real_to_f64(n2);
