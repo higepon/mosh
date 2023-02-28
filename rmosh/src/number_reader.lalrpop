@@ -329,7 +329,13 @@ UReal10: Object = {
     <numer: UInteger10> "/" <denom: UInteger10> =>? {
         match (isize::from_str(&numer), isize::from_str(&denom)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                if d == 0 {
+                    Err(ParseError::User {
+                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                    })
+                } else {
+                    Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                }
             }
             (Err(err), _) => {
                 Err(ParseError::User {

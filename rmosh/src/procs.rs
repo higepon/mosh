@@ -1058,12 +1058,8 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         chars.push('\0');
         match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
             Ok(n) => Ok(n),
-            Err(err) => Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                &format!("{:?}", err),
-                &[],
-            )),
+            // Note that string->number returns #f for any parse error.
+            Err(_) => Ok(Object::False),
         }
     } else {
         let radix = args[1];

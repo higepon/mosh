@@ -24,6 +24,10 @@ pub enum ReadError {
         token: String,
         description: String,
     },
+    DivisionByZero {
+        token: String,
+        description: String,
+    },    
     LalrpopInvalidToken {
         location: usize,
     },
