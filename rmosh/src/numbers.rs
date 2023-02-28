@@ -867,13 +867,13 @@ impl Compnum {
                 Object::Fixnum(1)
             } else if n > 0 {
                 let mut ret = z1;
-                for i in 0..n - 1 {
+                for _ in 0..n - 1 {
                     ret = mul(gc, ret, z1);
                 }
                 ret
             } else {
                 let mut ret = Object::Fixnum(1);
-                for i in 0..(-n) {
+                for _i in 0..(-n) {
                     match div(gc, ret, z1) {
                         Ok(v) => ret = v,
                         Err(_) => panic!(),
@@ -1368,10 +1368,23 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
             let fl2 = real_to_f64(n2);
             Object::Flonum(Flonum::new(fl1.powf(fl2)))
         }
-        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => {
+            Object::Flonum(Flonum::new(fl1.value().powf(fl2.value())))
+        }
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
-        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Compnum(c)) => {
+            let fl = fl.value();
+            if fl == 0.0 {
+                if c.real.is_negative() {
+                    Object::Unspecified
+                } else {
+                    Object::Flonum(Flonum::new(0.0))
+                }
+            } else {
+                Compnum::expt(gc, n1, n2)
+            }
+        }
         (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
@@ -1560,6 +1573,26 @@ pub fn to_string(n: Object, radix: usize) -> String {
         }
         Object::Fixnum(fx) if radix == 16 => {
             format!("{:x}", fx)
+        }
+        Object::Ratnum(r) if radix == 16 => {
+            format!("{:x}", r.ratio)
+        }
+        Object::Ratnum(r) if radix == 8 => {
+            format!("{:o}", r.ratio)
+        }
+        Object::Ratnum(r) if radix == 2 => {
+            format!("{:b}", r.ratio)
+        }
+        Object::Compnum(c) => {
+            if ge(c.imag, Object::Fixnum(0)) {
+                if c.imag.is_flonum() && c.imag.to_flonum().is_infinite() {
+                    format!("{}{}i", c.real.to_string(), c.imag.to_string())
+                } else {
+                    format!("{}+{}i", to_string(c.real, radix), to_string(c.imag, radix))
+                }
+            } else {
+                format!("{}+{}i", to_string(c.real, radix), to_string(c.imag, radix))
+            }
         }
         _ => panic!("invalid n={}, radix={}", n, radix),
     }

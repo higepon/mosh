@@ -1053,18 +1053,17 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_between!(name, args, 1, 2);
     let argc = args.len();
     if argc == 1 {
-        match args[0] {
-            Object::String(s) => {
-                let mut chars: Vec<char> = s.chars().collect();
-                chars.push('\0');
-                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
-                    Ok(n) => Ok(n),
-                    Err(err) => panic!("{}: {:?}", name, err),
-                }
-            }
-            _ => {
-                panic!("{}: string required but got {}", name, args[0])
-            }
+        let s = as_sstring!(name, args, 0, &mut vm.gc);
+        let mut chars: Vec<char> = s.chars().collect();
+        chars.push('\0');
+        match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+            Ok(n) => Ok(n),
+            Err(err) => Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                &format!("{:?}", err),
+                &[],
+            )),
         }
     } else {
         let radix = args[1];
