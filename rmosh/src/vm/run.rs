@@ -408,8 +408,10 @@ impl Vm {
                     let d = self.ac;
                     match div(&mut self.gc, n, d) {
                         Ok(result) => self.set_return_value(result),
+
                         Err(SchemeError::Div0) => {
-                            panic!("/: division by zero {} {}", n, d)
+                            let irritants = self.gc.list2(n, d);
+                            self.assertion_violation("/", "divsion by zero", irritants)?;
                         }
                         _ => panic!(),
                     }

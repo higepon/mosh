@@ -428,13 +428,10 @@ impl Flonum {
             Some(rv) => Object::Flonum(Flonum::new(self.value() * rv)),
             None => todo!(),
         }
-    }    
+    }
     pub fn eqv_rat(&self, r: &GcRef<Ratnum>) -> bool {
         match r.to_f64() {
-            Some(v) => {
-                println!("eqv_rat {} {}", v, self.value());
-                v == self.value()
-            }
+            Some(v) => v == self.value(),
             None => false,
         }
     }
@@ -459,6 +456,12 @@ impl Flonum {
                 Some(fv) => Object::Flonum(Flonum::new(fv + self.value())),
                 None => panic!(),
             },
+        }
+    }
+    pub fn mul_big(&self, _gc: &mut Box<Gc>, b: &GcRef<Bignum>) -> Object {
+        match b.to_f64() {
+            Some(fv) => Object::Flonum(Flonum::new(fv * self.value())),
+            None => panic!(),
         }
     }
 
@@ -856,6 +859,19 @@ impl Compnum {
         Object::Compnum(gc.alloc(Compnum::new(re, im)))
     }
 
+    pub fn log(&self, gc: &mut Box<Gc>) -> Object {
+        let real = real_to_f64(self.real);
+        let imag = real_to_f64(self.imag);
+
+        let r = (real * real + imag * imag).sqrt();
+        let theta = f64::atan2(imag, real);
+
+        Object::Compnum(gc.alloc(Compnum::new(
+            Object::Flonum(Flonum::new(r.ln())),
+            Object::Flonum(Flonum::new(theta)),
+        )))
+    }
+
     pub fn cos(&self, gc: &mut Box<Gc>) -> Object {
         // cos(iy) = (e^-y + e^y) / 2
         // sin(iy) = (e^-y - e^y) / 2i
@@ -1051,6 +1067,9 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
 }
 
 pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+    if !n1.is_number() {
+        panic!("n1={}", n1.to_string());
+    }
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1062,10 +1081,10 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.mul_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.mul(&fl2),
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.mul_rat(&r),
-        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => fl.mul_big(gc, &b),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.mul_big(gc, &b),
-        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.mul_big(gc, &b),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.mul(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
@@ -1082,7 +1101,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         _ => todo!(),
     }
 }
-
+#[derive(Debug)]
 pub enum SchemeError {
     Div0,
     NonZeroRequired,
@@ -1496,7 +1515,7 @@ pub fn log(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     match n {
         Object::Fixnum(fx) => fx.log(),
-        Object::Compnum(_) => todo!(),
+        Object::Compnum(c) => c.log(gc),
         _ => {
             let value = real_to_f64(n);
             if value.is_infinite() && n.is_bignum() && gt(n, Object::Fixnum(0)) {
@@ -1881,7 +1900,7 @@ impl Object {
     }
 
     #[inline(always)]
-    fn is_negative(&self) -> bool {
+    pub fn is_negative(&self) -> bool {
         lt(*self, Object::Fixnum(0))
     }
 

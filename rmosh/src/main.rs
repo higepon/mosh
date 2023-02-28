@@ -47,11 +47,14 @@ fn main() {
         vargs.push(vm.gc.new_string(&file));
     } else {
         //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
-        vargs.push(vm.gc.new_string("/root/cont.scm"));
+        //vargs.push(vm.gc.new_string("/root/cont.scm"));
+        vargs.push(vm.gc.new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/base.sps"))
     }
 
     let vargs = vm.gc.listn(&vargs);
-    match vm.enable_r7rs(vargs, args.loadpath) {
+//    let loadpath = args.loadpath;
+    let loadpath = Some("/root/mosh.git/tests/r6rs-test-suite/".to_string());
+    match vm.enable_r7rs(vargs, loadpath) {
         Ok(_ret) => (),
         Err(e) => {
             eprintln!("Abnormal exit {:?}", e);

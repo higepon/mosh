@@ -4600,21 +4600,51 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if n1.is_real() && n2.is_real() {
         match integer_div(&mut vm.gc, n1, n2) {
             Ok(v) => Ok(v),
-            Err(SchemeError::Div0) => {
-                panic!("{}: div by 0 is not defined", name)
-            }
-            Err(SchemeError::NanOrInfinite) => {
-                panic!("{}: nan.0 or inifite not allowed", name)
-            }
+            Err(SchemeError::Div0) => Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "division by zero",
+                &[n1, n2],
+            )),
+            Err(SchemeError::NanOrInfinite) => Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "nan.0 or inf.0 not allowed",
+                &[n1, n2],
+            )),
             _ => panic!(),
         }
     } else {
         panic!("{}: real numbers required but got {} {}", name, n1, n2);
     }
 }
-fn div0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "div0";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if !n1.is_real() || !n2.is_real() {
+        return Err(error::Error::new_from_string(
+            &mut vm.gc,
+            name,
+            "real numbers required",
+            &[n1, n2],
+        ));
+    }
+    let d = div(vm, &mut [n1, n2])?;
+    let d2 = numbers::mul(&mut vm.gc, d, n2);
+    let modulo = numbers::sub(&mut vm.gc, n1, d2);
+    // We know div zero won't happen here.
+    let d3 = numbers::div(&mut vm.gc, n2, Object::Fixnum(2)).unwrap();
+    if numbers::lt(modulo, d3) {
+        Ok(d)
+    } else {
+        if n2.is_negative() {
+            Ok(numbers::sub(&mut vm.gc, d, Object::Fixnum(1)))
+        } else {
+            Ok(numbers::add(&mut vm.gc, d, Object::Fixnum(1)))
+        }
+    }
 }
 fn numerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "numerator";
@@ -4687,7 +4717,12 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             panic!("{}: number required but got {}", name, n);
         }
         if n.is_exact_zero() {
-            panic!("{} nonzero required but got {}", name, n);
+            return Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                " nonzero required but got",
+                &[n],
+            ));
         } else {
             return Ok(numbers::log(&mut vm.gc, n));
         }
