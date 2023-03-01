@@ -137,13 +137,15 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn cdr_op(&mut self) {
+    pub(super) fn cdr_op(&mut self)  -> error::Result<Object> {
         match self.ac {
             Object::Pair(pair) => {
                 self.set_return_value(pair.cdr);
+                Ok(Object::Unspecified)
             }
-            obj => {
-                self.arg_err("cdr", "pair", obj);
+            _ => {
+                let irritatns = self.gc.list1(self.ac);
+                self.assertion_violation("cdr", "pair required", irritatns)
             }
         }
     }

@@ -214,7 +214,7 @@ impl Vm {
                     }
                 },
                 Op::Cdr => {
-                    self.cdr_op();
+                    self.cdr_op()?;
                 }
                 Op::Closure => {
                     self.closure_op();
@@ -726,7 +726,7 @@ impl Vm {
                     self.push_op();
                 }
                 Op::CdrPush => {
-                    self.cdr_op();
+                    self.cdr_op()?;
                     self.push_op();
                 }
                 Op::ShiftCall => todo!(),

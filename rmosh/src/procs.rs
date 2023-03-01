@@ -1058,7 +1058,11 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         chars.push('\0');
         println!("number->string {}", s.string);
         let mut is_inexact_context = false;
-        match NumberParser::new().parse(&mut vm.gc, &mut is_inexact_context, NumberLexer::new(&chars)) {
+        match NumberParser::new().parse(
+            &mut vm.gc,
+            &mut is_inexact_context,
+            NumberLexer::new(&chars),
+        ) {
             Ok(n) => Ok(n),
             // Note that string->number returns #f for any parse error.
             Err(_) => Ok(Object::False),
@@ -1087,7 +1091,11 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 let mut chars: Vec<char> = prefix.chars().collect();
                 chars.push('\0');
                 let mut is_inexact_context = false;
-                match NumberParser::new().parse(&mut vm.gc, &mut is_inexact_context, NumberLexer::new(&chars)) {
+                match NumberParser::new().parse(
+                    &mut vm.gc,
+                    &mut is_inexact_context,
+                    NumberLexer::new(&chars),
+                ) {
                     Ok(n) => Ok(n),
                     Err(err) => panic!("{}: {:?}", name, err),
                 }
@@ -1612,19 +1620,94 @@ fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => return Ok(pair3.car),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caadar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaddr";
@@ -1652,7 +1735,22 @@ fn caaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn caadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => return Ok(pair3.car),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caar";
@@ -1660,11 +1758,51 @@ fn caar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cadaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cadadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadar";
@@ -1687,7 +1825,27 @@ fn cadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn caddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caddar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cadddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadddr";
@@ -1748,19 +1906,94 @@ fn cadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cdaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => return Ok(pair3.cdr),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdadar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaddr";
@@ -1788,7 +2021,22 @@ fn cdaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cdadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => return Ok(pair3.cdr),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdar";
@@ -1796,11 +2044,51 @@ fn cdar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cddaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }    
 }
 fn cddadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddar";
@@ -1823,7 +2111,27 @@ fn cddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cdddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdddar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cddddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddddr";
