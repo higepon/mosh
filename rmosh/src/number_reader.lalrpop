@@ -353,7 +353,7 @@ UReal10: Object = {
     Decimal10 =>? {
         // To handle #e1e1000 case we parse 1e1000 style as exact.
         // Then later makes them inexact if there's not #e prefix.
-        let re = Regex::new(r"^(\d+)e(\d+)$").unwrap();
+        let re = Regex::new(r"^(\d+)e(\-?\d+)$").unwrap();
         if let Some(captures) = re.captures(&<>) {
             match (isize::from_str(&captures[1]), isize::from_str(&captures[2])) {
                 (Ok(lhs), Ok(rhs)) => {
@@ -366,7 +366,7 @@ UReal10: Object = {
         }
         match f64::from_str(&<>) {
             Ok(n) => {
-                    Ok(Object::Flonum(Flonum::new(n)))
+                Ok(Object::Flonum(Flonum::new(n)))
             }
             Err(err) => {
                 Err(ParseError::User {

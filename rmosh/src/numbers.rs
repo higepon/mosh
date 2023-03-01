@@ -1369,17 +1369,7 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
                         return Object::Unspecified;
                     }
                     let b = b1.pow((f2 * -1) as u32);
-                    match b.to_isize() {
-                        Some(v) => {
-                            let r = Ratnum::new_from_isize(1, v);
-                            if r.is_integer() {
-                                r.numer(gc)
-                            } else {
-                                Object::Ratnum(gc.alloc(r))
-                            }
-                        }
-                        None => panic!("We may need general Ratio"),
-                    }
+                    Object::Ratnum(gc.alloc(Ratnum::new(BigInt::from_isize(1).unwrap(), b)))
                 }
             }
             _ => todo!(),
