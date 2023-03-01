@@ -1432,14 +1432,19 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         panic!("{}: char required but got {}", name, args[0]);
     }
 }
-fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn integer_to_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "integer->char";
     check_argc!(name, args, 1);
     if let Object::Fixnum(n) = args[0] {
         match char::from_u32(n as u32) {
             Some(c) => Ok(Object::Char(c)),
             None => {
-                panic!("{}: integer out of range {}", name, args[0]);
+                Err(error::Error::new_from_string(
+                    &mut vm.gc,
+                    name,
+                    "integer out of range",
+                    &[args[0]],
+                ))
             }
         }
     } else {
