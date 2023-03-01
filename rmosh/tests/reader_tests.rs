@@ -351,7 +351,12 @@ fn propagate_lexer_error() {
     let mut vm = Vm::new();
     let mut chars: Vec<char> = s.chars().collect();
     chars.push('\0');
-    match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+    let mut is_inexact_context = false;
+    match NumberParser::new().parse(
+        &mut vm.gc,
+        &mut is_inexact_context,
+        NumberLexer::new(&chars),
+    ) {
         Ok(_) => {
             assert!(false);
         }

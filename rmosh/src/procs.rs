@@ -1056,7 +1056,9 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let s = as_sstring!(name, args, 0, &mut vm.gc);
         let mut chars: Vec<char> = s.chars().collect();
         chars.push('\0');
-        match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+        println!("number->string {}", s.string);
+        let mut is_inexact_context = false;
+        match NumberParser::new().parse(&mut vm.gc, &mut is_inexact_context, NumberLexer::new(&chars)) {
             Ok(n) => Ok(n),
             // Note that string->number returns #f for any parse error.
             Err(_) => Ok(Object::False),
@@ -1084,7 +1086,8 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 prefix.push_str(&s);
                 let mut chars: Vec<char> = prefix.chars().collect();
                 chars.push('\0');
-                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+                let mut is_inexact_context = false;
+                match NumberParser::new().parse(&mut vm.gc, &mut is_inexact_context, NumberLexer::new(&chars)) {
                     Ok(n) => Ok(n),
                     Err(err) => panic!("{}: {:?}", name, err),
                 }

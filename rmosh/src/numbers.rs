@@ -522,7 +522,7 @@ impl Flonum {
         match Rational64::from_f64(**self) {
             Some(r) => Object::from_ratio(gc, &r),
             None => {
-                todo!()
+                todo!("{}", self.value())
             }
         }
     }

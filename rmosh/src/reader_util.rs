@@ -65,7 +65,8 @@ pub fn read_number(
 ) -> Result<Object, ParseError<usize, lexer::Token, ReadError>> {
     let mut chars: Vec<char> = s.chars().collect();
     chars.push('\0');
-    let parsed = NumberParser::new().parse(gc, NumberLexer::new(&chars));
+    let mut is_inexact_context = false;
+    let parsed = NumberParser::new().parse(gc, &mut is_inexact_context, NumberLexer::new(&chars));
     // To distinguish UnrecognizedToken thrown by reader.larlpop and number_reader.larlpop.
     // We catch UnrecognizedToken thrown by number_reader here.
     match parsed {

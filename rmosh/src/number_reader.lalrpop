@@ -13,9 +13,10 @@ use crate::objects::Object;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use num_traits::Num;
+use regex::Regex;
 use lalrpop_util::ParseError;
 
-grammar(gc: &mut Box<Gc>);
+grammar(gc: &mut Box<Gc>, is_inexact_context: &mut bool);
 
 // R7RS small 7.1.2. External representations
 pub Number: Object = {
@@ -36,7 +37,13 @@ Number10: Object = {
                 }
             },
             Some(None) | None => {
-                c
+                // To handle #e1e1000.
+                // See below in decimal10 section.
+                if *is_inexact_context {
+                    inexact(gc, c)
+                } else {
+                    c
+                }
             },
         }
     },
@@ -350,10 +357,23 @@ UReal10: Object = {
         }
     },
     Decimal10 =>? {
+        // To handle #e1e1000 case we parse 1e1000 style as exact.
+        // Then later makes them inexact if there's not #e prefix.
+        let re = Regex::new(r"^(\d+)e(\d+)$").unwrap();
+        if let Some(captures) = re.captures(&<>) {
+            match (isize::from_str(&captures[1]), isize::from_str(&captures[2])) {
+                (Ok(lhs), Ok(rhs)) => {
+                    *is_inexact_context = true;
+                    let x = numbers::expt(gc, Object::Fixnum(10), Object::Fixnum(rhs));
+                    return Ok(numbers::mul(gc, Object::Fixnum(lhs), x))
+                }
+                _ => { /* fall through */ }
+            }
+        }
         match f64::from_str(&<>) {
             Ok(n) => {
-                Ok(Object::Flonum(Flonum::new(n)))
-            },
+                    Ok(Object::Flonum(Flonum::new(n)))
+            }
             Err(err) => {
                 Err(ParseError::User {
                     error: ReadError::NumberParseError { token: <>, description: err.to_string() }
