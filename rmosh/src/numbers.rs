@@ -706,7 +706,7 @@ trait BigRationalExt {
 impl BigRationalExt for BigRational {
     fn new_from_isize(numer: isize, denom: isize) -> BigRational {
         match (BigInt::from_isize(numer), BigInt::from_isize(denom)) {
-            (Some(denom), Some(numer)) => BigRational::new_raw(numer, denom),
+            (Some(numer), Some(denom)) => BigRational::new_raw(numer, denom),
             _ => panic!("Should not fail"),
         }
     }
