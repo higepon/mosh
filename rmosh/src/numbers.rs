@@ -1560,10 +1560,18 @@ pub fn to_string(n: Object, radix: usize) -> String {
     assert!(radix == 2 || radix == 8 || radix == 10 || radix == 16);
     match n {
         Object::Fixnum(fx) if radix == 2 => {
-            format!("{:b}", fx)
+            if fx < 0 {
+                format!("-{:b}", -fx)
+            } else {
+                format!("{:b}", fx)
+            }
         }
         Object::Fixnum(fx) if radix == 8 => {
-            format!("{:o}", fx)
+            if fx < 0 {
+                format!("-{:o}", -fx)
+            } else {
+                format!("{:o}", fx)                
+            }
         }
         Object::Fixnum(fx) if radix == 10 => {
             format!("{}", fx)
@@ -1572,7 +1580,11 @@ pub fn to_string(n: Object, radix: usize) -> String {
             format!("{}", n.to_string())
         }
         Object::Fixnum(fx) if radix == 16 => {
-            format!("{:x}", fx)
+            if fx < 0 {
+                format!("-{:x}", -fx)
+            } else {
+                format!("{:x}", fx)                
+            }
         }
         Object::Ratnum(r) if radix == 16 => {
             format!("{:x}", r.ratio)
