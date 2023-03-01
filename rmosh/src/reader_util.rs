@@ -1,14 +1,15 @@
-use std::cmp::max;
-
+use crate::gc::Gc;
+use crate::lexer;
+use crate::numbers::Bignum;
+use crate::objects::Object;
 use lalrpop_util::ParseError;
+use num_bigint::BigInt;
+use num_bigint::ParseBigIntError;
+use num_traits::Num;
+use std::cmp::max;
+use std::str::FromStr;
 
-use crate::{
-    gc::Gc,
-    lexer::{self, Token},
-    number_lexer::NumberLexer,
-    number_reader::NumberParser,
-    objects::Object,
-};
+use crate::{lexer::Token, number_lexer::NumberLexer, number_reader::NumberParser};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ReadError {
@@ -27,7 +28,7 @@ pub enum ReadError {
     DivisionByZero {
         token: String,
         description: String,
-    },    
+    },
     LalrpopInvalidToken {
         location: usize,
     },
@@ -53,10 +54,50 @@ pub fn count_lineno(content: &str, position: usize) -> usize {
         }
         let ch = chars[i];
         if ch == '\n' {
-            lineno+=1;
+            lineno += 1;
         }
     }
     lineno
+}
+
+pub fn read_uinteger2(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+    match isize::from_str_radix(s, 2) {
+        Ok(fx) => Ok(Object::Fixnum(fx)),
+        Err(_) => match BigInt::from_str_radix(s, 2) {
+            Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
+            Err(e) => Err(e),
+        },
+    }
+}
+
+pub fn read_uinteger8(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+    match isize::from_str_radix(s, 8) {
+        Ok(fx) => Ok(Object::Fixnum(fx)),
+        Err(_) => match BigInt::from_str_radix(s, 8) {
+            Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
+            Err(e) => Err(e),
+        },
+    }
+}
+
+pub fn read_uinteger10(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+    match isize::from_str(s) {
+        Ok(fx) => Ok(Object::Fixnum(fx)),
+        Err(_) => match BigInt::from_str(s) {
+            Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
+            Err(e) => Err(e),
+        },
+    }
+}
+
+pub fn read_uinteger16(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+    match isize::from_str_radix(s, 16) {
+        Ok(fx) => Ok(Object::Fixnum(fx)),
+        Err(_) => match BigInt::from_str_radix(s, 16) {
+            Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
+            Err(e) => Err(e),
+        },
+    }
 }
 
 pub fn read_number(
