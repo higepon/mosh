@@ -5,7 +5,7 @@ use std::{
 
 use num_bigint::BigInt;
 use num_rational::Rational64;
-use num_traits::{FromPrimitive, One, Signed, ToPrimitive};
+use num_traits::{FromPrimitive, Signed, ToPrimitive};
 
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -1335,11 +1335,17 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
                         return Object::Unspecified;
                     }
                     let b = b1.pow((f2 * -1) as u32);
-                    let one = BigInt::one();
-                    let ret = one / b;
-                    match ret.to_isize() {
-                        Some(v) => Object::Fixnum(v),
-                        None => Object::Bignum(gc.alloc(Bignum::new(ret))),
+                    eprintln!("b={}", b);
+                    match b.to_isize() {
+                        Some(v) => {
+                            let r = Ratnum::new(1, v);
+                            if r.is_integer() {
+                                r.numer()
+                            } else {
+                                Object::Ratnum(gc.alloc(r))
+                            }
+                        }
+                        None => panic!("We may need general Ratio"),
                     }
                 }
             }
@@ -1570,7 +1576,7 @@ pub fn to_string(n: Object, radix: usize) -> String {
             if fx < 0 {
                 format!("-{:o}", -fx)
             } else {
-                format!("{:o}", fx)                
+                format!("{:o}", fx)
             }
         }
         Object::Fixnum(fx) if radix == 10 => {
@@ -1583,7 +1589,7 @@ pub fn to_string(n: Object, radix: usize) -> String {
             if fx < 0 {
                 format!("-{:x}", -fx)
             } else {
-                format!("{:x}", fx)                
+                format!("{:x}", fx)
             }
         }
         Object::Ratnum(r) if radix == 16 => {
