@@ -1752,7 +1752,8 @@ pub fn angle(_gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     if n.is_real() {
         if n.is_negative() {
-            Object::Flonum(Flonum::new(-1.0f64.acos()))
+            // Pi
+            Object::Flonum(Flonum::new(f64::acos(-1.0)))
         } else {
             if n.is_flonum() {
                 Object::Flonum(Flonum::new(0.0))
