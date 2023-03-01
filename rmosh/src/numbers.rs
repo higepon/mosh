@@ -4,7 +4,7 @@ use std::{
 };
 
 use num_bigint::BigInt;
-use num_rational::Rational64;
+use num_rational::BigRational;
 use num_traits::{FromPrimitive, Signed, ToPrimitive};
 
 use crate::{
@@ -99,9 +99,9 @@ impl FixnumExt for isize {
         } else if fx == 1 {
             Ok(Object::Fixnum(self))
         } else {
-            let r = Ratnum::new(self, fx);
+            let r = Ratnum::new_from_isize(self, fx);
             if r.is_integer() {
-                Ok(r.numer())
+                Ok(r.numer(gc))
             } else {
                 Ok(Object::Ratnum(gc.alloc(r)))
             }
@@ -211,35 +211,35 @@ impl FixnumExt for isize {
 
     // Fixnum vs Ratnum
     fn add_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
-        let r = r.ratio + Rational64::new_raw(self as i64, 1);
+        let r = r.ratio.clone() + BigRational::new_from_isize(self, 1);
         Object::from_ratio(gc, &r)
     }
     fn sub_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
-        let r = r.ratio - Rational64::new_raw(self as i64, 1);
+        let r = r.ratio.clone() - BigRational::new_from_isize(self, 1);
         Object::from_ratio(gc, &r)
     }
     fn mul_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
-        let r = r.ratio * Rational64::new_raw(self as i64, 1);
+        let r = r.ratio.clone() * BigRational::new_from_isize(self, 1);
         Object::from_ratio(gc, &r)
     }
     fn div_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Result<Object, SchemeError> {
-        let r = Rational64::new_raw(self as i64, 1) / r.ratio;
+        let r = BigRational::new_from_isize(self, 1) / r.ratio.clone();
         Ok(Object::from_ratio(gc, &r))
     }
     fn eqv_rat(self, r: &Ratnum) -> bool {
-        match Rational64::from_isize(self) {
+        match BigRational::from_isize(self) {
             Some(self_r) => self_r == r.ratio,
             None => false,
         }
     }
     fn lt_rat(self, r: &Ratnum) -> bool {
-        match Rational64::from_isize(self) {
+        match BigRational::from_isize(self) {
             Some(self_r) => self_r < r.ratio,
             None => todo!(),
         }
     }
     fn gt_rat(self, r: &Ratnum) -> bool {
-        match Rational64::from_isize(self) {
+        match BigRational::from_isize(self) {
             Some(self_r) => self_r > r.ratio,
             None => todo!(),
         }
@@ -519,7 +519,7 @@ impl Flonum {
     }
 
     pub fn to_exact(&self, gc: &mut Box<Gc>) -> Object {
-        match Rational64::from_f64(**self) {
+        match BigRational::from_f64(**self) {
             Some(r) => Object::from_ratio(gc, &r),
             None => {
                 todo!("{}", self.value())
@@ -573,11 +573,11 @@ impl Debug for Flonum {
 #[repr(C)]
 pub struct Ratnum {
     pub header: GcHeader,
-    pub ratio: Rational64,
+    pub ratio: BigRational,
 }
 
 impl Deref for Ratnum {
-    type Target = Rational64;
+    type Target = BigRational;
 
     fn deref(&self) -> &Self::Target {
         &self.ratio
@@ -591,38 +591,59 @@ impl DerefMut for Ratnum {
 }
 
 impl Ratnum {
-    pub fn new(numer: isize, denom: isize) -> Self {
+    pub fn new(numer: BigInt, denom: BigInt) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Ratnum),
-            ratio: Rational64::new_raw(numer as i64, denom as i64).reduced(),
+            ratio: BigRational::new_raw(numer, denom).reduced(),
         }
     }
-    pub fn new_from_ratio(ratio: Rational64) -> Self {
+    pub fn new_from_isize(numer: isize, denom: isize) -> Self {
+        match (BigInt::from_isize(numer), BigInt::from_isize(denom)) {
+            (Some(b1), Some(b2)) => Self {
+                header: GcHeader::new(ObjectType::Ratnum),
+                ratio: BigRational::new_raw(b1, b2).reduced(),
+            },
+            _ => panic!(),
+        }
+    }
+    pub fn new_from_ratio(ratio: BigRational) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Ratnum),
             ratio: ratio,
         }
     }
 
-    pub fn denom(&self) -> Object {
-        Object::Fixnum(*self.ratio.denom() as isize)
+    pub fn denom(&self, gc: &mut Box<Gc>) -> Object {
+        match self.ratio.denom().to_isize() {
+            Some(fx) => Object::Fixnum(fx),
+            None => {
+                let denom = self.ratio.denom();
+                Object::Bignum(gc.alloc(Bignum::new((*denom).clone())))
+            }
+        }
     }
 
-    pub fn numer(&self) -> Object {
-        Object::Fixnum(*self.ratio.numer() as isize)
+    pub fn numer(&self, gc: &mut Box<Gc>) -> Object {
+        match self.ratio.numer().to_isize() {
+            Some(fx) => Object::Fixnum(fx),
+            None => {
+                let numer = self.ratio.numer();
+                Object::Bignum(gc.alloc(Bignum::new((*numer).clone())))
+            }
+        }
     }
 
     pub fn add(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
-        let r = self.ratio + other.ratio;
+        let r = self.ratio.clone() + other.ratio.clone();
         Object::from_ratio(gc, &r)
     }
 
     pub fn sub(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
-        let r = self.ratio - other.ratio;
+        let r = self.ratio.clone() - other.ratio.clone();
         Object::from_ratio(gc, &r)
     }
     pub fn mul(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
-        let r = self.ratio * other.ratio;
+        let r = self.ratio.clone() * other.ratio.clone();
         Object::from_ratio(gc, &r)
     }
 
@@ -632,7 +653,7 @@ impl Ratnum {
 
     // Ratnum vs Fixnum
     pub fn sub_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
-        let r = self.ratio - Rational64::new_raw(fx as i64, 1);
+        let r = self.ratio.clone() - BigRational::new_from_isize(fx, 1);
         Object::from_ratio(gc, &r)
     }
 
@@ -640,7 +661,7 @@ impl Ratnum {
         if fx == 0 {
             Err(SchemeError::Div0)
         } else {
-            let r = self.ratio / Rational64::new_raw(fx as i64, 1);
+            let r = self.ratio.clone() / BigRational::new_from_isize(fx, 1);
             Ok(Object::from_ratio(gc, &r))
         }
     }
@@ -675,6 +696,19 @@ impl Display for Ratnum {
 impl Debug for Ratnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<ratnum {}>", self.ratio)
+    }
+}
+
+trait BigRationalExt {
+    fn new_from_isize(numer: isize, denom: isize) -> BigRational;
+}
+
+impl BigRationalExt for BigRational {
+    fn new_from_isize(numer: isize, denom: isize) -> BigRational {
+        match (BigInt::from_isize(numer), BigInt::from_isize(denom)) {
+            (Some(denom), Some(numer)) => BigRational::new_raw(numer, denom),
+            _ => panic!("Should not fail"),
+        }
     }
 }
 
@@ -1335,12 +1369,11 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
                         return Object::Unspecified;
                     }
                     let b = b1.pow((f2 * -1) as u32);
-                    eprintln!("b={}", b);
                     match b.to_isize() {
                         Some(v) => {
-                            let r = Ratnum::new(1, v);
+                            let r = Ratnum::new_from_isize(1, v);
                             if r.is_integer() {
-                                r.numer()
+                                r.numer(gc)
                             } else {
                                 Object::Ratnum(gc.alloc(r))
                             }
@@ -1862,7 +1895,7 @@ pub fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
 pub fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
     assert!(obj.is_rational());
     match obj {
-        Object::Ratnum(r) => r.denom(),
+        Object::Ratnum(r) => r.denom(gc),
         Object::Flonum(fl) => {
             let m = fl.to_exact(gc);
             let denom = denominator(gc, m);
@@ -1875,7 +1908,7 @@ pub fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
 pub fn numerator(gc: &mut Box<Gc>, obj: Object) -> Object {
     assert!(obj.is_rational());
     match obj {
-        Object::Ratnum(r) => r.numer(),
+        Object::Ratnum(r) => r.numer(gc),
         Object::Flonum(fl) => {
             let m = fl.to_exact(gc);
             let denom = numerator(gc, m);
@@ -2043,14 +2076,14 @@ impl Object {
         }
     }
 
-    pub fn from_ratio(gc: &mut Box<Gc>, r: &Rational64) -> Object {
+    pub fn from_ratio(gc: &mut Box<Gc>, r: &BigRational) -> Object {
         if r.is_integer() {
             match r.to_isize() {
                 Some(v) => Object::Fixnum(v),
-                None => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(*r))),
+                None => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio((*r).clone()))),
             }
         } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(*r)))
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio((*r).clone())))
         }
     }
 }

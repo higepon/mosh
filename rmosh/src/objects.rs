@@ -454,7 +454,7 @@ impl Object {
         match self {
             Object::Fixnum(n) => Object::Fixnum(n * -1),
             Object::Flonum(f) => Object::Flonum(Flonum::new(f.value() * -1.0)),
-            Object::Ratnum(r) => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(-r.ratio))),
+            Object::Ratnum(r) => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(-r.ratio.clone()))),
             Object::Bignum(_) => numbers::negate(gc, *self),
             _ => todo!("{}", self),
         }

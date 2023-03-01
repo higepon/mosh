@@ -341,7 +341,7 @@ UReal10: Object = {
                         error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
                     })
                 } else {
-                    Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                    Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_isize(n, d))))
                 }
             }
             (Err(err), _) => {
@@ -406,7 +406,7 @@ UReal16: Object = {
     <numer: UInteger16> "/" <denom: UInteger16> =>? {
         match (isize::from_str_radix(&numer, 16), isize::from_str_radix(&denom, 16)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_isize(n, d))))
             }
             (Err(err), _) => {
                 Err(ParseError::User {
@@ -445,7 +445,7 @@ UReal8: Object = {
     <numer: UInteger8> "/" <denom: UInteger8> =>? {
         match (isize::from_str_radix(&numer, 8), isize::from_str_radix(&denom, 8)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_isize(n, d))))
             }
             (Err(err), _) => {
                 Err(ParseError::User {
@@ -484,7 +484,7 @@ UReal2: Object = {
     <numer: UInteger2> "/" <denom: UInteger2> =>? {
         match (isize::from_str_radix(&numer, 2), isize::from_str_radix(&denom, 2)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                Ok(Object::Ratnum(gc.alloc(Ratnum::new_from_isize(n, d))))
             }
             (Err(err), _) => {
                 Err(ParseError::User {

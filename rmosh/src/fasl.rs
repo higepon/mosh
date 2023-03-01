@@ -110,12 +110,9 @@ impl FaslWriter {
                 port.put_u64(f.u64_value())?;
             }
             Object::Bignum(b) => {
-                self.put_tag(port, Tag::Bignum)?;                
-                let (sign, bytes) = b.value.to_bytes_le();
-                let sign = if sign == Sign::Minus { 1 } else if sign == Sign::NoSign { 2 } else { 3};
-                port.put_u8(sign)?;
-                port.put_u16(bytes.len() as u16)?;
-                port.write(&bytes)?;
+                self.put_tag(port, Tag::Bignum)?;  
+                let bigint = &b.value;              
+                write_bigint(bigint, port)?;
             }
             Object::Compnum(c) => {
                 self.put_tag(port, Tag::Compnum)?;
@@ -130,8 +127,8 @@ impl FaslWriter {
             }
             Object::Ratnum(r) => {
                 self.put_tag(port, Tag::Ratnum)?;
-                port.put_i64(*r.ratio.numer())?;
-                port.put_i64(*r.ratio.denom())?;
+                write_bigint(r.ratio.numer(), port)?;
+                write_bigint(r.ratio.denom(), port)?;
             }
             Object::Regexp(_r) => {
                 todo!()
@@ -306,6 +303,15 @@ impl FaslWriter {
             }
         }
     }
+}
+
+fn write_bigint(bigint: &BigInt, port: &mut dyn BinaryOutputPort) -> Result<(), io::Error> {
+    let (sign, bytes) = bigint.to_bytes_le();
+    let sign = if sign == Sign::Minus { 1 } else if sign == Sign::NoSign { 2 } else { 3};
+    port.put_u8(sign)?;
+    port.put_u16(bytes.len() as u16)?;
+    port.write(&bytes)?;
+    Ok(())
 }
 
 #[macro_export]
@@ -541,26 +547,27 @@ impl FaslReader {
     }
 
     fn read_bignum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let bigint = self.read_bigint()?;
+        Ok(Object::Bignum(gc.alloc(Bignum::new(bigint))))
+    }
+
+    fn read_bigint(&mut self) -> Result<BigInt, io::Error> {
         let mut buf = [0; 1];
         self.bytes.read_exact(&mut buf)?;
         let sign = buf[0]        ;
         let sign =  if sign == 1 { Sign::Minus } else if sign == 2 { Sign::NoSign } else { Sign::Plus};
-        
         let mut buf = [0; 2];
         self.bytes.read_exact(&mut buf)?;
         let len = u16::from_le_bytes(buf);
-
         let mut buf = vec![0; len as usize];
-        self.bytes.read_exact(&mut buf)?;        
+        self.bytes.read_exact(&mut buf)?;
         let bigint = BigInt::from_bytes_le(sign, &buf);
-        Ok(Object::Bignum(gc.alloc(Bignum::new(bigint))))
+        Ok(bigint)
     }
 
     fn read_ratnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
-        let mut buf = [0; 8];
-        self.bytes.read_exact(&mut buf)?;
-        let numer = isize::from_le_bytes(buf);
-        let denom = isize::from_le_bytes(buf);
+        let numer = self.read_bigint()?;
+        let denom = self.read_bigint()?;        
         Ok(Object::Ratnum(gc.alloc(Ratnum::new(numer, denom))))
     }
 
