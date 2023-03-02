@@ -4945,7 +4945,7 @@ fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let modulo = numbers::sub(&mut vm.gc, n1, d2);
     // We know div zero won't happen here.
     let d3 = numbers::div(&mut vm.gc, n2, Object::Fixnum(2)).unwrap();
-    if numbers::lt(modulo, d3) {
+    if numbers::lt(modulo, numbers::abs(&mut vm.gc, d3)) {
         Ok(d)
     } else {
         if n2.is_negative() {
@@ -4955,6 +4955,7 @@ fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     }
 }
+
 fn numerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "numerator";
     check_argc!(name, args, 1);

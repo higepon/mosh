@@ -380,7 +380,7 @@ impl Flonum {
         let ret = if other.value() > 0.0 {
             (self.value() / other.value()).floor()
         } else {
-            (self.value() / (-other.value())).floor()
+            -((self.value() / (-other.value())).floor())
         };
         Ok(Object::Flonum(Flonum::new(ret)))
     }
