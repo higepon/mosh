@@ -215,7 +215,7 @@ impl FixnumExt for isize {
         Object::from_ratio(gc, &r)
     }
     fn sub_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
-        let r = r.ratio.clone() - BigRational::new_from_isize(self, 1);
+        let r = BigRational::new_from_isize(self, 1) - r.ratio.clone();
         Object::from_ratio(gc, &r)
     }
     fn mul_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {

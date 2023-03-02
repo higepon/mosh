@@ -4956,6 +4956,27 @@ fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 }
 
+/*
+    Object div = integerDivEx(theVM, argc, argv);
+    if (div.isUndef()) {
+        return Object::Undef;
+    }
+    Object mod = Arithmetic::sub(n1, Arithmetic::mul(div, n2));
+    // we can ignore isDiv0Error parameter of Arithmetic::div.
+    // Because we know division by zero never occur.
+    bool isDiv0Error = false;
+    if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2), isDiv0Error)))) {
+        return div;
+    } else {
+        if (Arithmetic::isNegative(n2)) {
+            return Arithmetic::sub(div, Object::makeFixnum(1));
+        } else {
+            return Arithmetic::add(div, Object::makeFixnum(1));
+        }
+    }
+
+ */
+
 fn numerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "numerator";
     check_argc!(name, args, 1);
