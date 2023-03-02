@@ -501,10 +501,6 @@
                        (lambda (x x2)
                          (test (= x x2) #t)
                          (test (< x x2) #f)
-                         (when (> x x2)
-                           (display x) (newline ) (display x2)
-                           (car 3))
-                           
                          (test (> x x2) #f)
                          (test (<= x x2) #t)
                          (test (>= x x2) #t))])

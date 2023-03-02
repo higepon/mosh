@@ -400,9 +400,7 @@ impl Flonum {
         Object::Flonum(Flonum::new(value))
     }
     pub fn div_fx(&self, fx: isize) -> Result<Object, SchemeError> {
-        if fx == 0 {
-            Err(SchemeError::Div0)
-        } else if fx == 1 {
+        if fx == 1 {
             Ok(Object::Flonum(Flonum::new(self.value())))
         } else {
             let value = self.value() / (fx as f64);
@@ -1329,7 +1327,7 @@ pub fn gt(n1: Object, n2: Object) -> bool {
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.gt_rat(&r),
         (Object::Flonum(fl), Object::Bignum(b)) => fl.gt_big(&b),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.lt_big(&b),
-        (Object::Bignum(b), Object::Flonum(fl)) => fl.gt_big(&b),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.lt_big(&b),
         (Object::Bignum(b), Object::Ratnum(r)) => b.gt_rat(&r),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.gt(&b2),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.lt_rat(&r),
