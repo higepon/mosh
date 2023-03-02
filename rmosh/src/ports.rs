@@ -354,9 +354,9 @@ impl TextInputPort for FileInputPort {
     fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
         let mut buf = vec![0; n];
         match self.reader.read(&mut buf) {
-            Ok(_) => {
+            Ok(size) => {
                 // TODO: This doesn't work for non ascii.
-                match std::str::from_utf8(&buf) {
+                match std::str::from_utf8(&buf[0..size]) {
                     Ok(s) => {
                         str.push_str(s);
                         Ok(str.len())

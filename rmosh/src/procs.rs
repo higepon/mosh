@@ -1056,7 +1056,6 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let s = as_sstring!(name, args, 0, &mut vm.gc);
         let mut chars: Vec<char> = s.chars().collect();
         chars.push('\0');
-        println!("number->string {}", s.string);
         let mut is_inexact_context = false;
         match NumberParser::new().parse(
             &mut vm.gc,
