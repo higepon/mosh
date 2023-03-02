@@ -1329,7 +1329,7 @@ pub fn gt(n1: Object, n2: Object) -> bool {
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.gt_rat(&r),
         (Object::Flonum(fl), Object::Bignum(b)) => fl.gt_big(&b),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.lt_big(&b),
-        (Object::Bignum(b), Object::Flonum(fl)) => !fl.gt_big(&b),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.gt_big(&b),
         (Object::Bignum(b), Object::Ratnum(r)) => b.gt_rat(&r),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.gt(&b2),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.lt_rat(&r),
