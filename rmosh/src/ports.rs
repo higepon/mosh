@@ -40,7 +40,6 @@ pub trait TextInputPort {
     fn set_parsed(&mut self, obj: Object);
     fn parsed(&self) -> Object;
 
-
     // (read ...)
     // LALRPOP doesn't support multiple calls of parse.
     // We parse all S-Expressions once then store them.
@@ -63,7 +62,13 @@ pub trait TextInputPort {
             let chars: Vec<char> = s.chars().collect();
             // Whether if we found #1# style.
             let mut shared_map: HashMap<u32, Object> = HashMap::new();
-            match DatumParser::new().parse(gc, &mut shared_map, &self.input_src(), &s, lexer::Lexer::new(&chars)) {
+            match DatumParser::new().parse(
+                gc,
+                &mut shared_map,
+                &self.input_src(),
+                &s,
+                lexer::Lexer::new(&chars),
+            ) {
                 Ok(parsed) => {
                     if shared_map.len() > 0 {
                         self.link_shared(gc, &shared_map, parsed);
@@ -427,7 +432,7 @@ impl TextInputPort for StringInputPort {
 
     fn input_src(&self) -> String {
         "#<string-input-port>".to_string()
-    }   
+    }
 
     fn ahead_char(&self) -> Option<char> {
         self.ahead_char
@@ -1023,7 +1028,7 @@ pub trait BinaryOutputPort {
 
     fn put_i64(&mut self, value: i64) -> io::Result<usize> {
         self.write(&value.to_le_bytes())
-    }    
+    }
 }
 
 // BytevectorOutputPort

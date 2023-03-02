@@ -1,6 +1,6 @@
+use clap::Parser;
 use rmosh::objects::Object;
 use rmosh::vm::Vm;
-use clap::Parser;
 extern crate num_derive;
 #[macro_use]
 extern crate lalrpop_util;
@@ -48,11 +48,14 @@ fn main() {
     } else {
         //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
-        vargs.push(vm.gc.new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/base.sps"))
+        vargs.push(
+            vm.gc
+                .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/base.sps"),
+        )
     }
 
     let vargs = vm.gc.listn(&vargs);
-//    let loadpath = args.loadpath;
+    //    let loadpath = args.loadpath;
     let loadpath = Some("/root/mosh.git/tests/r6rs-test-suite/".to_string());
     match vm.enable_r7rs(vargs, loadpath) {
         Ok(_ret) => (),

@@ -231,7 +231,7 @@ impl Gc {
             ret = self.cons_src(*obj, ret, src);
         }
         ret
-    }    
+    }
 
     pub fn listn(&mut self, objects: &[Object]) -> Object {
         let mut ret = Object::Nil;
@@ -241,14 +241,13 @@ impl Gc {
         ret
     }
 
-    pub fn listn_src (&mut self, objects: &[Object], src: Object) -> Object {
+    pub fn listn_src(&mut self, objects: &[Object], src: Object) -> Object {
         let mut ret = Object::Nil;
         for obj in objects.iter().rev() {
             ret = self.cons_src(*obj, ret, src);
         }
         ret
     }
-
 
     pub fn symbol_intern(&mut self, s: &str) -> Object {
         let symbol = self.intern(s);

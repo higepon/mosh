@@ -1438,14 +1438,12 @@ fn integer_to_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if let Object::Fixnum(n) = args[0] {
         match char::from_u32(n as u32) {
             Some(c) => Ok(Object::Char(c)),
-            None => {
-                Err(error::Error::new_from_string(
-                    &mut vm.gc,
-                    name,
-                    "integer out of range",
-                    &[args[0]],
-                ))
-            }
+            None => Err(error::Error::new_from_string(
+                &mut vm.gc,
+                name,
+                "integer out of range",
+                &[args[0]],
+            )),
         }
     } else {
         panic!("{}: integer required but got {}", name, args[0]);
@@ -2069,7 +2067,7 @@ fn cddaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         _ => {
             panic!("{}: pair required but got {:?}", name, args);
         }
-    }    
+    }
 }
 fn cddadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddadr";

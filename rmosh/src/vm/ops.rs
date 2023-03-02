@@ -93,7 +93,6 @@ impl Vm {
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
-
     pub(super) fn assertion_violation_obj(
         &mut self,
         who: Object,
@@ -101,7 +100,7 @@ impl Vm {
         irritants: Object,
     ) -> error::Result<Object> {
         self.raise_after3("assertion-violation", who, message, irritants)
-    }    
+    }
 
     pub(super) fn assertion_violation_err(&mut self, err: error::Error) -> error::Result<Object> {
         self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
@@ -137,7 +136,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn cdr_op(&mut self)  -> error::Result<Object> {
+    pub(super) fn cdr_op(&mut self) -> error::Result<Object> {
         match self.ac {
             Object::Pair(pair) => {
                 self.set_return_value(pair.cdr);

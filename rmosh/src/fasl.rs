@@ -3,13 +3,13 @@ use std::{
     io::{self, Cursor, Read},
 };
 
-use num_bigint::{Sign, BigInt};
+use num_bigint::{BigInt, Sign};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::{
     gc::Gc,
-    numbers::{Flonum, Ratnum, Compnum, Bignum},
+    numbers::{Bignum, Compnum, Flonum, Ratnum},
     objects::{EqHashtable, Object, SimpleStruct},
     ports::BinaryOutputPort,
 };
@@ -110,8 +110,8 @@ impl FaslWriter {
                 port.put_u64(f.u64_value())?;
             }
             Object::Bignum(b) => {
-                self.put_tag(port, Tag::Bignum)?;  
-                let bigint = &b.value;              
+                self.put_tag(port, Tag::Bignum)?;
+                let bigint = &b.value;
                 write_bigint(bigint, port)?;
             }
             Object::Compnum(c) => {
@@ -307,7 +307,13 @@ impl FaslWriter {
 
 fn write_bigint(bigint: &BigInt, port: &mut dyn BinaryOutputPort) -> Result<(), io::Error> {
     let (sign, bytes) = bigint.to_bytes_le();
-    let sign = if sign == Sign::Minus { 1 } else if sign == Sign::NoSign { 2 } else { 3};
+    let sign = if sign == Sign::Minus {
+        1
+    } else if sign == Sign::NoSign {
+        2
+    } else {
+        3
+    };
     port.put_u8(sign)?;
     port.put_u16(bytes.len() as u16)?;
     port.write(&bytes)?;
@@ -554,8 +560,14 @@ impl FaslReader {
     fn read_bigint(&mut self) -> Result<BigInt, io::Error> {
         let mut buf = [0; 1];
         self.bytes.read_exact(&mut buf)?;
-        let sign = buf[0]        ;
-        let sign =  if sign == 1 { Sign::Minus } else if sign == 2 { Sign::NoSign } else { Sign::Plus};
+        let sign = buf[0];
+        let sign = if sign == 1 {
+            Sign::Minus
+        } else if sign == 2 {
+            Sign::NoSign
+        } else {
+            Sign::Plus
+        };
         let mut buf = [0; 2];
         self.bytes.read_exact(&mut buf)?;
         let len = u16::from_le_bytes(buf);
@@ -567,7 +579,7 @@ impl FaslReader {
 
     fn read_ratnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let numer = self.read_bigint()?;
-        let denom = self.read_bigint()?;        
+        let denom = self.read_bigint()?;
         Ok(Object::Ratnum(gc.alloc(Ratnum::new(numer, denom))))
     }
 

@@ -233,7 +233,7 @@ impl Vm {
                 }
                 Object::Closure(closure) => {
                     if closure.src.is_pair() {
-                        eprint!("    {}. ", i);                        
+                        eprint!("    {}. ", i);
                         let proc = closure.src.cdr_unchecked();
                         let location = closure.src.car_unchecked();
                         if location.is_false() {

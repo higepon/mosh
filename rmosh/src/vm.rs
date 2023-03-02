@@ -139,7 +139,7 @@ impl Vm {
         ret
     }
 
-pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {
+    pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {
         let mut fasl = FaslReader::new(psyntax::U8_ARRAY);
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
@@ -237,7 +237,7 @@ pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::
 
     pub fn set_current_output_port(&mut self, port: Object) {
         self.current_output_port = port;
-    }    
+    }
 
     pub fn read(&mut self) -> Result<Object, ReadError> {
         match self.current_input_port {
@@ -266,19 +266,15 @@ pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::
 
         let top_level = self.gc.symbol_intern("<top-level>");
         let src = self.gc.list2(Object::False, top_level);
-        self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
-            null(),
-            0,
-            0,
-            false,
-            free_vars,
-            src,
-        )));
+        self.closure_for_evaluate =
+            Object::Closure(
+                self.gc
+                    .alloc(Closure::new(null(), 0, 0, false, free_vars, src)),
+            );
         self.dc = Object::Closure(display);
     }
 
     fn load_compiler(&mut self) -> error::Result<Object> {
-        
         let mut fasl = FaslReader::new(compiler::U8_ARRAY);
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)
