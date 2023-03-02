@@ -499,9 +499,15 @@ impl Flonum {
         Object::Flonum(Flonum::new(self.value().round()))
     }
 
-    #[inline(always)]
-    pub fn sqrt(&self) -> Object {
-        Object::Flonum(Flonum::new(self.value().sqrt()))
+    pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
+        if self.value() < 0.0 {
+            Object::Compnum(gc.alloc(Compnum::new(
+                Object::Flonum(Flonum::new(0.0)),
+                Object::Flonum(Flonum::new(self.value().abs().sqrt())),
+            )))
+        } else {
+            Object::Flonum(Flonum::new(self.value().sqrt()))
+        }
     }
 
     #[inline(always)]
@@ -1820,7 +1826,7 @@ pub fn round(gc: &mut Box<Gc>, n: Object) -> Object {
 pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
     match obj {
         Object::Fixnum(fx) => fx.sqrt(gc),
-        Object::Flonum(fl) => fl.sqrt(),
+        Object::Flonum(fl) => fl.sqrt(gc),
         Object::Bignum(b) => b.sqrt(gc),
         Object::Compnum(c) => c.sqrt(gc),
         Object::Ratnum(_r) => todo!(),
