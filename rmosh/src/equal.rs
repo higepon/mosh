@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ptr::null_mut};
+use std::collections::HashMap;
 
 use rand::Rng;
 
@@ -143,8 +143,8 @@ impl Equal {
     //     (define (interleave? x y k)
     //       (and (e? x y k) #t))
     fn is_interleave(&self, gc: &mut Box<Gc>, x: &Object, y: &Object, k: Object) -> bool {
-        let hashmap: *mut *mut HashMap<Object, Object> = null_mut();
-        if self.is_e(gc, hashmap, x, y, k).is_false() {
+        let mut hashmap: HashMap<Object, Object> = HashMap::new();
+        if self.is_e(gc, &mut hashmap, x, y, k).is_false() {
             false
         } else {
             true
@@ -157,14 +157,11 @@ impl Equal {
     fn call_union_find(
         &self,
         gc: &mut Box<Gc>,
-        hashmap: *mut *mut HashMap<Object, Object>,
+        hashmap: &mut HashMap<Object, Object>,
         x: &Object,
         y: &Object,
     ) -> Object {
-        if unsafe { *hashmap == null_mut() } {
-            unsafe { *hashmap = &mut HashMap::new().to_owned() as *mut HashMap<Object, Object> };
-        }
-        return self.union_find(gc, unsafe { *hashmap }, x, y);
+        return self.union_find(gc, hashmap, x, y);
     }
 
     // (define (find b)
@@ -276,7 +273,7 @@ impl Equal {
     fn is_e(
         &self,
         gc: &mut Box<Gc>,
-        hashmap: *mut *mut HashMap<Object, Object>,
+        hashmap: &mut HashMap<Object, Object>,
         x: &Object,
         y: &Object,
         k: Object,
@@ -322,7 +319,7 @@ impl Equal {
     fn is_slow(
         &self,
         gc: &mut Box<Gc>,
-        hashmap: *mut *mut HashMap<Object, Object>,
+        hashmap: &mut HashMap<Object, Object>,
         x: &Object,
         y: &Object,
         k: Object,
@@ -425,7 +422,7 @@ impl Equal {
     fn is_fast(
         &self,
         gc: &mut Box<Gc>,
-        hashmap: *mut *mut HashMap<Object, Object>,
+        hashmap: &mut HashMap<Object, Object>,
         x: &Object,
         y: &Object,
         k: Object,
