@@ -759,6 +759,14 @@ impl Bignum {
             None => Object::Bignum(gc.alloc(Bignum::new(result))),
         }
     }
+    pub fn div(&self, gc: &mut Box<Gc>, other: &Bignum) -> Result<Object, SchemeError> {
+        if other.value == BigInt::from_u8(0).unwrap() {
+            Err(SchemeError::Div0)
+        } else {
+            let ret = self.value.clone() / other.value.clone();
+            Ok(Object::Bignum(gc.alloc(Bignum::new(ret))))
+        }
+    }
 
     pub fn eqv(&self, other: &Bignum) -> bool {
         self.value.eq(&other.value)
@@ -1437,7 +1445,7 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     }
 }
 
-pub fn quotient(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1459,10 +1467,16 @@ pub fn quotient(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sch
             (fl.value() / b.value.to_f64().unwrap()).trunc(),
         ))),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => {
+            if fx == 0 {
+                Err(SchemeError::NonZeroRequired)
+            } else {
+                b.div_fx(gc, fx)
+            }
+        }
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.div(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
