@@ -7,34 +7,56 @@ use std::fmt::Display;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[derive(Debug)]
+pub enum ErrorType {
+    AssertionViolation,
+}
+
 pub struct Error {
+    pub error_type: ErrorType,
     pub who: Object,
     pub message: Object,
     pub irritants: Object,
 }
 
 impl Error {
-    pub fn new(who: Object, message: Object, irritants: Object) -> Self {
+    pub fn new(error_type: ErrorType, who: Object, message: Object, irritants: Object) -> Self {
         Self {
+            error_type: error_type,
             who: who,
             message: message,
             irritants: irritants,
         }
     }
-    pub fn new_from_string(
+
+    pub fn assertion_violation_obj(
+        who: Object,
+        message: Object,
+        irritants: Object,
+    ) -> Result<Object> {
+        Err(Self {
+            error_type: ErrorType::AssertionViolation,
+            who: who,
+            message: message,
+            irritants: irritants,
+        })
+    }
+
+    pub fn assertion_violation(
         gc: &mut Box<Gc>,
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> Self {
+    ) -> Result<Object> {
         let who = gc.new_string(who);
         let message = gc.new_string(message);
         let irritants = gc.listn(irritants);
-        Self {
+        Err(Self {
+            error_type: ErrorType::AssertionViolation,
             who: who,
             message: message,
             irritants: irritants,
-        }
+        })
     }
 }
 
@@ -42,7 +64,8 @@ impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "who: {} message: {} irritants {}",
+            "type: {:?} who: {} message: {} irritants {}",
+            self.error_type,
             self.who.to_string(),
             self.message.to_string(),
             self.irritants.to_string(),

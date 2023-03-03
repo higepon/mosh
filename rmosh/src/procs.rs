@@ -11,7 +11,7 @@ use std::{
 use crate::{
     as_bytevector, as_char, as_sstring, as_usize,
     equal::Equal,
-    error,
+    error::{self, Error},
     fasl::{FaslReader, FaslWriter},
     gc::Gc,
     number_lexer::NumberLexer,
@@ -1250,12 +1250,12 @@ fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::FileInputPort(mut p) => p.lookahead_char(),
         Object::StringInputPort(mut p) => p.lookahead_char(),
         _ => {
-            return Err(error::Error::new_from_string(
+            return Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "text input port required",
                 &[port],
-            ));
+            );
         }
     };
     match result {
@@ -1401,12 +1401,12 @@ fn delete_file(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let path = as_sstring!(name, args, 0, &mut vm.gc);
     match fs::remove_file(&path.string) {
         Ok(_) => Ok(Object::Unspecified),
-        Err(e) => Err(error::Error::new_from_string(
+        Err(e) => Error::assertion_violation(
             &mut vm.gc,
             name,
             &format!("delete file failed {}", e.to_string()),
             &[args[0]],
-        )),
+        ),
     }
 }
 fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1437,12 +1437,9 @@ fn integer_to_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if let Object::Fixnum(n) = args[0] {
         match char::from_u32(n as u32) {
             Some(c) => Ok(Object::Char(c)),
-            None => Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "integer out of range",
-                &[args[0]],
-            )),
+            None => {
+                Error::assertion_violation(&mut vm.gc, name, "integer out of range", &[args[0]])
+            }
         }
     } else {
         panic!("{}: integer required but got {}", name, args[0]);
@@ -1529,12 +1526,12 @@ fn set_current_output_port_destructive(vm: &mut Vm, args: &mut [Object]) -> erro
     if args[0].is_textual_port() && args[0].is_output_port() {
         vm.set_current_output_port(args[0]);
     } else {
-        return Err(error::Error::new_from_string(
+        return Error::assertion_violation(
             &mut vm.gc,
             name,
             "text output port required",
             &[args[0]],
-        ));
+        );
     }
     Ok(Object::Unspecified)
 }
@@ -2461,12 +2458,12 @@ fn get_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::BytevectorInputPort(mut port) => port.read(&mut buf),
         Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
         _ => {
-            return Err(error::Error::new_from_string(
+            return Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "binary input port required",
                 &[args[0]],
-            ));
+            );
         }
     };
     match result {
@@ -2486,30 +2483,25 @@ fn put_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::BytevectorOutputPort(mut port) => port.put_u8(value),
                 Object::BinaryFileOutputPort(mut port) => port.put_u8(value),
                 _ => {
-                    return Err(error::Error::new_from_string(
+                    return Error::assertion_violation(
                         &mut vm.gc,
                         name,
                         "binary output port required",
                         &[args[0]],
-                    ));
+                    );
                 }
             };
             match result {
                 Ok(_size) => Ok(Object::Unspecified),
-                Err(err) => Err(error::Error::new_from_string(
+                Err(err) => Error::assertion_violation(
                     &mut vm.gc,
                     name,
                     &format!("{:?}", err),
                     &[args[0], args[1]],
-                )),
+                ),
             }
         }
-        None => Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "u8 value required",
-            &[args[1]],
-        )),
+        None => Error::assertion_violation(&mut vm.gc, name, "u8 value required", &[args[1]]),
     }
 }
 fn put_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2537,12 +2529,7 @@ fn put_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     };
     match result {
         Ok(_) => Ok(Object::Unspecified),
-        Err(e) => Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            &format!("{:?}", e),
-            &[args[0]],
-        )),
+        Err(e) => Error::assertion_violation(&mut vm.gc, name, &format!("{:?}", e), &[args[0]]),
     }
 }
 
@@ -2607,24 +2594,24 @@ fn get_bytevector_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
     let start = as_usize!(name, args, 2, &mut vm.gc);
     let count = as_usize!(name, args, 3, &mut vm.gc);
     if bv.len() < start + count {
-        return Err(error::Error::new_from_string(
+        return Error::assertion_violation(
             &mut vm.gc,
             name,
             "bytevector must be a bytevector with at least start + count elements.",
             &[args[2], args[3]],
-        ));
+        );
     }
     let buf = &mut bv.data[start..start + count];
     let result = match args[0] {
         Object::BytevectorInputPort(mut port) => port.read(buf),
         Object::BinaryFileInputPort(mut port) => port.read(buf),
         _ => {
-            return Err(error::Error::new_from_string(
+            return Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "binary input port required",
                 &[args[0]],
-            ));
+            );
         }
     };
     match result {
@@ -2684,12 +2671,12 @@ fn sys_get_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     match args[0] {
         Object::BytevectorOutputPort(port) => Ok(port.to_bytevector(&mut vm.gc)),
-        _ => Err(error::Error::new_from_string(
+        _ => Error::assertion_violation(
             &mut vm.gc,
             name,
             "bytevector output port required",
             &[args[0]],
-        )),
+        ),
     }
 }
 fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2721,12 +2708,12 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::BytevectorInputPort(mut port) => port.read(&mut buf),
         Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
         _ => {
-            return Err(error::Error::new_from_string(
+            return Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "binary input port required",
                 &[args[0]],
-            ));
+            );
         }
     };
     match result {
@@ -2891,9 +2878,12 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
                     match FileInputPort::open(&path.string) {
                         Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
                         Err(err) => {
-                            let who = vm.gc.new_string(name);
-                            let message = vm.gc.new_string(&format!("{}", err));
-                            return Err(error::Error::new(who, message, vm.gc.list1(args[0])));
+                            return Error::assertion_violation(
+                                &mut vm.gc,
+                                name,
+                                &format!("{}", err),
+                                &[args[0]],
+                            );
                         }
                     }
                 } else if buffer_mode.string.eq("none") {
@@ -2918,12 +2908,7 @@ fn close_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = args[0];
     if !port.is_input_port() {
-        return Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "input_port required",
-            &[args[0]],
-        ));
+        return Error::assertion_violation(&mut vm.gc, name, "input_port required", &[args[0]]);
     }
     match args[0] {
         Object::BinaryFileInputPort(mut port) => port.close(),
@@ -3210,12 +3195,7 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if argc == 0 {
         match vm.read() {
             Ok(obj) => Ok(obj),
-            Err(e) => Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                &format!("{:?}", e),
-                &[],
-            )),
+            Err(e) => Error::assertion_violation(&mut vm.gc, name, &format!("{:?}", e), &[]),
         }
     } else if argc == 1 {
         match args[0] {
@@ -3843,12 +3823,12 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::StdInputPort(mut p) => p.read_n_to_string(&mut s, n),
         Object::StringInputPort(mut p) => p.read_n_to_string(&mut s, n),
         _ => {
-            return Err(error::Error::new_from_string(
+            return Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "text input port required",
                 &[args[0]],
-            ));
+            );
         }
     };
 
@@ -3881,12 +3861,12 @@ fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::StdInputPort(mut p) => p.read_line(&mut s),
         Object::StringInputPort(mut p) => p.read_line(&mut s),
         _ => {
-            return Err(error::Error::new_from_string(
+            return Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "text input port required",
                 &[args[0]],
-            ));
+            );
         }
     };
 
@@ -4245,12 +4225,7 @@ fn close_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = args[0];
     if !port.is_port() {
-        return Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "port required",
-            &[args[0]],
-        ));
+        return Error::assertion_violation(&mut vm.gc, name, "port required", &[args[0]]);
     }
     match args[0] {
         Object::BinaryFileInputPort(mut port) => port.close(),
@@ -4908,18 +4883,15 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if n1.is_real() && n2.is_real() {
         match integer_div(&mut vm.gc, n1, n2) {
             Ok(v) => Ok(v),
-            Err(SchemeError::Div0) => Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "division by zero",
-                &[n1, n2],
-            )),
-            Err(SchemeError::NanOrInfinite) => Err(error::Error::new_from_string(
+            Err(SchemeError::Div0) => {
+                Error::assertion_violation(&mut vm.gc, name, "division by zero", &[n1, n2])
+            }
+            Err(SchemeError::NanOrInfinite) => Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "nan.0 or inf.0 not allowed",
                 &[n1, n2],
-            )),
+            ),
             _ => panic!(),
         }
     } else {
@@ -4932,12 +4904,7 @@ fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let n1 = args[0];
     let n2 = args[1];
     if !n1.is_real() || !n2.is_real() {
-        return Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "real numbers required",
-            &[n1, n2],
-        ));
+        return Error::assertion_violation(&mut vm.gc, name, "real numbers required", &[n1, n2]);
     }
     let d = div(vm, &mut [n1, n2])?;
     let d2 = numbers::mul(&mut vm.gc, d, n2);
@@ -4956,25 +4923,25 @@ fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 
 /*
-    Object div = integerDivEx(theVM, argc, argv);
-    if (div.isUndef()) {
-        return Object::Undef;
-    }
-    Object mod = Arithmetic::sub(n1, Arithmetic::mul(div, n2));
-    // we can ignore isDiv0Error parameter of Arithmetic::div.
-    // Because we know division by zero never occur.
-    bool isDiv0Error = false;
-    if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2), isDiv0Error)))) {
-        return div;
-    } else {
-        if (Arithmetic::isNegative(n2)) {
-            return Arithmetic::sub(div, Object::makeFixnum(1));
-        } else {
-            return Arithmetic::add(div, Object::makeFixnum(1));
-        }
-    }
+   Object div = integerDivEx(theVM, argc, argv);
+   if (div.isUndef()) {
+       return Object::Undef;
+   }
+   Object mod = Arithmetic::sub(n1, Arithmetic::mul(div, n2));
+   // we can ignore isDiv0Error parameter of Arithmetic::div.
+   // Because we know division by zero never occur.
+   bool isDiv0Error = false;
+   if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2), isDiv0Error)))) {
+       return div;
+   } else {
+       if (Arithmetic::isNegative(n2)) {
+           return Arithmetic::sub(div, Object::makeFixnum(1));
+       } else {
+           return Arithmetic::add(div, Object::makeFixnum(1));
+       }
+   }
 
- */
+*/
 
 fn numerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "numerator";
@@ -5047,12 +5014,7 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             panic!("{}: number required but got {}", name, n);
         }
         if n.is_exact_zero() {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                " nonzero required but got",
-                &[n],
-            ));
+            return Error::assertion_violation(&mut vm.gc, name, " nonzero required but got", &[n]);
         } else {
             return Ok(numbers::log(&mut vm.gc, n));
         }
@@ -5445,12 +5407,12 @@ fn put_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         bv.len()
     };
     if bv.len() < start + count {
-        return Err(error::Error::new_from_string(
+        return Error::assertion_violation(
             &mut vm.gc,
             name,
             "Bytevector must have a length of at least start + count.",
             &[args[1], args[2]],
-        ));
+        );
     }
 
     let buf = &bv.data[start..start + count];
@@ -5458,22 +5420,17 @@ fn put_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::BytevectorOutputPort(mut port) => port.write(buf),
         Object::BinaryFileOutputPort(mut port) => port.write(buf),
         _ => {
-            return Err(error::Error::new_from_string(
+            return Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "binary output port required",
                 &[args[0]],
-            ));
+            );
         }
     };
     match result {
         Ok(_size) => Ok(Object::Unspecified),
-        Err(err) => Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            &format!("{:?}", err),
-            &[args[0], args[1]],
-        )),
+        Err(err) => Error::assertion_violation(&mut vm.gc, name, &format!("{:?}", err), args),
     }
 }
 fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5496,12 +5453,9 @@ fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         };
         match result {
             Ok(_) => Ok(Object::Unspecified),
-            Err(_) => Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "write-char failed",
-                &[args[0]],
-            )),
+            Err(_) => {
+                error::Error::assertion_violation(&mut vm.gc, name, "write-char failed", &[args[0]])
+            }
         }
     }
 }
@@ -6508,12 +6462,12 @@ fn is_port_open(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::StringOutputPort(port) => port.is_open(),
         _ => {
             let irritants = vm.gc.list1(args[0]);
-            return Err(error::Error::new_from_string(
+            return error::Error::assertion_violation(
                 &mut vm.gc,
                 name,
                 "port required",
                 &[irritants],
-            ));
+            );
         }
     }))
 }

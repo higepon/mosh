@@ -127,8 +127,8 @@ impl Vm {
             // The exception system is ready to use.
             Some(closure) => self.set_after_trigger3(*closure, who, message, irritants),
             None => {
-                println!("EEEEEEEE");
-                Err(error::Error::new(who, message, irritants))
+                eprintln!("Warning:The underlying exception is not ready to use");
+                error::Error::assertion_violation_obj(who, message, irritants)
             }
         }
     }
