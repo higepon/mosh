@@ -4735,9 +4735,11 @@ fn is_fxle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::True)
 }
-fn is_fxzero(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxzero(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxzero?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);    
+    Ok(Object::make_bool(fx == 0))
 }
 fn is_fxpositive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxpositive?";
