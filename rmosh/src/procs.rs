@@ -2878,7 +2878,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
                     match FileInputPort::open(&path.string) {
                         Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
                         Err(err) => {
-                            return Error::assertion_violation(
+                            return Error::error(
                                 &mut vm.gc,
                                 name,
                                 &format!("{}", err),

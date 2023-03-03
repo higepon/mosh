@@ -10,6 +10,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum ErrorType {
     AssertionViolation,
+    Error,
 }
 
 pub struct Error {
@@ -58,6 +59,23 @@ impl Error {
             irritants: irritants,
         })
     }
+
+    pub fn error(
+        gc: &mut Box<Gc>,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> Result<Object> {
+        let who = gc.new_string(who);
+        let message = gc.new_string(message);
+        let irritants = gc.listn(irritants);
+        Err(Self {
+            error_type: ErrorType::Error,
+            who: who,
+            message: message,
+            irritants: irritants,
+        })
+    }    
 }
 
 impl Display for Error {

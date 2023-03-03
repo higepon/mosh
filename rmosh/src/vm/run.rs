@@ -17,7 +17,12 @@ macro_rules! raise_or_exit {
     ($self:ident, $call:expr) => {{
         match $call {
             Ok(_) => Object::Unspecified,
-            Err(e) => $self.assertion_violation_err(e)?,
+            Err(error::Error {error_type: error::ErrorType::AssertionViolation, who: who, message: message, irritants: irritants}) => {
+                $self.raise_assertion_violation_obj(who, message, irritants)?
+            },
+            Err(error::Error {error_type: error::ErrorType::Error, who: who, message: message, irritants: irritants}) => {
+                $self.raise_error_obj(who, message, irritants)?
+            },            
         };
     }};
 }
@@ -53,7 +58,7 @@ impl Vm {
                     let who = self.operand();
                     let message = self.operand();
                     let irritants = self.operand();
-                    self.assertion_violation_obj(who, message, irritants)?;
+                    self.raise_assertion_violation_obj(who, message, irritants)?;
                 }
                 Op::BranchNotLe => {
                     self.branch_not_le_op();
@@ -411,7 +416,7 @@ impl Vm {
 
                         Err(SchemeError::Div0) => {
                             let irritants = self.gc.list2(n, d);
-                            self.assertion_violation("/", "divsion by zero", irritants)?;
+                            self.raise_assertion_violation("/", "divsion by zero", irritants)?;
                         }
                         _ => panic!(),
                     }

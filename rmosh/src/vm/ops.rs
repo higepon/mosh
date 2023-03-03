@@ -78,11 +78,11 @@ impl Vm {
                 self.set_return_value(pair.car);
                 Ok(Object::Unspecified)
             }
-            obj => self.assertion_violation("car", "pair required", obj),
+            obj => self.raise_assertion_violation("car", "pair required", obj),
         }
     }
 
-    pub(super) fn assertion_violation(
+    pub(super) fn raise_assertion_violation(
         &mut self,
         who: &str,
         message: &str,
@@ -93,7 +93,7 @@ impl Vm {
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
-    pub(super) fn assertion_violation_obj(
+    pub(super) fn raise_assertion_violation_obj(
         &mut self,
         who: Object,
         message: Object,
@@ -102,9 +102,19 @@ impl Vm {
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
-    pub(super) fn assertion_violation_err(&mut self, err: error::Error) -> error::Result<Object> {
-        self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
+    pub(super) fn raise_error_obj(
+        &mut self,
+        who: Object,
+        message: Object,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        self.raise_after3("error", who, message, irritants)
     }
+
+
+    //pub(super) fn raise_assertion_violation_err(&mut self, err: error::Error) -> error::Result<Object> {
+      //  self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
+    //}
 
     pub(super) fn raise_read_error(
         &mut self,
@@ -144,7 +154,7 @@ impl Vm {
             }
             _ => {
                 let irritatns = self.gc.list1(self.ac);
-                self.assertion_violation("cdr", "pair required", irritatns)
+                self.raise_assertion_violation("cdr", "pair required", irritatns)
             }
         }
     }
@@ -198,7 +208,7 @@ impl Vm {
                     // We convert apply call to Op::Call.
                     if procedure.func as usize == procs::apply as usize {
                         if argc == 1 {
-                            self.assertion_violation(
+                            self.raise_assertion_violation(
                                 "apply",
                                 "need two or more arguments but only 1 argument",
                                 Object::Nil,
@@ -213,7 +223,7 @@ impl Vm {
                             if i == argc - 1 {
                                 let mut last_pair = args[i as usize];
                                 if !last_pair.is_list() {
-                                    self.assertion_violation(
+                                    self.raise_assertion_violation(
                                         "apply",
                                         "last arguments shoulbe proper list but got",
                                         last_pair,
