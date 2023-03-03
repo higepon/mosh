@@ -4738,24 +4738,32 @@ fn is_fxle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_fxzero(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxzero?";
     check_argc!(name, args, 1);
-    let fx = as_isize!(name, args, 0, &mut vm.gc);    
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fx == 0))
 }
-fn is_fxpositive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxpositive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxpositive?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(fx > 0))
 }
-fn is_fxnegative(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxnegative(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxnegative?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(fx < 0))
 }
-fn is_fxodd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxodd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxodd?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(fx % 2 == 1))
 }
-fn is_fxeven(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxeven(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxeven?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(fx % 2 == 0))
 }
 fn fxmax(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmax";
@@ -4781,21 +4789,76 @@ fn fxmin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::Fixnum(min))
 }
-fn fxadd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxadd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx+";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    match fx1.checked_add(fx2) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
-fn fxmul(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxmul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx*";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    match fx1.checked_mul(fx2) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
-fn fxsub(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx-";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    if args.len() == 1 {
+        match fx1.checked_neg() {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::assertion_violation(
+                &mut vm.gc,
+                name,
+                "result is not fixnum",
+                &[args[0], args[1]],
+            ),
+        }
+    } else {
+        let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+        match fx1.checked_sub(fx2) {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::assertion_violation(
+                &mut vm.gc,
+                name,
+                "result is not fixnum",
+                &[args[0], args[1]],
+            ),
+        }
+    }
 }
-fn fxdiv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxdiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxdiv";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    match fx1.checked_div(fx2) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
 fn fxmod(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmod";
