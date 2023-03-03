@@ -116,8 +116,8 @@ Abbreviation: Object = {
         let quote = gc.symbol_intern("unsyntax");
         gc.list2(quote, datum)
     },
-    "#@" <datum: Datum> => {
-        let quote = gc.symbol_intern("unsyntaxsplicing");
+    "#,@" <datum: Datum> => {
+        let quote = gc.symbol_intern("unsyntax-splicing");
         gc.list2(quote, datum)
     },
 }
@@ -167,7 +167,7 @@ extern {
         "#'" => lexer::Token::AbbrevSyntax,
         "#`" => lexer::Token::AbbrevQuasisyntax,
         "#," => lexer::Token::AbbrevUnsyntax,
-        "#@" => lexer::Token::AbbrevUnsyntaxSplicing,
+        "#,@" => lexer::Token::AbbrevUnsyntaxSplicing,
         "#;" => lexer::Token::DatumComment,
         "#u8(" => lexer::Token::ByteVectorStart,
         "." => lexer::Token::Dot,
