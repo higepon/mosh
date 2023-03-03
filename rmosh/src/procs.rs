@@ -4810,9 +4810,35 @@ fn fxrotate_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     let name: &str = "fxrotate-bit-field";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxreverse_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxreverse_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxreverse-bit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut bits = as_usize!(name, args, 0, &mut vm.gc);
+    let mut start = as_isize!(name, args, 1, &mut vm.gc);
+    let mut end = as_isize!(name, args, 2, &mut vm.gc);
+    let num_bits = bits.count_ones() + bits.count_zeros();
+    if start > (num_bits as isize) || start < 0 || end > (num_bits as isize) || end < 0 {
+        return Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "out of range",
+            &[args[0], args[1], args[2]],
+        );
+    }
+    end -= 1;
+
+    while start < end {
+        let sbit = (bits >> start) & 1;
+        let ebit = (bits >> end) & 1;
+
+        bits &= usize::MAX - (1 << end);
+        bits |= sbit << end;
+        bits &= usize::MAX - (1 << start);
+        bits |= ebit << start;
+
+        start += 1;
+        end -= 1;
+    }
+    return Ok(Object::Fixnum(bits as isize));
 }
 fn bytevector_ieee_single_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-native-ref";
