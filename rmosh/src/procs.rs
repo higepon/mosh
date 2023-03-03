@@ -4317,7 +4317,8 @@ fn is_bignum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn fixnum_width(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fixnum-width";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::Fixnum(isize::BITS as isize))
 }
 fn least_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "greatest-fixnum";
@@ -4664,9 +4665,19 @@ fn is_integer_valued(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         Ok(Object::False)
     }
 }
-fn is_fxequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxequal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i, &mut vm.gc);
+        let fx2 = as_isize!(name, args, i + 1, &mut vm.gc);
+        if fx1 == fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fxgt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx>?";
@@ -4815,8 +4826,7 @@ fn fxreverse_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     let mut bits = as_usize!(name, args, 0, &mut vm.gc);
     let mut start = as_isize!(name, args, 1, &mut vm.gc);
     let mut end = as_isize!(name, args, 2, &mut vm.gc);
-    let num_bits = bits.count_ones() + bits.count_zeros();
-    if start > (num_bits as isize) || start < 0 || end > (num_bits as isize) || end < 0 {
+    if start > (isize::BITS as isize) || start < 0 || end > (isize::BITS as isize) || end < 0 {
         return Error::assertion_violation(
             &mut vm.gc,
             name,
