@@ -10,19 +10,25 @@ use crate::{
 use super::{Vm, MAX_NUM_VALUES};
 
 // Raise an exception or exit with the exception raised in Scheme world.
-// In R7RS mode we raise the exception in Scheme worled.
+// In R7RS mode we raise the exception in Scheme world.
 // Otherwise print the exception and exit.
 #[macro_export]
 macro_rules! raise_or_exit {
     ($self:ident, $call:expr) => {{
         match $call {
             Ok(_) => Object::Unspecified,
-            Err(error::Error {error_type: error::ErrorType::AssertionViolation, who: who, message: message, irritants: irritants}) => {
-                $self.raise_assertion_violation_obj(who, message, irritants)?
-            },
-            Err(error::Error {error_type: error::ErrorType::Error, who: who, message: message, irritants: irritants}) => {
-                $self.raise_error_obj(who, message, irritants)?
-            },            
+            Err(error::Error {
+                error_type: error::ErrorType::AssertionViolation,
+                who: who,
+                message: message,
+                irritants: irritants,
+            }) => $self.call_assertion_violation_obj_after(who, message, irritants)?,
+            Err(error::Error {
+                error_type: error::ErrorType::Error,
+                who: who,
+                message: message,
+                irritants: irritants,
+            }) => $self.call_error_obj_after(who, message, irritants)?,
         };
     }};
 }
@@ -58,7 +64,7 @@ impl Vm {
                     let who = self.operand();
                     let message = self.operand();
                     let irritants = self.operand();
-                    self.raise_assertion_violation_obj(who, message, irritants)?;
+                    self.call_assertion_violation_obj_after(who, message, irritants)?;
                 }
                 Op::BranchNotLe => {
                     self.branch_not_le_op();
@@ -416,7 +422,7 @@ impl Vm {
 
                         Err(SchemeError::Div0) => {
                             let irritants = self.gc.list2(n, d);
-                            self.raise_assertion_violation("/", "divsion by zero", irritants)?;
+                            self.call_assertion_violation_after("/", "divsion by zero", irritants)?;
                         }
                         _ => panic!(),
                     }
@@ -446,11 +452,11 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.raise_read_error("read", &format!("{:?}", err), port)?;
+                                self.call_read_error_after("read", &format!("{:?}", err), port)?;
                             }
                         },
                         _ => {
-                            self.raise_read_error("read", "input port required", port)?;
+                            self.call_read_error_after("read", "input port required", port)?;
                         }
                     }
                 }

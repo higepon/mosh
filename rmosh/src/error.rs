@@ -75,7 +75,7 @@ impl Error {
             message: message,
             irritants: irritants,
         })
-    }    
+    }
 }
 
 impl Display for Error {
