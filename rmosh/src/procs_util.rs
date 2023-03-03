@@ -41,3 +41,14 @@ macro_rules! as_usize {
         o.to_isize() as usize
     }};
 }
+
+#[macro_export]
+macro_rules! as_isize {
+    ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
+        let o = $args[$i];
+        if !o.is_fixnum() {
+            return error::Error::assertion_violation($gc, $name, "number required", &[o]);
+        }
+        o.to_isize()
+    }};
+}

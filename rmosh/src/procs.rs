@@ -9,7 +9,7 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_sstring, as_usize,
+    as_bytevector, as_char, as_isize, as_sstring, as_usize,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
@@ -4768,9 +4768,15 @@ fn fxlength(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxlength";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxfirst_bit_set(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxfirst_bit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxfirst-bit-set";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    if fx == 0 {
+        Ok(Object::Fixnum(-1))
+    } else {
+        Ok(Object::Fixnum(fx.trailing_zeros() as isize))
+    }
 }
 fn is_fxbit_set(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-set?";
