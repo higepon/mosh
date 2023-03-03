@@ -767,6 +767,14 @@ impl Bignum {
             Ok(Object::Bignum(gc.alloc(Bignum::new(ret))))
         }
     }
+    pub fn remainder(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
+        assert!(other.value != BigInt::from_u8(0).unwrap());
+        let ret = self.value.clone().rem(other.value.clone());
+        match ret.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(ret))),
+        }
+    }    
 
     pub fn eqv(&self, other: &Bignum) -> bool {
         self.value.eq(&other.value)
@@ -792,6 +800,15 @@ impl Bignum {
                 Some(v) => Ok(Object::Fixnum(v)),
                 None => Ok(Object::Bignum(gc.alloc(Bignum::new(ret)))),
             }
+        }
+    }
+
+    pub fn remainder_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
+        assert!(fx != 0);
+        let ret = self.value.clone().rem(fx);
+        match ret.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(ret))),
         }
     }
 
@@ -1539,7 +1556,7 @@ pub fn remainder(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sc
     }
 }
 
-pub fn modulo(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1568,10 +1585,33 @@ pub fn modulo(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Schem
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => {
+            if fx == 0 {
+                Err(SchemeError::NonZeroRequired)
+            } else {
+                let modulo = b.remainder_fx(gc, fx);
+                if eqv(modulo, Object::Fixnum(0)) {
+                    Ok(modulo)
+                } else {
+                    let a = n2.is_negative();
+                    let b = modulo.is_negative();
+                    if (a && !b) || (!a && b) {
+                        Ok(add(gc, modulo, n2))
+                    } else {
+                        Ok(modulo)
+                    }
+                }
+            }
+        }
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => {
+            if n2.is_zero() {
+                Err(SchemeError::NonZeroRequired)                
+            } else {
+                Ok(b1.remainder(gc, &b2))
+            }
+        }
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
