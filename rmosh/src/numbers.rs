@@ -1,6 +1,7 @@
 use std::{
     fmt::{self, Debug, Display},
-    ops::{Deref, DerefMut, Div, Neg, Rem}, mem,
+    mem,
+    ops::{Deref, DerefMut, Div, Neg, Rem},
 };
 
 use num_bigint::BigInt;
@@ -1747,7 +1748,16 @@ pub fn log2(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeEr
 pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_real());
     match n {
-        Object::Fixnum(fx) => Object::Fixnum(fx.abs()),
+        Object::Fixnum(fx) => match fx.checked_abs() {
+            Some(v) => Object::Fixnum(v),
+            None => match BigInt::from_isize(fx) {
+                Some(bigint) => {
+                    let b = gc.alloc(Bignum::new(bigint));
+                    b.abs(gc)
+                }
+                None => panic!(),
+            },
+        },
         Object::Flonum(fl) => fl.abs(),
         Object::Bignum(b) => b.abs(gc),
         Object::Ratnum(r) => r.abs(gc),

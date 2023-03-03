@@ -4830,7 +4830,7 @@ fn fxsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 &mut vm.gc,
                 name,
                 "result is not fixnum",
-                &[args[0], args[1]],
+                &[args[0]],
             ),
         }
     } else {

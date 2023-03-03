@@ -50,7 +50,7 @@ fn main() {
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
         vargs.push(
           vm.gc
-            .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/mutable-pairs.sps"),
+            .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/arithmetic/fixnums.sps"),
         )
     }
 
