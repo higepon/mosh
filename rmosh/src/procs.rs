@@ -4679,21 +4679,61 @@ fn is_fxequal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::True)
 }
-fn is_fxgt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxgt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx>?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i, &mut vm.gc);
+        let fx2 = as_isize!(name, args, i + 1, &mut vm.gc);
+        if fx1 > fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
-fn is_fxlt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxlt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx<?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i, &mut vm.gc);
+        let fx2 = as_isize!(name, args, i + 1, &mut vm.gc);
+        if fx1 < fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
-fn is_fxge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxge(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx>=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i, &mut vm.gc);
+        let fx2 = as_isize!(name, args, i + 1, &mut vm.gc);
+        if fx1 >= fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
-fn is_fxle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx<=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i, &mut vm.gc);
+        let fx2 = as_isize!(name, args, i + 1, &mut vm.gc);
+        if fx1 <= fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fxzero(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxzero?";
