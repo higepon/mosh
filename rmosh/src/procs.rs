@@ -4737,7 +4737,7 @@ fn is_fxle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_fxzero(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxzero?";
-    check_argc!(name, args, 0);
+    check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);    
     Ok(Object::make_bool(fx == 0))
 }
