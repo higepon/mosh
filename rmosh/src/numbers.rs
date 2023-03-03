@@ -745,6 +745,13 @@ impl Bignum {
         }
     }
 
+    pub fn add(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
+        let result = self.value.clone() + other.value.clone();
+        match result.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        }
+    }
     pub fn sub(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         let result = self.value.clone() - other.value.clone();
         match result.to_isize() {
@@ -774,7 +781,7 @@ impl Bignum {
             Some(v) => Object::Fixnum(v),
             None => Object::Bignum(gc.alloc(Bignum::new(ret))),
         }
-    }    
+    }
 
     pub fn eqv(&self, other: &Bignum) -> bool {
         self.value.eq(&other.value)
@@ -1110,7 +1117,7 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.add_big(gc, &b),
         (Object::Bignum(b), Object::Flonum(fl)) => fl.add_big(gc, &b),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.add(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.add_rat(gc, &r),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
@@ -1607,9 +1614,20 @@ pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Scheme
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(b1), Object::Bignum(b2)) => {
             if n2.is_zero() {
-                Err(SchemeError::NonZeroRequired)                
+                Err(SchemeError::NonZeroRequired)
             } else {
-                Ok(b1.remainder(gc, &b2))
+                let modulo = b1.remainder(gc, &b2);
+                if modulo.is_zero() {
+                    Ok(modulo)
+                } else {
+                    let a = n2.is_negative();
+                    let b = modulo.is_negative();
+                    if (a && !b) || (!a && b) {
+                        Ok(add(gc, modulo, n2))
+                    } else {
+                        Ok(modulo)
+                    }
+                }
             }
         }
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
