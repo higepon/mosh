@@ -4755,13 +4755,29 @@ fn is_fxeven(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxeven?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fxmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxmax(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmax";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut max = isize::MIN;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i, &mut vm.gc);
+        if fx > max {
+            max = fx
+        }
+    }
+    Ok(Object::Fixnum(max))
 }
-fn fxmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxmin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut min = isize::MAX;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i, &mut vm.gc);
+        if fx < min {
+            min = fx
+        }
+    }
+    Ok(Object::Fixnum(min))
 }
 fn fxadd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx+";
