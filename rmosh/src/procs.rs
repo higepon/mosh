@@ -4860,9 +4860,20 @@ fn fxdiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         ),
     }
 }
-fn fxmod(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmod";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    match fx1.checked_rem(fx2) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }    
 }
 fn fxdiv0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxdiv0";
