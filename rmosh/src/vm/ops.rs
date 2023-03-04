@@ -117,6 +117,20 @@ impl Vm {
         self.raise_after3("error", who, message, irritants)
     }
 
+    pub(super) fn implementation_restriction_violation_obj_after(
+        &mut self,
+        who: Object,
+        message: Object,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        self.raise_after3(
+            "implementation-restriction-violation",
+            who,
+            message,
+            irritants,
+        )
+    }
+
     pub(super) fn call_read_error_after(
         &mut self,
         who: &str,

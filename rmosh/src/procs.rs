@@ -4799,7 +4799,7 @@ fn fxadd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.checked_add(fx2) {
         Some(v) => Ok(Object::Fixnum(v)),
-        None => Error::assertion_violation(
+        None => Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
@@ -4814,7 +4814,7 @@ fn fxmul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.checked_mul(fx2) {
         Some(v) => Ok(Object::Fixnum(v)),
-        None => Error::assertion_violation(
+        None => Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
@@ -4830,14 +4830,14 @@ fn fxsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match fx1.checked_neg() {
             Some(v) => Ok(Object::Fixnum(v)),
             None => {
-                Error::assertion_violation(&mut vm.gc, name, "result is not fixnum", &[args[0]])
+                Error::implementation_restriction_violation(&mut vm.gc, name, "result is not fixnum", &[args[0]])
             }
         }
     } else {
         let fx2 = as_isize!(name, args, 1, &mut vm.gc);
         match fx1.checked_sub(fx2) {
             Some(v) => Ok(Object::Fixnum(v)),
-            None => Error::assertion_violation(
+            None => Error::implementation_restriction_violation(
                 &mut vm.gc,
                 name,
                 "result is not fixnum",
@@ -4853,7 +4853,7 @@ fn fxdiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.integer_div(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(_) => Error::assertion_violation(
+        Err(_) => Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
@@ -4868,7 +4868,7 @@ fn fxmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.modulo(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(e) => Error::assertion_violation(
+        Err(e) => Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             &format!("{:?}", e),
@@ -4882,7 +4882,7 @@ fn fxdiv0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.div0(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(_) => Error::assertion_violation(
+        Err(_) => Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
@@ -4896,7 +4896,7 @@ fn fxmod0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.modulo0(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(_) => Error::assertion_violation(
+        Err(_) => Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",

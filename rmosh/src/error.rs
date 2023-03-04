@@ -10,6 +10,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum ErrorType {
     AssertionViolation,
+    ImplementationRestrictionViolation,
     Error,
 }
 
@@ -49,15 +50,7 @@ impl Error {
         message: &str,
         irritants: &[Object],
     ) -> Result<Object> {
-        let who = gc.new_string(who);
-        let message = gc.new_string(message);
-        let irritants = gc.listn(irritants);
-        Err(Self {
-            error_type: ErrorType::AssertionViolation,
-            who: who,
-            message: message,
-            irritants: irritants,
-        })
+        Self::new_err(gc, ErrorType::AssertionViolation, who, message, irritants)
     }
 
     pub fn error(
@@ -66,11 +59,36 @@ impl Error {
         message: &str,
         irritants: &[Object],
     ) -> Result<Object> {
+        Self::new_err(gc, ErrorType::Error, who, message, irritants)
+    }
+
+    pub fn implementation_restriction_violation(
+        gc: &mut Box<Gc>,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> Result<Object> {
+        Self::new_err(
+            gc,
+            ErrorType::ImplementationRestrictionViolation,
+            who,
+            message,
+            irritants,
+        )
+    }
+
+    fn new_err(
+        gc: &mut Box<Gc>,
+        error_type: ErrorType,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> Result<Object> {
         let who = gc.new_string(who);
         let message = gc.new_string(message);
         let irritants = gc.listn(irritants);
         Err(Self {
-            error_type: ErrorType::Error,
+            error_type: error_type,
             who: who,
             message: message,
             irritants: irritants,

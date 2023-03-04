@@ -29,6 +29,12 @@ macro_rules! raise_or_exit {
                 message: message,
                 irritants: irritants,
             }) => $self.call_error_obj_after(who, message, irritants)?,
+            Err(error::Error {
+                error_type: error::ErrorType::ImplementationRestrictionViolation,
+                who: who,
+                message: message,
+                irritants: irritants,
+            }) => $self.implementation_restriction_violation_obj_after(who, message, irritants)?,
         };
     }};
 }
