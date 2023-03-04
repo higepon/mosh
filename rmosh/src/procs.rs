@@ -4949,7 +4949,7 @@ fn fxbit_count(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-count";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);
-    Ok(Object::Fixnum(fx.bit_counts() as isize))
+    Ok(Object::Fixnum(fx.bit_count() as isize))
 }
 fn fxlength(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxlength";

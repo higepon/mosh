@@ -15,7 +15,7 @@ use crate::{
 // Fixnum.
 pub trait FixnumExt {
     // Utils
-    fn bit_counts(&self) -> usize;
+    fn bit_count(&self) -> isize;
     fn length(&self) -> usize;
     fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize;
     fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize;
@@ -70,8 +70,12 @@ pub trait FixnumExt {
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
-    fn bit_counts(&self) -> usize {
-        self.count_ones() as usize
+    fn bit_count(&self) -> isize {
+        if *self > 0 {
+            self.count_ones() as isize
+        } else {
+         !(!(*self)).bit_count() as isize
+        }
     }
     fn length(&self) -> usize {
         if *self >= 0 {
@@ -79,10 +83,10 @@ impl FixnumExt for isize {
         } else {
             std::mem::size_of::<isize>() * 8 - (!*self).leading_zeros() as usize
         }
-    }    
+    }
     fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize {
         (fx1 & fx2) | ((!fx1) & fx3)
-    } 
+    }
     fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize {
         let mask = !(-1isize << fx3);
         (fx1 & mask) >> fx2
