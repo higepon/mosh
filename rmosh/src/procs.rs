@@ -4945,9 +4945,11 @@ fn fxif(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx3 = as_isize!(name, args, 2, &mut vm.gc);
     Ok(Object::Fixnum((fx1 & fx2) | (!fx1) & fx3))
 }
-fn fxbit_count(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxbit_count(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-count";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::Fixnum(fx.bit_counts() as isize))
 }
 fn fxlength(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxlength";
