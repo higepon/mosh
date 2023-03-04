@@ -4951,9 +4951,11 @@ fn fxbit_count(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx = as_isize!(name, args, 0, &mut vm.gc);
     Ok(Object::Fixnum(fx.bit_counts() as isize))
 }
-fn fxlength(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxlength(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxlength";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::Fixnum(fx.length() as isize))
 }
 fn fxfirst_bit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxfirst-bit-set";
@@ -4965,9 +4967,20 @@ fn fxfirst_bit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Ok(Object::Fixnum(fx.trailing_zeros() as isize))
     }
 }
-fn is_fxbit_set(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fxbit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-set?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    if fx1 > (isize::BITS as isize) || fx1 < 0 {
+        return Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "out of range",
+            &[args[0], args[1]],
+        );
+    }
+    Ok(Object::Fixnum((fx1 >> fx2) & 1))
 }
 fn fxcopy_bit(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit";

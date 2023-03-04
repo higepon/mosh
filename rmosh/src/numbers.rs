@@ -16,6 +16,7 @@ use crate::{
 pub trait FixnumExt {
     // Utils
     fn bit_counts(&self) -> usize;
+    fn length(&self) -> usize;
 
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
@@ -67,12 +68,15 @@ pub trait FixnumExt {
 }
 impl FixnumExt for isize {
     fn bit_counts(&self) -> usize {
+        self.count_ones() as usize
+    }
+    fn length(&self) -> usize {
         if self >= &0 {
             std::mem::size_of::<isize>() * 8 - self.leading_zeros() as usize
         } else {
             !(std::mem::size_of::<isize>() * 8 - (!self).leading_zeros() as usize)
         }
-    }
+    }    
 
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object {
