@@ -4863,12 +4863,12 @@ fn fxmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
-    match fx1.checked_rem(fx2) {
-        Some(v) => Ok(Object::Fixnum(v)),
-        None => Error::assertion_violation(
+    match fx1.modulo(fx2) {
+        Ok(v) => Ok(Object::Fixnum(v)),
+        Err(e) => Error::assertion_violation(
             &mut vm.gc,
             name,
-            "result is not fixnum",
+            &format!("{:?}", e),
             &[args[0], args[1]],
         ),
     }
