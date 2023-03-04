@@ -4972,7 +4972,7 @@ fn is_fxbit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
-    if fx1 > (isize::BITS as isize) || fx1 < 0 {
+    if fx2 > (isize::BITS as isize) || fx2 < 0 {
         return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
     }
     Ok(Object::make_bool(((fx1 >> fx2) & 1) == 1))
