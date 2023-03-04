@@ -4975,7 +4975,7 @@ fn is_fxbit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if fx1 > (isize::BITS as isize) || fx1 < 0 {
         return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
     }
-    Ok(Object::Fixnum((fx1 >> fx2) & 1))
+    Ok(Object::make_bool(((fx1 >> fx2) & 1) == 1))
 }
 fn fxcopy_bit(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit";
