@@ -18,6 +18,8 @@ pub trait FixnumExt {
     fn bit_counts(&self) -> usize;
     fn length(&self) -> usize;
     fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize;
+    fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize;
+    fn fxbit_copy_bitfield(fx1: isize, fx2: isize, fx3: isize, fx4: isize) -> isize;
 
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
@@ -80,7 +82,18 @@ impl FixnumExt for isize {
     }    
     fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize {
         (fx1 & fx2) | ((!fx1) & fx3)
-    }    
+    } 
+    fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize {
+        let mask = !(-1isize << fx3);
+        (fx1 & mask) >> fx2
+    }
+
+    fn fxbit_copy_bitfield(fx1: isize, fx2: isize, fx3: isize, fx4: isize) -> isize {
+        let mask1 = -1 << fx2;
+        let mask2 = !(-1 << fx3);
+        let mask = mask1 & mask2;
+        isize::fxif(mask, fx4 << fx2, fx1)
+    }
 
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object {

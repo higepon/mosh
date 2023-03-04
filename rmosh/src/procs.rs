@@ -5002,9 +5002,7 @@ fn fxbit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     {
         return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
     }
-
-    let mask = !(-1isize << fx3);
-    Ok(Object::Fixnum((fx1 & mask) >> fx2))
+    Ok(Object::Fixnum(isize::fxbitfield(fx1, fx2, fx3)))
 }
 fn fxcopy_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit-field";
@@ -5020,11 +5018,9 @@ fn fxcopy_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     {
         return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
     }
-
-    let mask1 = -1 << fx2;
-    let mask2 = !(-1 << fx3);
-    let mask = mask1 & mask2;
-    Ok(Object::Fixnum(isize::fxif(mask, fx4 << fx2, fx1)))
+    Ok(Object::Fixnum(isize::fxbit_copy_bitfield(
+        fx1, fx2, fx3, fx4,
+    )))
 }
 fn fxarithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift";
@@ -5093,9 +5089,51 @@ fn fxarithmetic_shift_right(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
         ),
     }
 }
-fn fxrotate_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxrotate_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxrotate-bit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    let fx3 = as_isize!(name, args, 2, &mut vm.gc);
+    let fx4 = as_isize!(name, args, 3, &mut vm.gc);
+
+    if (fx2 < 0 || fx2.abs() >= (isize::BITS) as isize)
+        || (fx3 < 0 || fx3.abs() >= (isize::BITS) as isize)
+        || (fx4 < 0 || fx4.abs() >= (isize::BITS) as isize)
+        || fx2 > fx3
+        || fx4 >= (fx3 - fx2)
+    {
+        return Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "out of range",
+            &[args[0], args[1], args[2], args[3]],
+        );
+    }
+
+    let width = fx3 - fx2;
+    if width > 0 {
+        let count = match fx4.modulo(width) {
+            Ok(v) => v,
+            Err(_) => {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "division by zero",
+                    &[args[0], args[1], args[2], args[3]],
+                );
+            }
+        };
+        let field0 = isize::fxbitfield(fx1, fx2, fx3);
+        let field1 = field0 << fx4;
+        let field2 = field0 >> (width - count);
+        let field = field1 | field2;
+        Ok(Object::Fixnum(isize::fxbit_copy_bitfield(
+            fx1, fx2, fx3, field,
+        )))
+    } else {
+        Ok(Object::Fixnum(fx1))
+    }
 }
 fn fxreverse_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxreverse-bit-field";
