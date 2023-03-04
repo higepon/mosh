@@ -4309,7 +4309,10 @@ fn is_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fixnum?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_number()))
+    match args[0] {
+        Object::Fixnum(_) => Ok(Object::True),
+        _ => Ok(Object::False),
+    }
 }
 fn is_bignum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bignum?";
