@@ -16,7 +16,7 @@ use crate::{
     gc::Gc,
     number_lexer::NumberLexer,
     number_reader::NumberParser,
-    numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError, FixnumExt},
+    numbers::{self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError},
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
@@ -4826,12 +4826,9 @@ fn fxsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args.len() == 1 {
         match fx1.checked_neg() {
             Some(v) => Ok(Object::Fixnum(v)),
-            None => Error::assertion_violation(
-                &mut vm.gc,
-                name,
-                "result is not fixnum",
-                &[args[0]],
-            ),
+            None => {
+                Error::assertion_violation(&mut vm.gc, name, "result is not fixnum", &[args[0]])
+            }
         }
     } else {
         let fx2 = as_isize!(name, args, 1, &mut vm.gc);
@@ -4848,16 +4845,17 @@ fn fxsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn fxdiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxdiv";
+    check_argc!(name, args, 2);
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.integer_div(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(e)=> Error::assertion_violation(
+        Err(_) => Error::assertion_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
             &[args[0], args[1]],
-        ),        
+        ),
     }
 }
 fn fxmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4873,7 +4871,7 @@ fn fxmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             "result is not fixnum",
             &[args[0], args[1]],
         ),
-    }    
+    }
 }
 fn fxdiv0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxdiv0";
@@ -4881,12 +4879,12 @@ fn fxdiv0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.div0(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(e)=> Error::assertion_violation(
+        Err(_) => Error::assertion_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
             &[args[0], args[1]],
-        ),        
+        ),
     }
 }
 fn fxmod0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4895,29 +4893,49 @@ fn fxmod0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.modulo0(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(e)=> Error::assertion_violation(
+        Err(_) => Error::assertion_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
             &[args[0], args[1]],
-        ),        
+        ),
     }
 }
-fn fxnot(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxnot(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxnot";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::Fixnum(!fx))
 }
-fn fxand(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxand(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxand";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut ret = -1;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i, &mut vm.gc);
+        ret = ret & fx;
+    }
+    Ok(Object::Fixnum(ret))
 }
-fn fxior(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxior";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut ret = 0;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i, &mut vm.gc);
+        ret = ret | fx;
+    }
+    Ok(Object::Fixnum(ret))
 }
-fn fxxor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxxor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxxor";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut ret = 0;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i, &mut vm.gc);
+        ret = ret ^ fx;
+    }
+    Ok(Object::Fixnum(ret))
 }
 fn fxif(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxif";
