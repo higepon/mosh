@@ -17,6 +17,7 @@ pub trait FixnumExt {
     // Utils
     fn bit_counts(&self) -> usize;
     fn length(&self) -> usize;
+    fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize;
 
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
@@ -76,6 +77,9 @@ impl FixnumExt for isize {
         } else {
             !(std::mem::size_of::<isize>() * 8 - (!self).leading_zeros() as usize)
         }
+    }    
+    fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize {
+        (fx1 & fx2) | ((!fx1) & fx3)
     }    
 
     // Fixnum vs Fixnum

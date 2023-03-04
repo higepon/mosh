@@ -4943,7 +4943,7 @@ fn fxif(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     let fx3 = as_isize!(name, args, 2, &mut vm.gc);
-    Ok(Object::Fixnum((fx1 & fx2) | (!fx1) & fx3))
+    Ok(Object::Fixnum(isize::fxif(fx1, fx2, fx3)))
 }
 fn fxbit_count(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-count";
@@ -4973,22 +4973,38 @@ fn is_fxbit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     if fx1 > (isize::BITS as isize) || fx1 < 0 {
-        return Error::assertion_violation(
-            &mut vm.gc,
-            name,
-            "out of range",
-            &[args[0], args[1]],
-        );
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
     }
     Ok(Object::Fixnum((fx1 >> fx2) & 1))
 }
-fn fxcopy_bit(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxcopy_bit(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    let fx3 = as_isize!(name, args, 2, &mut vm.gc);
+
+    if (fx2 < 0 || fx2 >= (isize::BITS as isize)) || (fx3 != 0 && fx3 != 1) {
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
+    }
+    let mask = 1 << fx2;
+    Ok(Object::Fixnum(isize::fxif(mask, fx3 << fx2, fx1)))
 }
-fn fxbit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxbit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    let fx3 = as_isize!(name, args, 2, &mut vm.gc);
+
+    if (fx2 < 0 || fx2 >= (isize::BITS as isize))
+        || (fx3 < 0 || fx3 >= (isize::BITS as isize))
+        || fx2 > fx3
+    {
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
+    }
+
+    let mask = !(-1isize << fx3);
+    Ok(Object::Fixnum((fx1 & mask) >> fx2))
 }
 fn fxcopy_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit-field";
