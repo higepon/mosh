@@ -4760,7 +4760,7 @@ fn is_fxodd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxodd?";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fx % 2 == 1))
+    Ok(Object::make_bool(fx % 2 != 0))
 }
 fn is_fxeven(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxeven?";
