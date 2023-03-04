@@ -5026,17 +5026,72 @@ fn fxcopy_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mask = mask1 & mask2;
     Ok(Object::Fixnum(isize::fxif(mask, fx4 << fx2, fx1)))
 }
-fn fxarithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxarithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    if fx2.abs() >= (isize::BITS) as isize {
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
+    }
+
+    if fx2 >= 0 {
+        match fx1.checked_shl(fx2 as u32) {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::assertion_violation(
+                &mut vm.gc,
+                name,
+                "result is not fixnum",
+                &[args[0], args[1]],
+            ),
+        }
+    } else {
+        match fx1.checked_shr((-fx2) as u32) {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::assertion_violation(
+                &mut vm.gc,
+                name,
+                "result is not fixnum",
+                &[args[0], args[1]],
+            ),
+        }
+    }
 }
-fn fxarithmetic_shift_left(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxarithmetic_shift_left(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift-left";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    if fx2 < 0 || fx2.abs() >= (isize::BITS) as isize {
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
+    }
+
+    match fx1.checked_shl(fx2 as u32) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
-fn fxarithmetic_shift_right(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxarithmetic_shift_right(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift-right";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    if fx2 < 0 || fx2.abs() >= (isize::BITS) as isize {
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
+    }
+
+    match fx1.checked_shr(fx2 as u32) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
 fn fxrotate_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxrotate-bit-field";
