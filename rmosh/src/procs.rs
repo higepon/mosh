@@ -5006,9 +5006,25 @@ fn fxbit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mask = !(-1isize << fx3);
     Ok(Object::Fixnum((fx1 & mask) >> fx2))
 }
-fn fxcopy_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fxcopy_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    let fx2 = as_isize!(name, args, 1, &mut vm.gc);
+    let fx3 = as_isize!(name, args, 2, &mut vm.gc);
+    let fx4 = as_isize!(name, args, 3, &mut vm.gc);
+
+    if (fx2 < 0 || fx2 >= (isize::BITS as isize))
+        || (fx3 < 0 || fx3 >= (isize::BITS as isize))
+        || fx2 > fx3
+    {
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
+    }
+
+    let mask1 = -1 << fx2;
+    let mask2 = !(-1 << fx3);
+    let mask = mask1 & mask2;
+    Ok(Object::Fixnum(isize::fxif(mask, fx4 << fx2, fx1)))
 }
 fn fxarithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift";
