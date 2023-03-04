@@ -1,12 +1,11 @@
 use std::{
     fmt::{self, Debug, Display},
-    mem,
     ops::{Deref, DerefMut, Div, Neg, Rem},
 };
 
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use num_traits::{FromPrimitive, Signed, ToPrimitive};
+use num_traits::{FromPrimitive, Signed, ToPrimitive, Zero};
 
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -35,6 +34,7 @@ trait FixnumExt {
     fn add_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
     fn sub_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
     fn mul_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
+    fn div_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Result<Object, SchemeError>;
     fn eqv_big(self, b: &Bignum) -> bool;
     fn lt_big(self, b: &Bignum) -> bool;
     fn gt_big(self, b: &Bignum) -> bool;
@@ -183,6 +183,14 @@ impl FixnumExt for isize {
         match result.to_isize() {
             Some(v) => Object::Fixnum(v),
             None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        }
+    }
+    fn div_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Result<Object, SchemeError> {
+        if b.is_zero() {
+            Err(SchemeError::Div0)
+        } else {
+            let lhs = BigInt::from_isize(self).unwrap();
+            Ok(Object::Ratnum(gc.alloc(Ratnum::new(lhs, b.value.clone()))))
         }
     }
     fn eqv_big(self, b: &Bignum) -> bool {
@@ -821,6 +829,11 @@ impl Bignum {
     }
 
     // Bignum vs Ratnum.
+    pub fn mul_rat(&self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
+        let ratio = BigRational::new_raw(self.value.clone(), BigInt::from_isize(1).unwrap());
+        let ret = ratio * r.ratio.clone();
+        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(ret)))
+    }
     pub fn eqv_rat(&self, r: &Ratnum) -> bool {
         match (self.to_f64(), r.to_f64()) {
             (Some(l), Some(r)) => l == r,
@@ -1185,13 +1198,13 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.mul_big(gc, &b),
         (Object::Bignum(b), Object::Flonum(fl)) => fl.mul_big(gc, &b),
-        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Ratnum(r)) => b.mul_rat(gc, &r),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.mul(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.mul_rat(gc, &r),
         (Object::Ratnum(r), Object::Flonum(fl)) => fl.mul_rat(&r),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.mul(gc, &r2),
-        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Bignum(b)) => b.mul_rat(gc, &r),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
         (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Compnum(_), Object::Flonum(_)) => todo!(),
@@ -1214,7 +1227,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.div_fx(gc, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.div_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.div_rat(gc, &r),
-        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Bignum(b)) => fx.div_big(gc, &b),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.div_fx(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.div(&fl2),
@@ -1224,7 +1237,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
         (Object::Bignum(b), Object::Fixnum(fx)) => b.div_fx(gc, fx),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.div(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => r.div_fx(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),

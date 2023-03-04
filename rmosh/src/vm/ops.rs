@@ -39,10 +39,16 @@ impl Vm {
 
     #[inline(always)]
     pub(super) fn number_add_op(&mut self) {
-        match (self.pop(), self.ac) {
-            (Object::Fixnum(a), Object::Fixnum(b)) => {
-                self.set_return_value(Object::Fixnum(a + b));
-            }
+        let lhs = self.pop();
+        let rhs = self.ac;
+        match (lhs, rhs) {
+            (Object::Fixnum(a), Object::Fixnum(b)) => match a.checked_add(b) {
+                Some(v) => self.set_return_value(Object::Fixnum(v)),
+                None => {
+                    let val = add(&mut self.gc, lhs, rhs);
+                    self.set_return_value(val);
+                }
+            },
             (a, b) => {
                 let val = add(&mut self.gc, a, b);
                 self.set_return_value(val);
