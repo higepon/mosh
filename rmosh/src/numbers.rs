@@ -74,10 +74,10 @@ impl FixnumExt for isize {
         self.count_ones() as usize
     }
     fn length(&self) -> usize {
-        if self >= &0 {
+        if *self >= 0 {
             std::mem::size_of::<isize>() * 8 - self.leading_zeros() as usize
         } else {
-            !(std::mem::size_of::<isize>() * 8 - (!self).leading_zeros() as usize)
+            std::mem::size_of::<isize>() * 8 - (!*self).leading_zeros() as usize
         }
     }    
     fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize {
