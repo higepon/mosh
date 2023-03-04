@@ -13,13 +13,16 @@ use crate::{
 };
 
 // Fixnum.
-trait FixnumExt {
+pub trait FixnumExt {
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn sub(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn mul(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn div(self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError>;
-    fn integer_div(self, fx: isize) -> Result<Object, SchemeError>;
+    fn integer_div(self, fx: isize) -> Result<isize, SchemeError>;
+    fn modulo(self, fx: isize) -> Result<isize, SchemeError>;
+    fn div0(self, fx: isize) -> Result<isize, SchemeError>;
+    fn modulo0(self, fx: isize) -> Result<isize, SchemeError>;
 
     // Fixnum vs Flonum
     fn add_fl(self, fl: &Flonum) -> Object;
@@ -108,7 +111,7 @@ impl FixnumExt for isize {
             }
         }
     }
-    fn integer_div(self, fx: isize) -> Result<Object, SchemeError> {
+    fn integer_div(self, fx: isize) -> Result<isize, SchemeError> {
         if fx == 0 {
             return Err(SchemeError::Div0);
         }
@@ -122,8 +125,27 @@ impl FixnumExt for isize {
         } else {
             ret = (self + fx + 1) / fx;
         }
-        Ok(Object::Fixnum(ret))
+        Ok(ret)
     }
+    fn modulo(self, other: isize) -> Result<isize, SchemeError> {
+        let x = self.integer_div(other)?;
+        Ok(self - x * other)
+    }
+    fn div0(self, other: isize) -> Result<isize, SchemeError> {
+        let d = self.integer_div(other)?;
+        let m = self.modulo(other)?;
+        if m <= other.abs() / 2 {
+            Ok(d)
+        } else if other > 0 {
+            Ok(d + 1)
+        } else {
+            Ok(d - 1)
+        }
+    }
+    fn modulo0(self, other: isize) -> Result<isize, SchemeError> {
+        let x = self.div0(other)?;
+        Ok(self - x * other)
+    }    
 
     // Fixnum vs Flonum
     fn add_fl(self, fl: &Flonum) -> Object {
@@ -1279,7 +1301,10 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
     }
 
     if n1.is_fixnum() && n2.is_fixnum() {
-        return n1.to_isize().integer_div(n2.to_isize());
+        match n1.to_isize().integer_div(n2.to_isize()) {
+            Ok(v) => Ok(Object::Fixnum(v)),
+            Err(_) => Err(SchemeError::Div0),
+        }
     } else if n1.is_flonum() && n2.is_flonum() {
         n1.to_flonum().integer_div(&n2.to_flonum())
     } else {
