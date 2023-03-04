@@ -74,7 +74,7 @@ impl FixnumExt for isize {
         if *self > 0 {
             self.count_ones() as isize
         } else {
-         !(!(*self)).bit_count() as isize
+            !(!(*self)).bit_count() as isize
         }
     }
     fn length(&self) -> usize {
@@ -151,17 +151,27 @@ impl FixnumExt for isize {
         if fx == 0 {
             return Err(SchemeError::Div0);
         }
-        let ret;
         if self == 0 {
-            ret = 0;
+            Ok(0)
         } else if self > 0 {
-            ret = self / fx;
+            Ok(self / fx)
         } else if fx > 0 {
-            ret = (self - fx + 1) / fx;
+            match self.checked_add(-fx) {
+                Some(v) => match v.checked_add(1) {
+                    Some(v) => Ok(v / fx),
+                    None => Err(SchemeError::Overflow),
+                },
+                None => Err(SchemeError::Overflow),
+            }
         } else {
-            ret = (self + fx + 1) / fx;
+            match self.checked_add(fx) {
+                Some(v) => match v.checked_add(1) {
+                    Some(v) => Ok(v / fx),
+                    None => Err(SchemeError::Overflow),
+                },
+                None => Err(SchemeError::Overflow),
+            }
         }
-        Ok(ret)
     }
     fn modulo(self, other: isize) -> Result<isize, SchemeError> {
         let x = self.integer_div(other)?;
@@ -1277,6 +1287,7 @@ pub enum SchemeError {
     Div0,
     NonZeroRequired,
     NanOrInfinite,
+    Overflow,
 }
 pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());

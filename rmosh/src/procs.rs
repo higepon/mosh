@@ -4323,12 +4323,12 @@ fn fixnum_width(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn least_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);
-    Ok(Object::Fixnum(-(2_isize.pow(62))))
+    Ok(Object::Fixnum(isize::MIN))
 }
 fn greatest_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);
-    Ok(Object::Fixnum(2_isize.pow(62) - 1))
+    Ok(Object::Fixnum(isize::MAX))
 }
 fn make_rectangular(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-rectangular";
