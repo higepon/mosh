@@ -938,7 +938,7 @@ impl SimpleStruct {
 
 impl Display for SimpleStruct {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#< simple-struct {} ", self.name)?;
+        write!(f, "#<simple-struct {} ", self.name)?;
         for i in 0..self.data.len() {
             write!(f, "{}", self.data[i])?;
             if i != self.data.len() - 1 {

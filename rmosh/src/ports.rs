@@ -795,7 +795,7 @@ pub trait TextOutputPort: Port {
         s: GcRef<SimpleStruct>,
         human_readable: bool,
     ) -> Result<(), std::io::Error> {
-        self.put_string("#<simple-stuct ")?;
+        self.put_string(&format!("#<simple-stuct {} ",  s.name))?;
         for i in 0..s.len() {
             self.display_one(s.field(i), human_readable)?;
             if i != s.len() - 1 {
@@ -812,7 +812,7 @@ pub trait TextOutputPort: Port {
         shared_id: &mut isize,
         human_readable: bool,
     ) -> Result<(), std::io::Error> {
-        self.put_string("#<simple-stuct ")?;
+        self.put_string(&format!("#<simple-stuct {} ",  s.name))?;
         for i in 0..s.len() {
             self.display_shared_one(s.field(i), seen, shared_id, human_readable)?;
             if i != s.len() - 1 {

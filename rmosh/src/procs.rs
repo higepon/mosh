@@ -4857,7 +4857,13 @@ fn fxdiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.integer_div(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(_) => Error::implementation_restriction_violation(
+        Err(SchemeError::Overflow) => Error::implementation_restriction_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),        
+        _ => Error::assertion_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
@@ -4872,12 +4878,9 @@ fn fxmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.modulo(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(e) => Error::implementation_restriction_violation(
-            &mut vm.gc,
-            name,
-            &format!("{:?}", e),
-            &[args[0], args[1]],
-        ),
+        Err(e) => {
+            Error::assertion_violation(&mut vm.gc, name, &format!("{:?}", e), &[args[0], args[1]])
+        }
     }
 }
 fn fxdiv0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4886,7 +4889,13 @@ fn fxdiv0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.div0(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(_) => Error::implementation_restriction_violation(
+        Err(SchemeError::Overflow) => Error::implementation_restriction_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+        _ => Error::assertion_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
@@ -4900,7 +4909,7 @@ fn fxmod0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx2 = as_isize!(name, args, 1, &mut vm.gc);
     match fx1.modulo0(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(_) => Error::implementation_restriction_violation(
+        Err(_) => Error::assertion_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
