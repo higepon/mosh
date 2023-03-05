@@ -4813,9 +4813,24 @@ fn bitwise_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-length";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_first_bit_set(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_first_bit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-first-bit-set";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => {
+            if fx == 0 {
+                Ok(Object::Fixnum(-1))
+            } else {
+                let idx = fx.trailing_zeros();
+                Ok(Object::Fixnum(idx as isize))
+            }
+        }
+        Object::Bignum(b) => match b.trailing_zeros() {
+            Some(idx) => Ok(Object::Fixnum(idx as isize)),
+            None => Ok(Object::Fixnum(-1)),
+        },
+        _ => Error::assertion_violation(&mut vm.gc, name, " numbers required", &[args[0]]),
+    }
 }
 fn bitwise_arithmetic_shift_left(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-arithmetic-shift-left";
