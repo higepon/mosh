@@ -27,7 +27,7 @@ use crate::{
     vm::Vm,
 };
 
-use num_traits::{FromPrimitive, Zero};
+use num_traits::{FromPrimitive, Zero, ToPrimitive};
 
 static mut GENSYM_PREFIX: char = 'a';
 static mut GENSYM_INDEX: isize = 0;
@@ -4501,7 +4501,7 @@ fn is_flpositive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flpositive?";
     check_argc!(name, args, 1);
     let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl >= 0.0))
+    Ok(Object::make_bool(fl > 0.0))
 }
 fn is_flnegative(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnegative?";
@@ -4762,9 +4762,14 @@ fn flacos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn flatan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flatan";
-    check_argc!(name, args, 1);
-    let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::Flonum(Flonum::new(fl.atan())))
+    check_argc_between!(name, args, 1, 2);
+    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
+    if args.len() == 1 {
+        Ok(Object::Flonum(Flonum::new(fl1.atan())))
+    } else {
+        let fl2 = as_f64!(name, args, 1, &mut vm.gc);
+        Ok(Object::Flonum(Flonum::new(fl1.atan2(fl2))))
+    }
 }
 fn flsqrt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flsqrt";
@@ -4772,13 +4777,17 @@ fn flsqrt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fl.sqrt())))
 }
-fn flexpt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flexpt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flexpt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
+    let fl2 = as_f64!(name, args, 1, &mut vm.gc);    
+    Ok(Object::Flonum(Flonum::new(fl1.powf(fl2))))
 }
-fn fixnum_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fixnum_to_flonum(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fixnum->flonum";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fx1.to_f64().unwrap())))
 }
 fn bitwise_not(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-not";
