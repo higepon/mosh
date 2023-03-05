@@ -4654,14 +4654,14 @@ fn fldiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let fl1 = as_flonum!(name, args, 0, &mut vm.gc);
     let fl2 = as_flonum!(name, args, 1, &mut vm.gc);
-    match fl1.integer_div(&fl2) {
-        Ok(v) => Ok(v),
-        _ => Error::assertion_violation(&mut vm.gc, name, "division by zero", &[args[0], args[1]]),
-    }
+    Ok(Object::Flonum(fl1.integer_div(&fl2)))
 }
-fn flmod(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmod";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0, &mut vm.gc);
+    let fl2 = as_flonum!(name, args, 1, &mut vm.gc);
+    Ok(Object::Flonum(fl1.integer_mod(&fl2)))
 }
 fn fldiv0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldiv0";

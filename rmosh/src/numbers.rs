@@ -453,13 +453,18 @@ impl Flonum {
         Ok(Object::Flonum(Flonum::new(self.value() / other.value())))
     }
 
-    pub fn integer_div(&self, other: &Flonum) -> Result<Object, SchemeError> {
+    pub fn integer_div(&self, other: &Flonum) -> Flonum {
         let ret = if other.value() > 0.0 {
             (self.value() / other.value()).floor()
         } else {
             -((self.value() / (-other.value())).floor())
         };
-        Ok(Object::Flonum(Flonum::new(ret)))
+        Flonum::new(ret)
+    }
+    pub fn integer_mod(&self, other: &Flonum) -> Flonum {
+        let d = self.integer_div(other);
+        let m = other.value() * d.value();
+        Flonum::new(self.value() - m)
     }
 
     #[inline(always)]
@@ -1385,7 +1390,8 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
             Err(_) => Err(SchemeError::Div0),
         }
     } else if n1.is_flonum() && n2.is_flonum() {
-        n1.to_flonum().integer_div(&n2.to_flonum())
+        let ret = n1.to_flonum().integer_div(&n2.to_flonum());
+        Ok(Object::Flonum(ret))
     } else {
         let ret;
         if n2.is_negative() {
