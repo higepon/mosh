@@ -4838,9 +4838,42 @@ fn bitwise_and(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Ok(Object::Bignum(vm.gc.alloc(Bignum::new(accum))))
     }
 }
-fn bitwise_ior(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_ior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-ior";
-    panic!("{}({}) not implemented", name, args.len());
+    if args.len() == 0 {
+        Ok(Object::Fixnum(-1))
+    } else if args.len() == 1 {
+        Ok(args[0])
+    } else {
+        let mut accum = match args[0] {
+            Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+            Object::Bignum(b) => b.value.clone(),
+            _ => {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "exact integer required",
+                    &[args[0]],
+                );
+            }
+        };
+        for i in 1..args.len() {
+            let v = match args[i] {
+                Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+                Object::Bignum(b) => b.value.clone(),
+                _ => {
+                    return Error::assertion_violation(
+                        &mut vm.gc,
+                        name,
+                        "exact integer required",
+                        &[args[0]],
+                    );
+                }
+            };
+            accum = accum | v;
+        }
+        Ok(Object::Bignum(vm.gc.alloc(Bignum::new(accum))))
+    }
 }
 fn bitwise_xor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-xor";
