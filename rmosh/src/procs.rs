@@ -4934,16 +4934,16 @@ fn bitwise_bit_count(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
             if fx >= 0 {
                 Ok(Object::Fixnum(fx.count_ones() as isize))
             } else {
-                Ok(Object::Fixnum((!fx).count_ones() as isize))
+                let v = (!fx).count_ones() as isize;
+                Ok(Object::Fixnum(!v))
             }
         }
         Object::Bignum(b) => {
             if b.value >= BigInt::from_isize(0).unwrap() {
                 Ok(Object::Fixnum(bigint_count_ones(&b.value) as isize))
             } else {
-                Ok(Object::Fixnum(
-                    bigint_count_ones(&(!b.value.clone())) as isize
-                ))
+                let v = bigint_count_ones(&(!b.value.clone())) as isize;
+                Ok(Object::Fixnum(!v))
             }
         }
         _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
