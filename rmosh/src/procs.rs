@@ -27,7 +27,7 @@ use crate::{
     vm::Vm,
 };
 
-use num_traits::FromPrimitive;
+use num_traits::{FromPrimitive, Zero};
 
 static mut GENSYM_PREFIX: char = 'a';
 static mut GENSYM_INDEX: isize = 0;
@@ -4445,6 +4445,7 @@ fn is_fllt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_flgt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>?";
+    check_argc_at_least!(name, args, 2);    
     for i in 0..args.len() - 1 {
         let fl1 = as_f64!(name, args, i, &mut vm.gc);
         let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
@@ -4458,6 +4459,7 @@ fn is_flgt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_flge(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>=?";
+    check_argc_at_least!(name, args, 2);    
     for i in 0..args.len() - 1 {
         let fl1 = as_f64!(name, args, i, &mut vm.gc);
         let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
@@ -4471,6 +4473,7 @@ fn is_flge(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_flle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl<=?";
+    check_argc_at_least!(name, args, 2);    
     for i in 0..args.len() - 1 {
         let fl1 = as_f64!(name, args, i, &mut vm.gc);
         let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
@@ -4482,13 +4485,17 @@ fn is_flle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::True)
 }
-fn is_flinteger(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flinteger(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinteger?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(fl.is_integer()))
 }
-fn is_flzero(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flzero(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flzero?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(fl.is_zero()))
 }
 fn is_flpositive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flpositive?";
@@ -4502,13 +4509,17 @@ fn is_flnegative(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fl < 0.0))
 }
-fn is_flodd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flodd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flodd?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(!fl.is_even()))
 }
-fn is_fleven(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fleven(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fleven?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0, &mut vm.gc);
+    Ok(Object::make_bool(fl.is_even()))
 }
 fn is_flfinite(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfinite?";

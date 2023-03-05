@@ -609,6 +609,14 @@ impl Flonum {
         }
     }
 
+    pub fn is_integer(&self) -> bool {
+        if self.value().is_infinite() || self.value().is_nan() {
+            false
+        } else {
+            self.value() == self.value().round()
+        }
+    }
+
     #[inline(always)]
     pub fn truncate(&self) -> Object {
         Object::Flonum(Flonum::new(self.value().trunc()))
