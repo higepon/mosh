@@ -4956,11 +4956,19 @@ fn bitwise_length(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::Fixnum(fx) => {
             let size_in_bytes = mem::size_of::<isize>();
             let size_in_bits = size_in_bytes * 8;
+            let fx = if fx < 0 { !fx } else { fx };
             Ok(Object::Fixnum(
                 (size_in_bits - fx.leading_zeros() as usize) as isize,
             ))
         }
-        Object::Bignum(b) => Ok(Object::Fixnum(b.bits() as isize)),
+        Object::Bignum(b) => {
+            let b = if b.value < BigInt::from_isize(0).unwrap() {
+                !b.value.clone()
+            } else {
+                b.value.clone()
+            };
+            Ok(Object::Fixnum((b.bits()) as isize))
+        }
         _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
     }
 }
