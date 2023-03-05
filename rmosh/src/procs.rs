@@ -1,6 +1,7 @@
 use std::{
     env::{self, current_dir, current_exe},
     fs::{self, File, OpenOptions},
+    mem,
     path::Path,
     process,
     time::{SystemTime, UNIX_EPOCH},
@@ -4829,9 +4830,12 @@ fn fxsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args.len() == 1 {
         match fx1.checked_neg() {
             Some(v) => Ok(Object::Fixnum(v)),
-            None => {
-                Error::implementation_restriction_violation(&mut vm.gc, name, "result is not fixnum", &[args[0]])
-            }
+            None => Error::implementation_restriction_violation(
+                &mut vm.gc,
+                name,
+                "result is not fixnum",
+                &[args[0]],
+            ),
         }
     } else {
         let fx2 = as_isize!(name, args, 1, &mut vm.gc);
@@ -5035,6 +5039,16 @@ fn fxarithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     }
 
     if fx2 >= 0 {
+        // Check overflow.
+        let x = if fx1 < 0 { !fx1 } else { fx1 };
+        if (x >> (mem::size_of_val(&x) as isize * 8 - 1 - fx2)) != 0 {
+            return Error::implementation_restriction_violation(
+                &mut vm.gc,
+                name,
+                "result is not fixnum1",
+                &[args[0], args[1]],
+            );
+        }
         match fx1.checked_shl(fx2 as u32) {
             Some(v) => Ok(Object::Fixnum(v)),
             None => Error::assertion_violation(
@@ -5056,6 +5070,7 @@ fn fxarithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         }
     }
 }
+
 fn fxarithmetic_shift_left(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift-left";
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
@@ -5064,16 +5079,28 @@ fn fxarithmetic_shift_left(vm: &mut Vm, args: &mut [Object]) -> error::Result<Ob
         return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
     }
 
-    match fx1.checked_shl(fx2 as u32) {
-        Some(v) => Ok(Object::Fixnum(v)),
-        None => Error::assertion_violation(
+    // Check overflow.
+    let x = if fx1 < 0 { !fx1 } else { fx1 };
+    if (x >> (mem::size_of_val(&x) as isize * 8 - 1 - fx2)) != 0 {
+        return Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
-            "result is not fixnum",
+            "result is not fixnum1",
+            &[args[0], args[1]],
+        );
+    }
+
+    match fx1.checked_shl(fx2 as u32) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::implementation_restriction_violation(
+            &mut vm.gc,
+            name,
+            "result is not fixnum2",
             &[args[0], args[1]],
         ),
     }
 }
+
 fn fxarithmetic_shift_right(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift-right";
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
@@ -5084,7 +5111,7 @@ fn fxarithmetic_shift_right(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
 
     match fx1.checked_shr(fx2 as u32) {
         Some(v) => Ok(Object::Fixnum(v)),
-        None => Error::assertion_violation(
+        None => Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             "result is not fixnum",
@@ -5106,7 +5133,7 @@ fn fxrotate_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         || fx2 > fx3
         || fx4 >= (fx3 - fx2)
     {
-        return Error::assertion_violation(
+        return Error::implementation_restriction_violation(
             &mut vm.gc,
             name,
             "out of range",
