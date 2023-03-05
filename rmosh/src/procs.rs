@@ -4829,7 +4829,7 @@ fn bitwise_first_bit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             Some(idx) => Ok(Object::Fixnum(idx as isize)),
             None => Ok(Object::Fixnum(-1)),
         },
-        _ => Error::assertion_violation(&mut vm.gc, name, " numbers required", &[args[0]]),
+        _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
     }
 }
 fn bitwise_arithmetic_shift_left(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
