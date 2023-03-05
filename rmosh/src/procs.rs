@@ -4596,57 +4596,83 @@ fn fldenominator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fl = as_flonum!(name, args, 0, &mut vm.gc);
     Ok(fl.denominator(&mut vm.gc))
 }
-fn flfloor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flfloor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfloor";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.floor())))
 }
-fn flceiling(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flceiling(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flceiling";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.ceil())))
 }
-fn fltruncate(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fltruncate(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fltruncate";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.trunc())))
 }
-fn flround(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flround(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flround";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.round())))
 }
-fn flexp(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flexp(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flexp";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.exp())))
 }
-fn fllog(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fllog(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fllog";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.ln())))
 }
-fn flsin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flsin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flsin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.sin())))
 }
-fn flcos(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flcos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flcos";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.cos())))
 }
-fn fltan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fltan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fltan";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.tan())))
 }
-fn flasin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flasin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flasin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.asin())))
 }
-fn flacos(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flacos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flacos";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.acos())))
 }
-fn flatan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flatan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flatan";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.atan())))
 }
-fn flsqrt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flsqrt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flsqrt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.sqrt())))
 }
 fn flexpt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flexpt";
