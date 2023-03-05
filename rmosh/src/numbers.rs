@@ -585,6 +585,30 @@ impl Flonum {
         }
     }
 
+    pub fn numerator(&self, gc: &mut Box<Gc>) -> Object {
+        if self.value().is_infinite() {
+            Object::Flonum(Flonum::new(self.value()))
+        } else if self.value().is_zero() {
+            Object::Flonum(Flonum::new(0.0))
+        } else {
+            let value = self.to_exact(gc);
+            let num = numerator(gc, value);
+            inexact(gc, num)
+        }
+    }
+
+    pub fn denominator(&self, gc: &mut Box<Gc>) -> Object {
+        if self.value().is_infinite() {
+            Object::Flonum(Flonum::new(self.value()))
+        } else if self.value().is_zero() {
+            Object::Flonum(Flonum::new(0.0))
+        } else {
+            let value = self.to_exact(gc);
+            let num = denominator(gc, value);
+            inexact(gc, num)
+        }
+    }
+
     #[inline(always)]
     pub fn truncate(&self) -> Object {
         Object::Flonum(Flonum::new(self.value().trunc()))

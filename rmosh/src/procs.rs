@@ -10,7 +10,7 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_f64, as_isize, as_sstring, as_usize,
+    as_bytevector, as_char, as_f64, as_flonum, as_isize, as_sstring, as_usize,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
@@ -4493,13 +4493,13 @@ fn is_flzero(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_flpositive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flpositive?";
     check_argc!(name, args, 1);
-    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fl >= 0.0))
 }
 fn is_flnegative(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnegative?";
     check_argc!(name, args, 1);
-    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fl < 0.0))
 }
 fn is_flodd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4513,19 +4513,19 @@ fn is_fleven(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_flfinite(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfinite?";
     check_argc!(name, args, 1);
-    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fl.is_finite()))
 }
 fn is_flinfinite(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinfinite?";
     check_argc!(name, args, 1);
-    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fl.is_infinite()))
 }
 fn is_flnan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnan?";
     check_argc!(name, args, 1);
-    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fl.is_nan()))
 }
 fn flmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4538,24 +4538,28 @@ fn flmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn fladd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl+";
+    check_argc!(name, args, 2);
     let fl1 = as_f64!(name, args, 0, &mut vm.gc);
     let fl2 = as_f64!(name, args, 1, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fl1 + fl2)))
 }
 fn flmul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl*";
+    check_argc!(name, args, 2);
     let fl1 = as_f64!(name, args, 0, &mut vm.gc);
     let fl2 = as_f64!(name, args, 1, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fl1 * fl2)))
 }
 fn flsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl-";
+    check_argc!(name, args, 2);
     let fl1 = as_f64!(name, args, 0, &mut vm.gc);
     let fl2 = as_f64!(name, args, 1, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fl1 - fl2)))
 }
 fn fldiv_op(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl/";
+    check_argc!(name, args, 2);
     let fl1 = as_f64!(name, args, 0, &mut vm.gc);
     let fl2 = as_f64!(name, args, 1, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fl1 / fl2)))
@@ -4580,13 +4584,17 @@ fn flmod0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmod0";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn flnumerator(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flnumerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnumerator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0, &mut vm.gc);
+    Ok(fl.numerator(&mut vm.gc))
 }
-fn fldenominator(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fldenominator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldenominator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0, &mut vm.gc);
+    Ok(fl.denominator(&mut vm.gc))
 }
 fn flfloor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfloor";
