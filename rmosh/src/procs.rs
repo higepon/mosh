@@ -4663,13 +4663,19 @@ fn flmod(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fl2 = as_flonum!(name, args, 1, &mut vm.gc);
     Ok(Object::Flonum(fl1.integer_mod(&fl2)))
 }
-fn fldiv0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fldiv0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldiv0";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0, &mut vm.gc);
+    let fl2 = as_flonum!(name, args, 1, &mut vm.gc);
+    Ok(Object::Flonum(fl1.integer_div0(&fl2)))
 }
-fn flmod0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flmod0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmod0";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0, &mut vm.gc);
+    let fl2 = as_flonum!(name, args, 1, &mut vm.gc);
+    Ok(Object::Flonum(fl1.integer_mod0(&fl2)))
 }
 fn flnumerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnumerator";
@@ -4715,9 +4721,14 @@ fn flexp(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn fllog(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fllog";
-    check_argc!(name, args, 1);
-    let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::Flonum(Flonum::new(fl.ln())))
+    check_argc_between!(name, args, 1, 2);
+    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
+    if args.len() == 1 {
+        Ok(Object::Flonum(Flonum::new(fl1.ln())))
+    } else {
+        let fl2 = as_f64!(name, args, 1, &mut vm.gc);
+        Ok(Object::Flonum(Flonum::new(fl1.log(fl2))))
+    }
 }
 fn flsin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flsin";

@@ -461,10 +461,28 @@ impl Flonum {
         };
         Flonum::new(ret)
     }
+
     pub fn integer_mod(&self, other: &Flonum) -> Flonum {
         let d = self.integer_div(other);
         let m = other.value() * d.value();
         Flonum::new(self.value() - m)
+    }
+
+    pub fn integer_div0(&self, other: &Flonum) -> Flonum {
+        let d = self.integer_div(other).value();
+        let m = self.integer_mod(other).value();
+        if m < other.value().abs() / 2.0 {
+            Flonum::new(d)
+        } else if other.value() > 0.0 {
+            Flonum::new(d + 1.0)
+        } else {
+            Flonum::new(d - 1.0)
+        }
+    }
+
+    pub fn integer_mod0(&self, other: &Flonum) -> Flonum {
+        let d = self.integer_div0(other).value();
+        Flonum::new(self.value() - other.value() * d)
     }
 
     #[inline(always)]
