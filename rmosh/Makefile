@@ -37,7 +37,8 @@ r6rs-passed:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/unicode.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/r5rs.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/arithmetic/fixnums.sps --loadpath=../tests/r6rs-test-suite/	
-
+	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/arithmetic/flonums.sps --loadpath=../tests/r6rs-test-suite/
+	
 r6rs-test:
 
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run-via-eval.sps --loadpath=../tests/r6rs-test-suite/
@@ -48,7 +49,7 @@ r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/bytevectors.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/arithmetic/bitwise.sps --loadpath=../tests/r6rs-test-suite/
 
-	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/arithmetic/flonums.sps --loadpath=../tests/r6rs-test-suite/
+
 
 
 gen-tests:
