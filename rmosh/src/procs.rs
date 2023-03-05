@@ -4893,9 +4893,25 @@ fn bitwise_arithmetic_shift_left(vm: &mut Vm, args: &mut [Object]) -> error::Res
         _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
     }
 }
-fn bitwise_arithmetic_shift_right(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_arithmetic_shift_right(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-arithmetic-shift-right";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let offset = as_isize!(name, args, 1, &mut vm.gc);
+    if offset < 0 {
+        return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
+    }
+    match args[0] {
+        Object::Fixnum(fx) => {
+            let b = BigInt::from_isize(fx).unwrap();
+            let shifted = b >> offset;
+            Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+        }
+        Object::Bignum(b) => {
+            let shifted = b.value.clone() >> offset;
+            Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+        }
+        _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
+    }
 }
 fn bitwise_arithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-arithmetic-shift";
