@@ -17,7 +17,9 @@ use crate::{
     gc::Gc,
     number_lexer::NumberLexer,
     number_reader::NumberParser,
-    numbers::{self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError, Bignum},
+    numbers::{
+        self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError,
+    },
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
@@ -4790,9 +4792,14 @@ fn fixnum_to_flonum(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fx1 = as_isize!(name, args, 0, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fx1.to_f64().unwrap())))
 }
-fn bitwise_not(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_not(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-not";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => Ok(Object::Fixnum(!fx)),
+        Object::Bignum(b) => Ok(Object::Bignum(vm.gc.alloc(Bignum::new(!b.value.clone())))),
+        _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
+    }
 }
 fn bitwise_and(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-and";
@@ -4837,12 +4844,12 @@ fn bitwise_arithmetic_shift_left(vm: &mut Vm, args: &mut [Object]) -> error::Res
     let name: &str = "bitwise-arithmetic-shift-left";
     check_argc!(name, args, 2);
     let offset = as_isize!(name, args, 1, &mut vm.gc);
-    if offset < 0  {
+    if offset < 0 {
         return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
-    }    
+    }
     match args[0] {
         Object::Fixnum(fx) => {
-            let b = BigInt::from_isize(fx).unwrap();            
+            let b = BigInt::from_isize(fx).unwrap();
             let shifted = b << offset;
             Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
         }
