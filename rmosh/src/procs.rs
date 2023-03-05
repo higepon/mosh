@@ -4536,21 +4536,29 @@ fn flmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmin";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn fladd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fladd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl+";
-    panic!("{}({}) not implemented", name, args.len());
+    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
+    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl1 + fl2)))
 }
-fn flmul(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flmul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl*";
-    panic!("{}({}) not implemented", name, args.len());
+    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
+    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl1 * fl2)))
 }
-fn flsub(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl-";
-    panic!("{}({}) not implemented", name, args.len());
+    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
+    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl1 - fl2)))
 }
-fn fldiv_op(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fldiv_op(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl/";
-    panic!("{}({}) not implemented", name, args.len());
+    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
+    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl1 / fl2)))
 }
 fn flabs(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flabs";
