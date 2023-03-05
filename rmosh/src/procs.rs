@@ -4649,9 +4649,15 @@ fn flabs(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fl.abs())))
 }
-fn fldiv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fldiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldiv";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0, &mut vm.gc);
+    let fl2 = as_flonum!(name, args, 1, &mut vm.gc);
+    match fl1.integer_div(&fl2) {
+        Ok(v) => Ok(v),
+        _ => Error::assertion_violation(&mut vm.gc, name, "division by zero", &[args[0], args[1]]),
+    }
 }
 fn flmod(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmod";
