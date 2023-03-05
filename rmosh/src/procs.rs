@@ -17,7 +17,7 @@ use crate::{
     gc::Gc,
     number_lexer::NumberLexer,
     number_reader::NumberParser,
-    numbers::{self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError},
+    numbers::{self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError, Bignum},
     objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
@@ -27,6 +27,7 @@ use crate::{
     vm::Vm,
 };
 
+use num_bigint::BigInt;
 use num_traits::{FromPrimitive, ToPrimitive, Zero};
 
 static mut GENSYM_PREFIX: char = 'a';
@@ -4840,9 +4841,31 @@ fn bitwise_arithmetic_shift_right(_vm: &mut Vm, args: &mut [Object]) -> error::R
     let name: &str = "bitwise-arithmetic-shift-right";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_arithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_arithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-arithmetic-shift";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::Bignum(b), Object::Fixnum(fx)) => {
+            if fx >= 0 {
+                let shifted = b.value.clone() << fx;
+                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            } else {
+                let shifted = b.value.clone() >> (-fx);
+                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            }
+        }
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => {
+            let b = BigInt::from_isize(fx1).unwrap();
+            if fx2 >= 0 {
+                let shifted = b << fx2;
+                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            } else {
+                let shifted = b >> (-fx2);
+                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            }
+        }
+        _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
+    }
 }
 fn is_complex(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "complex?";
