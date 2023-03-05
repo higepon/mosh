@@ -4528,13 +4528,35 @@ fn is_flnan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let fl = as_f64!(name, args, 0, &mut vm.gc);
     Ok(Object::make_bool(fl.is_nan()))
 }
-fn flmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flmax(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmax";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut max = f64::NEG_INFINITY;
+    for i in 0..args.len() {
+        let fl = as_f64!(name, args, i, &mut vm.gc);
+        if fl.is_nan() {
+            return Ok(Object::Flonum(Flonum::new(f64::NAN)));
+        }
+        if fl > max {
+            max = fl;
+        }
+    }
+    Ok(Object::Flonum(Flonum::new(max)))
 }
-fn flmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flmin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut min = f64::INFINITY;
+    for i in 0..args.len() {
+        let fl = as_f64!(name, args, i, &mut vm.gc);
+        if fl.is_nan() {
+            return Ok(Object::Flonum(Flonum::new(f64::NAN)));
+        }
+        if fl < min {
+            min = fl;
+        }
+    }
+    Ok(Object::Flonum(Flonum::new(min)))
 }
 fn fladd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl+";
