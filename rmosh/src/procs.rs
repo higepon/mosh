@@ -4445,7 +4445,7 @@ fn is_fllt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_flgt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>?";
-    check_argc_at_least!(name, args, 2);    
+    check_argc_at_least!(name, args, 2);
     for i in 0..args.len() - 1 {
         let fl1 = as_f64!(name, args, i, &mut vm.gc);
         let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
@@ -4459,7 +4459,7 @@ fn is_flgt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_flge(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>=?";
-    check_argc_at_least!(name, args, 2);    
+    check_argc_at_least!(name, args, 2);
     for i in 0..args.len() - 1 {
         let fl1 = as_f64!(name, args, i, &mut vm.gc);
         let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
@@ -4473,7 +4473,7 @@ fn is_flge(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_flle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl<=?";
-    check_argc_at_least!(name, args, 2);    
+    check_argc_at_least!(name, args, 2);
     for i in 0..args.len() - 1 {
         let fl1 = as_f64!(name, args, i, &mut vm.gc);
         let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
@@ -4571,35 +4571,83 @@ fn flmin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn fladd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl+";
-    check_argc!(name, args, 2);
-    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
-    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
-    Ok(Object::Flonum(Flonum::new(fl1 + fl2)))
+    let argc = args.len();
+    if 0 == argc {
+        Ok(Object::Flonum(Flonum::new(0.0)))
+    } else if 1 == argc {
+        let _ = as_f64!(name, args, 0, &mut vm.gc);
+        Ok(args[0])
+    } else {
+        let mut ret = 0.0;
+        for i in 0..args.len() {
+            let fl = as_f64!(name, args, i, &mut vm.gc);
+            ret += fl;
+        }
+        Ok(Object::Flonum(Flonum::new(ret)))
+    }
 }
 fn flmul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl*";
-    check_argc!(name, args, 2);
-    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
-    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
-    Ok(Object::Flonum(Flonum::new(fl1 * fl2)))
+    let argc = args.len();
+    if 0 == argc {
+        Ok(Object::Flonum(Flonum::new(1.0)))
+    } else if 1 == argc {
+        let _ = as_f64!(name, args, 0, &mut vm.gc);
+        Ok(args[0])
+    } else {
+        let mut ret = 1.0;
+        for i in 0..args.len() {
+            let fl = as_f64!(name, args, i, &mut vm.gc);
+            ret *= fl;
+        }
+        Ok(Object::Flonum(Flonum::new(ret)))
+    }
 }
 fn flsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl-";
-    check_argc!(name, args, 2);
-    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
-    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
-    Ok(Object::Flonum(Flonum::new(fl1 - fl2)))
+    check_argc_at_least!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    if args.len() == 1 {
+        return Ok(args[0].neg(&mut vm.gc));
+    }
+
+    let mut ret = fl;
+    for i in 1..args.len() {
+        let fl = as_f64!(name, args, i, &mut vm.gc);
+        ret -= fl;
+    }
+    Ok(Object::Flonum(Flonum::new(ret)))
 }
 fn fldiv_op(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl/";
-    check_argc!(name, args, 2);
-    let fl1 = as_f64!(name, args, 0, &mut vm.gc);
-    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
-    Ok(Object::Flonum(Flonum::new(fl1 / fl2)))
+    check_argc_at_least!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    if args.len() == 1 {
+        match numbers::div(&mut vm.gc, Object::Flonum(Flonum::new(1.0)), args[0]) {
+            Ok(v) => return Ok(v),
+            Err(_) => {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "division by zero",
+                    &[args[0], args[1], args[2], args[3]],
+                );
+            }
+        }
+    }
+
+    let mut ret = fl;
+    for i in 1..args.len() {
+        let fl = as_f64!(name, args, i, &mut vm.gc);
+        ret /= fl;
+    }
+    Ok(Object::Flonum(Flonum::new(ret)))
 }
-fn flabs(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flabs(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flabs";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);
+    Ok(Object::Flonum(Flonum::new(fl.abs())))
 }
 fn fldiv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldiv";
