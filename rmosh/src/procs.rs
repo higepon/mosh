@@ -4875,13 +4875,79 @@ fn bitwise_ior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Ok(Object::Bignum(vm.gc.alloc(Bignum::new(accum))))
     }
 }
-fn bitwise_xor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_xor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-xor";
-    panic!("{}({}) not implemented", name, args.len());
+    if args.len() == 0 {
+        Ok(Object::Fixnum(0))
+    } else if args.len() == 1 {
+        Ok(args[0])
+    } else {
+        let mut accum = match args[0] {
+            Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+            Object::Bignum(b) => b.value.clone(),
+            _ => {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "exact integer required",
+                    &[args[0]],
+                );
+            }
+        };
+        for i in 1..args.len() {
+            let v = match args[i] {
+                Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+                Object::Bignum(b) => b.value.clone(),
+                _ => {
+                    return Error::assertion_violation(
+                        &mut vm.gc,
+                        name,
+                        "exact integer required",
+                        &[args[0]],
+                    );
+                }
+            };
+            accum = accum ^ v;
+        }
+        Ok(Object::Bignum(vm.gc.alloc(Bignum::new(accum))))
+    }
 }
-fn bitwise_bit_count(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+
+fn bigint_count_ones(b: &BigInt) -> usize {
+    let mut num: usize = 0;
+    let mut value = b.clone();
+    let one = BigInt::from_isize(1).unwrap();
+    while !value.is_zero() {
+        if value.clone() & one.clone() == one {
+            num += 1;
+        }
+        value = value >> 1;
+    }
+    num
+}
+
+fn bitwise_bit_count(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-bit-count";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => {
+            if fx >= 0 {
+                Ok(Object::Fixnum(fx.count_ones() as isize))
+            } else {
+                Ok(Object::Fixnum((!fx).count_ones() as isize))
+            }
+        }
+        Object::Bignum(b) => {
+            if b.value >= BigInt::from_isize(0).unwrap() {
+                Ok(Object::Fixnum(bigint_count_ones(&b.value) as isize))
+            } else {
+                Ok(Object::Fixnum(
+                    bigint_count_ones(&(!b.value.clone())) as isize
+                ))
+            }
+        }
+        _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
+    }
 }
 fn bitwise_length(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-length";
