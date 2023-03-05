@@ -4429,21 +4429,58 @@ fn is_flequal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::True)
 }
-fn is_fllt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_fllt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl<?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i, &mut vm.gc);
+        let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
+        if fl1 < fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
-fn is_flgt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flgt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>?";
-    panic!("{}({}) not implemented", name, args.len());
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i, &mut vm.gc);
+        let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
+        if fl1 > fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
-fn is_flge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flge(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>=?";
-    panic!("{}({}) not implemented", name, args.len());
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i, &mut vm.gc);
+        let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
+        if fl1 >= fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
-fn is_flle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl<=?";
-    panic!("{}({}) not implemented", name, args.len());
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i, &mut vm.gc);
+        let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
+        if fl1 <= fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_flinteger(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinteger?";
@@ -4453,13 +4490,17 @@ fn is_flzero(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flzero?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flpositive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flpositive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flpositive?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    Ok(Object::make_bool(fl >= 0.0))
 }
-fn is_flnegative(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flnegative(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnegative?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    Ok(Object::make_bool(fl < 0.0))
 }
 fn is_flodd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flodd?";
@@ -4469,17 +4510,23 @@ fn is_fleven(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fleven?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flfinite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flfinite(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfinite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    Ok(Object::make_bool(fl.is_finite()))
 }
-fn is_flinfinite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flinfinite(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinfinite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    Ok(Object::make_bool(fl.is_infinite()))
 }
-fn is_flnan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flnan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnan?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0, &mut vm.gc);    
+    Ok(Object::make_bool(fl.is_nan()))
 }
 fn flmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmax";
