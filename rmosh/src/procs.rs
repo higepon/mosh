@@ -10,7 +10,7 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_isize, as_sstring, as_usize,
+    as_bytevector, as_char, as_f64, as_isize, as_sstring, as_usize,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
@@ -4415,9 +4415,19 @@ fn real_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real->flonum";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_flequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_flequal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i, &mut vm.gc);
+        let fl2 = as_f64!(name, args, i + 1, &mut vm.gc);
+        if fl1 == fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fllt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl<?";
@@ -4862,7 +4872,7 @@ fn fxdiv(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             name,
             "result is not fixnum",
             &[args[0], args[1]],
-        ),        
+        ),
         _ => Error::assertion_violation(
             &mut vm.gc,
             name,
