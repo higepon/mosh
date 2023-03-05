@@ -4883,9 +4883,20 @@ fn bitwise_bit_count(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "bitwise-bit-count";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bitwise_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_length(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-length";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => {
+            let size_in_bytes = mem::size_of::<isize>();
+            let size_in_bits = size_in_bytes * 8;
+            Ok(Object::Fixnum(
+                (size_in_bits - fx.leading_zeros() as usize) as isize,
+            ))
+        }
+        Object::Bignum(b) => Ok(Object::Fixnum(b.bits() as isize)),
+        _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
+    }
 }
 fn bitwise_first_bit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-first-bit-set";
