@@ -48,10 +48,9 @@ fn main() {
     } else {
         //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
-        vargs.push(
-          vm.gc
-            .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/arithmetic/fixnums.sps"),
-        )
+        vargs.push(vm.gc.new_string(
+            "/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/arithmetic/fixnums.sps",
+        ))
     }
 
     let vargs = vm.gc.listn(&vargs);

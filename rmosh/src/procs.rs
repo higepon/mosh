@@ -27,7 +27,7 @@ use crate::{
     vm::Vm,
 };
 
-use num_traits::{FromPrimitive, Zero, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive, Zero};
 
 static mut GENSYM_PREFIX: char = 'a';
 static mut GENSYM_INDEX: isize = 0;
@@ -4781,7 +4781,7 @@ fn flexpt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flexpt";
     check_argc!(name, args, 2);
     let fl1 = as_f64!(name, args, 0, &mut vm.gc);
-    let fl2 = as_f64!(name, args, 1, &mut vm.gc);    
+    let fl2 = as_f64!(name, args, 1, &mut vm.gc);
     Ok(Object::Flonum(Flonum::new(fl1.powf(fl2))))
 }
 fn fixnum_to_flonum(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

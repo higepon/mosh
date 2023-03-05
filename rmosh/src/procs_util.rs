@@ -74,4 +74,3 @@ macro_rules! as_flonum {
         o.to_flonum()
     }};
 }
-
