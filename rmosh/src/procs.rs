@@ -20,7 +20,7 @@ use crate::{
     numbers::{
         self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError,
     },
-    objects::{Bytevector, EqHashtable, Hashtable, Object, Pair, SString, SimpleStruct},
+    objects::{Bytevector, EqHashtable, EqvKey, Hashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, OutputPort, Port,
@@ -2354,13 +2354,14 @@ fn make_eqv_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 0);
     Ok(vm.gc.new_eqv_hashtable())
 }
-fn hashtable_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-set!";
     check_argc!(name, args, 3);
     match args[0] {
         Object::EqHashtable(mut hashtable) => hashtable.set(args[1], args[2]),
+        Object::EqvHashtable(mut hashtable) => hashtable.set(EqvKey::new(args[1]), args[2]),
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
     }
     Ok(Object::Unspecified)
