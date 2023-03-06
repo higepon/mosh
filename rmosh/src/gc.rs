@@ -16,7 +16,7 @@ use std::{ops::Deref, ops::DerefMut, usize};
 use crate::error;
 use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, Object, Pair, Procedure,
-    SString, SimpleStruct, Symbol, Vector, Vox,
+    SString, SimpleStruct, Symbol, Vector, Vox, EqvHashtable,
 };
 
 use crate::ports::FileInputPort;
@@ -84,6 +84,7 @@ pub enum ObjectType {
     Continuation,
     ContinuationStack,
     EqHashtable,
+    EqvHashtable,    
     FileInputPort,
     FileOutputPort,
     Pair,
@@ -576,6 +577,16 @@ impl Gc {
                     self.mark_object(obj);
                 }
             }
+            ObjectType::EqvHashtable => {
+                let hashtable: &EqvHashtable = unsafe { mem::transmute(pointer.as_ref()) };
+
+                for &obj in hashtable.hash_map.values() {
+                    self.mark_object(obj);
+                }
+                for &key in hashtable.hash_map.keys() {
+                    self.mark_object(key.obj);
+                }
+            }            
             ObjectType::FileInputPort => {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.parsed);

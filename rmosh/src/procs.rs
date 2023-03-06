@@ -20,7 +20,7 @@ use crate::{
     numbers::{
         self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError,
     },
-    objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
+    objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct, Hashtable},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, OutputPort, Port,

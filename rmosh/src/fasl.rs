@@ -10,7 +10,7 @@ use num_traits::FromPrimitive;
 use crate::{
     gc::Gc,
     numbers::{Bignum, Compnum, Flonum, Ratnum},
-    objects::{EqHashtable, Object, SimpleStruct},
+    objects::{EqHashtable, Object, SimpleStruct, Hashtable},
     ports::BinaryOutputPort,
 };
 
@@ -728,7 +728,7 @@ pub mod tests {
         equal::Equal,
         gc::Gc,
         numbers::Flonum,
-        objects::{Object, SimpleStruct},
+        objects::{Object, SimpleStruct, Hashtable},
         op::Op,
         ports::{BinaryOutputPort, BytevectorOutputPort},
     };

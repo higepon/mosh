@@ -13,7 +13,7 @@ use crate::vm::Vm;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
-use std::hash::Hash;
+use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
 
 /// Wrapper of heap allocated or simple stack objects.
@@ -1513,21 +1513,21 @@ impl EqHashtable {
             is_mutable: true,
         }
     }
-
+/*
     pub fn get(&self, key: Object, default: Object) -> Object {
         match self.hash_map.get(&key) {
             Some(value) => *value,
             _ => default,
         }
     }
-
+*/
     pub fn copy(&self) -> Self {
         let mut h = Self::new();
         h.is_mutable = self.is_mutable;
         h.hash_map.clone_from(&self.hash_map);
         h
     }
-
+/*
     pub fn contains(&self, key: Object) -> bool {
         match self.hash_map.get(&key) {
             Some(_) => true,
@@ -1550,19 +1550,190 @@ impl EqHashtable {
             _ => (),
         }
     }
-
+*/
     pub fn is_mutable(&self) -> bool {
         return self.is_mutable;
     }
-
+/*
     pub fn clear(&mut self) {
         self.hash_map.clear()
     }
+    */
 }
 
 impl Display for EqHashtable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<eq-hashtable>")
+    }
+}
+
+impl<'a> Hashtable<'a> for EqHashtable
+where
+    Object: Eq + Hash,
+{
+    type Key = Object;
+    fn get_mut_map(&'a mut self) -> &'a mut HashMap<Self::Key, Object> {
+        &mut self.hash_map
+    }
+    fn get_map(&'a self) -> &'a HashMap<Self::Key, Object> {
+        &self.hash_map
+    }
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct EqvKey {
+    pub obj: Object,
+}
+
+impl EqvKey {
+    pub fn new(obj: Object) -> Self {
+        Self { obj: obj }
+    }
+}
+
+impl Hash for EqvKey {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        if self.obj.is_number() {
+            numbers::to_string(self.obj, 10).hash(state)
+        } else {
+            self.obj.hash(state)
+        }
+    }
+}
+
+impl PartialEq for EqvKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.obj.eqv(&other.obj)
+    }
+}
+impl Eq for EqvKey {}
+
+pub trait Hashtable<'a>
+where
+    Self::Key: Eq + Hash,
+{
+    type Key;
+    fn get_mut_map(&'a mut self) -> &'a mut HashMap<Self::Key, Object>;
+    fn get_map(&'a self) -> &'a HashMap<Self::Key, Object>;
+
+    fn get(&'a self, key: Self::Key, default: Object) -> Object {
+        match self.get_map().get(&key) {
+            Some(value) => *value,
+            _ => default,
+        }
+    }
+
+    fn contains(&'a self, key: Self::Key) -> bool {
+        match self.get_map().get(&key) {
+            Some(_) => true,
+            _ => false,
+        }
+    }
+
+    fn set(&'a mut self, key: Self::Key, value: Object) {
+        match self.get_mut_map().insert(key, value) {
+            _ => (),
+        }
+    }
+
+    fn size(&'a self) -> usize {
+        self.get_map().len()
+    }
+
+    fn delte(&'a mut self, key: Self::Key) {
+        match self.get_mut_map().remove(&key) {
+            _ => (),
+        }
+    }
+
+    fn clear(&'a mut self) {
+        self.get_mut_map().clear()
+    }
+}
+
+impl<'a> Hashtable<'a> for EqvHashtable
+where
+    EqvKey: Eq + Hash,
+{
+    type Key = EqvKey;
+    fn get_mut_map(&'a mut self) -> &'a mut HashMap<Self::Key, Object> {
+        &mut self.hash_map
+    }
+    fn get_map(&'a self) -> &'a HashMap<Self::Key, Object> {
+        &self.hash_map
+    }
+}
+
+/// EqvHashtable
+#[derive(Debug)]
+#[repr(C)]
+pub struct EqvHashtable {
+    pub header: GcHeader,
+    pub hash_map: HashMap<EqvKey, Object>,
+    pub is_mutable: bool,
+}
+
+impl EqvHashtable {
+    pub fn new() -> Self {
+        EqvHashtable {
+            header: GcHeader::new(ObjectType::EqvHashtable),
+            hash_map: HashMap::new(),
+            is_mutable: true,
+        }
+    }
+
+    /*
+        pub fn get(&self, key: EqvKey, default: Object) -> Object {
+            match self.hash_map.get(&key) {
+                Some(value) => *value,
+                _ => default,
+            }
+        }
+    */
+    pub fn copy(&self) -> Self {
+        let mut h = Self::new();
+        h.is_mutable = self.is_mutable;
+        h.hash_map.clone_from(&self.hash_map);
+        h
+    }
+    /*
+        pub fn contains(&self, key: EqvKey) -> bool {
+            match self.hash_map.get(&key) {
+                Some(_) => true,
+                _ => false,
+            }
+        }
+
+        pub fn set(&mut self, key: EqvKey, value: Object) {
+            match self.hash_map.insert(key, value) {
+                _ => (),
+            }
+        }
+
+        pub fn size(&self) -> usize {
+            self.hash_map.len()
+        }
+
+        pub fn delte(&mut self, key: EqvKey) {
+            match self.hash_map.remove(&key) {
+                _ => (),
+            }
+        }
+    */
+    pub fn is_mutable(&self) -> bool {
+        return self.is_mutable;
+    }
+    /*
+    pub fn clear(&mut self) {
+        self.hash_map.clear()
+    }
+    */
+}
+
+impl Display for EqvHashtable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<eqv-hashtable>")
     }
 }
 
@@ -1574,6 +1745,7 @@ pub mod tests {
 
     use super::*;
     use crate::gc::Gc;
+    use num_bigint::BigInt;
     use regex::Regex;
 
     // Helpers.
@@ -1829,5 +2001,17 @@ pub mod tests {
             *ref_ref = &b;
             assert_eq!(4, **ref_ref);
         }
+    }
+
+    #[test]
+    fn test_eqv_key() {
+        let mut gc = Gc::new();
+        let mut x: HashMap<EqvKey, Object> = HashMap::new();
+        let s1 = Object::Bignum(gc.alloc(Bignum::new(BigInt::from_isize(0).unwrap())));
+        let s2 = Object::Bignum(gc.alloc(Bignum::new(BigInt::from_isize(0).unwrap())));
+        assert!(!s1.eq(&s2));
+        assert!(s1.eqv(&s2));
+        x.insert(EqvKey::new(s1), Object::Fixnum(3));
+        println!("value={:?}", x.get(&EqvKey::new(s2)));
     }
 }
