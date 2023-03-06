@@ -1496,119 +1496,6 @@ impl Display for Closure {
     }
 }
 
-/// EqHashtable
-#[derive(Debug)]
-#[repr(C)]
-pub struct EqHashtable {
-    pub header: GcHeader,
-    pub hash_map: HashMap<Object, Object>,
-    pub is_mutable: bool,
-}
-
-impl EqHashtable {
-    pub fn new() -> Self {
-        EqHashtable {
-            header: GcHeader::new(ObjectType::EqHashtable),
-            hash_map: HashMap::new(),
-            is_mutable: true,
-        }
-    }
-/*
-    pub fn get(&self, key: Object, default: Object) -> Object {
-        match self.hash_map.get(&key) {
-            Some(value) => *value,
-            _ => default,
-        }
-    }
-*/
-    pub fn copy(&self) -> Self {
-        let mut h = Self::new();
-        h.is_mutable = self.is_mutable;
-        h.hash_map.clone_from(&self.hash_map);
-        h
-    }
-/*
-    pub fn contains(&self, key: Object) -> bool {
-        match self.hash_map.get(&key) {
-            Some(_) => true,
-            _ => false,
-        }
-    }
-
-    pub fn set(&mut self, key: Object, value: Object) {
-        match self.hash_map.insert(key, value) {
-            _ => (),
-        }
-    }
-
-    pub fn size(&self) -> usize {
-        self.hash_map.len()
-    }
-
-    pub fn delte(&mut self, key: Object) {
-        match self.hash_map.remove(&key) {
-            _ => (),
-        }
-    }
-*/
-    pub fn is_mutable(&self) -> bool {
-        return self.is_mutable;
-    }
-/*
-    pub fn clear(&mut self) {
-        self.hash_map.clear()
-    }
-    */
-}
-
-impl Display for EqHashtable {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<eq-hashtable>")
-    }
-}
-
-impl<'a> Hashtable<'a> for EqHashtable
-where
-    Object: Eq + Hash,
-{
-    type Key = Object;
-    fn get_mut_map(&'a mut self) -> &'a mut HashMap<Self::Key, Object> {
-        &mut self.hash_map
-    }
-    fn get_map(&'a self) -> &'a HashMap<Self::Key, Object> {
-        &self.hash_map
-    }
-}
-
-
-#[derive(Debug, Clone, Copy)]
-pub struct EqvKey {
-    pub obj: Object,
-}
-
-impl EqvKey {
-    pub fn new(obj: Object) -> Self {
-        Self { obj: obj }
-    }
-}
-
-impl Hash for EqvKey {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        if self.obj.is_number() {
-            numbers::to_string(self.obj, 10).hash(state)
-        } else {
-            self.obj.hash(state)
-        }
-    }
-}
-
-impl PartialEq for EqvKey {
-    fn eq(&self, other: &Self) -> bool {
-        self.obj.eqv(&other.obj)
-    }
-}
-impl Eq for EqvKey {}
-
 pub trait Hashtable<'a>
 where
     Self::Key: Eq + Hash,
@@ -1616,6 +1503,7 @@ where
     type Key;
     fn get_mut_map(&'a mut self) -> &'a mut HashMap<Self::Key, Object>;
     fn get_map(&'a self) -> &'a HashMap<Self::Key, Object>;
+    fn is_mutable(&self) -> bool;
 
     fn get(&'a self, key: Self::Key, default: Object) -> Object {
         match self.get_map().get(&key) {
@@ -1652,6 +1540,82 @@ where
     }
 }
 
+/// EqHashtable
+#[derive(Debug)]
+#[repr(C)]
+pub struct EqHashtable {
+    pub header: GcHeader,
+    pub hash_map: HashMap<Object, Object>,
+    pub is_mutable: bool,
+}
+
+impl EqHashtable {
+    pub fn new() -> Self {
+        EqHashtable {
+            header: GcHeader::new(ObjectType::EqHashtable),
+            hash_map: HashMap::new(),
+            is_mutable: true,
+        }
+    }
+
+    pub fn copy(&self) -> Self {
+        let mut h = Self::new();
+        h.is_mutable = self.is_mutable;
+        h.hash_map.clone_from(&self.hash_map);
+        h
+    }
+}
+
+impl Display for EqHashtable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<eq-hashtable>")
+    }
+}
+
+impl<'a> Hashtable<'a> for EqHashtable
+where
+    Object: Eq + Hash,
+{
+    type Key = Object;
+    fn get_mut_map(&'a mut self) -> &'a mut HashMap<Self::Key, Object> {
+        &mut self.hash_map
+    }
+    fn get_map(&'a self) -> &'a HashMap<Self::Key, Object> {
+        &self.hash_map
+    }
+    fn is_mutable(&self) -> bool {
+        return self.is_mutable;
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct EqvKey {
+    pub obj: Object,
+}
+
+impl EqvKey {
+    pub fn new(obj: Object) -> Self {
+        Self { obj: obj }
+    }
+}
+
+impl Hash for EqvKey {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        if self.obj.is_number() {
+            numbers::to_string(self.obj, 10).hash(state)
+        } else {
+            self.obj.hash(state)
+        }
+    }
+}
+
+impl PartialEq for EqvKey {
+    fn eq(&self, other: &Self) -> bool {
+        self.obj.eqv(&other.obj)
+    }
+}
+impl Eq for EqvKey {}
+
 impl<'a> Hashtable<'a> for EqvHashtable
 where
     EqvKey: Eq + Hash,
@@ -1662,6 +1626,9 @@ where
     }
     fn get_map(&'a self) -> &'a HashMap<Self::Key, Object> {
         &self.hash_map
+    }
+    fn is_mutable(&self) -> bool {
+        return self.is_mutable;
     }
 }
 
@@ -1683,52 +1650,16 @@ impl EqvHashtable {
         }
     }
 
-    /*
-        pub fn get(&self, key: EqvKey, default: Object) -> Object {
-            match self.hash_map.get(&key) {
-                Some(value) => *value,
-                _ => default,
-            }
-        }
-    */
     pub fn copy(&self) -> Self {
         let mut h = Self::new();
         h.is_mutable = self.is_mutable;
         h.hash_map.clone_from(&self.hash_map);
         h
     }
-    /*
-        pub fn contains(&self, key: EqvKey) -> bool {
-            match self.hash_map.get(&key) {
-                Some(_) => true,
-                _ => false,
-            }
-        }
 
-        pub fn set(&mut self, key: EqvKey, value: Object) {
-            match self.hash_map.insert(key, value) {
-                _ => (),
-            }
-        }
-
-        pub fn size(&self) -> usize {
-            self.hash_map.len()
-        }
-
-        pub fn delte(&mut self, key: EqvKey) {
-            match self.hash_map.remove(&key) {
-                _ => (),
-            }
-        }
-    */
     pub fn is_mutable(&self) -> bool {
         return self.is_mutable;
     }
-    /*
-    pub fn clear(&mut self) {
-        self.hash_map.clear()
-    }
-    */
 }
 
 impl Display for EqvHashtable {
@@ -1753,18 +1684,6 @@ pub mod tests {
         assert_eq!(args.len(), 1);
         Ok(args[0])
     }
-
-    /*
-    #[test]
-    fn test_input_port() {
-        match InputPort::open("file_not_exists") {
-            Ok(_) => {}
-            Err(e) => {
-                println!("port error {:?}", e);
-            }
-        }
-    }
-    */
 
     #[test]
     fn test_symbol() {
