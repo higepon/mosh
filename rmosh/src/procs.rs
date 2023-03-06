@@ -20,7 +20,10 @@ use crate::{
     numbers::{
         self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError,
     },
-    objects::{Bytevector, EqHashtable, EqvKey, Hashtable, Object, Pair, SString, SimpleStruct},
+    objects::{
+        Bytevector, EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, Pair, SString,
+        SimpleStruct,
+    },
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, OutputPort, Port,
@@ -2366,7 +2369,7 @@ fn hashtable_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<
     }
     Ok(Object::Unspecified)
 }
-fn hashtable_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-ref";
     check_argc_between!(name, args, 2, 3);
     match args[0] {
@@ -2378,7 +2381,7 @@ fn hashtable_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
     }
 }
@@ -2422,7 +2425,7 @@ fn eq_hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     if let Object::EqHashtable(e) = args[0] {
         Ok(Object::EqHashtable(vm.gc.alloc(e.copy())))
     } else {
-        panic!("{}: eq-hashtable required but got {}", name, args[0]);
+        return Error::assertion_violation(&mut vm.gc, name, "eq-hashtable required", &[args[0]]);
     }
 }
 fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3516,37 +3519,43 @@ fn is_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     match args[0] {
         Object::EqHashtable(_) => Ok(Object::True),
+        Object::EqvHashtable(_) => Ok(Object::True),
         _ => Ok(Object::False),
     }
 }
-fn hashtable_size(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_size(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-size";
     check_argc!(name, args, 1);
     match args[0] {
         Object::EqHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
+        Object::EqvHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
     }
 }
-fn hashtable_delete_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_delete_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-delete!";
     check_argc!(name, args, 2);
     match args[0] {
         Object::EqHashtable(mut hashtable) => hashtable.delte(args[1]),
+        Object::EqvHashtable(mut hashtable) => hashtable.delte(EqvKey::new(args[1])),
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
     }
     Ok(Object::Unspecified)
 }
-fn is_hashtable_contains(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_hashtable_contains(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-contains?";
     check_argc!(name, args, 2);
     match args[0] {
         Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.contains(args[1]))),
+        Object::EqvHashtable(hashtable) => {
+            Ok(Object::make_bool(hashtable.contains(EqvKey::new(args[1]))))
+        }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
     }
 }
@@ -3566,8 +3575,20 @@ fn hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
             Ok(Object::EqHashtable(ret))
         }
+        Object::EqvHashtable(hashtable) => {
+            let mut ret = vm.gc.alloc(EqvHashtable::new());
+            for (key, value) in &hashtable.hash_map {
+                ret.set(*key, *value);
+            }
+            if args.len() == 2 && !args[1].is_false() {
+                ret.is_mutable = true;
+            } else {
+                ret.is_mutable = false;
+            }
+            Ok(Object::EqvHashtable(ret))
+        }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
     }
 }
@@ -3576,16 +3597,18 @@ fn is_hashtable_mutable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     check_argc!(name, args, 1);
     match args[0] {
         Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
+        Object::EqvHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),        
         _ => Ok(Object::False),
     }
 }
-fn hashtable_clear_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_clear_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-clear!";
     check_argc!(name, args, 1);
     match args[0] {
         Object::EqHashtable(mut hashtable) => hashtable.clear(),
+        Object::EqvHashtable(mut hashtable) => hashtable.clear(),
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
     }
     Ok(Object::Unspecified)
