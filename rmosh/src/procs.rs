@@ -10,19 +10,19 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_f64, as_flonum, as_isize, as_sstring, as_usize,
+    as_bytevector, as_char, as_f64, as_flonum, as_isize, as_sstring, as_symbol, as_usize,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
-    gc::Gc,
+    gc::{Gc, GcRef},
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{
         self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError,
     },
     objects::{
-        Bytevector, EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, Pair, SString,
-        SimpleStruct,
+        Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
+        Object, Pair, SString, SimpleStruct, Symbol,
     },
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
@@ -2349,12 +2349,12 @@ fn get_timeofday(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn make_eq_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-eq-hashtable";
-    check_argc!(name, args, 0);
+    check_argc_max!(name, args, 1);
     Ok(vm.gc.new_eq_hashtable())
 }
 fn make_eqv_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-eqv-hashtable";
-    check_argc!(name, args, 0);
+    check_argc_max!(name, args, 1);
     Ok(vm.gc.new_eqv_hashtable())
 }
 fn hashtable_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2399,26 +2399,81 @@ fn hashtable_keys(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(vm.gc.new_vector(&keys))
 }
-fn string_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_hash(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let s = as_sstring!(name, args, 0, &mut vm.gc);
+    Ok(Object::Fixnum(string_hash_one(&s.string)))
 }
 fn eqv_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eqv-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::Fixnum(equal_hash_one(args[0])))
 }
-fn string_ci_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_ci_hash(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string-ci-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let s = as_sstring!(name, args, 0, &mut vm.gc);
+    Ok(Object::Fixnum(string_hash_ci_one(&s.string)))
 }
-fn symbol_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn symbol_hash(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "symbol-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let s = as_symbol!(name, args, 0, &mut vm.gc);
+    Ok(Object::Fixnum(symbol_hash_one(s)))
 }
 fn equal_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "equal-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::Fixnum(equal_hash_one(args[0])))
 }
+
+fn symbol_hash_one(s: GcRef<Symbol>) -> isize {
+    // Symbol is interned, we can use pointer as hash value.
+    s.pointer.as_ptr() as isize
+}
+
+fn string_hash_one(s: &str) -> isize {
+    let mut hash = 0;
+    let chars: Vec<char> = s.chars().collect();
+    for ch in chars.iter() {
+        hash = (hash << 5) - hash + (*ch as isize);
+    }
+    hash
+}
+fn string_hash_ci_one(s: &str) -> isize {
+    let mut hash = 0;
+    let chars: Vec<char> = s.chars().collect();
+    for ch in chars.iter() {
+        hash = (hash << 5) - hash
+            + match ch.to_uppercase().next() {
+                Some(uch) => uch as isize,
+                None => *ch as isize,
+            };
+    }
+    hash
+}
+fn equal_hash_one(obj: Object) -> isize {
+    // borrowed from ypsilon scheme by Yoshikatsu Fujita
+    match obj {
+        Object::Pair(p) => {
+            let hash1: isize = equal_hash_one(p.car);
+            let hash2: isize = equal_hash_one(p.cdr);
+            hash1 + hash2.wrapping_mul(64) - hash2
+        }
+        Object::Vector(v) => {
+            let mut hash: isize = 1;
+            for e in v.data.iter() {
+                hash = hash.wrapping_mul(32) - hash + equal_hash_one(*e);
+            }
+            hash
+        }
+        Object::String(s) => string_hash_one(&s.string),
+        Object::Symbol(s) => symbol_hash_one(s),
+        _ => &obj as *const Object as isize,
+    }
+}
+
 fn eq_hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eq-hashtable-copy";
     check_argc!(name, args, 1);
@@ -3510,9 +3565,20 @@ fn set_symbol_value_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
         }
     }
 }
-fn make_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-hashtable";
-    panic!("{}({}) not implemented", name, args.len());
+    println!("Make hashtable called");
+    check_argc_between!(name, args, 2, 3);
+    if args[0].is_callable() && args[1].is_callable() {
+        Ok(vm.gc.new_generic_hashtable(args[0], args[1]))
+    } else {
+        Error::assertion_violation(
+            &mut vm.gc,
+            name,
+            "hash function and eq function required",
+            &[args[0], args[1]],
+        )
+    }
 }
 fn is_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable?";
@@ -3520,6 +3586,7 @@ fn is_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::EqHashtable(_) => Ok(Object::True),
         Object::EqvHashtable(_) => Ok(Object::True),
+        Object::GenericHashtable(_) => Ok(Object::True),
         _ => Ok(Object::False),
     }
 }
@@ -3529,6 +3596,7 @@ fn hashtable_size(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::EqHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
         Object::EqvHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
+        Object::GenericHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
@@ -3540,6 +3608,12 @@ fn hashtable_delete_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
     match args[0] {
         Object::EqHashtable(mut hashtable) => hashtable.delte(args[1]),
         Object::EqvHashtable(mut hashtable) => hashtable.delte(EqvKey::new(args[1])),
+        Object::GenericHashtable(mut hashtable) => {
+            let key = args[1];
+            let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+            let key = GenericHashKey::new(hash_obj);
+            hashtable.delte(key);
+        }
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
@@ -3553,6 +3627,12 @@ fn is_hashtable_contains(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.contains(args[1]))),
         Object::EqvHashtable(hashtable) => {
             Ok(Object::make_bool(hashtable.contains(EqvKey::new(args[1]))))
+        }
+        Object::GenericHashtable(hashtable) => {
+            let key = args[1];
+            let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+            let key = GenericHashKey::new(hash_obj);
+            Ok(Object::make_bool(hashtable.contains(key)))
         }
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
@@ -3587,6 +3667,21 @@ fn hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
             Ok(Object::EqvHashtable(ret))
         }
+        Object::GenericHashtable(hashtable) => {
+            let mut ret = vm.gc.alloc(GenericHashtable::new(
+                hashtable.hash_func,
+                hashtable.eq_func,
+            ));
+            for (key, value) in &hashtable.hash_map {
+                ret.set(*key, *value);
+            }
+            if args.len() == 2 && !args[1].is_false() {
+                ret.is_mutable = true;
+            } else {
+                ret.is_mutable = false;
+            }
+            Ok(Object::GenericHashtable(ret))
+        }
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
@@ -3597,7 +3692,8 @@ fn is_hashtable_mutable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     check_argc!(name, args, 1);
     match args[0] {
         Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
-        Object::EqvHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),        
+        Object::EqvHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
+        Object::GenericHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
         _ => Ok(Object::False),
     }
 }
@@ -3607,6 +3703,7 @@ fn hashtable_clear_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resul
     match args[0] {
         Object::EqHashtable(mut hashtable) => hashtable.clear(),
         Object::EqvHashtable(mut hashtable) => hashtable.clear(),
+        Object::GenericHashtable(mut hashtable) => hashtable.clear(),
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
@@ -3614,13 +3711,27 @@ fn hashtable_clear_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resul
     Ok(Object::Unspecified)
 }
 
-fn hashtable_equivalence_function(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_equivalence_function(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-equivalence-function";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::EqHashtable(_) => Ok(vm.gc.new_procedure(is_eq, "eq?")),
+        Object::EqvHashtable(_) => Ok(vm.gc.new_procedure(is_eqv, "eqv?")),
+        Object::GenericHashtable(hashtable) => Ok(hashtable.eq_func),
+        _ => {
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
+        }
+    }
 }
-fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_hash_function(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-hash-function";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::GenericHashtable(hashtable) => Ok(hashtable.hash_func),
+        _ => {
+            return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
+        }
+    }
 }
 // When non-continuable, we just print it and exit.
 fn throw(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

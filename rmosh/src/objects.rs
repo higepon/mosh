@@ -39,6 +39,7 @@ pub enum Object {
     FileOutputPort(GcRef<FileOutputPort>),
     Fixnum(isize),
     Flonum(Flonum),
+    GenericHashtable(GcRef<GenericHashtable>),
     Instruction(Op),
     Nil,
     ObjectPointer(*mut Object),
@@ -179,6 +180,13 @@ impl Object {
     pub fn is_closure(&self) -> bool {
         match self {
             Object::Closure(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_callable(&self) -> bool {
+        match self {
+            Object::Closure(_) => true,
+            Object::Procedure(_) => true,
             _ => false,
         }
     }
@@ -476,12 +484,13 @@ impl Object {
             Object::Compnum(_) => todo!(),
             Object::Eof => todo!(),
             Object::EqHashtable(_) => todo!(),
-            Object::EqvHashtable(_) => todo!(),            
+            Object::EqvHashtable(_) => todo!(),
             Object::False => todo!(),
             Object::FileInputPort(_) => todo!(),
             Object::FileOutputPort(_) => todo!(),
             Object::Fixnum(_) => todo!(),
             Object::Flonum(_) => todo!(),
+            Object::GenericHashtable(_) => todo!(),
             Object::Instruction(_) => todo!(),
             Object::Nil => todo!(),
             Object::ObjectPointer(_) => todo!(),
@@ -599,7 +608,10 @@ impl Debug for Object {
             }
             Object::EqvHashtable(table) => {
                 write!(f, "#<eqv-hashtable {:?}>", table.pointer.as_ptr())
-            }            
+            }
+            Object::GenericHashtable(table) => {
+                write!(f, "#<hashtable {:?}>", table.pointer.as_ptr())
+            }
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
@@ -736,7 +748,10 @@ impl Display for Object {
             }
             Object::EqvHashtable(table) => {
                 write!(f, "#<eqv-hashtable {:?}>", table.pointer.as_ptr())
-            }            
+            }
+            Object::GenericHashtable(table) => {
+                write!(f, "#<hashtable {:?}>", table.pointer.as_ptr())
+            }
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
@@ -1597,6 +1612,93 @@ where
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct GenericHashKey {
+    pub hash_obj: Object,
+}
+
+impl GenericHashKey {
+    pub fn new(hash_obj: Object) -> Self {
+        Self { hash_obj: hash_obj }
+    }
+}
+
+impl Hash for GenericHashKey {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // hash_obj is supposed to be exact integer returned by the scheme hash function.
+        if self.hash_obj.is_number() {
+            numbers::to_string(self.hash_obj, 10).hash(state)
+        } else {
+            self.hash_obj.hash(state)
+        }
+    }
+}
+
+impl PartialEq for GenericHashKey {
+    fn eq(&self, _other: &Self) -> bool {
+        panic!("I guess this should not be called");
+    }
+}
+impl Eq for GenericHashKey {}
+
+/// GenericHashtable
+#[derive(Debug)]
+#[repr(C)]
+pub struct GenericHashtable {
+    pub header: GcHeader,
+    pub hash_map: HashMap<GenericHashKey, Object>,
+    pub hash_func: Object,
+    pub eq_func: Object,
+    pub is_mutable: bool,
+}
+
+impl GenericHashtable {
+    pub fn new(hash_func: Object, eq_func: Object) -> Self {
+        GenericHashtable {
+            header: GcHeader::new(ObjectType::GenericHashtable),
+            hash_map: HashMap::new(),
+            hash_func: hash_func,
+            eq_func: eq_func,
+            is_mutable: true,
+        }
+    }
+
+    pub fn copy(&self) -> Self {
+        let mut h = Self::new(Object::Unspecified, Object::Unspecified);
+        h.hash_func = self.hash_func;
+        h.eq_func = self.eq_func;
+        h.is_mutable = self.is_mutable;
+        h.hash_map.clone_from(&self.hash_map);
+        h
+    }
+
+    pub fn is_mutable(&self) -> bool {
+        return self.is_mutable;
+    }
+}
+
+impl Display for GenericHashtable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<hashtable>")
+    }
+}
+
+impl<'a> Hashtable<'a> for GenericHashtable
+where
+    GenericHashKey: Eq + Hash,
+{
+    type Key = GenericHashKey;
+    fn get_mut_map(&'a mut self) -> &'a mut HashMap<Self::Key, Object> {
+        &mut self.hash_map
+    }
+    fn get_map(&'a self) -> &'a HashMap<Self::Key, Object> {
+        &self.hash_map
+    }
+    fn is_mutable(&self) -> bool {
+        return self.is_mutable;
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct EqvKey {
     pub obj: Object,
 }
@@ -1685,8 +1787,8 @@ pub mod tests {
     use super::*;
     use crate::gc::Gc;
     use num_bigint::BigInt;
-    use regex::Regex;
     use num_traits::FromPrimitive;
+    use regex::Regex;
 
     // Helpers.
     fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

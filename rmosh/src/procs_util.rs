@@ -32,6 +32,17 @@ macro_rules! as_sstring {
 }
 
 #[macro_export]
+macro_rules! as_symbol {
+    ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
+        let o = $args[$i];
+        if !o.is_symbol() {
+            return error::Error::assertion_violation($gc, $name, "symbol required", &[o]);
+        }
+        o.to_symbol()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_usize {
     ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
         let o = $args[$i];

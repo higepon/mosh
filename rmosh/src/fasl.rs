@@ -94,6 +94,7 @@ impl FaslWriter {
             Object::Eof => {
                 self.put_tag(port, Tag::Eof)?;
             }
+            Object::GenericHashtable(_) => panic!("serializng generic hashtable is not supported"),
             Object::EqHashtable(t) => {
                 self.put_tag(port, Tag::EqHashtable)?;
                 port.put_u16(t.size() as u16)?;
@@ -235,7 +236,8 @@ impl FaslWriter {
                 | Object::Procedure(_)
                 | Object::Char(_)
                 | Object::EqHashtable(_)
-                | Object::EqvHashtable(_)                
+                | Object::EqvHashtable(_)
+                | Object::GenericHashtable(_)                
                 | Object::False
                 | Object::Flonum(_)
                 | Object::StringInputPort(_)
