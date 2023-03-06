@@ -10,7 +10,7 @@ use num_traits::FromPrimitive;
 use crate::{
     gc::Gc,
     numbers::{Bignum, Compnum, Flonum, Ratnum},
-    objects::{EqHashtable, Object, SimpleStruct, Hashtable},
+    objects::{EqHashtable, Object, SimpleStruct, Hashtable, EqvHashtable, EqvKey},
     ports::BinaryOutputPort,
 };
 
@@ -37,6 +37,7 @@ enum Tag {
     Ratnum = 18,
     Compnum = 19,
     Bignum = 20,
+    EqvHashtable = 21,
 }
 
 // S-expression serializer.
@@ -102,6 +103,15 @@ impl FaslWriter {
                 }
                 port.put_u8(if t.is_mutable { 1 } else { 0 })?;
             }
+            Object::EqvHashtable(t) => {
+                self.put_tag(port, Tag::EqvHashtable)?;
+                port.put_u16(t.size() as u16)?;
+                for (key, value) in t.hash_map.iter() {
+                    self.write_one(port, seen, shared_id, key.obj)?;
+                    self.write_one(port, seen, shared_id, *value)?;
+                }
+                port.put_u8(if t.is_mutable { 1 } else { 0 })?;
+            }            
             Object::False => {
                 self.put_tag(port, Tag::False)?;
             }
@@ -225,6 +235,7 @@ impl FaslWriter {
                 | Object::Procedure(_)
                 | Object::Char(_)
                 | Object::EqHashtable(_)
+                | Object::EqvHashtable(_)                
                 | Object::False
                 | Object::Flonum(_)
                 | Object::StringInputPort(_)
@@ -511,6 +522,7 @@ impl FaslReader {
             Tag::CompilerInsn => self.read_compiler_insn(),
             Tag::Struct => self.read_struct(gc),
             Tag::EqHashtable => self.read_eq_hashtable(gc),
+            Tag::EqvHashtable => self.read_eqv_hashtable(gc),
             Tag::DefineShared => self.read_define_shared(gc),
             Tag::LookupShared => self.read_lookup_shared(gc),
             Tag::Flonum => self.read_float(),
@@ -687,6 +699,22 @@ impl FaslReader {
         t.is_mutable = buf[0] == 1;
         Ok(Object::EqHashtable(gc.alloc(t)))
     }
+
+    fn read_eqv_hashtable(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut t = EqvHashtable::new();
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf) as usize;
+        for _ in 0..len {
+            let obj = self.read_sexp(gc)?;
+            let value = self.read_sexp(gc)?;
+            t.set(EqvKey::new(obj), value);
+        }
+        let mut buf = [0; 1];
+        self.bytes.read_exact(&mut buf)?;
+        t.is_mutable = buf[0] == 1;
+        Ok(Object::EqvHashtable(gc.alloc(t)))
+    }    
 
     fn read_char(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 4];

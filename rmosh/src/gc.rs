@@ -300,6 +300,11 @@ impl Gc {
         Object::EqHashtable(obj)
     }
 
+    pub fn new_eqv_hashtable(&mut self) -> Object {
+        let obj = self.alloc(EqvHashtable::new());
+        Object::EqvHashtable(obj)
+    }
+
     // append o (list or obj) to l.
     // if l is not list return o.
     // allocate new cons sell.
@@ -452,6 +457,9 @@ impl Gc {
             Object::EqHashtable(hashtable) => {
                 self.mark_heap_object(hashtable);
             }
+            Object::EqvHashtable(hashtable) => {
+                self.mark_heap_object(hashtable);
+            }            
             Object::Procedure(procedure) => {
                 self.mark_heap_object(procedure);
             }

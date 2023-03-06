@@ -32,6 +32,7 @@ pub enum Object {
     ContinuationStack(GcRef<ContinuationStack>),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
+    EqvHashtable(GcRef<EqvHashtable>),
     False,
     DefinedShared(u32),
     FileInputPort(GcRef<FileInputPort>),
@@ -475,6 +476,7 @@ impl Object {
             Object::Compnum(_) => todo!(),
             Object::Eof => todo!(),
             Object::EqHashtable(_) => todo!(),
+            Object::EqvHashtable(_) => todo!(),            
             Object::False => todo!(),
             Object::FileInputPort(_) => todo!(),
             Object::FileOutputPort(_) => todo!(),
@@ -595,6 +597,9 @@ impl Debug for Object {
             Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
             }
+            Object::EqvHashtable(table) => {
+                write!(f, "#<eqv-hashtable {:?}>", table.pointer.as_ptr())
+            }            
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
@@ -729,6 +734,9 @@ impl Display for Object {
             Object::EqHashtable(table) => {
                 write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
             }
+            Object::EqvHashtable(table) => {
+                write!(f, "#<eqv-hashtable {:?}>", table.pointer.as_ptr())
+            }            
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
             }
@@ -1678,6 +1686,7 @@ pub mod tests {
     use crate::gc::Gc;
     use num_bigint::BigInt;
     use regex::Regex;
+    use num_traits::FromPrimitive;
 
     // Helpers.
     fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

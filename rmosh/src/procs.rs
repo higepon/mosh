@@ -20,7 +20,7 @@ use crate::{
     numbers::{
         self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError,
     },
-    objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct, Hashtable},
+    objects::{Bytevector, EqHashtable, Hashtable, Object, Pair, SString, SimpleStruct},
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, OutputPort, Port,
@@ -2344,12 +2344,15 @@ fn get_timeofday(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-timeofday";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_eq_hashtable(vm: &mut Vm, _args: &mut [Object]) -> error::Result<Object> {
+fn make_eq_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    let name: &str = "make-eq-hashtable";
+    check_argc!(name, args, 0);
     Ok(vm.gc.new_eq_hashtable())
 }
-fn make_eqv_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_eqv_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-eqv-hashtable";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(vm.gc.new_eqv_hashtable())
 }
 fn hashtable_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-set!";

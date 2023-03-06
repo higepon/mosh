@@ -549,6 +549,7 @@ pub trait TextOutputPort: Port {
             | Object::Procedure(_)
             | Object::Char(_)
             | Object::EqHashtable(_)
+            | Object::EqvHashtable(_)            
             | Object::Bignum(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
@@ -618,6 +619,7 @@ pub trait TextOutputPort: Port {
             | Object::Procedure(_)
             | Object::Char(_)
             | Object::EqHashtable(_)
+            | Object::EqvHashtable(_)            
             | Object::Bignum(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
@@ -839,6 +841,7 @@ pub trait TextOutputPort: Port {
                 | Object::ContinuationStack(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
+                | Object::EqvHashtable(_)                
                 | Object::False
                 | Object::FileInputPort(_)
                 | Object::FileOutputPort(_)
