@@ -15,8 +15,8 @@ use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::error;
 use crate::objects::{
-    Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, Object, Pair, Procedure,
-    SString, SimpleStruct, Symbol, Vector, Vox, EqvHashtable, GenericHashtable,
+    Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
+    GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 
 use crate::ports::FileInputPort;
@@ -84,7 +84,7 @@ pub enum ObjectType {
     Continuation,
     ContinuationStack,
     EqHashtable,
-    EqvHashtable,    
+    EqvHashtable,
     FileInputPort,
     FileOutputPort,
     GenericHashtable,
@@ -309,7 +309,7 @@ impl Gc {
     pub fn new_generic_hashtable(&mut self, hash_func: Object, eq_func: Object) -> Object {
         let obj = self.alloc(GenericHashtable::new(hash_func, eq_func));
         Object::GenericHashtable(obj)
-    }    
+    }
 
     // append o (list or obj) to l.
     // if l is not list return o.
@@ -465,10 +465,10 @@ impl Gc {
             }
             Object::EqvHashtable(hashtable) => {
                 self.mark_heap_object(hashtable);
-            }          
+            }
             Object::GenericHashtable(hashtable) => {
                 self.mark_heap_object(hashtable);
-            }                   
+            }
             Object::Procedure(procedure) => {
                 self.mark_heap_object(procedure);
             }
@@ -603,7 +603,7 @@ impl Gc {
                 for &key in hashtable.hash_map.keys() {
                     self.mark_object(key.obj);
                 }
-            }      
+            }
             ObjectType::GenericHashtable => {
                 let hashtable: &GenericHashtable = unsafe { mem::transmute(pointer.as_ref()) };
 
@@ -613,7 +613,7 @@ impl Gc {
                 for &key in hashtable.hash_map.keys() {
                     self.mark_object(key.hash_obj);
                 }
-            }                   
+            }
             ObjectType::FileInputPort => {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.parsed);

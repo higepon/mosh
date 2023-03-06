@@ -114,7 +114,7 @@ impl Vm {
             is_initialized: false,
             dynamic_code_array: vec![],
             call_by_name_code: vec![],
-            call_closure1_code: vec![],            
+            call_closure1_code: vec![],
             closure_for_evaluate: Object::Unspecified,
             current_input_port: Object::Unspecified,
             current_output_port: Object::Unspecified,
@@ -138,13 +138,14 @@ impl Vm {
         ret.call_by_name_code.push(Object::Fixnum(1));
         ret.call_by_name_code.push(Object::Instruction(Op::Halt));
         ret.call_closure1_code.push(Object::Instruction(Op::Frame));
-        
+
         ret.call_closure1_code.push(Object::Fixnum(8));
         ret.call_closure1_code
             .push(Object::Instruction(Op::Constant));
         ret.call_closure1_code.push(Object::Unspecified);
         ret.call_closure1_code.push(Object::Instruction(Op::Push));
-        ret.call_closure1_code.push(Object::Instruction(Op::Constant));
+        ret.call_closure1_code
+            .push(Object::Instruction(Op::Constant));
         ret.call_closure1_code.push(Object::Unspecified);
         ret.call_closure1_code.push(Object::Instruction(Op::Call));
         ret.call_closure1_code.push(Object::Fixnum(1));

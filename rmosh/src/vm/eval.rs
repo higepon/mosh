@@ -68,7 +68,7 @@ impl Vm {
         return self.set_after_trigger0(Object::Closure(c));
     }
 
-     fn set_after_trigger0(&mut self, closure: Object) -> error::Result<Object> {
+    fn set_after_trigger0(&mut self, closure: Object) -> error::Result<Object> {
         self.make_frame(self.pc);
 
         let mut code = vec![];
@@ -139,11 +139,11 @@ impl Vm {
         self.evaluate_safe(self.call_by_name_code.as_ptr())
     }
 
-    pub fn call_closure1(&mut self, func: Object, arg1: Object)-> error::Result<Object> {
+    pub fn call_closure1(&mut self, func: Object, arg1: Object) -> error::Result<Object> {
         self.call_closure1_code[3] = arg1;
-        self.call_closure1_code[6] = func;        
+        self.call_closure1_code[6] = func;
         self.evaluate_safe(self.call_closure1_code.as_ptr())
-    }    
+    }
 
     fn evaluate_safe(&mut self, ops: *const Object) -> error::Result<Object> {
         self.save_registers();

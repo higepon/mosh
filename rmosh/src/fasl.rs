@@ -10,7 +10,7 @@ use num_traits::FromPrimitive;
 use crate::{
     gc::Gc,
     numbers::{Bignum, Compnum, Flonum, Ratnum},
-    objects::{EqHashtable, Object, SimpleStruct, Hashtable, EqvHashtable, EqvKey},
+    objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
     ports::BinaryOutputPort,
 };
 
@@ -112,7 +112,7 @@ impl FaslWriter {
                     self.write_one(port, seen, shared_id, *value)?;
                 }
                 port.put_u8(if t.is_mutable { 1 } else { 0 })?;
-            }            
+            }
             Object::False => {
                 self.put_tag(port, Tag::False)?;
             }
@@ -237,7 +237,7 @@ impl FaslWriter {
                 | Object::Char(_)
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)
-                | Object::GenericHashtable(_)                
+                | Object::GenericHashtable(_)
                 | Object::False
                 | Object::Flonum(_)
                 | Object::StringInputPort(_)
@@ -716,7 +716,7 @@ impl FaslReader {
         self.bytes.read_exact(&mut buf)?;
         t.is_mutable = buf[0] == 1;
         Ok(Object::EqvHashtable(gc.alloc(t)))
-    }    
+    }
 
     fn read_char(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 4];
@@ -758,7 +758,7 @@ pub mod tests {
         equal::Equal,
         gc::Gc,
         numbers::Flonum,
-        objects::{Object, SimpleStruct, Hashtable},
+        objects::{Hashtable, Object, SimpleStruct},
         op::Op,
         ports::{BinaryOutputPort, BytevectorOutputPort},
     };
