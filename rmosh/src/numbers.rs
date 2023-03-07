@@ -12,13 +12,13 @@ use crate::{
     objects::Object,
 };
 
-// GCed Number -> Object.
-pub trait NumberExt {
+// GCed Object -> Object.
+pub trait GcObjectExt {
     fn to_obj(self, gc: &mut Box<Gc>) -> Object;
 }
 
 // BigInt => Fixnum or Bignum.
-impl NumberExt for BigInt {
+impl GcObjectExt for BigInt {
     fn to_obj(self, gc: &mut Box<Gc>) -> Object {
         match self.to_isize() {
             Some(v) => Object::Fixnum(v),
@@ -28,7 +28,7 @@ impl NumberExt for BigInt {
 }
 
 // BigRational => Fixnum, Bignum or Ratnum.
-impl NumberExt for BigRational {
+impl GcObjectExt for BigRational {
     fn to_obj(self, gc: &mut Box<Gc>) -> Object {
         if self.is_integer() {
             match self.to_isize() {
@@ -41,11 +41,33 @@ impl NumberExt for BigRational {
     }
 }
 
+// Primitive -> Object.
+pub trait ObjectExt {
+    fn to_obj(&self) -> Object;
+}
+
+impl ObjectExt for isize {
+    #[inline(always)]
+    fn to_obj(&self) -> Object {
+        Object::Fixnum(*self)
+    }
+}
+
+impl ObjectExt for bool {
+    #[inline(always)]
+    fn to_obj(&self) -> Object {
+        if *self {
+            Object::True
+        } else {
+            Object::False
+        }
+    }
+}
+
 // Fixnum.
 pub trait FixnumExt {
     // Utils
     fn bit_count(&self) -> isize;
-    fn to_obj(&self) -> Object;
     fn length(&self) -> usize;
     fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize;
     fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize;
@@ -403,11 +425,6 @@ impl FixnumExt for isize {
                 )))
             }
         }
-    }
-
-    #[inline(always)]
-    fn to_obj(&self) -> Object {
-        Object::Fixnum(*self)
     }
 }
 
@@ -984,7 +1001,7 @@ impl Bignum {
     }
 
     pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
-       self.value.abs().to_obj(gc)
+        self.value.abs().to_obj(gc)
     }
 
     pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
@@ -1881,9 +1898,7 @@ pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Fixnum(fx) => match fx.checked_abs() {
             Some(v) => Object::Fixnum(v),
             None => match BigInt::from_isize(fx) {
-                Some(bigint) => {
-                    bigint.abs().to_obj(gc)
-                }
+                Some(bigint) => bigint.abs().to_obj(gc),
                 None => panic!(),
             },
         },

@@ -18,7 +18,7 @@ use crate::{
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{
-        self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError, NumberExt,
+        self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError, GcObjectExt,
     },
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
