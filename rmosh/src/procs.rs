@@ -2361,8 +2361,46 @@ fn hashtable_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<
     let name: &str = "hashtable-set!";
     check_argc!(name, args, 3);
     match args[0] {
-        Object::EqHashtable(mut hashtable) => hashtable.set(args[1], args[2]),
-        Object::EqvHashtable(mut hashtable) => hashtable.set(EqvKey::new(args[1]), args[2]),
+        Object::EqHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.set(args[1], args[2])
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
+        Object::EqvHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.set(EqvKey::new(args[1]), args[2])
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
+        Object::GenericHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                let key = args[1];
+                let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+                let key = GenericHashKey::new(hash_obj, key);
+                hashtable.set(key, args[2])
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
+
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
@@ -2380,6 +2418,24 @@ fn hashtable_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Ok(hashtable.get(args[1], args[2]))
             }
         }
+        Object::EqvHashtable(hashtable) => {
+            if args.len() == 2 {
+                Ok(hashtable.get(EqvKey::new(args[1]), Object::False))
+            } else {
+                Ok(hashtable.get(EqvKey::new(args[1]), args[2]))
+            }
+        }
+        Object::GenericHashtable(hashtable) => {
+            let key = args[1];
+            let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+            let key = GenericHashKey::new(hash_obj, key);
+
+            if args.len() == 2 {
+                Ok(hashtable.get(key, Object::False))
+            } else {
+                Ok(hashtable.get(key, args[2]))
+            }
+        }
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }
@@ -2393,6 +2449,16 @@ fn hashtable_keys(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::EqHashtable(t) => {
             for k in t.hash_map.keys() {
                 keys.push(*k);
+            }
+        }
+        Object::EqvHashtable(t) => {
+            for k in t.hash_map.keys() {
+                keys.push(k.obj);
+            }
+        }
+        Object::GenericHashtable(t) => {
+            for k in t.hash_map.keys() {
+                keys.push(k.org_key);
             }
         }
         _ => {}
@@ -3567,7 +3633,6 @@ fn set_symbol_value_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
 }
 fn make_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-hashtable";
-    println!("Make hashtable called");
     check_argc_between!(name, args, 2, 3);
     if args[0].is_callable() && args[1].is_callable() {
         Ok(vm.gc.new_generic_hashtable(args[0], args[1]))
@@ -3606,13 +3671,44 @@ fn hashtable_delete_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
     let name: &str = "hashtable-delete!";
     check_argc!(name, args, 2);
     match args[0] {
-        Object::EqHashtable(mut hashtable) => hashtable.delte(args[1]),
-        Object::EqvHashtable(mut hashtable) => hashtable.delte(EqvKey::new(args[1])),
+        Object::EqHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.delte(args[1])
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
+        Object::EqvHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.delte(EqvKey::new(args[1]))
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
         Object::GenericHashtable(mut hashtable) => {
-            let key = args[1];
-            let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
-            let key = GenericHashKey::new(hash_obj);
-            hashtable.delte(key);
+            if hashtable.is_mutable() {
+                let key = args[1];
+                let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+                let key = GenericHashKey::new(hash_obj, key);
+                hashtable.delte(key);
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
         }
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
@@ -3631,7 +3727,7 @@ fn is_hashtable_contains(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         Object::GenericHashtable(hashtable) => {
             let key = args[1];
             let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
-            let key = GenericHashKey::new(hash_obj);
+            let key = GenericHashKey::new(hash_obj, key);
             Ok(Object::make_bool(hashtable.contains(key)))
         }
         _ => {
@@ -3701,9 +3797,42 @@ fn hashtable_clear_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resul
     let name: &str = "hashtable-clear!";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::EqHashtable(mut hashtable) => hashtable.clear(),
-        Object::EqvHashtable(mut hashtable) => hashtable.clear(),
-        Object::GenericHashtable(mut hashtable) => hashtable.clear(),
+        Object::EqHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.clear()
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
+        Object::EqvHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.clear()
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
+        Object::GenericHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.clear()
+            } else {
+                return Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "hashtable is immutable",
+                    &[args[0]],
+                );
+            }
+        }
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
         }

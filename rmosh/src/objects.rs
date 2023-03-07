@@ -1614,11 +1614,12 @@ where
 #[derive(Debug, Clone, Copy)]
 pub struct GenericHashKey {
     pub hash_obj: Object,
+    pub org_key: Object
 }
 
 impl GenericHashKey {
-    pub fn new(hash_obj: Object) -> Self {
-        Self { hash_obj: hash_obj }
+    pub fn new(hash_obj: Object, org_key: Object) -> Self {
+        Self { hash_obj: hash_obj, org_key: org_key }
     }
 }
 
@@ -1634,8 +1635,8 @@ impl Hash for GenericHashKey {
 }
 
 impl PartialEq for GenericHashKey {
-    fn eq(&self, _other: &Self) -> bool {
-        panic!("I guess this should not be called");
+    fn eq(&self, other: &Self) -> bool {
+        self.hash_obj.eqv(&other.hash_obj)
     }
 }
 impl Eq for GenericHashKey {}
