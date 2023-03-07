@@ -10,7 +10,7 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_f64, as_flonum, as_isize, as_sstring, as_symbol, as_usize,
+    as_bytevector, as_char, as_f64, as_flonum, as_isize, as_sstring, as_symbol, as_u8, as_usize,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
@@ -4197,10 +4197,7 @@ fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let value: u8 = if args.len() == 1 {
         0
     } else {
-        match args[1] {
-            Object::Fixnum(n) if n >= 0 && n <= 255 => n as u8,
-            _ => panic!("{}: u8 value required but got {}", name, args[1]),
-        }
+        as_u8!(name, args, 0, &mut vm.gc)
     };
     match args[0] {
         Object::Fixnum(len) => {
@@ -4217,9 +4214,12 @@ fn is_bytevectorequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     let name: &str = "bytevector=?";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_fill_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-fill!";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let value = as_u8!(name, args, 1, &mut vm.gc);
+    bv.fill(value);
+    Ok(Object::Unspecified)
 }
 fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-copy!";

@@ -85,3 +85,20 @@ macro_rules! as_flonum {
         o.to_flonum()
     }};
 }
+
+// For bytevectors.
+#[macro_export]
+macro_rules! as_u8 {
+    ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
+        let o = $args[$i];
+        if !o.is_fixnum() {
+            return error::Error::assertion_violation($gc, $name, "number required", &[o]);
+        }
+        let fx = o.to_isize();
+        if -128 <= fx && fx <= 255 {
+            fx as u8
+        } else {
+            return error::Error::assertion_violation($gc, $name, "u8 value required", &[o]);
+        }
+    }};
+}

@@ -898,6 +898,12 @@ impl Bytevector {
     pub fn len(&self) -> usize {
         self.data.len()
     }
+
+    pub fn fill(&mut self, value: u8) {
+        for e in self.data.iter_mut() {
+            *e = value;
+        }
+    }
 }
 
 impl Display for Bytevector {
@@ -1614,12 +1620,15 @@ where
 #[derive(Debug, Clone, Copy)]
 pub struct GenericHashKey {
     pub hash_obj: Object,
-    pub org_key: Object
+    pub org_key: Object,
 }
 
 impl GenericHashKey {
     pub fn new(hash_obj: Object, org_key: Object) -> Self {
-        Self { hash_obj: hash_obj, org_key: org_key }
+        Self {
+            hash_obj: hash_obj,
+            org_key: org_key,
+        }
     }
 }
 
