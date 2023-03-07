@@ -845,6 +845,14 @@ impl Bytevector {
         }
     }
 
+    pub fn is_little_endian() -> bool {
+        if cfg!(target_endian = "big") {
+            false
+        } else {
+            true
+        }
+    }
+
     pub fn from_list(list: Object) -> Option<Self> {
         let mut v: Vec<u8> = vec![];
         let mut obj = list;
@@ -892,6 +900,36 @@ impl Bytevector {
     pub fn set_i8_unchecked(&mut self, i: usize, v: i8) {
         self.data[i] = v as u8;
     }
+
+    pub fn ref_u16_little(&self, i: usize) -> Option<u16> {
+        match (self.data.get(i), self.data.get(i + 1)) {
+            (Some(lhs), Some(rhs)) => {
+                let lhs = *lhs as u16;
+                let rhs = *rhs as u16;
+                Some((rhs << 8) | lhs)
+            }
+            _ => None,
+        }
+    }
+
+    pub fn ref_u16_big(&self, i: usize) -> Option<u16> {
+        match (self.data.get(i), self.data.get(i + 1)) {
+            (Some(lhs), Some(rhs)) => {
+                let lhs = *lhs as u16;
+                let rhs = *rhs as u16;
+                Some((lhs << 8) | rhs)
+            }
+            _ => None,
+        }
+    }
+
+    pub fn ref_s16_little(&self, i: usize) -> Option<i16> {
+        self.ref_u16_little(i).map(|x| x as i16)
+    }
+
+    pub fn ref_s16_big(&self, i: usize) -> Option<i16> {
+        self.ref_u16_big(i).map(|x| x as i16)
+    }    
 
     pub fn copy(&self) -> Self {
         Self::new(&self.data)
