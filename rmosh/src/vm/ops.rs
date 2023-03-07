@@ -1,7 +1,7 @@
 use crate::{
     error,
     gc::GcRef,
-    numbers::{add, eqv, ge, gt, le, lt, sub},
+    numbers::{add, eqv, ge, gt, le, lt, sub, ObjectExt},
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
@@ -15,7 +15,7 @@ macro_rules! number_cmp_op {
         {
             match ($self.pop(), $self.ac) {
                 (Object::Fixnum(l), Object::Fixnum(r)) => {
-                    $self.set_return_value(Object::make_bool(l $op r))
+                    $self.set_return_value((l $op r).to_obj())
                 }
                 obj => {
                     panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
@@ -381,7 +381,7 @@ impl Vm {
     pub(super) fn branch_not_eq_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = eqv(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -394,7 +394,7 @@ impl Vm {
     pub(super) fn branch_not_gt_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = gt(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -407,7 +407,7 @@ impl Vm {
     pub(super) fn branch_not_lt_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = lt(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -420,7 +420,7 @@ impl Vm {
     pub(super) fn branch_not_ge_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = ge(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -433,7 +433,7 @@ impl Vm {
     pub(super) fn branch_not_le_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = le(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {

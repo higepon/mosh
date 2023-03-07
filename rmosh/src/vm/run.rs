@@ -1,7 +1,7 @@
 use crate::{
     equal::Equal,
     error,
-    numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError},
+    numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError, ObjectExt},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -87,7 +87,7 @@ impl Vm {
                 Op::BranchNotNull => {
                     let skip_offset = self.isize_operand();
                     let op_result = self.ac.is_nil();
-                    self.set_return_value(Object::make_bool(op_result));
+                    self.set_return_value(op_result.to_obj());
                     if op_result {
                         // go to then.
                     } else {
@@ -101,7 +101,7 @@ impl Vm {
                 Op::BranchNotEq => {
                     let skip_offset = self.isize_operand();
                     let pred = self.pop().eq(&self.ac);
-                    self.set_return_value(Object::make_bool(pred));
+                    self.set_return_value(pred.to_obj());
                     if !pred {
                         // Branch and jump to else.
                         self.pc = self.jump(self.pc, skip_offset - 1);
@@ -279,17 +279,17 @@ impl Vm {
                 }
                 Op::Eq => {
                     let ret = self.pop().eq(&self.ac);
-                    self.set_return_value(Object::make_bool(ret));
+                    self.set_return_value(ret.to_obj());
                 }
                 Op::Eqv => {
                     let ret = self.pop().eqv(&self.ac);
-                    self.set_return_value(Object::make_bool(ret));
+                    self.set_return_value(ret.to_obj());
                 }
                 Op::Equal => {
                     let e = Equal::new();
                     let val = self.pop();
                     let ret = e.is_equal(&mut self.gc, &val, &self.ac);
-                    self.set_return_value(Object::make_bool(ret));
+                    self.set_return_value(ret.to_obj());
                 }
                 Op::Frame => {
                     self.frame_op();
@@ -362,24 +362,24 @@ impl Vm {
                 },
                 Op::Nop => {}
                 Op::Not => {
-                    self.set_return_value(Object::make_bool(self.ac.is_false()));
+                    self.set_return_value(self.ac.is_false().to_obj());
                 }
                 Op::NullP => {
-                    self.set_return_value(Object::make_bool(self.ac.is_nil()));
+                    self.set_return_value(self.ac.is_nil().to_obj());
                 }
                 Op::NumberAdd => {
                     self.number_add_op();
                 }
                 Op::NumberEqual => {
                     let op_result = eqv(self.pop(), self.ac);
-                    self.set_return_value(Object::make_bool(op_result));
+                    self.set_return_value(op_result.to_obj());
                 }
                 Op::NumberGe => {
                     let lhs = self.pop();
                     let rhs = self.ac;
                     if lhs.is_number() && rhs.is_number() {
                         let op_result = ge(lhs, rhs);
-                        self.set_return_value(Object::make_bool(op_result));
+                        self.set_return_value(op_result.to_obj());
                     } else {
                         panic!(">=: numbers required but got {} {}", lhs, rhs);
                     }
@@ -389,7 +389,7 @@ impl Vm {
                     let rhs = self.ac;
                     if lhs.is_number() && rhs.is_number() {
                         let op_result = gt(lhs, rhs);
-                        self.set_return_value(Object::make_bool(op_result));
+                        self.set_return_value(op_result.to_obj());
                     } else {
                         panic!(">: numbers required but got {} {}", lhs, rhs);
                     }
@@ -399,7 +399,7 @@ impl Vm {
                     let rhs = self.ac;
                     if lhs.is_number() && rhs.is_number() {
                         let op_result = le(lhs, rhs);
-                        self.set_return_value(Object::make_bool(op_result));
+                        self.set_return_value(op_result.to_obj());
                     } else {
                         panic!("<=: numbers required but got {} {}", lhs, rhs);
                     }
@@ -409,7 +409,7 @@ impl Vm {
                     let rhs = self.ac;
                     if lhs.is_number() && rhs.is_number() {
                         let op_result = lt(lhs, rhs);
-                        self.set_return_value(Object::make_bool(op_result));
+                        self.set_return_value(op_result.to_obj());
                     } else {
                         panic!("<: numbers required but got {} {}", lhs, rhs);
                     }
@@ -436,7 +436,7 @@ impl Vm {
                 Op::NumberSub => {
                     self.number_sub_op();
                 }
-                Op::PairP => self.set_return_value(Object::make_bool(self.ac.is_pair())),
+                Op::PairP => self.set_return_value(self.ac.is_pair().to_obj()),
                 Op::Read => {
                     let port;
                     if self.ac.is_nil() {
@@ -537,7 +537,7 @@ impl Vm {
                 },
                 Op::Shift => todo!(),
                 Op::SymbolP => {
-                    self.set_return_value(Object::make_bool(self.ac.is_symbol()));
+                    self.set_return_value(self.ac.is_symbol().to_obj());
                 }
                 Op::Test => {
                     let jump_offset = self.isize_operand();

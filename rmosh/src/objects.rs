@@ -245,14 +245,6 @@ impl Object {
         }
     }
 
-    pub fn make_bool(pred: bool) -> Self {
-        if pred {
-            Object::True
-        } else {
-            Object::False
-        }
-    }
-
     pub fn eq(&self, other: &Self) -> bool {
         self == other
     }

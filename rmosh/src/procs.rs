@@ -18,7 +18,8 @@ use crate::{
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{
-        ObjectExt, self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError, GcObjectExt,
+        self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, GcObjectExt, ObjectExt,
+        SchemeError,
     },
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
@@ -1324,9 +1325,7 @@ fn is_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "equal?";
     check_argc!(name, args, 2);
     let e = Equal::new();
-    Ok(Object::make_bool(
-        e.is_equal(&mut vm.gc, &args[0], &args[1]),
-    ))
+    Ok(e.is_equal(&mut vm.gc, &args[0], &args[1]).to_obj())
 }
 fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-string-input-port";
@@ -2694,7 +2693,12 @@ fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
         args[0].to_bytevector().len(),
         args[1].is_fixnum(),
         (args[1].to_isize() as usize) < args[0].to_bytevector().len(),
-        if args[2].is_fixnum() { 3 } else {args[2].obj_type(); 4},
+        if args[2].is_fixnum() {
+            3
+        } else {
+            args[2].obj_type();
+            4
+        },
         args[2].to_isize() >= 0,
         args[2].to_isize() <= 255
     );
@@ -3734,9 +3738,7 @@ fn is_hashtable_contains(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     check_argc!(name, args, 2);
     match args[0] {
         Object::EqHashtable(hashtable) => Ok(hashtable.contains(args[1]).to_obj()),
-        Object::EqvHashtable(hashtable) => {
-            Ok(hashtable.contains(EqvKey::new(args[1])).to_obj())
-        }
+        Object::EqvHashtable(hashtable) => Ok(hashtable.contains(EqvKey::new(args[1])).to_obj()),
         Object::GenericHashtable(hashtable) => {
             let key = args[1];
             let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
@@ -4704,26 +4706,29 @@ fn inexact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_nan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "nan?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
+    Ok((match args[0] {
         Object::Flonum(fl) => fl.is_nan(),
         _ => false,
-    }))
+    })
+    .to_obj())
 }
 fn is_infinite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "infinite?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
+    Ok((match args[0] {
         Object::Flonum(fl) => fl.is_infinite(),
         _ => false,
-    }))
+    })
+    .to_obj())
 }
 fn is_finite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "finite?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
+    Ok((match args[0] {
         Object::Flonum(fl) => fl.is_finite(),
         _ => true,
-    }))
+    })
+    .to_obj())
 }
 fn real_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real->flonum";
@@ -6390,9 +6395,7 @@ fn is_fast_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fast-equal?";
     check_argc!(name, args, 2);
     let e = Equal::new();
-    Ok(Object::make_bool(
-        e.is_equal(&mut vm.gc, &args[0], &args[1]),
-    ))
+    Ok(e.is_equal(&mut vm.gc, &args[0], &args[1]).to_obj())
 }
 fn native_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-eol-style";
@@ -7593,7 +7596,7 @@ fn set_current_error_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> erro
 fn is_port_open(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-open?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
+    Ok((match args[0] {
         Object::BinaryFileInputPort(port) => port.is_open(),
         Object::BinaryFileOutputPort(port) => port.is_open(),
         Object::BytevectorInputPort(port) => port.is_open(),
@@ -7613,7 +7616,8 @@ fn is_port_open(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 &[irritants],
             );
         }
-    }))
+    })
+    .to_obj())
 }
 fn make_f64array(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-f64array";
