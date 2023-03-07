@@ -4182,9 +4182,14 @@ fn standard_library_path(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     check_argc!(name, args, 0);
     return Ok(vm.gc.new_string("."));
 }
-fn native_endianness(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn native_endianness(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-endianness";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    if cfg!(target_endian = "big") {
+        Ok(Object::Symbol(vm.gc.intern("big")))
+    } else {
+        Ok(Object::Symbol(vm.gc.intern("little")))
+    }
 }
 fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-bytevector";
