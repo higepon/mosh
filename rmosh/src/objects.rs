@@ -901,6 +901,25 @@ impl Bytevector {
         self.data[i] = v as u8;
     }
 
+    pub fn set_u16_little(&mut self, i: usize, v: u16) -> Option<()> {
+        if i + 1 >= self.len() {
+            None
+        } else {
+            self.data[i] = (v & 0xff) as u8;
+            self.data[i + 1] = (v >> 8) as u8;
+            Some(())
+        }
+    }
+    pub fn set_u16_big(&mut self, i: usize, v: u16) -> Option<()> {
+        if i + 1 >= self.len() {
+            None
+        } else {
+            self.data[i + 1] = (v & 0xff) as u8;
+            self.data[i] = (v >> 8) as u8;
+            Some(())
+        }
+    }
+
     pub fn ref_u16_little(&self, i: usize) -> Option<u16> {
         match (self.data.get(i), self.data.get(i + 1)) {
             (Some(lhs), Some(rhs)) => {
@@ -929,7 +948,79 @@ impl Bytevector {
 
     pub fn ref_s16_big(&self, i: usize) -> Option<i16> {
         self.ref_u16_big(i).map(|x| x as i16)
-    }    
+    }
+
+    pub fn ref_u32_little(&self, i: usize) -> Option<u32> {
+        if i + 3 >= self.len() {
+            None
+        } else {
+            let a = (self.data[i + 3] as u32) << 24;
+            let b = (self.data[i + 2] as u32) << 16;
+            let c = (self.data[i + 1] as u32) << 8;
+            let d = self.data[i] as u32;
+            Some(a | b | c | d)
+        }
+    }
+
+    pub fn ref_u32_big(&self, i: usize) -> Option<u32> {
+        if i + 3 >= self.len() {
+            None
+        } else {
+            let a = (self.data[i] as u32) << 24;
+            let b = (self.data[i + 1] as u32) << 16;
+            let c = (self.data[i + 2] as u32) << 8;
+            let d = self.data[i + 3] as u32;
+            Some(a | b | c | d)
+        }
+    }
+
+    pub fn ref_s32_little(&self, i: usize) -> Option<i32> {
+        self.ref_u32_little(i).map(|x| x as i32)
+    }
+
+    pub fn ref_s32_big(&self, i: usize) -> Option<i32> {
+        self.ref_u32_big(i).map(|x| x as i32)
+    }
+
+    pub fn ref_u64_little(&self, i: usize) -> Option<u64> {
+        if i + 7 >= self.len() {
+            None
+        } else {
+            let a = (self.data[i + 7] as u64) << 56;
+            let b = (self.data[i + 6] as u64) << 48;
+            let c = (self.data[i + 5] as u64) << 40;
+            let d = (self.data[i + 4] as u64) << 32;
+            let e = (self.data[i + 3] as u64) << 24;
+            let f = (self.data[i + 2] as u64) << 16;
+            let g = (self.data[i + 1] as u64) << 8;
+            let h = self.data[i + 0] as u64;
+            Some(a | b | c | d | e | f | g | h)
+        }
+    }
+
+    pub fn ref_u64_big(&self, i: usize) -> Option<u64> {
+        if i + 7 >= self.len() {
+            None
+        } else {
+            let a = (self.data[i + 0] as u64) << 56;
+            let b = (self.data[i + 1] as u64) << 48;
+            let c = (self.data[i + 2] as u64) << 40;
+            let d = (self.data[i + 3] as u64) << 32;
+            let e = (self.data[i + 4] as u64) << 24;
+            let f = (self.data[i + 5] as u64) << 16;
+            let g = (self.data[i + 6] as u64) << 8;
+            let h = self.data[i + 7] as u64;
+            Some(a | b | c | d | e | f | g | h)
+        }
+    }
+
+    pub fn ref_s64_little(&self, i: usize) -> Option<i64> {
+        self.ref_u64_little(i).map(|x| x as i64)
+    }
+
+    pub fn ref_s64_big(&self, i: usize) -> Option<i64> {
+        self.ref_u64_big(i).map(|x| x as i64)
+    }
 
     pub fn copy(&self) -> Self {
         Self::new(&self.data)

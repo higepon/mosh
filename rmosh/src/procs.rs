@@ -4379,7 +4379,9 @@ fn bytevector_u16_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     };
     match ret {
         Some(v) => Ok(Object::Fixnum(v as isize)),
-        None => panic!("{}: index out of range {}", name, index),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
     }
 }
 fn bytevector_s16_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4395,31 +4397,75 @@ fn bytevector_s16_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     };
     match ret {
         Some(v) => Ok(Object::Fixnum(v as isize)),
-        None => panic!("{}: index out of range {}", name, index),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
     }
 }
-fn bytevector_u16_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u16_native_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u16-native-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let ret = if cfg!(target_endian = "big") {
+        bv.ref_u16_big(index)
+    } else {
+        bv.ref_u16_little(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_s16_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s16-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u16_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u16_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u16-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let value = as_isize!(name, args, 1, &mut vm.gc) as u16;
+    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.set_u16_little(index, value)
+    } else {
+        bv.set_u16_big(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_s16_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s16-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
 fn bytevector_u16_native_set_destructive(
-    _vm: &mut Vm,
+    vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-u16-native-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let value = as_isize!(name, args, 1, &mut vm.gc) as u16;
+    let ret = if cfg!(target_endian = "big") {
+        bv.set_u16_big(index, value)
+    } else {
+        bv.set_u16_little(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_s16_native_set_destructive(
     _vm: &mut Vm,
@@ -4428,13 +4474,41 @@ fn bytevector_s16_native_set_destructive(
     let name: &str = "bytevector-s16-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u32_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u32_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u32-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_u32_little(index)
+    } else {
+        bv.ref_u32_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
-fn bytevector_s32_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s32_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s32-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_s32_little(index)
+    } else {
+        bv.ref_s32_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_u32_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u32-native-ref";
@@ -4466,13 +4540,41 @@ fn bytevector_s32_native_set_destructive(
     let name: &str = "bytevector-s32-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u64_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u64-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_s64_little(index)
+    } else {
+        bv.ref_s64_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
-fn bytevector_s64_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s64-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_s64_little(index)
+    } else {
+        bv.ref_s64_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_u64_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u64-native-ref";
