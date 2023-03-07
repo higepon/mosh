@@ -18,7 +18,7 @@ use crate::{
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{
-        self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError,
+        self, imag, integer_div, log2, real, Bignum, Compnum, FixnumExt, Flonum, SchemeError, NumberExt,
     },
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
@@ -5146,7 +5146,7 @@ fn bitwise_and(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             };
             accum = accum & v;
         }
-        Ok(Object::Bignum(vm.gc.alloc(Bignum::new(accum))))
+        Ok(accum.to_obj(&mut vm.gc))
     }
 }
 fn bitwise_ior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
