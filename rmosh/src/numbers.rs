@@ -136,7 +136,7 @@ impl FixnumExt for isize {
                 let b1 = BigInt::from_isize(self).unwrap();
                 let b2 = BigInt::from_isize(fx).unwrap();
                 let b = b1 + b2;
-                Object::Bignum(gc.alloc(Bignum::new(b)))
+                b.to_obj(gc)
             }
         }
     }
@@ -147,7 +147,7 @@ impl FixnumExt for isize {
                 let b1 = BigInt::from_isize(self).unwrap();
                 let b2 = BigInt::from_isize(fx).unwrap();
                 let b = b1 - b2;
-                Object::Bignum(gc.alloc(Bignum::new(b)))
+                b.to_obj(gc)
             }
         }
     }
@@ -158,7 +158,7 @@ impl FixnumExt for isize {
                 let b1 = BigInt::from_isize(self).unwrap();
                 let b2 = BigInt::from_isize(fx).unwrap();
                 let b = b1 * b2;
-                Object::Bignum(gc.alloc(Bignum::new(b)))
+                b.to_obj(gc)
             }
         }
     }
@@ -169,11 +169,7 @@ impl FixnumExt for isize {
             Ok(Object::Fixnum(self))
         } else {
             let r = Ratnum::new_from_isize(self, fx);
-            if r.is_integer() {
-                Ok(r.numer(gc))
-            } else {
-                Ok(Object::Ratnum(gc.alloc(r)))
-            }
+            Ok(r.ratio.to_obj(gc))
         }
     }
     fn integer_div(self, fx: isize) -> Result<isize, SchemeError> {
@@ -570,7 +566,7 @@ impl Flonum {
     // Flonum vs Bignum
     pub fn add_big(&self, gc: &mut Box<Gc>, b: &GcRef<Bignum>) -> Object {
         match BigInt::from_f64(self.value()) {
-            Some(bv) => Object::Bignum(gc.alloc(Bignum::new(bv + b.value.clone()))),
+            Some(bv) => (bv + b.value.clone()).to_obj(gc),
             None => match b.to_f64() {
                 Some(fv) => Object::Flonum(Flonum::new(fv + self.value())),
                 None => panic!(),
@@ -775,7 +771,7 @@ impl Ratnum {
             Some(fx) => Object::Fixnum(fx),
             None => {
                 let denom = self.ratio.denom();
-                Object::Bignum(gc.alloc(Bignum::new((*denom).clone())))
+                denom.clone().to_obj(gc)
             }
         }
     }
@@ -785,7 +781,7 @@ impl Ratnum {
             Some(fx) => Object::Fixnum(fx),
             None => {
                 let numer = self.ratio.numer();
-                Object::Bignum(gc.alloc(Bignum::new((*numer).clone())))
+                numer.clone().to_obj(gc)
             }
         }
     }
@@ -982,7 +978,7 @@ impl Bignum {
     }
 
     pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
-        Object::Bignum(gc.alloc(Bignum::new(self.value.abs())))
+       self.value.abs().to_obj(gc)
     }
 
     pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
@@ -1880,8 +1876,7 @@ pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
             Some(v) => Object::Fixnum(v),
             None => match BigInt::from_isize(fx) {
                 Some(bigint) => {
-                    let b = gc.alloc(Bignum::new(bigint));
-                    b.abs(gc)
+                    bigint.abs().to_obj(gc)
                 }
                 None => panic!(),
             },

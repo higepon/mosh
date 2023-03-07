@@ -5108,7 +5108,7 @@ fn bitwise_not(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     match args[0] {
         Object::Fixnum(fx) => Ok(Object::Fixnum(!fx)),
-        Object::Bignum(b) => Ok(Object::Bignum(vm.gc.alloc(Bignum::new(!b.value.clone())))),
+        Object::Bignum(b) => Ok((!b.value.clone()).to_obj(&mut vm.gc)),
         _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
     }
 }
@@ -5183,7 +5183,7 @@ fn bitwise_ior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             };
             accum = accum | v;
         }
-        Ok(Object::Bignum(vm.gc.alloc(Bignum::new(accum))))
+        Ok(accum.to_obj(&mut vm.gc))
     }
 }
 fn bitwise_xor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5220,7 +5220,7 @@ fn bitwise_xor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             };
             accum = accum ^ v;
         }
-        Ok(Object::Bignum(vm.gc.alloc(Bignum::new(accum))))
+        Ok(accum.to_obj(&mut vm.gc))
     }
 }
 
@@ -5313,11 +5313,11 @@ fn bitwise_arithmetic_shift_left(vm: &mut Vm, args: &mut [Object]) -> error::Res
         Object::Fixnum(fx) => {
             let b = BigInt::from_isize(fx).unwrap();
             let shifted = b << offset;
-            Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            Ok(shifted.to_obj(&mut vm.gc))
         }
         Object::Bignum(b) => {
             let shifted = b.value.clone() << offset;
-            Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            Ok(shifted.to_obj(&mut vm.gc))
         }
         _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
     }
@@ -5333,11 +5333,11 @@ fn bitwise_arithmetic_shift_right(vm: &mut Vm, args: &mut [Object]) -> error::Re
         Object::Fixnum(fx) => {
             let b = BigInt::from_isize(fx).unwrap();
             let shifted = b >> offset;
-            Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            Ok(shifted.to_obj(&mut vm.gc))
         }
         Object::Bignum(b) => {
             let shifted = b.value.clone() >> offset;
-            Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+            Ok(shifted.to_obj(&mut vm.gc))
         }
         _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
     }
@@ -5349,20 +5349,20 @@ fn bitwise_arithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
         (Object::Bignum(b), Object::Fixnum(fx)) => {
             if fx >= 0 {
                 let shifted = b.value.clone() << fx;
-                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+                Ok(shifted.to_obj(&mut vm.gc))
             } else {
                 let shifted = b.value.clone() >> (-fx);
-                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+                Ok(shifted.to_obj(&mut vm.gc))
             }
         }
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => {
             let b = BigInt::from_isize(fx1).unwrap();
             if fx2 >= 0 {
                 let shifted = b << fx2;
-                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+                Ok(shifted.to_obj(&mut vm.gc))
             } else {
                 let shifted = b >> (-fx2);
-                Ok(Object::Bignum(vm.gc.alloc(Bignum::new(shifted))))
+                Ok(shifted.to_obj(&mut vm.gc))
             }
         }
         _ => Error::assertion_violation(&mut vm.gc, name, "exact integer required", &[args[0]]),
