@@ -18,7 +18,7 @@ use crate::{
     number_lexer::NumberLexer,
     number_reader::NumberParser,
     numbers::{
-        self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError, GcObjectExt,
+        ObjectExt, self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, SchemeError, GcObjectExt,
     },
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
@@ -861,7 +861,7 @@ macro_rules! check_argc_between {
 fn is_number(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "number?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_number()))
+    Ok(args[0].is_number().to_obj())
 }
 fn cons(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cons";
@@ -921,7 +921,7 @@ fn cdr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_null(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "null?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_nil()))
+    Ok(args[0].is_nil().to_obj())
 }
 fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-car!";
@@ -979,7 +979,7 @@ fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "regexp?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_regexp()))
+    Ok(args[0].is_regexp().to_obj())
 }
 fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "regexp->string";
@@ -1397,7 +1397,7 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     if let Object::String(s) = args[0] {
         //println!("{} {} => {}", name, s.string, Path::new(&s.string).exists());
-        Ok(Object::make_bool(Path::new(&s.string).exists()))
+        Ok(Path::new(&s.string).exists().to_obj())
     } else {
         panic!("{}: string required but got {}", name, args[0])
     }
@@ -2227,7 +2227,7 @@ fn is_vector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_list(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "list?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_list()))
+    Ok(args[0].is_list().to_obj())
 }
 fn list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut obj = Object::Nil;
@@ -2272,7 +2272,7 @@ fn memq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_eq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eq?";
     check_argc!(name, args, 2);
-    Ok(Object::make_bool(args[0].eq(&args[1])))
+    Ok(args[0].eq(&args[1]).to_obj())
 }
 fn is_eqv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eqv?";
@@ -2564,7 +2564,7 @@ fn vm_apply(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_pair(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "pair?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_pair()))
+    Ok(args[0].is_pair().to_obj())
 }
 fn make_custom_binary_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-binary-input-port";
@@ -3219,7 +3219,7 @@ fn load(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_symbol(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "symbol?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_symbol()))
+    Ok(args[0].is_symbol().to_obj())
 }
 fn is_charle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "char<=?";
@@ -3733,15 +3733,15 @@ fn is_hashtable_contains(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     let name: &str = "hashtable-contains?";
     check_argc!(name, args, 2);
     match args[0] {
-        Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.contains(args[1]))),
+        Object::EqHashtable(hashtable) => Ok(hashtable.contains(args[1]).to_obj()),
         Object::EqvHashtable(hashtable) => {
-            Ok(Object::make_bool(hashtable.contains(EqvKey::new(args[1]))))
+            Ok(hashtable.contains(EqvKey::new(args[1])).to_obj())
         }
         Object::GenericHashtable(hashtable) => {
             let key = args[1];
             let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
             let key = GenericHashKey::new(hash_obj, key);
-            Ok(Object::make_bool(hashtable.contains(key)))
+            Ok(hashtable.contains(key).to_obj())
         }
         _ => {
             return Error::assertion_violation(&mut vm.gc, name, "hashtable required", &[args[0]]);
@@ -3800,9 +3800,9 @@ fn is_hashtable_mutable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     let name: &str = "hashtable-mutable?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
-        Object::EqvHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
-        Object::GenericHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
+        Object::EqHashtable(hashtable) => Ok(hashtable.is_mutable().to_obj()),
+        Object::EqvHashtable(hashtable) => Ok(hashtable.is_mutable().to_obj()),
+        Object::GenericHashtable(hashtable) => Ok(hashtable.is_mutable().to_obj()),
         _ => Ok(Object::False),
     }
 }
@@ -4615,7 +4615,7 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_rational(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "rational?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_rational()))
+    Ok(args[0].is_rational().to_obj())
 }
 fn is_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flonum?";
@@ -4680,12 +4680,12 @@ fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "exact?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_exact()))
+    Ok(args[0].is_exact().to_obj())
 }
 fn is_inexact(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "inexact?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(!args[0].is_exact()))
+    Ok((!args[0].is_exact()).to_obj())
 }
 fn exact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "exact";
@@ -4803,55 +4803,55 @@ fn is_flinteger(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinteger?";
     check_argc!(name, args, 1);
     let fl = as_flonum!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl.is_integer()))
+    Ok(fl.is_integer().to_obj())
 }
 fn is_flzero(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flzero?";
     check_argc!(name, args, 1);
     let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl.is_zero()))
+    Ok(fl.is_zero().to_obj())
 }
 fn is_flpositive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flpositive?";
     check_argc!(name, args, 1);
     let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl > 0.0))
+    Ok((fl > 0.0).to_obj())
 }
 fn is_flnegative(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnegative?";
     check_argc!(name, args, 1);
     let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl < 0.0))
+    Ok((fl < 0.0).to_obj())
 }
 fn is_flodd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flodd?";
     check_argc!(name, args, 1);
     let fl = as_flonum!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(!fl.is_even()))
+    Ok((!fl.is_even()).to_obj())
 }
 fn is_fleven(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fleven?";
     check_argc!(name, args, 1);
     let fl = as_flonum!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl.is_even()))
+    Ok(fl.is_even().to_obj())
 }
 fn is_flfinite(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfinite?";
     check_argc!(name, args, 1);
     let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl.is_finite()))
+    Ok(fl.is_finite().to_obj())
 }
 fn is_flinfinite(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinfinite?";
     check_argc!(name, args, 1);
     let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl.is_infinite()))
+    Ok(fl.is_infinite().to_obj())
 }
 fn is_flnan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnan?";
     check_argc!(name, args, 1);
     let fl = as_f64!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fl.is_nan()))
+    Ok(fl.is_nan().to_obj())
 }
 fn flmax(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmax";
@@ -5371,18 +5371,18 @@ fn bitwise_arithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
 fn is_complex(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "complex?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_complex()))
+    Ok(args[0].is_complex().to_obj())
 }
 fn is_real(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_real()))
+    Ok(args[0].is_real().to_obj())
 }
 
 fn is_integer(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "integer?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_integer(&mut vm.gc)))
+    Ok(args[0].is_integer(&mut vm.gc).to_obj())
 }
 fn is_real_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real-valued?";
@@ -5409,7 +5409,7 @@ fn is_integer_valued(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     check_argc!(name, args, 1);
 
     if args[0].is_number() {
-        Ok(Object::make_bool(args[0].is_integer_valued(&mut vm.gc)))
+        Ok(args[0].is_integer_valued(&mut vm.gc).to_obj())
     } else {
         Ok(Object::False)
     }
@@ -5488,31 +5488,31 @@ fn is_fxzero(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxzero?";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fx == 0))
+    Ok((fx == 0).to_obj())
 }
 fn is_fxpositive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxpositive?";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fx > 0))
+    Ok((fx > 0).to_obj())
 }
 fn is_fxnegative(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxnegative?";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fx < 0))
+    Ok((fx < 0).to_obj())
 }
 fn is_fxodd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxodd?";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fx % 2 != 0))
+    Ok((fx % 2 != 0).to_obj())
 }
 fn is_fxeven(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxeven?";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0, &mut vm.gc);
-    Ok(Object::make_bool(fx % 2 == 0))
+    Ok((fx % 2 == 0).to_obj())
 }
 fn fxmax(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmax";
@@ -5736,7 +5736,7 @@ fn is_fxbit_set(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if fx2 > (isize::BITS as isize) || fx2 < 0 {
         return Error::assertion_violation(&mut vm.gc, name, "out of range", &[args[0], args[1]]);
     }
-    Ok(Object::make_bool(((fx1 >> fx2) & 1) == 1))
+    Ok((((fx1 >> fx2) & 1) == 1).to_obj())
 }
 fn fxcopy_bit(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit";
@@ -5996,7 +5996,7 @@ fn is_even(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "even?";
     check_argc!(name, args, 1);
     if args[0].is_integer(&mut vm.gc) {
-        Ok(Object::make_bool(args[0].is_even()))
+        Ok(args[0].is_even().to_obj())
     } else {
         panic!("{}: integer value required but got {}", name, args[0])
     }
@@ -6005,7 +6005,7 @@ fn is_odd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "odd?";
     check_argc!(name, args, 1);
     if args[0].is_integer(&mut vm.gc) {
-        Ok(Object::make_bool(!args[0].is_even()))
+        Ok((!args[0].is_even()).to_obj())
     } else {
         panic!("{}: integer value required but got {}", name, args[0])
     }
@@ -6442,12 +6442,12 @@ fn set_current_directory_destructive(_vm: &mut Vm, args: &mut [Object]) -> error
 fn is_binary_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "binary-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_binary_port()))
+    Ok(args[0].is_binary_port().to_obj())
 }
 fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "input-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_input_port()))
+    Ok(args[0].is_input_port().to_obj())
 }
 fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-eof?";
@@ -6515,17 +6515,17 @@ fn host_os(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "output-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_output_port()))
+    Ok(args[0].is_output_port().to_obj())
 }
 fn is_textual_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "textual-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_textual_port()))
+    Ok(args[0].is_textual_port().to_obj())
 }
 fn is_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_port()))
+    Ok(args[0].is_port().to_obj())
 }
 fn port_transcoder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-transcoder";
@@ -7235,7 +7235,7 @@ fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
 fn is_same_marks(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "same-marks?";
     check_argc!(name, args, 2);
-    Ok(Object::make_bool(is_same_marks_raw(args[0], args[1])))
+    Ok(is_same_marks_raw(args[0], args[1]).to_obj())
 }
 
 /* psyntax/expander.ss
@@ -7553,7 +7553,7 @@ fn annotated_cons(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_annotated_pair(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "annotated-pair?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_pair()))
+    Ok(args[0].is_pair().to_obj())
 }
 fn get_annotation(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-annotation";
