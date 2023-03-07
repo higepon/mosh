@@ -12,7 +12,7 @@ use crate::{
     objects::Object,
 };
 
-// Number -> Object.
+// GCed Number -> Object.
 pub trait NumberExt {
     fn to_obj(self, gc: &mut Box<Gc>) -> Object;
 }
@@ -45,6 +45,7 @@ impl NumberExt for BigRational {
 pub trait FixnumExt {
     // Utils
     fn bit_count(&self) -> isize;
+    fn to_obj(&self) -> Object;
     fn length(&self) -> usize;
     fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize;
     fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize;
@@ -402,6 +403,11 @@ impl FixnumExt for isize {
                 )))
             }
         }
+    }
+
+    #[inline(always)]
+    fn to_obj(&self) -> Object {
+        Object::Fixnum(*self)
     }
 }
 
