@@ -2685,6 +2685,19 @@ fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<O
 fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u8-set!";
     check_argc!(name, args, 3);
+    if !args[1].is_fixnum() {
+        println!("{}", args[1].obj_type());
+    }
+    println!(
+        "{} {} {} {} {} {} {}",
+        args[0].is_bytevector(),
+        args[0].to_bytevector().len(),
+        args[1].is_fixnum(),
+        (args[1].to_isize() as usize) < args[0].to_bytevector().len(),
+        if args[2].is_fixnum() { 3 } else {args[2].obj_type(); 4},
+        args[2].to_isize() >= 0,
+        args[2].to_isize() <= 255
+    );
     match (args[0], args[1], args[2]) {
         (Object::Bytevector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
             if (index as usize) < bv.len() && v >= 0 && v <= 255 =>
@@ -4279,7 +4292,7 @@ fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
         (Object::Bytevector(bv), Object::Fixnum(index)) => match bv.ref_u8(index as usize) {
-            Some(v) => Ok(Object::Fixnum(*v as isize)),
+            Some(v) => Ok(Object::Fixnum(v as isize)),
             None => panic!("{}: index out of range {}", name, index),
         },
         _ => {
@@ -4293,11 +4306,37 @@ fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
 
 fn bytevector_s8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s8-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::Bytevector(bv), Object::Fixnum(index)) => match bv.ref_i8(index as usize) {
+            Some(v) => Ok(Object::Fixnum(v as isize)),
+            None => panic!("{}: index out of range {}", name, index),
+        },
+        _ => {
+            panic!(
+                "{}: bytevector and index required but got {} and {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 fn bytevector_s8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s8-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match (args[0], args[1], args[2]) {
+        (Object::Bytevector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
+            if (index as usize) < bv.len() && v >= -128 && v <= 127 =>
+        {
+            bv.set_i8_unchecked(index as usize, v as i8);
+            Ok(Object::Unspecified)
+        }
+        _ => {
+            panic!(
+                "{}: bytevector index i8 value required but got {}, {} and {}",
+                name, args[0], args[1], args[2]
+            );
+        }
+    }
 }
 fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector->u8-list";

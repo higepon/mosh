@@ -12,6 +12,21 @@ use crate::{
     objects::Object,
 };
 
+// Number -> Object.
+pub trait NumberExt {
+    fn to_obj(self, gc: &mut Box<Gc>) -> Object;
+}
+
+// BigInt => Fixnum or Bignum.
+impl NumberExt for BigInt {
+    fn to_obj(self, gc: &mut Box<Gc>) -> Object {
+        match self.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(self))),
+        }
+    }
+}
+
 // Fixnum.
 pub trait FixnumExt {
     // Utils
@@ -232,26 +247,17 @@ impl FixnumExt for isize {
     fn add_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
         let other = BigInt::from_isize(self).unwrap();
         let result = b.value.clone() + other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     fn sub_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
         let other = BigInt::from_isize(self).unwrap();
         let result = b.value.clone() - other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     fn mul_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
         let other = BigInt::from_isize(self).unwrap();
         let result = b.value.clone() * other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     fn div_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Result<Object, SchemeError> {
         if b.is_zero() {
@@ -879,40 +885,28 @@ impl Bignum {
 
     pub fn add(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         let result = self.value.clone() + other.value.clone();
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     pub fn sub(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         let result = self.value.clone() - other.value.clone();
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     pub fn mul(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         let result = self.value.clone() * other.value.clone();
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     pub fn div(&self, gc: &mut Box<Gc>, other: &Bignum) -> Result<Object, SchemeError> {
         if other.value == BigInt::from_u8(0).unwrap() {
             Err(SchemeError::Div0)
         } else {
             let ret = self.value.clone() / other.value.clone();
-            Ok(Object::Bignum(gc.alloc(Bignum::new(ret))))
+            Ok(ret.to_obj(gc))
         }
     }
     pub fn remainder(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         assert!(other.value != BigInt::from_u8(0).unwrap());
         let ret = self.value.clone().rem(other.value.clone());
-        match ret.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(ret))),
-        }
+        ret.to_obj(gc)
     }
 
     pub fn eqv(&self, other: &Bignum) -> bool {
@@ -924,10 +918,7 @@ impl Bignum {
     pub fn sub_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         let other = BigInt::from_isize(fx).unwrap();
         let result = self.value.clone() - other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
 
     pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
@@ -935,20 +926,14 @@ impl Bignum {
             Err(SchemeError::Div0)
         } else {
             let ret = self.value.clone().div(fx);
-            match ret.to_isize() {
-                Some(v) => Ok(Object::Fixnum(v)),
-                None => Ok(Object::Bignum(gc.alloc(Bignum::new(ret)))),
-            }
+            Ok(ret.to_obj(gc))
         }
     }
 
     pub fn remainder_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         assert!(fx != 0);
         let ret = self.value.clone().rem(fx);
-        match ret.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(ret))),
-        }
+        ret.to_obj(gc)
     }
 
     // Bignum vs Ratnum.
@@ -988,22 +973,12 @@ impl Bignum {
     pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
         if self.is_positive() {
             let b = self.value.sqrt();
-            match b.to_isize() {
-                Some(v) => Object::Fixnum(v),
-                None => Object::Bignum(gc.alloc(Bignum::new(b))),
-            }
+            b.to_obj(gc)
         } else {
             let b = self.value.clone().neg();
             let b = b.sqrt();
-            match b.to_isize() {
-                Some(v) => {
-                    Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(v))))
-                }
-                None => {
-                    let b = gc.alloc(Bignum::new(b));
-                    Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Bignum(b))))
-                }
-            }
+            let imag = b.to_obj(gc);
+            Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
         }
     }
 }
@@ -1538,10 +1513,7 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
                     Object::Fixnum(1)
                 } else if f2 > 0 {
                     let b = b1.pow(b2 as u32);
-                    match b.to_isize() {
-                        Some(v) => Object::Fixnum(v),
-                        None => Object::Bignum(gc.alloc(Bignum::new(b))),
-                    }
+                    b.to_obj(gc)
                 } else {
                     if f1 == 0 {
                         return Object::Unspecified;

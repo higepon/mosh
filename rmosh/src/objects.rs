@@ -875,8 +875,18 @@ impl Bytevector {
         }
     }
 
-    pub fn ref_u8(&self, i: usize) -> Option<&u8> {
-        self.data.get(i)
+    pub fn ref_i8(&self, i: usize) -> Option<i8> {
+        match self.data.get(i) {
+            Some(v) => Some(*v as i8),
+            None => None,
+        }
+    }
+
+    pub fn ref_u8(&self, i: usize) -> Option<u8> {
+        match self.data.get(i) {
+            Some(v) => Some(*v),
+            None => None,
+        }
     }
 
     pub fn ref_u8_unchecked(&self, i: usize) -> u8 {
@@ -885,6 +895,10 @@ impl Bytevector {
 
     pub fn set_u8_unchecked(&mut self, i: usize, v: u8) {
         self.data[i] = v;
+    }
+
+    pub fn set_i8_unchecked(&mut self, i: usize, v: i8) {
+        self.data[i] = v as u8;
     }
 
     pub fn copy(&self) -> Self {
