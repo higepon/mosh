@@ -4210,7 +4210,7 @@ fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let value: u8 = if args.len() == 1 {
         0
     } else {
-        as_u8!(name, args, 0, &mut vm.gc)
+        as_u8!(name, args, 1, &mut vm.gc)
     };
     match args[0] {
         Object::Fixnum(len) => {
