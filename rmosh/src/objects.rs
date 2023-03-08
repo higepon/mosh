@@ -14,6 +14,7 @@ use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
+use std::io::Write;
 use std::ops::{Deref, DerefMut};
 
 /// Wrapper of heap allocated or simple stack objects.
@@ -910,6 +911,7 @@ impl Bytevector {
             Some(())
         }
     }
+
     pub fn set_u16_big(&mut self, i: usize, v: u16) -> Option<()> {
         if i + 1 >= self.len() {
             None
@@ -948,6 +950,38 @@ impl Bytevector {
 
     pub fn ref_s16_big(&self, i: usize) -> Option<i16> {
         self.ref_u16_big(i).map(|x| x as i16)
+    }
+
+    pub fn ref_f32_little(&self, i: usize) -> Option<f32> {
+        let data: &[u8; 4] = match self.data[i..i + 4].try_into() {
+            Ok(v) => v,
+            Err(_) => return None,
+        };
+        Some(f32::from_le_bytes(*data))
+    }
+
+    pub fn ref_f32_big(&self, i: usize) -> Option<f32> {
+        let data: &[u8; 4] = match self.data[i..i + 4].try_into() {
+            Ok(v) => v,
+            Err(_) => return None,
+        };
+        Some(f32::from_be_bytes(*data))
+    }
+
+    pub fn set_f32_little(&mut self, i: usize, v: f32) -> Option<()> {
+        let data = v.to_le_bytes();
+        match (&mut self.data[i..]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_f32_big(&mut self, i: usize, v: f32) -> Option<()> {
+        let data = v.to_be_bytes();
+        match (&mut self.data[i..]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
     }
 
     pub fn ref_u32_little(&self, i: usize) -> Option<u32> {

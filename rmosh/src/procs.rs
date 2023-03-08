@@ -10,7 +10,8 @@ use std::{
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_f64, as_flonum, as_isize, as_sstring, as_symbol, as_u8, as_usize,
+    as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_sstring, as_symbol, as_u8,
+    as_usize,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
@@ -6079,9 +6080,22 @@ fn fxreverse_bit_field(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     }
     return Ok(Object::Fixnum(bits as isize));
 }
-fn bytevector_ieee_single_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_ieee_single_native_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-native-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let ret = if cfg!(target_endian = "big") {
+        bv.ref_f32_big(index)
+    } else {
+        bv.ref_f32_little(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Flonum(Flonum::new(v as f64))),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_ieee_single_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-ref";
@@ -6096,18 +6110,47 @@ fn bytevector_ieee_double_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Resul
     panic!("{}({}) not implemented", name, args.len());
 }
 fn bytevector_ieee_single_native_set_destructive(
-    _vm: &mut Vm,
+    vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-native-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let value = as_f32!(name, args, 2, &mut vm.gc);
+    let ret = if cfg!(target_endian = "big") {
+        bv.set_f32_big(index, value)
+    } else {
+        bv.set_f32_little(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_ieee_single_set_destructive(
-    _vm: &mut Vm,
+    vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
-    let name: &str = "bytevector-ieee-single-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    let name: &str = "bytevector-ieee-single-set!";    
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let value = as_f32!(name, args, 1, &mut vm.gc);
+    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.set_f32_little(index, value)
+    } else {
+        bv.set_f32_big(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => {
+            error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
+        }
+    }
 }
 fn bytevector_ieee_double_native_set_destructive(
     _vm: &mut Vm,

@@ -76,6 +76,17 @@ macro_rules! as_f64 {
 }
 
 #[macro_export]
+macro_rules! as_f32 {
+    ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
+        let o = $args[$i];
+        if !o.is_flonum() {
+            return error::Error::assertion_violation($gc, $name, "flonum required", &[o]);
+        }
+        o.to_flonum().value() as f32
+    }};
+}
+
+#[macro_export]
 macro_rules! as_flonum {
     ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
         let o = $args[$i];
