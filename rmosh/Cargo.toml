@@ -26,3 +26,4 @@ ordered-float = { version = "3.0", default-features = false }
 num-bigint = "0.4"
 num-rational = "0.4"
 clap = { version = "4.0", features = ["derive"] }
+byteorder = "1"

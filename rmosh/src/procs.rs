@@ -1,12 +1,3 @@
-use std::{
-    env::{self, current_dir, current_exe},
-    fs::{self, File, OpenOptions},
-    mem,
-    path::Path,
-    process,
-    time::{SystemTime, UNIX_EPOCH},
-};
-
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -32,6 +23,15 @@ use crate::{
         StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
     },
     vm::Vm,
+};
+use byteorder::{BigEndian, ByteOrder, LittleEndian};
+use std::{
+    env::{self, current_dir, current_exe},
+    fs::{self, File, OpenOptions},
+    mem,
+    path::Path,
+    process,
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 use num_bigint::BigInt;
@@ -4704,13 +4704,161 @@ fn string_to_utf32(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&data))))
 }
-fn utf16_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
-    let name: &str = "utf16->string";
-    panic!("{}({}) not implemented", name, args.len());
+
+#[derive(Clone, Debug, PartialEq)]
+enum BomType {
+    Le,
+    Be,
+    No,
 }
-fn utf32_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+
+fn utf16_bom_type(bv: &GcRef<Bytevector>) -> BomType {
+    if bv.len() >= 2 {
+        if bv.data[0] == 0xfe && bv.data[1] == 0xff {
+            BomType::Be
+        } else if bv.data[0] == 0xff && bv.data[1] == 0xfe {
+            BomType::Le
+        } else {
+            BomType::No
+        }
+    } else {
+        BomType::No
+    }
+}
+
+fn u8_to_u16(input: &[u8], is_little_endian: bool) -> Vec<u16> {
+    let mut output: Vec<u16> = Vec::with_capacity(input.len() / 2);
+
+    for chunk in input.chunks_exact(2) {
+        let value = if is_little_endian {
+            u16::from_le_bytes([chunk[0], chunk[1]])
+        } else {
+            u16::from_be_bytes([chunk[0], chunk[1]])
+        };
+        output.push(value);
+    }
+    output
+}
+
+fn utf16_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    let name: &str = "utf16->string";
+    check_argc_between!(name, args, 2, 3);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let mut endianness = BomType::No;
+    let mut skip_bom = false;
+    if args.len() == 2 {
+        endianness = utf16_bom_type(&bv);
+        if endianness != BomType::No {
+            skip_bom = true;
+        }
+    }
+
+    let endianness_mandatory = (args.len() == 3 && !args[2].is_false());
+    if endianness_mandatory || endianness == BomType::No {
+        let _endianness_sym = as_symbol!(name, args, 1, &mut vm.gc);
+        if args[1] == vm.gc.symbol_intern("little") {
+            endianness = BomType::Le;
+        } else if args[1] == vm.gc.symbol_intern("big") {
+            endianness = BomType::Be;
+        } else {
+            return error::Error::assertion_violation(
+                &mut vm.gc,
+                name,
+                "endianness should be little or big",
+                &[args[1]],
+            );
+        }
+    }
+    let is_little = endianness == BomType::Le;
+    let skip_size = if skip_bom { 2 } else { 0 };
+    let data = &bv.data[skip_size..];
+    let u16_data = u8_to_u16(data, is_little);
+    let s = String::from_utf16_lossy(&u16_data);
+    Ok(vm.gc.new_string(&s))
+}
+
+fn utf32_bom_type(bv: &GcRef<Bytevector>) -> BomType {
+    if bv.len() >= 4 {
+        if bv.data[0] == 0x00 && bv.data[1] == 0x00 && bv.data[2] == 0xfe && bv.data[3] == 0xff {
+            BomType::Be
+        } else if bv.data[3] == 0x00
+            && bv.data[2] == 0x00
+            && bv.data[1] == 0xfe
+            && bv.data[0] == 0xff
+        {
+            BomType::Le
+        } else {
+            BomType::No
+        }
+    } else {
+        BomType::No
+    }
+}
+
+fn utf32_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf32->string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 3);
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let mut endianness = BomType::No;
+    let mut skip_bom = false;
+    if args.len() == 2 {
+        endianness = utf32_bom_type(&bv);
+        if endianness != BomType::No {
+            skip_bom = true;
+        }
+    }
+
+    let endianness_mandatory = (args.len() == 3 && !args[2].is_false());
+    if endianness_mandatory || endianness == BomType::No {
+        let _endianness_sym = as_symbol!(name, args, 1, &mut vm.gc);
+        if args[1] == vm.gc.symbol_intern("little") {
+            endianness = BomType::Le;
+        } else if args[1] == vm.gc.symbol_intern("big") {
+            endianness = BomType::Be;
+        } else {
+            return error::Error::assertion_violation(
+                &mut vm.gc,
+                name,
+                "endianness should be little or big",
+                &[args[1]],
+            );
+        }
+    }
+    let is_little = endianness == BomType::Le;
+    let skip_size = if skip_bom { 4 } else { 0 };
+    let data = &bv.data[skip_size..];
+    let mut s = String::new();
+    let mut i = 0;
+    loop {
+        if i + 4 >= bv.len() {
+            break;
+        }
+        let bytes = &bv.data[i..i + 4];
+        let mut value: u32 = match is_little {
+            true => LittleEndian::read_u32(bytes),
+            false => BigEndian::read_u32(bytes),
+        };
+
+        // perform byte order conversion if necessary
+        if cfg!(target_endian = "big") && is_little == false {
+            value = value.swap_bytes();
+        } else if cfg!(target_endian = "little") && is_little == true {
+            value = value.swap_bytes();
+        }
+        match char::from_u32(value) {
+            Some(ch) => s.push(ch),
+            None => {
+                return error::Error::assertion_violation(
+                    &mut vm.gc,
+                    name,
+                    "invalid utf32 char",
+                    &[args[0]],
+                );
+            }
+        }
+        i = i + 4;
+    }
+    Ok(vm.gc.new_string(&s))
 }
 fn close_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-port";
