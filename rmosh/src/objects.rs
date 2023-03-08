@@ -984,6 +984,38 @@ impl Bytevector {
         }
     }
 
+    pub fn ref_f64_little(&self, i: usize) -> Option<f64> {
+        let data: &[u8; 8] = match self.data[i..i + 8].try_into() {
+            Ok(v) => v,
+            Err(_) => return None,
+        };
+        Some(f64::from_le_bytes(*data))
+    }
+
+    pub fn ref_f64_big(&self, i: usize) -> Option<f64> {
+        let data: &[u8; 8] = match self.data[i..i + 8].try_into() {
+            Ok(v) => v,
+            Err(_) => return None,
+        };
+        Some(f64::from_be_bytes(*data))
+    }
+
+    pub fn set_f64_little(&mut self, i: usize, v: f64) -> Option<()> {
+        let data = v.to_le_bytes();
+        match (&mut self.data[i..]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_f64_big(&mut self, i: usize, v: f64) -> Option<()> {
+        let data = v.to_be_bytes();
+        match (&mut self.data[i..]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
     pub fn ref_u32_little(&self, i: usize) -> Option<u32> {
         if i + 3 >= self.len() {
             None
