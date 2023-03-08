@@ -4652,13 +4652,57 @@ fn null_terminated_utf8_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::R
     let name: &str = "null-terminated-utf8->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_utf16(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_to_utf16(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf16";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let is_little = if args.len() == 2 {
+        args[1] == vm.gc.symbol_intern("little")
+    } else {
+        if cfg!(target_endian = "big") {
+            false
+        } else {
+            true
+        }
+    };
+    let s = as_sstring!(name, args, 0, &mut vm.gc);
+    let utf16_bytes: Vec<u16> = s.encode_utf16().collect();
+    let mut data = Vec::new();
+    for u in utf16_bytes {
+        if is_little {
+            let bytes = u.to_le_bytes();
+            data.extend_from_slice(&bytes);
+        } else {
+            let bytes = u.to_be_bytes();
+            data.extend_from_slice(&bytes);
+        }
+    }
+    Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&data))))
 }
-fn string_to_utf32(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_to_utf32(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf32";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let is_little = if args.len() == 2 {
+        args[1] == vm.gc.symbol_intern("little")
+    } else {
+        if cfg!(target_endian = "big") {
+            false
+        } else {
+            true
+        }
+    };
+    let s = as_sstring!(name, args, 0, &mut vm.gc);
+    let chars: Vec<char> = s.chars().collect();
+    let mut data = Vec::new();
+    for ch in chars.iter() {
+        if is_little {
+            let bytes = (*ch as u32).to_le_bytes();
+            data.extend_from_slice(&bytes);
+        } else {
+            let bytes = (*ch as u32).to_be_bytes();
+            data.extend_from_slice(&bytes);
+        }
+    }
+    Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&data))))
 }
 fn utf16_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf16->string";
