@@ -4372,6 +4372,9 @@ fn bytevector_s16_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 3);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(&mut vm.gc, name, "index not aligned", &[args[1]])  
+    }    
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
         bv.ref_s16_little(index)
@@ -4390,6 +4393,9 @@ fn bytevector_u16_native_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<
     check_argc!(name, args, 2);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(&mut vm.gc, name, "index not aligned", &[args[1]])  
+    }    
     let ret = if cfg!(target_endian = "big") {
         bv.ref_u16_big(index)
     } else {
@@ -4410,7 +4416,7 @@ fn bytevector_u16_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Re
     let name: &str = "bytevector-u16-set!";
     check_argc!(name, args, 4);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);  
     let value = as_isize!(name, args, 2, &mut vm.gc) as u16;
     let _endianness = as_symbol!(name, args, 3, &mut vm.gc);
     let ret = if args[3] == vm.gc.symbol_intern("little") {
@@ -4437,6 +4443,9 @@ fn bytevector_u16_native_set_destructive(
     check_argc!(name, args, 3);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(&mut vm.gc, name, "index not aligned", &[args[1]])  
+    }    
     let value = as_isize!(name, args, 2, &mut vm.gc) as u16;
     let ret = if cfg!(target_endian = "big") {
         bv.set_u16_big(index, value)
@@ -4461,7 +4470,7 @@ fn bytevector_u32_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "bytevector-u32-ref";
     check_argc!(name, args, 3);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);  
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
         bv.ref_u32_little(index)
@@ -4479,7 +4488,7 @@ fn bytevector_s32_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "bytevector-s32-ref";
     check_argc!(name, args, 3);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc); 
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
         bv.ref_s32_little(index)
@@ -4527,7 +4536,7 @@ fn bytevector_u64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "bytevector-u64-ref";
     check_argc!(name, args, 3);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc); 
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
         bv.ref_u64_little(index)
@@ -4545,7 +4554,7 @@ fn bytevector_s64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "bytevector-s64-ref";
     check_argc!(name, args, 3);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);   
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
         bv.ref_s64_little(index)
@@ -4640,11 +4649,7 @@ fn string_to_utf16(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let is_little = if args.len() == 2 {
         args[1] == vm.gc.symbol_intern("little")
     } else {
-        if cfg!(target_endian = "big") {
-            false
-        } else {
-            true
-        }
+        false // Default is Big.
     };
     let s = as_sstring!(name, args, 0, &mut vm.gc);
     let utf16_bytes: Vec<u16> = s.encode_utf16().collect();
@@ -4666,11 +4671,7 @@ fn string_to_utf32(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let is_little = if args.len() == 2 {
         args[1] == vm.gc.symbol_intern("little")
     } else {
-        if cfg!(target_endian = "big") {
-            false
-        } else {
-            true
-        }
+        false // Default is Big.
     };
     let s = as_sstring!(name, args, 0, &mut vm.gc);
     let chars: Vec<char> = s.chars().collect();
@@ -4812,28 +4813,21 @@ fn utf32_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut s = String::new();
     let mut i = 0;
     loop {
-        if i + 4 >= data.len() {
+        if i + 4 > data.len() {
             break;
         }
         let bytes = &data[i..i + 4];
-        let mut value: u32 = match is_little {
+        let value: u32 = match is_little {
             true => LittleEndian::read_u32(bytes),
             false => BigEndian::read_u32(bytes),
         };
-
-        // perform byte order conversion if necessary
-        if cfg!(target_endian = "big") && is_little == false {
-            value = value.swap_bytes();
-        } else if cfg!(target_endian = "little") && is_little == true {
-            value = value.swap_bytes();
-        }
         match char::from_u32(value) {
             Some(ch) => s.push(ch),
             None => {
                 return error::Error::assertion_violation(
                     &mut vm.gc,
                     name,
-                    "invalid utf32 char",
+                    &format!("invalid utf32 char {:x}", value),
                     &[args[0]],
                 );
             }
@@ -6259,6 +6253,9 @@ fn bytevector_ieee_single_native_ref(vm: &mut Vm, args: &mut [Object]) -> error:
     check_argc!(name, args, 2);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
+    if index %4 != 0 {
+        return error::Error::assertion_violation(&mut vm.gc, name, "index not aligned", &[args[1]])  
+    }    
     let ret = if cfg!(target_endian = "big") {
         bv.ref_f32_big(index)
     } else {
@@ -6275,7 +6272,7 @@ fn bytevector_ieee_single_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result
     let name: &str = "bytevector-ieee-single-ref";
     check_argc!(name, args, 3);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc);  
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
         bv.ref_f32_little(index)
@@ -6294,6 +6291,9 @@ fn bytevector_ieee_double_native_ref(vm: &mut Vm, args: &mut [Object]) -> error:
     check_argc!(name, args, 2);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
+    if index % 8 != 0 {
+        return error::Error::assertion_violation(&mut vm.gc, name, "index not aligned", &[args[1]])  
+    }    
     let ret = if cfg!(target_endian = "big") {
         bv.ref_f64_big(index)
     } else {
@@ -6310,7 +6310,7 @@ fn bytevector_ieee_double_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result
     let name: &str = "bytevector-ieee-double-ref";
     check_argc!(name, args, 3);
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
+    let index = as_usize!(name, args, 1, &mut vm.gc); 
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
         bv.ref_f64_little(index)
@@ -6332,6 +6332,9 @@ fn bytevector_ieee_single_native_set_destructive(
     check_argc!(name, args, 3);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
+    if index % 4 != 0 {
+        return error::Error::assertion_violation(&mut vm.gc, name, "index not aligned", &[args[1]])  
+    }    
     let value = as_f32!(name, args, 2, &mut vm.gc);
     let ret = if cfg!(target_endian = "big") {
         bv.set_f32_big(index, value)
@@ -6353,9 +6356,9 @@ fn bytevector_ieee_single_set_destructive(
     check_argc!(name, args, 4);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
-    let value = as_f32!(name, args, 1, &mut vm.gc);
-    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
-    let ret = if args[2] == vm.gc.symbol_intern("little") {
+    let value = as_f32!(name, args, 2, &mut vm.gc);
+    let _endianness = as_symbol!(name, args, 3, &mut vm.gc);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
         bv.set_f32_little(index, value)
     } else {
         bv.set_f32_big(index, value)
@@ -6375,6 +6378,9 @@ fn bytevector_ieee_double_native_set_destructive(
     check_argc!(name, args, 3);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
+    if index % 8 != 0 {
+        return error::Error::assertion_violation(&mut vm.gc, name, "index not aligned", &[args[1]])  
+    }
     let value = as_f64!(name, args, 2, &mut vm.gc);
     let ret = if cfg!(target_endian = "big") {
         bv.set_f64_big(index, value)
@@ -6395,10 +6401,10 @@ fn bytevector_ieee_double_set_destructive(
     let name: &str = "bytevector-ieee-double-set!";
     check_argc!(name, args, 4);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let index = as_usize!(name, args, 1, &mut vm.gc);
-    let value = as_f64!(name, args, 1, &mut vm.gc);
-    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
-    let ret = if args[2] == vm.gc.symbol_intern("little") {
+    let index = as_usize!(name, args, 1, &mut vm.gc);  
+    let value = as_f64!(name, args, 2, &mut vm.gc);
+    let _endianness = as_symbol!(name, args, 3, &mut vm.gc);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
         bv.set_f64_little(index, value)
     } else {
         bv.set_f64_big(index, value)
