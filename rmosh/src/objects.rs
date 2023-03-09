@@ -970,7 +970,7 @@ impl Bytevector {
 
     pub fn set_f32_little(&mut self, i: usize, v: f32) -> Option<()> {
         let data = v.to_le_bytes();
-        match (&mut self.data[i..i+4]).write(&data) {
+        match (&mut self.data[i..i + 4]).write(&data) {
             Ok(_) => Some(()),
             Err(_) => None,
         }
@@ -978,7 +978,7 @@ impl Bytevector {
 
     pub fn set_f32_big(&mut self, i: usize, v: f32) -> Option<()> {
         let data = v.to_be_bytes();
-        match (&mut self.data[i..i+4]).write(&data) {
+        match (&mut self.data[i..i + 4]).write(&data) {
             Ok(_) => Some(()),
             Err(_) => None,
         }
@@ -1002,7 +1002,7 @@ impl Bytevector {
 
     pub fn set_f64_little(&mut self, i: usize, v: f64) -> Option<()> {
         let data = v.to_le_bytes();
-        match (&mut self.data[i..i+8]).write(&data) {
+        match (&mut self.data[i..i + 8]).write(&data) {
             Ok(_) => Some(()),
             Err(_) => None,
         }
@@ -1010,7 +1010,7 @@ impl Bytevector {
 
     pub fn set_f64_big(&mut self, i: usize, v: f64) -> Option<()> {
         let data = v.to_be_bytes();
-        match (&mut self.data[i..i+8]).write(&data) {
+        match (&mut self.data[i..i + 8]).write(&data) {
             Ok(_) => Some(()),
             Err(_) => None,
         }

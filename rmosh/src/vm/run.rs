@@ -1,7 +1,7 @@
 use crate::{
     equal::Equal,
     error,
-    numbers::{div, eqv, ge, gt, le, lt, mul, SchemeError, ObjectExt},
+    numbers::{div, eqv, ge, gt, le, lt, mul, ObjectExt, SchemeError},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
