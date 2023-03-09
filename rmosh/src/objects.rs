@@ -42,6 +42,7 @@ pub enum Object {
     Flonum(Flonum),
     GenericHashtable(GcRef<GenericHashtable>),
     Instruction(Op),
+    Latin1Codec(GcRef<Latin1Codec>),
     Nil,
     ObjectPointer(*mut Object),
     Pair(GcRef<Pair>),
@@ -505,6 +506,7 @@ impl Object {
             Object::Vector(_) => todo!(),
             Object::Vox(_) => todo!(),
             Object::DefinedShared(_) => todo!(),
+            Object::Latin1Codec(_) => todo!(),
         }
     }
 }
@@ -539,6 +541,9 @@ impl Debug for Object {
             }
             Object::ContinuationStack(c) => {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
+            }
+            Object::Latin1Codec(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Ratnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
@@ -711,6 +716,9 @@ impl Display for Object {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Regexp(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }
+            Object::Latin1Codec(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Fixnum(n) => {
@@ -1986,6 +1994,27 @@ impl EqvHashtable {
 impl Display for EqvHashtable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<eqv-hashtable>")
+    }
+}
+
+/// EqvHashtable
+#[derive(Debug)]
+#[repr(C)]
+pub struct Latin1Codec {
+    pub header: GcHeader,
+}
+
+impl Latin1Codec {
+    pub fn new() -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::Latin1Codec),
+        }
+    }
+}
+
+impl Display for Latin1Codec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<latin-1-codec>")
     }
 }
 

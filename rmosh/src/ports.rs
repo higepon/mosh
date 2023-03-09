@@ -552,6 +552,7 @@ pub trait TextOutputPort: Port {
             | Object::EqvHashtable(_)
             | Object::GenericHashtable(_)
             | Object::Bignum(_)
+            | Object::Latin1Codec(_)            
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
@@ -624,6 +625,7 @@ pub trait TextOutputPort: Port {
             | Object::GenericHashtable(_)
             | Object::Bignum(_)
             | Object::Compnum(_)
+            | Object::Latin1Codec(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
             | Object::False
@@ -850,6 +852,7 @@ pub trait TextOutputPort: Port {
                 | Object::FileOutputPort(_)
                 | Object::Flonum(_)
                 | Object::Instruction(_)
+                | Object::Latin1Codec(_)
                 | Object::Nil
                 | Object::ObjectPointer(_)
                 | Object::Procedure(_)

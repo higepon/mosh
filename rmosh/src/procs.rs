@@ -15,7 +15,7 @@ use crate::{
     },
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
-        Object, Pair, SString, SimpleStruct, Symbol,
+        Object, Pair, SString, SimpleStruct, Symbol, Latin1Codec,
     },
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
@@ -2764,9 +2764,10 @@ fn transcoded_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoded-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn latin_1_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn latin_1_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "latin-1-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::Latin1Codec(vm.gc.alloc(Latin1Codec::new())))
 }
 fn utf_8_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf-8-codec";

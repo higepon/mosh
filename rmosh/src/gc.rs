@@ -87,6 +87,7 @@ pub enum ObjectType {
     EqvHashtable,
     FileInputPort,
     FileOutputPort,
+    Latin1Codec,
     GenericHashtable,
     Pair,
     Procedure,
@@ -445,6 +446,7 @@ impl Gc {
             Object::StdInputPort(_) => {}
             Object::StdOutputPort(_) => {}
             Object::StdErrorPort(_) => {}
+            Object::Latin1Codec(_) => {}
             Object::Nil => {}
             Object::Flonum(_) => {}
             Object::Fixnum(_) => {}
@@ -644,6 +646,7 @@ impl Gc {
             ObjectType::Symbol => {}
             ObjectType::Procedure => {}
             ObjectType::Ratnum => {}
+            ObjectType::Latin1Codec => {}
             ObjectType::Bignum => {}
             ObjectType::Compnum => {}
             ObjectType::ByteVector => {}
