@@ -133,7 +133,7 @@ impl Vm {
                         let p = self.gc.append2(head, self.ac);
                         self.set_return_value(p);
                     } else {
-                        self.arg_err("append", "pair", head);
+                        self.arg_err("append", "pair", head)?;
                     }
                 }
                 Op::Call => {
@@ -181,11 +181,11 @@ impl Vm {
                             self.set_return_value(pair.car);
                         }
                         obj => {
-                            self.arg_err("caar", "pair", obj);
+                            self.arg_err("caar", "pair", obj)?;
                         }
                     },
                     obj => {
-                        self.arg_err("caar", "pair", obj);
+                        self.arg_err("caar", "pair", obj)?;
                     }
                 },
                 Op::Cadr => match self.ac {
@@ -194,11 +194,11 @@ impl Vm {
                             self.set_return_value(pair.car);
                         }
                         obj => {
-                            self.arg_err("cadr", "pair", obj);
+                            self.arg_err("cadr", "pair", obj)?;
                         }
                     },
                     obj => {
-                        self.arg_err("cadr", "pair", obj);
+                        self.arg_err("cadr", "pair", obj)?;
                     }
                 },
                 Op::Car => {
@@ -210,11 +210,11 @@ impl Vm {
                             self.set_return_value(pair.cdr);
                         }
                         obj => {
-                            self.arg_err("cdar", "pair", obj);
+                            self.arg_err("cdar", "pair", obj)?;
                         }
                     },
                     obj => {
-                        self.arg_err("cdar", "pair", obj);
+                        self.arg_err("cdar", "pair", obj)?;
                     }
                 },
                 Op::Cddr => match self.ac {
@@ -223,11 +223,11 @@ impl Vm {
                             self.set_return_value(pair.cdr);
                         }
                         obj => {
-                            self.arg_err("cddr", "pair", obj);
+                            self.arg_err("cddr", "pair", obj)?;
                         }
                     },
                     obj => {
-                        self.arg_err("cddr", "pair", obj);
+                        self.arg_err("cddr", "pair", obj)?;
                     }
                 },
                 Op::Cdr => {
@@ -299,7 +299,7 @@ impl Vm {
                         self.set_return_value(vox.value);
                     }
                     obj => {
-                        self.arg_err("indirect", "vox", obj);
+                        self.arg_err("indirect", "vox", obj)?;
                     }
                 },
                 Op::Leave => {
@@ -357,7 +357,7 @@ impl Vm {
                         self.set_return_value(v);
                     }
                     obj => {
-                        self.arg_err("make-vector", "numbers", obj);
+                        self.arg_err("make-vector", "numbers", obj)?;
                     }
                 },
                 Op::Nop => {}
@@ -466,19 +466,34 @@ impl Vm {
                         }
                     }
                 }
-                Op::ReadChar => match self.ac {
-                    Object::StringInputPort(mut port) => match port.read_char() {
-                        Some(c) => {
-                            self.set_return_value(Object::Char(c));
+                Op::ReadChar => {
+                    let port = if self.ac.is_nil() {
+                        self.current_input_port
+                    } else {
+                        self.ac
+                    };
+                    match port {
+                        Object::FileInputPort(mut port) => match port.read_char() {
+                            Some(c) => {
+                                self.set_return_value(Object::Char(c));
+                            }
+                            None => {
+                                self.set_return_value(Object::Eof);
+                            }
+                        },
+                        Object::StringInputPort(mut port) => match port.read_char() {
+                            Some(c) => {
+                                self.set_return_value(Object::Char(c));
+                            }
+                            None => {
+                                self.set_return_value(Object::Eof);
+                            }
+                        },
+                        obj => {
+                            self.arg_err("read-char", "text-input-port", obj)?;
                         }
-                        None => {
-                            self.set_return_value(Object::Eof);
-                        }
-                    },
-                    obj => {
-                        self.arg_err("read-char", "text-input-port", obj);
                     }
-                },
+                }
                 Op::Reduce => todo!(),
                 Op::ReferFree => {
                     let n = self.usize_operand();
@@ -523,7 +538,7 @@ impl Vm {
                         self.set_return_value(Object::Unspecified);
                     }
                     obj => {
-                        self.arg_err("set-car!", "pair", obj);
+                        self.arg_err("set-car!", "pair", obj)?;
                     }
                 },
                 Op::SetCdr => match self.pop() {
@@ -532,7 +547,7 @@ impl Vm {
                         self.set_return_value(Object::Unspecified);
                     }
                     obj => {
-                        self.arg_err("set-cdr!", "pair", obj);
+                        self.arg_err("set-cdr!", "pair", obj)?;
                     }
                 },
                 Op::Shift => todo!(),
@@ -663,7 +678,7 @@ impl Vm {
                         self.set_return_value(Object::Fixnum(v.len() as isize));
                     }
                     obj => {
-                        self.arg_err("vector-length", "vector", obj);
+                        self.arg_err("vector-length", "vector", obj)?;
                     }
                 },
                 Op::VectorP => match self.ac {
@@ -680,7 +695,7 @@ impl Vm {
                         if idx < v.data.len() {
                             self.set_return_value(v.data[idx]);
                         } else {
-                            self.arg_err("vector-ref", "valid idx to vector", self.ac);
+                            self.arg_err("vector-ref", "valid idx to vector", self.ac)?;
                         }
                     }
                     (a, b) => {
@@ -699,7 +714,7 @@ impl Vm {
                             if idx < v.data.len() {
                                 v.data[idx] = self.ac;
                             } else {
-                                self.arg_err("vector-set", "valid idx to vector", obj);
+                                self.arg_err("vector-set", "valid idx to vector", obj)?;
                             }
                         }
                         (a, b) => {
@@ -928,7 +943,12 @@ impl Vm {
     #[cfg(not(feature = "debug_log_vm"))]
     fn print_vm(&mut self, _: Op) {}
 
-    pub(super) fn arg_err(&self, who: &str, expected: &str, actual: Object) {
-        panic!("{}: requires {} but got {}", who, expected, actual);
+    pub(super) fn arg_err(
+        &mut self,
+        who: &str,
+        expected: &str,
+        actual: Object,
+    ) -> error::Result<Object> {
+        self.call_assertion_violation_after(who, &format!("{} required", expected), actual)
     }
 }

@@ -7042,21 +7042,22 @@ fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "write-char";
     check_argc_between!(name, args, 1, 2);
     let c = as_char!(name, args, 0, &mut vm.gc);
-    if args.len() == 1 {
-        todo!();
+    let port = if args.len() == 1 {
+        vm.current_output_port()
     } else {
-        let result = match args[1] {
-            Object::FileOutputPort(mut port) => port.write_char(c),
-            Object::StdErrorPort(mut port) => port.write_char(c),
-            Object::StdOutputPort(mut port) => port.write_char(c),
-            Object::StringOutputPort(mut port) => port.write_char(c),
-            _ => panic!(),
-        };
-        match result {
-            Ok(_) => Ok(Object::Unspecified),
-            Err(_) => {
-                error::Error::assertion_violation(&mut vm.gc, name, "write-char failed", &[args[0]])
-            }
+        args[1]
+    };
+    let result = match port {
+        Object::FileOutputPort(mut port) => port.write_char(c),
+        Object::StdErrorPort(mut port) => port.write_char(c),
+        Object::StdOutputPort(mut port) => port.write_char(c),
+        Object::StringOutputPort(mut port) => port.write_char(c),
+        _ => panic!(),
+    };
+    match result {
+        Ok(_) => Ok(Object::Unspecified),
+        Err(_) => {
+            error::Error::assertion_violation(&mut vm.gc, name, "write-char failed", &[args[0]])
         }
     }
 }
