@@ -6855,9 +6855,14 @@ fn native_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     let name: &str = "native-eol-style";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_buffer_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "buffer-mode?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let _mode = as_symbol!(name, args, 0, &mut vm.gc);
+    Ok((args[0] == vm.gc.symbol_intern("none")
+        || args[0] == vm.gc.symbol_intern("line")
+        || args[0] == vm.gc.symbol_intern("block"))
+    .to_obj())
 }
 fn microseconds(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "microseconds";
