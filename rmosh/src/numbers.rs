@@ -14,29 +14,43 @@ use crate::{
 
 // GCed Object -> Object.
 pub trait GcObjectExt {
-    fn to_obj(self, gc: &mut Box<Gc>) -> Object;
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object;
 }
 
 // BigInt => Fixnum or Bignum.
 impl GcObjectExt for BigInt {
-    fn to_obj(self, gc: &mut Box<Gc>) -> Object {
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
         match self.to_isize() {
             Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(self))),
+            None => Object::Bignum(gc.alloc(Bignum::new(self.clone()))),
         }
     }
 }
 
 // BigRational => Fixnum, Bignum or Ratnum.
 impl GcObjectExt for BigRational {
-    fn to_obj(self, gc: &mut Box<Gc>) -> Object {
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
         if self.is_integer() {
             match self.to_isize() {
                 Some(v) => Object::Fixnum(v),
                 None => self.numer().clone().to_obj(gc),
             }
         } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self)))
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.clone())))
+        }
+    }
+}
+
+// u64 => Fixnum or Bignum
+impl GcObjectExt for u64 {
+    #[inline(always)]
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
+        match isize::from_u64(*self) {
+            Some(v) => v.to_obj(),
+            None => {
+                let b = BigInt::from_u64(*self).unwrap();
+                b.to_obj(gc)
+            }
         }
     }
 }

@@ -2685,24 +2685,6 @@ fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<O
 fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u8-set!";
     check_argc!(name, args, 3);
-    if !args[1].is_fixnum() {
-        println!("{}", args[1].obj_type());
-    }
-    println!(
-        "{} {} {} {} {} {} {}",
-        args[0].is_bytevector(),
-        args[0].to_bytevector().len(),
-        args[1].is_fixnum(),
-        (args[1].to_isize() as usize) < args[0].to_bytevector().len(),
-        if args[2].is_fixnum() {
-            3
-        } else {
-            args[2].obj_type();
-            4
-        },
-        args[2].to_isize() >= 0,
-        args[2].to_isize() <= 255
-    );
     match (args[0], args[1], args[2]) {
         (Object::Bytevector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
             if (index as usize) < bv.len() && v >= 0 && v <= 255 =>
@@ -4429,9 +4411,9 @@ fn bytevector_u16_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Re
     check_argc!(name, args, 4);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
-    let value = as_isize!(name, args, 1, &mut vm.gc) as u16;
-    let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
-    let ret = if args[2] == vm.gc.symbol_intern("little") {
+    let value = as_isize!(name, args, 2, &mut vm.gc) as u16;
+    let _endianness = as_symbol!(name, args, 3, &mut vm.gc);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
         bv.set_u16_little(index, value)
     } else {
         bv.set_u16_big(index, value)
@@ -4455,7 +4437,7 @@ fn bytevector_u16_native_set_destructive(
     check_argc!(name, args, 3);
     let mut bv = as_bytevector!(name, args, 0, &mut vm.gc);
     let index = as_usize!(name, args, 1, &mut vm.gc);
-    let value = as_isize!(name, args, 1, &mut vm.gc) as u16;
+    let value = as_isize!(name, args, 2, &mut vm.gc) as u16;
     let ret = if cfg!(target_endian = "big") {
         bv.set_u16_big(index, value)
     } else {
@@ -4548,12 +4530,12 @@ fn bytevector_u64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let index = as_usize!(name, args, 1, &mut vm.gc);
     let _endianness = as_symbol!(name, args, 2, &mut vm.gc);
     let ret = if args[2] == vm.gc.symbol_intern("little") {
-        bv.ref_s64_little(index)
+        bv.ref_u64_little(index)
     } else {
-        bv.ref_s64_big(index)
+        bv.ref_u64_big(index)
     };
     match ret {
-        Some(v) => Ok(Object::Fixnum(v as isize)),
+        Some(v) => Ok(v.to_obj(&mut vm.gc)),
         None => {
             error::Error::assertion_violation(&mut vm.gc, name, "index out of range", &[args[1]])
         }
@@ -4753,7 +4735,7 @@ fn utf16_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     }
 
-    let endianness_mandatory = (args.len() == 3 && !args[2].is_false());
+    let endianness_mandatory = args.len() == 3 && !args[2].is_false();
     if endianness_mandatory || endianness == BomType::No {
         let _endianness_sym = as_symbol!(name, args, 1, &mut vm.gc);
         if args[1] == vm.gc.symbol_intern("little") {
@@ -4808,7 +4790,7 @@ fn utf32_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     }
 
-    let endianness_mandatory = (args.len() == 3 && !args[2].is_false());
+    let endianness_mandatory = args.len() == 3 && !args[2].is_false();
     if endianness_mandatory || endianness == BomType::No {
         let _endianness_sym = as_symbol!(name, args, 1, &mut vm.gc);
         if args[1] == vm.gc.symbol_intern("little") {
@@ -4830,10 +4812,10 @@ fn utf32_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut s = String::new();
     let mut i = 0;
     loop {
-        if i + 4 >= bv.len() {
+        if i + 4 >= data.len() {
             break;
         }
-        let bytes = &bv.data[i..i + 4];
+        let bytes = &data[i..i + 4];
         let mut value: u32 = match is_little {
             true => LittleEndian::read_u32(bytes),
             false => BigEndian::read_u32(bytes),
