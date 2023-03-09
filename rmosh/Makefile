@@ -40,13 +40,13 @@ r6rs-passed:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/arithmetic/flonums.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/arithmetic/bitwise.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/hashtables.sps --loadpath=../tests/r6rs-test-suite/
+	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/bytevectors.sps --loadpath=../tests/r6rs-test-suite/
 	
 r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run-via-eval.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/simple.sps --loadpath=../tests/r6rs-test-suite/	
 
-	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/bytevectors.sps --loadpath=../tests/r6rs-test-suite/
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm
