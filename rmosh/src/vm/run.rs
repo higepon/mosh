@@ -34,7 +34,9 @@ macro_rules! raise_or_exit {
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => $self.implementation_restriction_violation_after(&who, &message, &irritants[..])?,
+            }) => {
+                $self.implementation_restriction_violation_after(&who, &message, &irritants[..])?
+            }
             Err(error::Error {
                 error_type: error::ErrorType::IoDecodingError,
                 who: _who,
@@ -446,7 +448,11 @@ impl Vm {
 
                         Err(SchemeError::Div0) => {
                             let irritants = self.gc.list2(n, d);
-                            self.call_assertion_violation_after("/", "divsion by zero", &[irritants])?;
+                            self.call_assertion_violation_after(
+                                "/",
+                                "divsion by zero",
+                                &[irritants],
+                            )?;
                         }
                         _ => panic!(),
                     }

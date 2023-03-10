@@ -128,7 +128,11 @@ impl Vm {
             Some(closure) => self.set_after_trigger3(*closure, who, message, irritants),
             None => {
                 eprintln!("Warning:The underlying exception is not ready to use");
-                error::Error::assertion_violation(&who.to_string(), &message.to_string(), &[irritants])
+                error::Error::assertion_violation(
+                    &who.to_string(),
+                    &message.to_string(),
+                    &[irritants],
+                )
             }
         }
     }
