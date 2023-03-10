@@ -1377,6 +1377,16 @@ impl Display for BinaryFileOutputPort {
 }
 
 /// Codec
+pub trait Codec {
+    fn read_char(
+        &self,
+        port: &mut dyn BinaryInputPort,
+        mode: ErrorHandlingMode,
+        should_check_bom: bool,
+    ) -> error::Result<Option<char>>;
+}
+
+/// Latin1Codec
 #[derive(Debug)]
 #[repr(C)]
 pub struct Latin1Codec {
@@ -1389,8 +1399,10 @@ impl Latin1Codec {
             header: GcHeader::new(ObjectType::Latin1Codec),
         }
     }
+}
 
-    pub fn read_char(
+impl Codec for Latin1Codec {
+    fn read_char(
         &self,
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
@@ -1502,14 +1514,14 @@ impl Transcoder {
     }
 
     fn read_char_raw(&mut self, port: &mut dyn BinaryInputPort) -> error::Result<Option<char>> {
+        let codec = self.codec.to_latin1_codec();
+        let codec: &dyn Codec = unsafe { codec.pointer.as_ref() };
         // In the beginning of input, we have to check the BOM.
         if self.is_beginning {
             self.is_beginning = false;
-            self.codec.to_latin1_code().read_char(port, self.mode, true)
+            codec.read_char(port, self.mode, true)
         } else if self.buffer.is_empty() {
-            self.codec
-                .to_latin1_code()
-                .read_char(port, self.mode, false)
+            codec.read_char(port, self.mode, false)
         } else {
             Ok(self.buffer.pop())
         }

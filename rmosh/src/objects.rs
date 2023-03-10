@@ -318,7 +318,7 @@ impl Object {
             panic!("Not a Object::Transcoder")
         }
     }
-    pub fn to_latin1_code(self) -> GcRef<Latin1Codec> {
+    pub fn to_latin1_codec(self) -> GcRef<Latin1Codec> {
         if let Self::Latin1Codec(b) = self {
             b
         } else {
