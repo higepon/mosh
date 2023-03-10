@@ -1534,7 +1534,7 @@ impl Transcoder {
         }
     }
 
-    fn unget_char(&mut self, ch: Option<char>) {
+    fn unget_char(&mut self, _ch: Option<char>) {
         todo!()
     }
 }
