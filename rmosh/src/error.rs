@@ -61,13 +61,13 @@ impl Error {
     pub fn io_decoding_error(
         who: &str,
         message: &str,
-        irritants: &[Object],
+        port: &[Object],
     ) -> Result<Option<char>> {
         Err(Self::new(
             ErrorType::IoDecodingError,
             who,
             message,
-            irritants,
+            port,
         ))
     }
 }

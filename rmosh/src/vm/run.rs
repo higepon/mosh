@@ -39,12 +39,11 @@ macro_rules! raise_or_exit {
             }
             Err(error::Error {
                 error_type: error::ErrorType::IoDecodingError,
-                who: _who,
-                message: _message,
-                irritants: _irritants,
+                who: who,
+                message: message,
+                irritants: irritants,
             }) => {
-                panic!("various error");
-                //$self.call_assertion_violation_after(&who, &message, &irritants[..])?
+                $self.call_io_decoding_error_after(&who, &message, &irritants[..])?
             }
             Err(error::Error {
                 error_type: error::ErrorType::IoError,

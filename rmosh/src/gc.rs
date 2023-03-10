@@ -88,6 +88,7 @@ pub enum ObjectType {
     FileInputPort,
     FileOutputPort,
     Latin1Codec,
+    UTF8Codec,
     GenericHashtable,
     Pair,
     Procedure,
@@ -448,6 +449,7 @@ impl Gc {
             Object::StdOutputPort(_) => {}
             Object::StdErrorPort(_) => {}
             Object::Latin1Codec(_) => {}
+            Object::UTF8Codec(_) => {}
             Object::Transcoder(_) => {}
             Object::Nil => {}
             Object::Flonum(_) => {}
@@ -649,6 +651,7 @@ impl Gc {
             ObjectType::Procedure => {}
             ObjectType::Ratnum => {}
             ObjectType::Latin1Codec => {}
+            ObjectType::UTF8Codec => {}
             ObjectType::Transcoder => {
                 let t: &Transcoder = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(t.codec);

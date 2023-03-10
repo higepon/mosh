@@ -21,7 +21,7 @@ use crate::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileInputPort,
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
-        TextInputPort, TextOutputPort, Transcoder,
+        TextInputPort, TextOutputPort, Transcoder, UTF8Codec,
     },
     vm::Vm,
 };
@@ -2727,9 +2727,10 @@ fn latin_1_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 0);
     Ok(Object::Latin1Codec(vm.gc.alloc(Latin1Codec::new())))
 }
-fn utf_8_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn utf_8_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf-8-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::UTF8Codec(vm.gc.alloc(UTF8Codec::new())))
 }
 fn utf_16_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf-16-codec";
