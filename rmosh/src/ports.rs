@@ -1392,7 +1392,6 @@ impl Latin1Codec {
 
     pub fn read_char(
         &self,
-        gc: &mut Box<Gc>,
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
         _should_check_bom: bool,
@@ -1407,7 +1406,6 @@ impl Latin1Codec {
                     }
                     ErrorHandlingMode::RaiseError => {
                         return error::Error::io_decoding_error(
-                            gc,
                             "latin-1-code",
                             "invalid latin-1 byte sequence",
                             &[],
@@ -1470,14 +1468,10 @@ impl Transcoder {
         }
     }
 
-    pub fn read_string(
-        &mut self,
-        gc: &mut Box<Gc>,
-        port: &mut dyn BinaryInputPort,
-    ) -> error::Result<String> {
+    pub fn read_string(&mut self, port: &mut dyn BinaryInputPort) -> error::Result<String> {
         let mut s = String::new();
         loop {
-            let ch = self.read_char(gc, port)?;
+            let ch = self.read_char(port)?;
             match ch {
                 Some(ch) => {
                     s.push(ch);
@@ -1490,12 +1484,8 @@ impl Transcoder {
     }
 
     // TODO: remove GC. this is not a good design.
-    pub fn read_char(
-        &mut self,
-        gc: &mut Box<Gc>,
-        port: &mut dyn BinaryInputPort,
-    ) -> error::Result<Option<char>> {
-        let ch = self.read_char_raw(gc, port)?;
+    pub fn read_char(&mut self, port: &mut dyn BinaryInputPort) -> error::Result<Option<char>> {
+        let ch = self.read_char_raw(port)?;
 
         match ch {
             Some(ch) => {
@@ -1514,7 +1504,7 @@ impl Transcoder {
                 return Ok(Some(char::LF));
             }
             Some(char::CR) => {
-                let ch2 = self.read_char_raw(gc, port)?;
+                let ch2 = self.read_char_raw(port)?;
                 self.lineno += 1;
                 match ch2 {
                     Some(char::LF) | Some(char::NEL) => {
@@ -1530,21 +1520,15 @@ impl Transcoder {
         }
     }
 
-    fn read_char_raw(
-        &mut self,
-        gc: &mut Box<Gc>,
-        port: &mut dyn BinaryInputPort,
-    ) -> error::Result<Option<char>> {
+    fn read_char_raw(&mut self, port: &mut dyn BinaryInputPort) -> error::Result<Option<char>> {
         // In the beginning of input, we have to check the BOM.
         if self.is_beginning {
             self.is_beginning = false;
-            self.codec
-                .to_latin1_code()
-                .read_char(gc, port, self.mode, true)
+            self.codec.to_latin1_code().read_char(port, self.mode, true)
         } else if self.buffer.is_empty() {
             self.codec
                 .to_latin1_code()
-                .read_char(gc, port, self.mode, false)
+                .read_char(port, self.mode, false)
         } else {
             Ok(self.buffer.pop())
         }

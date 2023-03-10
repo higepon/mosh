@@ -22,36 +22,36 @@ macro_rules! raise_or_exit {
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => $self.call_assertion_violation_obj_after(who, message, irritants)?,
+            }) => $self.call_assertion_violation_after(&who, &message, &irritants[..])?,
             Err(error::Error {
                 error_type: error::ErrorType::Error,
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => $self.call_error_obj_after(who, message, irritants)?,
+            }) => $self.call_error_after(&who, &message, &irritants[..])?,
             Err(error::Error {
                 error_type: error::ErrorType::ImplementationRestrictionViolation,
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => $self.implementation_restriction_violation_obj_after(who, message, irritants)?,
+            }) => $self.implementation_restriction_violation_after(&who, &message, &irritants[..])?,
             Err(error::Error {
                 error_type: error::ErrorType::IoDecodingError,
-                who: who,
-                message: message,
-                irritants: irritants,
+                who: _who,
+                message: _message,
+                irritants: _irritants,
             }) => {
                 panic!("various error");
-                $self.call_assertion_violation_obj_after(who, message, irritants)?
-            }            
+                //$self.call_assertion_violation_after(&who, &message, &irritants[..])?
+            }
             Err(error::Error {
                 error_type: error::ErrorType::IoError,
-                who: who,
-                message: message,
-                irritants: irritants,
+                who: _who,
+                message: _message,
+                irritants: _irritants,
             }) => {
                 panic!("various error");
-                $self.call_assertion_violation_obj_after(who, message, irritants)?
+                //$self.call_assertion_violation_after(&who, &message, &irritants[..])?
             }
         };
     }};
@@ -446,7 +446,7 @@ impl Vm {
 
                         Err(SchemeError::Div0) => {
                             let irritants = self.gc.list2(n, d);
-                            self.call_assertion_violation_after("/", "divsion by zero", irritants)?;
+                            self.call_assertion_violation_after("/", "divsion by zero", &[irritants])?;
                         }
                         _ => panic!(),
                     }
@@ -476,11 +476,11 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.call_read_error_after("read", &format!("{:?}", err), port)?;
+                                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
                             }
                         },
                         _ => {
-                            self.call_read_error_after("read", "input port required", port)?;
+                            self.call_read_error_after("read", "input port required", &[port])?;
                         }
                     }
                 }
@@ -967,6 +967,6 @@ impl Vm {
         expected: &str,
         actual: Object,
     ) -> error::Result<Object> {
-        self.call_assertion_violation_after(who, &format!("{} required", expected), actual)
+        self.call_assertion_violation_after(who, &format!("{} required", expected), &[actual])
     }
 }

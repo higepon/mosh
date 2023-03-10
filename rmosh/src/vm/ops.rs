@@ -84,7 +84,7 @@ impl Vm {
                 self.set_return_value(pair.car);
                 Ok(Object::Unspecified)
             }
-            obj => self.call_assertion_violation_after("car", "pair required", obj),
+            obj => self.call_assertion_violation_after("car", "pair required", &[obj]),
         }
     }
 
@@ -92,10 +92,11 @@ impl Vm {
         &mut self,
         who: &str,
         message: &str,
-        irritants: Object,
+        irritants: &[Object],
     ) -> error::Result<Object> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
@@ -108,21 +109,27 @@ impl Vm {
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
-    pub(super) fn call_error_obj_after(
+    pub(super) fn call_error_after(
         &mut self,
-        who: Object,
-        message: Object,
-        irritants: Object,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
     ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
         self.raise_after3("error", who, message, irritants)
     }
 
-    pub(super) fn implementation_restriction_violation_obj_after(
+    pub(super) fn implementation_restriction_violation_after(
         &mut self,
-        who: Object,
-        message: Object,
-        irritants: Object,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
     ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
         self.raise_after3(
             "implementation-restriction-violation",
             who,
@@ -135,10 +142,11 @@ impl Vm {
         &mut self,
         who: &str,
         message: &str,
-        irritants: Object,
+        irritants: &[Object],
     ) -> error::Result<Object> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
         self.raise_after3("raise-i/o-read-error", who, message, irritants)
     }
 
@@ -169,7 +177,7 @@ impl Vm {
             }
             _ => {
                 let irritatns = self.gc.list1(self.ac);
-                self.call_assertion_violation_after("cdr", "pair required", irritatns)
+                self.call_assertion_violation_after("cdr", "pair required", &[irritatns])
             }
         }
     }
@@ -226,7 +234,7 @@ impl Vm {
                             self.call_assertion_violation_after(
                                 "apply",
                                 "need two or more arguments but only 1 argument",
-                                Object::Nil,
+                                &[],
                             )?;
                             return Ok(Object::Unspecified);
                         }
@@ -241,7 +249,7 @@ impl Vm {
                                     self.call_assertion_violation_after(
                                         "apply",
                                         "last arguments shoulbe proper list but got",
-                                        last_pair,
+                                        &[last_pair],
                                     )?;
                                     return Ok(Object::Unspecified);
                                 }
