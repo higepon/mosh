@@ -5,8 +5,8 @@ use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
-    FileInputPort, FileOutputPort, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
-    StringOutputPort, TextOutputPort, Transcoder, Latin1Codec
+    FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
+    StringInputPort, StringOutputPort, TextOutputPort, Transcoder,
 };
 use crate::vm::Vm;
 
@@ -122,7 +122,7 @@ impl Object {
             Object::Transcoder(_) => true,
             _ => false,
         }
-    }    
+    }
 
     pub fn is_vox(&self) -> bool {
         match self {
@@ -316,6 +316,13 @@ impl Object {
             b
         } else {
             panic!("Not a Object::Transcoder")
+        }
+    }
+    pub fn to_latin1_code(self) -> GcRef<Latin1Codec> {
+        if let Self::Latin1Codec(b) = self {
+            b
+        } else {
+            panic!("Not a Object::Latin1Code")
         }
     }    
     pub fn to_compnum(self) -> GcRef<Compnum> {
@@ -1207,6 +1214,21 @@ impl Display for SimpleStruct {
         }
         write!(f, ">")
     }
+}
+
+/// Char
+pub trait CharExt {
+    const CR: char;
+    const LF: char;
+    const NEL: char;
+    const LS: char;
+}
+
+impl CharExt for char {
+    const CR: char = '\x0d';
+    const LF: char = '\x0a';
+    const NEL: char = '\u{85}';
+    const LS: char = '\u{2028}';
 }
 
 /// Cons cell

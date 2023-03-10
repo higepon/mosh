@@ -7,10 +7,11 @@ use std::{
     io::{self, Read},
 };
 
+use crate::error;
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
-    objects::{Object, Pair, SimpleStruct, Vector},
+    objects::{CharExt, Object, Pair, SimpleStruct, Vector},
     reader::DatumParser,
     reader_util::ReadError,
 };
@@ -970,6 +971,16 @@ pub trait TextOutputPort: Port {
 // Trait for Port.
 pub trait BinaryInputPort {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>;
+
+    fn read_u8(&mut self) -> io::Result<Option<u8>> {
+        let mut buf = [0; 1];
+        let size = self.read(&mut buf)?;
+        if size == 1 {
+            Ok(Some(buf[0]))
+        } else {
+            Ok(None)
+        }
+    }
 }
 
 // BytevectorInputPort
@@ -1378,6 +1389,53 @@ impl Latin1Codec {
             header: GcHeader::new(ObjectType::Latin1Codec),
         }
     }
+
+    pub fn read_char(
+        &self,
+        gc: &mut Box<Gc>,
+        port: &mut dyn BinaryInputPort,
+        mode: ErrorHandlingMode,
+        _should_check_bom: bool,
+    ) -> error::Result<Option<char>> {
+        loop {
+            match port.read_u8() {
+                Ok(Some(u)) => return Ok(Some(u as char)),
+                Ok(None) => return Ok(None),
+                Err(_) => match mode {
+                    ErrorHandlingMode::IgnoreError => {
+                        continue;
+                    }
+                    ErrorHandlingMode::RaiseError => {
+                        return error::Error::io_decoding_error(
+                            gc,
+                            "latin-1-code",
+                            "invalid latin-1 byte sequence",
+                            &[],
+                        )
+                    }
+                    ErrorHandlingMode::ReplaceError => return Ok(Some('\u{FFFD}')),
+                },
+            }
+        }
+        /*
+        retry:
+            const int f = port->getU8();
+            if (f == EOF) return EOF;
+            if (f <= 0xff) {
+                return (ucs4char)f;
+             } else {
+                if (mode == ErrorHandlingMode(RAISE_ERROR)) {
+                    throwIOError2(IOError::DECODE, UC("invalid latin-1 byte sequence"));
+                } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
+                    return 0xFFFD;
+                } else {
+                    MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));
+                    goto retry;
+                }
+            }
+            return ' ';
+         */
+    }
 }
 
 impl Display for Latin1Codec {
@@ -1394,6 +1452,9 @@ pub struct Transcoder {
     pub codec: Object,
     eol_style: EolStyle,
     mode: ErrorHandlingMode,
+    lineno: usize,
+    is_beginning: bool,
+    buffer: Vec<char>,
 }
 
 impl Transcoder {
@@ -1403,7 +1464,94 @@ impl Transcoder {
             codec: codec,
             eol_style: eol_style,
             mode: mode,
+            lineno: 1,
+            is_beginning: true,
+            buffer: vec![],
         }
+    }
+
+    pub fn read_string(
+        &mut self,
+        gc: &mut Box<Gc>,
+        port: &mut dyn BinaryInputPort,
+    ) -> error::Result<String> {
+        let mut s = String::new();
+        loop {
+            let ch = self.read_char(gc, port)?;
+            match ch {
+                Some(ch) => {
+                    s.push(ch);
+                }
+                // EOF.
+                None => break,
+            }
+        }
+        Ok(s)
+    }
+
+    // TODO: remove GC. this is not a good design.
+    pub fn read_char(
+        &mut self,
+        gc: &mut Box<Gc>,
+        port: &mut dyn BinaryInputPort,
+    ) -> error::Result<Option<char>> {
+        let ch = self.read_char_raw(gc, port)?;
+
+        match ch {
+            Some(ch) => {
+                if self.eol_style == EolStyle::ENone {
+                    if ch == char::LF {
+                        self.lineno += 1;
+                    }
+                    return Ok(Some(ch));
+                }
+            }
+            _ => {}
+        }
+        match ch {
+            Some(char::LF) | Some(char::NEL) | Some(char::LS) => {
+                self.lineno += 1;
+                return Ok(Some(char::LF));
+            }
+            Some(char::CR) => {
+                let ch2 = self.read_char_raw(gc, port)?;
+                self.lineno += 1;
+                match ch2 {
+                    Some(char::LF) | Some(char::NEL) => {
+                        return Ok(Some(char::LF));
+                    }
+                    _ => {
+                        self.unget_char(ch2);
+                        Ok(Some(char::LF))
+                    }
+                }
+            }
+            _ => Ok(ch),
+        }
+    }
+
+    fn read_char_raw(
+        &mut self,
+        gc: &mut Box<Gc>,
+        port: &mut dyn BinaryInputPort,
+    ) -> error::Result<Option<char>> {
+        // In the beginning of input, we have to check the BOM.
+        if self.is_beginning {
+            self.is_beginning = false;
+            self.codec
+                .to_latin1_code()
+                .read_char(gc, port, self.mode, true)
+        } else if self.buffer.is_empty() {
+            self.codec
+                .to_latin1_code()
+                .read_char(gc, port, self.mode, false)
+        } else {
+            Ok(self.buffer.pop())
+        }
+    }
+
+    fn unget_char(&mut self, ch: Option<char>) {
+        todo!()
     }
 }
 
@@ -1413,7 +1561,7 @@ impl Display for Transcoder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum EolStyle {
     Lf,
     Cr,
@@ -1424,7 +1572,7 @@ pub enum EolStyle {
     ENone,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum ErrorHandlingMode {
     IgnoreError,
     RaiseError,

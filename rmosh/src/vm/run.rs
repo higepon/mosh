@@ -35,6 +35,24 @@ macro_rules! raise_or_exit {
                 message: message,
                 irritants: irritants,
             }) => $self.implementation_restriction_violation_obj_after(who, message, irritants)?,
+            Err(error::Error {
+                error_type: error::ErrorType::IoDecodingError,
+                who: who,
+                message: message,
+                irritants: irritants,
+            }) => {
+                panic!("various error");
+                $self.call_assertion_violation_obj_after(who, message, irritants)?
+            }            
+            Err(error::Error {
+                error_type: error::ErrorType::IoError,
+                who: who,
+                message: message,
+                irritants: irritants,
+            }) => {
+                panic!("various error");
+                $self.call_assertion_violation_obj_after(who, message, irritants)?
+            }
         };
     }};
 }

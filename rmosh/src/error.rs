@@ -11,6 +11,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum ErrorType {
     AssertionViolation,
     ImplementationRestrictionViolation,
+    IoError,
+    IoDecodingError,
     Error,
 }
 
@@ -75,6 +77,23 @@ impl Error {
             message,
             irritants,
         )
+    }
+
+    pub fn io_decoding_error(
+        gc: &mut Box<Gc>,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> Result<Option<char>> {
+        let who = gc.new_string(who);
+        let message = gc.new_string(message);
+        let irritants = gc.listn(irritants);
+        Err(Self {
+            error_type: ErrorType::IoDecodingError,
+            who: who,
+            message: message,
+            irritants: irritants,
+        })
     }
 
     fn new_err(

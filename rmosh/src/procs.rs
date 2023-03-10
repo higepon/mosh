@@ -4627,9 +4627,12 @@ fn bytevector_s64_native_set_destructive(
 fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector->string";
     let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    let transcoder = as_transcoder!(name, args, 1, &mut vm.gc);
+    let mut transcoder = as_transcoder!(name, args, 1, &mut vm.gc);
 
-    panic!("{}({}) not implemented", name, args.len());
+    let mut port = BytevectorInputPort::new(&bv.data);
+    let port: &mut dyn BinaryInputPort = &mut port;
+    let s = &transcoder.read_string(&mut vm.gc, port)?;
+    Ok(vm.gc.new_string(s))
 }
 fn string_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->bytevector";
