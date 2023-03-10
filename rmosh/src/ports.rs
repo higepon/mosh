@@ -1465,7 +1465,6 @@ impl Transcoder {
         Ok(s)
     }
 
-    // TODO: remove GC. this is not a good design.
     pub fn read_char(&mut self, port: &mut dyn BinaryInputPort) -> error::Result<Option<char>> {
         let ch = self.read_char_raw(port)?;
 
