@@ -58,17 +58,8 @@ impl Error {
         ))
     }
 
-    pub fn io_decoding_error(
-        who: &str,
-        message: &str,
-        port: &[Object],
-    ) -> Result<Option<char>> {
-        Err(Self::new(
-            ErrorType::IoDecodingError,
-            who,
-            message,
-            port,
-        ))
+    pub fn io_decoding_error(who: &str, message: &str, port: &[Object]) -> Result<Option<char>> {
+        Err(Self::new(ErrorType::IoDecodingError, who, message, port))
     }
 }
 

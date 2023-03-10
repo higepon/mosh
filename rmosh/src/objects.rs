@@ -332,7 +332,7 @@ impl Object {
         } else {
             panic!("Not a Object::UTF8Codec")
         }
-    }    
+    }
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
@@ -579,7 +579,7 @@ impl Debug for Object {
             }
             Object::UTF8Codec(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
-            }            
+            }
             Object::Transcoder(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -761,7 +761,7 @@ impl Display for Object {
             }
             Object::UTF8Codec(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
-            }            
+            }
             Object::Transcoder(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }

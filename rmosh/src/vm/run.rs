@@ -42,9 +42,7 @@ macro_rules! raise_or_exit {
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => {
-                $self.call_io_decoding_error_after(&who, &message, &irritants[..])?
-            }
+            }) => $self.call_io_decoding_error_after(&who, &message, &irritants[..])?,
             Err(error::Error {
                 error_type: error::ErrorType::IoError,
                 who: _who,

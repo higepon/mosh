@@ -1485,7 +1485,7 @@ impl Codec for UTF8Codec {
                                     None => return self.decoding_error(),
                                 }
                             } else {
-                                return self.decoding_error()
+                                return self.decoding_error();
                             }
                         }
                         Ok(None) | Err(_) => return self.decoding_error(),
@@ -1542,7 +1542,7 @@ impl Codec for UTF8Codec {
                 }
             }
             Ok(None) => Ok(None),
-            Err(_) => return self.decoding_error()
+            Err(_) => return self.decoding_error(),
         }
     }
 }
