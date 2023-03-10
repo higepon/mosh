@@ -1415,24 +1415,6 @@ impl Latin1Codec {
                 },
             }
         }
-        /*
-        retry:
-            const int f = port->getU8();
-            if (f == EOF) return EOF;
-            if (f <= 0xff) {
-                return (ucs4char)f;
-             } else {
-                if (mode == ErrorHandlingMode(RAISE_ERROR)) {
-                    throwIOError2(IOError::DECODE, UC("invalid latin-1 byte sequence"));
-                } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
-                    return 0xFFFD;
-                } else {
-                    MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));
-                    goto retry;
-                }
-            }
-            return ' ';
-         */
     }
 }
 
