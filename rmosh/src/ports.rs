@@ -552,7 +552,8 @@ pub trait TextOutputPort: Port {
             | Object::EqvHashtable(_)
             | Object::GenericHashtable(_)
             | Object::Bignum(_)
-            | Object::Latin1Codec(_)            
+            | Object::Latin1Codec(_)
+            | Object::Transcoder(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
@@ -626,6 +627,7 @@ pub trait TextOutputPort: Port {
             | Object::Bignum(_)
             | Object::Compnum(_)
             | Object::Latin1Codec(_)
+            | Object::Transcoder(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
             | Object::False
@@ -853,6 +855,7 @@ pub trait TextOutputPort: Port {
                 | Object::Flonum(_)
                 | Object::Instruction(_)
                 | Object::Latin1Codec(_)
+                | Object::Transcoder(_)
                 | Object::Nil
                 | Object::ObjectPointer(_)
                 | Object::Procedure(_)
@@ -1360,4 +1363,70 @@ impl Display for BinaryFileOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<binary-file-output-port>")
     }
+}
+
+/// Codec
+#[derive(Debug)]
+#[repr(C)]
+pub struct Latin1Codec {
+    pub header: GcHeader,
+}
+
+impl Latin1Codec {
+    pub fn new() -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::Latin1Codec),
+        }
+    }
+}
+
+impl Display for Latin1Codec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<latin-1-codec>")
+    }
+}
+
+/// Transcoder
+#[derive(Debug)]
+#[repr(C)]
+pub struct Transcoder {
+    pub header: GcHeader,
+    pub codec: Object,
+    eol_style: EolStyle,
+    mode: ErrorHandlingMode,
+}
+
+impl Transcoder {
+    pub fn new(codec: Object, eol_style: EolStyle, mode: ErrorHandlingMode) -> Self {
+        Self {
+            header: GcHeader::new(ObjectType::Transcoder),
+            codec: codec,
+            eol_style: eol_style,
+            mode: mode,
+        }
+    }
+}
+
+impl Display for Transcoder {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<transcoder>")
+    }
+}
+
+#[derive(Debug)]
+pub enum EolStyle {
+    Lf,
+    Cr,
+    Nel,
+    Ls,
+    CrNel,
+    CrLf,
+    ENone,
+}
+
+#[derive(Debug)]
+pub enum ErrorHandlingMode {
+    IgnoreError,
+    RaiseError,
+    ReplaceError,
 }

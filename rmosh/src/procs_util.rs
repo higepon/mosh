@@ -113,3 +113,14 @@ macro_rules! as_u8 {
         }
     }};
 }
+
+#[macro_export]
+macro_rules! as_transcoder {
+    ($name:ident, $args:ident, $i:expr, $gc:expr) => {{
+        let o = $args[$i];
+        if !o.is_transcoder() {
+            return error::Error::assertion_violation($gc, $name, "transcoder required", &[o]);
+        }
+        o.to_transcoder()
+    }};
+}

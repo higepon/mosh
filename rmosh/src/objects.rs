@@ -6,7 +6,7 @@ use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
     FileInputPort, FileOutputPort, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
-    StringOutputPort, TextOutputPort,
+    StringOutputPort, TextOutputPort, Transcoder, Latin1Codec
 };
 use crate::vm::Vm;
 
@@ -58,6 +58,7 @@ pub enum Object {
     StringInputPort(GcRef<StringInputPort>),
     StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
+    Transcoder(GcRef<Transcoder>),
     True,
     Unspecified,
     Vector(GcRef<Vector>),
@@ -115,6 +116,13 @@ impl Object {
             _ => false,
         }
     }
+
+    pub fn is_transcoder(&self) -> bool {
+        match self {
+            Object::Transcoder(_) => true,
+            _ => false,
+        }
+    }    
 
     pub fn is_vox(&self) -> bool {
         match self {
@@ -303,6 +311,13 @@ impl Object {
             panic!("Not a Object::Bignum")
         }
     }
+    pub fn to_transcoder(self) -> GcRef<Transcoder> {
+        if let Self::Transcoder(b) = self {
+            b
+        } else {
+            panic!("Not a Object::Transcoder")
+        }
+    }    
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
@@ -507,6 +522,7 @@ impl Object {
             Object::Vox(_) => todo!(),
             Object::DefinedShared(_) => todo!(),
             Object::Latin1Codec(_) => todo!(),
+            Object::Transcoder(_) => todo!(),
         }
     }
 }
@@ -543,6 +559,9 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { c.pointer.as_ref() })
             }
             Object::Latin1Codec(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::Transcoder(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Ratnum(n) => {
@@ -719,6 +738,9 @@ impl Display for Object {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Latin1Codec(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }
+            Object::Transcoder(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Fixnum(n) => {
@@ -1994,27 +2016,6 @@ impl EqvHashtable {
 impl Display for EqvHashtable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<eqv-hashtable>")
-    }
-}
-
-/// EqvHashtable
-#[derive(Debug)]
-#[repr(C)]
-pub struct Latin1Codec {
-    pub header: GcHeader,
-}
-
-impl Latin1Codec {
-    pub fn new() -> Self {
-        Self {
-            header: GcHeader::new(ObjectType::Latin1Codec),
-        }
-    }
-}
-
-impl Display for Latin1Codec {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<latin-1-codec>")
     }
 }
 

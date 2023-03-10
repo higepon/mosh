@@ -1,8 +1,8 @@
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_sstring, as_symbol, as_u8,
-    as_usize,
+    as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_sstring, as_symbol,
+    as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error},
     fasl::{FaslReader, FaslWriter},
@@ -15,12 +15,12 @@ use crate::{
     },
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
-        Object, Pair, SString, SimpleStruct, Symbol, Latin1Codec,
+        Object, Pair, SString, SimpleStruct, Symbol,
     },
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, OutputPort, Port,
-        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
+        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort, Latin1Codec, EolStyle, ErrorHandlingMode, Transcoder,
     },
     vm::Vm,
 };
@@ -2777,9 +2777,19 @@ fn utf_16_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf-16-codec";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_transcoder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-transcoder";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 3);
+    let codec = args[0];
+    if args.len() == 1 {
+        Ok(Object::Transcoder(vm.gc.alloc(Transcoder::new(
+            codec,
+            EolStyle::Lf,
+            ErrorHandlingMode::ReplaceError,
+        ))))
+    } else {
+        panic!();
+    }
 }
 fn eof_object(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eof-object";
@@ -4614,8 +4624,11 @@ fn bytevector_s64_native_set_destructive(
     let name: &str = "bytevector-s64-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector->string";
+    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
+    let transcoder = as_transcoder!(name, args, 1, &mut vm.gc);
+
     panic!("{}({}) not implemented", name, args.len());
 }
 fn string_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

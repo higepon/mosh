@@ -154,6 +154,7 @@ impl FaslWriter {
             Object::StdErrorPort(_) => todo!(),
             Object::StringOutputPort(_) => todo!(),
             Object::Latin1Codec(_) => todo!(),
+            Object::Transcoder(_) => todo!(),            
             Object::Instruction(op) => {
                 self.put_tag(port, Tag::CompilerInsn)?;
                 port.put_u8(op as u8)?;
@@ -242,6 +243,7 @@ impl FaslWriter {
                 | Object::False
                 | Object::Flonum(_)
                 | Object::Latin1Codec(_)                
+                | Object::Transcoder(_)                    
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof
