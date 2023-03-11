@@ -4507,7 +4507,7 @@ fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
 
     let mut raw_port = BytevectorInputPort::new(&bv.data);
     let port: &mut dyn BinaryInputPort = &mut raw_port;
-    
+
     // Set the port to i/o decoding error.
     let s = &transcoder.read_string(port).map_err(|mut e| {
         e.irritants = vec![Object::BytevectorInputPort(vm.gc.alloc(raw_port))];
@@ -6632,9 +6632,14 @@ fn is_fast_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let e = Equal::new();
     Ok(e.is_equal(&mut vm.gc, &args[0], &args[1]).to_obj())
 }
-fn native_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn native_eol_style(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-eol-style";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(if std::env::consts::OS == "windows" {
+        vm.gc.symbol_intern("crlf")
+    } else {
+        vm.gc.symbol_intern("lf")
+    })
 }
 fn is_buffer_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "buffer-mode?";

@@ -1574,10 +1574,6 @@ impl UTF16Codec {
         }
     }
 
-    fn is_utf8_tail(&self, u: u8) -> bool {
-        0x80 <= u && u <= 0xbf
-    }
-
     fn decoding_error(&self) -> error::Result<Option<char>> {
         println!("decoding error");
         error::Error::io_decoding_error("utf-16-codec", "invalid utf16 sequence", &[])
