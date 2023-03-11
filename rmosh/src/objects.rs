@@ -6,7 +6,7 @@ use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
     FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TextOutputPort, Transcoder, UTF8Codec,
+    StringInputPort, StringOutputPort, TextOutputPort, Transcoder, UTF8Codec, UTF16Codec,
 };
 use crate::vm::Vm;
 
@@ -44,6 +44,7 @@ pub enum Object {
     Instruction(Op),
     Latin1Codec(GcRef<Latin1Codec>),
     UTF8Codec(GcRef<UTF8Codec>),
+    UTF16Codec(GcRef<UTF16Codec>),    
     Nil,
     ObjectPointer(*mut Object),
     Pair(GcRef<Pair>),
@@ -333,6 +334,13 @@ impl Object {
             panic!("Not a Object::UTF8Codec")
         }
     }
+    pub fn to_utf16_codec(self) -> GcRef<UTF16Codec> {
+        if let Self::UTF16Codec(b) = self {
+            b
+        } else {
+            panic!("Not a Object::UTF16Codec")
+        }
+    }    
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
@@ -538,6 +546,7 @@ impl Object {
             Object::DefinedShared(_) => todo!(),
             Object::Latin1Codec(_) => todo!(),
             Object::UTF8Codec(_) => todo!(),
+            Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
         }
     }
@@ -580,6 +589,9 @@ impl Debug for Object {
             Object::UTF8Codec(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::UTF16Codec(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }            
             Object::Transcoder(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -762,6 +774,9 @@ impl Display for Object {
             Object::UTF8Codec(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
+            Object::UTF16Codec(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }            
             Object::Transcoder(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }

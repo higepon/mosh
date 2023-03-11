@@ -21,7 +21,7 @@ use crate::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileInputPort,
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
-        TextInputPort, TextOutputPort, Transcoder, UTF8Codec,
+        TextInputPort, TextOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
     vm::Vm,
 };
@@ -2732,9 +2732,10 @@ fn utf_8_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 0);
     Ok(Object::UTF8Codec(vm.gc.alloc(UTF8Codec::new())))
 }
-fn utf_16_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn utf_16_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf-16-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::UTF16Codec(vm.gc.alloc(UTF16Codec::new())))
 }
 fn make_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-transcoder";
@@ -4504,9 +4505,14 @@ fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     let bv = as_bytevector!(name, args, 0);
     let mut transcoder = as_transcoder!(name, args, 1);
 
-    let mut port = BytevectorInputPort::new(&bv.data);
-    let port: &mut dyn BinaryInputPort = &mut port;
-    let s = &transcoder.read_string(port)?;
+    let mut raw_port = BytevectorInputPort::new(&bv.data);
+    let port: &mut dyn BinaryInputPort = &mut raw_port;
+    
+    // Set the port to i/o decoding error.
+    let s = &transcoder.read_string(port).map_err(|mut e| {
+        e.irritants = vec![Object::BytevectorInputPort(vm.gc.alloc(raw_port))];
+        e
+    })?;
     Ok(vm.gc.new_string(s))
 }
 fn string_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
