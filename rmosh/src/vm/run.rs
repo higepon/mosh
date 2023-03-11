@@ -50,6 +50,18 @@ macro_rules! raise_or_exit {
                 irritants: irritants,
             }) => $self.call_io_encoding_error_after(&who, &message, &irritants[..])?,            
             Err(error::Error {
+                error_type: error::ErrorType::IoFileNotExist,
+                who: who,
+                message: message,
+                irritants: irritants,
+            }) => $self.call_io_file_not_exist_after(&who, &message, &irritants[..])?,    
+            Err(error::Error {
+                error_type: error::ErrorType::IoFileAlreadyExist,
+                who: who,
+                message: message,
+                irritants: irritants,
+            }) => $self.call_io_file_already_exist_after(&who, &message, &irritants[..])?,                       
+            Err(error::Error {
                 error_type: error::ErrorType::IoError,
                 who: _who,
                 message: _message,

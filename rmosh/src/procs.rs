@@ -2638,6 +2638,7 @@ fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         Object::StdOutputPort(mut port) => port.flush(),
         Object::StringOutputPort(mut port) => port.flush(),
         Object::BytevectorOutputPort(mut port) => port.flush(),
+        Object::BinaryFileOutputPort(mut port) => port.flush(),
         _ => panic!("{}", args[0]),
     };
     Ok(Object::Unspecified)
@@ -2897,7 +2898,11 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
 
     if argc == 1 {
         if file_exists {
-            panic!("{}: file already exists {}", name, path);
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );            
         }
         let file = match open_options.open(&path) {
             Ok(file) => file,
@@ -2930,16 +2935,28 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             .is_false();
 
         if file_exists && empty_p {
-            panic!("{}: file already exists {}", name, path)
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );    
         } else if no_create_p && no_truncate_p {
             if !file_exists {
-                panic!("{}: file-options no-create: file not exist {}", name, path);
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
             }
         } else if no_create_p {
             if file_exists {
                 open_options.truncate(true);
             } else {
-                panic!("{}: file-options no-create: file not exist {}", name, path);
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
             }
         } else if no_fail_p && no_truncate_p {
             if !file_exists {

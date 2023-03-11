@@ -13,6 +13,8 @@ pub enum ErrorType {
     IoError,
     IoEncodingError,
     IoDecodingError,
+    IoFileNotExist,
+    IoFileAlreadyExist,
     Error,
 }
 
@@ -64,7 +66,16 @@ impl Error {
     }
     pub fn io_encoding_error(who: &str, message: &str, port: &[Object]) -> Result<Option<char>> {
         Err(Self::new(ErrorType::IoEncodingError, who, message, port))
-    }    
+    }   
+
+    pub fn io_file_not_exist(who: &str, message: &str, irritants: &[Object]) -> Result<Object> {
+        Err(Self::new(ErrorType::IoFileNotExist, who, message, irritants))
+    }       
+
+    pub fn io_file_already_exist(who: &str, message: &str, irritants: &[Object]) -> Result<Object> {
+        Err(Self::new(ErrorType::IoFileAlreadyExist, who, message, irritants))
+    }       
+
 }
 
 impl Display for Error {
