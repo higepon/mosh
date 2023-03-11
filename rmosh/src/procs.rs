@@ -2741,15 +2741,47 @@ fn make_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-transcoder";
     check_argc_between!(name, args, 1, 3);
     let codec = args[0];
-    if args.len() == 1 {
-        Ok(Object::Transcoder(vm.gc.alloc(Transcoder::new(
-            codec,
-            EolStyle::Lf,
-            ErrorHandlingMode::ReplaceError,
-        ))))
-    } else {
-        panic!();
+    let mut eol_style = EolStyle::Lf;
+    let mut mode = ErrorHandlingMode::ReplaceError;
+    if args.len() >= 2 {
+        let _eol_symbol = as_symbol!(name, args, 1);
+        let eol_symbol = args[1];
+        if eol_symbol == vm.gc.symbol_intern("lf") {
+            eol_style = EolStyle::Lf;
+        } else if eol_symbol == vm.gc.symbol_intern("cr") {
+            eol_style = EolStyle::Cr;
+        } else if eol_symbol == vm.gc.symbol_intern("nel") {
+            eol_style = EolStyle::Nel;
+        } else if eol_symbol == vm.gc.symbol_intern("ls") {
+            eol_style = EolStyle::Ls;
+        } else if eol_symbol == vm.gc.symbol_intern("crnel") {
+            eol_style = EolStyle::CrNel;
+        } else if eol_symbol == vm.gc.symbol_intern("crlf") {
+            eol_style = EolStyle::CrLf;
+        } else if eol_symbol == vm.gc.symbol_intern("none") {
+            eol_style = EolStyle::ENone;
+        } else {
+            return Error::assertion_violation(name, "invalid eol-style", &[args[1]]);
+        }
     }
+
+    if args.len() >= 3 {
+        let _mode_symbol = as_symbol!(name, args, 2);
+        let mode_symbol = args[1];
+        if mode_symbol == vm.gc.symbol_intern("raise") {
+            mode = ErrorHandlingMode::RaiseError;
+        } else if mode_symbol == vm.gc.symbol_intern("ignore") {
+            mode = ErrorHandlingMode::IgnoreError;
+        } else if mode_symbol == vm.gc.symbol_intern("replace") {
+            mode = ErrorHandlingMode::ReplaceError;
+        } else {
+            return Error::assertion_violation(name, "invalid error-handling-mode", &[args[1]]);
+        }
+    }
+
+    Ok(Object::Transcoder(
+        vm.gc.alloc(Transcoder::new(codec, eol_style, mode)),
+    ))
 }
 fn eof_object(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eof-object";
@@ -6853,14 +6885,14 @@ fn transcoder_eol_style(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     let name: &str = "transcoder-eol-style";
     check_argc!(name, args, 1);
     Ok(match args[0].to_transcoder().eol_style {
-            EolStyle::Lf => vm.gc.symbol_intern("lf"),
-            EolStyle::Cr => vm.gc.symbol_intern("cr"),
-            EolStyle::Nel => vm.gc.symbol_intern("nel"),
-            EolStyle::Ls => vm.gc.symbol_intern("ls"),
-            EolStyle::CrNel => vm.gc.symbol_intern("crnel"),
-            EolStyle::CrLf => vm.gc.symbol_intern("crlf"),
-            EolStyle::ENone => vm.gc.symbol_intern("none"),
-        })
+        EolStyle::Lf => vm.gc.symbol_intern("lf"),
+        EolStyle::Cr => vm.gc.symbol_intern("cr"),
+        EolStyle::Nel => vm.gc.symbol_intern("nel"),
+        EolStyle::Ls => vm.gc.symbol_intern("ls"),
+        EolStyle::CrNel => vm.gc.symbol_intern("crnel"),
+        EolStyle::CrLf => vm.gc.symbol_intern("crlf"),
+        EolStyle::ENone => vm.gc.symbol_intern("none"),
+    })
 }
 fn transcoder_error_handling_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-error-handling-mode";
