@@ -555,7 +555,7 @@ pub trait TextOutputPort: Port {
             | Object::Bignum(_)
             | Object::Latin1Codec(_)
             | Object::UTF8Codec(_)
-            | Object::UTF16Codec(_)            
+            | Object::UTF16Codec(_)
             | Object::Transcoder(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
@@ -631,7 +631,7 @@ pub trait TextOutputPort: Port {
             | Object::Compnum(_)
             | Object::Latin1Codec(_)
             | Object::UTF8Codec(_)
-            | Object::UTF16Codec(_)            
+            | Object::UTF16Codec(_)
             | Object::Transcoder(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
@@ -861,7 +861,7 @@ pub trait TextOutputPort: Port {
                 | Object::Instruction(_)
                 | Object::Latin1Codec(_)
                 | Object::UTF8Codec(_)
-                | Object::UTF16Codec(_)                
+                | Object::UTF16Codec(_)
                 | Object::Transcoder(_)
                 | Object::Nil
                 | Object::ObjectPointer(_)
@@ -1385,7 +1385,7 @@ impl Display for BinaryFileOutputPort {
 /// Codec
 pub trait Codec {
     fn read_char(
-        &self,
+        &mut self,
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
         should_check_bom: bool,
@@ -1409,7 +1409,7 @@ impl Latin1Codec {
 
 impl Codec for Latin1Codec {
     fn read_char(
-        &self,
+        &mut self,
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
         _should_check_bom: bool,
@@ -1468,7 +1468,7 @@ impl UTF8Codec {
 
 impl Codec for UTF8Codec {
     fn read_char(
-        &self,
+        &mut self,
         port: &mut dyn BinaryInputPort,
         _mode: ErrorHandlingMode,
         _should_check_bom: bool,
@@ -1561,12 +1561,16 @@ impl Display for UTF8Codec {
 #[repr(C)]
 pub struct UTF16Codec {
     pub header: GcHeader,
+    dont_check_bom: bool,
+    is_little_endian: bool,
 }
 
 impl UTF16Codec {
     pub fn new() -> Self {
         Self {
             header: GcHeader::new(ObjectType::UTF16Codec),
+            dont_check_bom: false,
+            is_little_endian: false,
         }
     }
 
@@ -1576,90 +1580,72 @@ impl UTF16Codec {
 
     fn decoding_error(&self) -> error::Result<Option<char>> {
         println!("decoding error");
-        error::Error::io_decoding_error("utf-8-codec", "invalid utf8 sequence", &[])
+        error::Error::io_decoding_error("utf-16-codec", "invalid utf16 sequence", &[])
     }
 }
 
 impl Codec for UTF16Codec {
     fn read_char(
-        &self,
+        &mut self,
         port: &mut dyn BinaryInputPort,
-        _mode: ErrorHandlingMode,
-        _should_check_bom: bool,
+        mode: ErrorHandlingMode,
+        should_check_bom: bool,
     ) -> error::Result<Option<char>> {
-        match port.read_u8() {
-            Ok(Some(first)) => {
-                match first {
-                    // UTF8-1(ascii) = %x00-7F
-                    0..=0x7F => return Ok(Some(first as char)),
-                    // UTF8-2 = %xC2-DF UTF8-tail
-                    0xC2..=0xDF => match port.read_u8() {
-                        Ok(Some(second)) => {
-                            if self.is_utf8_tail(second) {
-                                let u = (((first as u32) & 0x1f) << 6) | ((second as u32) & 0x3f);
-                                match char::from_u32(u) {
-                                    Some(ch) => return Ok(Some(ch)),
-                                    None => return self.decoding_error(),
-                                }
-                            } else {
-                                return self.decoding_error();
-                            }
+        match (port.read_u8(), port.read_u8()) {
+            (Ok(None), _) => Ok(None),
+            (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => self.decoding_error(),
+            (Ok(Some(a)), Ok(Some(b))) => {
+                if should_check_bom && !self.dont_check_bom {
+                    if a == 0xFE && b == 0xFF {
+                        self.is_little_endian = false;
+                        return self.read_char(port, mode, false);
+                    } else if a == 0xFF && b == 0xFE {
+                        self.is_little_endian = true;
+                        return self.read_char(port, mode, false);
+                    } else {
+                        self.is_little_endian = cfg!(target_endian = "little");
+                        // fall through.
+                    }
+                }
+                let a = a as u16;
+                let b = b as u16;
+                let val1 = if self.is_little_endian {
+                    (b << 8) | a
+                } else {
+                    (a << 8) | b
+                };
+                if val1 < 0xD800 || val1 > 0xDFFF {
+                    match char::from_u32(val1 as u32) {
+                        Some(ch) => return Ok(Some(ch)),
+                        None => return self.decoding_error(),
+                    }
+                }
+                match (port.read_u8(), port.read_u8()) {
+                    (Ok(None), _) | (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => {
+                        return self.decoding_error();
+                    }
+                    (Ok(Some(c)), Ok(Some(d))) => {
+                        let c = c as u16;
+                        let d = d as u16;
+                        let val2 = if self.is_little_endian {
+                            (d << 8) | c
+                        } else {
+                            (c << 8) | d
+                        };
+                        // http://unicode.org/faq/utf_bom.html#utf16-3
+                        let hi = val1 as u32;
+                        let lo = val2 as u32;
+                        let x = (hi & ((1 << 6) - 1)) << 10 | (lo & ((1 << 10) - 1));
+                        let w = (hi >> 6) & ((1 << 5) - 1);
+                        let u = w + 1;
+                        let c = u << 16 | x;
+                        match char::from_u32(c) {
+                            Some(ch) => Ok(Some(ch)),
+                            None => self.decoding_error(),
                         }
-                        Ok(None) | Err(_) => return self.decoding_error(),
-                    },
-                    // UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
-                    //          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
-                    0xE0..=0xEF => match (port.read_u8(), port.read_u8()) {
-                        (Ok(Some(second)), Ok(Some(third))) => {
-                            if !self.is_utf8_tail(second) {
-                                return self.decoding_error();
-                            } else if (0xe0 == first && 0xa0 <= second && second <= 0xbf)
-                                || (0xed == first && 0x80 <= second && second <= 0x9f)
-                                || (0xe1 <= first && first <= 0xec && self.is_utf8_tail(second))
-                                || ((0xee == first || 0xef == first) && self.is_utf8_tail(second))
-                            {
-                                let u = (((first as u32) & 0xf) << 12)
-                                    | (((second as u32) & 0x3f) << 6)
-                                    | ((third as u32) & 0x3f);
-                                match char::from_u32(u) {
-                                    Some(ch) => return Ok(Some(ch)),
-                                    None => return self.decoding_error(),
-                                }
-                            } else {
-                                return self.decoding_error();
-                            }
-                        }
-                        _ => return self.decoding_error(),
-                    },
-                    // UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
-                    //          %xF4 %x80-8F 2( UTF8-tail )
-                    0xf0..=0xf4 => match (port.read_u8(), port.read_u8(), port.read_u8()) {
-                        (Ok(Some(second)), Ok(Some(third)), Ok(Some(fourth))) => {
-                            if !self.is_utf8_tail(third) || !self.is_utf8_tail(fourth) {
-                                return self.decoding_error();
-                            } else if (0xf0 == first && 0x90 <= second && second <= 0xbf)
-                                || (0xf4 == first && 0x80 <= second && second <= 0x8f)
-                                || (0xf1 <= first && first <= 0xf3 && self.is_utf8_tail(second))
-                            {
-                                let u = (((first as u32) & 0x7) << 18)
-                                    | (((second as u32) & 0x3f) << 12)
-                                    | (((third as u32) & 0x3f) << 6)
-                                    | (fourth as u32);
-                                match char::from_u32(u) {
-                                    Some(ch) => return Ok(Some(ch)),
-                                    None => return self.decoding_error(),
-                                }
-                            } else {
-                                return self.decoding_error();
-                            }
-                        }
-                        _ => return self.decoding_error(),
-                    },
-                    _ => return self.decoding_error(),
+                    }
                 }
             }
-            Ok(None) => Ok(None),
-            Err(_) => return self.decoding_error(),
         }
     }
 }
@@ -1749,18 +1735,18 @@ impl Transcoder {
 
     fn read_char_raw(&mut self, port: &mut dyn BinaryInputPort) -> error::Result<Option<char>> {
         let codec = match self.codec {
-            Object::Latin1Codec(codec) => {
-                let codec: &dyn Codec = unsafe { codec.pointer.as_ref() };
+            Object::Latin1Codec(mut codec) => {
+                let codec: &mut dyn Codec = unsafe { codec.pointer.as_mut() };
                 codec
             }
-            Object::UTF8Codec(codec) => {
-                let codec: &dyn Codec = unsafe { codec.pointer.as_ref() };
+            Object::UTF8Codec(mut codec) => {
+                let codec: &mut dyn Codec = unsafe { codec.pointer.as_mut() };
                 codec
             }
-            Object::UTF16Codec(codec) => {
-                let codec: &dyn Codec = unsafe { codec.pointer.as_ref() };
+            Object::UTF16Codec(mut codec) => {
+                let codec: &mut dyn Codec = unsafe { codec.pointer.as_mut() };
                 codec
-            }            
+            }
             _ => todo!(),
         };
         // In the beginning of input, we have to check the BOM.
