@@ -2902,7 +2902,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
                 name,
                 &format!("file already exists {}", path),
                 args,
-            );            
+            );
         }
         let file = match open_options.open(&path) {
             Ok(file) => file,
@@ -2939,7 +2939,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
                 name,
                 &format!("file already exists {}", path),
                 args,
-            );    
+            );
         } else if no_create_p && no_truncate_p {
             if !file_exists {
                 return error::Error::io_file_not_exist(
@@ -2966,9 +2966,10 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             open_options.truncate(true);
         } else if no_truncate_p {
             if file_exists {
-                panic!(
-                    "{}: file-options no-trucate: file already exists {}",
-                    name, path
+                return error::Error::io_file_already_exist(
+                    name,
+                    &format!("file already exists {}", path),
+                    args,
                 );
             } else {
                 open_options.truncate(true);
