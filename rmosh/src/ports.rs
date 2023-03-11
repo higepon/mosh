@@ -1798,7 +1798,66 @@ impl Codec for UTF16Codec {
         ch: char,
         mode: ErrorHandlingMode,
     ) -> error::Result<usize> {
-        todo!()
+        let u = ch as u32;
+        let mut buf: Vec<u8> = vec![];
+        if u > 0x10FFFF {
+            match mode {
+                ErrorHandlingMode::IgnoreError => {
+                    return Ok(0);
+                }
+                ErrorHandlingMode::RaiseError => {
+                    return Err(Error::new(
+                        ErrorType::IoEncodingError,
+                        "utf-16-codec",
+                        &"character out of utf16 range",
+                        &[],
+                    ))
+                }
+                ErrorHandlingMode::ReplaceError => {
+                    buf.push(0xff);
+                    buf.push(0xfd);
+                }
+            }
+        }
+        if u < 0x10000 {
+            if self.is_little_endian {
+                buf.push((u & 0xff) as u8);
+                buf.push((u >> 8) as u8);
+            } else {
+                buf.push((u >> 8) as u8);
+                buf.push((u & 0xff) as u8);
+            }
+        } else {
+            // http://unicode.org/faq/utf_bom.html#utf16-3
+            const HI_SURROGATE_START: u16 = 0xD800;
+            let x = u as u16;
+            let uu: u32 = (u >> 16) & ((1 << 5) - 1);
+            let w: u16 = (uu as u16) - 1;
+            let hi_surrogate = HI_SURROGATE_START | (w << 6) | x >> 10;
+
+            const LO_SURROGATE_START: u16 = 0xDC00;
+            let x = u as u16;
+            let lo_surrogate = LO_SURROGATE_START | (x & ((1 << 10) - 1));
+            if self.is_little_endian {
+                buf.push((hi_surrogate & 0xff) as u8);
+                buf.push((hi_surrogate >> 8) as u8);
+                buf.push((lo_surrogate & 0xff) as u8);
+                buf.push((lo_surrogate >> 8) as u8);
+            } else {
+                buf.push((hi_surrogate >> 8) as u8);
+                buf.push((hi_surrogate & 0xff) as u8);
+                buf.push((lo_surrogate >> 8) as u8);
+                buf.push((lo_surrogate & 0xff) as u8);
+            }
+        }
+        port.write(&buf).map_err(|e| {
+            Error::new(
+                ErrorType::IoDecodingError,
+                "utf-8-code",
+                &format!("writer error {}", e.to_string()),
+                &[],
+            )
+        })
     }
 }
 
