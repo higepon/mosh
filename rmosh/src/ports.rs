@@ -1756,8 +1756,16 @@ impl Transcoder {
         }
     }
 
-    fn unget_char(&mut self, _ch: Option<char>) {
-        todo!()
+    fn unget_char(&mut self, ch: Option<char>) {
+        match ch {
+            Some(ch) => {
+                self.buffer.push(ch);
+                if ch == char::LF {
+                    self.lineno += 1;
+                }
+            }
+            None => return,
+        }
     }
 }
 
