@@ -1658,8 +1658,8 @@ impl Display for UTF16Codec {
 pub struct Transcoder {
     pub header: GcHeader,
     pub codec: Object,
-    eol_style: EolStyle,
-    mode: ErrorHandlingMode,
+    pub eol_style: EolStyle,
+    pub mode: ErrorHandlingMode,
     lineno: usize,
     is_beginning: bool,
     buffer: Vec<char>,

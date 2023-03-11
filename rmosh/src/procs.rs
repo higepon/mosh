@@ -6849,9 +6849,18 @@ fn transcoder_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     check_argc!(name, args, 1);
     Ok(args[0].to_transcoder().codec)
 }
-fn transcoder_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn transcoder_eol_style(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-eol-style";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(match args[0].to_transcoder().eol_style {
+            EolStyle::Lf => vm.gc.symbol_intern("lf"),
+            EolStyle::Cr => vm.gc.symbol_intern("cr"),
+            EolStyle::Nel => vm.gc.symbol_intern("nel"),
+            EolStyle::Ls => vm.gc.symbol_intern("ls"),
+            EolStyle::CrNel => vm.gc.symbol_intern("crnel"),
+            EolStyle::CrLf => vm.gc.symbol_intern("crlf"),
+            EolStyle::ENone => vm.gc.symbol_intern("none"),
+        })
 }
 fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-error-handling-mode";
