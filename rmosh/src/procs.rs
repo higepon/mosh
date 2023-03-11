@@ -6846,7 +6846,8 @@ fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn transcoder_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(args[0].to_transcoder().codec)
 }
 fn transcoder_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-eol-style";
