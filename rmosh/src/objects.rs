@@ -313,6 +313,13 @@ impl Object {
             panic!("Not a Object::Bignum")
         }
     }
+    pub fn to_bytevector_output_port(self) -> GcRef<BytevectorOutputPort> {
+        if let Self::BytevectorOutputPort(b) = self {
+            b
+        } else {
+            panic!("Not a Object::BytevectorOutputPort")
+        }
+    }    
     pub fn to_transcoder(self) -> GcRef<Transcoder> {
         if let Self::Transcoder(b) = self {
             b

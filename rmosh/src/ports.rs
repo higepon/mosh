@@ -1,3 +1,4 @@
+use core::panic;
 use std::cmp::{max, min};
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::{
@@ -7,7 +8,7 @@ use std::{
     io::{self, Read},
 };
 
-use crate::error;
+use crate::error::{self, Error, ErrorType};
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
@@ -1330,6 +1331,66 @@ impl TextOutputPort for StringOutputPort {
     fn flush(&mut self) {}
 }
 
+// TranscodedOutputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct TranscodedOutputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    pub out_port: Object,
+    pub transcoder: Object,
+}
+
+impl TranscodedOutputPort {
+    pub fn new(out_port: Object, transcoder: Object) -> Self {
+        TranscodedOutputPort {
+            header: GcHeader::new(ObjectType::FileOutputPort),
+            is_closed: false,
+            out_port: out_port,
+            transcoder: transcoder,
+        }
+    }
+}
+
+impl Port for TranscodedOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl Display for TranscodedOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<transcoded-output-port>")
+    }
+}
+
+impl TextOutputPort for TranscodedOutputPort {
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+        let port = match self.out_port {
+            Object::BytevectorOutputPort(mut port) => {
+                let port = unsafe { port.pointer.as_mut() };
+                port as &mut dyn BinaryOutputPort
+            }
+            Object::BinaryFileOutputPort(mut port) => {
+                let port = unsafe { port.pointer.as_mut() };
+                port as &mut dyn BinaryOutputPort
+            }
+            _ => panic!(),
+        };
+        let mut transcoder = self.transcoder.to_transcoder();
+        transcoder
+            .write_string(port, s)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))
+    }
+    fn flush(&mut self) {
+        todo!();
+        //self.writer.flush().unwrap_or(())
+    }
+}
+
 // BinaryFileOutputPort
 #[derive(Debug)]
 #[repr(C)]
@@ -1390,6 +1451,13 @@ pub trait Codec {
         mode: ErrorHandlingMode,
         should_check_bom: bool,
     ) -> error::Result<Option<char>>;
+
+    fn write_char(
+        &mut self,
+        port: &mut dyn BinaryOutputPort,
+        ch: char,
+        mode: ErrorHandlingMode,
+    ) -> error::Result<usize>;
 }
 
 /// Latin1Codec
@@ -1433,6 +1501,14 @@ impl Codec for Latin1Codec {
                 },
             }
         }
+    }
+    fn write_char(
+        &mut self,
+        port: &mut dyn BinaryOutputPort,
+        ch: char,
+        mode: ErrorHandlingMode,
+    ) -> error::Result<usize> {
+        todo!()
     }
 }
 
@@ -1548,6 +1624,49 @@ impl Codec for UTF8Codec {
             Err(_) => return self.decoding_error(),
         }
     }
+    fn write_char(
+        &mut self,
+        port: &mut dyn BinaryOutputPort,
+        ch: char,
+        mode: ErrorHandlingMode,
+    ) -> error::Result<usize> {
+        let u = ch as u32;
+        let mut buf: Vec<u8> = vec![];
+        // UTF8-1
+        if u < 0x80 {
+            buf.push(u as u8);
+        } else if u < 0x7ff {
+            buf.push((0xc0 | ((u >> 6) & 0x1f)) as u8);
+            buf.push((0x80 | (u & 0x3f)) as u8);
+        } else if u < 0xffff {
+            buf.push((0xe0 | ((u >> 12) & 0xf)) as u8);
+            buf.push((0x80 | ((u >> 12) & 0x3f)) as u8);
+            buf.push((0x80 | ((u >> 6) & 0x3f)) as u8);
+            buf.push((0x80 | (u & 0x3f)) as u8);
+        } else {
+            match mode {
+                ErrorHandlingMode::IgnoreError => return Ok(buf.len()),
+                ErrorHandlingMode::RaiseError => return Err(Error::new(
+                    ErrorType::IoDecodingError,
+                    "utf-8-code",
+                    &"invalid utf-8 sequence",
+                    &[],
+                )),
+                ErrorHandlingMode::ReplaceError => {
+                    buf.push(0xff);
+                    buf.push(0xfd);
+                }
+            }
+        }
+        port.write(&buf).map_err(|e| {
+            Error::new(
+                ErrorType::IoDecodingError,
+                "utf-8-code",
+                &format!("writer error {}", e.to_string()),
+                &[],
+            )
+        })
+    }
 }
 
 impl Display for UTF8Codec {
@@ -1644,6 +1763,14 @@ impl Codec for UTF16Codec {
             }
         }
     }
+    fn write_char(
+        &mut self,
+        port: &mut dyn BinaryOutputPort,
+        ch: char,
+        mode: ErrorHandlingMode,
+    ) -> error::Result<usize> {
+        todo!()
+    }
 }
 
 impl Display for UTF16Codec {
@@ -1676,6 +1803,55 @@ impl Transcoder {
             is_beginning: true,
             buffer: vec![],
         }
+    }
+
+    pub fn write_char(&mut self, port: &mut dyn BinaryOutputPort, ch: char) -> error::Result<usize> {
+        if !self.buffer.is_empty() {
+            self.buffer.pop();
+        }
+        let codec = match self.codec {
+            Object::Latin1Codec(mut codec) => {
+                let codec: &mut dyn Codec = unsafe { codec.pointer.as_mut() };
+                codec
+            }
+            Object::UTF8Codec(mut codec) => {
+                let codec: &mut dyn Codec = unsafe { codec.pointer.as_mut() };
+                codec
+            }
+            Object::UTF16Codec(mut codec) => {
+                let codec: &mut dyn Codec = unsafe { codec.pointer.as_mut() };
+                codec
+            }
+            _ => todo!(),
+        };
+        if self.eol_style == EolStyle::ENone {
+            return codec.write_char(port, ch, self.mode);
+        } else if ch == char::LF {
+            match self.eol_style {
+                EolStyle::Lf => return codec.write_char(port, char::LF, self.mode),
+                EolStyle::Cr => return codec.write_char(port, char::CR, self.mode),
+                EolStyle::Nel => return codec.write_char(port, char::NEL, self.mode),
+                EolStyle::Ls => return codec.write_char(port, char::LS, self.mode),
+                EolStyle::ENone => return codec.write_char(port, ch, self.mode),
+                EolStyle::CrNel => {
+                    codec.write_char(port, char::CR, self.mode)?;
+                    codec.write_char(port, char::NEL, self.mode)
+                }
+                EolStyle::CrLf => {
+                    codec.write_char(port, char::CR, self.mode)?;
+                    codec.write_char(port, char::LF, self.mode)
+                }
+            }
+        } else {
+            codec.write_char(port, ch, self.mode)
+        }
+    }
+
+    pub fn write_string(&mut self, port: &mut dyn BinaryOutputPort, s: &str) -> error::Result<()> {
+        for ch in s.chars() {
+            self.write_char(port, ch)?;
+        }
+        Ok(())
     }
 
     pub fn read_string(&mut self, port: &mut dyn BinaryInputPort) -> error::Result<String> {

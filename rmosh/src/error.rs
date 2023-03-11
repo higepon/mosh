@@ -11,6 +11,7 @@ pub enum ErrorType {
     AssertionViolation,
     ImplementationRestrictionViolation,
     IoError,
+    IoEncodingError,
     IoDecodingError,
     Error,
 }
@@ -61,6 +62,9 @@ impl Error {
     pub fn io_decoding_error(who: &str, message: &str, port: &[Object]) -> Result<Option<char>> {
         Err(Self::new(ErrorType::IoDecodingError, who, message, port))
     }
+    pub fn io_encoding_error(who: &str, message: &str, port: &[Object]) -> Result<Option<char>> {
+        Err(Self::new(ErrorType::IoEncodingError, who, message, port))
+    }    
 }
 
 impl Display for Error {

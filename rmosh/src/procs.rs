@@ -4,7 +4,7 @@ use crate::{
     as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_sstring, as_symbol,
     as_transcoder, as_u8, as_usize,
     equal::Equal,
-    error::{self, Error},
+    error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
     gc::{Gc, GcRef},
     number_lexer::NumberLexer,
@@ -21,7 +21,7 @@ use crate::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
         BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileInputPort,
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
-        TextInputPort, TextOutputPort, Transcoder, UTF16Codec, UTF8Codec,
+        TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
     vm::Vm,
 };
@@ -4547,9 +4547,28 @@ fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     })?;
     Ok(vm.gc.new_string(s))
 }
-fn string_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let text = as_sstring!(name, args, 0);
+    let _transcoder = as_transcoder!(name, args, 1);
+    let transcoder = args[1];
+    let out_port = Object::BytevectorOutputPort(vm.gc.alloc(BytevectorOutputPort::new()));
+
+    let mut port = TranscodedOutputPort::new(out_port, transcoder);
+    for ch in text.string.chars() {
+        port.write_char(ch).map_err(|e| {
+            Error::new(
+                ErrorType::IoDecodingError,
+                name,
+                &format!("write error {}", e.to_string()),
+                &[out_port],
+            )
+        })?;
+    }
+    Ok(out_port
+        .to_bytevector_output_port()
+        .to_bytevector(&mut vm.gc))
 }
 fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf8";
