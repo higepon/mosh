@@ -6862,9 +6862,14 @@ fn transcoder_eol_style(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
             EolStyle::ENone => vm.gc.symbol_intern("none"),
         })
 }
-fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn transcoder_error_handling_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-error-handling-mode";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(match args[0].to_transcoder().mode {
+        ErrorHandlingMode::IgnoreError => vm.gc.symbol_intern("ignore"),
+        ErrorHandlingMode::RaiseError => vm.gc.symbol_intern("raise"),
+        ErrorHandlingMode::ReplaceError => vm.gc.symbol_intern("replace"),
+    })
 }
 fn quotient(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "quotient";
