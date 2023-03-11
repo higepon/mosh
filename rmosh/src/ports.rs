@@ -1508,7 +1508,34 @@ impl Codec for Latin1Codec {
         ch: char,
         mode: ErrorHandlingMode,
     ) -> error::Result<usize> {
-        todo!()
+        let u = ch as u32;
+        let mut buf: Vec<u8> = vec![];
+        if u < 0xff {
+            buf.push(u as u8);
+        } else {
+            match mode {
+                ErrorHandlingMode::IgnoreError => return Ok(0),
+                ErrorHandlingMode::RaiseError => {
+                    return Err(Error::new(
+                        ErrorType::IoDecodingError,
+                        "latin-1-code",
+                        &"writer error",
+                        &[],
+                    ))
+                }
+                ErrorHandlingMode::ReplaceError => {
+                    buf.push('?' as u8);
+                }
+            }
+        }
+        port.write(&buf).map_err(|e| {
+            Error::new(
+                ErrorType::IoDecodingError,
+                "latin-1-code",
+                &format!("writer error {}", e.to_string()),
+                &[],
+            )
+        })
     }
 }
 
@@ -1646,12 +1673,14 @@ impl Codec for UTF8Codec {
         } else {
             match mode {
                 ErrorHandlingMode::IgnoreError => return Ok(buf.len()),
-                ErrorHandlingMode::RaiseError => return Err(Error::new(
-                    ErrorType::IoDecodingError,
-                    "utf-8-code",
-                    &"invalid utf-8 sequence",
-                    &[],
-                )),
+                ErrorHandlingMode::RaiseError => {
+                    return Err(Error::new(
+                        ErrorType::IoDecodingError,
+                        "utf-8-code",
+                        &"invalid utf-8 sequence",
+                        &[],
+                    ))
+                }
                 ErrorHandlingMode::ReplaceError => {
                     buf.push(0xff);
                     buf.push(0xfd);
@@ -1805,7 +1834,11 @@ impl Transcoder {
         }
     }
 
-    pub fn write_char(&mut self, port: &mut dyn BinaryOutputPort, ch: char) -> error::Result<usize> {
+    pub fn write_char(
+        &mut self,
+        port: &mut dyn BinaryOutputPort,
+        ch: char,
+    ) -> error::Result<usize> {
         if !self.buffer.is_empty() {
             self.buffer.pop();
         }
