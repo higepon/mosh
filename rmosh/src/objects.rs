@@ -488,6 +488,7 @@ impl Object {
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
+            | Object::TranscodedInputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
             _ => false,

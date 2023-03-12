@@ -224,6 +224,7 @@ macro_rules! as_text_input_port_mut {
 macro_rules! obj_as_text_input_port_mut {
     ($name:ident, $obj:expr) => {{
         let port = match $obj {
+            Object::TranscodedInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
             Object::StdInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
             Object::StringInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort

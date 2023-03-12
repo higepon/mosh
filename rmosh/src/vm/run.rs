@@ -2,6 +2,7 @@ use crate::{
     equal::Equal,
     error,
     numbers::{div, eqv, ge, gt, le, lt, mul, ObjectExt, SchemeError},
+    obj_as_text_input_port_mut_or_panic,
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -66,7 +67,7 @@ macro_rules! raise_or_exit {
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => $self.call_io_invalid_position_after(&who, &message, &irritants[..])?,            
+            }) => $self.call_io_invalid_position_after(&who, &message, &irritants[..])?,
             Err(error::Error {
                 error_type: error::ErrorType::IoError,
                 who: _who,
@@ -495,10 +496,10 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                panic!("read: error {:?}", err)
+                                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
                             }
                         },
-                        Object::StringInputPort(mut p) => match p.read(&mut self.gc) {
+                        Object::TranscodedInputPort(mut p) => match p.read(&mut self.gc) {
                             Ok(obj) => {
                                 self.set_return_value(obj);
                             }
@@ -517,25 +518,13 @@ impl Vm {
                     } else {
                         self.ac
                     };
-                    match port {
-                        Object::FileInputPort(mut port) => match port.read_char() {
-                            Some(c) => {
-                                self.set_return_value(Object::Char(c));
-                            }
-                            None => {
-                                self.set_return_value(Object::Eof);
-                            }
-                        },
-                        Object::StringInputPort(mut port) => match port.read_char() {
-                            Some(c) => {
-                                self.set_return_value(Object::Char(c));
-                            }
-                            None => {
-                                self.set_return_value(Object::Eof);
-                            }
-                        },
-                        obj => {
-                            self.arg_err("read-char", "text-input-port", obj)?;
+                    let port = obj_as_text_input_port_mut_or_panic!(port);
+                    match port.read_char() {
+                        Some(c) => {
+                            self.set_return_value(Object::Char(c));
+                        }
+                        None => {
+                            self.set_return_value(Object::Eof);
                         }
                     }
                 }
