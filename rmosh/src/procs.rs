@@ -14,7 +14,7 @@ use crate::{
         self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, GcObjectExt, ObjectExt,
         SchemeError,
     },
-    obj_as_text_output_port_mut,
+    obj_as_text_input_port_mut, obj_as_text_output_port_mut,
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
         Object, Pair, SString, SimpleStruct, Symbol,
@@ -1243,14 +1243,8 @@ fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     } else {
         args[0]
     };
-    let result = match port {
-        Object::FileInputPort(mut p) => p.lookahead_char(),
-        Object::StringInputPort(mut p) => p.lookahead_char(),
-        _ => {
-            return Error::assertion_violation(name, "text input port required", &[port]);
-        }
-    };
-    match result {
+    let port = obj_as_text_input_port_mut!(name, port);
+    match port.lookahead_char() {
         Some(c) => Ok(Object::Char(c)),
         None => Ok(Object::Eof),
     }
@@ -2552,18 +2546,8 @@ fn put_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 
     match u8::from_usize(value) {
         Some(value) => {
-            let result = match args[0] {
-                Object::BytevectorOutputPort(mut port) => port.put_u8(value),
-                Object::BinaryFileOutputPort(mut port) => port.put_u8(value),
-                _ => {
-                    return Error::assertion_violation(
-                        name,
-                        "binary output port required",
-                        &[args[0]],
-                    );
-                }
-            };
-            match result {
+            let port = as_binary_output_port_mut!(name, args, 0);
+            match port.put_u8(value) {
                 Ok(_size) => Ok(Object::Unspecified),
                 Err(err) => {
                     Error::assertion_violation(name, &format!("{:?}", err), &[args[0], args[1]])
@@ -3009,16 +2993,14 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
 fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-input-port";
     check_argc!(name, args, 1);
-    let port = args[0];
-    if !port.is_input_port() {
+    if args[0].is_binary_input_port() {
+        let port = as_binary_input_port_mut!(name, args, 0);
+        port.close();
+    } else if args[0].is_textual_input_port() {
+        let port = as_text_input_port_mut!(name, args, 0);
+        port.close();
+    } else {
         return Error::assertion_violation(name, "input_port required", &[args[0]]);
-    }
-    match args[0] {
-        Object::BinaryFileInputPort(mut port) => port.close(),
-        Object::BytevectorInputPort(mut port) => port.close(),
-        Object::FileInputPort(mut port) => port.close(),
-        Object::StringInputPort(mut port) => port.close(),
-        _ => panic!(),
     }
     Ok(Object::Unspecified)
 }
