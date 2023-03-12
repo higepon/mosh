@@ -185,6 +185,32 @@ macro_rules! as_text_input_port_mut {
 }
 
 #[macro_export]
+macro_rules! obj_as_text_input_port_mut {
+    ($name:ident, $obj:expr) => {{
+        let port = match $obj {
+            Object::StdInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
+            Object::StringInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
+            Object::FileInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },            
+            _ => return error::Error::assertion_violation($name, "text input port required", &[$obj])
+        };
+        port
+    }};
+}
+
+#[macro_export]
+macro_rules! obj_as_text_output_port_mut {
+    ($name:ident, $obj:expr) => {{
+        let port = match $obj {
+            Object::StdOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextOutputPort },
+            Object::StringOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextOutputPort },
+            Object::FileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextOutputPort },   
+            _ => return error::Error::assertion_violation($name, "text output port required", &[$obj])
+        };
+        port
+    }};
+}
+
+#[macro_export]
 macro_rules! as_binary_input_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
@@ -202,8 +228,8 @@ macro_rules! as_binary_output_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
-            Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryOutputPort },
-            Object::BytevectorOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryOutputPort },
+            Object::BinaryFileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryOutputPort },
+            Object::BytevectorOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryOutputPort },
             _ => return error::Error::assertion_violation($name, "binary output port required", &[o])
         };
         port

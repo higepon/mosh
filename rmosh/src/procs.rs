@@ -23,7 +23,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm, as_port_mut,
+    vm::Vm, as_port_mut, as_binary_output_port_mut, obj_as_text_input_port_mut, obj_as_text_output_port_mut,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -6717,17 +6717,7 @@ fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-eof?";
     check_argc!(name, args, 1);
     if args[0].is_textual_input_port() {
-        let port = match args[0] {
-            Object::FileInputPort(mut port) => {
-                let port: &mut dyn TextInputPort = unsafe { port.pointer.as_mut() };
-                port
-            }
-            Object::StdInputPort(mut port) => {
-                let port: &mut dyn TextInputPort = unsafe { port.pointer.as_mut() };
-                port
-            }
-            _ => panic!("{}", args[0]),
-        };
+        let port = as_text_input_port_mut!(name, args, 0);
         if !port.is_open() {
             todo!()
         }
@@ -6848,14 +6838,8 @@ fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 
     let buf = &bv.data[start..start + count];
-    let result = match args[0] {
-        Object::BytevectorOutputPort(mut port) => port.write(buf),
-        Object::BinaryFileOutputPort(mut port) => port.write(buf),
-        _ => {
-            return Error::assertion_violation(name, "binary output port required", &[args[0]]);
-        }
-    };
-    match result {
+    let port = as_binary_output_port_mut!(name, args, 0);
+    match port.write(buf) {
         Ok(_size) => Ok(Object::Unspecified),
         Err(err) => Error::assertion_violation(name, &format!("{:?}", err), args),
     }
@@ -7753,23 +7737,8 @@ fn write_ss(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         args[1]
     };
     let shared_aware = true;
-    match port {
-        Object::StringOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdErrorPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::FileOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        _ => {
-            println!("{}: port required but got {} {}", name, port, args[0])
-        }
-    }
+    let port = obj_as_text_output_port_mut!(name, port);
+    port.write(args[0], shared_aware)?;
     Ok(Object::Unspecified)
 }
 fn monapi_message_send(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
