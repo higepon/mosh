@@ -14,7 +14,7 @@ use crate::{
         self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, GcObjectExt, ObjectExt,
         SchemeError,
     },
-    obj_as_text_input_port_mut, obj_as_text_output_port_mut,
+    obj_as_text_output_port_mut,
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
         Object, Pair, SString, SimpleStruct, Symbol,
