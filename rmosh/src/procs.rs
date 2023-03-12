@@ -2974,12 +2974,12 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     let mut transcoder: Option<Object> = None;
 
     // N.B. As R6RS says, we ignore "file-options" for input-port.
-    // And we ignore buffer-mode so input port is always buffered.
     let file = match File::open(path) {
         Ok(file) => file,
         Err(err) => return Error::assertion_violation(name, &format!("{}", err), &[args[0]]),
     };
 
+    // We also ignore buffer-mode so input port is always buffered.
     let _buffer_mode = if argc < 3 {
         BufferMode::None
     } else {
@@ -2992,16 +2992,24 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     };
 
     if argc == 4 {
-        transcoder = Some(Object::Unspecified); // todo
+        match args[3] {
+            Object::Transcoder(_) => transcoder = Some(args[3]),
+            Object::False => {}
+            _ => {
+                return Error::assertion_violation(name, "transcoder or #f required", &[args[3]]);
+            }
+        }
     }
 
     match transcoder {
-        Some(_) => match FileInputPort::open(path) {
+        Some(_) => {
+            todo!();
+            match FileInputPort::open(path) {
             Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
             Err(err) => {
                 return Error::error(name, &format!("{}", err), &[args[0]]);
             }
-        },
+        }},
         None => Ok(Object::BinaryFileInputPort(
             vm.gc.alloc(BinaryFileInputPort::new(file)),
         )),
