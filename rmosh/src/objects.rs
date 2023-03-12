@@ -6,7 +6,8 @@ use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
     FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TextOutputPort, Transcoder, UTF16Codec, UTF8Codec,
+    StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputPort, Transcoder, UTF16Codec,
+    UTF8Codec,
 };
 use crate::vm::Vm;
 
@@ -61,6 +62,7 @@ pub enum Object {
     StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
     Transcoder(GcRef<Transcoder>),
+    TranscodedInputPort(GcRef<TranscodedInputPort>),
     True,
     Unspecified,
     Vector(GcRef<Vector>),
@@ -241,6 +243,7 @@ impl Object {
             Object::BinaryFileInputPort(_)
             | Object::FileInputPort(_)
             | Object::StdInputPort(_)
+            | Object::TranscodedInputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::StringInputPort(_) => true,
             _ => false,
@@ -319,7 +322,7 @@ impl Object {
         } else {
             panic!("Not a Object::SimpleStruct")
         }
-    }    
+    }
     pub fn to_bignum(self) -> GcRef<Bignum> {
         if let Self::Bignum(b) = self {
             b
@@ -459,6 +462,7 @@ impl Object {
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
+            | Object::TranscodedInputPort(_)
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -502,7 +506,10 @@ impl Object {
 
     pub fn is_textual_input_port(self) -> bool {
         match self {
-            Object::FileInputPort(_) | Object::StdInputPort(_) | Object::StringInputPort(_) => true,
+            Object::TranscodedInputPort(_)
+            | Object::FileInputPort(_)
+            | Object::StdInputPort(_)
+            | Object::StringInputPort(_) => true,
             _ => false,
         }
     }
@@ -593,6 +600,7 @@ impl Object {
             Object::UTF8Codec(_) => todo!(),
             Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
+            Object::TranscodedInputPort(_) => todo!(),
         }
     }
 }
@@ -638,6 +646,9 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Transcoder(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::TranscodedInputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Ratnum(n) => {
@@ -823,6 +834,9 @@ impl Display for Object {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Transcoder(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }
+            Object::TranscodedInputPort(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Fixnum(n) => {

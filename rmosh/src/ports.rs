@@ -9,6 +9,7 @@ use std::{
 };
 
 use crate::error::{self, Error, ErrorType};
+use crate::obj_as_binary_input_port_mut_or_panic;
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
@@ -573,6 +574,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::UTF8Codec(_)
             | Object::UTF16Codec(_)
             | Object::Transcoder(_)
+            | Object::TranscodedInputPort(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
@@ -649,6 +651,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::UTF8Codec(_)
             | Object::UTF16Codec(_)
             | Object::Transcoder(_)
+            | Object::TranscodedInputPort(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
             | Object::False
@@ -879,6 +882,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::UTF8Codec(_)
                 | Object::UTF16Codec(_)
                 | Object::Transcoder(_)
+                | Object::TranscodedInputPort(_)
                 | Object::Nil
                 | Object::ObjectPointer(_)
                 | Object::Procedure(_)
@@ -1398,6 +1402,117 @@ impl TextOutputPort for StringOutputPort {
     }
 }
 
+// TranscodedInputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct TranscodedInputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    pub in_port: Object,
+    pub transcoder: Object,
+    ahead_char: Option<char>,
+    pub parsed: Object,
+}
+
+impl TranscodedInputPort {
+    pub fn new(in_port: Object, transcoder: Object) -> Self {
+        TranscodedInputPort {
+            header: GcHeader::new(ObjectType::TranscodedOutputPort),
+            is_closed: false,
+            in_port: in_port,
+            transcoder: transcoder,
+            ahead_char: None,
+            parsed: Object::Unspecified,
+        }
+    }
+}
+
+impl Port for TranscodedInputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl Display for TranscodedInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<transcoded-input-port>")
+    }
+}
+
+impl TextInputPort for TranscodedInputPort {
+    fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
+        let mut i: usize = 1;
+        loop {
+            match self.read_char() {
+                Some(ch) => str.push(ch),
+                None => break,
+            }
+            i += 1;
+        }
+        Ok(i)
+    }
+
+    fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
+        let mut size = 0;
+        loop {
+            match self.read_char() {
+                Some(ch) => str.push(ch),
+                None => {
+                    return Ok(size)
+                }
+            }
+            size += 1;
+            if size == n {
+                break;
+            }
+        }
+        Ok(n)
+    }
+
+    fn read_char(&mut self) -> Option<char> {
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let port = obj_as_binary_input_port_mut_or_panic!(self.in_port);
+                let mut t = self.transcoder.to_transcoder();
+                match t.read_char(port) {
+                    Ok(Some(ch)) => Some(ch),
+                    _ => None,
+                }
+            }
+        }
+    }
+
+    fn ahead_char(&self) -> Option<char> {
+        self.ahead_char
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        self.ahead_char = c;
+    }
+
+    fn input_src(&self) -> String {
+        "todo: input source".to_string()
+    }
+
+    fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
+        self.read_to_string(str)
+    }
+
+    fn set_parsed(&mut self, obj: Object) {
+        self.parsed = obj;
+    }
+    fn parsed(&self) -> Object {
+        self.parsed
+    }
+}
+
 // TranscodedOutputPort
 #[derive(Debug)]
 #[repr(C)]
@@ -1411,7 +1526,7 @@ pub struct TranscodedOutputPort {
 impl TranscodedOutputPort {
     pub fn new(out_port: Object, transcoder: Object) -> Self {
         TranscodedOutputPort {
-            header: GcHeader::new(ObjectType::FileOutputPort),
+            header: GcHeader::new(ObjectType::TranscodedOutputPort),
             is_closed: false,
             out_port: out_port,
             transcoder: transcoder,

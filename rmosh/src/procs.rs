@@ -23,7 +23,8 @@ use crate::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort, BufferMode,
         BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileInputPort,
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
-        TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
+        TextInputPort, TextOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
+        UTF16Codec, UTF8Codec,
     },
     vm::Vm,
 };
@@ -3002,20 +3003,15 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     }
 
     match transcoder {
-        Some(_) => {
-            todo!();
-            match FileInputPort::open(path) {
-            Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
-            Err(err) => {
-                return Error::error(name, &format!("{}", err), &[args[0]]);
-            }
-        }},
+        Some(t) => {
+            let in_port = Object::BinaryFileInputPort(vm.gc.alloc(BinaryFileInputPort::new(file)));
+            let port = TranscodedInputPort::new(in_port, t);
+            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
+        }
         None => Ok(Object::BinaryFileInputPort(
             vm.gc.alloc(BinaryFileInputPort::new(file)),
         )),
     }
-
-    // todo transcoded port
 }
 fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-input-port";
@@ -4764,10 +4760,6 @@ fn utf32_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn close_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-port";
     check_argc!(name, args, 1);
-    let port = args[0];
-    if !port.is_port() {
-        return Error::assertion_violation(name, "port required", &[args[0]]);
-    }
     let port = as_port_mut!(name, args, 0);
     port.close();
     Ok(Object::Unspecified)
@@ -6801,7 +6793,13 @@ fn port_transcoder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn native_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-transcoder";
     check_argc!(name, args, 0);
-    return Ok(vm.gc.new_string("TODO: native-transcoder"));
+    let codec = Object::UTF8Codec(vm.gc.alloc(UTF8Codec::new()));
+    let eol_style =    if std::env::consts::OS == "windows" {
+        EolStyle::CrLf
+    } else {
+      EolStyle::Lf
+    };
+    Ok(Object::Transcoder(vm.gc.alloc(Transcoder::new(codec, eol_style, ErrorHandlingMode::RaiseError))))
 }
 fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-bytevector";

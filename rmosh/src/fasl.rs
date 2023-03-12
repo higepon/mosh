@@ -157,6 +157,7 @@ impl FaslWriter {
             Object::UTF8Codec(_) => todo!(),
             Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
+            Object::TranscodedInputPort(_) => todo!(),
             Object::Instruction(op) => {
                 self.put_tag(port, Tag::CompilerInsn)?;
                 port.put_u8(op as u8)?;
@@ -248,6 +249,7 @@ impl FaslWriter {
                 | Object::UTF8Codec(_)
                 | Object::UTF16Codec(_)
                 | Object::Transcoder(_)
+                | Object::TranscodedInputPort(_)
                 | Object::StringInputPort(_)
                 | Object::FileInputPort(_)
                 | Object::Eof

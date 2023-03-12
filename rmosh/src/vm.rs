@@ -20,7 +20,7 @@ use crate::{
     ports::{StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
     procs::default_free_vars,
     psyntax,
-    reader_util::ReadError,
+    reader_util::ReadError, obj_as_text_input_port_mut_or_panic,
 };
 
 const STACK_SIZE: usize = 65536;
@@ -254,15 +254,8 @@ impl Vm {
     }
 
     pub fn read(&mut self) -> Result<Object, ReadError> {
-        match self.current_input_port {
-            Object::FileInputPort(mut port) => port.read(&mut self.gc),
-            _ => {
-                panic!(
-                    "read: input-port required but got {}",
-                    self.current_input_port
-                )
-            }
-        }
+        let port = obj_as_text_input_port_mut_or_panic!(self.current_input_port);
+        port.read(&mut self.gc)
     }
     fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);
