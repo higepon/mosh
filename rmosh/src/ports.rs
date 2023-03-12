@@ -995,8 +995,7 @@ pub trait TextOutputPort: OutputPort {
 }
 
 // Trait for Port.
-pub trait 
-BinaryInputPort: Port {
+pub trait BinaryInputPort: Port {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>;
     fn ahead_u8(&self) -> Option<u8>;
     fn set_ahead_u8(&mut self, c: Option<u8>);
@@ -1017,6 +1016,23 @@ BinaryInputPort: Port {
                 }
             }
         }
+    }
+
+    // This default implementation is not very efficient :)
+    fn read_all(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
+        let mut size = 0;
+        loop {
+            match self.read_u8() {
+                Ok(Some(u)) => {
+                    buf.push(u);
+                    size += 1;
+                }
+                _ => {
+                    break;
+                }
+            }
+        }
+        Ok(size)
     }
 
     fn lookahead_u8(&mut self) -> Option<u8> {
@@ -1236,9 +1252,7 @@ impl BinaryInputPort for BinaryFileInputPort {
                 }
                 self.unget_u8(u);
             }
-            None => {
-                read_start = 0
-            }
+            None => read_start = 0,
         }
         self.reader.read(&mut buf[read_start..])
     }

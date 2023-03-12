@@ -2684,11 +2684,33 @@ fn get_bytevector_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Res
 }
 fn get_bytevector_some(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-some";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_binary_input_port_mut!(name, args, 0);
+    let mut buf: Vec<u8> = vec![];
+    port.read_all(&mut buf).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
+    Ok(vm.gc.new_bytevector_u8(&buf))
 }
-fn get_bytevector_all(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_bytevector_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-all";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_binary_input_port_mut!(name, args, 0);
+    let mut buf: Vec<u8> = vec![];
+    port.read_all(&mut buf).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
+    Ok(vm.gc.new_bytevector_u8(&buf))
 }
 fn transcoded_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoded-port";
