@@ -1,8 +1,8 @@
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_port, as_sstring, as_symbol,
-    as_transcoder, as_u8, as_usize,
+    as_binary_input_port_mut, as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_port,
+    as_sstring, as_symbol, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -23,7 +23,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm, as_binary_input_port_mut,
+    vm::Vm,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -2572,7 +2572,7 @@ fn put_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let value = as_usize!(name, args, 1);
 
     match u8::from_usize(value) {
-        Some(value) => {            
+        Some(value) => {
             let result = match args[0] {
                 Object::BytevectorOutputPort(mut port) => port.put_u8(value),
                 Object::BinaryFileOutputPort(mut port) => port.put_u8(value),
@@ -2672,7 +2672,7 @@ fn is_port_has_set_port_position_destructive(
     let name: &str = "port-has-set-port-position!?";
     check_argc!(name, args, 1);
     let port = as_port!(name, args, 0);
-    Ok(port.has_set_position().to_obj())    
+    Ok(port.has_set_position().to_obj())
 }
 fn port_position(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-position";
@@ -2696,14 +2696,8 @@ fn get_bytevector_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Res
         );
     }
     let buf = &mut bv.data[start..start + count];
-    let result = match args[0] {
-        Object::BytevectorInputPort(mut port) => port.read(buf),
-        Object::BinaryFileInputPort(mut port) => port.read(buf),
-        _ => {
-            return Error::assertion_violation(name, "binary input port required", &[args[0]]);
-        }
-    };
-    match result {
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.read(buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(size) => Ok(Object::Fixnum(size as isize)),
         Err(_) => Ok(Object::Eof),
