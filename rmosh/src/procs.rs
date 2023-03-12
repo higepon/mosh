@@ -956,23 +956,8 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         args[1]
     };
     let shared_aware = false;
-    match port {
-        Object::StringOutputPort(mut port) => {
-            port.display(args[0], shared_aware).ok();
-        }
-        Object::StdOutputPort(mut port) => {
-            port.display(args[0], shared_aware).ok();
-        }
-        Object::FileOutputPort(mut port) => {
-            port.display(args[0], shared_aware).ok();
-        }
-        Object::StdErrorPort(mut port) => {
-            port.display(args[0], shared_aware).ok();
-        }
-        _ => {
-            println!("{}: port required but got {}", name, port)
-        }
-    }
+    let port = obj_as_text_output_port_mut!(name, port);
+    port.display(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7738,7 +7723,7 @@ fn write_ss(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     };
     let shared_aware = true;
     let port = obj_as_text_output_port_mut!(name, port);
-    port.write(args[0], shared_aware)?;
+    port.write(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
 fn monapi_message_send(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
