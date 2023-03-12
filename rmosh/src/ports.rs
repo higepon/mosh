@@ -31,7 +31,7 @@ pub trait Port {
     fn has_set_position(&self) -> bool {
         false
     }
-    fn set_position(&self) -> Option<u8> {
+    fn set_position(&self, _pos: usize) -> io::Result<usize> {
         panic!("doesn't support set-postion")
     }
 }

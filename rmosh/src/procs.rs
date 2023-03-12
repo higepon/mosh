@@ -2642,7 +2642,19 @@ fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn set_port_position_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-port-position!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let port = as_port!(name, args, 0);
+    if port.has_set_position() {
+        let pos = as_usize!(name, args, 1);
+        match port.set_position(pos) {
+            Ok(_) => Ok(Object::Unspecified),
+            Err(_) => {
+                error::Error::io_invalid_position(name, &format!("invalid position {}", pos), args)
+            }
+        }
+    } else {
+        Error::assertion_violation(name, "port doesn't support set-ort-position!", &[args[0]])
+    }
 }
 fn get_bytevector_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-n!";
