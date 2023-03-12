@@ -2,7 +2,6 @@ use crate::{
     equal::Equal,
     error,
     numbers::{div, eqv, ge, gt, le, lt, mul, ObjectExt, SchemeError},
-    obj_as_text_input_port_mut_or_panic,
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -499,6 +498,14 @@ impl Vm {
                                 self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
                             }
                         },
+                        Object::StringInputPort(mut p) => match p.read(&mut self.gc) {
+                            Ok(obj) => {
+                                self.set_return_value(obj);
+                            }
+                            Err(err) => {
+                                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
+                            }
+                        },
                         Object::TranscodedInputPort(mut p) => match p.read(&mut self.gc) {
                             Ok(obj) => {
                                 self.set_return_value(obj);
@@ -518,13 +525,33 @@ impl Vm {
                     } else {
                         self.ac
                     };
-                    let port = obj_as_text_input_port_mut_or_panic!(port);
-                    match port.read_char() {
-                        Some(c) => {
-                            self.set_return_value(Object::Char(c));
-                        }
-                        None => {
-                            self.set_return_value(Object::Eof);
+                    match port {
+                        Object::FileInputPort(mut p) => match p.read_char() {
+                            Some(c) => {
+                                self.set_return_value(Object::Char(c));
+                            }
+                            None => {
+                                self.set_return_value(Object::Eof);
+                            }
+                        },
+                        Object::StringInputPort(mut p) => match p.read_char() {
+                            Some(c) => {
+                                self.set_return_value(Object::Char(c));
+                            }
+                            None => {
+                                self.set_return_value(Object::Eof);
+                            }
+                        },
+                        Object::TranscodedInputPort(mut p) => match p.read_char() {
+                            Some(c) => {
+                                self.set_return_value(Object::Char(c));
+                            }
+                            None => {
+                                self.set_return_value(Object::Eof);
+                            }
+                        },
+                        _ => {
+                            self.call_read_error_after("read", "input port required", &[port])?;
                         }
                     }
                 }
