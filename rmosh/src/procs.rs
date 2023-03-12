@@ -2632,7 +2632,7 @@ fn is_port_has_set_port_position_destructive(
 }
 fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-position";
-    check_argc!(name, args, 0);
+    check_argc!(name, args, 1);
     let port = as_port!(name, args, 0);
     if port.has_position() {
         Ok(port.position().to_obj(&mut vm.gc))
