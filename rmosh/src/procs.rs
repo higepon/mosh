@@ -1,8 +1,9 @@
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_binary_input_port_mut, as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_port,
-    as_sstring, as_symbol, as_text_input_port_mut, as_transcoder, as_u8, as_usize,
+    as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
+    as_flonum, as_isize, as_port, as_port_mut, as_sstring, as_symbol, as_text_input_port_mut,
+    as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -13,6 +14,7 @@ use crate::{
         self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, GcObjectExt, ObjectExt,
         SchemeError,
     },
+    obj_as_text_input_port_mut, obj_as_text_output_port_mut,
     objects::{
         Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
         Object, Pair, SString, SimpleStruct, Symbol,
@@ -23,7 +25,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm, as_port_mut, as_binary_output_port_mut, obj_as_text_input_port_mut, obj_as_text_output_port_mut,
+    vm::Vm,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -1431,29 +1433,21 @@ fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 }
 fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    let name: &str = "format";
     let argc = args.len();
     if argc >= 2 {
         match (args[0], args[1]) {
-            (Object::StringOutputPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
-            (Object::StdErrorPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
-            (Object::StdOutputPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
-            (Object::FileOutputPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
             (Object::False, Object::String(s)) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[2..]);
                 return Ok(vm.gc.new_string(&port.string()));
+            }
+            (obj, Object::String(s)) => {
+                if obj.is_textual_output_port() {
+                    let port = obj_as_text_output_port_mut!(name, obj);
+                    port.format(&s.string, &mut args[2..]);
+                    return Ok(Object::Unspecified);
+                }
             }
             (Object::String(s), _) => {
                 let mut port = StringOutputPort::new();

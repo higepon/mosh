@@ -6,7 +6,7 @@ use crate::op::Op;
 use crate::ports::{
     BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
     FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TextOutputPort, Transcoder, UTF8Codec, UTF16Codec,
+    StringInputPort, StringOutputPort, TextOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::vm::Vm;
 
@@ -44,7 +44,7 @@ pub enum Object {
     Instruction(Op),
     Latin1Codec(GcRef<Latin1Codec>),
     UTF8Codec(GcRef<UTF8Codec>),
-    UTF16Codec(GcRef<UTF16Codec>),    
+    UTF16Codec(GcRef<UTF16Codec>),
     Nil,
     ObjectPointer(*mut Object),
     Pair(GcRef<Pair>),
@@ -319,7 +319,7 @@ impl Object {
         } else {
             panic!("Not a Object::BytevectorOutputPort")
         }
-    }    
+    }
     pub fn to_transcoder(self) -> GcRef<Transcoder> {
         if let Self::Transcoder(b) = self {
             b
@@ -347,7 +347,7 @@ impl Object {
         } else {
             panic!("Not a Object::UTF16Codec")
         }
-    }    
+    }
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
@@ -476,22 +476,29 @@ impl Object {
         }
     }
 
-    pub fn is_textual_input_port(self) -> bool {
+    pub fn is_textual_output_port(self) -> bool {
         match self {
-            Object::FileInputPort(_)
-            | Object::StdInputPort(_)
-            | Object::StringInputPort(_) => true,
+            Object::FileOutputPort(_)
+            | Object::StdErrorPort(_)
+            | Object::StdOutputPort(_)
+            | Object::StringOutputPort(_) => true,
             _ => false,
         }
-    }    
+    }
+
+    pub fn is_textual_input_port(self) -> bool {
+        match self {
+            Object::FileInputPort(_) | Object::StdInputPort(_) | Object::StringInputPort(_) => true,
+            _ => false,
+        }
+    }
 
     pub fn is_binary_input_port(self) -> bool {
         match self {
-            Object::BinaryFileInputPort(_)
-            | Object::BytevectorInputPort(_) => true,
+            Object::BinaryFileInputPort(_) | Object::BytevectorInputPort(_) => true,
             _ => false,
         }
-    }    
+    }
 
     pub fn eqv(&self, other: &Self) -> bool {
         if self.is_number() {
@@ -615,7 +622,7 @@ impl Debug for Object {
             }
             Object::UTF16Codec(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
-            }            
+            }
             Object::Transcoder(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -800,7 +807,7 @@ impl Display for Object {
             }
             Object::UTF16Codec(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
-            }            
+            }
             Object::Transcoder(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
