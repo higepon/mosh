@@ -55,6 +55,20 @@ impl GcObjectExt for u64 {
     }
 }
 
+// usize => Fixnum or Bignum
+impl GcObjectExt for usize {
+    #[inline(always)]
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
+        match isize::from_usize(*self) {
+            Some(v) => v.to_obj(),
+            None => {
+                let b = BigInt::from_usize(*self).unwrap();
+                b.to_obj(gc)
+            }
+        }
+    }
+}
+
 // Primitive -> Object.
 pub trait ObjectExt {
     fn to_obj(&self) -> Object;

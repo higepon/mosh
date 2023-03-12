@@ -130,8 +130,13 @@ impl Vm {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
-        self.raise_after3("raise-i/o-file-does-not-exist-error", who, message, irritants)
-    }    
+        self.raise_after3(
+            "raise-i/o-file-does-not-exist-error",
+            who,
+            message,
+            irritants,
+        )
+    }
 
     pub(super) fn call_io_file_already_exist_after(
         &mut self,
@@ -142,8 +147,13 @@ impl Vm {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
-        self.raise_after3("raise-i/o-file-already-exists-error", who, message, irritants)
-    }    
+        self.raise_after3(
+            "raise-i/o-file-already-exists-error",
+            who,
+            message,
+            irritants,
+        )
+    }
 
     pub(super) fn call_io_encoding_error_after(
         &mut self,
@@ -155,7 +165,7 @@ impl Vm {
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
         self.raise_after3("raise-i/o-encoding-error", who, message, irritants)
-    }    
+    }
 
     pub(super) fn call_error_after(
         &mut self,

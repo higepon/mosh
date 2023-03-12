@@ -2,8 +2,8 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
-    as_flonum, as_isize, as_port, as_port_mut, as_sstring, as_symbol, as_text_input_port_mut,
-    as_transcoder, as_u8, as_usize,
+    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
+    as_text_input_port_mut, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -25,7 +25,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm, as_output_port_mut,
+    vm::Vm,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -2630,9 +2630,15 @@ fn is_port_has_set_port_position_destructive(
     let port = as_port!(name, args, 0);
     Ok(port.has_set_position().to_obj())
 }
-fn port_position(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-position";
-    panic!();
+    check_argc!(name, args, 0);
+    let port = as_port!(name, args, 0);
+    if port.has_position() {
+        Ok(port.position().to_obj(&mut vm.gc))
+    } else {
+        Error::assertion_violation(name, "port doesn't support port-position", &[args[0]])
+    }
 }
 fn set_port_position_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-port-position!";
