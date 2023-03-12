@@ -222,6 +222,13 @@ impl Object {
         }
     }
 
+    pub fn is_simple_struct(&self) -> bool {
+        match self {
+            Object::SimpleStruct(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_string(&self) -> bool {
         match self {
             Object::String(_) => true,
@@ -306,6 +313,13 @@ impl Object {
             panic!("Not a Object::String")
         }
     }
+    pub fn to_simple_struc(self) -> GcRef<SimpleStruct> {
+        if let Self::SimpleStruct(s) = self {
+            s
+        } else {
+            panic!("Not a Object::SimpleStruct")
+        }
+    }    
     pub fn to_bignum(self) -> GcRef<Bignum> {
         if let Self::Bignum(b) = self {
             b

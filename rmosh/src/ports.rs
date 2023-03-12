@@ -34,6 +34,10 @@ pub trait Port {
     fn set_position(&self, _pos: usize) -> io::Result<usize> {
         panic!("doesn't support set-postion")
     }
+
+    fn buffer_mode(&self) -> BufferMode {
+        BufferMode::None
+    }
 }
 
 pub trait OutputPort: Port {
@@ -2125,4 +2129,21 @@ pub enum ErrorHandlingMode {
     IgnoreError,
     RaiseError,
     ReplaceError,
+}
+
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum BufferMode {
+    None,
+    Line,
+    Block,
+}
+
+impl Display for BufferMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BufferMode::None => write!(f, "none"),
+            BufferMode::Line => write!(f, "line"),
+            BufferMode::Block => write!(f, "block"),
+        }
+    }
 }

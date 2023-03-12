@@ -2,8 +2,8 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
-    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
-    as_text_input_port_mut, as_transcoder, as_u8, as_usize,
+    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_simple_struct, as_sstring,
+    as_symbol, as_text_input_port_mut, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -20,7 +20,7 @@ use crate::{
         Object, Pair, SString, SimpleStruct, Symbol,
     },
     ports::{
-        BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
+        BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort, BufferMode,
         BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileInputPort,
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
@@ -2593,9 +2593,13 @@ fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     port.flush();
     Ok(Object::Unspecified)
 }
-fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn output_port_buffer_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "output-port-buffer-mode";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_port!(name, args, 0);
+    Ok(vm
+        .gc
+        .symbol_intern(&port.buffer_mode().to_string().to_lowercase()))
 }
 fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u8-set!";
@@ -2948,58 +2952,62 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         ))
     }
 }
+
+fn symbol_to_buffer_mode(sym: GcRef<Symbol>) -> Option<BufferMode> {
+    if sym.string == "line" {
+        Some(BufferMode::Line)
+    } else if sym.string == "block" {
+        Some(BufferMode::Block)
+    } else if sym.string == "none" {
+        Some(BufferMode::None)
+    } else {
+        None
+    }
+}
+
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-file-input-port";
     check_argc_between!(name, args, 1, 4);
     let argc = args.len();
 
+    let path = &as_sstring!(name, args, 0).string;
+    let mut transcoder: Option<Object> = None;
+
     // N.B. As R6RS says, we ignore "file-options" for input-port.
-    if argc == 1 {
-        if let Object::String(path) = args[0] {
-            let file = match File::open(&path.string) {
-                Ok(file) => file,
-                Err(err) => panic!("{}: {} {}", name, args[0], err),
-            };
-            Ok(Object::BinaryFileInputPort(
-                vm.gc.alloc(BinaryFileInputPort::new(file)),
-            ))
-        } else {
-            panic!("{}: path required but got {}", name, args[0]);
-        }
-    } else if argc == 2 {
-        todo!();
-    } else if argc == 3 {
-        todo!();
-    } else if argc == 4 {
-        match (args[0], args[1], args[2]) {
-            (
-                Object::String(path),
-                Object::SimpleStruct(_file_options),
-                Object::Symbol(buffer_mode),
-            ) => {
-                if buffer_mode.string.eq("block") || buffer_mode.string.eq("line") {
-                    match FileInputPort::open(&path.string) {
-                        Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
-                        Err(err) => {
-                            return Error::error(name, &format!("{}", err), &[args[0]]);
-                        }
-                    }
-                } else if buffer_mode.string.eq("none") {
-                    todo!()
-                } else {
-                    panic!("{}: invalid buffer-mode option {}", name, args[2]);
-                }
-            }
-            _ => {
-                panic!(
-                    "{}: path, file-options and buffer-mode required but got {}, {} and {}",
-                    name, args[0], args[1], args[2]
-                )
-            }
-        }
+    // And we ignore buffer-mode so input port is always buffered.
+    let file = match File::open(path) {
+        Ok(file) => file,
+        Err(err) => return Error::assertion_violation(name, &format!("{}", err), &[args[0]]),
+    };
+
+    let _buffer_mode = if argc < 3 {
+        BufferMode::None
     } else {
-        todo!();
+        match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+            Some(mode) => mode,
+            None => {
+                return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+            }
+        }
+    };
+
+    if argc == 4 {
+        transcoder = Some(Object::Unspecified); // todo
     }
+
+    match transcoder {
+        Some(_) => match FileInputPort::open(path) {
+            Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
+            Err(err) => {
+                return Error::error(name, &format!("{}", err), &[args[0]]);
+            }
+        },
+        None => Ok(Object::BinaryFileInputPort(
+            vm.gc.alloc(BinaryFileInputPort::new(file)),
+        )),
+    }
+
+    // todo transcoded port
 }
 fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-input-port";

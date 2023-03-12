@@ -32,6 +32,17 @@ macro_rules! as_sstring {
 }
 
 #[macro_export]
+macro_rules! as_simple_struct {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !o.is_simple_struct() {
+            return error::Error::assertion_violation($name, "simple_struct required", &[o]);
+        }
+        o.to_simple_struct()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_symbol {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
