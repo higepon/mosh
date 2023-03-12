@@ -124,3 +124,69 @@ macro_rules! as_transcoder {
         o.to_transcoder()
     }};
 }
+
+#[macro_export]
+macro_rules! as_port {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        let port = match o {
+            Object::BinaryFileInputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::BytevectorInputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::BytevectorOutputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::StdErrorPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::StdInputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::StdOutputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::StringInputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            Object::StringOutputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },
+            _ => return error::Error::assertion_violation($name, "port required", &[o])
+        };
+        port
+    }};
+}
+
+#[macro_export]
+macro_rules! as_port_mut {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        let port = match o {
+            Object::BinaryFileInputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::BytevectorInputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::BytevectorOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::StdErrorPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::StdInputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::StdOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::StringInputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::StringOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            _ => return error::Error::assertion_violation($name, "port required", &[o])
+        };
+        port
+    }};
+}
+
+#[macro_export]
+macro_rules! as_binary_input_port_mut {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        let port = match o {
+            Object::BinaryFileInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryInputPort },
+            Object::BytevectorInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryInputPort },
+            _ => return error::Error::assertion_violation($name, "binary input port required", &[o])
+        };
+        port
+    }};
+}
+
+#[macro_export]
+macro_rules! as_binary_output_port_mut {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        let port = match o {
+            Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryOutputPort },
+            Object::BytevectorOutputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn BinaryOutputPort },
+            _ => return error::Error::assertion_violation($name, "binary output port required", &[o])
+        };
+        port
+    }};
+}

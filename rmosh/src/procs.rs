@@ -1,7 +1,7 @@
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
-    as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_sstring, as_symbol,
+    as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_port, as_sstring, as_symbol,
     as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
@@ -23,7 +23,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm,
+    vm::Vm, as_binary_input_port_mut,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -2559,14 +2559,8 @@ fn get_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-u8";
     check_argc!(name, args, 1);
     let mut buf: Vec<u8> = vec![0; 1];
-    let result = match args[0] {
-        Object::BytevectorInputPort(mut port) => port.read(&mut buf),
-        Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
-        _ => {
-            return Error::assertion_violation(name, "binary input port required", &[args[0]]);
-        }
-    };
-    match result {
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.read(&mut buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(_) => Ok(Object::Fixnum(buf[0] as isize)),
         Err(_) => Ok(Object::Eof),
@@ -2578,7 +2572,7 @@ fn put_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let value = as_usize!(name, args, 1);
 
     match u8::from_usize(value) {
-        Some(value) => {
+        Some(value) => {            
             let result = match args[0] {
                 Object::BytevectorOutputPort(mut port) => port.put_u8(value),
                 Object::BinaryFileOutputPort(mut port) => port.put_u8(value),
@@ -2667,18 +2661,22 @@ fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
 }
 fn is_port_has_port_position(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-has-port-position?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_port!(name, args, 0);
+    Ok(port.has_position().to_obj())
 }
 fn is_port_has_set_port_position_destructive(
     _vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "port-has-set-port-position!?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_port!(name, args, 0);
+    Ok(port.has_set_position().to_obj())    
 }
 fn port_position(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-position";
-    panic!("{}({}) not implemented", name, args.len());
+    panic!();
 }
 fn set_port_position_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-port-position!";
@@ -6768,7 +6766,32 @@ fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-eof?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_textual_input_port() {
+        let port = match args[0] {
+            Object::FileInputPort(mut port) => {
+                let port: &mut dyn TextInputPort = unsafe { port.pointer.as_mut() };
+                port
+            }
+            Object::StdInputPort(mut port) => {
+                let port: &mut dyn TextInputPort = unsafe { port.pointer.as_mut() };
+                port
+            }
+            _ => panic!("{}", args[0]),
+        };
+        if !port.is_open() {
+            todo!()
+        }
+        Ok((port.lookahead_char() == None).to_obj())
+    } else if args[0].is_binary_input_port() {
+        let port = as_binary_input_port_mut!(name, args, 0);
+        if !port.is_open() {
+            todo!()
+        }
+        Ok((port.lookahead_u8() == None).to_obj())
+    } else {
+        panic!()
+    }
 }
 fn lookahead_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-u8";

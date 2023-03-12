@@ -476,6 +476,23 @@ impl Object {
         }
     }
 
+    pub fn is_textual_input_port(self) -> bool {
+        match self {
+            Object::FileInputPort(_)
+            | Object::StdInputPort(_)
+            | Object::StringInputPort(_) => true,
+            _ => false,
+        }
+    }    
+
+    pub fn is_binary_input_port(self) -> bool {
+        match self {
+            Object::BinaryFileInputPort(_)
+            | Object::BytevectorInputPort(_) => true,
+            _ => false,
+        }
+    }    
+
     pub fn eqv(&self, other: &Self) -> bool {
         if self.is_number() {
             if other.is_number() {

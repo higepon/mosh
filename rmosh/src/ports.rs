@@ -22,6 +22,19 @@ use lalrpop_util::ParseError;
 pub trait Port {
     fn is_open(&self) -> bool;
     fn close(&mut self);
+    fn has_position(&self) -> bool {
+        false
+    }
+    fn position(&self) -> usize {
+        panic!("doesn't support postion")
+    }
+    fn has_set_position(&self) -> bool {
+        false
+    }
+    fn set_position(&self) -> Option<u8> {
+        panic!("doesn't support set-postion")
+    }
+
 }
 
 pub trait OutputPort: Port {
@@ -29,7 +42,7 @@ pub trait OutputPort: Port {
 }
 
 // Trait for TextInputPort.
-pub trait TextInputPort {
+pub trait TextInputPort: Port {
     // The methods you have to implement.
     fn read_to_string(&mut self, str: &mut String) -> io::Result<usize>;
     fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize>;
@@ -976,8 +989,10 @@ pub trait TextOutputPort: Port {
 }
 
 // Trait for Port.
-pub trait BinaryInputPort {
+pub trait BinaryInputPort: Port {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>;
+    fn ahead_u8(&self) -> Option<u8>;
+    fn set_ahead_u8(&mut self, c: Option<u8>);    
 
     fn read_u8(&mut self) -> io::Result<Option<u8>> {
         let mut buf = [0; 1];
@@ -987,7 +1002,26 @@ pub trait BinaryInputPort {
         } else {
             Ok(None)
         }
+    }    
+
+    fn lookahead_u8(&mut self) -> Option<u8> {
+        match self.ahead_u8() {
+            Some(u) => Some(u),
+            None => match self.read_u8() {
+                Ok(Some(u)) => {
+                    self.unget_u8(u);
+                    Some(u)
+                }
+                Ok(None) => None,
+                _ => None,
+            },
+        }
     }
+
+    fn unget_u8(&mut self, u: u8) {
+        assert!(self.ahead_u8() == None);
+        self.set_ahead_u8(Some(u));
+    }    
 }
 
 // BytevectorInputPort
@@ -998,6 +1032,7 @@ pub struct BytevectorInputPort {
     is_closed: bool,
     idx: usize,
     data: Vec<u8>,
+    ahead_u8: Option<u8>,
 }
 
 impl BytevectorInputPort {
@@ -1007,6 +1042,7 @@ impl BytevectorInputPort {
             is_closed: false,
             idx: 0,
             data: data.to_owned(),
+            ahead_u8: None,
         }
     }
 }
@@ -1027,6 +1063,14 @@ impl BinaryInputPort for BytevectorInputPort {
         self.idx += size;
         Ok(size)
     }
+
+    fn ahead_u8(&self) -> Option<u8> {
+        self.ahead_u8
+    }
+
+    fn set_ahead_u8(&mut self, u: Option<u8>) {
+        self.ahead_u8 = u;
+    }    
 }
 
 impl Display for BytevectorInputPort {
@@ -1117,6 +1161,7 @@ pub struct BinaryFileInputPort {
     pub header: GcHeader,
     pub reader: BufReader<File>,
     is_closed: bool,
+    ahead_u8: Option<u8>
 }
 
 impl BinaryFileInputPort {
@@ -1125,6 +1170,7 @@ impl BinaryFileInputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputPort),
             is_closed: false,
             reader: BufReader::new(file),
+            ahead_u8: None,
         }
     }
 
@@ -1150,6 +1196,14 @@ impl BinaryInputPort for BinaryFileInputPort {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.reader.read(buf)
     }
+
+    fn ahead_u8(&self) -> Option<u8> {
+        self.ahead_u8
+    }
+
+    fn set_ahead_u8(&mut self, u: Option<u8>) {
+        self.ahead_u8 = u;
+    }    
 }
 
 impl Display for BinaryFileInputPort {
