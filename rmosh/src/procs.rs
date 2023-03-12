@@ -2827,14 +2827,8 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let size = as_usize!(name, args, 1);
     let mut buf: Vec<u8> = vec![0; size];
-    let result = match args[0] {
-        Object::BytevectorInputPort(mut port) => port.read(&mut buf),
-        Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
-        _ => {
-            return Error::assertion_violation(name, "binary input port required", &[args[0]]);
-        }
-    };
-    match result {
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.read(&mut buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(size) => Ok(Object::Bytevector(
             vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec().into())),
