@@ -175,9 +175,9 @@ macro_rules! as_text_input_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
-            Object::StdInputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
-            Object::StringInputPort(p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
-            Object::FileInputPort(p) => unsafe { p.pointer.as_ref() as & dyn Port },            
+            Object::StdInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
+            Object::StringInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
+            Object::FileInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },            
             _ => return error::Error::assertion_violation($name, "text input port required", &[o])
         };
         port

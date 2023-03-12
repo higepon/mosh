@@ -2,7 +2,7 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     as_binary_input_port_mut, as_bytevector, as_char, as_f32, as_f64, as_flonum, as_isize, as_port,
-    as_sstring, as_symbol, as_transcoder, as_u8, as_usize,
+    as_sstring, as_symbol, as_text_input_port_mut, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -23,7 +23,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm, as_text_input_port_mut,
+    vm::Vm,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -4038,14 +4038,10 @@ fn get_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-char";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::StringInputPort(mut port) => match port.lookahead_char() {
-            Some(c) => Ok(Object::Char(c)),
-            None => Ok(Object::Eof),
-        },
-        _ => {
-            panic!("{}: port required but got {}", name, args[0]);
-        }
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.lookahead_char() {
+        Some(c) => Ok(Object::Char(c)),
+        None => Ok(Object::Eof),
     }
 }
 fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4053,16 +4049,8 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let n = as_usize!(name, args, 1);
     let mut s = String::new();
-    let result = match args[0] {
-        Object::FileInputPort(mut p) => p.read_n_to_string(&mut s, n),
-        Object::StdInputPort(mut p) => p.read_n_to_string(&mut s, n),
-        Object::StringInputPort(mut p) => p.read_n_to_string(&mut s, n),
-        _ => {
-            return Error::assertion_violation(name, "text input port required", &[args[0]]);
-        }
-    };
-
-    match result {
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.read_n_to_string(&mut s, n) {
         Ok(_) => {
             if s.len() > 0 {
                 Ok(vm.gc.new_string(&s))
