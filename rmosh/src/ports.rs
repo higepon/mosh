@@ -1272,6 +1272,83 @@ impl Display for BinaryFileInputPort {
     }
 }
 
+// BinaryFileInputOutputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct BinaryFileInputOutputPort {
+    pub header: GcHeader,
+    pub file: File,
+    is_closed: bool,
+    ahead_u8: Option<u8>,
+}
+
+impl BinaryFileInputOutputPort {
+    pub fn new(file: File) -> Self {
+        BinaryFileInputOutputPort {
+            header: GcHeader::new(ObjectType::BinaryFileInputPort),
+            is_closed: false,
+            file: file,
+            ahead_u8: None,
+        }
+    }
+
+    pub fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
+        self.file.read_to_end(buf)
+    }
+
+    pub fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl Port for BinaryFileInputOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl BinaryInputPort for BinaryFileInputOutputPort {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        let read_start: usize;
+        match self.ahead_u8() {
+            Some(u) => {
+                if buf.len() >= 1 {
+                    buf[0] = u;
+                    read_start = 1
+                } else {
+                    read_start = 0;
+                }
+                self.unget_u8(u);
+            }
+            None => read_start = 0,
+        }
+        self.read(&mut buf[read_start..])
+    }
+
+    fn ahead_u8(&self) -> Option<u8> {
+        self.ahead_u8
+    }
+
+    fn set_ahead_u8(&mut self, u: Option<u8>) {
+        self.ahead_u8 = u;
+    }
+}
+
+impl BinaryOutputPort for BinaryFileInputOutputPort {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.write(buf)
+    }
+}
+
+impl Display for BinaryFileInputOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<binary-file-input-output-port {:?}>", self.file)
+    }
+}
+
 // FileOutputPort
 #[derive(Debug)]
 #[repr(C)]

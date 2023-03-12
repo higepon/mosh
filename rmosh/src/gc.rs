@@ -75,6 +75,7 @@ impl<T> DerefMut for GcRef<T> {
 pub enum ObjectType {
     Bignum,
     BinaryFileInputPort,
+    BinaryFileInputOutputPort,
     BinaryFileOutputPort,
     ByteVector,
     BytevectorInputPort,
@@ -653,6 +654,7 @@ impl Gc {
             ObjectType::BytevectorInputPort => {}
             ObjectType::BytevectorOutputPort => {}
             ObjectType::BinaryFileInputPort => {}
+            ObjectType::BinaryFileInputOutputPort => {}            
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
             ObjectType::StdInputPort => {}

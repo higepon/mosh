@@ -2682,7 +2682,7 @@ fn get_bytevector_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Res
         Err(_) => Ok(Object::Eof),
     }
 }
-fn get_bytevector_some(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_bytevector_some(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-some";
     check_argc!(name, args, 1);
     let port = as_binary_input_port_mut!(name, args, 0);
