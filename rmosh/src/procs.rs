@@ -23,7 +23,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm,
+    vm::Vm, as_port_mut,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -3322,15 +3322,11 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Err(e) => Error::assertion_violation(name, &format!("{:?}", e), &[]),
         }
     } else if argc == 1 {
-        match args[0] {
-            Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {
-                Ok(obj) => Ok(obj),
-                Err(err) => {
-                    panic!("{}: {:?} {:?}", name, err, port.reader.get_ref())
-                }
-            },
-            _ => {
-                panic!("{}: required input-port bug got {}", name, args[0]);
+        let port = as_text_input_port_mut!(name, args, 0);
+        match port.read(&mut vm.gc) {
+            Ok(obj) => Ok(obj),
+            Err(err) => {
+                panic!("{}: {:?}", name, err)
             }
         }
     } else {
@@ -4074,16 +4070,8 @@ fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-line";
     check_argc!(name, args, 1);
     let mut s = String::new();
-    let result = match args[0] {
-        Object::FileInputPort(mut p) => p.read_line(&mut s),
-        Object::StdInputPort(mut p) => p.read_line(&mut s),
-        Object::StringInputPort(mut p) => p.read_line(&mut s),
-        _ => {
-            return Error::assertion_violation(name, "text input port required", &[args[0]]);
-        }
-    };
-
-    match result {
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.read_line(&mut s) {
         Ok(_) => Ok(vm.gc.new_string(&s)),
         Err(_) => Ok(Object::Eof),
     }
@@ -4792,19 +4780,8 @@ fn close_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if !port.is_port() {
         return Error::assertion_violation(name, "port required", &[args[0]]);
     }
-    match args[0] {
-        Object::BinaryFileInputPort(mut port) => port.close(),
-        Object::BinaryFileOutputPort(mut port) => port.close(),
-        Object::BytevectorInputPort(mut port) => port.close(),
-        Object::BytevectorOutputPort(mut port) => port.close(),
-        Object::FileInputPort(mut port) => port.close(),
-        Object::FileOutputPort(mut port) => port.close(),
-        Object::StdErrorPort(mut port) => port.close(),
-        Object::StdOutputPort(mut port) => port.close(),
-        Object::StringInputPort(mut port) => port.close(),
-        Object::StringOutputPort(mut port) => port.close(),
-        _ => panic!(),
-    }
+    let port = as_port_mut!(name, args, 0);
+    port.close();
     Ok(Object::Unspecified)
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
