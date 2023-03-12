@@ -23,7 +23,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm,
+    vm::Vm, as_text_input_port_mut,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -4029,14 +4029,10 @@ fn min(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn get_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-char";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::StringInputPort(mut port) => match port.read_char() {
-            Some(c) => Ok(Object::Char(c)),
-            None => Ok(Object::Eof),
-        },
-        _ => {
-            panic!("{}: port required but got {}", name, args[0]);
-        }
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.read_char() {
+        Some(c) => Ok(Object::Char(c)),
+        None => Ok(Object::Eof),
     }
 }
 fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
