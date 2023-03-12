@@ -2,8 +2,8 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
-    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_simple_struct, as_sstring,
-    as_symbol, as_text_input_port_mut, as_transcoder, as_u8, as_usize,
+    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
+    as_text_input_port_mut, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -21,10 +21,10 @@ use crate::{
     },
     ports::{
         BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort, BufferMode,
-        BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileInputPort,
-        FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
-        TextInputPort, TextOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
-        UTF16Codec, UTF8Codec,
+        BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileOutputPort,
+        Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
+        TextOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec,
+        UTF8Codec,
     },
     vm::Vm,
 };
@@ -6794,12 +6794,16 @@ fn native_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     let name: &str = "native-transcoder";
     check_argc!(name, args, 0);
     let codec = Object::UTF8Codec(vm.gc.alloc(UTF8Codec::new()));
-    let eol_style =    if std::env::consts::OS == "windows" {
+    let eol_style = if std::env::consts::OS == "windows" {
         EolStyle::CrLf
     } else {
-      EolStyle::Lf
+        EolStyle::Lf
     };
-    Ok(Object::Transcoder(vm.gc.alloc(Transcoder::new(codec, eol_style, ErrorHandlingMode::RaiseError))))
+    Ok(Object::Transcoder(vm.gc.alloc(Transcoder::new(
+        codec,
+        eol_style,
+        ErrorHandlingMode::RaiseError,
+    ))))
 }
 fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-bytevector";
