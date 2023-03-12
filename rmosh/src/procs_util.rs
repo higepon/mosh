@@ -169,6 +169,23 @@ macro_rules! as_port_mut {
     }};
 }
 
+#[macro_export]
+macro_rules! as_output_port_mut {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        let port = match o {
+            Object::BinaryFileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
+            Object::BytevectorOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
+            Object::StdErrorPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
+            Object::StdOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
+            Object::StringOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
+            Object::FileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },                        
+            _ => return error::Error::assertion_violation($name, "output port required", &[o])
+        };
+        port
+    }};
+}
+
 
 #[macro_export]
 macro_rules! as_text_input_port_mut {

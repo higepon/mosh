@@ -25,7 +25,7 @@ use crate::{
         FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort,
         TextInputPort, TextOutputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm,
+    vm::Vm, as_output_port_mut,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -2589,15 +2589,8 @@ fn put_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flush-output-port";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::FileOutputPort(mut port) => port.flush(),
-        Object::StdErrorPort(mut port) => port.flush(),
-        Object::StdOutputPort(mut port) => port.flush(),
-        Object::StringOutputPort(mut port) => port.flush(),
-        Object::BytevectorOutputPort(mut port) => port.flush(),
-        Object::BinaryFileOutputPort(mut port) => port.flush(),
-        _ => panic!("{}", args[0]),
-    };
+    let port = as_output_port_mut!(name, args, 0);
+    port.flush();
     Ok(Object::Unspecified)
 }
 fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

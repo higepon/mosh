@@ -34,7 +34,6 @@ pub trait Port {
     fn set_position(&self) -> Option<u8> {
         panic!("doesn't support set-postion")
     }
-
 }
 
 pub trait OutputPort: Port {
@@ -508,9 +507,8 @@ impl Port for StringInputPort {
 }
 
 // Trait for TextOutputPort.
-pub trait TextOutputPort: Port {
+pub trait TextOutputPort: OutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error>;
-    fn flush(&mut self);
 
     // (write-char c).
     fn write_char(&mut self, c: char) -> Result<(), std::io::Error> {
@@ -992,7 +990,7 @@ pub trait TextOutputPort: Port {
 pub trait BinaryInputPort: Port {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>;
     fn ahead_u8(&self) -> Option<u8>;
-    fn set_ahead_u8(&mut self, c: Option<u8>);    
+    fn set_ahead_u8(&mut self, c: Option<u8>);
 
     fn read_u8(&mut self) -> io::Result<Option<u8>> {
         let mut buf = [0; 1];
@@ -1002,7 +1000,7 @@ pub trait BinaryInputPort: Port {
         } else {
             Ok(None)
         }
-    }    
+    }
 
     fn lookahead_u8(&mut self) -> Option<u8> {
         match self.ahead_u8() {
@@ -1021,7 +1019,7 @@ pub trait BinaryInputPort: Port {
     fn unget_u8(&mut self, u: u8) {
         assert!(self.ahead_u8() == None);
         self.set_ahead_u8(Some(u));
-    }    
+    }
 }
 
 // BytevectorInputPort
@@ -1070,7 +1068,7 @@ impl BinaryInputPort for BytevectorInputPort {
 
     fn set_ahead_u8(&mut self, u: Option<u8>) {
         self.ahead_u8 = u;
-    }    
+    }
 }
 
 impl Display for BytevectorInputPort {
@@ -1161,7 +1159,7 @@ pub struct BinaryFileInputPort {
     pub header: GcHeader,
     pub reader: BufReader<File>,
     is_closed: bool,
-    ahead_u8: Option<u8>
+    ahead_u8: Option<u8>,
 }
 
 impl BinaryFileInputPort {
@@ -1203,7 +1201,7 @@ impl BinaryInputPort for BinaryFileInputPort {
 
     fn set_ahead_u8(&mut self, u: Option<u8>) {
         self.ahead_u8 = u;
-    }    
+    }
 }
 
 impl Display for BinaryFileInputPort {
@@ -1247,12 +1245,15 @@ impl Display for FileOutputPort {
     }
 }
 
+impl OutputPort for FileOutputPort {
+    fn flush(&mut self) {
+        self.writer.flush().unwrap_or(())
+    }
+}
+
 impl TextOutputPort for FileOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         write!(self.writer, "{}", s)
-    }
-    fn flush(&mut self) {
-        self.writer.flush().unwrap_or(())
     }
 }
 
@@ -1283,14 +1284,17 @@ impl Display for StdOutputPort {
     }
 }
 
+impl OutputPort for StdOutputPort {
+    fn flush(&mut self) {
+        // There's nothing we can do here if flush resutns error.
+        io::stdout().flush().unwrap_or(())
+    }
+}
+
 impl TextOutputPort for StdOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         print!("{}", s);
         Ok(())
-    }
-    fn flush(&mut self) {
-        // There's nothing we can do here if flush resutns error.
-        io::stdout().flush().unwrap_or(())
     }
 }
 
@@ -1321,14 +1325,17 @@ impl Display for StdErrorPort {
     }
 }
 
+impl OutputPort for StdErrorPort {
+    fn flush(&mut self) {
+        // There's nothing we can do here if flush resutns error.
+        io::stdout().flush().unwrap_or(())
+    }
+}
+
 impl TextOutputPort for StdErrorPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         eprint!("{}", s);
         Ok(())
-    }
-    fn flush(&mut self) {
-        // There's nothing we can do here if flush resutns error.
-        io::stdout().flush().unwrap_or(())
     }
 }
 
@@ -1376,13 +1383,15 @@ impl Display for StringOutputPort {
         write!(f, "#<string-output-port>")
     }
 }
+impl OutputPort for StringOutputPort {
+    fn flush(&mut self) {}
+}
 
 impl TextOutputPort for StringOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         self.string.push_str(s);
         Ok(())
     }
-    fn flush(&mut self) {}
 }
 
 // TranscodedOutputPort
@@ -1421,6 +1430,13 @@ impl Display for TranscodedOutputPort {
     }
 }
 
+impl OutputPort for TranscodedOutputPort {
+    fn flush(&mut self) {
+        todo!();
+        //self.writer.flush().unwrap_or(())
+    }
+}
+
 impl TextOutputPort for TranscodedOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
         let port = match self.out_port {
@@ -1438,10 +1454,6 @@ impl TextOutputPort for TranscodedOutputPort {
         transcoder
             .write_string(port, s)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))
-    }
-    fn flush(&mut self) {
-        todo!();
-        //self.writer.flush().unwrap_or(())
     }
 }
 
