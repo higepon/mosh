@@ -995,18 +995,27 @@ pub trait TextOutputPort: OutputPort {
 }
 
 // Trait for Port.
-pub trait BinaryInputPort: Port {
+pub trait 
+BinaryInputPort: Port {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize>;
     fn ahead_u8(&self) -> Option<u8>;
     fn set_ahead_u8(&mut self, c: Option<u8>);
 
     fn read_u8(&mut self) -> io::Result<Option<u8>> {
-        let mut buf = [0; 1];
-        let size = self.read(&mut buf)?;
-        if size == 1 {
-            Ok(Some(buf[0]))
-        } else {
-            Ok(None)
+        match self.ahead_u8() {
+            Some(u) => {
+                self.unget_u8(u);
+                Ok(Some(u))
+            }
+            None => {
+                let mut buf = [0; 1];
+                let size = self.read(&mut buf)?;
+                if size == 1 {
+                    Ok(Some(buf[0]))
+                } else {
+                    Ok(None)
+                }
+            }
         }
     }
 
@@ -1064,8 +1073,24 @@ impl Port for BytevectorInputPort {
 
 impl BinaryInputPort for BytevectorInputPort {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        let size = min(buf.len(), self.data.len() - self.idx);
-        buf[0..size].copy_from_slice(&self.data[self.idx..self.idx + size]);
+        let read_start: usize;
+        match self.ahead_u8 {
+            Some(u) => {
+                if buf.len() > 0 {
+                    buf[0] = u;
+                }
+                self.unget_u8(u);
+                read_start = 1;
+            }
+            None => {
+                read_start = 0;
+            }
+        }
+        let mut size = min(buf.len(), self.data.len() - self.idx);
+        if size > 1 && read_start > 0 {
+            size -= read_start;
+        }
+        buf[read_start..size].copy_from_slice(&self.data[self.idx..self.idx + size]);
         self.idx += size;
         Ok(size)
     }
@@ -1200,7 +1225,22 @@ impl Port for BinaryFileInputPort {
 
 impl BinaryInputPort for BinaryFileInputPort {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.reader.read(buf)
+        let read_start: usize;
+        match self.ahead_u8() {
+            Some(u) => {
+                if buf.len() >= 1 {
+                    buf[0] = u;
+                    read_start = 1
+                } else {
+                    read_start = 0;
+                }
+                self.unget_u8(u);
+            }
+            None => {
+                read_start = 0
+            }
+        }
+        self.reader.read(&mut buf[read_start..])
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1460,9 +1500,7 @@ impl TextInputPort for TranscodedInputPort {
         loop {
             match self.read_char() {
                 Some(ch) => str.push(ch),
-                None => {
-                    return Ok(size)
-                }
+                None => return Ok(size),
             }
             size += 1;
             if size == n {
