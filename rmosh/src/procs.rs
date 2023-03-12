@@ -7938,26 +7938,11 @@ fn set_current_error_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> erro
     let name: &str = "set-current-error-port!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port_open(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_port_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-open?";
     check_argc!(name, args, 1);
-    Ok((match args[0] {
-        Object::BinaryFileInputPort(port) => port.is_open(),
-        Object::BinaryFileOutputPort(port) => port.is_open(),
-        Object::BytevectorInputPort(port) => port.is_open(),
-        Object::BytevectorOutputPort(port) => port.is_open(),
-        Object::FileInputPort(port) => port.is_open(),
-        Object::FileOutputPort(port) => port.is_open(),
-        Object::StdErrorPort(port) => port.is_open(),
-        Object::StdOutputPort(port) => port.is_open(),
-        Object::StringInputPort(port) => port.is_open(),
-        Object::StringOutputPort(port) => port.is_open(),
-        _ => {
-            let irritants = vm.gc.list1(args[0]);
-            return error::Error::assertion_violation(name, "port required", &[irritants]);
-        }
-    })
-    .to_obj())
+    let port = as_port!(name, args, 0);
+    Ok(port.is_open().to_obj())
 }
 fn make_f64array(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-f64array";
