@@ -1107,10 +1107,14 @@ impl BinaryInputPort for BytevectorInputPort {
                 read_start = 0;
             }
         }
-        let mut size = min(buf.len(), self.data.len() - self.idx);
-        if size > 1 && read_start > 0 {
-            size -= read_start;
-        }
+        let size = min(
+            if buf.len() == 0 {
+                buf.len()
+            } else {
+                buf.len() - read_start
+            },
+            self.data.len() - self.idx,
+        );
         buf[read_start..size].copy_from_slice(&self.data[self.idx..self.idx + size]);
         self.idx += size;
         Ok(size)
