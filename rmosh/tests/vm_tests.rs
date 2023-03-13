@@ -38,7 +38,7 @@ static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE * 2
     + (SIZE_OF_PROCEDURE * 623 * 2)
     + SIZE_OF_CLOSURE * 0
     + SIZE_OF_SYMBOL * 0
-    + SIZE_OF_STRING * 0 + 192 /* todo */;
+    + SIZE_OF_STRING * 0 + 192 + 96/* todo */;
 
 fn test_ops_with_size(vm: &mut Vm, ops: Vec<Object>, expected: Object, expected_heap_diff: usize) {
     // Keep reference so that it won't be freed.

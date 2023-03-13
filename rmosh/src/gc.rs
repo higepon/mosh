@@ -759,11 +759,11 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::numbers::{Bignum, Compnum, Ratnum};
+        use crate::numbers::{Bignum, Ratnum};
         use crate::ports::{
-            BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
-            FileOutputPort, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
-            StringOutputPort,
+            BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort,
+            BytevectorInputPort, BytevectorOutputPort, FileOutputPort, Latin1Codec, StdErrorPort,
+            StdOutputPort, StringOutputPort, UTF16Codec, UTF8Codec,
         };
 
         let object_type = object_ptr.obj_type;
@@ -871,6 +871,46 @@ impl Gc {
             ObjectType::EqHashtable => {
                 let hashtable: &EqHashtable = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(hashtable)
+            }
+            ObjectType::BinaryFileInputOutputPort => {
+                let x: &BinaryFileInputOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::EqvHashtable => {
+                let x: &EqvHashtable = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::Latin1Codec => {
+                let x: &Latin1Codec = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::UTF8Codec => {
+                let x: &UTF8Codec = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::UTF16Codec => {
+                let x: &UTF16Codec = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::GenericHashtable => {
+                let x: &GenericHashtable = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::Transcoder => {
+                let x: &Transcoder = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::TranscodedInputPort => {
+                let x: &TranscodedInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::TranscodedInputOutputPort => {
+                let x: &TranscodedInputOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::TranscodedOutputPort => {
+                let x: &TranscodedOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
             }
         };
         #[cfg(feature = "debug_log_gc")]

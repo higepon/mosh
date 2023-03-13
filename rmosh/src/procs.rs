@@ -4085,7 +4085,14 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
         );
     }
     let mut s = String::new();
-    port.read_n_to_string(&mut s, count);
+    port.read_n_to_string(&mut s, count).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;    
     if s.is_empty() {
         Ok(Object::Eof)
     } else {
