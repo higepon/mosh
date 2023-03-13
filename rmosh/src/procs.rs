@@ -2785,7 +2785,11 @@ fn sys_open_bytevector_output_port(vm: &mut Vm, args: &mut [Object]) -> error::R
             vm.gc.alloc(BytevectorOutputPort::new()),
         ))
     } else {
-        todo!()
+        let _transcoder = as_transcoder!(name, args, 0);
+        let out_port = Object::BytevectorOutputPort(vm.gc.alloc(BytevectorOutputPort::new()));
+        Ok(Object::TranscodedOutputPort(
+            vm.gc.alloc(TranscodedOutputPort::new(out_port, args[0])),
+        ))
     }
 }
 
@@ -2794,6 +2798,14 @@ fn sys_get_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     match args[0] {
         Object::BytevectorOutputPort(port) => Ok(port.to_bytevector(&mut vm.gc)),
+        Object::TranscodedOutputPort(port) => match port.out_port {
+            Object::BytevectorOutputPort(out_port) => Ok(out_port.to_bytevector(&mut vm.gc)),
+            _ => Error::assertion_violation(
+                name,
+                "transcoded port is supposed to have bytevector output port",
+                &[args[0]],
+            ),
+        },
         _ => Error::assertion_violation(name, "bytevector output port required", &[args[0]]),
     }
 }
@@ -4058,13 +4070,38 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 }
 
-fn get_string_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-n!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let port = as_text_input_port_mut!(name, args, 0);
+    let mut dest = as_sstring!(name, args, 1);
+    let start = as_usize!(name, args, 2);
+    let count = as_usize!(name, args, 3);
+    if dest.len() < start + count {
+        return error::Error::assertion_violation(
+            name,
+            "string must be a string with at least start + count elements.",
+            args,
+        );
+    }
+    let mut s = String::new();
+    port.read_n_to_string(&mut s, count);
+    if s.is_empty() {
+        Ok(Object::Eof)
+    } else {
+        dest.string.replace_range(start..start + count, &s);
+        Ok(s.len().to_obj(&mut vm.gc))
+    }
 }
-fn get_string_all(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_string_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-all";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_text_input_port_mut!(name, args, 0);
+    let mut s = String::new();
+    match port.read_to_string(&mut s) {
+        Ok(_) => Ok(vm.gc.new_string(&s)),
+        Err(_) => Ok(Object::Eof),
+    }
 }
 fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-line";
@@ -4076,9 +4113,18 @@ fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Err(_) => Ok(Object::Eof),
     }
 }
-fn get_datum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_datum(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-datum";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_text_input_port_mut!(name, args, 0);
+    port.read(&mut vm.gc).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {:?}", e),
+            &[args[0]],
+        )
+    })
 }
 fn is_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector?";

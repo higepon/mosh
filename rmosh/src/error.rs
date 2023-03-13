@@ -15,7 +15,7 @@ pub enum ErrorType {
     IoDecodingError,
     IoFileNotExist,
     IoFileAlreadyExist,
-    IoInvlidPosition,
+    IoInvalidPosition,
     Error,
 }
 
@@ -89,7 +89,7 @@ impl Error {
 
     pub fn io_invalid_position(who: &str, message: &str, irritants: &[Object]) -> Result<Object> {
         Err(Self::new(
-            ErrorType::IoInvlidPosition,
+            ErrorType::IoInvalidPosition,
             who,
             message,
             irritants,

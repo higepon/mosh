@@ -462,6 +462,9 @@ impl Gc {
             Object::UTF8Codec(_) => {}
             Object::UTF16Codec(_) => {}
             Object::Transcoder(_) => {}
+            Object::TranscodedOutputPort(t) => {
+                self.mark_heap_object(t);
+            }            
             Object::TranscodedInputPort(t) => {
                 self.mark_heap_object(t);
             }

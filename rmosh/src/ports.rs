@@ -574,6 +574,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::UTF8Codec(_)
             | Object::UTF16Codec(_)
             | Object::Transcoder(_)
+            | Object::TranscodedOutputPort(_)
             | Object::TranscodedInputPort(_)
             | Object::TranscodedInputOutputPort(_)
             | Object::Compnum(_)
@@ -667,6 +668,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::StringOutputPort(_)
             | Object::Symbol(_)
             | Object::TranscodedInputPort(_)
+            | Object::TranscodedOutputPort(_)
             | Object::TranscodedInputOutputPort(_)
             | Object::Transcoder(_)
             | Object::True
@@ -898,6 +900,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::StringOutputPort(_)
                 | Object::Symbol(_)
                 | Object::TranscodedInputPort(_)
+                | Object::TranscodedOutputPort(_)
                 | Object::TranscodedInputOutputPort(_)
                 | Object::Transcoder(_)
                 | Object::True

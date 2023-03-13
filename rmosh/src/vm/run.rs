@@ -62,7 +62,7 @@ macro_rules! raise_or_exit {
                 irritants: irritants,
             }) => $self.call_io_file_already_exist_after(&who, &message, &irritants[..])?,
             Err(error::Error {
-                error_type: error::ErrorType::IoInvlidPosition,
+                error_type: error::ErrorType::IoInvalidPosition,
                 who: who,
                 message: message,
                 irritants: irritants,

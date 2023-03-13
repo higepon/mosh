@@ -7,7 +7,7 @@ use crate::ports::{
     BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
     BytevectorOutputPort, FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort,
     StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
-    TranscodedInputPort, Transcoder, UTF16Codec, UTF8Codec,
+    TranscodedInputPort, Transcoder, UTF16Codec, UTF8Codec, TranscodedOutputPort,
 };
 use crate::vm::Vm;
 
@@ -61,6 +61,7 @@ pub enum Object {
     StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
     TranscodedInputPort(GcRef<TranscodedInputPort>),
+    TranscodedOutputPort(GcRef<TranscodedOutputPort>),    
     TranscodedInputOutputPort(GcRef<TranscodedInputOutputPort>),
     Transcoder(GcRef<Transcoder>),
     True,
@@ -468,6 +469,7 @@ impl Object {
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::TranscodedInputPort(_)
+            | Object::TranscodedOutputPort(_)            
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -480,6 +482,7 @@ impl Object {
             Object::BinaryFileOutputPort(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::FileOutputPort(_)
+            | Object::TranscodedOutputPort(_)                
             | Object::StdErrorPort(_)
             | Object::StdOutputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -495,6 +498,7 @@ impl Object {
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
             | Object::TranscodedInputPort(_)
+            | Object::TranscodedOutputPort(_)    
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
             _ => false,
@@ -506,6 +510,7 @@ impl Object {
             Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdOutputPort(_)
+            | Object::TranscodedOutputPort(_)                
             | Object::StringOutputPort(_) => true,
             _ => false,
         }
@@ -611,6 +616,7 @@ impl Object {
             Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
             Object::TranscodedInputPort(_) => todo!(),
+            Object::TranscodedOutputPort(_) => todo!(),            
             Object::TranscodedInputOutputPort(_) => todo!(),
         }
     }
@@ -662,6 +668,9 @@ impl Debug for Object {
             Object::TranscodedInputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::TranscodedOutputPort(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }            
             Object::TranscodedInputOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -859,6 +868,9 @@ impl Display for Object {
             Object::TranscodedInputPort(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
+            Object::TranscodedOutputPort(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }            
             Object::TranscodedInputOutputPort(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
