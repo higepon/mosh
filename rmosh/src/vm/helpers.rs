@@ -264,7 +264,7 @@ impl Vm {
                 const FP_OFFSET: isize = 1;
                 cl = unsafe { *self.dec(fp, CL_OFFSET) };
 
-                if !cl.is_closure() && !cl.is_proecdure() {
+                if !cl.is_closure() && !cl.is_procedure() {
                     break;
                 }
 

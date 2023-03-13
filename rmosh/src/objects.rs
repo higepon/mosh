@@ -7,7 +7,7 @@ use crate::ports::{
     BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
     BytevectorOutputPort, FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort,
     StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
-    TranscodedInputPort, Transcoder, UTF16Codec, UTF8Codec, TranscodedOutputPort,
+    TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec, CustomBinaryInputPort,
 };
 use crate::vm::Vm;
 
@@ -33,6 +33,7 @@ pub enum Object {
     Compnum(GcRef<Compnum>),
     Continuation(GcRef<Continuation>),
     ContinuationStack(GcRef<ContinuationStack>),
+    CustomBinaryInputPort(GcRef<CustomBinaryInputPort>),
     DefinedShared(u32),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
@@ -61,7 +62,7 @@ pub enum Object {
     StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
     TranscodedInputPort(GcRef<TranscodedInputPort>),
-    TranscodedOutputPort(GcRef<TranscodedOutputPort>),    
+    TranscodedOutputPort(GcRef<TranscodedOutputPort>),
     TranscodedInputOutputPort(GcRef<TranscodedInputOutputPort>),
     Transcoder(GcRef<Transcoder>),
     True,
@@ -182,7 +183,7 @@ impl Object {
             _ => false,
         }
     }
-    pub fn is_proecdure(&self) -> bool {
+    pub fn is_procedure(&self) -> bool {
         match self {
             Object::Procedure(_) => true,
             _ => false,
@@ -247,6 +248,7 @@ impl Object {
             | Object::BinaryFileInputOutputPort(_)
             | Object::FileInputPort(_)
             | Object::StdInputPort(_)
+            | Object::CustomBinaryInputPort(_)
             | Object::TranscodedInputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::StringInputPort(_) => true,
@@ -258,6 +260,7 @@ impl Object {
         match self {
             Object::BinaryFileInputPort(_)
             | Object::BinaryFileInputOutputPort(_)
+            | Object::CustomBinaryInputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorOutputPort(_)
             | Object::BytevectorInputPort(_) => true,
@@ -466,10 +469,11 @@ impl Object {
             | Object::BinaryFileInputOutputPort(_)
             | Object::FileInputPort(_)
             | Object::FileOutputPort(_)
+            | Object::CustomBinaryInputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::TranscodedInputPort(_)
-            | Object::TranscodedOutputPort(_)            
+            | Object::TranscodedOutputPort(_)
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -482,7 +486,7 @@ impl Object {
             Object::BinaryFileOutputPort(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::FileOutputPort(_)
-            | Object::TranscodedOutputPort(_)                
+            | Object::TranscodedOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdOutputPort(_)
             | Object::StringOutputPort(_) => true,
@@ -498,7 +502,7 @@ impl Object {
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
             | Object::TranscodedInputPort(_)
-            | Object::TranscodedOutputPort(_)    
+            | Object::TranscodedOutputPort(_)
             | Object::StringInputPort(_)
             | Object::StringOutputPort(_) => true,
             _ => false,
@@ -510,7 +514,7 @@ impl Object {
             Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdOutputPort(_)
-            | Object::TranscodedOutputPort(_)                
+            | Object::TranscodedOutputPort(_)
             | Object::StringOutputPort(_) => true,
             _ => false,
         }
@@ -530,6 +534,7 @@ impl Object {
         match self {
             Object::BinaryFileInputPort(_)
             | Object::BytevectorInputPort(_)
+            | Object::CustomBinaryInputPort(_)
             | Object::BinaryFileInputOutputPort(_) => true,
             _ => false,
         }
@@ -581,6 +586,7 @@ impl Object {
             Object::Continuation(_) => todo!(),
             Object::ContinuationStack(_) => todo!(),
             Object::Compnum(_) => todo!(),
+            Object::CustomBinaryInputPort(_) => todo!(),
             Object::Eof => todo!(),
             Object::EqHashtable(_) => todo!(),
             Object::EqvHashtable(_) => todo!(),
@@ -616,7 +622,7 @@ impl Object {
             Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
             Object::TranscodedInputPort(_) => todo!(),
-            Object::TranscodedOutputPort(_) => todo!(),            
+            Object::TranscodedOutputPort(_) => todo!(),
             Object::TranscodedInputOutputPort(_) => todo!(),
         }
     }
@@ -670,7 +676,7 @@ impl Debug for Object {
             }
             Object::TranscodedOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
-            }            
+            }
             Object::TranscodedInputOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -678,6 +684,9 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Compnum(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }
+            Object::CustomBinaryInputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::StringInputPort(port) => {
@@ -823,6 +832,9 @@ impl Display for Object {
             Object::FileOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::CustomBinaryInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -870,7 +882,7 @@ impl Display for Object {
             }
             Object::TranscodedOutputPort(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
-            }            
+            }
             Object::TranscodedInputOutputPort(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }

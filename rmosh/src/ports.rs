@@ -559,6 +559,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Closure(_)
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
+            | Object::CustomBinaryInputPort(_)
             | Object::Vox(_)
             | Object::ProgramCounter(_)
             | Object::ObjectPointer(_)
@@ -644,6 +645,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Compnum(_)
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
+            | Object::CustomBinaryInputPort(_)
             | Object::Eof
             | Object::EqHashtable(_)
             | Object::EqvHashtable(_)
@@ -876,6 +878,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Compnum(_)
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)
+                | Object::CustomBinaryInputPort(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)
@@ -2545,5 +2548,69 @@ impl Display for BufferMode {
             BufferMode::Line => write!(f, "line"),
             BufferMode::Block => write!(f, "block"),
         }
+    }
+}
+
+// CustomBinaryInputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct CustomBinaryInputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    ahead_u8: Option<u8>,
+    id: String,
+    pub read_proc: Object,
+    pub pos_proc: Object,
+    pub set_pos_proc: Object,
+    pub close_proc: Object,
+}
+
+impl CustomBinaryInputPort {
+    pub fn new(
+        id: &str,
+        read_proc: Object,
+        pos_proc: Object,
+        set_pos_proc: Object,
+        close_proc: Object,
+    ) -> Self {
+        CustomBinaryInputPort {
+            header: GcHeader::new(ObjectType::CustomBinaryInputPort),
+            is_closed: false,
+            ahead_u8: None,
+            id: id.to_string(),
+            read_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        }
+    }
+}
+
+impl Port for CustomBinaryInputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl BinaryInputPort for CustomBinaryInputPort {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        todo!()
+    }
+
+    fn ahead_u8(&self) -> Option<u8> {
+        self.ahead_u8
+    }
+
+    fn set_ahead_u8(&mut self, u: Option<u8>) {
+        self.ahead_u8 = u;
+    }
+}
+
+impl Display for CustomBinaryInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<custome-binary-input-port>")
     }
 }

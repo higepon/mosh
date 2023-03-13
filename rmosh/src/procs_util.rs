@@ -309,6 +309,9 @@ macro_rules! as_binary_input_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
+            Object::CustomBinaryInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryInputPort
+            },
             Object::BinaryFileInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -330,6 +333,9 @@ macro_rules! as_binary_input_port_mut {
 macro_rules! obj_as_binary_input_port_mut_or_panic {
     ($obj:expr) => {{
         let port = match $obj {
+            Object::CustomBinaryInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryInputPort
+            },            
             Object::BinaryFileInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -417,5 +423,27 @@ macro_rules! as_text_output_port_mut {
             }
         };
         port
+    }};
+}
+
+#[macro_export]
+macro_rules! check_is_closure {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !o.is_closure() {
+            return error::Error::assertion_violation($name, "procedure required", &[o]);
+        }
+        o
+    }};
+}
+
+#[macro_export]
+macro_rules! check_is_closure_or_false {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !(o.is_closure() || o.is_false()) {
+            return error::Error::assertion_violation($name, "procedure or #f required", &[o]);
+        }
+        o
     }};
 }

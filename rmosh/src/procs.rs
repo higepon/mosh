@@ -4,6 +4,7 @@ use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
     as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
     as_text_input_port_mut, as_text_output_port_mut, as_transcoder, as_u8, as_usize,
+    check_is_closure, check_is_closure_or_false,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -21,10 +22,11 @@ use crate::{
     },
     ports::{
         BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort,
-        BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort, EolStyle,
-        ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort,
-        StringOutputPort, TextInputPort, TextOutputPort, TranscodedInputOutputPort,
-        TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
+        BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort,
+        CustomBinaryInputPort, EolStyle, ErrorHandlingMode, FileOutputPort, Latin1Codec,
+        OutputPort, Port, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
+        TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
+        UTF16Codec, UTF8Codec,
     },
     vm::Vm,
 };
@@ -2513,9 +2515,17 @@ fn is_pair(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     Ok(args[0].is_pair().to_obj())
 }
-fn make_custom_binary_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_custom_binary_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-binary-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let pos_proc = check_is_closure_or_false!(name, args, 2);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 3);
+    let close_proc = check_is_closure_or_false!(name, args, 4);
+    Ok(Object::CustomBinaryInputPort(vm.gc.alloc(
+        CustomBinaryInputPort::new(id, read_proc, pos_proc, set_pos_proc, close_proc),
+    )))
 }
 fn make_custom_binary_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-binary-output-port";
@@ -4092,7 +4102,7 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
             &format!("read error {}", e.to_string()),
             &[args[0]],
         )
-    })?;    
+    })?;
     if s.is_empty() {
         Ok(Object::Eof)
     } else {
