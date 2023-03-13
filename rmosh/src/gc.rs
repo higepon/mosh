@@ -19,7 +19,9 @@ use crate::objects::{
     GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 
-use crate::ports::{FileInputPort, TranscodedOutputPort, Transcoder, TranscodedInputPort, TranscodedInputOutputPort};
+use crate::ports::{
+    FileInputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
+};
 use crate::vm::Vm;
 
 // GcRef.
@@ -105,7 +107,7 @@ pub enum ObjectType {
     Symbol,
     Transcoder,
     TranscodedInputPort,
-    TranscodedInputOutputPort,    
+    TranscodedInputOutputPort,
     TranscodedOutputPort,
     Vector,
     Vox,
@@ -435,7 +437,7 @@ impl Gc {
             }
             Object::BinaryFileInputOutputPort(port) => {
                 self.mark_heap_object(port);
-            }            
+            }
             Object::BinaryFileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -444,7 +446,7 @@ impl Gc {
             }
             Object::BytevectorOutputPort(port) => {
                 self.mark_heap_object(port);
-            }            
+            }
             Object::BinaryFileInputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -465,7 +467,7 @@ impl Gc {
             }
             Object::TranscodedInputOutputPort(t) => {
                 self.mark_heap_object(t);
-            }            
+            }
             Object::Nil => {}
             Object::Flonum(_) => {}
             Object::Fixnum(_) => {}
@@ -667,7 +669,7 @@ impl Gc {
             ObjectType::BytevectorInputPort => {}
             ObjectType::BytevectorOutputPort => {}
             ObjectType::BinaryFileInputPort => {}
-            ObjectType::BinaryFileInputOutputPort => {}            
+            ObjectType::BinaryFileInputOutputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
             ObjectType::StdInputPort => {}

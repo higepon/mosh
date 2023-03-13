@@ -6,8 +6,8 @@ use crate::op::Op;
 use crate::ports::{
     BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
     BytevectorOutputPort, FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort,
-    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputPort,
-    Transcoder, UTF16Codec, UTF8Codec, TranscodedInputOutputPort,
+    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
+    TranscodedInputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::vm::Vm;
 
@@ -61,7 +61,7 @@ pub enum Object {
     StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
     TranscodedInputPort(GcRef<TranscodedInputPort>),
-    TranscodedInputOutputPort(GcRef<TranscodedInputOutputPort>),    
+    TranscodedInputOutputPort(GcRef<TranscodedInputOutputPort>),
     Transcoder(GcRef<Transcoder>),
     True,
     Unspecified,
@@ -611,7 +611,7 @@ impl Object {
             Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
             Object::TranscodedInputPort(_) => todo!(),
-            Object::TranscodedInputOutputPort(_) => todo!(),            
+            Object::TranscodedInputOutputPort(_) => todo!(),
         }
     }
 }
@@ -664,7 +664,7 @@ impl Debug for Object {
             }
             Object::TranscodedInputOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
-            }            
+            }
             Object::Ratnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -861,7 +861,7 @@ impl Display for Object {
             }
             Object::TranscodedInputOutputPort(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
-            }            
+            }
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }

@@ -15,12 +15,13 @@ use crate::{
     compiler, error,
     fasl::FaslReader,
     gc::{Gc, GcRef},
+    obj_as_text_input_port_mut_or_panic,
     objects::{Closure, Object, Symbol},
     op::Op,
     ports::{StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
     procs::default_free_vars,
     psyntax,
-    reader_util::ReadError, obj_as_text_input_port_mut_or_panic,
+    reader_util::ReadError,
 };
 
 const STACK_SIZE: usize = 65536;

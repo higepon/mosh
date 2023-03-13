@@ -178,7 +178,7 @@ impl Vm {
         let irritants = self.gc.listn(irritants);
         self.raise_after3("error", who, message, irritants)
     }
-    
+
     pub(super) fn call_io_invalid_position_after(
         &mut self,
         who: &str,
@@ -189,7 +189,7 @@ impl Vm {
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
         self.raise_after3("raise-i/o-invalid-position-error", who, message, irritants)
-    }    
+    }
     pub(super) fn implementation_restriction_violation_after(
         &mut self,
         who: &str,

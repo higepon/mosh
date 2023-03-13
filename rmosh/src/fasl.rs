@@ -148,7 +148,7 @@ impl FaslWriter {
             Object::FileInputPort(_) => todo!(),
             Object::FileOutputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
-            Object::BinaryFileInputOutputPort(_) => todo!(),            
+            Object::BinaryFileInputOutputPort(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
             Object::StdInputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
@@ -159,7 +159,7 @@ impl FaslWriter {
             Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
             Object::TranscodedInputPort(_) => todo!(),
-            Object::TranscodedInputOutputPort(_) => todo!(),            
+            Object::TranscodedInputOutputPort(_) => todo!(),
             Object::Instruction(op) => {
                 self.put_tag(port, Tag::CompilerInsn)?;
                 port.put_u8(op as u8)?;
@@ -231,7 +231,7 @@ impl FaslWriter {
             match o {
                 Object::Bytevector(_)
                 | Object::Bignum(_)
-                | Object::BinaryFileInputOutputPort(_)                
+                | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::BytevectorInputPort(_)
@@ -265,7 +265,7 @@ impl FaslWriter {
                 | Object::StringOutputPort(_)
                 | Object::Symbol(_)
                 | Object::TranscodedInputPort(_)
-                | Object::TranscodedInputOutputPort(_)                
+                | Object::TranscodedInputOutputPort(_)
                 | Object::Transcoder(_)
                 | Object::True
                 | Object::Unspecified

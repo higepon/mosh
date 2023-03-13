@@ -575,7 +575,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::UTF16Codec(_)
             | Object::Transcoder(_)
             | Object::TranscodedInputPort(_)
-            | Object::TranscodedInputOutputPort(_)            
+            | Object::TranscodedInputOutputPort(_)
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
@@ -667,7 +667,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::StringOutputPort(_)
             | Object::Symbol(_)
             | Object::TranscodedInputPort(_)
-            | Object::TranscodedInputOutputPort(_)            
+            | Object::TranscodedInputOutputPort(_)
             | Object::Transcoder(_)
             | Object::True
             | Object::Unspecified
@@ -898,7 +898,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::StringOutputPort(_)
                 | Object::Symbol(_)
                 | Object::TranscodedInputPort(_)
-                | Object::TranscodedInputOutputPort(_)                
+                | Object::TranscodedInputOutputPort(_)
                 | Object::Transcoder(_)
                 | Object::True
                 | Object::Unspecified
@@ -1847,7 +1847,7 @@ impl TextOutputPort for TranscodedInputOutputPort {
             Object::BinaryFileInputOutputPort(mut port) => {
                 let port = unsafe { port.pointer.as_mut() };
                 port as &mut dyn BinaryOutputPort
-            }            
+            }
             _ => panic!(),
         };
         let mut transcoder = self.transcoder.to_transcoder();

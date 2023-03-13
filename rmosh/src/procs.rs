@@ -2,8 +2,8 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
-    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring,
-    as_symbol, as_text_input_port_mut, as_transcoder, as_u8, as_usize,
+    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
+    as_text_input_port_mut, as_text_output_port_mut, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -23,10 +23,10 @@ use crate::{
         BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort,
         BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort, EolStyle,
         ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort,
-        StringOutputPort, TextInputPort, TextOutputPort, TranscodedInputPort, TranscodedOutputPort,
-        Transcoder, UTF16Codec, UTF8Codec, TranscodedInputOutputPort,
+        StringOutputPort, TextInputPort, TextOutputPort, TranscodedInputOutputPort,
+        TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm, as_text_output_port_mut,
+    vm::Vm,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{

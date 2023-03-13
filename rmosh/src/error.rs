@@ -94,7 +94,7 @@ impl Error {
             message,
             irritants,
         ))
-    }    
+    }
 }
 
 impl Display for Error {
