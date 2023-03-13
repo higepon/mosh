@@ -142,6 +142,7 @@ macro_rules! as_port {
         let o = $args[$i];
         let port = match o {
             Object::BinaryFileInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
+            Object::BinaryFileInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
@@ -165,6 +166,7 @@ macro_rules! as_port_mut {
         let o = $args[$i];
         let port = match o {
             Object::BinaryFileInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::BinaryFileInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::BinaryFileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
@@ -187,6 +189,9 @@ macro_rules! as_output_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
+            Object::BinaryFileInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn OutputPort
+            },            
             Object::BinaryFileOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
             },
@@ -275,6 +280,9 @@ macro_rules! as_binary_input_port_mut {
             Object::BinaryFileInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
+            Object::BinaryFileInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryInputPort
+            },            
             Object::BytevectorInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -291,6 +299,9 @@ macro_rules! obj_as_binary_input_port_mut_or_panic {
     ($obj:expr) => {{
         let port = match $obj {
             Object::BinaryFileInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryInputPort
+            },
+            Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
             Object::BytevectorInputPort(mut p) => unsafe {
@@ -328,6 +339,9 @@ macro_rules! as_binary_output_port_mut {
             Object::BinaryFileOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
+            Object::BinaryFileInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryOutputPort
+            },            
             Object::BytevectorOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },

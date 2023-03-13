@@ -584,6 +584,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::FileInputPort(_)
             | Object::Eof
             | Object::BinaryFileInputPort(_)
+            | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
@@ -660,6 +661,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::FileInputPort(_)
             | Object::Eof
             | Object::BinaryFileInputPort(_)
+            | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StringOutputPort(_)
@@ -861,6 +863,7 @@ pub trait TextOutputPort: OutputPort {
                 Object::Bytevector(_)
                 | Object::Bignum(_)
                 | Object::BinaryFileInputPort(_)
+                | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::BytevectorInputPort(_)
                 | Object::BytevectorOutputPort(_)
@@ -1325,7 +1328,7 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
             }
             None => read_start = 0,
         }
-        self.read(&mut buf[read_start..])
+        self.file.read(&mut buf[read_start..])
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1339,7 +1342,13 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
 
 impl BinaryOutputPort for BinaryFileInputOutputPort {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.write(buf)
+        self.file.write(buf)
+    }
+}
+
+impl OutputPort for BinaryFileInputOutputPort {
+    fn flush(&mut self) {
+        self.file.flush().unwrap_or(())
     }
 }
 

@@ -2,8 +2,8 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
-    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
-    as_text_input_port_mut, as_transcoder, as_u8, as_usize,
+    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_simple_struct, as_sstring,
+    as_symbol, as_text_input_port_mut, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -20,11 +20,11 @@ use crate::{
         Object, Pair, SString, SimpleStruct, Symbol,
     },
     ports::{
-        BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort, BufferMode,
-        BytevectorInputPort, BytevectorOutputPort, EolStyle, ErrorHandlingMode, FileOutputPort,
-        Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
-        TextOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec,
-        UTF8Codec,
+        BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort,
+        BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort, EolStyle,
+        ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort,
+        StringOutputPort, TextInputPort, TextOutputPort, TranscodedInputPort, TranscodedOutputPort,
+        Transcoder, UTF16Codec, UTF8Codec,
     },
     vm::Vm,
 };
@@ -6949,9 +6949,148 @@ fn modulo(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         _ => panic!(),
     }
 }
-fn open_file_input_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-file-input/output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 4);
+    let path = &as_sstring!(name, args, 0).string;
+    let file_exists = Path::new(&path).exists();
+    let file_readable = match fs::metadata(path) {
+        Ok(m) => !m.permissions().readonly(),
+        Err(_) => false,
+    };
+    let argc = args.len();
+    let mut open_options = OpenOptions::new();
+    open_options.write(true).create(true);
+    let mut transcoder: Option<Object> = None;
+    let file: File;
+    if argc == 1 {
+        if file_exists {
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );
+        }
+        file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                return error::Error::assertion_violation(
+                    name,
+                    &format!("file open error {}: {}", path, err.to_string()),
+                    args,
+                );
+            }
+        };
+    } else {
+        let file_options = match args[1] {
+            Object::SimpleStruct(s) => s.field(1),
+            _ => {
+                panic!("{}: file-options required but got {}", name, args[1])
+            }
+        };
+        let empty_p = file_options.is_nil();
+        let sym_no_create = vm.gc.symbol_intern("no-create");
+        let sym_no_truncate = vm.gc.symbol_intern("no-truncate");
+        let sym_no_fail = vm.gc.symbol_intern("no-fail");
+        let no_create_p = !memq(vm, &mut [sym_no_create, file_options])
+            .unwrap()
+            .is_false();
+        let no_truncate_p = !memq(vm, &mut [sym_no_truncate, file_options])
+            .unwrap()
+            .is_false();
+        let no_fail_p = !memq(vm, &mut [sym_no_fail, file_options])
+            .unwrap()
+            .is_false();
+
+        if file_exists && empty_p {
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );
+        } else if no_create_p && no_truncate_p {
+            if !file_exists {
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
+            }
+        } else if no_create_p {
+            if file_exists {
+                open_options.truncate(true);
+            } else {
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
+            }
+        } else if no_fail_p && no_truncate_p {
+            if !file_exists {
+                open_options.truncate(true);
+            }
+        } else if no_fail_p {
+            open_options.truncate(true);
+        } else if no_truncate_p {
+            if file_exists {
+                return error::Error::io_file_already_exist(
+                    name,
+                    &format!("file already exists {}", path),
+                    args,
+                );
+            } else {
+                open_options.truncate(true);
+            }
+        }
+
+        // We ignore buffer-mode. This implmentation is not buffered at this momement.
+        // We may revisit this. Once we conform R7RS and R6RS.
+        let _buffer_mode = if argc < 3 {
+            BufferMode::None
+        } else {
+            match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+                Some(mode) => mode,
+                None => {
+                    return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+                }
+            }
+        };
+
+        if argc == 4 {
+            match args[3] {
+                Object::Transcoder(_) => transcoder = Some(args[3]),
+                Object::False => {}
+                _ => {
+                    return Error::assertion_violation(
+                        name,
+                        "transcoder or #f required",
+                        &[args[3]],
+                    );
+                }
+            }
+        }
+        file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{}: {} {}", name, path, err);
+            }
+        };
+    }
+
+    match transcoder {
+        Some(t) => {
+            let bin_port = Object::BinaryFileInputOutputPort(
+                vm.gc.alloc(BinaryFileInputOutputPort::new(file)),
+            );
+            panic!("this should be input/output prot");
+            let port = TranscodedInputPort::new(bin_port, t);
+            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
+        }
+        None => Ok(Object::BinaryFileInputOutputPort(
+            vm.gc.alloc(BinaryFileInputOutputPort::new(file)),
+        )),
+    }
 }
 fn make_custom_binary_input_output_port(
     _vm: &mut Vm,

@@ -432,6 +432,9 @@ impl Gc {
             Object::FileInputPort(port) => {
                 self.mark_heap_object(port);
             }
+            Object::BinaryFileInputOutputPort(port) => {
+                self.mark_heap_object(port);
+            }            
             Object::BinaryFileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -440,7 +443,7 @@ impl Gc {
             }
             Object::BytevectorOutputPort(port) => {
                 self.mark_heap_object(port);
-            }
+            }            
             Object::BinaryFileInputPort(port) => {
                 self.mark_heap_object(port);
             }

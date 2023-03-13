@@ -4,10 +4,10 @@ use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
-    BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort, BytevectorOutputPort,
-    FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputPort, Transcoder, UTF16Codec,
-    UTF8Codec,
+    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
+    BytevectorOutputPort, FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort,
+    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputPort,
+    Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::vm::Vm;
 
@@ -23,6 +23,7 @@ use std::ops::{Deref, DerefMut};
 pub enum Object {
     Bignum(GcRef<Bignum>),
     BinaryFileInputPort(GcRef<BinaryFileInputPort>),
+    BinaryFileInputOutputPort(GcRef<BinaryFileInputOutputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
     Bytevector(GcRef<Bytevector>),
     BytevectorInputPort(GcRef<BytevectorInputPort>),
@@ -241,6 +242,7 @@ impl Object {
     pub fn is_input_port(self) -> bool {
         match self {
             Object::BinaryFileInputPort(_)
+            | Object::BinaryFileInputOutputPort(_)
             | Object::FileInputPort(_)
             | Object::StdInputPort(_)
             | Object::TranscodedInputPort(_)
@@ -253,6 +255,7 @@ impl Object {
     pub fn is_binary_port(self) -> bool {
         match self {
             Object::BinaryFileInputPort(_)
+            | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorOutputPort(_)
             | Object::BytevectorInputPort(_) => true,
@@ -458,6 +461,7 @@ impl Object {
         match self {
             Object::BinaryFileInputPort(_)
             | Object::BinaryFileOutputPort(_)
+            | Object::BinaryFileInputOutputPort(_)
             | Object::FileInputPort(_)
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
@@ -473,6 +477,7 @@ impl Object {
     pub fn is_output_port(self) -> bool {
         match self {
             Object::BinaryFileOutputPort(_)
+            | Object::BinaryFileInputOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdOutputPort(_)
@@ -517,7 +522,9 @@ impl Object {
 
     pub fn is_binary_input_port(self) -> bool {
         match self {
-            Object::BinaryFileInputPort(_) | Object::BytevectorInputPort(_) => true,
+            Object::BinaryFileInputPort(_)
+            | Object::BytevectorInputPort(_)
+            | Object::BinaryFileInputOutputPort(_) => true,
             _ => false,
         }
     }
@@ -558,6 +565,7 @@ impl Object {
         match self {
             Object::Bignum(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
+            Object::BinaryFileInputOutputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
             Object::Bytevector(_) => todo!(),
             Object::BytevectorInputPort(_) => todo!(),
@@ -668,6 +676,9 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::BinaryFileOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::BinaryFileInputOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::BinaryFileInputPort(port) => {
@@ -784,6 +795,9 @@ impl Display for Object {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::BinaryFileInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::BinaryFileInputOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::BytevectorInputPort(port) => {
