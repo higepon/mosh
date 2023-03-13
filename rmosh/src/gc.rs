@@ -463,6 +463,9 @@ impl Gc {
             Object::TranscodedInputPort(t) => {
                 self.mark_heap_object(t);
             }
+            Object::TranscodedInputOutputPort(t) => {
+                self.mark_heap_object(t);
+            }            
             Object::Nil => {}
             Object::Flonum(_) => {}
             Object::Fixnum(_) => {}

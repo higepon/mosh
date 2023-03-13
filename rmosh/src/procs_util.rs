@@ -142,7 +142,9 @@ macro_rules! as_port {
         let o = $args[$i];
         let port = match o {
             Object::BinaryFileInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
-            Object::BinaryFileInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
+            Object::BinaryFileInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn Port
+            },
             Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
@@ -153,6 +155,7 @@ macro_rules! as_port {
             Object::StringOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::FileInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::TranscodedInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
+            Object::TranscodedInputOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::FileOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             _ => return error::Error::assertion_violation($name, "port required", &[o]),
         };
@@ -166,7 +169,9 @@ macro_rules! as_port_mut {
         let o = $args[$i];
         let port = match o {
             Object::BinaryFileInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
-            Object::BinaryFileInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
+            Object::BinaryFileInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn Port
+            },
             Object::BinaryFileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
@@ -176,7 +181,10 @@ macro_rules! as_port_mut {
             Object::StringInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::StringOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::FileInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
-            Object::TranscodedInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
+            Object::TranscodedInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::TranscodedInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn Port
+            },
             Object::FileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             _ => return error::Error::assertion_violation($name, "port required", &[o]),
         };
@@ -191,7 +199,7 @@ macro_rules! as_output_port_mut {
         let port = match o {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
-            },            
+            },
             Object::BinaryFileOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
             },
@@ -202,6 +210,9 @@ macro_rules! as_output_port_mut {
             Object::StdOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
             Object::StringOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
             Object::FileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn OutputPort },
+            Object::TranscodedInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn OutputPort
+            },
             _ => return error::Error::assertion_violation($name, "output port required", &[o]),
         };
         port
@@ -213,7 +224,12 @@ macro_rules! as_text_input_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
-            Object::TranscodedInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },            
+            Object::TranscodedInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },
+            Object::TranscodedInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },
             Object::StdInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
             Object::StringInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
@@ -229,7 +245,12 @@ macro_rules! as_text_input_port_mut {
 macro_rules! obj_as_text_input_port_mut {
     ($name:ident, $obj:expr) => {{
         let port = match $obj {
-            Object::TranscodedInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
+            Object::TranscodedInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },
+            Object::TranscodedInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },
             Object::StdInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
             Object::StringInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
@@ -260,6 +281,9 @@ macro_rules! obj_as_text_output_port_mut {
             Object::FileOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextOutputPort
             },
+            Object::TranscodedInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },
             _ => {
                 return error::Error::assertion_violation(
                     $name,
@@ -282,7 +306,7 @@ macro_rules! as_binary_input_port_mut {
             },
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
-            },            
+            },
             Object::BytevectorInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -323,6 +347,9 @@ macro_rules! obj_as_text_input_port_mut_or_panic {
             Object::TranscodedInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
+            Object::TranscodedInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },
             _ => {
                 panic!("BUG: text-input-port expected")
             }
@@ -341,7 +368,7 @@ macro_rules! as_binary_output_port_mut {
             },
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
-            },            
+            },
             Object::BytevectorOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
@@ -351,6 +378,31 @@ macro_rules! as_binary_output_port_mut {
                     "binary output port required",
                     &[o],
                 )
+            }
+        };
+        port
+    }};
+}
+
+#[macro_export]
+macro_rules! as_text_output_port_mut {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        let port = match o {
+            Object::TranscodedInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },
+            Object::StdOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },
+            Object::StringOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },
+            Object::FileOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },
+            _ => {
+                return error::Error::assertion_violation($name, "text output port required", &[o])
             }
         };
         port

@@ -2,7 +2,7 @@
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
-    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_simple_struct, as_sstring,
+    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring,
     as_symbol, as_text_input_port_mut, as_transcoder, as_u8, as_usize,
     equal::Equal,
     error::{self, Error, ErrorType},
@@ -24,9 +24,9 @@ use crate::{
         BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort, EolStyle,
         ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort,
         StringOutputPort, TextInputPort, TextOutputPort, TranscodedInputPort, TranscodedOutputPort,
-        Transcoder, UTF16Codec, UTF8Codec,
+        Transcoder, UTF16Codec, UTF8Codec, TranscodedInputOutputPort,
     },
-    vm::Vm,
+    vm::Vm, as_text_output_port_mut,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -2574,14 +2574,8 @@ fn put_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         str.len()
     };
     let str = &str[start..count];
-    let result = match args[0] {
-        Object::FileOutputPort(mut port) => port.put_string(str),
-        Object::StdErrorPort(mut port) => port.put_string(str),
-        Object::StdOutputPort(mut port) => port.put_string(str),
-        Object::StringOutputPort(mut port) => port.put_string(str),
-        _ => panic!("{}", args[1]),
-    };
-    match result {
+    let port = as_text_output_port_mut!(name, args, 0);
+    match port.put_string(str) {
         Ok(_) => Ok(Object::Unspecified),
         Err(e) => Error::assertion_violation(name, &format!("{:?}", e), &[args[0]]),
     }
@@ -6954,10 +6948,10 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
     check_argc_between!(name, args, 1, 4);
     let path = &as_sstring!(name, args, 0).string;
     let file_exists = Path::new(&path).exists();
-    let file_readable = match fs::metadata(path) {
+    /*let file_readable = match fs::metadata(path) {
         Ok(m) => !m.permissions().readonly(),
         Err(_) => false,
-    };
+    };*/
     let argc = args.len();
     let mut open_options = OpenOptions::new();
     open_options.write(true).create(true);
@@ -7083,9 +7077,8 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
             let bin_port = Object::BinaryFileInputOutputPort(
                 vm.gc.alloc(BinaryFileInputOutputPort::new(file)),
             );
-            panic!("this should be input/output prot");
-            let port = TranscodedInputPort::new(bin_port, t);
-            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
+            let port = TranscodedInputOutputPort::new(bin_port, t);
+            Ok(Object::TranscodedInputOutputPort(vm.gc.alloc(port)))
         }
         None => Ok(Object::BinaryFileInputOutputPort(
             vm.gc.alloc(BinaryFileInputOutputPort::new(file)),

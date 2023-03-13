@@ -575,6 +575,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::UTF16Codec(_)
             | Object::Transcoder(_)
             | Object::TranscodedInputPort(_)
+            | Object::TranscodedInputOutputPort(_)            
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
@@ -631,47 +632,48 @@ pub trait TextOutputPort: OutputPort {
                 self.display_shared_struct(s, seen, shared_id, human_readable)
             }
             Object::Bytevector(_)
+            | Object::Bignum(_)
+            | Object::BinaryFileInputOutputPort(_)
+            | Object::BinaryFileInputPort(_)
+            | Object::BinaryFileOutputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::BytevectorOutputPort(_)
+            | Object::Char(_)
             | Object::Closure(_)
+            | Object::Compnum(_)
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
-            | Object::Vox(_)
-            | Object::ProgramCounter(_)
-            | Object::ObjectPointer(_)
-            | Object::Unspecified
-            | Object::True
-            | Object::Procedure(_)
-            | Object::Char(_)
+            | Object::Eof
             | Object::EqHashtable(_)
             | Object::EqvHashtable(_)
+            | Object::False
+            | Object::FileInputPort(_)
+            | Object::FileOutputPort(_)
+            | Object::Flonum(_)
             | Object::GenericHashtable(_)
-            | Object::Bignum(_)
-            | Object::Compnum(_)
+            | Object::Instruction(_)
             | Object::Latin1Codec(_)
-            | Object::UTF8Codec(_)
-            | Object::UTF16Codec(_)
-            | Object::Transcoder(_)
-            | Object::TranscodedInputPort(_)
+            | Object::Nil
+            | Object::ObjectPointer(_)
+            | Object::Procedure(_)
+            | Object::ProgramCounter(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
-            | Object::False
-            | Object::Flonum(_)
-            | Object::StringInputPort(_)
-            | Object::FileInputPort(_)
-            | Object::Eof
-            | Object::BinaryFileInputPort(_)
-            | Object::BinaryFileInputOutputPort(_)
-            | Object::BinaryFileOutputPort(_)
-            | Object::FileOutputPort(_)
-            | Object::StringOutputPort(_)
+            | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
-            | Object::StdErrorPort(_)
-            | Object::Instruction(_)
-            | Object::Nil
-            | Object::Symbol(_)
             | Object::String(_)
+            | Object::StringInputPort(_)
+            | Object::StringOutputPort(_)
+            | Object::Symbol(_)
+            | Object::TranscodedInputPort(_)
+            | Object::TranscodedInputOutputPort(_)            
+            | Object::Transcoder(_)
+            | Object::True
+            | Object::Unspecified
+            | Object::UTF16Codec(_)
+            | Object::UTF8Codec(_)
+            | Object::Vox(_)
             | Object::Fixnum(_) => {
                 if human_readable {
                     self.as_display(obj)
@@ -862,8 +864,8 @@ pub trait TextOutputPort: OutputPort {
             match o {
                 Object::Bytevector(_)
                 | Object::Bignum(_)
-                | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileInputOutputPort(_)
+                | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::BytevectorInputPort(_)
                 | Object::BytevectorOutputPort(_)
@@ -875,17 +877,13 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)
-                | Object::GenericHashtable(_)
                 | Object::False
                 | Object::FileInputPort(_)
                 | Object::FileOutputPort(_)
                 | Object::Flonum(_)
+                | Object::GenericHashtable(_)
                 | Object::Instruction(_)
                 | Object::Latin1Codec(_)
-                | Object::UTF8Codec(_)
-                | Object::UTF16Codec(_)
-                | Object::Transcoder(_)
-                | Object::TranscodedInputPort(_)
                 | Object::Nil
                 | Object::ObjectPointer(_)
                 | Object::Procedure(_)
@@ -899,8 +897,13 @@ pub trait TextOutputPort: OutputPort {
                 | Object::StringInputPort(_)
                 | Object::StringOutputPort(_)
                 | Object::Symbol(_)
+                | Object::TranscodedInputPort(_)
+                | Object::TranscodedInputOutputPort(_)                
+                | Object::Transcoder(_)
                 | Object::True
                 | Object::Unspecified
+                | Object::UTF16Codec(_)
+                | Object::UTF8Codec(_)
                 | Object::Vox(_)
                 | Object::Fixnum(_) => return,
                 Object::Pair(p) => {
@@ -1841,6 +1844,10 @@ impl TextOutputPort for TranscodedInputOutputPort {
                 let port = unsafe { port.pointer.as_mut() };
                 port as &mut dyn BinaryOutputPort
             }
+            Object::BinaryFileInputOutputPort(mut port) => {
+                let port = unsafe { port.pointer.as_mut() };
+                port as &mut dyn BinaryOutputPort
+            }            
             _ => panic!(),
         };
         let mut transcoder = self.transcoder.to_transcoder();

@@ -7,7 +7,7 @@ use crate::ports::{
     BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
     BytevectorOutputPort, FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort,
     StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputPort,
-    Transcoder, UTF16Codec, UTF8Codec,
+    Transcoder, UTF16Codec, UTF8Codec, TranscodedInputOutputPort,
 };
 use crate::vm::Vm;
 
@@ -22,8 +22,8 @@ use std::ops::{Deref, DerefMut};
 #[derive(Copy, Clone, PartialEq, Hash)]
 pub enum Object {
     Bignum(GcRef<Bignum>),
-    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     BinaryFileInputOutputPort(GcRef<BinaryFileInputOutputPort>),
+    BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
     Bytevector(GcRef<Bytevector>),
     BytevectorInputPort(GcRef<BytevectorInputPort>),
@@ -33,11 +33,11 @@ pub enum Object {
     Compnum(GcRef<Compnum>),
     Continuation(GcRef<Continuation>),
     ContinuationStack(GcRef<ContinuationStack>),
+    DefinedShared(u32),
     Eof,
     EqHashtable(GcRef<EqHashtable>),
     EqvHashtable(GcRef<EqvHashtable>),
     False,
-    DefinedShared(u32),
     FileInputPort(GcRef<FileInputPort>),
     FileOutputPort(GcRef<FileOutputPort>),
     Fixnum(isize),
@@ -45,8 +45,6 @@ pub enum Object {
     GenericHashtable(GcRef<GenericHashtable>),
     Instruction(Op),
     Latin1Codec(GcRef<Latin1Codec>),
-    UTF8Codec(GcRef<UTF8Codec>),
-    UTF16Codec(GcRef<UTF16Codec>),
     Nil,
     ObjectPointer(*mut Object),
     Pair(GcRef<Pair>),
@@ -62,10 +60,13 @@ pub enum Object {
     StringInputPort(GcRef<StringInputPort>),
     StringOutputPort(GcRef<StringOutputPort>),
     Symbol(GcRef<Symbol>),
-    Transcoder(GcRef<Transcoder>),
     TranscodedInputPort(GcRef<TranscodedInputPort>),
+    TranscodedInputOutputPort(GcRef<TranscodedInputOutputPort>),    
+    Transcoder(GcRef<Transcoder>),
     True,
     Unspecified,
+    UTF16Codec(GcRef<UTF16Codec>),
+    UTF8Codec(GcRef<UTF8Codec>),
     Vector(GcRef<Vector>),
     Vox(GcRef<Vox>),
 }
@@ -610,6 +611,7 @@ impl Object {
             Object::UTF16Codec(_) => todo!(),
             Object::Transcoder(_) => todo!(),
             Object::TranscodedInputPort(_) => todo!(),
+            Object::TranscodedInputOutputPort(_) => todo!(),            
         }
     }
 }
@@ -660,6 +662,9 @@ impl Debug for Object {
             Object::TranscodedInputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::TranscodedInputOutputPort(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }            
             Object::Ratnum(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -854,6 +859,9 @@ impl Display for Object {
             Object::TranscodedInputPort(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
+            Object::TranscodedInputOutputPort(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }            
             Object::Fixnum(n) => {
                 write!(f, "{}", n)
             }
