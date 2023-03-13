@@ -1009,7 +1009,7 @@ pub trait BinaryInputPort: Port {
     fn read_u8(&mut self) -> io::Result<Option<u8>> {
         match self.ahead_u8() {
             Some(u) => {
-                self.unget_u8(u);
+                self.set_ahead_u8(None);
                 Ok(Some(u))
             }
             None => {
@@ -1115,7 +1115,7 @@ impl BinaryInputPort for BytevectorInputPort {
             },
             self.data.len() - self.idx,
         );
-        buf[read_start..size].copy_from_slice(&self.data[self.idx..self.idx + size]);
+        buf[read_start..size + read_start].copy_from_slice(&self.data[self.idx..self.idx + size]);
         self.idx += size;
         Ok(size)
     }
@@ -1259,7 +1259,6 @@ impl BinaryInputPort for BinaryFileInputPort {
                 } else {
                     read_start = 0;
                 }
-                self.unget_u8(u);
             }
             None => read_start = 0,
         }
@@ -1330,7 +1329,6 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
                 } else {
                     read_start = 0;
                 }
-                self.unget_u8(u);
             }
             None => read_start = 0,
         }
