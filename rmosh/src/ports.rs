@@ -1296,7 +1296,7 @@ pub struct BinaryFileInputOutputPort {
 impl BinaryFileInputOutputPort {
     pub fn new(file: File) -> Self {
         BinaryFileInputOutputPort {
-            header: GcHeader::new(ObjectType::BinaryFileInputPort),
+            header: GcHeader::new(ObjectType::BinaryFileInputOutputPort),
             is_closed: false,
             file: file,
             ahead_u8: None,
@@ -1564,7 +1564,7 @@ pub struct TranscodedInputPort {
 impl TranscodedInputPort {
     pub fn new(in_port: Object, transcoder: Object) -> Self {
         TranscodedInputPort {
-            header: GcHeader::new(ObjectType::TranscodedOutputPort),
+            header: GcHeader::new(ObjectType::TranscodedInputPort),
             is_closed: false,
             in_port: in_port,
             transcoder: transcoder,
