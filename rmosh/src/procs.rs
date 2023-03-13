@@ -6730,7 +6730,12 @@ fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn lookahead_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-u8";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.lookahead_u8() {
+        Some(u) => Ok(Object::Fixnum(u as isize)),
+        None => Ok(Object::Eof),
+    }
 }
 
 fn open_bytevector_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
