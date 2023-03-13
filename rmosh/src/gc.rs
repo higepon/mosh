@@ -19,7 +19,7 @@ use crate::objects::{
     GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 
-use crate::ports::{FileInputPort, TranscodedOutputPort, Transcoder, TranscodedInputPort};
+use crate::ports::{FileInputPort, TranscodedOutputPort, Transcoder, TranscodedInputPort, TranscodedInputOutputPort};
 use crate::vm::Vm;
 
 // GcRef.
@@ -105,6 +105,7 @@ pub enum ObjectType {
     Symbol,
     Transcoder,
     TranscodedInputPort,
+    TranscodedInputOutputPort,    
     TranscodedOutputPort,
     Vector,
     Vox,
@@ -642,6 +643,12 @@ impl Gc {
                 self.mark_object(port.transcoder);
             }
 
+            ObjectType::TranscodedInputOutputPort => {
+                let port: &TranscodedInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(port.parsed);
+                self.mark_object(port.port);
+                self.mark_object(port.transcoder);
+            }
 
             ObjectType::Continuation => {
                 let c: &Continuation = unsafe { mem::transmute(pointer.as_ref()) };

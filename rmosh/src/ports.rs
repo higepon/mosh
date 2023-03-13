@@ -1714,6 +1714,142 @@ impl TextOutputPort for TranscodedOutputPort {
     }
 }
 
+// TranscodedInputOutputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct TranscodedInputOutputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    pub port: Object,
+    pub transcoder: Object,
+    ahead_char: Option<char>,
+    pub parsed: Object,
+}
+
+impl TranscodedInputOutputPort {
+    pub fn new(port: Object, transcoder: Object) -> Self {
+        TranscodedInputOutputPort {
+            header: GcHeader::new(ObjectType::TranscodedInputOutputPort),
+            is_closed: false,
+            port: port,
+            transcoder: transcoder,
+            ahead_char: None,
+            parsed: Object::Unspecified,
+        }
+    }
+}
+
+impl Port for TranscodedInputOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl Display for TranscodedInputOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<transcoded-input/output-port>")
+    }
+}
+
+impl TextInputPort for TranscodedInputOutputPort {
+    fn read_to_string(&mut self, str: &mut String) -> std::io::Result<usize> {
+        let mut i: usize = 1;
+        loop {
+            match self.read_char() {
+                Some(ch) => str.push(ch),
+                None => break,
+            }
+            i += 1;
+        }
+        Ok(i)
+    }
+
+    fn read_n_to_string(&mut self, str: &mut String, n: usize) -> io::Result<usize> {
+        let mut size = 0;
+        loop {
+            match self.read_char() {
+                Some(ch) => str.push(ch),
+                None => return Ok(size),
+            }
+            size += 1;
+            if size == n {
+                break;
+            }
+        }
+        Ok(n)
+    }
+
+    fn read_char(&mut self) -> Option<char> {
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let port = obj_as_binary_input_port_mut_or_panic!(self.port);
+                let mut t = self.transcoder.to_transcoder();
+                match t.read_char(port) {
+                    Ok(Some(ch)) => Some(ch),
+                    _ => None,
+                }
+            }
+        }
+    }
+
+    fn ahead_char(&self) -> Option<char> {
+        self.ahead_char
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        self.ahead_char = c;
+    }
+
+    fn input_src(&self) -> String {
+        "todo: input source".to_string()
+    }
+
+    fn read_line(&mut self, str: &mut String) -> std::io::Result<usize> {
+        self.read_to_string(str)
+    }
+
+    fn set_parsed(&mut self, obj: Object) {
+        self.parsed = obj;
+    }
+    fn parsed(&self) -> Object {
+        self.parsed
+    }
+}
+
+impl OutputPort for TranscodedInputOutputPort {
+    fn flush(&mut self) {
+        // todo
+        //self.file.flush().unwrap_or(())
+    }
+}
+
+impl TextOutputPort for TranscodedInputOutputPort {
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+        let port = match self.port {
+            Object::BytevectorOutputPort(mut port) => {
+                let port = unsafe { port.pointer.as_mut() };
+                port as &mut dyn BinaryOutputPort
+            }
+            Object::BinaryFileOutputPort(mut port) => {
+                let port = unsafe { port.pointer.as_mut() };
+                port as &mut dyn BinaryOutputPort
+            }
+            _ => panic!(),
+        };
+        let mut transcoder = self.transcoder.to_transcoder();
+        transcoder
+            .write_string(port, s)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))
+    }
+}
+
 // BinaryFileOutputPort
 #[derive(Debug)]
 #[repr(C)]
