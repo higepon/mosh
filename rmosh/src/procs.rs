@@ -6730,7 +6730,7 @@ fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn lookahead_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-u8";
-    check_argc!(name, args, 0);
+    check_argc!(name, args, 1);
     let port = as_binary_input_port_mut!(name, args, 0);
     match port.lookahead_u8() {
         Some(u) => Ok(Object::Fixnum(u as isize)),

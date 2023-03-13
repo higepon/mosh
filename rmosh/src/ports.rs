@@ -1101,7 +1101,6 @@ impl BinaryInputPort for BytevectorInputPort {
                 if buf.len() > 0 {
                     buf[0] = u;
                 }
-                self.unget_u8(u);
                 read_start = 1;
             }
             None => {
