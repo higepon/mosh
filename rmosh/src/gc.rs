@@ -14,13 +14,15 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::error;
+use crate::numbers::Compnum;
 use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
     GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 
 use crate::ports::{
-    FileInputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
+    FileInputPort, StdInputPort, StringInputPort, TranscodedInputOutputPort, TranscodedInputPort,
+    TranscodedOutputPort, Transcoder,
 };
 use crate::vm::Vm;
 
@@ -430,8 +432,21 @@ impl Gc {
             Object::Char(_) => {}
             Object::Eof => {}
             Object::False => {}
-            Object::Continuation(_) => todo!(),
-            Object::ContinuationStack(_) => todo!(),
+            Object::Nil => {}
+            Object::Flonum(_) => {}
+            Object::Fixnum(_) => {}
+            Object::Instruction(_) => {}
+            Object::ObjectPointer(_) => {}
+            Object::ProgramCounter(_) => {}
+            Object::True => {}
+            Object::Unspecified => {}
+            Object::DefinedShared(_) => todo!(),
+            Object::Continuation(c) => {
+                self.mark_heap_object(c);
+            }
+            Object::ContinuationStack(c) => {
+                self.mark_heap_object(c);
+            }
             Object::FileInputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -453,36 +468,54 @@ impl Gc {
             Object::FileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
-            Object::StringInputPort(_) => {}
-            Object::StringOutputPort(_) => {}
-            Object::StdInputPort(_) => {}
-            Object::StdOutputPort(_) => {}
-            Object::StdErrorPort(_) => {}
-            Object::Latin1Codec(_) => {}
-            Object::UTF8Codec(_) => {}
-            Object::UTF16Codec(_) => {}
-            Object::Transcoder(_) => {}
+            Object::StringInputPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::StringOutputPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::StdInputPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::StdOutputPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::StdErrorPort(port) => {
+                self.mark_heap_object(port);
+            }
+            Object::Latin1Codec(c) => {
+                self.mark_heap_object(c);
+            }
+            Object::UTF8Codec(c) => {
+                self.mark_heap_object(c);
+            }
+            Object::UTF16Codec(c) => {
+                self.mark_heap_object(c);
+            }
+            Object::Transcoder(t) => {
+                self.mark_heap_object(t);
+            }
             Object::TranscodedOutputPort(t) => {
                 self.mark_heap_object(t);
-            }            
+            }
             Object::TranscodedInputPort(t) => {
                 self.mark_heap_object(t);
             }
             Object::TranscodedInputOutputPort(t) => {
                 self.mark_heap_object(t);
             }
-            Object::Nil => {}
-            Object::Flonum(_) => {}
-            Object::Fixnum(_) => {}
-            Object::Compnum(_) => {}
-            Object::Bignum(_) => {}
-            Object::Ratnum(_) => {}
-            Object::Regexp(_) => {}
-            Object::Instruction(_) => {}
-            Object::ObjectPointer(_) => {}
-            Object::ProgramCounter(_) => {}
-            Object::True => {}
-            Object::Unspecified => {}
+            Object::Compnum(c) => {
+                self.mark_heap_object(c);
+            }
+            Object::Bignum(b) => {
+                self.mark_heap_object(b);
+            }
+            Object::Ratnum(r) => {
+                self.mark_heap_object(r);
+            }
+            Object::Regexp(r) => {
+                self.mark_heap_object(r);
+            }
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);
             }
@@ -519,7 +552,6 @@ impl Gc {
             Object::SimpleStruct(s) => {
                 self.mark_heap_object(s);
             }
-            Object::DefinedShared(_) => todo!(),
         }
     }
 
@@ -606,6 +638,7 @@ impl Gc {
             }
             ObjectType::SimpleStruct => {
                 let s: &SimpleStruct = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(s.name);
                 for obj in s.data.iter() {
                     self.mark_object(*obj);
                 }
@@ -639,6 +672,8 @@ impl Gc {
                 for &key in hashtable.hash_map.keys() {
                     self.mark_object(key.hash_obj);
                 }
+                self.mark_object(hashtable.hash_func);
+                self.mark_object(hashtable.eq_func);
             }
             ObjectType::FileInputPort => {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
@@ -675,10 +710,16 @@ impl Gc {
             ObjectType::BinaryFileInputOutputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
-            ObjectType::StdInputPort => {}
+            ObjectType::StdInputPort => {
+                let s: &StdInputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(s.parsed)
+            }
             ObjectType::StdOutputPort => {}
             ObjectType::StdErrorPort => {}
-            ObjectType::StringInputPort => {}
+            ObjectType::StringInputPort => {
+                let s: &StringInputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(s.parsed)
+            }
             ObjectType::StringOutputPort => {}
             ObjectType::String => {}
             ObjectType::Symbol => {}
@@ -692,7 +733,11 @@ impl Gc {
                 self.mark_object(t.codec);
             }
             ObjectType::Bignum => {}
-            ObjectType::Compnum => {}
+            ObjectType::Compnum => {
+                let c: &Compnum = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(c.real);
+                self.mark_object(c.imag);
+            }
             ObjectType::ByteVector => {}
             ObjectType::TranscodedOutputPort => {
                 let t: &TranscodedOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
