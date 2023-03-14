@@ -47,6 +47,9 @@ impl Vm {
         for &obj in &self.call_closure1_code {
             self.gc.mark_object(obj);
         }
+        for &obj in &self.call_closure3_code {
+            self.gc.mark_object(obj);
+        }
 
 
         self.gc.mark_object(self.saved_registers.ac);

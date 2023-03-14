@@ -1247,7 +1247,7 @@ fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         args[0]
     };
     let port = obj_as_text_input_port_mut!(name, port);
-    match port.lookahead_char() {
+    match port.lookahead_char(vm) {
         Some(c) => Ok(Object::Char(c)),
         None => Ok(Object::Eof),
     }
@@ -2539,12 +2539,12 @@ fn make_custom_textual_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::
     let name: &str = "make-custom-textual-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn get_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-u8";
     check_argc!(name, args, 1);
     let mut buf: Vec<u8> = vec![0; 1];
     let port = as_binary_input_port_mut!(name, args, 0);
-    match port.read(&mut buf) {
+    match port.read(vm, &mut buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(_) => Ok(Object::Fixnum(buf[0] as isize)),
         Err(_) => Ok(Object::Eof),
@@ -2665,7 +2665,7 @@ fn set_port_position_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
         Error::assertion_violation(name, "port doesn't support set-ort-position!", &[args[0]])
     }
 }
-fn get_bytevector_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_bytevector_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-n!";
     check_argc!(name, args, 4);
     let mut bv = as_bytevector!(name, args, 1);
@@ -2680,7 +2680,7 @@ fn get_bytevector_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Res
     }
     let buf = &mut bv.data[start..start + count];
     let port = as_binary_input_port_mut!(name, args, 0);
-    match port.read(buf) {
+    match port.read(vm, buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(size) => Ok(Object::Fixnum(size as isize)),
         Err(_) => Ok(Object::Eof),
@@ -2691,7 +2691,7 @@ fn get_bytevector_some(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     check_argc!(name, args, 1);
     let port = as_binary_input_port_mut!(name, args, 0);
     let mut buf: Vec<u8> = vec![];
-    port.read_all(&mut buf).map_err(|e| {
+    port.read_all(vm, &mut buf).map_err(|e| {
         Error::new(
             ErrorType::IoError,
             name,
@@ -2706,7 +2706,7 @@ fn get_bytevector_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     let port = as_binary_input_port_mut!(name, args, 0);
     let mut buf: Vec<u8> = vec![];
-    port.read_all(&mut buf).map_err(|e| {
+    port.read_all(vm, &mut buf).map_err(|e| {
         Error::new(
             ErrorType::IoError,
             name,
@@ -2845,7 +2845,7 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let size = as_usize!(name, args, 1);
     let mut buf: Vec<u8> = vec![0; size];
     let port = as_binary_input_port_mut!(name, args, 0);
-    match port.read(&mut buf) {
+    match port.read(vm, &mut buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(size) => Ok(Object::Bytevector(
             vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec().into())),
@@ -3345,7 +3345,7 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     } else if argc == 1 {
         let port = as_text_input_port_mut!(name, args, 0);
-        match port.read(&mut vm.gc) {
+        match port.read(vm) {
             Ok(obj) => Ok(obj),
             Err(err) => {
                 panic!("{}: {:?}", name, err)
@@ -4044,20 +4044,20 @@ fn min(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     return Ok(min);
 }
-fn get_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-char";
     check_argc!(name, args, 1);
     let port = as_text_input_port_mut!(name, args, 0);
-    match port.read_char() {
+    match port.read_char(vm) {
         Some(c) => Ok(Object::Char(c)),
         None => Ok(Object::Eof),
     }
 }
-fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn lookahead_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-char";
     check_argc!(name, args, 1);
     let port = as_text_input_port_mut!(name, args, 0);
-    match port.lookahead_char() {
+    match port.lookahead_char(vm) {
         Some(c) => Ok(Object::Char(c)),
         None => Ok(Object::Eof),
     }
@@ -4068,7 +4068,7 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let n = as_usize!(name, args, 1);
     let mut s = String::new();
     let port = as_text_input_port_mut!(name, args, 0);
-    match port.read_n_to_string(&mut s, n) {
+    match port.read_n_to_string(vm, &mut s, n) {
         Ok(_) => {
             if s.len() > 0 {
                 Ok(vm.gc.new_string(&s))
@@ -4095,7 +4095,7 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
         );
     }
     let mut s = String::new();
-    port.read_n_to_string(&mut s, count).map_err(|e| {
+    port.read_n_to_string(vm, &mut s, count).map_err(|e| {
         Error::new(
             ErrorType::IoError,
             name,
@@ -4115,7 +4115,7 @@ fn get_string_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = as_text_input_port_mut!(name, args, 0);
     let mut s = String::new();
-    match port.read_to_string(&mut s) {
+    match port.read_to_string(vm, &mut s) {
         Ok(_) => Ok(vm.gc.new_string(&s)),
         Err(_) => Ok(Object::Eof),
     }
@@ -4125,7 +4125,7 @@ fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let mut s = String::new();
     let port = as_text_input_port_mut!(name, args, 0);
-    match port.read_line(&mut s) {
+    match port.read_line(vm, &mut s) {
         Ok(_) => Ok(vm.gc.new_string(&s)),
         Err(_) => Ok(Object::Eof),
     }
@@ -4134,7 +4134,7 @@ fn get_datum(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-datum";
     check_argc!(name, args, 1);
     let port = as_text_input_port_mut!(name, args, 0);
-    port.read(&mut vm.gc).map_err(|e| {
+    port.read(vm).map_err(|e| {
         Error::new(
             ErrorType::IoError,
             name,
@@ -4580,7 +4580,7 @@ fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     let port: &mut dyn BinaryInputPort = &mut raw_port;
 
     // Set the port to i/o decoding error.
-    let s = &transcoder.read_string(port).map_err(|mut e| {
+    let s = &transcoder.read_string(vm, port).map_err(|mut e| {
         e.irritants = vec![Object::BytevectorInputPort(vm.gc.alloc(raw_port))];
         e
     })?;
@@ -6772,7 +6772,7 @@ fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     Ok(args[0].is_input_port().to_obj())
 }
-fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-eof?";
     check_argc!(name, args, 1);
     if args[0].is_textual_input_port() {
@@ -6780,22 +6780,22 @@ fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_char() == None).to_obj())
+        Ok((port.lookahead_char(vm) == None).to_obj())
     } else if args[0].is_binary_input_port() {
         let port = as_binary_input_port_mut!(name, args, 0);
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_u8() == None).to_obj())
+        Ok((port.lookahead_u8(vm) == None).to_obj())
     } else {
         panic!()
     }
 }
-fn lookahead_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn lookahead_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-u8";
     check_argc!(name, args, 1);
     let port = as_binary_input_port_mut!(name, args, 0);
-    match port.lookahead_u8() {
+    match port.lookahead_u8(vm) {
         Some(u) => Ok(Object::Fixnum(u as isize)),
         None => Ok(Object::Eof),
     }

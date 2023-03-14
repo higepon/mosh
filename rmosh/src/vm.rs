@@ -83,6 +83,7 @@ pub struct Vm {
     pub dynamic_code_array: Vec<Vec<Object>>,
     pub call_by_name_code: Vec<Object>,
     pub call_closure1_code: Vec<Object>,
+    pub call_closure3_code: Vec<Object>,
     pub closure_for_evaluate: Object,
     current_input_port: Object,
     current_output_port: Object,
@@ -116,6 +117,7 @@ impl Vm {
             dynamic_code_array: vec![],
             call_by_name_code: vec![],
             call_closure1_code: vec![],
+            call_closure3_code: vec![],
             closure_for_evaluate: Object::Unspecified,
             current_input_port: Object::Unspecified,
             current_output_port: Object::Unspecified,
@@ -138,8 +140,8 @@ impl Vm {
         ret.call_by_name_code.push(Object::Instruction(Op::Call));
         ret.call_by_name_code.push(Object::Fixnum(1));
         ret.call_by_name_code.push(Object::Instruction(Op::Halt));
-        ret.call_closure1_code.push(Object::Instruction(Op::Frame));
 
+        ret.call_closure1_code.push(Object::Instruction(Op::Frame));
         ret.call_closure1_code.push(Object::Fixnum(8));
         ret.call_closure1_code
             .push(Object::Instruction(Op::Constant));
@@ -151,7 +153,48 @@ impl Vm {
         ret.call_closure1_code.push(Object::Instruction(Op::Call));
         ret.call_closure1_code.push(Object::Fixnum(1));
         ret.call_closure1_code.push(Object::Instruction(Op::Halt));
+
+        ret.call_closure3_code.push(Object::Instruction(Op::Frame));
+        ret.call_closure3_code.push(Object::Fixnum(14));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Push));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Push));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Push));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Call));
+        ret.call_closure3_code.push(Object::Fixnum(3));
+        ret.call_closure3_code.push(Object::Instruction(Op::Halt));
         ret
+
+        /*
+        callClosure3Code_ = new Code(16);
+        callClosure3Code_->push(Object::makeRaw(Instruction::FRAME));
+        callClosure3Code_->push(Object::makeFixnum(14));
+        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+        callClosure3Code_->push(Object::Undef);
+        callClosure3Code_->push(Object::makeRaw(Instruction::PUSH));
+        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+        callClosure3Code_->push(Object::Undef);
+        callClosure3Code_->push(Object::makeRaw(Instruction::PUSH));
+        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+        callClosure3Code_->push(Object::Undef);
+        callClosure3Code_->push(Object::makeRaw(Instruction::PUSH));
+        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+        callClosure3Code_->push(Object::Undef);
+        callClosure3Code_->push(Object::makeRaw(Instruction::CALL));
+        callClosure3Code_->push(Object::makeFixnum(3));
+        callClosure3Code_->push(Object::makeRaw(Instruction::HALT));
+             */
     }
 
     pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {
@@ -256,7 +299,7 @@ impl Vm {
 
     pub fn read(&mut self) -> Result<Object, ReadError> {
         let port = obj_as_text_input_port_mut_or_panic!(self.current_input_port);
-        port.read(&mut self.gc)
+        port.read(self)
     }
     fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);

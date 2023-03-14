@@ -149,6 +149,20 @@ impl Vm {
         self.evaluate_safe(self.call_closure1_code.as_ptr())
     }
 
+    pub fn call_closure3(
+        &mut self,
+        func: Object,
+        arg1: Object,
+        arg2: Object,
+        arg3: Object,
+    ) -> error::Result<Object> {
+        self.call_closure3_code[3] = arg1;
+        self.call_closure3_code[6] = arg2;
+        self.call_closure3_code[9] = arg3;
+        self.call_closure3_code[12] = func;
+        self.evaluate_safe(self.call_closure3_code.as_ptr())
+    }
+
     fn evaluate_safe(&mut self, ops: *const Object) -> error::Result<Object> {
         self.save_registers();
         let ret = self.evaluate_unsafe(ops);

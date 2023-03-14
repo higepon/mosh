@@ -5,9 +5,10 @@ use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
     BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
-    BytevectorOutputPort, FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort,
-    StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
-    TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec, CustomBinaryInputPort,
+    BytevectorOutputPort, CustomBinaryInputPort, FileInputPort, FileOutputPort, Latin1Codec,
+    StdErrorPort, StdInputPort, StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort,
+    TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec,
+    UTF8Codec,
 };
 use crate::vm::Vm;
 
@@ -834,7 +835,7 @@ impl Display for Object {
             }
             Object::CustomBinaryInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
-            }            
+            }
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

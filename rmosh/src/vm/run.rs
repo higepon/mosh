@@ -490,7 +490,7 @@ impl Vm {
                         port = self.ac;
                     }
                     match port {
-                        Object::FileInputPort(mut p) => match p.read(&mut self.gc) {
+                        Object::FileInputPort(mut p) => match p.read(self) {
                             Ok(obj) => {
                                 self.set_return_value(obj);
                             }
@@ -498,7 +498,7 @@ impl Vm {
                                 self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
                             }
                         },
-                        Object::StringInputPort(mut p) => match p.read(&mut self.gc) {
+                        Object::StringInputPort(mut p) => match p.read(self) {
                             Ok(obj) => {
                                 self.set_return_value(obj);
                             }
@@ -506,7 +506,7 @@ impl Vm {
                                 self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
                             }
                         },
-                        Object::TranscodedInputPort(mut p) => match p.read(&mut self.gc) {
+                        Object::TranscodedInputPort(mut p) => match p.read(self) {
                             Ok(obj) => {
                                 self.set_return_value(obj);
                             }
@@ -526,7 +526,7 @@ impl Vm {
                         self.ac
                     };
                     match port {
-                        Object::FileInputPort(mut p) => match p.read_char() {
+                        Object::FileInputPort(mut p) => match p.read_char(self) {
                             Some(c) => {
                                 self.set_return_value(Object::Char(c));
                             }
@@ -542,7 +542,7 @@ impl Vm {
                                 self.set_return_value(Object::Eof);
                             }
                         },
-                        Object::TranscodedInputPort(mut p) => match p.read_char() {
+                        Object::TranscodedInputPort(mut p) => match p.read_char(self) {
                             Some(c) => {
                                 self.set_return_value(Object::Char(c));
                             }

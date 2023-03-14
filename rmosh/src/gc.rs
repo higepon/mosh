@@ -21,8 +21,8 @@ use crate::objects::{
 };
 
 use crate::ports::{
-    FileInputPort, StdInputPort, StringInputPort, TranscodedInputOutputPort, TranscodedInputPort,
-    TranscodedOutputPort, Transcoder, CustomBinaryInputPort, Port,
+    CustomBinaryInputPort, FileInputPort, StdInputPort, StringInputPort, TranscodedInputOutputPort,
+    TranscodedInputPort, TranscodedOutputPort, Transcoder,
 };
 use crate::vm::Vm;
 
@@ -450,7 +450,7 @@ impl Gc {
             }
             Object::CustomBinaryInputPort(c) => {
                 self.mark_heap_object(c);
-            }            
+            }
             Object::FileInputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -640,7 +640,7 @@ impl Gc {
                 self.mark_object(port.pos_proc);
                 self.mark_object(port.set_pos_proc);
                 self.mark_object(port.close_proc);
-            }            
+            }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
                 for obj in vector.data.iter() {
