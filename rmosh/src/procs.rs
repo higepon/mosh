@@ -26,7 +26,7 @@ use crate::{
         CustomBinaryInputPort, EolStyle, ErrorHandlingMode, FileOutputPort, Latin1Codec,
         OutputPort, Port, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
         TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
-        UTF16Codec, UTF8Codec,
+        UTF16Codec, UTF8Codec, CustomTextInputPort,
     },
     vm::Vm,
 };
@@ -2531,9 +2531,17 @@ fn make_custom_binary_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::R
     let name: &str = "make-custom-binary-output-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_custom_textual_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_custom_textual_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-textual-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let pos_proc = check_is_closure_or_false!(name, args, 2);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 3);
+    let close_proc = check_is_closure_or_false!(name, args, 4);
+    Ok(Object::CustomTextInputPort(vm.gc.alloc(
+        CustomTextInputPort::new(id, read_proc, pos_proc, set_pos_proc, close_proc),
+    )))
 }
 fn make_custom_textual_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-textual-output-port";

@@ -562,6 +562,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
+            | Object::CustomTextInputPort(_)            
             | Object::Vox(_)
             | Object::ProgramCounter(_)
             | Object::ObjectPointer(_)
@@ -648,6 +649,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
+            | Object::CustomTextInputPort(_)            
             | Object::Eof
             | Object::EqHashtable(_)
             | Object::EqvHashtable(_)
@@ -881,6 +883,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)
                 | Object::CustomBinaryInputPort(_)
+                | Object::CustomTextInputPort(_)                
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)
@@ -2667,6 +2670,95 @@ impl BinaryInputPort for CustomBinaryInputPort {
 
 impl Display for CustomBinaryInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custome-binary-input-port>")
+        write!(f, "#<custom-binary-input-port>")
+    }
+}
+
+
+// CustomTextInputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct CustomTextInputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    id: String,
+    ahead_char: Option<char>,    
+    pub read_proc: Object,
+    pub pos_proc: Object,
+    pub set_pos_proc: Object,
+    pub close_proc: Object,
+}
+
+impl CustomTextInputPort {
+    pub fn new(
+        id: &str,
+        read_proc: Object,
+        pos_proc: Object,
+        set_pos_proc: Object,
+        close_proc: Object,
+    ) -> Self {
+        CustomTextInputPort {
+            header: GcHeader::new(ObjectType::CustomTextInputPort),
+            is_closed: false,
+            ahead_char: None,
+            id: id.to_string(),
+            read_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        }
+    }
+}
+
+impl Port for CustomTextInputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl TextInputPort for CustomTextInputPort {
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize> {
+        todo!()
+    }
+
+    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
+        todo!()
+    }
+
+    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+        todo!()
+    }
+
+    fn ahead_char(&self) -> Option<char> {
+        todo!()
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        todo!()
+    }
+
+    fn input_src(&self) -> String {
+        todo!()
+    }
+
+    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize> {
+        todo!()
+    }
+
+    fn set_parsed(&mut self, obj: Object) {
+        todo!()
+    }
+
+    fn parsed(&self) -> Object {
+        todo!()
+    }
+}
+
+impl Display for CustomTextInputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<custom-text-input-port>")
     }
 }

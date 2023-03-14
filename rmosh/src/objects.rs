@@ -8,7 +8,7 @@ use crate::ports::{
     BytevectorOutputPort, CustomBinaryInputPort, FileInputPort, FileOutputPort, Latin1Codec,
     StdErrorPort, StdInputPort, StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort,
     TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec,
-    UTF8Codec,
+    UTF8Codec, CustomTextInputPort,
 };
 use crate::vm::Vm;
 
@@ -34,6 +34,7 @@ pub enum Object {
     Compnum(GcRef<Compnum>),
     Continuation(GcRef<Continuation>),
     ContinuationStack(GcRef<ContinuationStack>),
+    CustomTextInputPort(GcRef<CustomTextInputPort>),    
     CustomBinaryInputPort(GcRef<CustomBinaryInputPort>),
     DefinedShared(u32),
     Eof,
@@ -250,6 +251,7 @@ impl Object {
             | Object::FileInputPort(_)
             | Object::StdInputPort(_)
             | Object::CustomBinaryInputPort(_)
+            | Object::CustomTextInputPort(_)            
             | Object::TranscodedInputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::StringInputPort(_) => true,
@@ -498,6 +500,7 @@ impl Object {
     pub fn is_textual_port(self) -> bool {
         match self {
             Object::FileInputPort(_)
+            | Object::CustomTextInputPort(_)                
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
@@ -525,6 +528,7 @@ impl Object {
         match self {
             Object::TranscodedInputPort(_)
             | Object::FileInputPort(_)
+            | Object::CustomTextInputPort(_)                
             | Object::StdInputPort(_)
             | Object::StringInputPort(_) => true,
             _ => false,
@@ -588,6 +592,7 @@ impl Object {
             Object::ContinuationStack(_) => todo!(),
             Object::Compnum(_) => todo!(),
             Object::CustomBinaryInputPort(_) => todo!(),
+            Object::CustomTextInputPort(_) => todo!(),            
             Object::Eof => todo!(),
             Object::EqHashtable(_) => todo!(),
             Object::EqvHashtable(_) => todo!(),
@@ -690,6 +695,9 @@ impl Debug for Object {
             Object::CustomBinaryInputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::CustomTextInputPort(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }            
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -836,6 +844,9 @@ impl Display for Object {
             Object::CustomBinaryInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::CustomTextInputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::StringInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

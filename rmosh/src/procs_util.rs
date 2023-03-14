@@ -145,6 +145,8 @@ macro_rules! as_port {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
             },
+            Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomTextInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
@@ -173,6 +175,8 @@ macro_rules! as_port_mut {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
             },
+            Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomTextInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BinaryFileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
@@ -229,6 +233,9 @@ macro_rules! as_text_input_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
+            Object::CustomTextInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },
             Object::TranscodedInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
@@ -250,6 +257,9 @@ macro_rules! as_text_input_port_mut {
 macro_rules! obj_as_text_input_port_mut {
     ($name:ident, $obj:expr) => {{
         let port = match $obj {
+            Object::CustomTextInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },
             Object::TranscodedInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
