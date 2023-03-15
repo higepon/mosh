@@ -1,6 +1,4 @@
 use clap::Parser;
-use rmosh::objects::Object;
-use rmosh::vm::Vm;
 extern crate num_derive;
 #[macro_use]
 extern crate lalrpop_util;
@@ -39,9 +37,9 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    let mut vm = Vm::new();
+    let vm = unsafe { &mut vm::CURRENT_VM };
     vm.should_load_compiler = true;
-    let mut vargs: Vec<Object> = vec![];
+    let mut vargs: Vec<objects::Object> = vec![];
     // The main program file.
     if let Some(file) = args.file {
         vargs.push(vm.gc.new_string(&file));

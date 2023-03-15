@@ -3,6 +3,7 @@ use std::{
     env,
     ptr::{null, null_mut},
 };
+use once_cell::sync::Lazy;
 
 // Sub module definitions.
 mod eval;
@@ -23,6 +24,11 @@ use crate::{
     psyntax,
     reader_util::ReadError,
 };
+
+// This is introduced to support custom binary output port where we need vm.call_closure3().
+// We tried to pass Vm to the methods, but it turned out it breaks to_string() family badly.
+// So we decided to have this kind of global accessible Vm. We use this as less as possible to keep this code clean.
+pub static mut CURRENT_VM: Lazy<Vm> = Lazy::new(|| Vm::new());
 
 const STACK_SIZE: usize = 65536;
 const MAX_NUM_VALUES: usize = 256;

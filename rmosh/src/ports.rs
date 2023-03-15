@@ -11,7 +11,7 @@ use std::{
 use crate::error::{self, Error, ErrorType};
 use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::obj_as_binary_input_port_mut_or_panic;
-use crate::vm::Vm;
+use crate::vm::{Vm, CURRENT_VM};
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
@@ -562,7 +562,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
-            | Object::CustomBinaryOutputPort(_)            
+            | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
             | Object::Vox(_)
             | Object::ProgramCounter(_)
@@ -650,7 +650,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
-            | Object::CustomBinaryOutputPort(_)            
+            | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
             | Object::Eof
             | Object::EqHashtable(_)
@@ -885,7 +885,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)
                 | Object::CustomBinaryInputPort(_)
-                | Object::CustomBinaryOutputPort(_)                
+                | Object::CustomBinaryOutputPort(_)
                 | Object::CustomTextInputPort(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
@@ -2873,7 +2873,21 @@ impl Port for CustomBinaryOutputPort {
 
 impl BinaryOutputPort for CustomBinaryOutputPort {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        todo!()
+        let vm = unsafe { &mut CURRENT_VM };
+        let write_buf = buf.to_vec();
+        let bv = vm.gc.new_bytevector_u8(&write_buf);
+        let start = 0_isize.to_obj();
+        let count = write_buf.len().to_obj(&mut vm.gc);
+        let write_size = match vm.call_closure3(self.write_proc, bv, start, count) {
+            Ok(obj) => {
+                if !obj.is_fixnum() {
+                    panic!("read proc for custom port returned {}", obj)
+                }
+                obj.to_isize() as usize
+            }
+            Err(_) => 0,
+        };
+        Ok(write_size)
     }
 }
 
