@@ -22,7 +22,7 @@ use crate::objects::{
 
 use crate::ports::{
     CustomBinaryInputPort, FileInputPort, StdInputPort, StringInputPort, TranscodedInputOutputPort,
-    TranscodedInputPort, TranscodedOutputPort, Transcoder, CustomTextInputPort,
+    TranscodedInputPort, TranscodedOutputPort, Transcoder, CustomTextInputPort, CustomBinaryOutputPort,
 };
 use crate::vm::Vm;
 
@@ -90,6 +90,7 @@ pub enum ObjectType {
     ContinuationStack,
     CustomTextInputPort,    
     CustomBinaryInputPort,
+    CustomBinaryOutputPort,    
     EqHashtable,
     EqvHashtable,
     FileInputPort,
@@ -452,6 +453,9 @@ impl Gc {
             Object::CustomBinaryInputPort(c) => {
                 self.mark_heap_object(c);
             }
+            Object::CustomBinaryOutputPort(c) => {
+                self.mark_heap_object(c);
+            }            
             Object::CustomTextInputPort(c) => {
                 self.mark_heap_object(c);
             }            
@@ -645,6 +649,13 @@ impl Gc {
                 self.mark_object(port.set_pos_proc);
                 self.mark_object(port.close_proc);
             } 
+            ObjectType::CustomBinaryOutputPort => {
+                let port: &CustomBinaryOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                self.mark_object(port.write_proc);
+                self.mark_object(port.pos_proc);
+                self.mark_object(port.set_pos_proc);
+                self.mark_object(port.close_proc);
+            }             
             ObjectType::CustomTextInputPort => {
                 let port: &CustomTextInputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.read_proc);

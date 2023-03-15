@@ -146,6 +146,7 @@ macro_rules! as_port {
                 p.pointer.as_mut() as &mut dyn Port
             },
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomBinaryOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomTextInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
@@ -176,6 +177,7 @@ macro_rules! as_port_mut {
                 p.pointer.as_mut() as &mut dyn Port
             },
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomBinaryOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomTextInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BinaryFileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
@@ -203,6 +205,9 @@ macro_rules! as_output_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
+            Object::CustomBinaryOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn OutputPort
+            },
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
             },
@@ -387,6 +392,9 @@ macro_rules! as_binary_output_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
+            Object::CustomBinaryOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryOutputPort
+            },
             Object::BinaryFileOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
