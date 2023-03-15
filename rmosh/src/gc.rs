@@ -89,6 +89,7 @@ pub enum ObjectType {
     Continuation,
     ContinuationStack,
     CustomTextInputPort,    
+    CustomTextOutputPort,        
     CustomBinaryInputPort,
     CustomBinaryOutputPort,    
     EqHashtable,

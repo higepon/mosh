@@ -2900,3 +2900,61 @@ impl Display for CustomBinaryOutputPort {
         write!(f, "#<custom-binary-input-port>")
     }
 }
+
+// CustomTextOutputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct CustomTextOutputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    id: String,
+    pub write_proc: Object,
+    pub pos_proc: Object,
+    pub set_pos_proc: Object,
+    pub close_proc: Object,
+}
+
+impl CustomTextOutputPort {
+    pub fn new(
+        id: &str,
+        write_proc: Object,
+        pos_proc: Object,
+        set_pos_proc: Object,
+        close_proc: Object,
+    ) -> Self {
+        CustomTextOutputPort {
+            header: GcHeader::new(ObjectType::CustomTextOutputPort),
+            is_closed: false,
+            id: id.to_string(),
+            write_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        }
+    }
+}
+
+impl Port for CustomTextOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl TextOutputPort for CustomTextOutputPort {
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+        todo!()
+    }
+}
+
+impl OutputPort for CustomTextOutputPort {
+    fn flush(&mut self) {}
+}
+
+impl Display for CustomTextOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<custom-text-output-port>")
+    }
+}
