@@ -154,6 +154,7 @@ impl FaslWriter {
             Object::CustomBinaryInputPort(_) => todo!(),
             Object::CustomBinaryOutputPort(_) => todo!(),            
             Object::CustomTextInputPort(_) => todo!(),            
+            Object::CustomTextOutputPort(_) => todo!(),              
             Object::StdOutputPort(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StringOutputPort(_) => todo!(),
@@ -248,6 +249,7 @@ impl FaslWriter {
                 | Object::CustomBinaryInputPort(_)
                 | Object::CustomBinaryOutputPort(_)                
                 | Object::CustomTextInputPort(_)                
+                | Object::CustomTextOutputPort(_)                  
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)

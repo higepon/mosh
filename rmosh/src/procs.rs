@@ -23,10 +23,10 @@ use crate::{
     ports::{
         BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort,
         BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort,
-        CustomBinaryInputPort, EolStyle, ErrorHandlingMode, FileOutputPort, Latin1Codec,
-        OutputPort, Port, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
-        TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
-        UTF16Codec, UTF8Codec, CustomTextInputPort, CustomBinaryOutputPort,
+        CustomBinaryInputPort, CustomBinaryOutputPort, CustomTextInputPort, EolStyle,
+        ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort,
+        StringOutputPort, TextInputPort, TextOutputPort, TranscodedInputOutputPort,
+        TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec, CustomTextOutputPort,
     },
     vm::Vm,
 };
@@ -2551,9 +2551,17 @@ fn make_custom_textual_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Re
         CustomTextInputPort::new(id, read_proc, pos_proc, set_pos_proc, close_proc),
     )))
 }
-fn make_custom_textual_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_custom_textual_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-textual-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+    let id = &as_sstring!(name, args, 0).string;
+    let write_proc = check_is_closure!(name, args, 1);
+    let pos_proc = check_is_closure_or_false!(name, args, 2);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 3);
+    let close_proc = check_is_closure_or_false!(name, args, 4);
+    Ok(Object::CustomTextOutputPort(vm.gc.alloc(
+        CustomTextOutputPort::new(id, write_proc, pos_proc, set_pos_proc, close_proc),
+    )))
 }
 fn get_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-u8";
@@ -2597,9 +2605,10 @@ fn put_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let count = if argc >= 4 {
         as_usize!(name, args, 3)
     } else {
-        str.len()
+        str.len() - start
     };
-    let str = &str[start..count];
+
+    let str = &str[start..start+count];
     let port = as_text_output_port_mut!(name, args, 0);
     match port.put_string(str) {
         Ok(_) => Ok(Object::Unspecified),

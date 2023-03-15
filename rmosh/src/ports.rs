@@ -564,6 +564,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::CustomBinaryInputPort(_)
             | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
+            | Object::CustomTextOutputPort(_)            
             | Object::Vox(_)
             | Object::ProgramCounter(_)
             | Object::ObjectPointer(_)
@@ -652,6 +653,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::CustomBinaryInputPort(_)
             | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
+            | Object::CustomTextOutputPort(_)            
             | Object::Eof
             | Object::EqHashtable(_)
             | Object::EqvHashtable(_)
@@ -887,6 +889,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::CustomBinaryInputPort(_)
                 | Object::CustomBinaryOutputPort(_)
                 | Object::CustomTextInputPort(_)
+                | Object::CustomTextOutputPort(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)
