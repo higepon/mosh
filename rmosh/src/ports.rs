@@ -562,7 +562,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
-            | Object::CustomTextInputPort(_)            
+            | Object::CustomTextInputPort(_)
             | Object::Vox(_)
             | Object::ProgramCounter(_)
             | Object::ObjectPointer(_)
@@ -649,7 +649,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
-            | Object::CustomTextInputPort(_)            
+            | Object::CustomTextInputPort(_)
             | Object::Eof
             | Object::EqHashtable(_)
             | Object::EqvHashtable(_)
@@ -883,7 +883,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)
                 | Object::CustomBinaryInputPort(_)
-                | Object::CustomTextInputPort(_)                
+                | Object::CustomTextInputPort(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)
@@ -2674,7 +2674,6 @@ impl Display for CustomBinaryInputPort {
     }
 }
 
-
 // CustomTextInputPort
 #[derive(Debug)]
 #[repr(C)]
@@ -2682,11 +2681,12 @@ pub struct CustomTextInputPort {
     pub header: GcHeader,
     is_closed: bool,
     id: String,
-    ahead_char: Option<char>,    
+    ahead_char: Option<char>,
     pub read_proc: Object,
     pub pos_proc: Object,
     pub set_pos_proc: Object,
     pub close_proc: Object,
+    pub parsed: Object,
 }
 
 impl CustomTextInputPort {
@@ -2706,6 +2706,7 @@ impl CustomTextInputPort {
             pos_proc,
             set_pos_proc,
             close_proc,
+            parsed: Object::Unspecified,
         }
     }
 }
@@ -2720,40 +2721,100 @@ impl Port for CustomTextInputPort {
 }
 
 impl TextInputPort for CustomTextInputPort {
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize> {
-        todo!()
-    }
-
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
-        todo!()
-    }
-
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
-        todo!()
-    }
-
-    fn ahead_char(&self) -> Option<char> {
-        todo!()
-    }
-
-    fn set_ahead_char(&mut self, c: Option<char>) {
-        todo!()
+    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
+        panic!();
     }
 
     fn input_src(&self) -> String {
-        todo!()
+        "custom text port".to_string()
     }
 
-    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize> {
-        todo!()
+    fn ahead_char(&self) -> Option<char> {
+        self.ahead_char
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        self.ahead_char = c;
+    }
+
+    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let mut str = String::new();
+                match self.read_n_to_string(vm, &mut str, 1) {
+                    Ok(_) => {
+                        if str.len() == 0 {
+                            None
+                        } else {
+                            let mut chars = str.chars();
+                            chars.nth(0)
+                        }
+                    }
+                    Err(_) => None,
+                }
+            }
+        }
+    }
+    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> io::Result<usize> {
+        if n == 0 {
+            return Ok(0);
+        }
+        let read_start: usize;
+        match self.ahead_char {
+            Some(ch) => {
+                dst.push(ch);
+                self.set_ahead_char(None);
+
+                if n == 1 {
+                    return Ok(1);
+                }
+                read_start = 1;
+            }
+            None => {
+                read_start = 0;
+            }
+        }
+
+        let size = n - read_start;
+
+        let s = vm.gc.new_string(&(0..size).map(|_| " ").collect::<String>());
+        let start = 0_isize.to_obj();
+        let count = size.to_obj(&mut vm.gc);
+        let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
+            Ok(obj) => {
+                if !obj.is_fixnum() {
+                    panic!("read proc for custom port returned {}", obj)
+                }
+                obj.to_isize() as usize
+            }
+            Err(_) => 0,
+        };
+
+        let source = &s.to_sstring().string;
+        let mut i = 0;
+        for ch in source.chars() {
+            if i >= read_size {
+                break
+            }
+            dst.push(ch);
+            i += 1;
+        }
+        Ok(read_start + read_size)
+    }
+
+    fn read_line(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
+        panic!();
     }
 
     fn set_parsed(&mut self, obj: Object) {
-        todo!()
+        self.parsed = obj;
     }
-
     fn parsed(&self) -> Object {
-        todo!()
+        self.parsed
     }
 }
 
