@@ -70,10 +70,10 @@ macro_rules! raise_or_exit {
             Err(error::Error {
                 error_type: error::ErrorType::IoError,
                 who: _who,
-                message: _message,
+                message: message,
                 irritants: _irritants,
             }) => {
-                panic!("various error");
+                panic!("{} various error", message);
                 //$self.call_assertion_violation_after(&who, &message, &irritants[..])?
             }
         };

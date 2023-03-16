@@ -23,10 +23,11 @@ use crate::{
     ports::{
         BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort,
         BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort,
-        CustomBinaryInputPort, CustomBinaryOutputPort, CustomTextInputPort, EolStyle,
-        ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StringInputPort,
-        StringOutputPort, TextInputPort, TextOutputPort, TranscodedInputOutputPort,
-        TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec, CustomTextOutputPort,
+        CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
+        CustomTextInputPort, CustomTextOutputPort, EolStyle, ErrorHandlingMode, FileOutputPort,
+        Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
+        TextOutputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
+        Transcoder, UTF16Codec, UTF8Codec, CustomTextInputOutputPort, StdInputPort, StdOutputPort, StdErrorPort,
     },
     vm::Vm,
 };
@@ -2608,7 +2609,7 @@ fn put_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         str.len() - start
     };
 
-    let str = &str[start..start+count];
+    let str = &str[start..start + count];
     let port = as_text_output_port_mut!(name, args, 0);
     match port.put_string(str) {
         Ok(_) => Ok(Object::Unspecified),
@@ -2852,17 +2853,20 @@ fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         _ => panic!("{} bytevector required but got {}", name, args[0]),
     }
 }
-fn standard_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn standard_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "standard-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::StdInputPort(vm.gc.alloc(StdInputPort::new())))
 }
-fn standard_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn standard_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "standard-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::StdOutputPort(vm.gc.alloc(StdOutputPort::new())))
 }
-fn standard_error_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn standard_error_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "standard-error-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::StdErrorPort(vm.gc.alloc(StdErrorPort::new())))
 }
 fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-n";
@@ -6945,7 +6949,11 @@ fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let port = as_text_output_port_mut!(name, args, 0);
+    let ch = as_char!(name,  args, 1);
+    port.write_char(ch);
+    Ok(Object::Unspecified)
 }
 fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "write-char";
@@ -7178,23 +7186,55 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
         )),
     }
 }
-fn make_custom_binary_input_output_port(
-    _vm: &mut Vm,
-    args: &mut [Object],
-) -> error::Result<Object> {
+fn make_custom_binary_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-binary-input/output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 6);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let write_proc = check_is_closure!(name, args, 2);
+    let pos_proc = check_is_closure_or_false!(name, args, 3);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 4);
+    let close_proc = check_is_closure_or_false!(name, args, 5);
+    Ok(Object::CustomBinaryInputOutputPort(vm.gc.alloc(
+        CustomBinaryInputOutputPort::new(
+            id,
+            read_proc,
+            write_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        ),
+    )))
 }
 fn make_custom_textual_input_output_port(
-    _vm: &mut Vm,
+    vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "make-custom-textual-input/output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 6);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let write_proc = check_is_closure!(name, args, 2);
+    let pos_proc = check_is_closure_or_false!(name, args, 3);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 4);
+    let close_proc = check_is_closure_or_false!(name, args, 5);
+    Ok(Object::CustomTextInputOutputPort(vm.gc.alloc(
+        CustomTextInputOutputPort::new(
+            id,
+            read_proc,
+            write_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        ),
+    )))
 }
 fn put_datum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-datum";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let port = as_text_output_port_mut!(name, args, 0);
+    port.write(args[1], false);
+    Ok(Object::Unspecified)
 }
 fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "list-ref";

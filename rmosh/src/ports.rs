@@ -562,9 +562,11 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
+            | Object::CustomBinaryInputOutputPort(_)
             | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
-            | Object::CustomTextOutputPort(_)            
+            | Object::CustomTextInputOutputPort(_)            
+            | Object::CustomTextOutputPort(_)
             | Object::Vox(_)
             | Object::ProgramCounter(_)
             | Object::ObjectPointer(_)
@@ -651,9 +653,11 @@ pub trait TextOutputPort: OutputPort {
             | Object::Continuation(_)
             | Object::ContinuationStack(_)
             | Object::CustomBinaryInputPort(_)
+            | Object::CustomBinaryInputOutputPort(_)
             | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
-            | Object::CustomTextOutputPort(_)            
+            | Object::CustomTextInputOutputPort(_)            
+            | Object::CustomTextOutputPort(_)
             | Object::Eof
             | Object::EqHashtable(_)
             | Object::EqvHashtable(_)
@@ -887,8 +891,10 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)
                 | Object::CustomBinaryInputPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
                 | Object::CustomBinaryOutputPort(_)
                 | Object::CustomTextInputPort(_)
+                | Object::CustomTextInputOutputPort(_)                
                 | Object::CustomTextOutputPort(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
@@ -2948,7 +2954,20 @@ impl Port for CustomTextOutputPort {
 
 impl TextOutputPort for CustomTextOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
-        todo!()
+        let vm = unsafe { &mut CURRENT_VM };
+        let str = vm.gc.new_string(s);
+        let start = 0_isize.to_obj();
+        let count = s.len().to_obj(&mut vm.gc);
+        let _write_size = match vm.call_closure3(self.write_proc, str, start, count) {
+            Ok(obj) => {
+                if !obj.is_fixnum() {
+                    panic!("read proc for custom port returned {}", obj)
+                }
+                obj.to_isize() as usize
+            }
+            Err(_) => 0,
+        };
+        Ok(())
     }
 }
 
@@ -2959,5 +2978,312 @@ impl OutputPort for CustomTextOutputPort {
 impl Display for CustomTextOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<custom-text-output-port>")
+    }
+}
+
+// CustomBinaryInputOutputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct CustomBinaryInputOutputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    ahead_u8: Option<u8>,
+    id: String,
+    pub read_proc: Object,
+    pub write_proc: Object,
+    pub pos_proc: Object,
+    pub set_pos_proc: Object,
+    pub close_proc: Object,
+}
+
+impl CustomBinaryInputOutputPort {
+    pub fn new(
+        id: &str,
+        read_proc: Object,
+        write_proc: Object,
+        pos_proc: Object,
+        set_pos_proc: Object,
+        close_proc: Object,
+    ) -> Self {
+        CustomBinaryInputOutputPort {
+            header: GcHeader::new(ObjectType::CustomBinaryInputOutputPort),
+            is_closed: false,
+            ahead_u8: None,
+            id: id.to_string(),
+            read_proc,
+            write_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        }
+    }
+}
+
+impl Port for CustomBinaryInputOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl BinaryOutputPort for CustomBinaryInputOutputPort {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let vm = unsafe { &mut CURRENT_VM };
+        let write_buf = buf.to_vec();
+        let bv = vm.gc.new_bytevector_u8(&write_buf);
+        let start = 0_isize.to_obj();
+        let count = write_buf.len().to_obj(&mut vm.gc);
+        let write_size = match vm.call_closure3(self.write_proc, bv, start, count) {
+            Ok(obj) => {
+                if !obj.is_fixnum() {
+                    panic!("read proc for custom port returned {}", obj)
+                }
+                obj.to_isize() as usize
+            }
+            Err(_) => 0,
+        };
+        Ok(write_size)
+    }
+}
+
+impl BinaryInputPort for CustomBinaryInputOutputPort {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+        let read_start: usize;
+        match self.ahead_u8 {
+            Some(u) => {
+                if buf.len() > 0 {
+                    buf[0] = u;
+                    self.set_ahead_u8(None);
+                }
+                if buf.len() == 1 {
+                    return Ok(1);
+                }
+                read_start = 1;
+            }
+            None => {
+                read_start = 0;
+            }
+        }
+        let size = if buf.len() == 0 {
+            buf.len()
+        } else {
+            buf.len() - read_start
+        };
+
+        let read_buf: Vec<u8> = vec![0; size];
+        let bv = vm.gc.new_bytevector_u8(&read_buf);
+        let start = 0_isize.to_obj();
+        let count = size.to_obj(&mut vm.gc);
+        let read_size = match vm.call_closure3(self.read_proc, bv, start, count) {
+            Ok(obj) => {
+                if !obj.is_fixnum() {
+                    panic!("read proc for custom port returned {}", obj)
+                }
+                obj.to_isize() as usize
+            }
+            Err(_) => 0,
+        };
+
+        buf[read_start..read_start + read_size]
+            .copy_from_slice(&bv.to_bytevector().data[0..read_size]);
+        Ok(read_start + read_size)
+    }
+
+    fn ahead_u8(&self) -> Option<u8> {
+        self.ahead_u8
+    }
+
+    fn set_ahead_u8(&mut self, u: Option<u8>) {
+        self.ahead_u8 = u;
+    }
+}
+
+impl OutputPort for CustomBinaryInputOutputPort {
+    fn flush(&mut self) {}
+}
+
+impl Display for CustomBinaryInputOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<custom-binary-input/output-port>")
+    }
+}
+
+// CustomTextInputOutputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct CustomTextInputOutputPort {
+    pub header: GcHeader,
+    is_closed: bool,
+    id: String,
+    ahead_char: Option<char>,
+    pub parsed: Object,
+    pub read_proc: Object,
+    pub write_proc: Object,
+    pub pos_proc: Object,
+    pub set_pos_proc: Object,
+    pub close_proc: Object,
+}
+
+impl CustomTextInputOutputPort {
+    pub fn new(
+        id: &str,
+        read_proc: Object,
+        write_proc: Object,
+        pos_proc: Object,
+        set_pos_proc: Object,
+        close_proc: Object,
+    ) -> Self {
+        CustomTextInputOutputPort {
+            header: GcHeader::new(ObjectType::CustomTextInputOutputPort),
+            is_closed: false,
+            id: id.to_string(),
+            ahead_char: None,
+            parsed: Object::Unspecified,
+            read_proc,
+            write_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        }
+    }
+}
+
+impl Port for CustomTextInputOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+    fn close(&mut self) {
+        self.is_closed = true;
+    }
+}
+
+impl TextOutputPort for CustomTextInputOutputPort {
+    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+        let vm = unsafe { &mut CURRENT_VM };
+        let str = vm.gc.new_string(s);
+        let start = 0_isize.to_obj();
+        let count = s.len().to_obj(&mut vm.gc);
+        let _write_size = match vm.call_closure3(self.write_proc, str, start, count) {
+            Ok(obj) => {
+                if !obj.is_fixnum() {
+                    panic!("read proc for custom port returned {}", obj)
+                }
+                obj.to_isize() as usize
+            }
+            Err(_) => 0,
+        };
+        Ok(())
+    }
+}
+
+impl OutputPort for CustomTextInputOutputPort {
+    fn flush(&mut self) {}
+}
+
+impl Display for CustomTextInputOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<custom-text-input/output-port>")
+    }
+}
+
+impl TextInputPort for CustomTextInputOutputPort {
+    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> std::io::Result<usize> {
+        panic!();
+    }
+
+    fn input_src(&self) -> String {
+        "custom text port".to_string()
+    }
+
+    fn ahead_char(&self) -> Option<char> {
+        self.ahead_char
+    }
+
+    fn set_ahead_char(&mut self, c: Option<char>) {
+        self.ahead_char = c;
+    }
+
+    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+        match self.ahead_char {
+            Some(c) => {
+                self.ahead_char = None;
+                Some(c)
+            }
+            None => {
+                let mut str = String::new();
+                match self.read_n_to_string(vm, &mut str, 1) {
+                    Ok(_) => {
+                        if str.len() == 0 {
+                            None
+                        } else {
+                            let mut chars = str.chars();
+                            chars.nth(0)
+                        }
+                    }
+                    Err(_) => None,
+                }
+            }
+        }
+    }
+    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> io::Result<usize> {
+        if n == 0 {
+            return Ok(0);
+        }
+        let read_start: usize;
+        match self.ahead_char {
+            Some(ch) => {
+                dst.push(ch);
+                self.set_ahead_char(None);
+
+                if n == 1 {
+                    return Ok(1);
+                }
+                read_start = 1;
+            }
+            None => {
+                read_start = 0;
+            }
+        }
+
+        let size = n - read_start;
+
+        let s = vm
+            .gc
+            .new_string(&(0..size).map(|_| " ").collect::<String>());
+        let start = 0_isize.to_obj();
+        let count = size.to_obj(&mut vm.gc);
+        let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
+            Ok(obj) => {
+                if !obj.is_fixnum() {
+                    panic!("read proc for custom port returned {}", obj)
+                }
+                obj.to_isize() as usize
+            }
+            Err(_) => 0,
+        };
+
+        let source = &s.to_sstring().string;
+        let mut i = 0;
+        for ch in source.chars() {
+            if i >= read_size {
+                break;
+            }
+            dst.push(ch);
+            i += 1;
+        }
+        Ok(read_start + read_size)
+    }
+
+    fn read_line(&mut self, _vm: &mut Vm, _str: &mut String) -> std::io::Result<usize> {
+        panic!();
+    }
+
+    fn set_parsed(&mut self, obj: Object) {
+        self.parsed = obj;
+    }
+    fn parsed(&self) -> Object {
+        self.parsed
     }
 }

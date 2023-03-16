@@ -8,7 +8,7 @@ use crate::ports::{
     BytevectorOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort, CustomTextInputPort,
     CustomTextOutputPort, FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort,
     StdOutputPort, StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
-    TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
+    TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec, CustomBinaryInputOutputPort, CustomTextInputOutputPort,
 };
 use crate::vm::Vm;
 
@@ -35,8 +35,10 @@ pub enum Object {
     Continuation(GcRef<Continuation>),
     ContinuationStack(GcRef<ContinuationStack>),
     CustomTextInputPort(GcRef<CustomTextInputPort>),
+    CustomTextInputOutputPort(GcRef<CustomTextInputOutputPort>),    
     CustomTextOutputPort(GcRef<CustomTextOutputPort>),
     CustomBinaryInputPort(GcRef<CustomBinaryInputPort>),
+    CustomBinaryInputOutputPort(GcRef<CustomBinaryInputOutputPort>),    
     CustomBinaryOutputPort(GcRef<CustomBinaryOutputPort>),
     DefinedShared(u32),
     Eof,
@@ -477,8 +479,10 @@ impl Object {
             | Object::FileInputPort(_)
             | Object::FileOutputPort(_)
             | Object::CustomBinaryInputPort(_)
+            | Object::CustomBinaryInputOutputPort(_)            
             | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
+            | Object::CustomTextInputOutputPort(_)            
             | Object::CustomTextOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
@@ -498,6 +502,8 @@ impl Object {
             | Object::FileOutputPort(_)
             | Object::TranscodedOutputPort(_)
             | Object::CustomBinaryOutputPort(_)
+            | Object::CustomBinaryInputOutputPort(_)            
+            | Object::CustomTextInputOutputPort(_)            
             | Object::CustomTextOutputPort(_)
             | Object::StdErrorPort(_)
             | Object::StdOutputPort(_)
@@ -510,6 +516,7 @@ impl Object {
         match self {
             Object::FileInputPort(_)
             | Object::CustomTextInputPort(_)
+            | Object::CustomTextInputOutputPort(_)            
             | Object::CustomTextOutputPort(_)
             | Object::FileOutputPort(_)
             | Object::StdErrorPort(_)
@@ -527,6 +534,7 @@ impl Object {
         match self {
             Object::FileOutputPort(_)
             | Object::CustomTextOutputPort(_)
+            | Object::CustomTextInputOutputPort(_)            
             | Object::StdErrorPort(_)
             | Object::StdOutputPort(_)
             | Object::TranscodedOutputPort(_)
@@ -540,6 +548,7 @@ impl Object {
             Object::TranscodedInputPort(_)
             | Object::FileInputPort(_)
             | Object::CustomTextInputPort(_)
+            | Object::CustomTextInputOutputPort(_)            
             | Object::StdInputPort(_)
             | Object::StringInputPort(_) => true,
             _ => false,
@@ -551,6 +560,7 @@ impl Object {
             Object::BinaryFileInputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::CustomBinaryInputPort(_)
+            | Object::CustomBinaryInputOutputPort(_)            
             | Object::BinaryFileInputOutputPort(_) => true,
             _ => false,
         }
@@ -603,8 +613,10 @@ impl Object {
             Object::ContinuationStack(_) => todo!(),
             Object::Compnum(_) => todo!(),
             Object::CustomBinaryInputPort(_) => todo!(),
+            Object::CustomBinaryInputOutputPort(_) => todo!(),            
             Object::CustomBinaryOutputPort(_) => todo!(),
             Object::CustomTextInputPort(_) => todo!(),
+            Object::CustomTextInputOutputPort(_) => todo!(),            
             Object::CustomTextOutputPort(_) => todo!(),
             Object::Eof => todo!(),
             Object::EqHashtable(_) => todo!(),
@@ -708,12 +720,18 @@ impl Debug for Object {
             Object::CustomBinaryInputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::CustomBinaryInputOutputPort(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }            
             Object::CustomBinaryOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::CustomTextInputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
+            Object::CustomTextInputOutputPort(n) => {
+                write!(f, "{}", unsafe { n.pointer.as_ref() })
+            }            
             Object::CustomTextOutputPort(n) => {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
@@ -863,12 +881,18 @@ impl Display for Object {
             Object::CustomBinaryInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::CustomBinaryInputOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::CustomBinaryOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::CustomTextInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
+            Object::CustomTextInputOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }            
             Object::CustomTextOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

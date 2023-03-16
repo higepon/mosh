@@ -146,8 +146,10 @@ macro_rules! as_port {
                 p.pointer.as_mut() as &mut dyn Port
             },
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomBinaryInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::CustomBinaryOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomTextInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomTextInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::CustomTextOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::BinaryFileOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::BytevectorInputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
@@ -178,8 +180,10 @@ macro_rules! as_port_mut {
                 p.pointer.as_mut() as &mut dyn Port
             },
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomBinaryInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::CustomBinaryOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomTextInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
+            Object::CustomTextInputOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::CustomTextOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },            
             Object::BinaryFileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::BytevectorInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
@@ -210,9 +214,15 @@ macro_rules! as_output_port_mut {
             Object::CustomBinaryOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
             },
-            Object::CustomTextOutputPort(mut p) => unsafe {
+            Object::CustomBinaryInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
             },            
+            Object::CustomTextOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn OutputPort
+            },  
+            Object::CustomTextInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn OutputPort
+            },                       
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
             },
@@ -246,6 +256,9 @@ macro_rules! as_text_input_port_mut {
             Object::CustomTextInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
+            Object::CustomTextInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },            
             Object::TranscodedInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
@@ -270,6 +283,9 @@ macro_rules! obj_as_text_input_port_mut {
             Object::CustomTextInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
+            Object::CustomTextInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },            
             Object::TranscodedInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
@@ -299,7 +315,10 @@ macro_rules! obj_as_text_output_port_mut {
         let port = match $obj {
             Object::CustomTextOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextOutputPort
-            },            
+            },        
+            Object::CustomTextInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },                 
             Object::StdOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextOutputPort
             },
@@ -335,6 +354,9 @@ macro_rules! as_binary_input_port_mut {
             Object::CustomBinaryInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
+            Object::CustomBinaryInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryInputPort
+            },            
             Object::BinaryFileInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -359,6 +381,9 @@ macro_rules! obj_as_binary_input_port_mut_or_panic {
             Object::CustomBinaryInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
+            Object::CustomBinaryInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryInputPort
+            },            
             Object::BinaryFileInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -384,6 +409,12 @@ macro_rules! obj_as_text_input_port_mut_or_panic {
             Object::TranscodedInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
+            Object::CustomTextInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },            
+            Object::CustomTextInputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextInputPort
+            },                 
             Object::TranscodedInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
@@ -400,6 +431,9 @@ macro_rules! as_binary_output_port_mut {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         let port = match o {
+            Object::CustomBinaryInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryOutputPort
+            },            
             Object::CustomBinaryOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
@@ -438,6 +472,12 @@ macro_rules! as_text_output_port_mut {
             Object::StdOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextOutputPort
             },
+            Object::CustomTextOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },            
+            Object::CustomTextInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn TextOutputPort
+            },                
             Object::StringOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn TextOutputPort
             },
