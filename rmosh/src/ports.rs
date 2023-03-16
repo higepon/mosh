@@ -1944,10 +1944,10 @@ impl Codec for Latin1Codec {
                 ErrorHandlingMode::IgnoreError => return Ok(0),
                 ErrorHandlingMode::RaiseError => {
                     return Err(Error::new(
-                        ErrorType::IoDecodingError,
+                        ErrorType::IoEncodingError,
                         "latin-1-code",
                         &"writer error",
-                        &[],
+                        &[Object::Char(ch)],
                     ))
                 }
                 ErrorHandlingMode::ReplaceError => {
@@ -1957,10 +1957,10 @@ impl Codec for Latin1Codec {
         }
         port.write(&buf).map_err(|e| {
             Error::new(
-                ErrorType::IoDecodingError,
+                ErrorType::IoEncodingError,
                 "latin-1-code",
                 &format!("writer error {}", e.to_string()),
-                &[],
+                &[Object::Char(ch)],
             )
         })
     }
@@ -2243,7 +2243,7 @@ impl Codec for UTF16Codec {
                         ErrorType::IoEncodingError,
                         "utf-16-codec",
                         &"character out of utf16 range",
-                        &[],
+                        &[Object::Char(ch)],
                     ))
                 }
                 ErrorHandlingMode::ReplaceError => {
@@ -2285,10 +2285,10 @@ impl Codec for UTF16Codec {
         }
         port.write(&buf).map_err(|e| {
             Error::new(
-                ErrorType::IoDecodingError,
+                ErrorType::IoEncodingError,
                 "utf-8-code",
                 &format!("writer error {}", e.to_string()),
-                &[],
+                &[Object::Char(ch)],
             )
         })
     }

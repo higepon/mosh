@@ -4613,10 +4613,10 @@ fn string_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     for ch in text.string.chars() {
         port.write_char(ch).map_err(|e| {
             Error::new(
-                ErrorType::IoDecodingError,
+                ErrorType::IoEncodingError,
                 name,
                 &format!("write error {}", e.to_string()),
-                &[out_port],
+                &[Object::Char(ch), out_port],
             )
         })?;
     }

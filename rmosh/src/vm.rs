@@ -232,25 +232,7 @@ impl Vm {
         ret.call_closure3_code.push(Object::Instruction(Op::Halt));
         ret
 
-        /*
-        callClosure3Code_ = new Code(16);
-        callClosure3Code_->push(Object::makeRaw(Instruction::FRAME));
-        callClosure3Code_->push(Object::makeFixnum(14));
-        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
-        callClosure3Code_->push(Object::Undef);
-        callClosure3Code_->push(Object::makeRaw(Instruction::PUSH));
-        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
-        callClosure3Code_->push(Object::Undef);
-        callClosure3Code_->push(Object::makeRaw(Instruction::PUSH));
-        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
-        callClosure3Code_->push(Object::Undef);
-        callClosure3Code_->push(Object::makeRaw(Instruction::PUSH));
-        callClosure3Code_->push(Object::makeRaw(Instruction::CONSTANT));
-        callClosure3Code_->push(Object::Undef);
-        callClosure3Code_->push(Object::makeRaw(Instruction::CALL));
-        callClosure3Code_->push(Object::makeFixnum(3));
-        callClosure3Code_->push(Object::makeRaw(Instruction::HALT));
-             */
+
     }
 
     pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {

@@ -48,7 +48,10 @@ macro_rules! raise_or_exit {
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => $self.call_io_encoding_error_after(&who, &message, &irritants[..])?,
+            }) => {
+                let ch = irritants[0].to_char();
+                $self.call_io_encoding_error_after(&who, &message, ch, &irritants[..])?
+            }
             Err(error::Error {
                 error_type: error::ErrorType::IoFileNotExist,
                 who: who,
