@@ -57,7 +57,20 @@ pub trait TextInputPort: Port {
     fn set_ahead_char(&mut self, c: Option<char>);
     fn input_src(&self) -> String;
 
-    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize>;
+    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize> {
+        loop {
+            match self.read_char(vm) {
+                Some(ch) => {
+                    if ch == '\n' {
+                        break;
+                    }
+                    str.push(ch)
+                }
+                None => break,
+            }
+        }
+        Ok(str.len())
+    }
     fn set_parsed(&mut self, obj: Object);
     fn parsed(&self) -> Object;
 
@@ -335,9 +348,6 @@ impl TextInputPort for FileInputPort {
             Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
         }
     }
-    fn read_line(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
-        self.reader.read_to_string(str)
-    }
 
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
@@ -429,19 +439,6 @@ impl TextInputPort for StringInputPort {
         str.push_str(&s);
         Ok(s.len())
     }
-    fn read_line(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
-        let s = &self.source[self.idx..];
-        match s.lines().next() {
-            Some(line) => {
-                str.push_str(line);
-                // line doesn't include \n so we add 1 here.
-                self.idx += line.len() + 1;
-                Ok(line.len() + 1)
-            }
-            None => Err(io::Error::new(io::ErrorKind::Other, "can't read line")),
-        }
-    }
-
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -1612,10 +1609,6 @@ impl TextInputPort for TranscodedInputPort {
         "todo: input source".to_string()
     }
 
-    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
-        self.read_to_string(vm, str)
-    }
-
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -1774,10 +1767,6 @@ impl TextInputPort for TranscodedInputOutputPort {
 
     fn input_src(&self) -> String {
         "todo: input source".to_string()
-    }
-
-    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
-        self.read_to_string(vm, str)
     }
 
     fn set_parsed(&mut self, obj: Object) {
@@ -2731,7 +2720,7 @@ impl Port for CustomTextInputPort {
         } else {
             panic!("doesn't support set-postion")
         }
-    }    
+    }
 }
 
 impl TextInputPort for CustomTextInputPort {
@@ -2822,10 +2811,6 @@ impl TextInputPort for CustomTextInputPort {
         Ok(read_start + read_size)
     }
 
-    fn read_line(&mut self, _vm: &mut Vm, _str: &mut String) -> std::io::Result<usize> {
-        panic!();
-    }
-
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -2908,7 +2893,7 @@ impl Port for CustomBinaryOutputPort {
         } else {
             panic!("doesn't support set-postion")
         }
-    }    
+    }
 }
 
 impl BinaryOutputPort for CustomBinaryOutputPort {
@@ -3009,7 +2994,7 @@ impl Port for CustomTextOutputPort {
         } else {
             panic!("doesn't support set-postion")
         }
-    }    
+    }
 }
 
 impl TextOutputPort for CustomTextOutputPort {
@@ -3114,7 +3099,7 @@ impl Port for CustomBinaryInputOutputPort {
         } else {
             panic!("doesn't support set-postion")
         }
-    }    
+    }
 }
 
 impl BinaryOutputPort for CustomBinaryInputOutputPort {
@@ -3274,7 +3259,7 @@ impl Port for CustomTextInputOutputPort {
         } else {
             panic!("doesn't support set-postion")
         }
-    }    
+    }
 }
 
 impl TextOutputPort for CustomTextInputOutputPort {
@@ -3392,10 +3377,6 @@ impl TextInputPort for CustomTextInputOutputPort {
             i += 1;
         }
         Ok(read_start + read_size)
-    }
-
-    fn read_line(&mut self, _vm: &mut Vm, _str: &mut String) -> std::io::Result<usize> {
-        panic!();
     }
 
     fn set_parsed(&mut self, obj: Object) {
