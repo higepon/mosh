@@ -4,7 +4,7 @@ use crate::{
     as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
     as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
     as_text_input_port_mut, as_text_output_port_mut, as_transcoder, as_u8, as_usize,
-    check_is_closure, check_is_closure_or_false,
+    check_is_closure, check_is_closure_or_false, check_is_transcoder_or_false,
     equal::Equal,
     error::{self, Error, ErrorType},
     fasl::{FaslReader, FaslWriter},
@@ -30,7 +30,7 @@ use crate::{
         TextOutputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
         Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm, check_is_transcoder_or_false,
+    vm::Vm,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -2644,9 +2644,10 @@ fn is_port_has_set_port_position_destructive(
 fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-position";
     check_argc!(name, args, 1);
-    let port = as_port!(name, args, 0);
+    let mut port = as_port_mut!(name, args, 0);
     if port.has_position() {
-        Ok(port.position(vm).to_obj(&mut vm.gc))
+        let pos = port.position(vm);
+        Ok(pos.to_obj(&mut vm.gc))
     } else {
         Error::assertion_violation(name, "port doesn't support port-position", &[args[0]])
     }
@@ -2654,7 +2655,7 @@ fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn set_port_position_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-port-position!";
     check_argc!(name, args, 2);
-    let port = as_port!(name, args, 0);
+    let mut port = as_port_mut!(name, args, 0);
     if port.has_set_position() {
         let pos = as_usize!(name, args, 1);
         match port.set_position(vm, pos) {
@@ -3045,7 +3046,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     };
 
     // We also ignore buffer-mode so input port is always buffered.
-    let _buffer_mode = if argc < 3 {
+    let buffer_mode = if argc < 3 {
         BufferMode::None
     } else {
         match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
@@ -3068,12 +3069,14 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
 
     match transcoder {
         Some(t) => {
-            let in_port = Object::BinaryFileInputPort(vm.gc.alloc(BinaryFileInputPort::new(file)));
+            let in_port = Object::BinaryFileInputPort(
+                vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
+            );
             let port = TranscodedInputPort::new(in_port, t);
             Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
         }
         None => Ok(Object::BinaryFileInputPort(
-            vm.gc.alloc(BinaryFileInputPort::new(file)),
+            vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
         )),
     }
 }
@@ -6840,13 +6843,12 @@ fn open_bytevector_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result
         if transcoder.is_false() {
             Ok(Object::BytevectorInputPort(
                 vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
-            ))            
+            ))
         } else {
-            let bin_port = Object::BytevectorInputPort(
-                vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
-            );
+            let bin_port =
+                Object::BytevectorInputPort(vm.gc.alloc(BytevectorInputPort::new(&bv.data)));
             let port = TranscodedInputPort::new(bin_port, transcoder);
-            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))            
+            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
         }
     }
 }
@@ -7145,19 +7147,6 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
             }
         }
 
-        // We ignore buffer-mode. This implmentation is not buffered at this momement.
-        // We may revisit this. Once we conform R7RS and R6RS.
-        let _buffer_mode = if argc < 3 {
-            BufferMode::None
-        } else {
-            match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
-                Some(mode) => mode,
-                None => {
-                    return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
-                }
-            }
-        };
-
         if argc == 4 {
             match args[3] {
                 Object::Transcoder(_) => transcoder = Some(args[3]),
@@ -7179,16 +7168,31 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
         };
     }
 
+    // We ignore buffer-mode. This implmentation is not buffered at this momement.
+    // We may revisit this. Once we conform R7RS and R6RS.
+    let buffer_mode = if argc < 3 {
+        BufferMode::None
+    } else {
+        match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+            Some(mode) => mode,
+            None => {
+                return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+            }
+        }
+    };
+
     match transcoder {
         Some(t) => {
             let bin_port = Object::BinaryFileInputOutputPort(
-                vm.gc.alloc(BinaryFileInputOutputPort::new(file)),
+                vm.gc
+                    .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
             );
             let port = TranscodedInputOutputPort::new(bin_port, t);
             Ok(Object::TranscodedInputOutputPort(vm.gc.alloc(port)))
         }
         None => Ok(Object::BinaryFileInputOutputPort(
-            vm.gc.alloc(BinaryFileInputOutputPort::new(file)),
+            vm.gc
+                .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
         )),
     }
 }

@@ -1,6 +1,7 @@
 use core::panic;
 use std::cmp::{max, min};
 use std::io::{BufReader, BufWriter, Write};
+use std::io::{Seek, SeekFrom};
 use std::{
     collections::HashMap,
     fmt::{self, Display},
@@ -28,13 +29,13 @@ pub trait Port {
     fn has_position(&self) -> bool {
         false
     }
-    fn position(&self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> usize {
         panic!("doesn't support postion")
     }
     fn has_set_position(&self) -> bool {
         false
     }
-    fn set_position(&self, vm: &mut Vm, _pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, _pos: usize) -> io::Result<usize> {
         panic!("doesn't support set-postion")
     }
 
@@ -1185,15 +1186,17 @@ pub struct BinaryFileInputPort {
     pub reader: BufReader<File>,
     is_closed: bool,
     ahead_u8: Option<u8>,
+    buffer_mode: BufferMode,
 }
 
 impl BinaryFileInputPort {
-    pub fn new(file: File) -> Self {
+    pub fn new(file: File, buffer_mode: BufferMode) -> Self {
         BinaryFileInputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputPort),
             is_closed: false,
             reader: BufReader::new(file),
             ahead_u8: None,
+            buffer_mode: buffer_mode,
         }
     }
 
@@ -1212,6 +1215,9 @@ impl Port for BinaryFileInputPort {
     }
     fn close(&mut self) {
         self.is_closed = true;
+    }
+    fn buffer_mode(&self) -> BufferMode {
+        self.buffer_mode
     }
 }
 
@@ -1255,15 +1261,17 @@ pub struct BinaryFileInputOutputPort {
     pub file: File,
     is_closed: bool,
     ahead_u8: Option<u8>,
+    buffer_mode: BufferMode,
 }
 
 impl BinaryFileInputOutputPort {
-    pub fn new(file: File) -> Self {
+    pub fn new(file: File, buffer_mode: BufferMode) -> Self {
         BinaryFileInputOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputOutputPort),
             is_closed: false,
             file: file,
             ahead_u8: None,
+            buffer_mode: buffer_mode,
         }
     }
 
@@ -1283,6 +1291,9 @@ impl Port for BinaryFileInputOutputPort {
     fn close(&mut self) {
         self.file.flush().ok();
         self.is_closed = true;
+    }
+    fn buffer_mode(&self) -> BufferMode {
+        self.buffer_mode
     }
 }
 
@@ -1544,6 +1555,10 @@ impl Port for TranscodedInputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+    fn buffer_mode(&self) -> BufferMode {
+        let port = obj_as_binary_input_port_mut_or_panic!(self.in_port);
+        port.buffer_mode()
+    }
 }
 
 impl Display for TranscodedInputPort {
@@ -1647,6 +1662,10 @@ impl Port for TranscodedOutputPort {
         port.close();
         self.is_closed = true;
     }
+    fn buffer_mode(&self) -> BufferMode {
+        let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
+        port.buffer_mode()
+    }
 }
 
 impl Display for TranscodedOutputPort {
@@ -1703,6 +1722,10 @@ impl Port for TranscodedInputOutputPort {
     }
     fn close(&mut self) {
         self.is_closed = true;
+    }
+    fn buffer_mode(&self) -> BufferMode {
+        let port = obj_as_binary_input_port_mut_or_panic!(self.port);
+        port.buffer_mode()
     }
 }
 
@@ -1839,6 +1862,27 @@ impl Port for BinaryFileOutputPort {
     fn close(&mut self) {
         self.flush();
         self.is_closed = true;
+    }
+
+    fn has_position(&self) -> bool {
+        true
+    }
+    fn position(&mut self, vm: &mut Vm) -> usize {
+        self.writer.flush().ok();
+        match self.writer.seek(SeekFrom::Current(0)) {
+            Ok(pos) => pos as usize,
+            Err(_) => panic!(),
+        }
+    }
+    fn has_set_position(&self) -> bool {
+        true
+    }
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+        self.writer.flush().ok();
+        match self.writer.seek(SeekFrom::Start(pos as u64)) {
+            Ok(pos) => Ok(pos as usize),
+            Err(_) => panic!(),
+        }
     }
 }
 
@@ -2566,7 +2610,7 @@ impl Port for CustomBinaryInputPort {
         !self.set_pos_proc.is_false()
     }
 
-    fn position(&self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> usize {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => pos as usize,
@@ -2579,7 +2623,7 @@ impl Port for CustomBinaryInputPort {
         }
     }
 
-    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
@@ -2699,7 +2743,7 @@ impl Port for CustomTextInputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> usize {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => pos as usize,
@@ -2712,7 +2756,7 @@ impl Port for CustomTextInputPort {
         }
     }
 
-    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
@@ -2872,7 +2916,7 @@ impl Port for CustomBinaryOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> usize {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => pos as usize,
@@ -2885,7 +2929,7 @@ impl Port for CustomBinaryOutputPort {
         }
     }
 
-    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
@@ -2973,7 +3017,7 @@ impl Port for CustomTextOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> usize {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => pos as usize,
@@ -2986,7 +3030,7 @@ impl Port for CustomTextOutputPort {
         }
     }
 
-    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
@@ -3078,7 +3122,7 @@ impl Port for CustomBinaryInputOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> usize {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => pos as usize,
@@ -3091,7 +3135,7 @@ impl Port for CustomBinaryInputOutputPort {
         }
     }
 
-    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
@@ -3238,7 +3282,7 @@ impl Port for CustomTextInputOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> usize {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => pos as usize,
@@ -3251,7 +3295,7 @@ impl Port for CustomTextInputOutputPort {
         }
     }
 
-    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
