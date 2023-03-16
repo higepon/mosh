@@ -2791,68 +2791,42 @@ impl TextInputPort for CustomTextInputPort {
                 Some(c)
             }
             None => {
-                let mut str = String::new();
-                match self.read_n_to_string(vm, &mut str, 1) {
-                    Ok(_) => {
-                        if str.len() == 0 {
-                            None
-                        } else {
-                            let mut chars = str.chars();
-                            chars.nth(0)
+                let size:usize = 1;
+                let s = vm
+                    .gc
+                    .new_string(&(0..size).map(|_| " ").collect::<String>());
+                let start = 0_isize.to_obj();
+                let count = size.to_obj(&mut vm.gc);
+                let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
+                    Ok(obj) => {
+                        if !obj.is_fixnum() {
+                            panic!("read proc for custom port returned {}", obj)
                         }
+                        obj.to_isize() as usize
                     }
-                    Err(_) => None,
+                    Err(_) => 0,
+                };
+                if read_size == 0 {
+                    None
+                } else {
+                    s.to_sstring().string.chars().nth(0)
                 }
             }
         }
     }
     fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> io::Result<usize> {
-        if n == 0 {
-            return Ok(0);
+        let mut size = 0;
+        loop {
+            if size >= n {
+                break
+            }
+            match self.read_char( vm) {
+                Some(ch) => dst.push(ch),
+                None => break
+            }
+            size+=1;
         }
-        let read_start: usize;
-        match self.ahead_char {
-            Some(ch) => {
-                dst.push(ch);
-                self.set_ahead_char(None);
-
-                if n == 1 {
-                    return Ok(1);
-                }
-                read_start = 1;
-            }
-            None => {
-                read_start = 0;
-            }
-        }
-
-        let size = n - read_start;
-
-        let s = vm
-            .gc
-            .new_string(&(0..size).map(|_| " ").collect::<String>());
-        let start = 0_isize.to_obj();
-        let count = size.to_obj(&mut vm.gc);
-        let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
-            Ok(obj) => {
-                if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
-                }
-                obj.to_isize() as usize
-            }
-            Err(_) => 0,
-        };
-
-        let source = &s.to_sstring().string;
-        let mut i = 0;
-        for ch in source.chars() {
-            if i >= read_size {
-                break;
-            }
-            dst.push(ch);
-            i += 1;
-        }
-        Ok(read_start + read_size)
+        Ok(size)
     }
 
     fn set_parsed(&mut self, obj: Object) {
