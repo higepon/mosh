@@ -586,7 +586,12 @@ impl Object {
                 false
             }
         } else {
-            self.eq(&other)
+            match (*self, *other) {
+                (Object::Latin1Codec(_), Object::Latin1Codec(_)) => true,                
+                (Object::UTF8Codec(_), Object::UTF8Codec(_)) => true,
+                (Object::UTF16Codec(_), Object::UTF16Codec(_)) => true,
+                _ =>  self.eq(&other)
+            }
         }
     }
 
