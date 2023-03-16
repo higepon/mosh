@@ -1107,7 +1107,7 @@ impl Display for BytevectorInputPort {
 }
 
 // Trait for binary output port.
-pub trait BinaryOutputPort {
+pub trait BinaryOutputPort: OutputPort {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize>;
 
     fn put_u8(&mut self, value: u8) -> io::Result<usize> {
@@ -1284,6 +1284,7 @@ impl Port for BinaryFileInputOutputPort {
         !self.is_closed
     }
     fn close(&mut self) {
+        self.file.flush().ok();
         self.is_closed = true;
     }
 }
@@ -1649,6 +1650,8 @@ impl Port for TranscodedOutputPort {
         !self.is_closed
     }
     fn close(&mut self) {
+        let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
+        port.close();
         self.is_closed = true;
     }
 }
@@ -1661,8 +1664,8 @@ impl Display for TranscodedOutputPort {
 
 impl OutputPort for TranscodedOutputPort {
     fn flush(&mut self) {
-        todo!();
-        //self.writer.flush().unwrap_or(())
+        let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
+        port.flush()
     }
 }
 

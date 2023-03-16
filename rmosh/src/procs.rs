@@ -1334,19 +1334,9 @@ fn sys_port_seek(vm: &mut Vm, _args: &mut [Object]) -> error::Result<Object> {
 fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-output-port";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::StringOutputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        Object::FileOutputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        _ => {
-            panic!("{}: string-output-port required but got {:?}", name, args);
-        }
-    }
+    let port = as_output_port_mut!(name, args, 0);
+    port.close();
+    Ok(Object::Unspecified)
 }
 fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "digit->integer";
@@ -2778,7 +2768,7 @@ fn make_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args.len() >= 3 {
         let _mode_symbol = as_symbol!(name, args, 2);
         let mode_symbol = args[2];
-        if mode_symbol.eq(&vm.gc.symbol_intern("raise")){
+        if mode_symbol.eq(&vm.gc.symbol_intern("raise")) {
             mode = ErrorHandlingMode::RaiseError;
         } else if mode_symbol.eq(&vm.gc.symbol_intern("ignore")) {
             mode = ErrorHandlingMode::IgnoreError;
@@ -2994,16 +2984,37 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             }
         }
 
-        println!("WARNING {}: {:?} silently ignored", name, args);
-        let file = match open_options.open(&path) {
-            Ok(file) => file,
-            Err(err) => {
-                panic!("{}: {} {}", name, path, err);
+        let mut transcoder: Option<Object> = None;
+        if argc == 4 {
+            match args[3] {
+                Object::Transcoder(_) => transcoder = Some(args[3]),
+                Object::False => {}
+                _ => {
+                    return Error::assertion_violation(
+                        name,
+                        "transcoder or #f required",
+                        &[args[3]],
+                    );
+                }
             }
+        }
+
+        let file = match open_options.open(path) {
+            Ok(file) => file,
+            Err(err) => return Error::assertion_violation(name, &format!("{}", err), &[args[0]]),
         };
-        Ok(Object::FileOutputPort(
-            vm.gc.alloc(FileOutputPort::new(file)),
-        ))
+
+        match transcoder {
+            Some(t) => {
+                let in_port =
+                    Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(file)));
+                let port = TranscodedOutputPort::new(in_port, t);
+                Ok(Object::TranscodedOutputPort(vm.gc.alloc(port)))
+            }
+            None => Ok(Object::BinaryFileOutputPort(
+                vm.gc.alloc(BinaryFileOutputPort::new(file)),
+            )),
+        }
     }
 }
 
