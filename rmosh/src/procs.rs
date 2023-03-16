@@ -2777,15 +2777,15 @@ fn make_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 
     if args.len() >= 3 {
         let _mode_symbol = as_symbol!(name, args, 2);
-        let mode_symbol = args[1];
-        if mode_symbol == vm.gc.symbol_intern("raise") {
+        let mode_symbol = args[2];
+        if mode_symbol.eq(&vm.gc.symbol_intern("raise")){
             mode = ErrorHandlingMode::RaiseError;
-        } else if mode_symbol == vm.gc.symbol_intern("ignore") {
+        } else if mode_symbol.eq(&vm.gc.symbol_intern("ignore")) {
             mode = ErrorHandlingMode::IgnoreError;
-        } else if mode_symbol == vm.gc.symbol_intern("replace") {
+        } else if mode_symbol.eq(&vm.gc.symbol_intern("replace")) {
             mode = ErrorHandlingMode::ReplaceError;
         } else {
-            return Error::assertion_violation(name, "invalid error-handling-mode", &[args[1]]);
+            return Error::assertion_violation(name, "invalid error-handling-mode", &[args[2]]);
         }
     }
 

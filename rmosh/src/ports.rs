@@ -10,7 +10,6 @@ use std::{
 
 use crate::error::{self, Error, ErrorType};
 use crate::numbers::{GcObjectExt, ObjectExt};
-use crate::{obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut_or_panic};
 use crate::vm::{Vm, CURRENT_VM};
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -19,6 +18,7 @@ use crate::{
     reader::DatumParser,
     reader_util::ReadError,
 };
+use crate::{obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut_or_panic};
 use lalrpop_util::ParseError;
 
 // Trait for Port.
@@ -512,7 +512,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::CustomBinaryInputOutputPort(_)
             | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
-            | Object::CustomTextInputOutputPort(_)            
+            | Object::CustomTextInputOutputPort(_)
             | Object::CustomTextOutputPort(_)
             | Object::Vox(_)
             | Object::ProgramCounter(_)
@@ -603,7 +603,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::CustomBinaryInputOutputPort(_)
             | Object::CustomBinaryOutputPort(_)
             | Object::CustomTextInputPort(_)
-            | Object::CustomTextInputOutputPort(_)            
+            | Object::CustomTextInputOutputPort(_)
             | Object::CustomTextOutputPort(_)
             | Object::Eof
             | Object::EqHashtable(_)
@@ -841,7 +841,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::CustomBinaryInputOutputPort(_)
                 | Object::CustomBinaryOutputPort(_)
                 | Object::CustomTextInputPort(_)
-                | Object::CustomTextInputOutputPort(_)                
+                | Object::CustomTextInputOutputPort(_)
                 | Object::CustomTextOutputPort(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
@@ -1456,7 +1456,7 @@ impl OutputPort for StdErrorPort {
 impl BinaryOutputPort for StdErrorPort {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         io::stderr().write(buf)
-    }    
+    }
 }
 
 // StringOutputPort
@@ -2095,6 +2095,10 @@ impl Codec for UTF8Codec {
             buf.push((0x80 | (u & 0x3f)) as u8);
         } else if u < 0xffff {
             buf.push((0xe0 | ((u >> 12) & 0xf)) as u8);
+            buf.push((0x80 | ((u >> 6) & 0x3f)) as u8);
+            buf.push((0x80 | (u & 0x3f)) as u8);
+        } else if u < 0x10ffff {
+            buf.push((0xf0 | ((u >> 18) & 0x7)) as u8);
             buf.push((0x80 | ((u >> 12) & 0x3f)) as u8);
             buf.push((0x80 | ((u >> 6) & 0x3f)) as u8);
             buf.push((0x80 | (u & 0x3f)) as u8);
