@@ -44,12 +44,12 @@ fn main() {
     if let Some(file) = args.file {
         vargs.push(vm.gc.new_string(&file));
     } else {
-        vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
+        //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
-        //  vargs.push(
-        //    vm.gc
-        //      .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/bytevectors.sps"),
-        //)
+          vargs.push(
+            vm.gc
+              .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/ports.sps"),
+        )
     }
 
     let vargs = vm.gc.listn(&vargs);

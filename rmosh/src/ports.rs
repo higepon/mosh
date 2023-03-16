@@ -1,6 +1,6 @@
 use core::panic;
 use std::cmp::{max, min};
-use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter, Write};
 use std::{
     collections::HashMap,
     fmt::{self, Display},
@@ -10,7 +10,7 @@ use std::{
 
 use crate::error::{self, Error, ErrorType};
 use crate::numbers::{GcObjectExt, ObjectExt};
-use crate::obj_as_binary_input_port_mut_or_panic;
+use crate::{obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut_or_panic};
 use crate::vm::{Vm, CURRENT_VM};
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -196,16 +196,14 @@ pub trait TextInputPort: Port {
 #[repr(C)]
 pub struct StdInputPort {
     pub header: GcHeader,
-    pub parsed: Object,
-    ahead_char: Option<char>,
+    ahead_u8: Option<u8>,
 }
 
 impl StdInputPort {
     pub fn new() -> Self {
         StdInputPort {
             header: GcHeader::new(ObjectType::StdInputPort),
-            ahead_char: None,
-            parsed: Object::Unspecified,
+            ahead_u8: None,
         }
     }
 }
@@ -224,68 +222,17 @@ impl Port for StdInputPort {
     fn close(&mut self) {}
 }
 
-impl TextInputPort for StdInputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
-        io::stdin().read_to_string(str)
-    }
-    fn input_src(&self) -> String {
-        "#<stdin>".to_string()
-    }
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
-        match self.ahead_char {
-            Some(c) => {
-                self.ahead_char = None;
-                Some(c)
-            }
-            None => {
-                let mut str = String::new();
-                match self.read_n_to_string(vm, &mut str, 1) {
-                    Ok(_) => {
-                        if str.len() == 0 {
-                            None
-                        } else {
-                            let mut chars = str.chars();
-                            chars.nth(0)
-                        }
-                    }
-                    Err(_) => None,
-                }
-            }
-        }
+impl BinaryInputPort for StdInputPort {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+        io::stdin().read(buf)
     }
 
-    fn ahead_char(&self) -> Option<char> {
-        self.ahead_char
+    fn ahead_u8(&self) -> Option<u8> {
+        self.ahead_u8
     }
 
-    fn set_ahead_char(&mut self, c: Option<char>) {
-        self.ahead_char = c;
-    }
-    fn read_n_to_string(&mut self, _vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
-        let mut buf = vec![0; n];
-        match io::stdin().read(&mut buf) {
-            Ok(_) => {
-                // TODO: This doesn't work for non ascii.
-                match std::str::from_utf8(&buf) {
-                    Ok(s) => {
-                        str.push_str(s);
-                        Ok(str.len())
-                    }
-                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
-                }
-            }
-            Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
-        }
-    }
-    fn read_line(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
-        io::stdin().lock().read_line(str)
-    }
-
-    fn set_parsed(&mut self, obj: Object) {
-        self.parsed = obj;
-    }
-    fn parsed(&self) -> Object {
-        self.parsed
+    fn set_ahead_u8(&mut self, u: Option<u8>) {
+        self.ahead_u8 = u;
     }
 }
 
@@ -1466,14 +1413,13 @@ impl OutputPort for StdOutputPort {
     }
 }
 
-impl TextOutputPort for StdOutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
-        print!("{}", s);
-        Ok(())
+impl BinaryOutputPort for StdOutputPort {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        io::stdout().write(buf)
     }
 }
 
-// StdOutputPort
+// StdErrorPort
 #[repr(C)]
 pub struct StdErrorPort {
     pub header: GcHeader,
@@ -1507,11 +1453,10 @@ impl OutputPort for StdErrorPort {
     }
 }
 
-impl TextOutputPort for StdErrorPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
-        eprint!("{}", s);
-        Ok(())
-    }
+impl BinaryOutputPort for StdErrorPort {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        io::stderr().write(buf)
+    }    
 }
 
 // StringOutputPort
@@ -1723,17 +1668,7 @@ impl OutputPort for TranscodedOutputPort {
 
 impl TextOutputPort for TranscodedOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
-        let port = match self.out_port {
-            Object::BytevectorOutputPort(mut port) => {
-                let port = unsafe { port.pointer.as_mut() };
-                port as &mut dyn BinaryOutputPort
-            }
-            Object::BinaryFileOutputPort(mut port) => {
-                let port = unsafe { port.pointer.as_mut() };
-                port as &mut dyn BinaryOutputPort
-            }
-            _ => panic!(),
-        };
+        let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
         let mut transcoder = self.transcoder.to_transcoder();
         transcoder
             .write_string(port, s)

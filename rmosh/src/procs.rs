@@ -24,10 +24,11 @@ use crate::{
         BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort,
         BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort,
         CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
-        CustomTextInputPort, CustomTextOutputPort, EolStyle, ErrorHandlingMode, FileOutputPort,
-        Latin1Codec, OutputPort, Port, StringInputPort, StringOutputPort, TextInputPort,
+        CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, EolStyle,
+        ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StdErrorPort,
+        StdInputPort, StdOutputPort, StringInputPort, StringOutputPort, TextInputPort,
         TextOutputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
-        Transcoder, UTF16Codec, UTF8Codec, CustomTextInputOutputPort, StdInputPort, StdOutputPort, StdErrorPort,
+        Transcoder, UTF16Codec, UTF8Codec,
     },
     vm::Vm,
 };
@@ -1525,23 +1526,8 @@ fn write(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         args[1]
     };
     let shared_aware = false;
-    match port {
-        Object::StringOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdErrorPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::FileOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        _ => {
-            println!("{}: port required but got {} {}", name, port, args[0])
-        }
-    }
+    let port = obj_as_text_output_port_mut!(name, port);
+    port.write(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
 fn gensym(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6951,7 +6937,7 @@ fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-char";
     check_argc!(name, args, 2);
     let port = as_text_output_port_mut!(name, args, 0);
-    let ch = as_char!(name,  args, 1);
+    let ch = as_char!(name, args, 1);
     port.write_char(ch);
     Ok(Object::Unspecified)
 }
@@ -6964,14 +6950,8 @@ fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     } else {
         args[1]
     };
-    let result = match port {
-        Object::FileOutputPort(mut port) => port.write_char(c),
-        Object::StdErrorPort(mut port) => port.write_char(c),
-        Object::StdOutputPort(mut port) => port.write_char(c),
-        Object::StringOutputPort(mut port) => port.write_char(c),
-        _ => panic!(),
-    };
-    match result {
+    let port = obj_as_text_output_port_mut!(name, port);
+    match port.write_char(c) {
         Ok(_) => Ok(Object::Unspecified),
         Err(_) => error::Error::assertion_violation(name, "write-char failed", &[args[0]]),
     }

@@ -779,11 +779,8 @@ impl Gc {
             ObjectType::BinaryFileInputOutputPort => {}
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
-            ObjectType::StdInputPort => {
-                let s: &StdInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(s.parsed)
-            }
             ObjectType::StdOutputPort => {}
+            ObjectType::StdInputPort => {}            
             ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {
                 let s: &StringInputPort = unsafe { mem::transmute(pointer.as_ref()) };

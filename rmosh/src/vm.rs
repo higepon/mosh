@@ -1,9 +1,9 @@
+use once_cell::sync::Lazy;
 use std::{
     collections::HashMap,
     env,
     ptr::{null, null_mut},
 };
-use once_cell::sync::Lazy;
 
 // Sub module definitions.
 mod eval;
@@ -19,7 +19,10 @@ use crate::{
     obj_as_text_input_port_mut_or_panic,
     objects::{Closure, Object, Symbol},
     op::Op,
-    ports::{StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
+    ports::{
+        EolStyle, ErrorHandlingMode, StdErrorPort, StdInputPort, StdOutputPort, TextInputPort,
+        TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF8Codec,
+    },
     procs::default_free_vars,
     psyntax,
     reader_util::ReadError,
@@ -130,9 +133,56 @@ impl Vm {
             current_error_port: Object::Unspecified,
             saved_registers: Registers::new(),
         };
-        ret.current_output_port = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
-        ret.current_error_port = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
-        ret.current_input_port = Object::StdInputPort(ret.gc.alloc(StdInputPort::new()));
+        let raw_stdport = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
+        let codec = Object::UTF8Codec(ret.gc.alloc(UTF8Codec::new()));
+        let eol_style = if std::env::consts::OS == "windows" {
+            EolStyle::CrLf
+        } else {
+            EolStyle::Lf
+        };
+        let transcoder = Object::Transcoder(ret.gc.alloc(Transcoder::new(
+            codec,
+            eol_style,
+            ErrorHandlingMode::RaiseError,
+        )));
+        ret.current_output_port = Object::TranscodedOutputPort(
+            ret.gc
+                .alloc(TranscodedOutputPort::new(raw_stdport, transcoder)),
+        );
+
+        let raw_errport = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
+        let codec = Object::UTF8Codec(ret.gc.alloc(UTF8Codec::new()));
+        let eol_style = if std::env::consts::OS == "windows" {
+            EolStyle::CrLf
+        } else {
+            EolStyle::Lf
+        };
+        let transcoder = Object::Transcoder(ret.gc.alloc(Transcoder::new(
+            codec,
+            eol_style,
+            ErrorHandlingMode::RaiseError,
+        )));
+        ret.current_error_port = Object::TranscodedOutputPort(
+            ret.gc
+                .alloc(TranscodedOutputPort::new(raw_errport, transcoder)),
+        );
+
+        let raw_stdinport = Object::StdInputPort(ret.gc.alloc(StdInputPort::new()));
+        let codec = Object::UTF8Codec(ret.gc.alloc(UTF8Codec::new()));
+        let eol_style = if std::env::consts::OS == "windows" {
+            EolStyle::CrLf
+        } else {
+            EolStyle::Lf
+        };
+        let transcoder = Object::Transcoder(ret.gc.alloc(Transcoder::new(
+            codec,
+            eol_style,
+            ErrorHandlingMode::RaiseError,
+        )));
+        ret.current_input_port = Object::TranscodedInputPort(
+            ret.gc
+                .alloc(TranscodedInputPort::new(raw_stdinport, transcoder)),
+        );
 
         ret.call_by_name_code.push(Object::Instruction(Op::Frame));
         ret.call_by_name_code.push(Object::Fixnum(8));
