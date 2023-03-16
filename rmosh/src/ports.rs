@@ -28,13 +28,13 @@ pub trait Port {
     fn has_position(&self) -> bool {
         false
     }
-    fn position(&self) -> usize {
+    fn position(&self, vm: &mut Vm) -> usize {
         panic!("doesn't support postion")
     }
     fn has_set_position(&self) -> bool {
         false
     }
-    fn set_position(&self, _pos: usize) -> io::Result<usize> {
+    fn set_position(&self, vm: &mut Vm, _pos: usize) -> io::Result<usize> {
         panic!("doesn't support set-postion")
     }
 
@@ -2568,6 +2568,37 @@ impl Port for CustomBinaryInputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+
+    fn has_position(&self) -> bool {
+        !self.pos_proc.is_false()
+    }
+
+    fn has_set_position(&self) -> bool {
+        !self.set_pos_proc.is_false()
+    }
+
+    fn position(&self, vm: &mut Vm) -> usize {
+        if self.has_position() {
+            match vm.call_closure0(self.pos_proc) {
+                Ok(Object::Fixnum(pos)) => pos as usize,
+                _ => {
+                    panic!("position should be integer")
+                }
+            }
+        } else {
+            panic!("doesn't support postion")
+        }
+    }
+
+    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+        if self.has_set_position() {
+            let pos = pos.to_obj(&mut vm.gc);
+            vm.call_closure1(self.set_pos_proc, pos);
+            Ok(0)
+        } else {
+            panic!("doesn't support set-postion")
+        }
+    }
 }
 
 impl BinaryInputPort for CustomBinaryInputPort {
@@ -2672,6 +2703,35 @@ impl Port for CustomTextInputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+    fn has_position(&self) -> bool {
+        !self.pos_proc.is_false()
+    }
+
+    fn has_set_position(&self) -> bool {
+        !self.set_pos_proc.is_false()
+    }
+    fn position(&self, vm: &mut Vm) -> usize {
+        if self.has_position() {
+            match vm.call_closure0(self.pos_proc) {
+                Ok(Object::Fixnum(pos)) => pos as usize,
+                _ => {
+                    panic!("position should be integer")
+                }
+            }
+        } else {
+            panic!("doesn't support postion")
+        }
+    }
+
+    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+        if self.has_set_position() {
+            let pos = pos.to_obj(&mut vm.gc);
+            vm.call_closure1(self.set_pos_proc, pos);
+            Ok(0)
+        } else {
+            panic!("doesn't support set-postion")
+        }
+    }    
 }
 
 impl TextInputPort for CustomTextInputPort {
@@ -2820,6 +2880,35 @@ impl Port for CustomBinaryOutputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+    fn has_position(&self) -> bool {
+        !self.pos_proc.is_false()
+    }
+
+    fn has_set_position(&self) -> bool {
+        !self.set_pos_proc.is_false()
+    }
+    fn position(&self, vm: &mut Vm) -> usize {
+        if self.has_position() {
+            match vm.call_closure0(self.pos_proc) {
+                Ok(Object::Fixnum(pos)) => pos as usize,
+                _ => {
+                    panic!("position should be integer")
+                }
+            }
+        } else {
+            panic!("doesn't support postion")
+        }
+    }
+
+    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+        if self.has_set_position() {
+            let pos = pos.to_obj(&mut vm.gc);
+            vm.call_closure1(self.set_pos_proc, pos);
+            Ok(0)
+        } else {
+            panic!("doesn't support set-postion")
+        }
+    }    
 }
 
 impl BinaryOutputPort for CustomBinaryOutputPort {
@@ -2892,6 +2981,35 @@ impl Port for CustomTextOutputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+    fn has_position(&self) -> bool {
+        !self.pos_proc.is_false()
+    }
+
+    fn has_set_position(&self) -> bool {
+        !self.set_pos_proc.is_false()
+    }
+    fn position(&self, vm: &mut Vm) -> usize {
+        if self.has_position() {
+            match vm.call_closure0(self.pos_proc) {
+                Ok(Object::Fixnum(pos)) => pos as usize,
+                _ => {
+                    panic!("position should be integer")
+                }
+            }
+        } else {
+            panic!("doesn't support postion")
+        }
+    }
+
+    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+        if self.has_set_position() {
+            let pos = pos.to_obj(&mut vm.gc);
+            vm.call_closure1(self.set_pos_proc, pos);
+            Ok(0)
+        } else {
+            panic!("doesn't support set-postion")
+        }
+    }    
 }
 
 impl TextOutputPort for CustomTextOutputPort {
@@ -2968,6 +3086,35 @@ impl Port for CustomBinaryInputOutputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+    fn has_position(&self) -> bool {
+        !self.pos_proc.is_false()
+    }
+
+    fn has_set_position(&self) -> bool {
+        !self.set_pos_proc.is_false()
+    }
+    fn position(&self, vm: &mut Vm) -> usize {
+        if self.has_position() {
+            match vm.call_closure0(self.pos_proc) {
+                Ok(Object::Fixnum(pos)) => pos as usize,
+                _ => {
+                    panic!("position should be integer")
+                }
+            }
+        } else {
+            panic!("doesn't support postion")
+        }
+    }
+
+    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+        if self.has_set_position() {
+            let pos = pos.to_obj(&mut vm.gc);
+            vm.call_closure1(self.set_pos_proc, pos);
+            Ok(0)
+        } else {
+            panic!("doesn't support set-postion")
+        }
+    }    
 }
 
 impl BinaryOutputPort for CustomBinaryInputOutputPort {
@@ -3099,6 +3246,35 @@ impl Port for CustomTextInputOutputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+    fn has_position(&self) -> bool {
+        !self.pos_proc.is_false()
+    }
+
+    fn has_set_position(&self) -> bool {
+        !self.set_pos_proc.is_false()
+    }
+    fn position(&self, vm: &mut Vm) -> usize {
+        if self.has_position() {
+            match vm.call_closure0(self.pos_proc) {
+                Ok(Object::Fixnum(pos)) => pos as usize,
+                _ => {
+                    panic!("position should be integer")
+                }
+            }
+        } else {
+            panic!("doesn't support postion")
+        }
+    }
+
+    fn set_position(&self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+        if self.has_set_position() {
+            let pos = pos.to_obj(&mut vm.gc);
+            vm.call_closure1(self.set_pos_proc, pos);
+            Ok(0)
+        } else {
+            panic!("doesn't support set-postion")
+        }
+    }    
 }
 
 impl TextOutputPort for CustomTextInputOutputPort {

@@ -30,7 +30,7 @@ use crate::{
         TextOutputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
         Transcoder, UTF16Codec, UTF8Codec,
     },
-    vm::Vm,
+    vm::Vm, check_is_transcoder_or_false,
 };
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -2646,18 +2646,18 @@ fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = as_port!(name, args, 0);
     if port.has_position() {
-        Ok(port.position().to_obj(&mut vm.gc))
+        Ok(port.position(vm).to_obj(&mut vm.gc))
     } else {
         Error::assertion_violation(name, "port doesn't support port-position", &[args[0]])
     }
 }
-fn set_port_position_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn set_port_position_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-port-position!";
     check_argc!(name, args, 2);
     let port = as_port!(name, args, 0);
     if port.has_set_position() {
         let pos = as_usize!(name, args, 1);
-        match port.set_position(pos) {
+        match port.set_position(vm, pos) {
             Ok(_) => Ok(Object::Unspecified),
             Err(_) => {
                 error::Error::io_invalid_position(name, &format!("invalid position {}", pos), args)
@@ -6831,9 +6831,24 @@ fn open_bytevector_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result
     let name: &str = "open-bytevector-input-port";
     check_argc_between!(name, args, 1, 2);
     let bv = as_bytevector!(name, args, 0);
-    Ok(Object::BytevectorInputPort(
-        vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
-    ))
+    if args.len() == 1 {
+        Ok(Object::BytevectorInputPort(
+            vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
+        ))
+    } else {
+        let transcoder = check_is_transcoder_or_false!(name, args, 1);
+        if transcoder.is_false() {
+            Ok(Object::BytevectorInputPort(
+                vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
+            ))            
+        } else {
+            let bin_port = Object::BytevectorInputPort(
+                vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
+            );
+            let port = TranscodedInputPort::new(bin_port, transcoder);
+            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))            
+        }
+    }
 }
 
 fn ffi_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

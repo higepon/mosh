@@ -91,6 +91,7 @@ pub struct Vm {
     pub should_load_compiler: bool,
     pub dynamic_code_array: Vec<Vec<Object>>,
     pub call_by_name_code: Vec<Object>,
+    pub call_closure0_code: Vec<Object>,
     pub call_closure1_code: Vec<Object>,
     pub call_closure3_code: Vec<Object>,
     pub closure_for_evaluate: Object,
@@ -125,6 +126,7 @@ impl Vm {
             is_initialized: false,
             dynamic_code_array: vec![],
             call_by_name_code: vec![],
+            call_closure0_code: vec![],
             call_closure1_code: vec![],
             call_closure3_code: vec![],
             closure_for_evaluate: Object::Unspecified,
@@ -197,6 +199,15 @@ impl Vm {
         ret.call_by_name_code.push(Object::Fixnum(1));
         ret.call_by_name_code.push(Object::Instruction(Op::Halt));
 
+        ret.call_closure0_code.push(Object::Instruction(Op::Frame));
+        ret.call_closure0_code.push(Object::Fixnum(5));
+        ret.call_closure0_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure0_code.push(Object::Unspecified);
+        ret.call_closure0_code.push(Object::Instruction(Op::Call));
+        ret.call_closure0_code.push(Object::Fixnum(0));
+        ret.call_closure0_code.push(Object::Instruction(Op::Halt));
+
         ret.call_closure1_code.push(Object::Instruction(Op::Frame));
         ret.call_closure1_code.push(Object::Fixnum(8));
         ret.call_closure1_code
@@ -231,8 +242,6 @@ impl Vm {
         ret.call_closure3_code.push(Object::Fixnum(3));
         ret.call_closure3_code.push(Object::Instruction(Op::Halt));
         ret
-
-
     }
 
     pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {

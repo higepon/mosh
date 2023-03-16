@@ -121,7 +121,7 @@ impl Vm {
         arg1: Object,
         arg2: Object,
         arg3: Object,
-        arg4: Object,        
+        arg4: Object,
     ) -> error::Result<Object> {
         self.make_frame(self.pc);
 
@@ -136,7 +136,7 @@ impl Vm {
         code.push(arg3);
         code.push(Object::Instruction(Op::Push));
         code.push(Object::Instruction(Op::Constant));
-        code.push(arg4);        
+        code.push(arg4);
         code.push(Object::Instruction(Op::Push));
         code.push(Object::Instruction(Op::Constant));
         code.push(closure);
@@ -148,7 +148,7 @@ impl Vm {
 
         self.pc = self.allocate_code(&code);
         return Ok(self.ac);
-    }    
+    }
 
     pub(super) fn raise_after3(
         &mut self,
@@ -193,12 +193,17 @@ impl Vm {
                 )
             }
         }
-    }    
+    }
 
     fn call_by_name(&mut self, name: Object, arg: Object) -> error::Result<Object> {
         self.call_by_name_code[3] = arg;
         self.call_by_name_code[6] = name;
         self.evaluate_safe(self.call_by_name_code.as_ptr())
+    }
+
+    pub fn call_closure0(&mut self, func: Object) -> error::Result<Object> {
+        self.call_closure0_code[3] = func;
+        self.evaluate_safe(self.call_closure0_code.as_ptr())
     }
 
     pub fn call_closure1(&mut self, func: Object, arg1: Object) -> error::Result<Object> {

@@ -532,3 +532,14 @@ macro_rules! check_is_closure_or_false {
         o
     }};
 }
+
+#[macro_export]
+macro_rules! check_is_transcoder_or_false {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !(o.is_transcoder() || o.is_false()) {
+            return error::Error::assertion_violation($name, "transcoder or #f required", &[o]);
+        }
+        o
+    }};
+}
