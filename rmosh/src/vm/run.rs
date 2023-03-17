@@ -537,7 +537,7 @@ impl Vm {
                                 self.set_return_value(Object::Eof);
                             }
                         },
-                        Object::StringInputPort(mut p) => match p.read_char() {
+                        Object::StringInputPort(mut p) => match p.read_char(self) {
                             Some(c) => {
                                 self.set_return_value(Object::Char(c));
                             }

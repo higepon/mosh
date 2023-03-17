@@ -381,7 +381,7 @@ impl StringInputPort {
         }
     }
 
-    pub fn read_char(&mut self) -> Option<char> {
+    /*pub fn read_char(&mut self) -> Option<char> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -394,7 +394,7 @@ impl StringInputPort {
                 ret
             }
         }
-    }
+    }*/
 }
 
 impl Display for StringInputPort {
@@ -434,11 +434,25 @@ impl TextInputPort for StringInputPort {
             }
         }
     }
-    fn read_n_to_string(&mut self, _vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
+    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
+        let mut read_size = 0;
+        loop {
+            if read_size >= n {
+                break;
+            }
+            match self.read_char(vm) {
+                Some(ch) => str.push(ch),
+                None => break,
+            }
+            read_size += 1;
+        }
+        Ok(read_size)
+        /*
         let end = min(self.source.len(), self.idx + n);
         let s = &self.source[self.idx..end];
+        println!("count={} source=({}) s=({})", n, self.source, s);
         str.push_str(&s);
-        Ok(s.len())
+        Ok(s.len())*/
     }
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
@@ -1062,30 +1076,43 @@ impl Port for BytevectorInputPort {
 }
 
 impl BinaryInputPort for BytevectorInputPort {
-    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
-        let read_start: usize;
-        match self.ahead_u8 {
+    fn read_u8(&mut self, _vm: &mut Vm) -> io::Result<Option<u8>> {
+        match self.ahead_u8() {
             Some(u) => {
-                if buf.len() > 0 {
-                    buf[0] = u;
-                }
-                read_start = 1;
+                self.set_ahead_u8(None);
+                Ok(Some(u))
             }
-            None => {
-                read_start = 0;
+            None => match self.data.get(self.idx) {
+                Some(u) => {
+                    self.idx += 1;
+                    Ok(Some(*u))
+                }
+                None => Ok(None),
+            },
+        }
+    }
+
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+        let size = buf.len();
+        let mut i = 0;
+        loop {
+            if i >= size {
+                break;
+            }
+            match self.read_u8(vm) {
+                Ok(Some(u)) => {
+                    buf[i] = u;
+                    i += 1;
+                }
+                Ok(None) => {
+                    break;
+                }
+                Err(_) => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "can't read"));
+                }
             }
         }
-        let size = min(
-            if buf.len() == 0 {
-                buf.len()
-            } else {
-                buf.len() - read_start
-            },
-            self.data.len() - self.idx,
-        );
-        buf[read_start..size + read_start].copy_from_slice(&self.data[self.idx..self.idx + size]);
-        self.idx += size;
-        Ok(size)
+        Ok(i)
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1955,9 +1982,11 @@ impl Codec for Latin1Codec {
     ) -> error::Result<Option<char>> {
         loop {
             match port.read_u8(vm) {
-                Ok(Some(u)) => return Ok(Some(u as char)),
-                Ok(None) => return Ok(None),
-                Err(_) => match mode {
+                Ok(Some(u)) => return { Ok(Some(u as char)) },
+                Ok(None) => {
+                    return Ok(None);
+                }
+                Err(e) => match mode {
                     ErrorHandlingMode::IgnoreError => {
                         continue;
                     }
@@ -2225,11 +2254,17 @@ impl Codec for UTF16Codec {
                         return self.read_char(vm, port, mode, false);
                     } else {
                         self.is_little_endian = cfg!(target_endian = "little");
+                        println!(
+                            "little={} big={}",
+                            cfg!(target_endian = "little"),
+                            cfg!(target_endian = "big")
+                        );
                         // fall through.
                     }
                 }
                 let a = a as u16;
                 let b = b as u16;
+
                 let val1 = if self.is_little_endian {
                     (b << 8) | a
                 } else {
@@ -2237,7 +2272,12 @@ impl Codec for UTF16Codec {
                 };
                 if val1 < 0xD800 || val1 > 0xDFFF {
                     match char::from_u32(val1 as u32) {
-                        Some(ch) => return Ok(Some(ch)),
+                        Some(ch) => {
+                            return {
+                                println!("ch1={}", ch);
+                                Ok(Some(ch))
+                            }
+                        }
                         None => return self.decoding_error(),
                     }
                 }
@@ -2633,6 +2673,7 @@ impl Port for CustomBinaryInputPort {
 
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
+            self.set_ahead_u8(None);
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
             Ok(0)
@@ -3121,6 +3162,7 @@ impl Port for CustomBinaryInputOutputPort {
 
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
+            self.set_ahead_u8(None);
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos);
             Ok(0)

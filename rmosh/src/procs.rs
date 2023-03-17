@@ -2702,7 +2702,11 @@ fn get_bytevector_some(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
             &[args[0]],
         )
     })?;
-    Ok(vm.gc.new_bytevector_u8(&buf))
+    if buf.len() == 0 {
+        Ok(Object::Eof)
+    } else {
+        Ok(vm.gc.new_bytevector_u8(&buf))
+    }
 }
 fn get_bytevector_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-all";
@@ -2811,7 +2815,7 @@ fn sys_get_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     match args[0] {
         Object::BytevectorOutputPort(mut port) => Ok(port.to_bytevector(&mut vm.gc)),
-        Object::TranscodedOutputPort(port) => match port.out_port {
+        Object::TranscodedOutputPort(mut port) => match port.out_port {
             Object::BytevectorOutputPort(mut out_port) => Ok(out_port.to_bytevector(&mut vm.gc)),
             _ => Error::assertion_violation(
                 name,
@@ -3057,6 +3061,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         Ok(file) => file,
         Err(err) => return Error::assertion_violation(name, &format!("{}", err), &[args[0]]),
     };
+    println!("FILE={:?}", file);
 
     // We also ignore buffer-mode so input port is always buffered.
     let buffer_mode = if argc < 3 {
@@ -4148,6 +4153,7 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
     if s.is_empty() {
         Ok(Object::Eof)
     } else {
+        println!("s=[{}] count={} len={}", s, count, s.len());
         dest.string.replace_range(start..start + count, &s);
         Ok(s.len().to_obj(&mut vm.gc))
     }
@@ -6957,7 +6963,7 @@ fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let count = if args.len() >= 4 {
         as_usize!(name, args, 3)
     } else {
-        bv.len()
+        bv.len() - start
     };
     if bv.len() < start + count {
         return Error::assertion_violation(
@@ -7076,7 +7082,7 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
     };*/
     let argc = args.len();
     let mut open_options = OpenOptions::new();
-    open_options.write(true).create(true);
+    open_options.write(true).create(true).read(true);
     let mut transcoder: Option<Object> = None;
     let file: File;
     if argc == 1 {
@@ -7180,6 +7186,8 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
             }
         };
     }
+
+    println!("FILE={:?}", file);    
 
     // We ignore buffer-mode. This implmentation is not buffered at this momement.
     // We may revisit this. Once we conform R7RS and R6RS.
