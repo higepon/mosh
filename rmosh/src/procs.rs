@@ -2810,9 +2810,9 @@ fn sys_get_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "sys-get-bytevector";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::BytevectorOutputPort(port) => Ok(port.to_bytevector(&mut vm.gc)),
+        Object::BytevectorOutputPort(mut port) => Ok(port.to_bytevector(&mut vm.gc)),
         Object::TranscodedOutputPort(port) => match port.out_port {
-            Object::BytevectorOutputPort(out_port) => Ok(out_port.to_bytevector(&mut vm.gc)),
+            Object::BytevectorOutputPort(mut out_port) => Ok(out_port.to_bytevector(&mut vm.gc)),
             _ => Error::assertion_violation(
                 name,
                 "transcoded port is supposed to have bytevector output port",
@@ -2920,7 +2920,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             }
         };
         Ok(Object::BinaryFileOutputPort(
-            vm.gc.alloc(BinaryFileOutputPort::new(file)),
+            vm.gc.alloc(BinaryFileOutputPort::new(file, BufferMode::Block)),
         ))
     } else {
         let file_options = match args[1] {
@@ -2985,6 +2985,19 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             }
         }
 
+    // We ignore buffer-mode. This implmentation is not buffered at this momement.
+    // We may revisit this. Once we conform R7RS and R6RS.
+    let buffer_mode = if argc < 3 {
+        BufferMode::None
+    } else {
+        match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+            Some(mode) => mode,
+            None => {
+                return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+            }
+        }
+    };        
+
         let mut transcoder: Option<Object> = None;
         if argc == 4 {
             match args[3] {
@@ -3008,12 +3021,12 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         match transcoder {
             Some(t) => {
                 let in_port =
-                    Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(file)));
+                    Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)));
                 let port = TranscodedOutputPort::new(in_port, t);
                 Ok(Object::TranscodedOutputPort(vm.gc.alloc(port)))
             }
             None => Ok(Object::BinaryFileOutputPort(
-                vm.gc.alloc(BinaryFileOutputPort::new(file)),
+                vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
             )),
         }
     }
@@ -3055,7 +3068,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
                 return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
             }
         }
-    };
+    };    
 
     if argc == 4 {
         match args[3] {

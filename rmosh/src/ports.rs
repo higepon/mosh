@@ -1147,8 +1147,10 @@ impl BytevectorOutputPort {
         }
     }
 
-    pub fn to_bytevector(&self, gc: &mut Box<Gc>) -> Object {
-        gc.new_bytevector_u8(&self.data)
+    pub fn to_bytevector(&mut self, gc: &mut Box<Gc>) -> Object {
+        let ret = gc.new_bytevector_u8(&self.data);
+        self.data.clear();
+        ret
     }
 }
 
@@ -1838,14 +1840,16 @@ pub struct BinaryFileOutputPort {
     pub header: GcHeader,
     pub writer: BufWriter<File>,
     is_closed: bool,
+    buffer_mode: BufferMode,
 }
 
 impl BinaryFileOutputPort {
-    pub fn new(file: File) -> Self {
+    pub fn new(file: File, buffer_mode: BufferMode) -> Self {
         BinaryFileOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileOutputPort),
             is_closed: false,
             writer: BufWriter::new(file),
+            buffer_mode: buffer_mode,
         }
     }
 
@@ -1883,6 +1887,10 @@ impl Port for BinaryFileOutputPort {
             Ok(pos) => Ok(pos as usize),
             Err(_) => panic!(),
         }
+    }
+
+    fn buffer_mode(&self) -> BufferMode {
+        self.buffer_mode
     }
 }
 
@@ -2635,46 +2643,48 @@ impl Port for CustomBinaryInputPort {
 }
 
 impl BinaryInputPort for CustomBinaryInputPort {
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
-        let read_start: usize;
-        match self.ahead_u8 {
+    fn read_u8(&mut self, vm: &mut Vm) -> io::Result<Option<u8>> {
+        match self.ahead_u8() {
             Some(u) => {
-                if buf.len() > 0 {
-                    buf[0] = u;
-                    self.set_ahead_u8(None);
-                }
-                if buf.len() == 1 {
-                    return Ok(1);
-                }
-                read_start = 1;
+                self.set_ahead_u8(None);
+                Ok(Some(u))
             }
             None => {
-                read_start = 0;
+                let size: usize = 1;
+                let read_buf: Vec<u8> = vec![0; 1];
+                let bv = vm.gc.new_bytevector_u8(&read_buf);
+                let start = 0_isize.to_obj();
+                let count = size.to_obj(&mut vm.gc);
+                match vm.call_closure3(self.read_proc, bv, start, count) {
+                    Ok(Object::Fixnum(n)) => {
+                        if n == 0 {
+                            Ok(None)
+                        } else {
+                            Ok(Some(bv.to_bytevector().data[0]))
+                        }
+                    }
+                    Ok(_) => panic!("exact integer required"),
+                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+                }
             }
         }
-        let size = if buf.len() == 0 {
-            buf.len()
-        } else {
-            buf.len() - read_start
-        };
+    }
 
-        let read_buf: Vec<u8> = vec![0; size];
-        let bv = vm.gc.new_bytevector_u8(&read_buf);
-        let start = 0_isize.to_obj();
-        let count = size.to_obj(&mut vm.gc);
-        let read_size = match vm.call_closure3(self.read_proc, bv, start, count) {
-            Ok(obj) => {
-                if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
-                }
-                obj.to_isize() as usize
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+        let size = buf.len();
+        let mut i = 0;
+        loop {
+            if i >= size {
+                break;
             }
-            Err(_) => 0,
-        };
-
-        buf[read_start..read_start + read_size]
-            .copy_from_slice(&bv.to_bytevector().data[0..read_size]);
-        Ok(read_start + read_size)
+            match self.read_u8(vm) {
+                Ok(Some(u)) => buf[i] = u,
+                Ok(None) => break,
+                Err(_) => break,
+            }
+            i += 1;
+        }
+        Ok(i)
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -2791,7 +2801,7 @@ impl TextInputPort for CustomTextInputPort {
                 Some(c)
             }
             None => {
-                let size:usize = 1;
+                let size: usize = 1;
                 let s = vm
                     .gc
                     .new_string(&(0..size).map(|_| " ").collect::<String>());
@@ -2818,13 +2828,13 @@ impl TextInputPort for CustomTextInputPort {
         let mut size = 0;
         loop {
             if size >= n {
-                break
+                break;
             }
-            match self.read_char( vm) {
+            match self.read_char(vm) {
                 Some(ch) => dst.push(ch),
-                None => break
+                None => break,
             }
-            size+=1;
+            size += 1;
         }
         Ok(size)
     }
@@ -3141,46 +3151,48 @@ impl BinaryOutputPort for CustomBinaryInputOutputPort {
 }
 
 impl BinaryInputPort for CustomBinaryInputOutputPort {
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
-        let read_start: usize;
-        match self.ahead_u8 {
+    fn read_u8(&mut self, vm: &mut Vm) -> io::Result<Option<u8>> {
+        match self.ahead_u8() {
             Some(u) => {
-                if buf.len() > 0 {
-                    buf[0] = u;
-                    self.set_ahead_u8(None);
-                }
-                if buf.len() == 1 {
-                    return Ok(1);
-                }
-                read_start = 1;
+                self.set_ahead_u8(None);
+                Ok(Some(u))
             }
             None => {
-                read_start = 0;
+                let size: usize = 1;
+                let read_buf: Vec<u8> = vec![0; 1];
+                let bv = vm.gc.new_bytevector_u8(&read_buf);
+                let start = 0_isize.to_obj();
+                let count = size.to_obj(&mut vm.gc);
+                match vm.call_closure3(self.read_proc, bv, start, count) {
+                    Ok(Object::Fixnum(n)) => {
+                        if n == 0 {
+                            Ok(None)
+                        } else {
+                            Ok(Some(bv.to_bytevector().data[0]))
+                        }
+                    }
+                    Ok(_) => panic!("exact integer required"),
+                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+                }
             }
         }
-        let size = if buf.len() == 0 {
-            buf.len()
-        } else {
-            buf.len() - read_start
-        };
+    }
 
-        let read_buf: Vec<u8> = vec![0; size];
-        let bv = vm.gc.new_bytevector_u8(&read_buf);
-        let start = 0_isize.to_obj();
-        let count = size.to_obj(&mut vm.gc);
-        let read_size = match vm.call_closure3(self.read_proc, bv, start, count) {
-            Ok(obj) => {
-                if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
-                }
-                obj.to_isize() as usize
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+        let size = buf.len();
+        let mut i = 0;
+        loop {
+            if i >= size {
+                break;
             }
-            Err(_) => 0,
-        };
-
-        buf[read_start..read_start + read_size]
-            .copy_from_slice(&bv.to_bytevector().data[0..read_size]);
-        Ok(read_start + read_size)
+            match self.read_u8(vm) {
+                Ok(Some(u)) => buf[i] = u,
+                Ok(None) => break,
+                Err(_) => break,
+            }
+            i += 1;
+        }
+        Ok(i)
     }
 
     fn ahead_u8(&self) -> Option<u8> {
