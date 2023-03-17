@@ -1522,8 +1522,10 @@ impl StringOutputPort {
         self.is_closed = true;
     }
 
-    pub fn string(&self) -> String {
-        self.string.to_owned()
+    pub fn string(&mut self) -> String {
+        let ret = self.string.to_string();
+        self.string.clear();
+        ret
     }
 }
 

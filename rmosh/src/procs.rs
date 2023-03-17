@@ -1390,7 +1390,7 @@ fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-output-string";
     check_argc!(name, args, 1);
-    if let Object::StringOutputPort(s) = args[0] {
+    if let Object::StringOutputPort(mut s) = args[0] {
         Ok(vm.gc.new_string(&s.string()))
     } else {
         panic!("{}: string-output-port require but got {}", name, args[0])
