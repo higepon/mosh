@@ -11,7 +11,7 @@ use crate::{
     gc::Gc,
     numbers::{Bignum, Compnum, Flonum, Ratnum},
     objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
-    ports::BinaryOutputPort,
+    ports::BinaryOutputPort, error,
 };
 
 #[derive(FromPrimitive)]
@@ -47,7 +47,7 @@ impl FaslWriter {
     pub fn new() -> Self {
         Self {}
     }
-    pub fn write(&self, port: &mut dyn BinaryOutputPort, obj: Object) -> Result<(), io::Error> {
+    pub fn write(&self, port: &mut dyn BinaryOutputPort, obj: Object) -> error::Result<()> {
         let mut seen: HashMap<Object, Object> = HashMap::new();
         self.scan(obj, &mut seen);
         let mut shared_id = 1;
@@ -59,7 +59,7 @@ impl FaslWriter {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         obj: Object,
-    ) -> Result<(), io::Error> {
+    ) -> error::Result<()> {
         let seen_state = match seen.get(&obj) {
             Some(val) => *val,
             None => Object::False,
@@ -227,7 +227,7 @@ impl FaslWriter {
         Ok(())
     }
 
-    fn put_tag(&self, port: &mut dyn BinaryOutputPort, tag: Tag) -> Result<(), io::Error> {
+    fn put_tag(&self, port: &mut dyn BinaryOutputPort, tag: Tag) -> error::Result<()> {
         port.put_u8(tag as u8)?;
         Ok(())
     }
@@ -346,7 +346,7 @@ impl FaslWriter {
     }
 }
 
-fn write_bigint(bigint: &BigInt, port: &mut dyn BinaryOutputPort) -> Result<(), io::Error> {
+fn write_bigint(bigint: &BigInt, port: &mut dyn BinaryOutputPort) -> error::Result<()> {
     let (sign, bytes) = bigint.to_bytes_le();
     let sign = if sign == Sign::Minus {
         1

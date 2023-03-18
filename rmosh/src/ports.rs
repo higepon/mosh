@@ -1138,25 +1138,25 @@ impl Display for BytevectorInputPort {
 
 // Trait for binary output port.
 pub trait BinaryOutputPort: OutputPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize>;
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize>;
 
-    fn put_u8(&mut self, value: u8) -> io::Result<usize> {
+    fn put_u8(&mut self, value: u8) -> error::Result<usize> {
         self.write(&[value])
     }
 
-    fn put_u16(&mut self, value: u16) -> io::Result<usize> {
+    fn put_u16(&mut self, value: u16) -> error::Result<usize> {
         self.write(&value.to_le_bytes())
     }
 
-    fn put_u32(&mut self, value: u32) -> io::Result<usize> {
+    fn put_u32(&mut self, value: u32) -> error::Result<usize> {
         self.write(&value.to_le_bytes())
     }
 
-    fn put_u64(&mut self, value: u64) -> io::Result<usize> {
+    fn put_u64(&mut self, value: u64) -> error::Result<usize> {
         self.write(&value.to_le_bytes())
     }
 
-    fn put_i64(&mut self, value: i64) -> io::Result<usize> {
+    fn put_i64(&mut self, value: i64) -> error::Result<usize> {
         self.write(&value.to_le_bytes())
     }
 }
@@ -1196,7 +1196,7 @@ impl Port for BytevectorOutputPort {
 }
 
 impl BinaryOutputPort for BytevectorOutputPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
         self.data.extend_from_slice(buf);
         Ok(buf.len())
     }
@@ -1372,8 +1372,15 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
 }
 
 impl BinaryOutputPort for BinaryFileInputOutputPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.file.write(buf)
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+        self.file.write(buf).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "write",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 }
 
@@ -1471,8 +1478,15 @@ impl OutputPort for StdOutputPort {
 }
 
 impl BinaryOutputPort for StdOutputPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        io::stdout().write(buf)
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+        io::stdout().write(buf).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "write",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 }
 
@@ -1511,8 +1525,15 @@ impl OutputPort for StdErrorPort {
 }
 
 impl BinaryOutputPort for StdErrorPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        io::stderr().write(buf)
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+        io::stderr().write(buf).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "write",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 }
 
@@ -1949,8 +1970,15 @@ impl OutputPort for BinaryFileOutputPort {
 }
 
 impl BinaryOutputPort for BinaryFileOutputPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.writer.write(buf)
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+        self.writer.write(buf).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "write",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 }
 
@@ -2997,7 +3025,7 @@ impl Port for CustomBinaryOutputPort {
 }
 
 impl BinaryOutputPort for CustomBinaryOutputPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
         let vm = unsafe { &mut CURRENT_VM };
         let write_buf = buf.to_vec();
         let bv = vm.gc.new_bytevector_u8(&write_buf);
@@ -3010,7 +3038,7 @@ impl BinaryOutputPort for CustomBinaryOutputPort {
                 }
                 obj.to_isize() as usize
             }
-            Err(_) => 0,
+            Err(e) => return Err(e)
         };
         Ok(write_size)
     }
@@ -3206,7 +3234,7 @@ impl Port for CustomBinaryInputOutputPort {
 }
 
 impl BinaryOutputPort for CustomBinaryInputOutputPort {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
         let vm = unsafe { &mut CURRENT_VM };
         let write_buf = buf.to_vec();
         let bv = vm.gc.new_bytevector_u8(&write_buf);
