@@ -1431,19 +1431,18 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 port.format(&s.string, &mut args[2..]);
                 return Ok(vm.gc.new_string(&port.string()));
             }
-            (obj, Object::String(s)) => {
-                if obj.is_textual_output_port() {
-                    let port = obj_as_text_output_port_mut!(name, obj);
-                    port.format(&s.string, &mut args[2..]);
-                    return Ok(Object::Unspecified);
-                }
+            (obj, Object::String(s)) if obj.is_textual_output_port() => {
+                let port = obj_as_text_output_port_mut!(name, obj);
+                port.format(&s.string, &mut args[2..]);
+                return Ok(Object::Unspecified);
             }
+
             (Object::String(s), _) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[1..]);
                 return Ok(vm.gc.new_string(&port.string()));
             }
-            _ => {}
+            (x, y) => panic!("x={} y={}", x, y),
         }
     }
     println!("***{} called", "format");
