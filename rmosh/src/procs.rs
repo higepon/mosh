@@ -6835,7 +6835,7 @@ fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_u8(vm) == None).to_obj())
+        Ok((port.lookahead_u8(vm) == Ok(None)).to_obj())
     } else {
         panic!()
     }
@@ -6845,8 +6845,9 @@ fn lookahead_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = as_binary_input_port_mut!(name, args, 0);
     match port.lookahead_u8(vm) {
-        Some(u) => Ok(Object::Fixnum(u as isize)),
-        None => Ok(Object::Eof),
+        Ok(Some(u)) => Ok(Object::Fixnum(u as isize)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e),
     }
 }
 

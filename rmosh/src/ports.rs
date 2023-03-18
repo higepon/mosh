@@ -237,8 +237,15 @@ impl Port for StdInputPort {
 }
 
 impl BinaryInputPort for StdInputPort {
-    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
-        io::stdin().read(buf)
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
+        io::stdin().read(buf).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "read",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -984,11 +991,11 @@ pub trait TextOutputPort: OutputPort {
 
 // Trait for Port.
 pub trait BinaryInputPort: Port {
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize>;
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize>;
     fn ahead_u8(&self) -> Option<u8>;
     fn set_ahead_u8(&mut self, c: Option<u8>);
 
-    fn read_u8(&mut self, vm: &mut Vm) -> io::Result<Option<u8>> {
+    fn read_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -1007,7 +1014,7 @@ pub trait BinaryInputPort: Port {
     }
 
     // This default implementation is not very efficient :)
-    fn read_all(&mut self, vm: &mut Vm, buf: &mut Vec<u8>) -> io::Result<usize> {
+    fn read_all(&mut self, vm: &mut Vm, buf: &mut Vec<u8>) -> error::Result<usize> {
         let mut size = 0;
         loop {
             match self.read_u8(vm) {
@@ -1023,16 +1030,16 @@ pub trait BinaryInputPort: Port {
         Ok(size)
     }
 
-    fn lookahead_u8(&mut self, vm: &mut Vm) -> Option<u8> {
+    fn lookahead_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
         match self.ahead_u8() {
-            Some(u) => Some(u),
+            Some(u) => Ok(Some(u)),
             None => match self.read_u8(vm) {
                 Ok(Some(u)) => {
                     self.unget_u8(u);
-                    Some(u)
+                    Ok(Some(u))
                 }
-                Ok(None) => None,
-                _ => None,
+                Ok(None) => Ok(None),
+                Err(e) => Err(e),
             },
         }
     }
@@ -1076,7 +1083,7 @@ impl Port for BytevectorInputPort {
 }
 
 impl BinaryInputPort for BytevectorInputPort {
-    fn read_u8(&mut self, _vm: &mut Vm) -> io::Result<Option<u8>> {
+    fn read_u8(&mut self, _vm: &mut Vm) -> error::Result<Option<u8>> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -1092,7 +1099,7 @@ impl BinaryInputPort for BytevectorInputPort {
         }
     }
 
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
         let size = buf.len();
         let mut i = 0;
         loop {
@@ -1107,9 +1114,7 @@ impl BinaryInputPort for BytevectorInputPort {
                 Ok(None) => {
                     break;
                 }
-                Err(_) => {
-                    return Err(io::Error::new(io::ErrorKind::Other, "can't read"));
-                }
+                Err(e) => return Err(e),
             }
         }
         Ok(i)
@@ -1251,7 +1256,7 @@ impl Port for BinaryFileInputPort {
 }
 
 impl BinaryInputPort for BinaryFileInputPort {
-    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
         let read_start: usize;
         match self.ahead_u8() {
             Some(u) => {
@@ -1264,7 +1269,14 @@ impl BinaryInputPort for BinaryFileInputPort {
             }
             None => read_start = 0,
         }
-        self.reader.read(&mut buf[read_start..])
+        self.reader.read(&mut buf[read_start..]).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "read",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1327,7 +1339,7 @@ impl Port for BinaryFileInputOutputPort {
 }
 
 impl BinaryInputPort for BinaryFileInputOutputPort {
-    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
         let read_start: usize;
         match self.ahead_u8() {
             Some(u) => {
@@ -1340,7 +1352,14 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
             }
             None => read_start = 0,
         }
-        self.file.read(&mut buf[read_start..])
+        self.file.read(&mut buf[read_start..]).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "read",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -2687,7 +2706,7 @@ impl Port for CustomBinaryInputPort {
 }
 
 impl BinaryInputPort for CustomBinaryInputPort {
-    fn read_u8(&mut self, vm: &mut Vm) -> io::Result<Option<u8>> {
+    fn read_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -2707,14 +2726,21 @@ impl BinaryInputPort for CustomBinaryInputPort {
                             Ok(Some(bv.to_bytevector().data[0]))
                         }
                     }
-                    Ok(_) => panic!("exact integer required"),
-                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+                    Ok(obj) => {
+                        Err(error::Error::new(
+                            ErrorType::IoError,
+                            "read_u8",
+                            &format!("custom-binary-input-port read procedure should return exact integer but got {}", obj),
+                            &[obj],
+                        ))
+                    }
+                    Err(e) => Err(e),
                 }
             }
         }
     }
 
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
         let size = buf.len();
         let mut i = 0;
         loop {
@@ -2724,7 +2750,7 @@ impl BinaryInputPort for CustomBinaryInputPort {
             match self.read_u8(vm) {
                 Ok(Some(u)) => buf[i] = u,
                 Ok(None) => break,
-                Err(_) => break,
+                Err(e) => return Err(e),
             }
             i += 1;
         }
@@ -2813,7 +2839,8 @@ impl Port for CustomTextInputPort {
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -2960,7 +2987,8 @@ impl Port for CustomBinaryOutputPort {
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -3061,7 +3089,8 @@ impl Port for CustomTextOutputPort {
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -3167,7 +3196,8 @@ impl Port for CustomBinaryInputOutputPort {
         if self.has_set_position() {
             self.set_ahead_u8(None);
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -3196,7 +3226,7 @@ impl BinaryOutputPort for CustomBinaryInputOutputPort {
 }
 
 impl BinaryInputPort for CustomBinaryInputOutputPort {
-    fn read_u8(&mut self, vm: &mut Vm) -> io::Result<Option<u8>> {
+    fn read_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -3216,14 +3246,22 @@ impl BinaryInputPort for CustomBinaryInputOutputPort {
                             Ok(Some(bv.to_bytevector().data[0]))
                         }
                     }
-                    Ok(_) => panic!("exact integer required"),
-                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+                    Ok(obj) => {
+                        Err(error::Error::new(
+                            ErrorType::IoError,
+                            "read_u8",
+                            
+                            &format!("custom-binary-input/output-port read procedure should return exact integer but got {}", obj),
+                            &[obj],
+                        ))                        
+                    }
+                    Err(e) => Err(e)
                 }
             }
         }
     }
 
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
         let size = buf.len();
         let mut i = 0;
         loop {
@@ -3329,7 +3367,8 @@ impl Port for CustomTextInputOutputPort {
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")

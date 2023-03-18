@@ -6,7 +6,7 @@ use std::fmt::Display;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ErrorType {
     AssertionViolation,
     ImplementationRestrictionViolation,
@@ -19,6 +19,7 @@ pub enum ErrorType {
     Error,
 }
 
+#[derive(Clone, PartialEq)]
 pub struct Error {
     pub error_type: ErrorType,
     pub who: String,
