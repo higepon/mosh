@@ -25,10 +25,10 @@ use crate::{
         BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort,
         CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
         CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, EolStyle,
-        ErrorHandlingMode, FileOutputPort, Latin1Codec, OutputPort, Port, StdErrorPort,
-        StdInputPort, StdOutputPort, StringInputPort, StringOutputPort, TextInputPort,
-        TextOutputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
-        Transcoder, UTF16Codec, UTF8Codec,
+        ErrorHandlingMode, Latin1Codec, OutputPort, Port, StdErrorPort, StdInputPort,
+        StdOutputPort, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
+        TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
+        UTF16Codec, UTF8Codec,
     },
     vm::Vm,
 };
@@ -2644,7 +2644,7 @@ fn is_port_has_set_port_position_destructive(
 fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-position";
     check_argc!(name, args, 1);
-    let mut port = as_port_mut!(name, args, 0);
+    let port = as_port_mut!(name, args, 0);
     if port.has_position() {
         let pos = port.position(vm);
         Ok(pos.to_obj(&mut vm.gc))
@@ -2655,7 +2655,7 @@ fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn set_port_position_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-port-position!";
     check_argc!(name, args, 2);
-    let mut port = as_port_mut!(name, args, 0);
+    let port = as_port_mut!(name, args, 0);
     if port.has_set_position() {
         let pos = as_usize!(name, args, 1);
         match port.set_position(vm, pos) {
@@ -2815,7 +2815,7 @@ fn sys_get_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     match args[0] {
         Object::BytevectorOutputPort(mut port) => Ok(port.to_bytevector(&mut vm.gc)),
-        Object::TranscodedOutputPort(mut port) => match port.out_port {
+        Object::TranscodedOutputPort(port) => match port.out_port {
             Object::BytevectorOutputPort(mut out_port) => Ok(out_port.to_bytevector(&mut vm.gc)),
             _ => Error::assertion_violation(
                 name,
@@ -2924,7 +2924,8 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             }
         };
         Ok(Object::BinaryFileOutputPort(
-            vm.gc.alloc(BinaryFileOutputPort::new(file, BufferMode::Block)),
+            vm.gc
+                .alloc(BinaryFileOutputPort::new(file, BufferMode::Block)),
         ))
     } else {
         let file_options = match args[1] {
@@ -2989,18 +2990,18 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             }
         }
 
-    // We ignore buffer-mode. This implmentation is not buffered at this momement.
-    // We may revisit this. Once we conform R7RS and R6RS.
-    let buffer_mode = if argc < 3 {
-        BufferMode::None
-    } else {
-        match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
-            Some(mode) => mode,
-            None => {
-                return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+        // We ignore buffer-mode. This implmentation is not buffered at this momement.
+        // We may revisit this. Once we conform R7RS and R6RS.
+        let buffer_mode = if argc < 3 {
+            BufferMode::None
+        } else {
+            match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+                Some(mode) => mode,
+                None => {
+                    return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+                }
             }
-        }
-    };        
+        };
 
         let mut transcoder: Option<Object> = None;
         if argc == 4 {
@@ -3024,8 +3025,9 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
 
         match transcoder {
             Some(t) => {
-                let in_port =
-                    Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)));
+                let in_port = Object::BinaryFileOutputPort(
+                    vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
+                );
                 let port = TranscodedOutputPort::new(in_port, t);
                 Ok(Object::TranscodedOutputPort(vm.gc.alloc(port)))
             }
@@ -3073,7 +3075,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
                 return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
             }
         }
-    };    
+    };
 
     if argc == 4 {
         match args[3] {
@@ -6985,7 +6987,14 @@ fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let port = as_text_output_port_mut!(name, args, 0);
     let ch = as_char!(name, args, 1);
-    port.write_char(ch);
+    port.write_char(ch).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("write error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
     Ok(Object::Unspecified)
 }
 fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7187,7 +7196,7 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
         };
     }
 
-    println!("FILE={:?}", file);    
+    println!("FILE={:?}", file);
 
     // We ignore buffer-mode. This implmentation is not buffered at this momement.
     // We may revisit this. Once we conform R7RS and R6RS.
@@ -7264,7 +7273,14 @@ fn put_datum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-datum";
     check_argc!(name, args, 2);
     let port = as_text_output_port_mut!(name, args, 0);
-    port.write(args[1], false);
+    port.write(args[1], false).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("write error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
     Ok(Object::Unspecified)
 }
 fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

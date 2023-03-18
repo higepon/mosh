@@ -22,7 +22,7 @@ use crate::objects::{
 
 use crate::ports::{
     CustomBinaryInputPort, CustomBinaryOutputPort, CustomTextInputPort, CustomTextOutputPort,
-    FileInputPort, StdInputPort, StringInputPort, TranscodedInputOutputPort, TranscodedInputPort,
+    FileInputPort, StringInputPort, TranscodedInputOutputPort, TranscodedInputPort,
     TranscodedOutputPort, Transcoder, CustomBinaryInputOutputPort, CustomTextInputOutputPort,
 };
 use crate::vm::Vm;
