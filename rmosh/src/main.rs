@@ -48,7 +48,7 @@ fn main() {
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
         vargs.push(
             vm.gc
-                .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/ports.sps"),
+                .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps"),
         )
     }
 
