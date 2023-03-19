@@ -35,7 +35,7 @@ pub trait Port {
     fn has_set_position(&self) -> bool {
         false
     }
-    fn set_position(&mut self, _vm: &mut Vm, _pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, _vm: &mut Vm, _pos: usize) -> error::Result<usize> {
         panic!("doesn't support set-postion")
     }
 
@@ -1998,11 +1998,16 @@ impl Port for BinaryFileOutputPort {
     fn has_set_position(&self) -> bool {
         true
     }
-    fn set_position(&mut self, _vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, _vm: &mut Vm, pos: usize) -> error::Result<usize> {
         self.writer.flush().ok();
         match self.writer.seek(SeekFrom::Start(pos as u64)) {
             Ok(pos) => Ok(pos as usize),
-            Err(_) => panic!(),
+            Err(e) =>            Err(error::Error::new(
+                ErrorType::IoError,
+                "set_position!",
+                &format!("{}", e.to_string()),
+                &[],)
+            )
         }
     }
 
@@ -2768,15 +2773,19 @@ impl Port for CustomBinaryInputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
             self.set_ahead_u8(None);
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            panic!("doesn't support set-postion")
+            return Err(error::Error::new(
+                ErrorType::IoError,
+                "set-position!",
+                &format!("set-position! not supported"),
+                &[],
+            ))
         }
     }
 }
@@ -2912,11 +2921,10 @@ impl Port for CustomTextInputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -3067,11 +3075,10 @@ impl Port for CustomBinaryOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -3169,11 +3176,10 @@ impl Port for CustomTextOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -3275,12 +3281,11 @@ impl Port for CustomBinaryInputOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
             self.set_ahead_u8(None);
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
@@ -3298,7 +3303,12 @@ impl BinaryOutputPort for CustomBinaryInputOutputPort {
         let write_size = match vm.call_closure3(self.write_proc, bv, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "write",
+                        &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
+                        &[obj],
+                    ))
                 }
                 obj.to_isize() as usize
             }
@@ -3447,11 +3457,10 @@ impl Port for CustomTextInputOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> io::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
-            vm.call_closure1(self.set_pos_proc, pos)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+            vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
             panic!("doesn't support set-postion")
