@@ -19,7 +19,7 @@ use crate::{
     reader::DatumParser,
     reader_util::ReadError,
 };
-use crate::{obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut_or_panic};
+use crate::{obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut_or_panic, obj_as_binary_output_port_mut};
 use lalrpop_util::ParseError;
 
 // Trait for Port.
@@ -41,7 +41,12 @@ pub trait Port {
         false
     }
     fn set_position(&mut self, _vm: &mut Vm, _pos: usize) -> error::Result<usize> {
-        panic!("doesn't support set-postion")
+        Err(error::Error::new(
+            ErrorType::IoError,
+            "set-position!",
+            "set-position! not supported",
+            &[],
+        ))        
     }
 
     fn buffer_mode(&self) -> BufferMode {
@@ -511,20 +516,26 @@ impl Port for StringInputPort {
 }
 
 // Trait for TextOutputPort.
+
 pub trait TextOutputPort: OutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error>;
+    fn put_string(&mut self, s: &str) -> error::Result<()>;
 
     // (write-char c).
-    fn write_char(&mut self, c: char) -> Result<(), std::io::Error> {
+    fn write_char(&mut self, c: char) ->error::Result<()> {
         if self.is_open() {
             self.put_string(&c.to_string())
         } else {
-            Err(io::Error::new(io::ErrorKind::Other, "port is closed"))
+            return Err(error::Error::new(
+                    ErrorType::IoError,
+                    "write-char",
+                    &format!("port is closed"),
+                    &[],
+            ))
         }
     }
 
     // (write obj): Machine readable print.
-    fn write(&mut self, obj: Object, shared_aware: bool) -> Result<(), std::io::Error> {
+    fn write(&mut self, obj: Object, shared_aware: bool) -> error::Result<()> {
         if shared_aware {
             let mut shared_id = 1;
             let mut seen: HashMap<Object, Object> = HashMap::new();
@@ -536,7 +547,7 @@ pub trait TextOutputPort: OutputPort {
     }
 
     // (display obj): Human readable print.
-    fn display(&mut self, obj: Object, shared_aware: bool) -> Result<(), std::io::Error> {
+    fn display(&mut self, obj: Object, shared_aware: bool) -> error::Result<()> {
         if shared_aware {
             let mut shared_id = 1;
             let mut seen: HashMap<Object, Object> = HashMap::new();
@@ -547,7 +558,7 @@ pub trait TextOutputPort: OutputPort {
         }
     }
 
-    fn display_one(&mut self, obj: Object, human_readable: bool) -> Result<(), std::io::Error> {
+    fn display_one(&mut self, obj: Object, human_readable: bool) -> error::Result<()> {
         match obj {
             Object::Pair(p) => self.display_pair(p, human_readable),
             Object::Vector(v) => self.display_vector(v, human_readable),
@@ -619,7 +630,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> Result<(), std::io::Error> {
+    ) -> error::Result<()> {
         let seen_state = match seen.get(&obj) {
             Some(val) => *val,
             None => Object::False,
@@ -717,7 +728,7 @@ pub trait TextOutputPort: OutputPort {
         return false;
     }
 
-    fn display_pair(&mut self, p: GcRef<Pair>, human_readable: bool) -> Result<(), std::io::Error> {
+    fn display_pair(&mut self, p: GcRef<Pair>, human_readable: bool) -> error::Result<()> {
         let mut p = p;
         let abbreviated =
             p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
@@ -759,7 +770,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> Result<(), std::io::Error> {
+    ) -> error::Result<()> {
         let mut p = p;
         let abbreviated =
             p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
@@ -799,11 +810,11 @@ pub trait TextOutputPort: OutputPort {
         }
     }
 
-    fn as_display(&mut self, obj: Object) -> Result<(), std::io::Error> {
+    fn as_display(&mut self, obj: Object) -> error::Result<()> {
         self.put_string(&format!("{}", obj))
     }
 
-    fn as_write(&mut self, obj: Object) -> Result<(), std::io::Error> {
+    fn as_write(&mut self, obj: Object) -> error::Result<()> {
         self.put_string(&format!("{:?}", obj))
     }
 
@@ -811,7 +822,7 @@ pub trait TextOutputPort: OutputPort {
         &mut self,
         v: GcRef<Vector>,
         human_readable: bool,
-    ) -> Result<(), std::io::Error> {
+    ) ->error::Result<()> {
         self.put_string("#(")?;
         for i in 0..v.len() {
             self.display_one(v.data[i], human_readable)?;
@@ -828,7 +839,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> Result<(), std::io::Error> {
+    ) -> error::Result<()> {
         self.put_string("#(")?;
         for i in 0..v.len() {
             self.display_shared_one(v.data[i], seen, shared_id, human_readable)?;
@@ -843,7 +854,7 @@ pub trait TextOutputPort: OutputPort {
         &mut self,
         s: GcRef<SimpleStruct>,
         human_readable: bool,
-    ) -> Result<(), std::io::Error> {
+    ) -> error::Result<()> {
         self.put_string(&format!("#<simple-stuct {} ", s.name))?;
         for i in 0..s.len() {
             self.display_one(s.field(i), human_readable)?;
@@ -860,7 +871,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> Result<(), std::io::Error> {
+    ) ->error::Result<()> {
         self.put_string(&format!("#<simple-stuct {} ", s.name))?;
         for i in 0..s.len() {
             self.display_shared_one(s.field(i), seen, shared_id, human_readable)?;
@@ -1485,8 +1496,15 @@ impl OutputPort for FileOutputPort {
 }
 
 impl TextOutputPort for FileOutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
-        write!(self.writer, "{}", s)
+    fn put_string(&mut self, s: &str) -> error::Result<()> {
+        write!(self.writer, "{}", s).map_err(|e| {
+            Error::new(
+                ErrorType::IoError,
+                "put-string",
+                &format!("write error {}", e.to_string()),
+                &[],
+            )
+        })
     }
 }
 
@@ -1635,7 +1653,7 @@ impl OutputPort for StringOutputPort {
 }
 
 impl TextOutputPort for StringOutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+    fn put_string(&mut self, s: &str) -> error::Result<()> {
         self.string.push_str(s);
         Ok(())
     }
@@ -1803,12 +1821,11 @@ impl OutputPort for TranscodedOutputPort {
 }
 
 impl TextOutputPort for TranscodedOutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+    fn put_string(&mut self, s: &str) -> error::Result<()> {
         let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
         let mut transcoder = self.transcoder.to_transcoder();
         transcoder
             .write_string(port, s)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))
     }
 }
 
@@ -1842,8 +1859,7 @@ impl Port for TranscodedInputOutputPort {
         !self.is_closed
     }
     fn close(&mut self) {
-        self.is_closed = true;
-    }
+        self.is_closed = true;    }
     fn buffer_mode(&self) -> BufferMode {
         let port = obj_as_binary_input_port_mut_or_panic!(self.port);
         port.buffer_mode()
@@ -1932,26 +1948,11 @@ impl OutputPort for TranscodedInputOutputPort {
 }
 
 impl TextOutputPort for TranscodedInputOutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
-        let port = match self.port {
-            Object::BytevectorOutputPort(mut port) => {
-                let port = unsafe { port.pointer.as_mut() };
-                port as &mut dyn BinaryOutputPort
-            }
-            Object::BinaryFileOutputPort(mut port) => {
-                let port = unsafe { port.pointer.as_mut() };
-                port as &mut dyn BinaryOutputPort
-            }
-            Object::BinaryFileInputOutputPort(mut port) => {
-                let port = unsafe { port.pointer.as_mut() };
-                port as &mut dyn BinaryOutputPort
-            }
-            _ => panic!(),
-        };
+    fn put_string(&mut self, s: &str) -> error::Result<()> {
+        let port = obj_as_binary_output_port_mut!("put-string", self.port);
         let mut transcoder = self.transcoder.to_transcoder();
         transcoder
             .write_string(port, s)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))
     }
 }
 
@@ -2945,7 +2946,12 @@ impl Port for CustomTextInputPort {
                 Err(e) => Err(e),
             }
         } else {
-            panic!("doesn't support postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "position",
+                "position not supported",
+                &[],
+            ))
         }
     }
 
@@ -2955,7 +2961,12 @@ impl Port for CustomTextInputPort {
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            panic!("doesn't support set-postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "set-position!",
+                "set-position! not supported",
+                &[],
+            )) 
         }
     }
 }
@@ -3105,7 +3116,12 @@ impl Port for CustomBinaryOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            panic!("doesn't support postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "position",
+                "position not supported",
+                &[],
+            ))
         }
     }
 
@@ -3115,7 +3131,12 @@ impl Port for CustomBinaryOutputPort {
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            panic!("doesn't support set-postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "set-position!",
+                "set-position! not supported",
+                &[],
+            )) 
         }
     }
 }
@@ -3212,7 +3233,12 @@ impl Port for CustomTextOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            panic!("doesn't support postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "position",
+                "position not supported",
+                &[],
+            ))
         }
     }
 
@@ -3222,13 +3248,18 @@ impl Port for CustomTextOutputPort {
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            panic!("doesn't support set-postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "set-position!",
+                "set-position! not supported",
+                &[],
+            )) 
         }
     }
 }
 
 impl TextOutputPort for CustomTextOutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+    fn put_string(&mut self, s: &str) -> error::Result<()> {
         let vm = unsafe { &mut CURRENT_VM };
         let str = vm.gc.new_string(s);
         let start = 0_isize.to_obj();
@@ -3323,7 +3354,12 @@ impl Port for CustomBinaryInputOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            panic!("doesn't support postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "position",
+                "position not supported",
+                &[],
+            ))
         }
     }
 
@@ -3334,7 +3370,12 @@ impl Port for CustomBinaryInputOutputPort {
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            panic!("doesn't support set-postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "set-position!",
+                "set-position! not supported",
+                &[],
+            )) 
         }
     }
 }
@@ -3505,7 +3546,12 @@ impl Port for CustomTextInputOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            panic!("doesn't support postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "position",
+                "position not supported",
+                &[],
+            ))
         }
     }
 
@@ -3515,13 +3561,18 @@ impl Port for CustomTextInputOutputPort {
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            panic!("doesn't support set-postion")
+            Err(error::Error::new(
+                ErrorType::IoError,
+                "set-position!",
+                "set-position! not supported",
+                &[],
+            )) 
         }
     }
 }
 
 impl TextOutputPort for CustomTextInputOutputPort {
-    fn put_string(&mut self, s: &str) -> Result<(), std::io::Error> {
+    fn put_string(&mut self, s: &str) -> error::Result<()> {
         let vm = unsafe { &mut CURRENT_VM };
         let str = vm.gc.new_string(s);
         let start = 0_isize.to_obj();
