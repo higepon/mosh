@@ -980,7 +980,7 @@ pub trait TextOutputPort: OutputPort {
     }
 
     // (format ...).
-    fn format(&mut self, fmt: &str, args: &mut [Object]) {
+    fn format(&mut self, fmt: &str, args: &mut [Object]) -> error::Result<()> {
         let mut chars = fmt.chars();
         let mut i = 0;
         while let Some(c) = chars.next() {
@@ -992,7 +992,12 @@ pub trait TextOutputPort: OutputPort {
                             self.display(args[i], shared_aware).ok();
                             i += 1;
                         } else {
-                            panic!("format: not enough arguments");
+                            return Err(error::Error::new(
+                                ErrorType::IoError,
+                                "format",
+                                &format!("not enough arguments"),
+                                &[],
+                            ))
                         }
                     } else if c == 's' {
                         let shared_aware = false;
@@ -1000,10 +1005,20 @@ pub trait TextOutputPort: OutputPort {
                             self.write(args[i], shared_aware).ok();
                             i += 1;
                         } else {
-                            panic!("format: not enough arguments");
+                            return Err(error::Error::new(
+                                ErrorType::IoError,
+                                "format",
+                                &format!("not enough arguments"),
+                                &[],
+                            ))
                         }
                     } else {
-                        panic!("format: unknown ~{}", c);
+                        return Err(error::Error::new(
+                            ErrorType::IoError,
+                            "format",
+                            &format!("unknown format specifier ~{}", c),
+                            &[],
+                        ))                        
                     }
                 } else {
                     break;
@@ -1012,6 +1027,7 @@ pub trait TextOutputPort: OutputPort {
                 self.put_string(&format!("{}", c)).ok();
             }
         }
+        Ok(())
     }
 }
 
