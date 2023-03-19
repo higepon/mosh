@@ -21,9 +21,10 @@ use crate::objects::{
 };
 
 use crate::ports::{
-    CustomBinaryInputPort, CustomBinaryOutputPort, CustomTextInputPort, CustomTextOutputPort,
-    FileInputPort, StringInputPort, TranscodedInputOutputPort, TranscodedInputPort,
-    TranscodedOutputPort, Transcoder, CustomBinaryInputOutputPort, CustomTextInputOutputPort,
+    CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
+    CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, FileInputPort,
+    StringInputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
+    Transcoder,
 };
 use crate::vm::Vm;
 
@@ -90,7 +91,7 @@ pub enum ObjectType {
     Continuation,
     ContinuationStack,
     CustomTextInputPort,
-    CustomTextInputOutputPort,    
+    CustomTextInputOutputPort,
     CustomTextOutputPort,
     CustomBinaryInputPort,
     CustomBinaryInputOutputPort,
@@ -468,7 +469,7 @@ impl Gc {
             }
             Object::CustomTextInputOutputPort(c) => {
                 self.mark_heap_object(c);
-            }            
+            }
             Object::CustomTextOutputPort(c) => {
                 self.mark_heap_object(c);
             }
@@ -663,7 +664,8 @@ impl Gc {
                 self.mark_object(port.close_proc);
             }
             ObjectType::CustomBinaryInputOutputPort => {
-                let port: &CustomBinaryInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                let port: &CustomBinaryInputOutputPort =
+                    unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.read_proc);
                 self.mark_object(port.write_proc);
                 self.mark_object(port.pos_proc);
@@ -694,11 +696,11 @@ impl Gc {
             ObjectType::CustomTextInputOutputPort => {
                 let port: &CustomTextInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 self.mark_object(port.read_proc);
-                self.mark_object(port.write_proc);                
+                self.mark_object(port.write_proc);
                 self.mark_object(port.pos_proc);
                 self.mark_object(port.set_pos_proc);
                 self.mark_object(port.close_proc);
-            }            
+            }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
                 for obj in vector.data.iter() {
@@ -780,7 +782,7 @@ impl Gc {
             ObjectType::BinaryFileOutputPort => {}
             ObjectType::FileOutputPort => {}
             ObjectType::StdOutputPort => {}
-            ObjectType::StdInputPort => {}            
+            ObjectType::StdInputPort => {}
             ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {
                 let s: &StringInputPort = unsafe { mem::transmute(pointer.as_ref()) };

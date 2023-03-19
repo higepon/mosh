@@ -165,7 +165,7 @@ impl Vm {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let ch = Object::Char(ch);
-        let irritants = self.gc.listn(irritants);        
+        let irritants = self.gc.listn(irritants);
         self.raise_after4("raise-i/o-encoding-error", who, message, ch, irritants)
     }
 

@@ -19,7 +19,10 @@ use crate::{
     reader::DatumParser,
     reader_util::ReadError,
 };
-use crate::{obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut_or_panic, obj_as_binary_output_port_mut};
+use crate::{
+    obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
+    obj_as_binary_output_port_mut_or_panic,
+};
 use lalrpop_util::ParseError;
 
 // Trait for Port.
@@ -46,7 +49,7 @@ pub trait Port {
             "set-position!",
             "set-position! not supported",
             &[],
-        ))        
+        ))
     }
 
     fn buffer_mode(&self) -> BufferMode {
@@ -62,7 +65,8 @@ pub trait OutputPort: Port {
 pub trait TextInputPort: Port {
     // The methods you have to implement.
     fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize>;
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize>;
+    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize)
+        -> error::Result<usize>;
     fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>>;
     fn ahead_char(&self) -> Option<char>;
     fn set_ahead_char(&mut self, c: Option<char>);
@@ -78,7 +82,7 @@ pub trait TextInputPort: Port {
                     str.push(ch)
                 }
                 Ok(None) => break,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             }
         }
         Ok(str.len())
@@ -206,8 +210,8 @@ pub trait TextInputPort: Port {
                     self.unget_char(c);
                     Ok(Some(c))
                 }
-                Ok(None) => Ok(None,),
-                Err(e) => Err(e)
+                Ok(None) => Ok(None),
+                Err(e) => Err(e),
             },
         }
     }
@@ -337,7 +341,7 @@ impl TextInputPort for FileInputPort {
         self.ahead_char = c;
     }
 
-    fn read_char(&mut self, vm: &mut Vm) ->error::Result<Option<char>> {
+    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -359,39 +363,38 @@ impl TextInputPort for FileInputPort {
             }
         }
     }
-    fn read_n_to_string(&mut self, _vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
+    fn read_n_to_string(
+        &mut self,
+        _vm: &mut Vm,
+        str: &mut String,
+        n: usize,
+    ) -> error::Result<usize> {
         let mut buf = vec![0; n];
-        match self.reader.read(&mut buf){
+        match self.reader.read(&mut buf) {
             Ok(size) => {
-                // TODO: This doesn't work for non ascii.                
-                match  std::str::from_utf8(&buf[0..size]) {
+                // TODO: This doesn't work for non ascii.
+                match std::str::from_utf8(&buf[0..size]) {
                     Ok(s) => {
                         str.push_str(s);
                         Ok(str.len())
                     }
-                    Err(e) => {
-                        Err(Error::new(
-                            ErrorType::IoDecodingError,
-                            "read",
-                            &format!("read error {}", e.to_string()),
-                            &[],
-                        )   )                     
-                    }
+                    Err(e) => Err(Error::new(
+                        ErrorType::IoDecodingError,
+                        "read",
+                        &format!("read error {}", e.to_string()),
+                        &[],
+                    )),
                 }
-                 
             }
-            Err(e) => {
-                Err(error::Error::new(
-                    ErrorType::IoError,
-                    "read",
-                    &format!("{}", e.to_string()),
-                    &[],
-                ))
-            
-            }
+            Err(e) => Err(error::Error::new(
+                ErrorType::IoError,
+                "read",
+                &format!("{}", e.to_string()),
+                &[],
+            )),
         }
     }
-    
+
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -476,7 +479,12 @@ impl TextInputPort for StringInputPort {
             }
         }
     }
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
+    fn read_n_to_string(
+        &mut self,
+        vm: &mut Vm,
+        str: &mut String,
+        n: usize,
+    ) -> error::Result<usize> {
         let mut read_size = 0;
         loop {
             if read_size >= n {
@@ -485,7 +493,7 @@ impl TextInputPort for StringInputPort {
             match self.read_char(vm) {
                 Ok(Some(ch)) => str.push(ch),
                 Ok(None) => break,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             }
             read_size += 1;
         }
@@ -521,16 +529,16 @@ pub trait TextOutputPort: OutputPort {
     fn put_string(&mut self, s: &str) -> error::Result<()>;
 
     // (write-char c).
-    fn write_char(&mut self, c: char) ->error::Result<()> {
+    fn write_char(&mut self, c: char) -> error::Result<()> {
         if self.is_open() {
             self.put_string(&c.to_string())
         } else {
             return Err(error::Error::new(
-                    ErrorType::IoError,
-                    "write-char",
-                    &format!("port is closed"),
-                    &[],
-            ))
+                ErrorType::IoError,
+                "write-char",
+                &format!("port is closed"),
+                &[],
+            ));
         }
     }
 
@@ -818,11 +826,7 @@ pub trait TextOutputPort: OutputPort {
         self.put_string(&format!("{:?}", obj))
     }
 
-    fn display_vector(
-        &mut self,
-        v: GcRef<Vector>,
-        human_readable: bool,
-    ) ->error::Result<()> {
+    fn display_vector(&mut self, v: GcRef<Vector>, human_readable: bool) -> error::Result<()> {
         self.put_string("#(")?;
         for i in 0..v.len() {
             self.display_one(v.data[i], human_readable)?;
@@ -871,7 +875,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) ->error::Result<()> {
+    ) -> error::Result<()> {
         self.put_string(&format!("#<simple-stuct {} ", s.name))?;
         for i in 0..s.len() {
             self.display_shared_one(s.field(i), seen, shared_id, human_readable)?;
@@ -1013,7 +1017,7 @@ pub trait TextOutputPort: OutputPort {
                                 "format",
                                 &format!("not enough arguments"),
                                 &[],
-                            ))
+                            ));
                         }
                     } else if c == 's' {
                         let shared_aware = false;
@@ -1026,7 +1030,7 @@ pub trait TextOutputPort: OutputPort {
                                 "format",
                                 &format!("not enough arguments"),
                                 &[],
-                            ))
+                            ));
                         }
                     } else {
                         return Err(error::Error::new(
@@ -1034,7 +1038,7 @@ pub trait TextOutputPort: OutputPort {
                             "format",
                             &format!("unknown format specifier ~{}", c),
                             &[],
-                        ))                        
+                        ));
                     }
                 } else {
                     break;
@@ -1710,20 +1714,25 @@ impl TextInputPort for TranscodedInputPort {
             match self.read_char(vm) {
                 Ok(Some(ch)) => str.push(ch),
                 Ok(None) => break,
-                Err(e)=> return Err(e)
+                Err(e) => return Err(e),
             }
             i += 1;
         }
         Ok(i)
     }
 
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
+    fn read_n_to_string(
+        &mut self,
+        vm: &mut Vm,
+        str: &mut String,
+        n: usize,
+    ) -> error::Result<usize> {
         let mut size = 0;
         loop {
             match self.read_char(vm) {
                 Ok(Some(ch)) => str.push(ch),
                 Ok(None) => return Ok(size),
-                Err(e)=> return Err(e)
+                Err(e) => return Err(e),
             }
             size += 1;
             if size == n {
@@ -1824,8 +1833,7 @@ impl TextOutputPort for TranscodedOutputPort {
     fn put_string(&mut self, s: &str) -> error::Result<()> {
         let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
         let mut transcoder = self.transcoder.to_transcoder();
-        transcoder
-            .write_string(port, s)
+        transcoder.write_string(port, s)
     }
 }
 
@@ -1859,7 +1867,8 @@ impl Port for TranscodedInputOutputPort {
         !self.is_closed
     }
     fn close(&mut self) {
-        self.is_closed = true;    }
+        self.is_closed = true;
+    }
     fn buffer_mode(&self) -> BufferMode {
         let port = obj_as_binary_input_port_mut_or_panic!(self.port);
         port.buffer_mode()
@@ -1879,20 +1888,25 @@ impl TextInputPort for TranscodedInputOutputPort {
             match self.read_char(vm) {
                 Ok(Some(ch)) => str.push(ch),
                 Ok(None) => break,
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             }
             i += 1;
         }
         Ok(i)
     }
 
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
+    fn read_n_to_string(
+        &mut self,
+        vm: &mut Vm,
+        str: &mut String,
+        n: usize,
+    ) -> error::Result<usize> {
         let mut size = 0;
         loop {
             match self.read_char(vm) {
                 Ok(Some(ch)) => str.push(ch),
                 Ok(None) => return Ok(size),
-                Err(e) => return Err(e)
+                Err(e) => return Err(e),
             }
             size += 1;
             if size == n {
@@ -1951,8 +1965,7 @@ impl TextOutputPort for TranscodedInputOutputPort {
     fn put_string(&mut self, s: &str) -> error::Result<()> {
         let port = obj_as_binary_output_port_mut!("put-string", self.port);
         let mut transcoder = self.transcoder.to_transcoder();
-        transcoder
-            .write_string(port, s)
+        transcoder.write_string(port, s)
     }
 }
 
@@ -1998,13 +2011,12 @@ impl Port for BinaryFileOutputPort {
         self.writer.flush().ok();
         match self.writer.seek(SeekFrom::Current(0)) {
             Ok(pos) => Ok(pos as usize),
-            Err(e) =>                 
-                Err(error::Error::new(
+            Err(e) => Err(error::Error::new(
                 ErrorType::IoError,
                 "position",
                 &format!("{}", e.to_string()),
                 &[],
-            ))
+            )),
         }
     }
     fn has_set_position(&self) -> bool {
@@ -2014,12 +2026,12 @@ impl Port for BinaryFileOutputPort {
         self.writer.flush().ok();
         match self.writer.seek(SeekFrom::Start(pos as u64)) {
             Ok(pos) => Ok(pos as usize),
-            Err(e) =>            Err(error::Error::new(
+            Err(e) => Err(error::Error::new(
                 ErrorType::IoError,
                 "set_position!",
                 &format!("{}", e.to_string()),
-                &[],)
-            )
+                &[],
+            )),
         }
     }
 
@@ -2792,9 +2804,9 @@ impl Port for CustomBinaryInputPort {
                 "position",
                 &format!("position! not supported"),
                 &[],
-            ))
+            ));
         }
-        }
+    }
 
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
@@ -2808,7 +2820,7 @@ impl Port for CustomBinaryInputPort {
                 "set-position!",
                 &format!("set-position! not supported"),
                 &[],
-            ))
+            ));
         }
     }
 }
@@ -2966,7 +2978,7 @@ impl Port for CustomTextInputPort {
                 "set-position!",
                 "set-position! not supported",
                 &[],
-            )) 
+            ))
         }
     }
 }
@@ -3007,10 +3019,9 @@ impl TextInputPort for CustomTextInputPort {
                             return Err(error::Error::new(
                                 ErrorType::IoError,
                                 "read_u8",
-                                
                                 &format!("custom-text-input-port read procedure should return exact integer but got {}", obj),
                                 &[obj],
-                            ))
+                            ));
                         }
                         obj.to_isize() as usize
                     }
@@ -3024,7 +3035,12 @@ impl TextInputPort for CustomTextInputPort {
             }
         }
     }
-    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> error::Result<usize> {
+    fn read_n_to_string(
+        &mut self,
+        vm: &mut Vm,
+        dst: &mut String,
+        n: usize,
+    ) -> error::Result<usize> {
         let mut size = 0;
         loop {
             if size >= n {
@@ -3136,7 +3152,7 @@ impl Port for CustomBinaryOutputPort {
                 "set-position!",
                 "set-position! not supported",
                 &[],
-            )) 
+            ))
         }
     }
 }
@@ -3151,11 +3167,16 @@ impl BinaryOutputPort for CustomBinaryOutputPort {
         let write_size = match vm.call_closure3(self.write_proc, bv, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "write",
+                        &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
+                        &[obj],
+                    ));
                 }
                 obj.to_isize() as usize
             }
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         };
         Ok(write_size)
     }
@@ -3253,7 +3274,7 @@ impl Port for CustomTextOutputPort {
                 "set-position!",
                 "set-position! not supported",
                 &[],
-            )) 
+            ))
         }
     }
 }
@@ -3267,7 +3288,12 @@ impl TextOutputPort for CustomTextOutputPort {
         let _write_size = match vm.call_closure3(self.write_proc, str, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "read",
+                        &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
+                        &[obj],
+                    ));
                 }
                 obj.to_isize() as usize
             }
@@ -3375,7 +3401,7 @@ impl Port for CustomBinaryInputOutputPort {
                 "set-position!",
                 "set-position! not supported",
                 &[],
-            )) 
+            ))
         }
     }
 }
@@ -3395,7 +3421,7 @@ impl BinaryOutputPort for CustomBinaryInputOutputPort {
                         "write",
                         &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
                         &[obj],
-                    ))
+                    ));
                 }
                 obj.to_isize() as usize
             }
@@ -3430,10 +3456,9 @@ impl BinaryInputPort for CustomBinaryInputOutputPort {
                         Err(error::Error::new(
                             ErrorType::IoError,
                             "read_u8",
-                            
                             &format!("custom-binary-input/output-port read procedure should return exact integer but got {}", obj),
                             &[obj],
-                        ))                        
+                        ))
                     }
                     Err(e) => Err(e)
                 }
@@ -3566,7 +3591,7 @@ impl Port for CustomTextInputOutputPort {
                 "set-position!",
                 "set-position! not supported",
                 &[],
-            )) 
+            ))
         }
     }
 }
@@ -3580,7 +3605,12 @@ impl TextOutputPort for CustomTextInputOutputPort {
         let _write_size = match vm.call_closure3(self.write_proc, str, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "write",
+                        &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
+                        &[obj],
+                    ));
                 }
                 obj.to_isize() as usize
             }
@@ -3628,7 +3658,7 @@ impl TextInputPort for CustomTextInputOutputPort {
                 match self.read_n_to_string(vm, &mut str, 1) {
                     Ok(_) => {
                         if str.len() == 0 {
-                           Ok(None)
+                            Ok(None)
                         } else {
                             let mut chars = str.chars();
                             Ok(chars.nth(0))
@@ -3639,7 +3669,12 @@ impl TextInputPort for CustomTextInputOutputPort {
             }
         }
     }
-    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> error::Result<usize> {
+    fn read_n_to_string(
+        &mut self,
+        vm: &mut Vm,
+        dst: &mut String,
+        n: usize,
+    ) -> error::Result<usize> {
         if n == 0 {
             return Ok(0);
         }
@@ -3669,7 +3704,12 @@ impl TextInputPort for CustomTextInputOutputPort {
         let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    panic!("read proc for custom port returned {}", obj)
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "read",
+                        &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
+                        &[obj],
+                    ));
                 }
                 obj.to_isize() as usize
             }

@@ -8,10 +8,11 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::{
+    error,
     gc::Gc,
     numbers::{Bignum, Compnum, Flonum, Ratnum},
     objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
-    ports::BinaryOutputPort, error,
+    ports::BinaryOutputPort,
 };
 
 #[derive(FromPrimitive)]
@@ -152,11 +153,11 @@ impl FaslWriter {
             Object::BinaryFileInputPort(_) => todo!(),
             Object::StdInputPort(_) => todo!(),
             Object::CustomBinaryInputPort(_) => todo!(),
-            Object::CustomBinaryInputOutputPort(_) => todo!(),            
-            Object::CustomBinaryOutputPort(_) => todo!(),            
-            Object::CustomTextInputPort(_) => todo!(),            
-            Object::CustomTextInputOutputPort(_) => todo!(),                
-            Object::CustomTextOutputPort(_) => todo!(),              
+            Object::CustomBinaryInputOutputPort(_) => todo!(),
+            Object::CustomBinaryOutputPort(_) => todo!(),
+            Object::CustomTextInputPort(_) => todo!(),
+            Object::CustomTextInputOutputPort(_) => todo!(),
+            Object::CustomTextOutputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StringOutputPort(_) => todo!(),
@@ -249,11 +250,11 @@ impl FaslWriter {
                 | Object::Continuation(_)
                 | Object::ContinuationStack(_)
                 | Object::CustomBinaryInputPort(_)
-                | Object::CustomBinaryInputOutputPort(_)                
-                | Object::CustomBinaryOutputPort(_)                
-                | Object::CustomTextInputPort(_)                
-                | Object::CustomTextInputOutputPort(_)   
-                | Object::CustomTextOutputPort(_)                  
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::CustomBinaryOutputPort(_)
+                | Object::CustomTextInputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::CustomTextOutputPort(_)
                 | Object::Eof
                 | Object::EqHashtable(_)
                 | Object::EqvHashtable(_)

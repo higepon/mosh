@@ -1252,7 +1252,7 @@ fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match port.lookahead_char(vm) {
         Ok(Some(c)) => Ok(Object::Char(c)),
         Ok(None) => Ok(Object::Eof),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
 fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4100,7 +4100,7 @@ fn get_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match port.read_char(vm) {
         Ok(Some(c)) => Ok(Object::Char(c)),
         Ok(None) => Ok(Object::Eof),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
 fn lookahead_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4110,7 +4110,7 @@ fn lookahead_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match port.lookahead_char(vm) {
         Ok(Some(c)) => Ok(Object::Char(c)),
         Ok(None) => Ok(Object::Eof),
-        Err(e) => Err(e)        
+        Err(e) => Err(e),
     }
 }
 fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
