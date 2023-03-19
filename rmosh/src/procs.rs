@@ -2589,7 +2589,7 @@ fn put_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let port = as_text_output_port_mut!(name, args, 0);
     match port.put_string(str) {
         Ok(_) => Ok(Object::Unspecified),
-        Err(e) => Error::assertion_violation(name, &format!("{:?}", e), &[args[0]]),
+        Err(e) => Err(e),
     }
 }
 

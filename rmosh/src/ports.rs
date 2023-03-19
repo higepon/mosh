@@ -2118,7 +2118,7 @@ impl Codec for Latin1Codec {
                     }
                     ErrorHandlingMode::RaiseError => {
                         return error::Error::io_decoding_error(
-                            "latin-1-code",
+                            "latin-1-codec",
                             "invalid latin-1 byte sequence",
                             &[],
                         )
@@ -2144,7 +2144,7 @@ impl Codec for Latin1Codec {
                 ErrorHandlingMode::RaiseError => {
                     return Err(Error::new(
                         ErrorType::IoEncodingError,
-                        "latin-1-code",
+                        "latin-1-codec",
                         &"writer error",
                         &[Object::Char(ch)],
                     ))
@@ -2157,7 +2157,7 @@ impl Codec for Latin1Codec {
         port.write(&buf).map_err(|e| {
             Error::new(
                 ErrorType::IoEncodingError,
-                "latin-1-code",
+                "latin-1-codec",
                 &format!("writer error {}", e.to_string()),
                 &[Object::Char(ch)],
             )
