@@ -21,6 +21,11 @@ pub enum ReadError {
         end: usize,
         token: String,
     },
+    MalformedBytevector {
+        start: usize,
+        end: usize,
+        token: String,
+    },    
     NumberParseError {
         token: String,
         description: String,

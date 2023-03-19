@@ -298,8 +298,8 @@ impl Gc {
         let bv = self.alloc(Bytevector::new(&values));
         Object::Bytevector(bv)
     }
-
-    pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> Object {
+/*
+    pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> error::Result<Object> {
         let mut u8_vec: Vec<u8> = vec![];
         for obj in objects {
             if let Object::Fixnum(n) = obj {
@@ -313,9 +313,9 @@ impl Gc {
             }
         }
         let bv = self.alloc(Bytevector::new(&u8_vec));
-        Object::Bytevector(bv)
+        Ok(Object::Bytevector(bv))
     }
-
+*/
     pub fn new_eq_hashtable(&mut self) -> Object {
         let obj = self.alloc(EqHashtable::new());
         Object::EqHashtable(obj)

@@ -72,13 +72,10 @@ macro_rules! raise_or_exit {
             }) => $self.call_io_invalid_position_after(&who, &message, &irritants[..])?,
             Err(error::Error {
                 error_type: error::ErrorType::IoError,
-                who: _who,
+                who: who,
                 message: message,
-                irritants: _irritants,
-            }) => {
-                panic!("{} various error", message);
-                //$self.call_assertion_violation_after(&who, &message, &irritants[..])?
-            }
+                irritants: irritants,
+            }) => $self.call_assertion_violation_after(&who, &message, &irritants[..])?,
         };
     }};
 }
