@@ -4157,8 +4157,7 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
     if s.is_empty() {
         Ok(Object::Eof)
     } else {
-        println!("s=[{}] count={} len={}", s, count, s.len());
-        dest.string.replace_range(start..start + count, &s);
+        dest.string.replace_range(start..start + s.len(), &s);
         Ok(s.len().to_obj(&mut vm.gc))
     }
 }
