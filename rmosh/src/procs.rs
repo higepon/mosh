@@ -1429,18 +1429,18 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match (args[0], args[1]) {
             (Object::False, Object::String(s)) => {
                 let mut port = StringOutputPort::new();
-                port.format(&s.string, &mut args[2..]);
+                port.format(&s.string, &mut args[2..])?;
                 return Ok(vm.gc.new_string(&port.string()));
             }
             (obj, Object::String(s)) if obj.is_textual_output_port() => {
                 let port = obj_as_text_output_port_mut!(name, obj);
-                port.format(&s.string, &mut args[2..]);
+                port.format(&s.string, &mut args[2..])?;
                 return Ok(Object::Unspecified);
             }
 
             (Object::String(s), _) => {
                 let mut port = StringOutputPort::new();
-                port.format(&s.string, &mut args[1..]);
+                port.format(&s.string, &mut args[1..])?;
                 return Ok(vm.gc.new_string(&port.string()));
             }
             (x, y) => panic!("x={} y={}", x, y),
@@ -2646,7 +2646,7 @@ fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = as_port_mut!(name, args, 0);
     if port.has_position() {
-        let pos = port.position(vm);
+        let pos = port.position(vm)?;
         Ok(pos.to_obj(&mut vm.gc))
     } else {
         Error::assertion_violation(name, "port doesn't support port-position", &[args[0]])

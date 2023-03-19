@@ -29,8 +29,13 @@ pub trait Port {
     fn has_position(&self) -> bool {
         false
     }
-    fn position(&mut self, _vm: &mut Vm) -> usize {
-        panic!("doesn't support postion")
+    fn position(&mut self, _vm: &mut Vm) -> error::Result<usize> {
+        Err(error::Error::new(
+            ErrorType::IoError,
+            "position",
+            "position not supported",
+            &[],
+        ))
     }
     fn has_set_position(&self) -> bool {
         false
@@ -1988,11 +1993,17 @@ impl Port for BinaryFileOutputPort {
     fn has_position(&self) -> bool {
         true
     }
-    fn position(&mut self, _vm: &mut Vm) -> usize {
+    fn position(&mut self, _vm: &mut Vm) -> error::Result<usize> {
         self.writer.flush().ok();
         match self.writer.seek(SeekFrom::Current(0)) {
-            Ok(pos) => pos as usize,
-            Err(_) => panic!(),
+            Ok(pos) => Ok(pos as usize),
+            Err(e) =>                 
+                Err(error::Error::new(
+                ErrorType::IoError,
+                "position",
+                &format!("{}", e.to_string()),
+                &[],
+            ))
         }
     }
     fn has_set_position(&self) -> bool {
@@ -2760,18 +2771,29 @@ impl Port for CustomBinaryInputPort {
         !self.set_pos_proc.is_false()
     }
 
-    fn position(&mut self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
-                Ok(Object::Fixnum(pos)) => pos as usize,
-                _ => {
-                    panic!("position should be integer")
+                Ok(Object::Fixnum(pos)) => Ok(pos as usize),
+                Ok(obj) => {
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "position",
+                        &format!("pos procedure returned non integer {}", obj),
+                        &[self.pos_proc, obj],
+                    ))
                 }
+                Err(e) => Err(e),
             }
         } else {
-            panic!("doesn't support postion")
+            return Err(error::Error::new(
+                ErrorType::IoError,
+                "position",
+                &format!("position! not supported"),
+                &[],
+            ))
         }
-    }
+        }
 
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
         if self.has_set_position() {
@@ -2908,13 +2930,19 @@ impl Port for CustomTextInputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
-                Ok(Object::Fixnum(pos)) => pos as usize,
-                _ => {
-                    panic!("position should be integer")
+                Ok(Object::Fixnum(pos)) => Ok(pos as usize),
+                Ok(obj) => {
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "position",
+                        &format!("pos procedure returned non integer {}", obj),
+                        &[self.pos_proc, obj],
+                    ))
                 }
+                Err(e) => Err(e),
             }
         } else {
             panic!("doesn't support postion")
@@ -3062,13 +3090,19 @@ impl Port for CustomBinaryOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
-                Ok(Object::Fixnum(pos)) => pos as usize,
-                _ => {
-                    panic!("position should be integer")
+                Ok(Object::Fixnum(pos)) => Ok(pos as usize),
+                Ok(obj) => {
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "position",
+                        &format!("pos procedure returned non integer {}", obj),
+                        &[self.pos_proc, obj],
+                    ))
                 }
+                Err(e) => Err(e),
             }
         } else {
             panic!("doesn't support postion")
@@ -3163,13 +3197,19 @@ impl Port for CustomTextOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
-                Ok(Object::Fixnum(pos)) => pos as usize,
-                _ => {
-                    panic!("position should be integer")
+                Ok(Object::Fixnum(pos)) => Ok(pos as usize),
+                Ok(obj) => {
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "position",
+                        &format!("pos procedure returned non integer {}", obj),
+                        &[self.pos_proc, obj],
+                    ))
                 }
+                Err(e) => Err(e),
             }
         } else {
             panic!("doesn't support postion")
@@ -3268,13 +3308,19 @@ impl Port for CustomBinaryInputOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
-                Ok(Object::Fixnum(pos)) => pos as usize,
-                _ => {
-                    panic!("position should be integer")
+                Ok(Object::Fixnum(pos)) => Ok(pos as usize),
+                Ok(obj) => {
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "position",
+                        &format!("pos procedure returned non integer {}", obj),
+                        &[self.pos_proc, obj],
+                    ))
                 }
+                Err(e) => Err(e),
             }
         } else {
             panic!("doesn't support postion")
@@ -3444,13 +3490,19 @@ impl Port for CustomTextInputOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> usize {
+    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
-                Ok(Object::Fixnum(pos)) => pos as usize,
-                _ => {
-                    panic!("position should be integer")
+                Ok(Object::Fixnum(pos)) => Ok(pos as usize),
+                Ok(obj) => {
+                    return Err(error::Error::new(
+                        ErrorType::IoError,
+                        "position",
+                        &format!("pos procedure returned non integer {}", obj),
+                        &[self.pos_proc, obj],
+                    ))
                 }
+                Err(e) => Err(e),
             }
         } else {
             panic!("doesn't support postion")
