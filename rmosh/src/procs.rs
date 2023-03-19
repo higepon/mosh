@@ -4169,7 +4169,7 @@ fn get_string_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut s = String::new();
     match port.read_to_string(vm, &mut s) {
         Ok(_) => Ok(vm.gc.new_string(&s)),
-        Err(_) => Ok(Object::Eof),
+        Err(e) => Err(e),
     }
 }
 fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6982,7 +6982,7 @@ fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let port = as_binary_output_port_mut!(name, args, 0);
     match port.write(buf) {
         Ok(_size) => Ok(Object::Unspecified),
-        Err(err) => Error::assertion_violation(name, &format!("{:?}", err), args),
+        Err(e) => Err(e)
     }
 }
 fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
