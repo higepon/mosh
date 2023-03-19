@@ -1356,7 +1356,7 @@ impl Display for Bytevector {
         for i in 0..self.data.len() {
             write!(f, "{}", self.data[i])?;
             if i != self.data.len() - 1 {
-                write!(f, ", ")?;
+                write!(f, " ")?;
             }
         }
         write!(f, ")")
