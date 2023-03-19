@@ -530,27 +530,48 @@ impl Vm {
                     };
                     match port {
                         Object::FileInputPort(mut p) => match p.read_char(self) {
-                            Some(c) => {
+                            Ok(Some(c)) => {
                                 self.set_return_value(Object::Char(c));
                             }
-                            None => {
+                            Ok(None) => {
                                 self.set_return_value(Object::Eof);
+                            }
+                            Err(e) => {
+                                self.call_read_error_after(
+                                    "read",
+                                    &format!("read error {}", e),
+                                    &[port],
+                                )?;
                             }
                         },
                         Object::StringInputPort(mut p) => match p.read_char(self) {
-                            Some(c) => {
+                            Ok(Some(c)) => {
                                 self.set_return_value(Object::Char(c));
                             }
-                            None => {
+                            Ok(None) => {
                                 self.set_return_value(Object::Eof);
+                            }
+                            Err(e) => {
+                                self.call_read_error_after(
+                                    "read",
+                                    &format!("read error {}", e),
+                                    &[port],
+                                )?;
                             }
                         },
                         Object::TranscodedInputPort(mut p) => match p.read_char(self) {
-                            Some(c) => {
+                            Ok(Some(c)) => {
                                 self.set_return_value(Object::Char(c));
                             }
-                            None => {
+                            Ok(None) => {
                                 self.set_return_value(Object::Eof);
+                            }
+                            Err(e) => {
+                                self.call_read_error_after(
+                                    "read",
+                                    &format!("read error {}", e),
+                                    &[port],
+                                )?;
                             }
                         },
                         _ => {

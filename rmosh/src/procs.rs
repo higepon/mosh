@@ -1250,8 +1250,9 @@ fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     };
     let port = obj_as_text_input_port_mut!(name, port);
     match port.lookahead_char(vm) {
-        Some(c) => Ok(Object::Char(c)),
-        None => Ok(Object::Eof),
+        Ok(Some(c)) => Ok(Object::Char(c)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e)
     }
 }
 fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4097,8 +4098,9 @@ fn get_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = as_text_input_port_mut!(name, args, 0);
     match port.read_char(vm) {
-        Some(c) => Ok(Object::Char(c)),
-        None => Ok(Object::Eof),
+        Ok(Some(c)) => Ok(Object::Char(c)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e)
     }
 }
 fn lookahead_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4106,8 +4108,9 @@ fn lookahead_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     let port = as_text_input_port_mut!(name, args, 0);
     match port.lookahead_char(vm) {
-        Some(c) => Ok(Object::Char(c)),
-        None => Ok(Object::Eof),
+        Ok(Some(c)) => Ok(Object::Char(c)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e)        
     }
 }
 fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6829,7 +6832,7 @@ fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_char(vm) == None).to_obj())
+        Ok((port.lookahead_char(vm) == Ok(None)).to_obj())
     } else if args[0].is_binary_input_port() {
         let port = as_binary_input_port_mut!(name, args, 0);
         if !port.is_open() {

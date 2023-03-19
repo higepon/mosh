@@ -51,23 +51,24 @@ pub trait OutputPort: Port {
 // Trait for TextInputPort.
 pub trait TextInputPort: Port {
     // The methods you have to implement.
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize>;
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize>;
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char>;
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize>;
+    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize>;
+    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>>;
     fn ahead_char(&self) -> Option<char>;
     fn set_ahead_char(&mut self, c: Option<char>);
     fn input_src(&self) -> String;
 
-    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> io::Result<usize> {
+    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
         loop {
             match self.read_char(vm) {
-                Some(ch) => {
+                Ok(Some(ch)) => {
                     if ch == '\n' {
                         break;
                     }
                     str.push(ch)
                 }
-                None => break,
+                Ok(None) => break,
+                Err(e) => return Err(e)
             }
         }
         Ok(str.len())
@@ -187,15 +188,16 @@ pub trait TextInputPort: Port {
         }
     }
 
-    fn lookahead_char(&mut self, vm: &mut Vm) -> Option<char> {
+    fn lookahead_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
         match self.ahead_char() {
-            Some(ch) => Some(ch),
+            Some(ch) => Ok(Some(ch)),
             None => match self.read_char(vm) {
-                Some(c) => {
+                Ok(Some(c)) => {
                     self.unget_char(c);
-                    Some(c)
+                    Ok(Some(c))
                 }
-                None => None,
+                Ok(None) => Ok(None,),
+                Err(e) => Err(e)
             },
         }
     }
@@ -302,8 +304,15 @@ impl Port for FileInputPort {
 }
 
 impl TextInputPort for FileInputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
-        self.reader.read_to_string(str)
+    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> error::Result<usize> {
+        self.reader.read_to_string(str).map_err(|e| {
+            error::Error::new(
+                ErrorType::IoError,
+                "read",
+                &format!("{}", e.to_string()),
+                &[],
+            )
+        })
     }
 
     fn input_src(&self) -> String {
@@ -318,45 +327,61 @@ impl TextInputPort for FileInputPort {
         self.ahead_char = c;
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+    fn read_char(&mut self, vm: &mut Vm) ->error::Result<Option<char>> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
-                Some(c)
+                Ok(Some(c))
             }
             None => {
                 let mut str = String::new();
                 match self.read_n_to_string(vm, &mut str, 1) {
                     Ok(_) => {
                         if str.len() == 0 {
-                            None
+                            Ok(None)
                         } else {
                             let mut chars = str.chars();
-                            chars.nth(0)
+                            Ok(chars.nth(0))
                         }
                     }
-                    Err(_) => None,
+                    Err(e) => Err(e),
                 }
             }
         }
     }
-    fn read_n_to_string(&mut self, _vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
+    fn read_n_to_string(&mut self, _vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
         let mut buf = vec![0; n];
-        match self.reader.read(&mut buf) {
+        match self.reader.read(&mut buf){
             Ok(size) => {
-                // TODO: This doesn't work for non ascii.
-                match std::str::from_utf8(&buf[0..size]) {
+                // TODO: This doesn't work for non ascii.                
+                match  std::str::from_utf8(&buf[0..size]) {
                     Ok(s) => {
                         str.push_str(s);
                         Ok(str.len())
                     }
-                    Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+                    Err(e) => {
+                        Err(Error::new(
+                            ErrorType::IoDecodingError,
+                            "read",
+                            &format!("read error {}", e.to_string()),
+                            &[],
+                        )   )                     
+                    }
                 }
+                 
             }
-            Err(_) => Err(io::Error::new(io::ErrorKind::Other, "can't read")),
+            Err(e) => {
+                Err(error::Error::new(
+                    ErrorType::IoError,
+                    "read",
+                    &format!("{}", e.to_string()),
+                    &[],
+                ))
+            
+            }
         }
     }
-
+    
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -411,7 +436,7 @@ impl Display for StringInputPort {
 }
 
 impl TextInputPort for StringInputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
+    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> error::Result<usize> {
         str.push_str(&self.source);
         Ok(self.source.len())
     }
@@ -427,29 +452,30 @@ impl TextInputPort for StringInputPort {
     fn set_ahead_char(&mut self, c: Option<char>) {
         self.ahead_char = c;
     }
-    fn read_char(&mut self, _vm: &mut Vm) -> Option<char> {
+    fn read_char(&mut self, _vm: &mut Vm) -> error::Result<Option<char>> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
-                Some(c)
+                Ok(Some(c))
             }
             None => {
                 let mut chars = self.source.chars();
                 let ret = chars.nth(self.idx);
                 self.idx = self.idx + 1;
-                ret
+                Ok(ret)
             }
         }
     }
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
+    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
         let mut read_size = 0;
         loop {
             if read_size >= n {
                 break;
             }
             match self.read_char(vm) {
-                Some(ch) => str.push(ch),
-                None => break,
+                Ok(Some(ch)) => str.push(ch),
+                Ok(None) => break,
+                Err(e) => return Err(e)
             }
             read_size += 1;
         }
@@ -1639,24 +1665,26 @@ impl Display for TranscodedInputPort {
 }
 
 impl TextInputPort for TranscodedInputPort {
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
         let mut i: usize = 1;
         loop {
             match self.read_char(vm) {
-                Some(ch) => str.push(ch),
-                None => break,
+                Ok(Some(ch)) => str.push(ch),
+                Ok(None) => break,
+                Err(e)=> return Err(e)
             }
             i += 1;
         }
         Ok(i)
     }
 
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
+    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
         let mut size = 0;
         loop {
             match self.read_char(vm) {
-                Some(ch) => str.push(ch),
-                None => return Ok(size),
+                Ok(Some(ch)) => str.push(ch),
+                Ok(None) => return Ok(size),
+                Err(e)=> return Err(e)
             }
             size += 1;
             if size == n {
@@ -1666,18 +1694,19 @@ impl TextInputPort for TranscodedInputPort {
         Ok(n)
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
-                Some(c)
+                Ok(Some(c))
             }
             None => {
                 let port = obj_as_binary_input_port_mut_or_panic!(self.in_port);
                 let mut t = self.transcoder.to_transcoder();
                 match t.read_char(vm, port) {
-                    Ok(Some(ch)) => Some(ch),
-                    _ => None,
+                    Ok(Some(ch)) => Ok(Some(ch)),
+                    Ok(None) => Ok(None),
+                    Err(e) => Err(e),
                 }
             }
         }
@@ -1807,24 +1836,26 @@ impl Display for TranscodedInputOutputPort {
 }
 
 impl TextInputPort for TranscodedInputOutputPort {
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> std::io::Result<usize> {
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
         let mut i: usize = 1;
         loop {
             match self.read_char(vm) {
-                Some(ch) => str.push(ch),
-                None => break,
+                Ok(Some(ch)) => str.push(ch),
+                Ok(None) => break,
+                Err(e) => return Err(e)
             }
             i += 1;
         }
         Ok(i)
     }
 
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> io::Result<usize> {
+    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize) -> error::Result<usize> {
         let mut size = 0;
         loop {
             match self.read_char(vm) {
-                Some(ch) => str.push(ch),
-                None => return Ok(size),
+                Ok(Some(ch)) => str.push(ch),
+                Ok(None) => return Ok(size),
+                Err(e) => return Err(e)
             }
             size += 1;
             if size == n {
@@ -1834,18 +1865,19 @@ impl TextInputPort for TranscodedInputOutputPort {
         Ok(n)
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
-                Some(c)
+                Ok(Some(c))
             }
             None => {
                 let port = obj_as_binary_input_port_mut_or_panic!(self.port);
                 let mut t = self.transcoder.to_transcoder();
                 match t.read_char(vm, port) {
-                    Ok(Some(ch)) => Some(ch),
-                    _ => None,
+                    Ok(Some(ch)) => Ok(Some(ch)),
+                    Ok(None) => Ok(None),
+                    Err(e) => Err(e),
                 }
             }
         }
@@ -2877,7 +2909,7 @@ impl Port for CustomTextInputPort {
 }
 
 impl TextInputPort for CustomTextInputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> std::io::Result<usize> {
+    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> error::Result<usize> {
         panic!();
     }
 
@@ -2893,11 +2925,11 @@ impl TextInputPort for CustomTextInputPort {
         self.ahead_char = c;
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
-                Some(c)
+                Ok(Some(c))
             }
             None => {
                 let size: usize = 1;
@@ -2909,29 +2941,36 @@ impl TextInputPort for CustomTextInputPort {
                 let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
                     Ok(obj) => {
                         if !obj.is_fixnum() {
-                            panic!("read proc for custom port returned {}", obj)
+                            return Err(error::Error::new(
+                                ErrorType::IoError,
+                                "read_u8",
+                                
+                                &format!("custom-text-input-port read procedure should return exact integer but got {}", obj),
+                                &[obj],
+                            ))
                         }
                         obj.to_isize() as usize
                     }
-                    Err(_) => 0,
+                    Err(e) => return Err(e),
                 };
                 if read_size == 0 {
-                    None
+                    Ok(None)
                 } else {
-                    s.to_sstring().string.chars().nth(0)
+                    Ok(s.to_sstring().string.chars().nth(0))
                 }
             }
         }
     }
-    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> io::Result<usize> {
+    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> error::Result<usize> {
         let mut size = 0;
         loop {
             if size >= n {
                 break;
             }
             match self.read_char(vm) {
-                Some(ch) => dst.push(ch),
-                None => break,
+                Ok(Some(ch)) => dst.push(ch),
+                Ok(None) => break,
+                Err(e) => return Err(e),
             }
             size += 1;
         }
@@ -3434,7 +3473,7 @@ impl Display for CustomTextInputOutputPort {
 }
 
 impl TextInputPort for CustomTextInputOutputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> std::io::Result<usize> {
+    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> error::Result<usize> {
         panic!();
     }
 
@@ -3450,29 +3489,29 @@ impl TextInputPort for CustomTextInputOutputPort {
         self.ahead_char = c;
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> Option<char> {
+    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
-                Some(c)
+                Ok(Some(c))
             }
             None => {
                 let mut str = String::new();
                 match self.read_n_to_string(vm, &mut str, 1) {
                     Ok(_) => {
                         if str.len() == 0 {
-                            None
+                           Ok(None)
                         } else {
                             let mut chars = str.chars();
-                            chars.nth(0)
+                            Ok(chars.nth(0))
                         }
                     }
-                    Err(_) => None,
+                    Err(e) => Err(e),
                 }
             }
         }
     }
-    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> io::Result<usize> {
+    fn read_n_to_string(&mut self, vm: &mut Vm, dst: &mut String, n: usize) -> error::Result<usize> {
         if n == 0 {
             return Ok(0);
         }
