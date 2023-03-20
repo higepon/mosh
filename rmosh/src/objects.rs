@@ -1814,7 +1814,24 @@ impl Display for Symbol {
 
 impl Debug for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.string)
+        let content: Vec<char> = self.string.chars().collect();    
+        let start = content[0];
+        let is_bar_symbol = (start == '|') && content[content.len() - 1] == '|';
+        if start >= '0' && start <= '9' || start == ' ' {
+            write!(f, "\\x{:x};", start as u32)?;
+        } else {
+            write!(f, "{}", start)?;
+        }
+
+        for i in 1..content.len() {
+            let ch = content[i];
+            if !is_bar_symbol && ch == ' ' {
+                write!(f, "\\x{:x};", ch as u32)?;
+            } else {
+                write!(f, "{}", ch)?;
+            }
+        }
+        Ok(())
     }
 }
 
