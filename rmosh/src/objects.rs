@@ -769,7 +769,7 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Char(c) => {
-                write!(f, "{:?}", c)
+                write!(f, "#\\x{:x}", *c as u32)
             }
             Object::Flonum(n) => {
                 write!(f, "{}", n)
