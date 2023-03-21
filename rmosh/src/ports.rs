@@ -2344,6 +2344,7 @@ pub struct UTF16Codec {
     pub header: GcHeader,
     dont_check_bom: bool,
     is_little_endian: bool,
+    is_native_little_endian: bool,
 }
 
 impl UTF16Codec {
@@ -2352,6 +2353,7 @@ impl UTF16Codec {
             header: GcHeader::new(ObjectType::UTF16Codec),
             dont_check_bom: false,
             is_little_endian: false,
+            is_native_little_endian: false,
         }
     }
 
@@ -2381,12 +2383,7 @@ impl Codec for UTF16Codec {
                         self.is_little_endian = true;
                         return self.read_char(vm, port, mode, false);
                     } else {
-                        self.is_little_endian = cfg!(target_endian = "little");
-                        println!(
-                            "little={} big={}",
-                            cfg!(target_endian = "little"),
-                            cfg!(target_endian = "big")
-                        );
+                        self.is_little_endian = self.is_native_little_endian;
                         // fall through.
                     }
                 }
@@ -2400,7 +2397,7 @@ impl Codec for UTF16Codec {
                 };
                 if val1 < 0xD800 || val1 > 0xDFFF {
                     match char::from_u32(val1 as u32) {
-                        Some(ch) => return { Ok(Some(ch)) },
+                        Some(ch) => return Ok(Some(ch)),
                         None => return self.decoding_error(),
                     }
                 }
