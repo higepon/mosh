@@ -17,7 +17,7 @@ test-scheme:
 r7rs-test:
 	cargo run  ../tests/r7rs/r7rs-tests.scm	
 
-r6rs-passed:
+r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/reader.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/conditions.sps --loadpath=../tests/r6rs-test-suite/	
@@ -43,7 +43,6 @@ r6rs-passed:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/simple.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/base.sps --loadpath=../tests/r6rs-test-suite/
 
-r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run-via-eval.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
 

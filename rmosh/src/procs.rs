@@ -4971,7 +4971,7 @@ fn fixnum_width(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     Ok(Object::Fixnum(isize::BITS as isize))
 }
 fn least_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
-    let name: &str = "greatest-fixnum";
+    let name: &str = "least-fixnum";
     check_argc!(name, args, 0);
     Ok(Object::Fixnum(isize::MIN))
 }

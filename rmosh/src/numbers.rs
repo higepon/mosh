@@ -311,8 +311,8 @@ impl FixnumExt for isize {
         result.to_obj(gc)
     }
     fn sub_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
-        let other = BigInt::from_isize(self).unwrap();
-        let result = b.value.clone() - other;
+        let self_b = BigInt::from_isize(self).unwrap();
+        let result = self_b - b.value.clone();
         result.to_obj(gc)
     }
     fn mul_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
