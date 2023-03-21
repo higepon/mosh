@@ -961,8 +961,9 @@ impl Bignum {
         if other.value == BigInt::from_u8(0).unwrap() {
             Err(SchemeError::Div0)
         } else {
-            let ret = self.value.clone() / other.value.clone();
-            Ok(ret.to_obj(gc))
+            let r = BigRational::new(self.value.clone(), other.value.clone());
+            println!("r= {}", r);
+            Ok(r.to_obj(gc))            
         }
     }
     pub fn remainder(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
