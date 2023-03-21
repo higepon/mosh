@@ -4936,7 +4936,13 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match fasl.read(&mut vm.gc) {
             Ok(sexp) => Ok(sexp),
             Err(err) => {
-                panic!("{}: {} {}", name, err, args[0])
+                return Err(error::Error::new(
+                    ErrorType::IoError,
+                    name,
+                    &format!("{}", err.to_string()),
+                    &[args[0]],
+                ))
+                
             }
         }
     } else {
