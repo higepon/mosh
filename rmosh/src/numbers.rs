@@ -1442,7 +1442,15 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
     if n1.is_fixnum() && n2.is_fixnum() {
         match n1.to_isize().integer_div(n2.to_isize()) {
             Ok(v) => Ok(Object::Fixnum(v)),
-            Err(_) => Err(SchemeError::Div0),
+            Err(SchemeError::Div0) => Err(SchemeError::Div0),
+            Err(SchemeError::Overflow) => match BigInt::from_isize(n1.to_isize()) {
+                Some(b) => { 
+                    let b1 = Object::Bignum(gc.alloc(Bignum::new(b)));
+                    return integer_div(gc, b1, n2)
+                }
+                None => panic!(""),
+            },
+            Err(x) => panic!("{:?}", x),
         }
     } else if n1.is_flonum() && n2.is_flonum() {
         let ret = n1.to_flonum().integer_div(&n2.to_flonum());
