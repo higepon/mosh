@@ -962,14 +962,21 @@ impl Bignum {
             Err(SchemeError::Div0)
         } else {
             let r = BigRational::new(self.value.clone(), other.value.clone());
-            println!("r= {}", r);
-            Ok(r.to_obj(gc))            
+            Ok(r.to_obj(gc))
         }
     }
     pub fn remainder(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         assert!(other.value != BigInt::from_u8(0).unwrap());
         let ret = self.value.clone().rem(other.value.clone());
         ret.to_obj(gc)
+    }
+    pub fn quotient(&self, gc: &mut Box<Gc>, other: &Bignum) -> Result<Object, SchemeError> {
+        if other.value == BigInt::from_u8(0).unwrap() {
+            Err(SchemeError::Div0)
+        } else {
+            let b = self.value.clone() / other.value.clone();
+            Ok(b.to_obj(gc))
+        }
     }
 
     pub fn eqv(&self, other: &Bignum) -> bool {
@@ -991,6 +998,16 @@ impl Bignum {
             let b = BigInt::from_isize(fx).unwrap();
             let r = BigRational::new(self.value.clone(), b);
             Ok(r.to_obj(gc))
+        }
+    }
+
+    pub fn quotient_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+        if fx == 0 {
+            Err(SchemeError::Div0)
+        } else {
+            let b = BigInt::from_isize(fx).unwrap();
+            let b = self.value.clone() / b;
+            Ok(b.to_obj(gc))
         }
     }
 
@@ -1446,9 +1463,9 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
             Ok(v) => Ok(Object::Fixnum(v)),
             Err(SchemeError::Div0) => Err(SchemeError::Div0),
             Err(SchemeError::Overflow) => match BigInt::from_isize(n1.to_isize()) {
-                Some(b) => { 
+                Some(b) => {
                     let b1 = Object::Bignum(gc.alloc(Bignum::new(b)));
-                    return integer_div(gc, b1, n2)
+                    return integer_div(gc, b1, n2);
                 }
                 None => panic!(""),
             },
@@ -1681,12 +1698,12 @@ pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sche
             if fx == 0 {
                 Err(SchemeError::NonZeroRequired)
             } else {
-                b.div_fx(gc, fx)
+                b.quotient_fx(gc, fx)
             }
         }
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(b1), Object::Bignum(b2)) => b1.div(gc, &b2),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.quotient(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
