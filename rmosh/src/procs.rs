@@ -3061,7 +3061,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
     // N.B. As R6RS says, we ignore "file-options" for input-port.
     let file = match File::open(path) {
         Ok(file) => file,
-        Err(err) => return Error::assertion_violation(name, &format!("{}", err), &[args[0]]),
+        Err(err) => return Error::error(name, &format!("{}", err), &[args[0]]),
     };
 
     // We also ignore buffer-mode so input port is always buffered.
