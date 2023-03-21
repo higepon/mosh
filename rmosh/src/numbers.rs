@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Debug, Display},
-    ops::{Deref, DerefMut, Div, Neg, Rem},
+    ops::{Deref, DerefMut, Neg, Rem},
 };
 
 use num_bigint::BigInt;
