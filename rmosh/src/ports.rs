@@ -2400,11 +2400,7 @@ impl Codec for UTF16Codec {
                 };
                 if val1 < 0xD800 || val1 > 0xDFFF {
                     match char::from_u32(val1 as u32) {
-                        Some(ch) => {
-                            return {
-                                Ok(Some(ch))
-                            }
-                        }
+                        Some(ch) => return { Ok(Some(ch)) },
                         None => return self.decoding_error(),
                     }
                 }
@@ -2788,7 +2784,10 @@ impl Port for CustomBinaryInputPort {
     fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
-                Ok(Object::Fixnum(pos)) => Ok(pos as usize),
+                Ok(Object::Fixnum(pos)) => match self.ahead_u8() {
+                    Some(_) => Ok((pos - 1) as usize),
+                    None => Ok(pos as usize),
+                },
                 Ok(obj) => {
                     return Err(error::Error::new(
                         ErrorType::IoError,
