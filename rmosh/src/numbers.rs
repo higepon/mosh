@@ -988,8 +988,9 @@ impl Bignum {
         if fx == 0 {
             Err(SchemeError::Div0)
         } else {
-            let ret = self.value.clone().div(fx);
-            Ok(ret.to_obj(gc))
+            let b = BigInt::from_isize(fx).unwrap();
+            let r = BigRational::new(self.value.clone(), b);
+            Ok(r.to_obj(gc))
         }
     }
 
