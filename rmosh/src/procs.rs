@@ -3063,7 +3063,6 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         Ok(file) => file,
         Err(err) => return Error::assertion_violation(name, &format!("{}", err), &[args[0]]),
     };
-    println!("FILE={:?}", file);
 
     // We also ignore buffer-mode so input port is always buffered.
     let buffer_mode = if argc < 3 {
@@ -7197,8 +7196,6 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
             }
         };
     }
-
-    println!("FILE={:?}", file);
 
     // We ignore buffer-mode. This implmentation is not buffered at this momement.
     // We may revisit this. Once we conform R7RS and R6RS.

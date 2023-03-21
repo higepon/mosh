@@ -2192,7 +2192,6 @@ impl UTF8Codec {
     }
 
     fn decoding_error(&self) -> error::Result<Option<char>> {
-        println!("decoding error");
         error::Error::io_decoding_error("utf-8-codec", "invalid utf8 sequence", &[])
     }
 }
