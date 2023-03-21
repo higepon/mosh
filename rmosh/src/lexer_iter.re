@@ -23,7 +23,8 @@ use crate::reader_util::ReadError;
     HEX_DIGIT              = DIGIT | [A-Fa-f];
     HEX_SCALAR_VALUE       = HEX_DIGIT +;
     INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";
-    INITIAL                = LETTER | SPECIAL_INITIAL | INLINE_HEX_ESCAPE ;    
+    CONSTITUENT            = LETTER | [\X0080-\XFFFF]; 
+    INITIAL                = CONSTITUENT | SPECIAL_INITIAL | INLINE_HEX_ESCAPE ;    
     SUBSEQUENT             = INITIAL | DIGIT | SPECIAL_SUBSEQUENT;    
     SIGN_SUBSEQUENT        = INITIAL | EXPLICIT_SIGN | "@";
     DOT                    = ".";
@@ -237,7 +238,7 @@ impl<'input> Iterator for Lexer<'input> {
                         break 'lex;
                     }
                     $ { return None; }
-                    * { return Some(Err(ReadError::InvalidToken {
+                    * { println!("invalid token {}", self.extract_token());return Some(Err(ReadError::InvalidToken {
                             start: self.tok,
                             end: self.cursor,
                             token: self.extract_token()

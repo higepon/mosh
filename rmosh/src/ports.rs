@@ -449,9 +449,17 @@ impl Display for StringInputPort {
 }
 
 impl TextInputPort for StringInputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> error::Result<usize> {
-        str.push_str(&self.source);
-        Ok(self.source.len())
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
+        let mut read_size = 0;
+        loop {
+            match self.read_char(vm) {
+                Ok(Some(ch)) => str.push(ch),
+                Ok(None) => break,
+                Err(e) => return Err(e),
+            }
+            read_size += 1;
+        }
+        Ok(read_size)
     }
 
     fn input_src(&self) -> String {
@@ -498,12 +506,6 @@ impl TextInputPort for StringInputPort {
             read_size += 1;
         }
         Ok(read_size)
-        /*
-        let end = min(self.source.len(), self.idx + n);
-        let s = &self.source[self.idx..end];
-        println!("count={} source=({}) s=({})", n, self.source, s);
-        str.push_str(&s);
-        Ok(s.len())*/
     }
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
