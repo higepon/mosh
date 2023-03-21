@@ -2402,7 +2402,6 @@ impl Codec for UTF16Codec {
                     match char::from_u32(val1 as u32) {
                         Some(ch) => {
                             return {
-                                println!("ch1={}", ch);
                                 Ok(Some(ch))
                             }
                         }
