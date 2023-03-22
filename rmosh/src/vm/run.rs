@@ -1,3 +1,5 @@
+use std::ptr::null;
+
 use crate::{
     equal::Equal,
     error,
@@ -301,7 +303,7 @@ impl Vm {
                         free_vars.push(var);
                     }
                     let mut display = self.gc.alloc(Closure::new(
-                        [].as_ptr(),
+                        null(),
                         0,
                         0,
                         false,

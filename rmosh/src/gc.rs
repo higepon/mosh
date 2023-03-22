@@ -382,11 +382,15 @@ impl Gc {
     #[cfg(not(feature = "test_gc_size"))]
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
+            let alloc_size = std::mem::size_of_val(&object);
+            self.current_alloc_size += alloc_size;                
             let boxed = Box::new(object);
             let mut pointer = NonNull::new_unchecked(Box::into_raw(boxed));
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_mut());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
+
+        
             GcRef { pointer }
         }
     }
@@ -822,13 +826,6 @@ impl Gc {
 
     #[cfg(feature = "test_gc_size")]
     fn free(&mut self, object_ptr: &mut GcHeader) {
-        use crate::numbers::{Bignum, Ratnum};
-        use crate::ports::{
-            BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort,
-            BytevectorInputPort, BytevectorOutputPort, FileOutputPort, Latin1Codec, StdErrorPort,
-            StdInputPort, StdOutputPort, StringOutputPort, UTF16Codec, UTF8Codec,
-        };
-
         let object_type = object_ptr.obj_type;
 
         let header: &GcHeader = object_ptr;
@@ -1016,13 +1013,18 @@ impl Gc {
     }
 
     fn sweep(&mut self) {
+        let mut total = 0;
+        let mut stayed  = 0;
+        let mut _freed = 0;
         let mut previous: Option<NonNull<GcHeader>> = None;
         let mut current: Option<NonNull<GcHeader>> = self.first;
         while let Some(mut object) = current {
+            total += 1;
             unsafe {
                 let object_ptr = object.as_mut();
                 current = object_ptr.next;
                 if object_ptr.marked {
+                    stayed += 1;
                     object_ptr.marked = false;
                     previous = Some(object);
                 } else {
@@ -1035,5 +1037,6 @@ impl Gc {
                 }
             }
         }
+        eprintln!("{}/{}={}%", stayed, total, (stayed as f64) / (total as f64) * 100.0);
     }
 }

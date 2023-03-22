@@ -19,6 +19,7 @@ use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::ops::{Deref, DerefMut};
+use std::ptr::null;
 
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]
@@ -2033,10 +2034,14 @@ pub struct Closure {
 
 impl Trace for Closure {
     fn trace(&self, gc: &mut Gc) {
-        for i in 0..self.ops_len {
-            let op = unsafe { *self.ops.offset(i as isize) };
-            gc.mark_object(op);
-        }
+        // We don't have to trace in closure body because every executed code is traced in other place.
+        /*
+        if self.ops != null() {
+            for i in 0..self.ops_len {
+                let op = unsafe { *self.ops.offset(i as isize) };
+                gc.mark_object(op);
+            }
+        }*/
 
         for obj in self.free_vars.iter() {
             gc.mark_object(*obj);
