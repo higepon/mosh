@@ -676,7 +676,9 @@ impl FaslReader {
             let n = u32::from_le_bytes(buf);
             match char::from_u32(n) {
                 Some(c) => chars.push(c),
-                None => return Err(self.create_read_error(&format!("invalid char: {:x} in symbol", n))),
+                None => {
+                    return Err(self.create_read_error(&format!("invalid char: {:x} in symbol", n)))
+                }
             }
         }
         Ok(gc.symbol_intern(&String::from_iter(chars)))
@@ -693,7 +695,9 @@ impl FaslReader {
             let n = u32::from_le_bytes(buf);
             match char::from_u32(n) {
                 Some(c) => chars.push(c),
-                None => return Err(self.create_read_error(&format!("invalid char: {:x} in string", n))),
+                None => {
+                    return Err(self.create_read_error(&format!("invalid char: {:x} in string", n)))
+                }
             }
         }
         Ok(gc.new_string(&String::from_iter(chars)))

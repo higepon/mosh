@@ -25,7 +25,7 @@ pub enum ReadError {
         start: usize,
         end: usize,
         token: String,
-    },    
+    },
     NumberParseError {
         token: String,
         description: String,

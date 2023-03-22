@@ -14,17 +14,19 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::error;
-use crate::numbers::Compnum;
+use crate::numbers::{Bignum, Compnum, Ratnum};
 use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
     GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
 
 use crate::ports::{
-    CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
-    CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, FileInputPort,
-    StringInputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
-    Transcoder,
+    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
+    BytevectorOutputPort, CustomBinaryInputOutputPort, CustomBinaryInputPort,
+    CustomBinaryOutputPort, CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort,
+    FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
+    StringInputPort, StringOutputPort, TranscodedInputOutputPort, TranscodedInputPort,
+    TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::vm::Vm;
 
@@ -145,6 +147,10 @@ impl GcHeader {
 pub fn short_type_name<T: std::any::Any>() -> &'static str {
     let full_name = std::any::type_name::<T>();
     full_name.split("::").last().unwrap()
+}
+
+pub trait Trace {
+    fn trace(&self, gc: &mut Gc);
 }
 
 pub struct Gc {
@@ -298,7 +304,7 @@ impl Gc {
         let bv = self.alloc(Bytevector::new(&values));
         Object::Bytevector(bv)
     }
-/*
+
     pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> error::Result<Object> {
         let mut u8_vec: Vec<u8> = vec![];
         for obj in objects {
@@ -315,7 +321,7 @@ impl Gc {
         let bv = self.alloc(Bytevector::new(&u8_vec));
         Ok(Object::Bytevector(bv))
     }
-*/
+
     pub fn new_eq_hashtable(&mut self) -> Object {
         let obj = self.alloc(EqHashtable::new());
         Object::EqHashtable(obj)
@@ -632,185 +638,174 @@ impl Gc {
         match object_type {
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
-                for obj in closure.free_vars.iter() {
-                    self.mark_object(*obj);
-                }
-                for i in 0..closure.ops_len {
-                    let op = unsafe { *closure.ops.offset(i as isize) };
-                    self.mark_object(op);
-                }
-
-                if !closure.prev.is_unspecified() {
-                    self.mark_object(closure.prev);
-                }
-
-                self.mark_object(closure.src);
+                closure.trace(self);
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(vox.value);
+                vox.trace(self);
             }
             ObjectType::Pair => {
                 let pair: &Pair = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(pair.car);
-                self.mark_object(pair.cdr);
-                self.mark_object(pair.src);
+                pair.trace(self);
             }
             ObjectType::CustomBinaryInputPort => {
                 let port: &CustomBinaryInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.read_proc);
-                self.mark_object(port.pos_proc);
-                self.mark_object(port.set_pos_proc);
-                self.mark_object(port.close_proc);
+                port.trace(self);
             }
             ObjectType::CustomBinaryInputOutputPort => {
                 let port: &CustomBinaryInputOutputPort =
                     unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.read_proc);
-                self.mark_object(port.write_proc);
-                self.mark_object(port.pos_proc);
-                self.mark_object(port.set_pos_proc);
-                self.mark_object(port.close_proc);
+                port.trace(self);
             }
             ObjectType::CustomBinaryOutputPort => {
                 let port: &CustomBinaryOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.write_proc);
-                self.mark_object(port.pos_proc);
-                self.mark_object(port.set_pos_proc);
-                self.mark_object(port.close_proc);
+                port.trace(self);
             }
             ObjectType::CustomTextOutputPort => {
                 let port: &CustomTextOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.write_proc);
-                self.mark_object(port.pos_proc);
-                self.mark_object(port.set_pos_proc);
-                self.mark_object(port.close_proc);
+                port.trace(self);
             }
             ObjectType::CustomTextInputPort => {
                 let port: &CustomTextInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.read_proc);
-                self.mark_object(port.pos_proc);
-                self.mark_object(port.set_pos_proc);
-                self.mark_object(port.close_proc);
+                port.trace(self);
             }
             ObjectType::CustomTextInputOutputPort => {
                 let port: &CustomTextInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.read_proc);
-                self.mark_object(port.write_proc);
-                self.mark_object(port.pos_proc);
-                self.mark_object(port.set_pos_proc);
-                self.mark_object(port.close_proc);
+                port.trace(self);
             }
             ObjectType::Vector => {
                 let vector: &Vector = unsafe { mem::transmute(pointer.as_ref()) };
-                for obj in vector.data.iter() {
-                    self.mark_object(*obj);
-                }
+                vector.trace(self);
             }
             ObjectType::SimpleStruct => {
                 let s: &SimpleStruct = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(s.name);
-                for obj in s.data.iter() {
-                    self.mark_object(*obj);
-                }
+                s.trace(self);
             }
             ObjectType::EqHashtable => {
                 let hashtable: &EqHashtable = unsafe { mem::transmute(pointer.as_ref()) };
-
-                for &obj in hashtable.hash_map.values() {
-                    self.mark_object(obj);
-                }
-                for &obj in hashtable.hash_map.keys() {
-                    self.mark_object(obj);
-                }
+                hashtable.trace(self);
             }
             ObjectType::EqvHashtable => {
                 let hashtable: &EqvHashtable = unsafe { mem::transmute(pointer.as_ref()) };
-
-                for &obj in hashtable.hash_map.values() {
-                    self.mark_object(obj);
-                }
-                for &key in hashtable.hash_map.keys() {
-                    self.mark_object(key.obj);
-                }
+                hashtable.trace(self);
             }
             ObjectType::GenericHashtable => {
                 let hashtable: &GenericHashtable = unsafe { mem::transmute(pointer.as_ref()) };
-
-                for &obj in hashtable.hash_map.values() {
-                    self.mark_object(obj);
-                }
-                for &key in hashtable.hash_map.keys() {
-                    self.mark_object(key.hash_obj);
-                }
-                self.mark_object(hashtable.hash_func);
-                self.mark_object(hashtable.eq_func);
+                hashtable.trace(self);
             }
             ObjectType::FileInputPort => {
                 let port: &FileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.parsed);
+                port.trace(self);
             }
             ObjectType::TranscodedInputPort => {
                 let port: &TranscodedInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.parsed);
-                self.mark_object(port.in_port);
-                self.mark_object(port.transcoder);
+                port.trace(self);
             }
 
             ObjectType::TranscodedInputOutputPort => {
                 let port: &TranscodedInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(port.parsed);
-                self.mark_object(port.port);
-                self.mark_object(port.transcoder);
+                port.trace(self);
             }
 
             ObjectType::Continuation => {
                 let c: &Continuation = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(c.stack);
-                self.mark_object(c.winders);
+                c.trace(self);
             }
             ObjectType::ContinuationStack => {
                 let c: &ContinuationStack = unsafe { mem::transmute(pointer.as_ref()) };
-                for obj in c.data.iter() {
-                    self.mark_object(*obj);
-                }
+                c.trace(self);
             }
-            ObjectType::BytevectorInputPort => {}
-            ObjectType::BytevectorOutputPort => {}
-            ObjectType::BinaryFileInputPort => {}
-            ObjectType::BinaryFileInputOutputPort => {}
-            ObjectType::BinaryFileOutputPort => {}
-            ObjectType::FileOutputPort => {}
-            ObjectType::StdOutputPort => {}
-            ObjectType::StdInputPort => {}
-            ObjectType::StdErrorPort => {}
             ObjectType::StringInputPort => {
                 let s: &StringInputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(s.parsed)
+                s.trace(self);
             }
-            ObjectType::StringOutputPort => {}
-            ObjectType::String => {}
-            ObjectType::Symbol => {}
-            ObjectType::Procedure => {}
-            ObjectType::Ratnum => {}
-            ObjectType::Latin1Codec => {}
-            ObjectType::UTF8Codec => {}
-            ObjectType::UTF16Codec => {}
-            ObjectType::Transcoder => {
-                let t: &Transcoder = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(t.codec);
-            }
-            ObjectType::Bignum => {}
-            ObjectType::Compnum => {
-                let c: &Compnum = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(c.real);
-                self.mark_object(c.imag);
-            }
-            ObjectType::ByteVector => {}
             ObjectType::TranscodedOutputPort => {
                 let t: &TranscodedOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
-                self.mark_object(t.out_port);
-                self.mark_object(t.transcoder);
+                t.trace(self);
+            }
+            ObjectType::Transcoder => {
+                let t: &Transcoder = unsafe { mem::transmute(pointer.as_ref()) };
+                t.trace(self);
+            }
+            ObjectType::Compnum => {
+                let c: &Compnum = unsafe { mem::transmute(pointer.as_ref()) };
+                c.trace(self);
+            }
+            ObjectType::BytevectorInputPort => {
+                let port: &BytevectorInputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::BytevectorOutputPort => {
+                let port: &BytevectorOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::BinaryFileInputPort => {
+                let port: &BinaryFileInputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::BinaryFileInputOutputPort => {
+                let port: &BinaryFileInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::BinaryFileOutputPort => {
+                let port: &BinaryFileOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::FileOutputPort => {
+                let port: &FileOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::StdOutputPort => {
+                let port: &StdOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::StdInputPort => {
+                let port: &StdInputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::StdErrorPort => {
+                let port: &StdErrorPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::StringOutputPort => {
+                let port: &StringOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                port.trace(self);
+            }
+            ObjectType::String => {
+                let obj: &SString = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::Symbol => {
+                let obj: &Symbol = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::Procedure => {
+                let obj: &Procedure = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::Ratnum => {
+                let obj: &Ratnum = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::Latin1Codec => {
+                let obj: &Latin1Codec = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::UTF8Codec => {
+                let obj: &UTF8Codec = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::UTF16Codec => {
+                let obj: &UTF16Codec = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::Bignum => {
+                let obj: &Bignum = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
+            }
+            ObjectType::ByteVector => {
+                let obj: &Bytevector = unsafe { mem::transmute(pointer.as_ref()) };
+                obj.trace(self);
             }
         }
     }
@@ -831,7 +826,7 @@ impl Gc {
         use crate::ports::{
             BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort,
             BytevectorInputPort, BytevectorOutputPort, FileOutputPort, Latin1Codec, StdErrorPort,
-            StdOutputPort, StringOutputPort, UTF16Codec, UTF8Codec,
+            StdInputPort, StdOutputPort, StringOutputPort, UTF16Codec, UTF8Codec,
         };
 
         let object_type = object_ptr.obj_type;
@@ -843,6 +838,30 @@ impl Gc {
             ObjectType::Procedure => {
                 //  panic!("procedure should not be freed");
                 0
+            }
+            ObjectType::CustomBinaryInputPort => {
+                let x: &CustomBinaryInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::CustomBinaryInputOutputPort => {
+                let x: &CustomBinaryInputOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::CustomBinaryOutputPort => {
+                let x: &CustomBinaryOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::CustomTextInputPort => {
+                let x: &CustomTextInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::CustomTextInputOutputPort => {
+                let x: &CustomTextInputOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::CustomTextOutputPort => {
+                let x: &CustomTextOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
             }
             ObjectType::String => {
                 let sstring: &SString = unsafe { mem::transmute(header) };

@@ -1,5 +1,5 @@
 use crate::error;
-use crate::gc::{Gc, GcRef};
+use crate::gc::{Gc, GcRef, Trace};
 use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
@@ -1043,6 +1043,14 @@ pub struct Vector {
     pub data: Vec<Object>,
 }
 
+impl Trace for Vector {
+    fn trace(&self, gc: &mut Gc) {
+        for obj in self.data.iter() {
+            gc.mark_object(*obj);
+        }
+    }
+}
+
 impl Vector {
     pub fn new(data: &Vec<Object>) -> Self {
         Vector {
@@ -1079,6 +1087,10 @@ impl Display for Vector {
 pub struct Bytevector {
     pub header: GcHeader,
     pub data: Vec<u8>,
+}
+
+impl Trace for Bytevector {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl Bytevector {
@@ -1373,6 +1385,15 @@ pub struct SimpleStruct {
     len: usize,
 }
 
+impl Trace for SimpleStruct {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.name);
+        for obj in self.data.iter() {
+            gc.mark_object(*obj)
+        }
+    }
+}
+
 impl SimpleStruct {
     pub fn new(name: Object, len: usize) -> Self {
         SimpleStruct {
@@ -1445,6 +1466,14 @@ pub struct Pair {
     pub car: Object,
     pub cdr: Object,
     pub src: Object,
+}
+
+impl Trace for Pair {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.car);
+        gc.mark_object(self.cdr);
+        gc.mark_object(self.src);
+    }
 }
 
 impl Pair {
@@ -1653,6 +1682,12 @@ pub struct Vox {
     pub value: Object,
 }
 
+impl Trace for Vox {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.value)
+    }
+}
+
 impl Vox {
     pub fn new(value: Object) -> Self {
         Vox {
@@ -1673,6 +1708,10 @@ impl Display for Vox {
 pub struct SString {
     pub header: GcHeader,
     pub string: String,
+}
+
+impl Trace for SString {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl SString {
@@ -1797,6 +1836,10 @@ pub struct Symbol {
     pub string: String,
 }
 
+impl Trace for Symbol {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl Symbol {
     pub fn new(string: String) -> Self {
         Symbol {
@@ -1814,7 +1857,7 @@ impl Display for Symbol {
 
 impl Debug for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let content: Vec<char> = self.string.chars().collect();    
+        let content: Vec<char> = self.string.chars().collect();
         let start = content[0];
         let is_bar_symbol = (start == '|') && content[content.len() - 1] == '|';
         if start >= '0' && start <= '9' || start == ' ' {
@@ -1841,6 +1884,10 @@ pub struct Procedure {
     pub header: GcHeader,
     pub func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>,
     pub name: String,
+}
+
+impl Trace for Procedure {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl Procedure {
@@ -1894,6 +1941,13 @@ pub struct Continuation {
     pub winders: Object,
 }
 
+impl Trace for Continuation {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.stack);
+        gc.mark_object(self.winders);
+    }
+}
+
 impl Continuation {
     pub fn new(shift_size: isize, stack: Object, winders: Object) -> Self {
         Self {
@@ -1923,6 +1977,14 @@ impl Display for Continuation {
 pub struct ContinuationStack {
     pub header: GcHeader,
     pub data: Vec<Object>,
+}
+
+impl Trace for ContinuationStack {
+    fn trace(&self, gc: &mut Gc) {
+        for obj in self.data.iter() {
+            gc.mark_object(*obj);
+        }
+    }
 }
 
 impl ContinuationStack {
@@ -1967,6 +2029,22 @@ pub struct Closure {
     pub free_vars: Vec<Object>,
     pub prev: Object,
     pub src: Object,
+}
+
+impl Trace for Closure {
+    fn trace(&self, gc: &mut Gc) {
+        for i in 0..self.ops_len {
+            let op = unsafe { *self.ops.offset(i as isize) };
+            gc.mark_object(op);
+        }
+
+        for obj in self.free_vars.iter() {
+            gc.mark_object(*obj);
+        }
+
+        gc.mark_object(self.prev);
+        gc.mark_object(self.src);
+    }
 }
 
 impl Closure {
@@ -2054,6 +2132,17 @@ pub struct EqHashtable {
     pub is_mutable: bool,
 }
 
+impl Trace for EqHashtable {
+    fn trace(&self, gc: &mut Gc) {
+        for &obj in self.hash_map.values() {
+            gc.mark_object(obj);
+        }
+        for &obj in self.hash_map.keys() {
+            gc.mark_object(obj);
+        }
+    }
+}
+
 impl EqHashtable {
     pub fn new() -> Self {
         EqHashtable {
@@ -2135,6 +2224,20 @@ pub struct GenericHashtable {
     pub hash_func: Object,
     pub eq_func: Object,
     pub is_mutable: bool,
+}
+
+impl Trace for GenericHashtable {
+    fn trace(&self, gc: &mut Gc) {
+        for &obj in self.hash_map.values() {
+            gc.mark_object(obj);
+        }
+        for &key in self.hash_map.keys() {
+            gc.mark_object(key.hash_obj);
+            gc.mark_object(key.org_key);
+        }
+        gc.mark_object(self.hash_func);
+        gc.mark_object(self.eq_func);
+    }
 }
 
 impl GenericHashtable {
@@ -2235,6 +2338,17 @@ pub struct EqvHashtable {
     pub header: GcHeader,
     pub hash_map: HashMap<EqvKey, Object>,
     pub is_mutable: bool,
+}
+
+impl Trace for EqvHashtable {
+    fn trace(&self, gc: &mut Gc) {
+        for &obj in self.hash_map.values() {
+            gc.mark_object(obj);
+        }
+        for &key in self.hash_map.keys() {
+            gc.mark_object(key.obj);
+        }
+    }
 }
 
 impl EqvHashtable {

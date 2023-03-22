@@ -1,7 +1,6 @@
 use rmosh::{
     self,
     equal::Equal,
-    gc::Gc,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
     ports::{StringInputPort, TextInputPort},
@@ -38,7 +37,7 @@ static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE * 2
     + (SIZE_OF_PROCEDURE * 623 * 2)
     + SIZE_OF_CLOSURE * 0
     + SIZE_OF_SYMBOL * 0
-    + SIZE_OF_STRING * 0 + 192 + 96/* todo */;
+    + SIZE_OF_STRING * 0 + 192 + 96 + 536 /* todo */;
 
 fn test_ops_with_size(vm: &mut Vm, ops: Vec<Object>, expected: Object, expected_heap_diff: usize) {
     // Keep reference so that it won't be freed.
@@ -2484,9 +2483,9 @@ fn test_compiler() {
     }
 }
 
-fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
+fn read(vm: &mut Vm, s: &str) -> Result<Object, ReadError> {
     let mut port = StringInputPort::new(s);
-    port.read(gc)
+    port.read(vm)
 }
 
 #[test]
@@ -2494,7 +2493,7 @@ fn test_compiler3() {
     let mut vm = Vm::new();
     vm.should_load_compiler = true;
 
-    let sexp = read(&mut vm.gc, "((lambda (a) a) 3)").unwrap();
+    let sexp = read(&mut vm, "((lambda (a) a) 3)").unwrap();
     let ops = vec![
         Object::Instruction(Op::Frame),
         Object::Fixnum(8),

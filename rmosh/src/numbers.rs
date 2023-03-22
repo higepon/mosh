@@ -8,7 +8,7 @@ use num_rational::BigRational;
 use num_traits::{FromPrimitive, Signed, ToPrimitive, Zero};
 
 use crate::{
-    gc::{Gc, GcHeader, GcRef, ObjectType},
+    gc::{Gc, GcHeader, GcRef, ObjectType, Trace},
     objects::Object,
 };
 
@@ -780,6 +780,10 @@ pub struct Ratnum {
     pub ratio: BigRational,
 }
 
+impl Trace for Ratnum {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl Deref for Ratnum {
     type Target = BigRational;
 
@@ -921,6 +925,10 @@ impl BigRationalExt for BigRational {
 pub struct Bignum {
     pub header: GcHeader,
     pub value: BigInt,
+}
+
+impl Trace for Bignum {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl Deref for Bignum {
@@ -1083,6 +1091,13 @@ pub struct Compnum {
     pub header: GcHeader,
     pub real: Object,
     pub imag: Object,
+}
+
+impl Trace for Compnum {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.real);
+        gc.mark_object(self.imag);
+    }
 }
 
 impl Compnum {

@@ -4942,7 +4942,6 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     &format!("{}", err.to_string()),
                     &[args[0]],
                 ))
-                
             }
         }
     } else {
@@ -6986,7 +6985,7 @@ fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let port = as_binary_output_port_mut!(name, args, 0);
     match port.write(buf) {
         Ok(_size) => Ok(Object::Unspecified),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
 fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {

@@ -2,7 +2,6 @@ use lalrpop_util::ParseError;
 use rmosh::number_lexer::NumberLexer;
 use rmosh::{
     equal::Equal,
-    gc::Gc,
     number_reader::NumberParser,
     objects::Object,
     ports::{StringInputPort, TextInputPort},
@@ -10,9 +9,9 @@ use rmosh::{
     vm::Vm,
 };
 
-fn read(gc: &mut Box<Gc>, s: &str) -> Result<Object, ReadError> {
+fn read(vm: &mut Vm, s: &str) -> Result<Object, ReadError> {
     let mut port = StringInputPort::new(s);
-    port.read(gc)
+    port.read(vm)
 }
 
 #[macro_export]
@@ -31,44 +30,38 @@ macro_rules! assert_equal {
 #[test]
 fn parse_true() {
     let mut vm = Vm::new();
-    assert_eq!(Object::True, read(&mut vm.gc, "#t").unwrap());
-    assert_eq!(Object::True, read(&mut vm.gc, "#true").unwrap());
+    assert_eq!(Object::True, read(&mut vm, "#t").unwrap());
+    assert_eq!(Object::True, read(&mut vm, "#true").unwrap());
 }
 
 #[test]
 fn parse_false() {
     let mut vm = Vm::new();
-    assert_eq!(Object::False, read(&mut vm.gc, "#f").unwrap());
-    assert_eq!(Object::False, read(&mut vm.gc, "#false").unwrap());
+    assert_eq!(Object::False, read(&mut vm, "#f").unwrap());
+    assert_eq!(Object::False, read(&mut vm, "#false").unwrap());
 }
 
 #[test]
 fn parse_symbol() {
     let mut vm = Vm::new();
-    assert_eq!(vm.gc.symbol_intern("abc"), read(&mut vm.gc, "abc").unwrap());
-    assert_eq!(
-        vm.gc.symbol_intern("$seq"),
-        read(&mut vm.gc, "$seq").unwrap()
-    );
+    assert_eq!(vm.gc.symbol_intern("abc"), read(&mut vm, "abc").unwrap());
+    assert_eq!(vm.gc.symbol_intern("$seq"), read(&mut vm, "$seq").unwrap());
     assert_eq!(
         vm.gc.symbol_intern("$seq--"),
-        read(&mut vm.gc, "$seq--").unwrap()
+        read(&mut vm, "$seq--").unwrap()
     );
     assert_eq!(
         vm.gc.symbol_intern("|xy z|"),
-        read(&mut vm.gc, "|xy z|").unwrap()
+        read(&mut vm, "|xy z|").unwrap()
     );
-    assert_eq!(
-        vm.gc.symbol_intern(".abc"),
-        read(&mut vm.gc, ".abc").unwrap()
-    );
+    assert_eq!(vm.gc.symbol_intern(".abc"), read(&mut vm, ".abc").unwrap());
 }
 
 #[test]
 fn parse_list() {
     let mut vm = Vm::new();
     let expected = Object::Nil;
-    let obj = read(&mut vm.gc, "()").unwrap();
+    let obj = read(&mut vm, "()").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -76,7 +69,7 @@ fn parse_list() {
 fn parse_list1() {
     let mut vm = Vm::new();
     let expected = vm.gc.list1(Object::True);
-    let obj = read(&mut vm.gc, "(#t)").unwrap();
+    let obj = read(&mut vm, "(#t)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -84,7 +77,7 @@ fn parse_list1() {
 fn parse_list2() {
     let mut vm = Vm::new();
     let expected = vm.gc.list2(Object::True, Object::False);
-    let obj = read(&mut vm.gc, "(#t #f)").unwrap();
+    let obj = read(&mut vm, "(#t #f)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -93,7 +86,7 @@ fn parse_nested_list() {
     let mut vm = Vm::new();
     let list1 = vm.gc.list1(Object::True);
     let expected = vm.gc.list2(list1, Object::False);
-    let obj = read(&mut vm.gc, "((#t) #f)").unwrap();
+    let obj = read(&mut vm, "((#t) #f)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -101,7 +94,7 @@ fn parse_nested_list() {
 fn parse_string() {
     let mut vm = Vm::new();
     let expected = vm.gc.new_string("hello");
-    let obj = read(&mut vm.gc, "\"hello\"").unwrap();
+    let obj = read(&mut vm, "\"hello\"").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -109,7 +102,7 @@ fn parse_string() {
 fn parse_number() {
     let mut vm = Vm::new();
     let expected = Object::Fixnum(101);
-    let obj = read(&mut vm.gc, "101").unwrap();
+    let obj = read(&mut vm, "101").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -117,7 +110,7 @@ fn parse_number() {
 fn parse_number_list1() {
     let mut vm = Vm::new();
     let expected = vm.gc.list1(Object::Fixnum(3));
-    let obj = read(&mut vm.gc, "(3)").unwrap();
+    let obj = read(&mut vm, "(3)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -125,7 +118,7 @@ fn parse_number_list1() {
 fn parse_number_comment_list1() {
     let mut vm = Vm::new();
     let expected = vm.gc.list1(Object::Fixnum(3));
-    let obj = read(&mut vm.gc, "; comment\n(3)").unwrap();
+    let obj = read(&mut vm, "; comment\n(3)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -133,7 +126,7 @@ fn parse_number_comment_list1() {
 fn parse_number_list2() {
     let mut vm = Vm::new();
     let expected = vm.gc.list2(Object::Fixnum(3), Object::Fixnum(4));
-    let obj = read(&mut vm.gc, "(3 4)").unwrap();
+    let obj = read(&mut vm, "(3 4)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -141,7 +134,7 @@ fn parse_number_list2() {
 fn parse_dot_pair() {
     let mut vm = Vm::new();
     let expected = vm.gc.cons(Object::Fixnum(3), Object::False);
-    let obj = read(&mut vm.gc, "(3 . #f)").unwrap();
+    let obj = read(&mut vm, "(3 . #f)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -149,7 +142,7 @@ fn parse_dot_pair() {
 fn parse_empty_vector() {
     let mut vm = Vm::new();
     let expected = vm.gc.new_vector(&vec![]);
-    let obj = read(&mut vm.gc, "#()").unwrap();
+    let obj = read(&mut vm, "#()").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -161,19 +154,22 @@ fn parse_vector() {
         Object::Fixnum(4),
         Object::Fixnum(5),
     ]);
-    let obj = read(&mut vm.gc, "#(3 4 5)").unwrap();
+    let obj = read(&mut vm, "#(3 4 5)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
 #[test]
 fn parse_bytevector() {
     let mut vm = Vm::new();
-    let expected = vm.gc.new_bytevector(&vec![
-        Object::Fixnum(3),
-        Object::Fixnum(4),
-        Object::Fixnum(5),
-    ]);
-    let obj = read(&mut vm.gc, "#u8(3 4 5)").unwrap();
+    let expected = vm
+        .gc
+        .new_bytevector(&vec![
+            Object::Fixnum(3),
+            Object::Fixnum(4),
+            Object::Fixnum(5),
+        ])
+        .unwrap();
+    let obj = read(&mut vm, "#u8(3 4 5)").unwrap();
     assert_equal!(vm.gc, expected, obj);
 }
 
@@ -181,7 +177,7 @@ fn parse_bytevector() {
 fn parse_chars() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "#\\a").unwrap();
+        let obj = read(&mut vm, "#\\a").unwrap();
         assert_equal!(vm.gc, Object::Char('a'), obj);
     }
 }
@@ -190,7 +186,7 @@ fn parse_chars() {
 fn parse_chars2() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "#\\あ").unwrap();
+        let obj = read(&mut vm, "#\\あ").unwrap();
         assert_equal!(vm.gc, Object::Char('あ'), obj);
     }
 }
@@ -199,7 +195,7 @@ fn parse_chars2() {
 fn parse_hex_chars() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "#\\x41").unwrap();
+        let obj = read(&mut vm, "#\\x41").unwrap();
         assert_equal!(vm.gc, Object::Char('A'), obj);
     }
 }
@@ -208,7 +204,7 @@ fn parse_hex_chars() {
 fn parse_hex_number() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "#x7F").unwrap();
+        let obj = read(&mut vm, "#x7F").unwrap();
         assert_equal!(vm.gc, Object::Fixnum(127), obj);
     }
 }
@@ -217,7 +213,7 @@ fn parse_hex_number() {
 fn read_quote() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "'a").unwrap();
+        let obj = read(&mut vm, "'a").unwrap();
         let quote = vm.gc.symbol_intern("quote");
         let symbol = vm.gc.symbol_intern("a");
         let expected = vm.gc.list2(quote, symbol);
@@ -229,7 +225,7 @@ fn read_quote() {
 fn read_quasiquote() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "`a").unwrap();
+        let obj = read(&mut vm, "`a").unwrap();
         let quote = vm.gc.symbol_intern("quasiquote");
         let symbol = vm.gc.symbol_intern("a");
         let expected = vm.gc.list2(quote, symbol);
@@ -241,7 +237,7 @@ fn read_quasiquote() {
 fn read_unquote() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, ",a").unwrap();
+        let obj = read(&mut vm, ",a").unwrap();
         let quote = vm.gc.symbol_intern("unquote");
         let symbol = vm.gc.symbol_intern("a");
         let expected = vm.gc.list2(quote, symbol);
@@ -253,25 +249,25 @@ fn read_unquote() {
 fn read_datum_comment() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "#; 3 4").unwrap();
+        let obj = read(&mut vm, "#; 3 4").unwrap();
         let expected = Object::Fixnum(4);
         assert_equal!(vm.gc, expected, obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "(3 #; 4)").unwrap();
+        let obj = read(&mut vm, "(3 #; 4)").unwrap();
         let expected = vm.gc.list1(Object::Fixnum(3));
         assert_equal!(vm.gc, expected, obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "(3 #;(9))").unwrap();
+        let obj = read(&mut vm, "(3 #;(9))").unwrap();
         let expected = vm.gc.list1(Object::Fixnum(3));
         assert_equal!(vm.gc, expected, obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "(3 #;8 #;9)").unwrap();
+        let obj = read(&mut vm, "(3 #;8 #;9)").unwrap();
         let expected = vm.gc.list1(Object::Fixnum(3));
         assert_equal!(vm.gc, expected, obj);
     }
@@ -283,15 +279,15 @@ fn parse_multiple() {
     let mut port = StringInputPort::new("(3) (4)");
 
     let expected = vm.gc.list1(Object::Fixnum(3));
-    let parsed = port.read(&mut vm.gc).unwrap();
+    let parsed = port.read(&mut vm).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 
     let expected = vm.gc.list1(Object::Fixnum(4));
-    let parsed = port.read(&mut vm.gc).unwrap();
+    let parsed = port.read(&mut vm).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 
     let expected = Object::Eof;
-    let parsed = port.read(&mut vm.gc).unwrap();
+    let parsed = port.read(&mut vm).unwrap();
     assert_equal!(vm.gc, expected, parsed);
 }
 
@@ -299,47 +295,47 @@ fn parse_multiple() {
 fn parse_special_chars() {
     let mut vm = Vm::new();
     {
-        let obj = read(&mut vm.gc, "#\\alarm").unwrap();
+        let obj = read(&mut vm, "#\\alarm").unwrap();
         assert_equal!(vm.gc, Object::Char(char::from(7)), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\backspace").unwrap();
+        let obj = read(&mut vm, "#\\backspace").unwrap();
         assert_equal!(vm.gc, Object::Char(char::from(8)), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\delete").unwrap();
+        let obj = read(&mut vm, "#\\delete").unwrap();
         assert_equal!(vm.gc, Object::Char(char::from(0x7f)), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\escape").unwrap();
+        let obj = read(&mut vm, "#\\escape").unwrap();
         assert_equal!(vm.gc, Object::Char(char::from(0x1b)), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\newline").unwrap();
+        let obj = read(&mut vm, "#\\newline").unwrap();
         assert_equal!(vm.gc, Object::Char('\n'), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\null").unwrap();
+        let obj = read(&mut vm, "#\\null").unwrap();
         assert_equal!(vm.gc, Object::Char('\0'), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\return").unwrap();
+        let obj = read(&mut vm, "#\\return").unwrap();
         assert_equal!(vm.gc, Object::Char(char::from(0x0d)), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\space").unwrap();
+        let obj = read(&mut vm, "#\\space").unwrap();
         assert_equal!(vm.gc, Object::Char(' '), obj);
     }
 
     {
-        let obj = read(&mut vm.gc, "#\\tab").unwrap();
+        let obj = read(&mut vm, "#\\tab").unwrap();
         assert_equal!(vm.gc, Object::Char('\t'), obj);
     }
 }

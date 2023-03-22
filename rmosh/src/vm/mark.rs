@@ -29,10 +29,41 @@ impl Vm {
     }
 
     pub(super) fn mark_roots(&mut self) {
-        // Ports.
-        self.gc.mark_object(self.current_input_port);
-        self.gc.mark_object(self.current_error_port);
-        self.gc.mark_object(self.current_output_port);
+        // Stack.
+        for &obj in &self.stack[0..self.stack_len()] {
+            self.gc.mark_object(obj);
+        }
+
+        // Registers.
+        self.gc.mark_object(self.ac);
+        self.gc.mark_object(self.cl);
+        self.gc.mark_object(self.dc);
+        self.gc.mark_object(self.expected);
+
+        // Global variables.
+        for &obj in self.globals.values() {
+            self.gc.mark_object(obj);
+        }
+
+        // Base library ops.
+        for op in &self.lib_compiler {
+            self.gc.mark_object(*op);
+        }
+        for op in &self.lib_psyntax {
+            self.gc.mark_object(*op);
+        }
+        self.gc.mark_object(self.dynamic_winders);
+
+        // Values.
+        for &obj in &self.values[0..self.num_values] {
+            self.gc.mark_object(obj);
+        }
+
+        // RTDs.
+        for (k, v) in self.rtds.iter() {
+            self.gc.mark_object(*k);
+            self.gc.mark_object(*v);
+        }
 
         for eval_code in &self.dynamic_code_array {
             for obj in eval_code {
@@ -52,32 +83,16 @@ impl Vm {
         for &obj in &self.call_closure3_code {
             self.gc.mark_object(obj);
         }
+        self.gc.mark_object(self.closure_for_evaluate);
+
+        // Ports.
+        self.gc.mark_object(self.current_input_port);
+        self.gc.mark_object(self.current_error_port);
+        self.gc.mark_object(self.current_output_port);
 
         self.gc.mark_object(self.saved_registers.ac);
         self.gc.mark_object(self.saved_registers.dc);
         self.gc.mark_object(self.saved_registers.cl);
-
-        self.gc.mark_object(self.closure_for_evaluate);
-
-        // Base library ops.
-        for op in &self.lib_compiler {
-            self.gc.mark_object(*op);
-        }
-        for op in &self.lib_psyntax {
-            self.gc.mark_object(*op);
-        }
-
-        self.gc.mark_object(self.dynamic_winders);
-
-        // Stack.
-        for &obj in &self.stack[0..self.stack_len()] {
-            self.gc.mark_object(obj);
-        }
-
-        // Values.
-        for &obj in &self.values[0..self.num_values] {
-            self.gc.mark_object(obj);
-        }
 
         // Symbols.
         let symbols = self
@@ -89,22 +104,5 @@ impl Vm {
         for symbol in symbols {
             self.gc.mark_object(Object::Symbol(symbol));
         }
-
-        // Global variables.
-        for &obj in self.globals.values() {
-            self.gc.mark_object(obj);
-        }
-
-        // RTDs.
-        for (k, v) in self.rtds.iter() {
-            self.gc.mark_object(*k);
-            self.gc.mark_object(*v);
-        }
-
-        // Registers.
-        self.gc.mark_object(self.ac);
-        self.gc.mark_object(self.cl);
-        self.gc.mark_object(self.dc);
-        self.gc.mark_object(self.expected);
     }
 }

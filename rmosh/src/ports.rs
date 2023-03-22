@@ -10,6 +10,7 @@ use std::{
 };
 
 use crate::error::{self, Error, ErrorType};
+use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::vm::{Vm, CURRENT_VM};
 use crate::{
@@ -229,6 +230,10 @@ pub struct StdInputPort {
     ahead_u8: Option<u8>,
 }
 
+impl Trace for StdInputPort {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl StdInputPort {
     pub fn new() -> Self {
         StdInputPort {
@@ -282,6 +287,12 @@ pub struct FileInputPort {
     ahead_char: Option<char>,
     path: String,
     pub parsed: Object,
+}
+
+impl Trace for FileInputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.parsed)
+    }
 }
 
 impl FileInputPort {
@@ -412,6 +423,12 @@ pub struct StringInputPort {
     ahead_char: Option<char>,
     is_closed: bool,
     pub parsed: Object,
+}
+
+impl Trace for StringInputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.parsed);
+    }
 }
 
 impl StringInputPort {
@@ -1125,6 +1142,10 @@ pub struct BytevectorInputPort {
     ahead_u8: Option<u8>,
 }
 
+impl Trace for BytevectorInputPort {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl BytevectorInputPort {
     pub fn new(data: &[u8]) -> Self {
         BytevectorInputPort {
@@ -1233,6 +1254,9 @@ pub struct BytevectorOutputPort {
     is_closed: bool,
     pub data: Vec<u8>,
 }
+impl Trace for BytevectorOutputPort {
+    fn trace(&self, _gc: &mut Gc) {}
+}
 
 impl BytevectorOutputPort {
     pub fn new() -> Self {
@@ -1285,6 +1309,10 @@ pub struct BinaryFileInputPort {
     is_closed: bool,
     ahead_u8: Option<u8>,
     buffer_mode: BufferMode,
+}
+
+impl Trace for BinaryFileInputPort {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl BinaryFileInputPort {
@@ -1367,6 +1395,10 @@ pub struct BinaryFileInputOutputPort {
     is_closed: bool,
     ahead_u8: Option<u8>,
     buffer_mode: BufferMode,
+}
+
+impl Trace for BinaryFileInputOutputPort {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl BinaryFileInputOutputPort {
@@ -1469,6 +1501,10 @@ pub struct FileOutputPort {
     is_closed: bool,
 }
 
+impl Trace for FileOutputPort {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl FileOutputPort {
     pub fn new(file: File) -> Self {
         FileOutputPort {
@@ -1520,6 +1556,10 @@ pub struct StdOutputPort {
     pub header: GcHeader,
 }
 
+impl Trace for StdOutputPort {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl StdOutputPort {
     pub fn new() -> Self {
         Self {
@@ -1565,6 +1605,10 @@ impl BinaryOutputPort for StdOutputPort {
 #[repr(C)]
 pub struct StdErrorPort {
     pub header: GcHeader,
+}
+
+impl Trace for StdErrorPort {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl StdErrorPort {
@@ -1615,6 +1659,10 @@ pub struct StringOutputPort {
     pub header: GcHeader,
     string: String,
     is_closed: bool,
+}
+
+impl Trace for StringOutputPort {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl StringOutputPort {
@@ -1675,6 +1723,14 @@ pub struct TranscodedInputPort {
     pub transcoder: Object,
     ahead_char: Option<char>,
     pub parsed: Object,
+}
+
+impl Trace for TranscodedInputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.in_port);
+        gc.mark_object(self.transcoder);
+        gc.mark_object(self.parsed);
+    }
 }
 
 impl TranscodedInputPort {
@@ -1792,6 +1848,13 @@ pub struct TranscodedOutputPort {
     pub transcoder: Object,
 }
 
+impl Trace for TranscodedOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.out_port);
+        gc.mark_object(self.transcoder);
+    }
+}
+
 impl TranscodedOutputPort {
     pub fn new(out_port: Object, transcoder: Object) -> Self {
         TranscodedOutputPort {
@@ -1849,6 +1912,14 @@ pub struct TranscodedInputOutputPort {
     pub transcoder: Object,
     ahead_char: Option<char>,
     pub parsed: Object,
+}
+
+impl Trace for TranscodedInputOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.port);
+        gc.mark_object(self.transcoder);
+        gc.mark_object(self.parsed);
+    }
 }
 
 impl TranscodedInputOutputPort {
@@ -1981,6 +2052,10 @@ pub struct BinaryFileOutputPort {
     buffer_mode: BufferMode,
 }
 
+impl Trace for BinaryFileOutputPort {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl BinaryFileOutputPort {
     pub fn new(file: File, buffer_mode: BufferMode) -> Self {
         BinaryFileOutputPort {
@@ -2092,6 +2167,10 @@ pub struct Latin1Codec {
     pub header: GcHeader,
 }
 
+impl Trace for Latin1Codec {
+    fn trace(&self, _gc: &mut Gc) {}
+}
+
 impl Latin1Codec {
     pub fn new() -> Self {
         Self {
@@ -2178,6 +2257,10 @@ impl Display for Latin1Codec {
 #[repr(C)]
 pub struct UTF8Codec {
     pub header: GcHeader,
+}
+
+impl Trace for UTF8Codec {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl UTF8Codec {
@@ -2344,6 +2427,10 @@ pub struct UTF16Codec {
     dont_check_bom: bool,
     is_little_endian: bool,
     is_native_little_endian: bool,
+}
+
+impl Trace for UTF16Codec {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl UTF16Codec {
@@ -2514,6 +2601,12 @@ pub struct Transcoder {
     lineno: usize,
     is_beginning: bool,
     buffer: Vec<char>,
+}
+
+impl Trace for Transcoder {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.codec);
+    }
 }
 
 impl Transcoder {
@@ -2740,6 +2833,15 @@ pub struct CustomBinaryInputPort {
     pub close_proc: Object,
 }
 
+impl Trace for CustomBinaryInputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.read_proc);
+        gc.mark_object(self.pos_proc);
+        gc.mark_object(self.set_pos_proc);
+        gc.mark_object(self.close_proc);
+    }
+}
+
 impl CustomBinaryInputPort {
     pub fn new(
         id: &str,
@@ -2901,6 +3003,16 @@ pub struct CustomTextInputPort {
     pub set_pos_proc: Object,
     pub close_proc: Object,
     pub parsed: Object,
+}
+
+impl Trace for CustomTextInputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.read_proc);
+        gc.mark_object(self.pos_proc);
+        gc.mark_object(self.set_pos_proc);
+        gc.mark_object(self.close_proc);
+        gc.mark_object(self.parsed);
+    }
 }
 
 impl CustomTextInputPort {
@@ -3079,6 +3191,15 @@ pub struct CustomBinaryOutputPort {
     pub close_proc: Object,
 }
 
+impl Trace for CustomBinaryOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.write_proc);
+        gc.mark_object(self.pos_proc);
+        gc.mark_object(self.set_pos_proc);
+        gc.mark_object(self.close_proc);
+    }
+}
+
 impl CustomBinaryOutputPort {
     pub fn new(
         id: &str,
@@ -3199,6 +3320,15 @@ pub struct CustomTextOutputPort {
     pub pos_proc: Object,
     pub set_pos_proc: Object,
     pub close_proc: Object,
+}
+
+impl Trace for CustomTextOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.write_proc);
+        gc.mark_object(self.pos_proc);
+        gc.mark_object(self.set_pos_proc);
+        gc.mark_object(self.close_proc);
+    }
 }
 
 impl CustomTextOutputPort {
@@ -3322,6 +3452,16 @@ pub struct CustomBinaryInputOutputPort {
     pub pos_proc: Object,
     pub set_pos_proc: Object,
     pub close_proc: Object,
+}
+
+impl Trace for CustomBinaryInputOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.read_proc);
+        gc.mark_object(self.write_proc);
+        gc.mark_object(self.pos_proc);
+        gc.mark_object(self.set_pos_proc);
+        gc.mark_object(self.close_proc);
+    }
 }
 
 impl CustomBinaryInputOutputPort {
@@ -3512,6 +3652,17 @@ pub struct CustomTextInputOutputPort {
     pub pos_proc: Object,
     pub set_pos_proc: Object,
     pub close_proc: Object,
+}
+
+impl Trace for CustomTextInputOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.parsed);
+        gc.mark_object(self.read_proc);
+        gc.mark_object(self.write_proc);
+        gc.mark_object(self.pos_proc);
+        gc.mark_object(self.set_pos_proc);
+        gc.mark_object(self.close_proc);
+    }
 }
 
 impl CustomTextInputOutputPort {
