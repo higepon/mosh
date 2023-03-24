@@ -19,7 +19,6 @@ use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::ops::{Deref, DerefMut};
-use std::ptr::null;
 
 /// Wrapper of heap allocated or simple stack objects.
 #[derive(Copy, Clone, PartialEq, Hash)]

@@ -4176,7 +4176,13 @@ fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut s = String::new();
     let port = as_text_input_port_mut!(name, args, 0);
     match port.read_line(vm, &mut s) {
-        Ok(_) => Ok(vm.gc.new_string(&s)),
+        Ok(size) => {
+            if size == 0 {
+                Ok(Object::Eof)
+            } else {
+                Ok(vm.gc.new_string(&s))
+            }
+        }
         Err(_) => Ok(Object::Eof),
     }
 }
