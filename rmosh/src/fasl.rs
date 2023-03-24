@@ -211,9 +211,10 @@ impl FaslWriter {
             Object::String(s) => {
                 self.put_tag(port, Tag::String)
                     .map_err(|_| self.write_error())?;
-                port.put_u16(s.string.len() as u16)
+                let chars: Vec<char> = s.chars().collect();    
+                port.put_u16(chars.len() as u16)
                     .map_err(|_| self.write_error())?;
-                for c in s.string.chars() {
+                for c in chars {
                     port.put_u32(c as u32).map_err(|_| self.write_error())?;
                 }
             }
