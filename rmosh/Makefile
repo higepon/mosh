@@ -42,7 +42,6 @@ r6rs-test:
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/bytevectors.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/simple.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/base.sps --loadpath=../tests/r6rs-test-suite/
-
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run-via-eval.sps --loadpath=../tests/r6rs-test-suite/
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
 

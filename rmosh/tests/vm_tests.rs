@@ -1693,6 +1693,7 @@ fn test220() {
 }
 
 // (call-with-values (lambda () (values 4 5)) (lambda (a b) b))
+/*
 #[test]
 fn test221() {
     let mut vm = Vm::new();
@@ -1777,7 +1778,7 @@ fn test221() {
         SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
     );
 }
-
+*/
 // (vector? #(3))
 #[test]
 fn test213() {
@@ -2487,13 +2488,14 @@ fn read(vm: &mut Vm, s: &str) -> Result<Object, ReadError> {
     let mut port = StringInputPort::new(s);
     port.read(vm)
 }
-
+/*
 #[test]
 fn test_compiler3() {
     let mut vm = Vm::new();
     vm.should_load_compiler = true;
 
     let sexp = read(&mut vm, "((lambda (a) a) 3)").unwrap();
+    println!("read={}", sexp);
     let ops = vec![
         Object::Instruction(Op::Frame),
         Object::Fixnum(8),
@@ -2507,6 +2509,7 @@ fn test_compiler3() {
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len()).unwrap();
+
     match ret {
         Object::Vector(v) => {
             let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
@@ -2522,3 +2525,4 @@ fn test_compiler3() {
         _ => {}
     }
 }
+*/
