@@ -2483,12 +2483,12 @@ fn test_compiler() {
         _ => {}
     }
 }
-
+/*
 fn read(vm: &mut Vm, s: &str) -> Result<Object, ReadError> {
     let mut port = StringInputPort::new(s);
     port.read(vm)
 }
-/*
+
 #[test]
 fn test_compiler3() {
     let mut vm = Vm::new();
