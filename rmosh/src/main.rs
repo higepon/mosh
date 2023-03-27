@@ -54,7 +54,7 @@ fn main() {
         vargs.push(
             vm.gc
                 .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/contrib.sps"),
-        )        
+        )
     }
 
     let vargs = vm.gc.listn(&vargs);

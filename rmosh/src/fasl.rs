@@ -85,7 +85,7 @@ impl FaslWriter {
         match obj {
             Object::Bytevector(bv) => {
                 self.put_tag(port, Tag::Bytevector)?;
-                port.put_u16(bv.len() as u16)
+                port.put_u32(bv.len() as u32)
                     .map_err(|_| self.write_error())?;
                 for e in bv.data.iter() {
                     port.put_u8(*e).map_err(|_| self.write_error())?;
@@ -104,7 +104,7 @@ impl FaslWriter {
             Object::GenericHashtable(_) => panic!("serializng generic hashtable is not supported"),
             Object::EqHashtable(t) => {
                 self.put_tag(port, Tag::EqHashtable)?;
-                port.put_u16(t.size() as u16)
+                port.put_u32(t.size() as u32)
                     .map_err(|_| self.write_error())?;
                 for (key, value) in t.hash_map.iter() {
                     self.write_one(port, seen, shared_id, *key)?;
@@ -115,7 +115,7 @@ impl FaslWriter {
             }
             Object::EqvHashtable(t) => {
                 self.put_tag(port, Tag::EqvHashtable)?;
-                port.put_u16(t.size() as u16)
+                port.put_u32(t.size() as u32)
                     .map_err(|_| self.write_error())?;
                 for (key, value) in t.hash_map.iter() {
                     self.write_one(port, seen, shared_id, key.obj)?;
@@ -211,7 +211,7 @@ impl FaslWriter {
             Object::String(s) => {
                 self.put_tag(port, Tag::String)
                     .map_err(|_| self.write_error())?;
-                let chars: Vec<char> = s.chars().collect();    
+                let chars: Vec<char> = s.chars().collect();
                 port.put_u16(chars.len() as u16)
                     .map_err(|_| self.write_error())?;
                 for c in chars {
@@ -237,7 +237,7 @@ impl FaslWriter {
             Object::ProgramCounter(_) => todo!(),
             Object::Vector(v) => {
                 self.put_tag(port, Tag::Vector)?;
-                port.put_u16(v.len() as u16)
+                port.put_u32(v.len() as u32)
                     .map_err(|_| self.write_error())?;
                 for i in 0..v.len() {
                     self.write_one(port, seen, shared_id, v.data[i])?;
@@ -705,9 +705,9 @@ impl FaslReader {
     }
 
     fn read_vector(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
-        let mut buf = [0; 2];
+        let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
-        let len = u16::from_le_bytes(buf);
+        let len = u32::from_le_bytes(buf);
         let mut objs = vec![];
         for _ in 0..len {
             objs.push(self.read_sexp(gc)?);
@@ -716,9 +716,9 @@ impl FaslReader {
     }
 
     fn read_bytevector(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
-        let mut buf = [0; 2];
+        let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
-        let len = u16::from_le_bytes(buf);
+        let len = u32::from_le_bytes(buf);
         let mut vu8 = vec![];
         let mut buf = [0; 1];
 
@@ -747,9 +747,9 @@ impl FaslReader {
 
     fn read_eq_hashtable(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let mut t = EqHashtable::new();
-        let mut buf = [0; 2];
+        let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
-        let len = u16::from_le_bytes(buf) as usize;
+        let len = u32::from_le_bytes(buf) as usize;
         for _ in 0..len {
             let key = self.read_sexp(gc)?;
             let value = self.read_sexp(gc)?;
@@ -763,9 +763,9 @@ impl FaslReader {
 
     fn read_eqv_hashtable(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let mut t = EqvHashtable::new();
-        let mut buf = [0; 2];
+        let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
-        let len = u16::from_le_bytes(buf) as usize;
+        let len = u32::from_le_bytes(buf) as usize;
         for _ in 0..len {
             let obj = self.read_sexp(gc)?;
             let value = self.read_sexp(gc)?;

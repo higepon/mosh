@@ -88,7 +88,7 @@
           (put-u8 port TAG_NIL)]
         [(? vector? v)
           (put-u8 port TAG_VECTOR)
-          (put-u16 port (vector-length v))
+          (put-u32 port (vector-length v))
           (for-each
             (lambda (o)
               (write-sexp port o))

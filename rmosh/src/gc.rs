@@ -383,14 +383,13 @@ impl Gc {
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
             let alloc_size = std::mem::size_of_val(&object);
-            self.current_alloc_size += alloc_size;                
+            self.current_alloc_size += alloc_size;
             let boxed = Box::new(object);
             let mut pointer = NonNull::new_unchecked(Box::into_raw(boxed));
             let mut header: NonNull<GcHeader> = mem::transmute(pointer.as_mut());
             header.as_mut().next = self.first.take();
             self.first = Some(header);
 
-        
             GcRef { pointer }
         }
     }
@@ -1014,7 +1013,7 @@ impl Gc {
 
     fn sweep(&mut self) {
         let mut total = 0;
-        let mut stayed  = 0;
+        let mut stayed = 0;
         let mut _freed = 0;
         let mut previous: Option<NonNull<GcHeader>> = None;
         let mut current: Option<NonNull<GcHeader>> = self.first;
@@ -1037,6 +1036,11 @@ impl Gc {
                 }
             }
         }
-        eprintln!("{}/{}={}%", stayed, total, (stayed as f64) / (total as f64) * 100.0);
+        eprintln!(
+            "{}/{}={}%",
+            stayed,
+            total,
+            (stayed as f64) / (total as f64) * 100.0
+        );
     }
 }

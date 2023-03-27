@@ -302,14 +302,9 @@ impl Vm {
                         let var = unsafe { *start.offset(-i) };
                         free_vars.push(var);
                     }
-                    let mut display = self.gc.alloc(Closure::new(
-                        null(),
-                        0,
-                        0,
-                        false,
-                        free_vars,
-                        Object::False,
-                    ));
+                    let mut display =
+                        self.gc
+                            .alloc(Closure::new(null(), 0, 0, false, free_vars, Object::False));
                     display.prev = self.dc;
 
                     let display = Object::Closure(display);
