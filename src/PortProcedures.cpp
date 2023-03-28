@@ -678,7 +678,7 @@ Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
     argumentAsTextualInputPort(0, inputPort);
     checkPortIsOpen(inputPort, argv[0]);
     TRY_WITHOUT_DSTR
-        return inputPort->getrLine();
+        return inputPort->getLine();
     CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = Object(procedureName);
