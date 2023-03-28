@@ -3,8 +3,6 @@ use rmosh::{
     equal::Equal,
     objects::{Closure, Object, Pair, Procedure, SString, Symbol, Vector},
     op::Op,
-    ports::{StringInputPort, TextInputPort},
-    reader_util::ReadError,
     vm::Vm,
 };
 

@@ -3,21 +3,21 @@
 TESTS = #test_compiler #test63_optimized #test_test193_modified0 #test_vm_define #test_test193_modified0 #test_test153 #test_test92 #test_test62 #test_test61 #test_test19 #test_vm_alloc_many_pairs  # test_vm_run_add_pair
 FEATURES = #--features debug_log_vm # --features debug_log_gc
 
-test: src/lexer_iter.rs src/number_lexer_iter.rs r7rs-test r6rs-test
-	make -C scripts test
+test: scheme-test rust-test r7rs-test r6rs-test 
+
+rust-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture # -- --test-threads 1
-	grep "not implemented" src/procs.rs | wc -l
-	grep "Object {" src/procs.rs | wc -l
-	# Always run tests using miri to catch errors early.
-	# MIRIFLAGS="-Zmiri-symbolic-alignment-check -Zmiri-ignore-leaks" cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --
 
-test-scheme:
-	mosh --loadpath=./scripts/ tests/rust_sexp.scm
+rust-miri-test:	src/lexer_iter.rs src/number_lexer_iter.rs
+	MIRIFLAGS="-Zmiri-symbolic-alignment-check -Zmiri-ignore-leaks" cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --
 
-r7rs-test:
+scheme-test:
+	make -C scripts test
+
+r7rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ../tests/r7rs/r7rs-tests.scm	
 
-r6rs-test:
+r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/reader.sps --loadpath=../tests/r6rs-test-suite/	
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/conditions.sps --loadpath=../tests/r6rs-test-suite/	

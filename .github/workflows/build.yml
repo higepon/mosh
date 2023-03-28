@@ -492,11 +492,10 @@ jobs:
           args: --verbose --manifest-path rmosh/Cargo.toml
 
       - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose --manifest-path rmosh/Cargo.toml
-
+        run: |
+          make test
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - name: Check formatting
         uses: actions-rs/cargo@v1
         with:
