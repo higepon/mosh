@@ -480,26 +480,23 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --verbose
-      working-directory: rmosh
+        args: --verbose --manifest-path rmosh/Cargo.toml
 
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --verbose
-      working-directory: rmosh
+        args: --verbose --manifest-path rmosh/Cargo.toml
 
     - name: Check formatting
       uses: actions-rs/cargo@v1
       with:
         command: fmt
-        args: --all -- --check
-      working-directory: rmosh        
+        args: --manifest-path rmosh/Cargo.toml --all -- --check
 
     - name: Run Clippy (linter)
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-targets --all-features -- -D warnings
-      working-directory: rmosh        
+        args: --manifest-path rmosh/Cargo.toml --all-targets --all-features -- -D warnings
+
