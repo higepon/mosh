@@ -493,6 +493,7 @@ jobs:
 
       - name: Run tests
         run: |
+          cd rmosh &&        
           make test
       - name: Checkout repository
         uses: actions/checkout@v2

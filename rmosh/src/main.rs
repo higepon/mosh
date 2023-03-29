@@ -25,7 +25,7 @@ pub mod psyntax;
 pub mod reader_util;
 pub mod vm;
 
-/// Search for a pattern in a file and display the lines that contain it.
+/// rmosh R7RS&R6RS Scheme intepreter.
 #[derive(Parser)]
 struct Cli {
     #[arg(long = "loadpath", help = "Add library loadpath.")]
