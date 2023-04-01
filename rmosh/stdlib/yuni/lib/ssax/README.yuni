@@ -1,0 +1,6 @@
+(yuni lib ssax) libraries:
+
+originally from:
+https://code.launchpad.net/~derick-eddington/scheme-libraries/xitomatl
+and (wak ssax) package at
+http://gitorious.org/wak/wak-ssax

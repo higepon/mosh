@@ -1,0 +1,109 @@
+;; generated from src/posix/socket/Library.scm DO NOT EDIT!!
+(library (nmosh stubs posix-socket)
+(export
+  socket_setnodelay
+  socket_addrinfo_read
+  socket_accept
+  socket_connect
+  socket_listen
+  socket_bind
+  socket_freeaddrinfo
+  socket_create
+  socket_getaddrinfo
+  socket_sizeof_sockaddr_storage)
+(import
+  (mosh ffi)
+  (rnrs)
+  (nmosh ffi pffi)
+  (nmosh ffi stublib))
+
+
+(define %library (make-pffi-ref 'posix-socket))
+
+
+(define
+  socket_sizeof_sockaddr_storage
+  (pffi-c-function
+    %library
+    int
+    socket_sizeof_sockaddr_storage))
+(define
+  socket_getaddrinfo
+  (pffi-c-function
+    %library
+    int
+    socket_getaddrinfo
+    char*
+    char*
+    void*
+    int
+    int))
+(define
+  socket_create
+  (pffi-c-function
+    %library
+    int
+    socket_create
+    int
+    int))
+(define
+  socket_freeaddrinfo
+  (pffi-c-function
+    %library
+    void
+    socket_freeaddrinfo
+    void*))
+(define
+  socket_bind
+  (pffi-c-function
+    %library
+    int
+    socket_bind
+    int
+    void*
+    int))
+(define
+  socket_listen
+  (pffi-c-function
+    %library
+    int
+    socket_listen
+    int
+    int))
+(define
+  socket_connect
+  (pffi-c-function
+    %library
+    int
+    socket_connect
+    int
+    void*
+    int))
+(define
+  socket_accept
+  (pffi-c-function
+    %library
+    int
+    socket_accept
+    int
+    void*
+    void*))
+(define
+  socket_addrinfo_read
+  (pffi-c-function
+    %library
+    void
+    socket_addrinfo_read
+    void*
+    void*
+    void*
+    void*
+    void*))
+(define
+  socket_setnodelay
+  (pffi-c-function
+    %library
+    void
+    socket_setnodelay
+    int))
+)

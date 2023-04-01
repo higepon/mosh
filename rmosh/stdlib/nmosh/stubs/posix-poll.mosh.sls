@@ -1,0 +1,127 @@
+;; generated from src/posix/poll/Library.scm DO NOT EDIT!!
+(library (nmosh stubs posix-poll)
+(export
+  poll_get_pollnval
+  poll_get_pollhup
+  poll_get_pollerr
+  poll_get_pollout
+  poll_get_pollin
+  poll_unset_pollout
+  poll_set_pollout
+  poll_unset_pollin
+  poll_set_pollin
+  poll_set_fd
+  poll_exec
+  poll_dispose
+  poll_alloc)
+(import
+  (mosh ffi)
+  (rnrs)
+  (nmosh ffi pffi)
+  (nmosh ffi stublib))
+
+
+(define %library (make-pffi-ref 'posix-poll))
+
+
+(define
+  poll_alloc
+  (pffi-c-function %library void* poll_alloc int))
+(define
+  poll_dispose
+  (pffi-c-function
+    %library
+    void
+    poll_dispose
+    void*))
+(define
+  poll_exec
+  (pffi-c-function
+    %library
+    int
+    poll_exec
+    void*
+    int
+    int))
+(define
+  poll_set_fd
+  (pffi-c-function
+    %library
+    void
+    poll_set_fd
+    void*
+    int
+    int))
+(define
+  poll_set_pollin
+  (pffi-c-function
+    %library
+    void
+    poll_set_pollin
+    void*
+    int))
+(define
+  poll_unset_pollin
+  (pffi-c-function
+    %library
+    void
+    poll_unset_pollin
+    void*
+    int))
+(define
+  poll_set_pollout
+  (pffi-c-function
+    %library
+    void
+    poll_set_pollout
+    void*
+    int))
+(define
+  poll_unset_pollout
+  (pffi-c-function
+    %library
+    void
+    poll_unset_pollout
+    void*
+    int))
+(define
+  poll_get_pollin
+  (pffi-c-function
+    %library
+    int
+    poll_get_pollin
+    void*
+    int))
+(define
+  poll_get_pollout
+  (pffi-c-function
+    %library
+    int
+    poll_get_pollout
+    void*
+    int))
+(define
+  poll_get_pollerr
+  (pffi-c-function
+    %library
+    int
+    poll_get_pollerr
+    void*
+    int))
+(define
+  poll_get_pollhup
+  (pffi-c-function
+    %library
+    int
+    poll_get_pollhup
+    void*
+    int))
+(define
+  poll_get_pollnval
+  (pffi-c-function
+    %library
+    int
+    poll_get_pollnval
+    void*
+    int))
+)

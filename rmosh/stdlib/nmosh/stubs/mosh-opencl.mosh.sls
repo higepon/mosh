@@ -1,0 +1,130 @@
+;; generated from src/ext/khronos/OpenCL/Library.scm DO NOT EDIT!!
+(library (nmosh stubs mosh-opencl)
+(export
+  mcl_platform_extensions
+  mcl_platform_vendor
+  mcl_platform_name
+  mcl_platform_version
+  mcl_platform_profile
+  mcl_platform_extensions_size
+  mcl_platform_vendor_size
+  mcl_platform_name_size
+  mcl_platform_version_size
+  mcl_platform_profile_size
+  mcl_clGetPlatformIDs
+  mcl_platform_id_size
+  mcl_platform_count)
+(import
+  (mosh ffi)
+  (rnrs)
+  (nmosh ffi pffi-plugin)
+  (nmosh ffi stublib))
+
+
+(define %library (make-pffi-ref/plugin 'mosh_opencl))
+
+
+(define
+  mcl_platform_count
+  (pffi-c-function %library int mcl_platform_count))
+(define
+  mcl_platform_id_size
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_id_size))
+(define
+  mcl_clGetPlatformIDs
+  (pffi-c-function
+    %library
+    int
+    mcl_clGetPlatformIDs
+    int
+    void*
+    void*))
+(define
+  mcl_platform_profile_size
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_profile_size
+    void*))
+(define
+  mcl_platform_version_size
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_version_size
+    void*))
+(define
+  mcl_platform_name_size
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_name_size
+    void*))
+(define
+  mcl_platform_vendor_size
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_vendor_size
+    void*))
+(define
+  mcl_platform_extensions_size
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_extensions_size
+    void*))
+(define
+  mcl_platform_profile
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_profile
+    void*
+    void*
+    int
+    void*))
+(define
+  mcl_platform_version
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_version
+    void*
+    void*
+    int
+    void*))
+(define
+  mcl_platform_name
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_name
+    void*
+    void*
+    int
+    void*))
+(define
+  mcl_platform_vendor
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_vendor
+    void*
+    void*
+    int
+    void*))
+(define
+  mcl_platform_extensions
+  (pffi-c-function
+    %library
+    int
+    mcl_platform_extensions
+    void*
+    void*
+    int
+    void*))
+)

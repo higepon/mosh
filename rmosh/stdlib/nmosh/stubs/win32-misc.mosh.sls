@@ -1,0 +1,141 @@
+;; generated from src/win32/misc/Library.scm DO NOT EDIT!!
+(library (nmosh stubs win32-misc)
+(export
+  win32_extent_length
+  win32_extent_offset
+  win32_extent_disknumber
+  win32_extent_get
+  win32_extent_size
+  win32_querydosdevice
+  win32_setenv
+  win32_mypath
+  win32_measure_multibyte_to_widechar
+  win32_multibyte_to_widechar
+  win32_get_ansi_codepage
+  win32_get_processor_count
+  win32_invoke_ffithread)
+(import
+  (mosh ffi)
+  (rnrs)
+  (nmosh ffi pffi)
+  (nmosh ffi stublib))
+
+
+(define %library (make-pffi-ref 'win32-misc))
+
+
+(define
+  win32_invoke_ffithread
+  (pffi-c-function
+    %library
+    void
+    win32_invoke_ffithread
+    void*
+    void*
+    void*
+    void*
+    void*))
+(define
+  win32_get_processor_count
+  (pffi-c-function
+    %library
+    int
+    win32_get_processor_count))
+(define
+  win32_get_ansi_codepage
+  (pffi-c-function
+    %library
+    int
+    win32_get_ansi_codepage))
+(define
+  win32_multibyte_to_widechar
+  (pffi-c-function
+    %library
+    int
+    win32_multibyte_to_widechar
+    int
+    void*
+    int
+    void*
+    int
+    void*))
+(define
+  win32_measure_multibyte_to_widechar
+  (pffi-c-function
+    %library
+    int
+    win32_measure_multibyte_to_widechar
+    int
+    void*
+    int))
+(define
+  win32_mypath
+  (pffi-c-function
+    %library
+    int
+    win32_mypath
+    void*
+    int))
+(define
+  win32_setenv
+  (pffi-c-function
+    %library
+    int
+    win32_setenv
+    void*
+    void*))
+(define
+  win32_querydosdevice
+  (pffi-c-function
+    %library
+    int
+    win32_querydosdevice
+    void*
+    void*
+    int))
+(define
+  win32_extent_size
+  (pffi-c-function
+    %library
+    int
+    win32_extent_size
+    int))
+(define
+  win32_extent_get
+  (pffi-c-function
+    %library
+    int
+    win32_extent_get
+    void*
+    void*
+    int
+    void*))
+(define
+  win32_extent_disknumber
+  (pffi-c-function
+    %library
+    int
+    win32_extent_disknumber
+    void*
+    int))
+(define
+  win32_extent_offset
+  (pffi-c-function
+    %library
+    void
+    win32_extent_offset
+    void*
+    int
+    void*
+    void*))
+(define
+  win32_extent_length
+  (pffi-c-function
+    %library
+    void
+    win32_extent_length
+    void*
+    int
+    void*
+    void*))
+)

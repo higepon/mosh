@@ -1,0 +1,307 @@
+;; generated from src/win32/gui/Library.scm DO NOT EDIT!!
+(library (nmosh stubs win32-gui)
+(export
+  win32_cursor_hide
+  win32_getmonitorinfo
+  win32_dc_measure_text
+  win32_dc_draw
+  win32_font_create
+  win32_brush_create
+  win32_pen_create
+  win32_gdi_deleteobject
+  win32_dc_settransform
+  win32_dc_transform
+  win32_dc_selectobject
+  win32_dc_dispose
+  win32_dc_create
+  win32_window_clienttoscreen
+  win32_window_getclientrect_y
+  win32_window_getclientrect_x
+  win32_window_getclientrect
+  win32_window_getwindowrect
+  win32_window_createbitmap
+  win32_window_updaterects
+  win32_window_create
+  win32_window_fitbuffer
+  win32_window_alloc
+  win32_registerwindowclass
+  win32_window_destroy
+  win32_window_close
+  win32_window_settitle
+  win32_window_hide
+  win32_window_show
+  win32_window_move
+  win32_messagebox)
+(import
+  (mosh ffi)
+  (rnrs)
+  (nmosh ffi pffi)
+  (nmosh ffi stublib))
+
+
+(define %library (make-pffi-ref 'win32-gui))
+
+
+(define
+  win32_messagebox
+  (pffi-c-function
+    %library
+    int
+    win32_messagebox
+    void*
+    void*
+    int
+    int))
+(define
+  win32_window_move
+  (pffi-c-function
+    %library
+    void
+    win32_window_move
+    void*
+    int
+    int
+    int
+    int))
+(define
+  win32_window_show
+  (pffi-c-function
+    %library
+    void
+    win32_window_show
+    void*
+    int))
+(define
+  win32_window_hide
+  (pffi-c-function
+    %library
+    void
+    win32_window_hide
+    void*))
+(define
+  win32_window_settitle
+  (pffi-c-function
+    %library
+    void
+    win32_window_settitle
+    void*
+    void*))
+(define
+  win32_window_close
+  (pffi-c-function
+    %library
+    void
+    win32_window_close
+    void*))
+(define
+  win32_window_destroy
+  (pffi-c-function
+    %library
+    void
+    win32_window_destroy
+    void*))
+(define
+  win32_registerwindowclass
+  (pffi-c-function
+    %library
+    void
+    win32_registerwindowclass))
+(define
+  win32_window_alloc
+  (pffi-c-function
+    %library
+    void*
+    win32_window_alloc))
+(define
+  win32_window_fitbuffer
+  (pffi-c-function
+    %library
+    void
+    win32_window_fitbuffer
+    void*))
+(define
+  win32_window_create
+  (pffi-c-function
+    %library
+    void
+    win32_window_create
+    void*
+    void*))
+(define
+  win32_window_updaterects
+  (pffi-c-function
+    %library
+    void
+    win32_window_updaterects
+    void*
+    void*
+    void*
+    int))
+(define
+  win32_window_createbitmap
+  (pffi-c-function
+    %library
+    void*
+    win32_window_createbitmap
+    void*
+    int
+    int))
+(define
+  win32_window_getwindowrect
+  (pffi-c-function
+    %library
+    int
+    win32_window_getwindowrect
+    void*
+    void*
+    void*
+    void*
+    void*))
+(define
+  win32_window_getclientrect
+  (pffi-c-function
+    %library
+    int
+    win32_window_getclientrect
+    void*
+    void*
+    void*
+    void*
+    void*))
+(define
+  win32_window_getclientrect_x
+  (pffi-c-function
+    %library
+    int
+    win32_window_getclientrect_x
+    void*))
+(define
+  win32_window_getclientrect_y
+  (pffi-c-function
+    %library
+    int
+    win32_window_getclientrect_y
+    void*))
+(define
+  win32_window_clienttoscreen
+  (pffi-c-function
+    %library
+    int
+    win32_window_clienttoscreen
+    void*
+    int
+    int
+    void*
+    void*))
+(define
+  win32_dc_create
+  (pffi-c-function %library void* win32_dc_create))
+(define
+  win32_dc_dispose
+  (pffi-c-function
+    %library
+    void
+    win32_dc_dispose
+    void*))
+(define
+  win32_dc_selectobject
+  (pffi-c-function
+    %library
+    void
+    win32_dc_selectobject
+    void*
+    void*))
+(define
+  win32_dc_transform
+  (pffi-c-function
+    %library
+    void
+    win32_dc_transform
+    void*
+    void*))
+(define
+  win32_dc_settransform
+  (pffi-c-function
+    %library
+    void
+    win32_dc_settransform
+    void*
+    void*))
+(define
+  win32_gdi_deleteobject
+  (pffi-c-function
+    %library
+    void
+    win32_gdi_deleteobject
+    void*))
+(define
+  win32_pen_create
+  (pffi-c-function
+    %library
+    void*
+    win32_pen_create
+    int
+    int
+    int
+    int))
+(define
+  win32_brush_create
+  (pffi-c-function
+    %library
+    void*
+    win32_brush_create
+    int
+    int
+    int))
+(define
+  win32_font_create
+  (pffi-c-function
+    %library
+    void*
+    win32_font_create
+    int
+    int
+    int
+    void*))
+(define
+  win32_dc_draw
+  (pffi-c-function
+    %library
+    void*
+    win32_dc_draw
+    void*
+    void*
+    void*
+    int))
+(define
+  win32_dc_measure_text
+  (pffi-c-function
+    %library
+    void*
+    win32_dc_measure_text
+    void*
+    void*
+    int
+    void*
+    void*))
+(define
+  win32_getmonitorinfo
+  (pffi-c-function
+    %library
+    void
+    win32_getmonitorinfo
+    int
+    int
+    void*
+    void*
+    void*
+    void*
+    void*))
+(define
+  win32_cursor_hide
+  (pffi-c-function
+    %library
+    void
+    win32_cursor_hide
+    void*))
+)

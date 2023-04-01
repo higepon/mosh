@@ -28,7 +28,7 @@ use std::{
 
 // We embed libraries written in Scheme in the binary.
 #[derive(RustEmbed)]
-#[folder = "../lib/"]
+#[folder = "./stdlib/"]
 #[prefix = "/embed/stdlib/"]
 pub struct StdLib;
 
