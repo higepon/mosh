@@ -14,8 +14,6 @@ Cargo.lock
 *.pdb
 
 core
-src/lexer_iter.rs
-src/number_lexer_iter.rs
 boot/*.op
 data/*.op
 data/*.rsop
