@@ -14,6 +14,7 @@ debug_log_gc = []
 lalrpop = "0.19.7"
 
 [dependencies]
+rust-embed="6.6.1"
 bumpalo = { version = "3.11.1" }
 mimalloc = { version = "0.1.27", default-features = false }
 enum-display-derive = "0.1.1"

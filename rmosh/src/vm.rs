@@ -267,7 +267,7 @@ impl Vm {
 
             let sym = self.gc.symbol_intern("%loadpath");
             let mut paths = String::new();
-            paths.push_str("/root/mosh.git/lib");
+            paths.push_str("/embed/stdlib");
             if let Some(loadpath) = loadpath {
                 paths.push(':');
                 paths.push_str(&loadpath);

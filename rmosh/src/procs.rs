@@ -1,3 +1,4 @@
+use crate::ports::StdLib;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -25,7 +26,7 @@ use crate::{
         BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort,
         CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
         CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, EolStyle,
-        ErrorHandlingMode, Latin1Codec, OutputPort, Port, StdErrorPort, StdInputPort,
+        ErrorHandlingMode, Latin1Codec, OutputPort, Port, StdErrorPort, StdInputPort, StdLibExt,
         StdOutputPort, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
         TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
         UTF16Codec, UTF8Codec,
@@ -1369,8 +1370,13 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "file-exists?";
     check_argc!(name, args, 1);
     if let Object::String(s) = args[0] {
-        //println!("{} {} => {}", name, s.string, Path::new(&s.string).exists());
-        Ok(Path::new(&s.string).exists().to_obj())
+        if Path::new(&s.string).exists() {
+            Ok(Object::True)
+        } else if s.string.starts_with("/embed/stdlib") {
+            Ok(StdLib::exists(&s.string).to_obj())
+        } else {
+            Ok(Object::False)
+        }
     } else {
         panic!("{}: string required but got {}", name, args[0])
     }
@@ -3057,6 +3063,15 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
 
     let path = &as_sstring!(name, args, 0).string;
     let mut transcoder: Option<Object> = None;
+
+    // We first check if the file is available in the binary as embdedd file.
+    if let Some(file) = StdLib::get(path) {
+        let in_port =
+            Object::BytevectorInputPort(vm.gc.alloc(BytevectorInputPort::new(&file.data)));
+        let transcoder = create_native_transcoder(&mut vm.gc);
+        let port = TranscodedInputPort::new(in_port, transcoder);
+        return Ok(Object::TranscodedInputPort(vm.gc.alloc(port)));
+    }
 
     // N.B. As R6RS says, we ignore "file-options" for input-port.
     let file = match File::open(path) {
@@ -6950,21 +6965,26 @@ fn port_transcoder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-transcoder";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn native_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
-    let name: &str = "native-transcoder";
-    check_argc!(name, args, 0);
-    let codec = Object::UTF8Codec(vm.gc.alloc(UTF8Codec::new()));
+fn create_native_transcoder(gc: &mut Box<Gc>) -> Object {
+    let codec = Object::UTF8Codec(gc.alloc(UTF8Codec::new()));
     let eol_style = if std::env::consts::OS == "windows" {
         EolStyle::CrLf
     } else {
         EolStyle::Lf
     };
-    Ok(Object::Transcoder(vm.gc.alloc(Transcoder::new(
+    Object::Transcoder(gc.alloc(Transcoder::new(
         codec,
         eol_style,
         ErrorHandlingMode::RaiseError,
-    ))))
+    )))
 }
+
+fn native_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    let name: &str = "native-transcoder";
+    check_argc!(name, args, 0);
+    Ok(create_native_transcoder(&mut vm.gc))
+}
+
 fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-bytevector";
     check_argc_between!(name, args, 2, 4);
@@ -7550,27 +7570,42 @@ fn file_size_in_bytes(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     let name: &str = "file-size-in-bytes";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn file_stat_mtime(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn file_stat_mtime(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "file-stat-mtime";
     check_argc!(name, args, 1);
     if let Object::String(path) = args[0] {
-        let metadata = File::open(&path.string)
-            .map(|file| file.metadata())
-            .unwrap_or_else(|_| panic!("failed to retrieve metadata for {}", path.string));
+        if path.string.starts_with("/embed/stdlib") {
+            if let Some(file) = StdLib::get(&path.string) {
+                match file.metadata.last_modified() {
+                    Some(last_modified) => return Ok(last_modified.to_obj(&mut vm.gc)),
+                    None => {
+                        panic!("failed to retrieve last modified for {}", path.string);
+                    }
+                }
+            } else {
+                panic!("failed to retrieve metadata for {}", path.string);
+            }
+        } else {
+            let metadata = File::open(&path.string)
+                .map(|file| file.metadata())
+                .unwrap_or_else(|_| panic!("failed to retrieve metadata for {}", path.string));
 
-        // Get the last modification time
-        let mtime = metadata
-            .map(|metadata| metadata.modified())
-            .unwrap_or_else(|_| panic!("failed to retrieve modification time for {}", path.string));
+            // Get the last modification time
+            let mtime = metadata
+                .map(|metadata| metadata.modified())
+                .unwrap_or_else(|_| {
+                    panic!("failed to retrieve modification time for {}", path.string)
+                });
 
-        // Convert the last modification time to a system time
-        let mtime = mtime.unwrap_or(SystemTime::now());
-        let mtime_seconds = mtime
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
-            .as_secs();
+            // Convert the last modification time to a system time
+            let mtime = mtime.unwrap_or(SystemTime::now());
+            let mtime_seconds = mtime
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
+                .as_secs();
 
-        Ok(Object::Fixnum(mtime_seconds as isize))
+            Ok(Object::Fixnum(mtime_seconds as isize))
+        }
     } else {
         panic!("{}: file path required but got {}", name, args[0])
     }

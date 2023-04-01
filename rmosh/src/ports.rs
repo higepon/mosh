@@ -1,14 +1,3 @@
-use core::panic;
-use std::cmp::max;
-use std::io::{BufReader, BufWriter, Write};
-use std::io::{Seek, SeekFrom};
-use std::{
-    collections::HashMap,
-    fmt::{self, Display},
-    fs::File,
-    io::{self, Read},
-};
-
 use crate::error::{self, Error, ErrorType};
 use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};
@@ -24,7 +13,40 @@ use crate::{
     obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
     obj_as_binary_output_port_mut_or_panic,
 };
+use core::panic;
 use lalrpop_util::ParseError;
+use rust_embed::RustEmbed;
+use std::cmp::max;
+use std::io::{BufReader, BufWriter, Write};
+use std::io::{Seek, SeekFrom};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display},
+    fs::File,
+    io::{self, Read},
+};
+
+// We embed libraries written in Scheme in the binary.
+#[derive(RustEmbed)]
+#[folder = "../lib/"]
+#[prefix = "/embed/stdlib/"]
+pub struct StdLib;
+
+pub trait StdLibExt {
+    fn exists(s: &str) -> bool;
+}
+
+impl StdLibExt for StdLib {
+    fn exists(s: &str) -> bool {
+        if s.eq("/embed/stdlib") || s.eq("/embed/stdlib/") {
+            true
+        } else if s.starts_with("/embed/stdlib") {
+            Self::get(s).is_some()
+        } else {
+            false
+        }
+    }
+}
 
 // Trait for Port.
 pub trait Port {
