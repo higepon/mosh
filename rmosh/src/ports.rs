@@ -1612,14 +1612,16 @@ impl OutputPort for StdOutputPort {
 
 impl BinaryOutputPort for StdOutputPort {
     fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
-        io::stdout().write(buf).map_err(|e| {
+        let ret = io::stdout().write(buf).map_err(|e| {
             error::Error::new(
                 ErrorType::IoError,
                 "write",
                 &format!("{}", e.to_string()),
                 &[],
             )
-        })
+        });
+        self.flush();
+        ret
     }
 }
 
