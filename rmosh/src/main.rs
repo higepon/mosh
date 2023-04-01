@@ -58,8 +58,8 @@ fn main() {
     }
 
     let vargs = vm.gc.listn(&vargs);
-    //    let loadpath = args.loadpath;
-    let loadpath = Some("/root/mosh.git/tests/r6rs-test-suite/".to_string());
+    let loadpath = args.loadpath;
+    //let loadpath = Some("/root/mosh.git/tests/r6rs-test-suite/".to_string());
     match vm.enable_r7rs(vargs, loadpath) {
         Ok(_ret) => (),
         Err(e) => {
