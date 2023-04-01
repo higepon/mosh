@@ -1,7 +1,11 @@
 [package]
 name = "rmosh"
 version = "0.0.1"
+authors = ["higepon@gmail.com>"]
 edition = "2021"
+description = "R6RS & R7RS Scheme Interpreter"
+license = "MIT"
+repository = "https://github.com/higepon/mosh/rmosh"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
