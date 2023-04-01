@@ -1,32 +1,50 @@
+use crate::ports::StdLib;
+/// Scheme procedures written in Rust.
+/// The procedures will be exposed to the VM via free vars.
+use crate::{
+    as_binary_input_port_mut, as_binary_output_port_mut, as_bytevector, as_char, as_f32, as_f64,
+    as_flonum, as_isize, as_output_port_mut, as_port, as_port_mut, as_sstring, as_symbol,
+    as_text_input_port_mut, as_text_output_port_mut, as_transcoder, as_u8, as_usize,
+    check_is_closure, check_is_closure_or_false, check_is_transcoder_or_false,
+    equal::Equal,
+    error::{self, Error, ErrorType},
+    fasl::{FaslReader, FaslWriter},
+    gc::{Gc, GcRef},
+    number_lexer::NumberLexer,
+    number_reader::NumberParser,
+    numbers::{
+        self, imag, integer_div, log2, real, Compnum, FixnumExt, Flonum, GcObjectExt, ObjectExt,
+        SchemeError,
+    },
+    obj_as_text_input_port_mut, obj_as_text_output_port_mut,
+    objects::{
+        Bytevector, EqHashtable, EqvHashtable, EqvKey, GenericHashKey, GenericHashtable, Hashtable,
+        Object, Pair, SString, SimpleStruct, Symbol,
+    },
+    ports::{
+        BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort,
+        BinaryOutputPort, BufferMode, BytevectorInputPort, BytevectorOutputPort,
+        CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
+        CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, EolStyle,
+        ErrorHandlingMode, Latin1Codec, OutputPort, Port, StdErrorPort, StdInputPort, StdLibExt,
+        StdOutputPort, StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
+        TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort, Transcoder,
+        UTF16Codec, UTF8Codec,
+    },
+    vm::Vm,
+};
+use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
     env::{self, current_dir, current_exe},
     fs::{self, File, OpenOptions},
+    mem,
     path::Path,
     process,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-/// Scheme procedures written in Rust.
-/// The procedures will be exposed to the VM via free vars.
-use crate::{
-    as_bytevector, as_char, as_sstring, as_usize,
-    equal::Equal,
-    error,
-    fasl::{FaslReader, FaslWriter},
-    gc::Gc,
-    number_lexer::NumberLexer,
-    number_reader::NumberParser,
-    numbers::{self, imag, integer_div, log2, real, Compnum, Flonum, SchemeError},
-    objects::{Bytevector, EqHashtable, Object, Pair, SString, SimpleStruct},
-    ports::{
-        BinaryFileInputPort, BinaryFileOutputPort, BinaryInputPort, BinaryOutputPort,
-        BytevectorInputPort, BytevectorOutputPort, FileInputPort, FileOutputPort, OutputPort, Port,
-        StringInputPort, StringOutputPort, TextInputPort, TextOutputPort,
-    },
-    vm::Vm,
-};
-
-use num_traits::FromPrimitive;
+use num_bigint::BigInt;
+use num_traits::{FromPrimitive, ToPrimitive, Zero};
 
 static mut GENSYM_PREFIX: char = 'a';
 static mut GENSYM_INDEX: isize = 0;
@@ -854,7 +872,7 @@ macro_rules! check_argc_between {
 fn is_number(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "number?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_number()))
+    Ok(args[0].is_number().to_obj())
 }
 fn cons(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cons";
@@ -914,7 +932,7 @@ fn cdr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_null(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "null?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_nil()))
+    Ok(args[0].is_nil().to_obj())
 }
 fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-car!";
@@ -946,20 +964,8 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         args[1]
     };
     let shared_aware = false;
-    match port {
-        Object::StringOutputPort(mut port) => {
-            port.display(args[0], shared_aware).ok();
-        }
-        Object::StdOutputPort(mut port) => {
-            port.display(args[0], shared_aware).ok();
-        }
-        Object::StdErrorPort(mut port) => {
-            port.display(args[0], shared_aware).ok();
-        }
-        _ => {
-            println!("{}: port required but got {}", name, port)
-        }
-    }
+    let port = obj_as_text_output_port_mut!(name, port);
+    port.display(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -969,7 +975,7 @@ fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "regexp?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_regexp()))
+    Ok(args[0].is_regexp().to_obj())
 }
 fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "regexp->string";
@@ -1050,18 +1056,18 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_between!(name, args, 1, 2);
     let argc = args.len();
     if argc == 1 {
-        match args[0] {
-            Object::String(s) => {
-                let mut chars: Vec<char> = s.chars().collect();
-                chars.push('\0');
-                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
-                    Ok(n) => Ok(n),
-                    Err(err) => panic!("{}: {:?}", name, err),
-                }
-            }
-            _ => {
-                panic!("{}: string required but got {}", name, args[0])
-            }
+        let s = as_sstring!(name, args, 0);
+        let mut chars: Vec<char> = s.chars().collect();
+        chars.push('\0');
+        let mut is_inexact_context = false;
+        match NumberParser::new().parse(
+            &mut vm.gc,
+            &mut is_inexact_context,
+            NumberLexer::new(&chars),
+        ) {
+            Ok(n) => Ok(n),
+            // Note that string->number returns #f for any parse error.
+            Err(_) => Ok(Object::False),
         }
     } else {
         let radix = args[1];
@@ -1086,7 +1092,12 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 prefix.push_str(&s);
                 let mut chars: Vec<char> = prefix.chars().collect();
                 chars.push('\0');
-                match NumberParser::new().parse(&mut vm.gc, NumberLexer::new(&chars)) {
+                let mut is_inexact_context = false;
+                match NumberParser::new().parse(
+                    &mut vm.gc,
+                    &mut is_inexact_context,
+                    NumberLexer::new(&chars),
+                ) {
                     Ok(n) => Ok(n),
                     Err(err) => panic!("{}: {:?}", name, err),
                 }
@@ -1238,21 +1249,11 @@ fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     } else {
         args[0]
     };
-    let result = match port {
-        Object::FileInputPort(mut p) => p.lookahead_char(),
-        Object::StringInputPort(mut p) => p.lookahead_char(),
-        _ => {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "text input port required",
-                &[port],
-            ));
-        }
-    };
-    match result {
-        Some(c) => Ok(Object::Char(c)),
-        None => Ok(Object::Eof),
+    let port = obj_as_text_input_port_mut!(name, port);
+    match port.lookahead_char(vm) {
+        Ok(Some(c)) => Ok(Object::Char(c)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e),
     }
 }
 fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1309,9 +1310,7 @@ fn is_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "equal?";
     check_argc!(name, args, 2);
     let e = Equal::new();
-    Ok(Object::make_bool(
-        e.is_equal(&mut vm.gc, &args[0], &args[1]),
-    ))
+    Ok(e.is_equal(&mut vm.gc, &args[0], &args[1]).to_obj())
 }
 fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-string-input-port";
@@ -1337,19 +1336,9 @@ fn sys_port_seek(vm: &mut Vm, _args: &mut [Object]) -> error::Result<Object> {
 fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-output-port";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::StringOutputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        Object::FileOutputPort(mut port) => {
-            port.close();
-            Ok(Object::Unspecified)
-        }
-        _ => {
-            panic!("{}: string-output-port required but got {:?}", name, args);
-        }
-    }
+    let port = as_output_port_mut!(name, args, 0);
+    port.close();
+    Ok(Object::Unspecified)
 }
 fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "digit->integer";
@@ -1381,30 +1370,34 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "file-exists?";
     check_argc!(name, args, 1);
     if let Object::String(s) = args[0] {
-        //println!("{} {} => {}", name, s.string, Path::new(&s.string).exists());
-        Ok(Object::make_bool(Path::new(&s.string).exists()))
+        if Path::new(&s.string).exists() {
+            Ok(Object::True)
+        } else if s.string.starts_with("/embed/stdlib") {
+            Ok(StdLib::exists(&s.string).to_obj())
+        } else {
+            Ok(Object::False)
+        }
     } else {
         panic!("{}: string required but got {}", name, args[0])
     }
 }
-fn delete_file(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "delete-file";
     check_argc!(name, args, 1);
-    let path = as_sstring!(name, args, 0, &mut vm.gc);
+    let path = as_sstring!(name, args, 0);
     match fs::remove_file(&path.string) {
         Ok(_) => Ok(Object::Unspecified),
-        Err(e) => Err(error::Error::new_from_string(
-            &mut vm.gc,
+        Err(e) => Error::assertion_violation(
             name,
             &format!("delete file failed {}", e.to_string()),
             &[args[0]],
-        )),
+        ),
     }
 }
 fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-output-string";
     check_argc!(name, args, 1);
-    if let Object::StringOutputPort(s) = args[0] {
+    if let Object::StringOutputPort(mut s) = args[0] {
         Ok(vm.gc.new_string(&s.string()))
     } else {
         panic!("{}: string-output-port require but got {}", name, args[0])
@@ -1429,45 +1422,34 @@ fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if let Object::Fixnum(n) = args[0] {
         match char::from_u32(n as u32) {
             Some(c) => Ok(Object::Char(c)),
-            None => {
-                panic!("{}: integer out of range {}", name, args[0]);
-            }
+            None => Error::assertion_violation(name, "integer out of range", &[args[0]]),
         }
     } else {
         panic!("{}: integer required but got {}", name, args[0]);
     }
 }
 fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    let name: &str = "format";
     let argc = args.len();
     if argc >= 2 {
         match (args[0], args[1]) {
-            (Object::StringOutputPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
-            (Object::StdErrorPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
-            (Object::StdOutputPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
-            (Object::FileOutputPort(mut port), Object::String(s)) => {
-                port.format(&s.string, &mut args[2..]);
-                return Ok(Object::Unspecified);
-            }
             (Object::False, Object::String(s)) => {
                 let mut port = StringOutputPort::new();
-                port.format(&s.string, &mut args[2..]);
+                port.format(&s.string, &mut args[2..])?;
                 return Ok(vm.gc.new_string(&port.string()));
             }
+            (obj, Object::String(s)) if obj.is_textual_output_port() => {
+                let port = obj_as_text_output_port_mut!(name, obj);
+                port.format(&s.string, &mut args[2..])?;
+                return Ok(Object::Unspecified);
+            }
+
             (Object::String(s), _) => {
                 let mut port = StringOutputPort::new();
-                port.format(&s.string, &mut args[1..]);
+                port.format(&s.string, &mut args[1..])?;
                 return Ok(vm.gc.new_string(&port.string()));
             }
-            _ => {}
+            (x, y) => panic!("x={} y={}", x, y),
         }
     }
     println!("***{} called", "format");
@@ -1512,9 +1494,15 @@ fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> error
     vm.set_current_input_port(args[0]);
     Ok(Object::Unspecified)
 }
-fn set_current_output_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn set_current_output_port_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-current-output-port!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_textual_port() && args[0].is_output_port() {
+        vm.set_current_output_port(args[0]);
+    } else {
+        return Error::assertion_violation(name, "text output port required", &[args[0]]);
+    }
+    Ok(Object::Unspecified)
 }
 fn is_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "char?";
@@ -1534,23 +1522,8 @@ fn write(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         args[1]
     };
     let shared_aware = false;
-    match port {
-        Object::StringOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdErrorPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::FileOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        _ => {
-            println!("{}: port required but got {} {}", name, port, args[0])
-        }
-    }
+    let port = obj_as_text_output_port_mut!(name, port);
+    port.write(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
 fn gensym(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1600,19 +1573,94 @@ fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => return Ok(pair3.car),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caadar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaddr";
@@ -1640,7 +1688,22 @@ fn caaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn caadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => return Ok(pair3.car),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn caar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caar";
@@ -1648,11 +1711,51 @@ fn caar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cadaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cadadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadar";
@@ -1675,7 +1778,27 @@ fn cadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn caddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caddar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.car),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cadddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadddr";
@@ -1736,19 +1859,94 @@ fn cadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cdaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => return Ok(pair3.cdr),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdadar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.car {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaddr";
@@ -1776,7 +1974,22 @@ fn cdaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cdadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => return Ok(pair3.cdr),
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cdar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdar";
@@ -1784,11 +1997,51 @@ fn cdar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cddaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddaar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cddadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddadr";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.cdr {
+            Object::Pair(pair2) => match pair2.car {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddar";
@@ -1811,7 +2064,27 @@ fn cddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn cdddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdddar";
-    panic!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => match pair2.cdr {
+                Object::Pair(pair3) => match pair3.cdr {
+                    Object::Pair(pair4) => Ok(pair4.cdr),
+                    _ => {
+                        panic!("{}: pair required but got {:?}", name, args);
+                    }
+                },
+                _ => {
+                    panic!("{}: pair required but got {:?}", name, args);
+                }
+            },
+            _ => {
+                panic!("{}: pair required but got {:?}", name, args);
+            }
+        },
+        _ => {
+            panic!("{}: pair required but got {:?}", name, args);
+        }
+    }
 }
 fn cddddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cddddr";
@@ -1901,7 +2174,7 @@ fn is_vector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_list(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "list?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_list()))
+    Ok(args[0].is_list().to_obj())
 }
 fn list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut obj = Object::Nil;
@@ -1946,7 +2219,7 @@ fn memq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_eq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eq?";
     check_argc!(name, args, 2);
-    Ok(Object::make_bool(args[0].eq(&args[1])))
+    Ok(args[0].eq(&args[1]).to_obj())
 }
 fn is_eqv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eqv?";
@@ -2021,25 +2294,52 @@ fn get_timeofday(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-timeofday";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn make_eq_hashtable(vm: &mut Vm, _args: &mut [Object]) -> error::Result<Object> {
+fn make_eq_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    let name: &str = "make-eq-hashtable";
+    check_argc_max!(name, args, 1);
     Ok(vm.gc.new_eq_hashtable())
 }
-fn make_eqv_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_eqv_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-eqv-hashtable";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_max!(name, args, 1);
+    Ok(vm.gc.new_eqv_hashtable())
 }
-fn hashtable_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-set!";
     check_argc!(name, args, 3);
     match args[0] {
-        Object::EqHashtable(mut hashtable) => hashtable.set(args[1], args[2]),
+        Object::EqHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.set(args[1], args[2])
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
+        Object::EqvHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.set(EqvKey::new(args[1]), args[2])
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
+        Object::GenericHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                let key = args[1];
+                let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+                let key = GenericHashKey::new(hash_obj, key);
+                hashtable.set(key, args[2])
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
+
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
         }
     }
     Ok(Object::Unspecified)
 }
-fn hashtable_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-ref";
     check_argc_between!(name, args, 2, 3);
     match args[0] {
@@ -2050,8 +2350,26 @@ fn hashtable_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Ok(hashtable.get(args[1], args[2]))
             }
         }
+        Object::EqvHashtable(hashtable) => {
+            if args.len() == 2 {
+                Ok(hashtable.get(EqvKey::new(args[1]), Object::False))
+            } else {
+                Ok(hashtable.get(EqvKey::new(args[1]), args[2]))
+            }
+        }
+        Object::GenericHashtable(hashtable) => {
+            let key = args[1];
+            let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+            let key = GenericHashKey::new(hash_obj, key);
+
+            if args.len() == 2 {
+                Ok(hashtable.get(key, Object::False))
+            } else {
+                Ok(hashtable.get(key, args[2]))
+            }
+        }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
         }
     }
 }
@@ -2065,37 +2383,102 @@ fn hashtable_keys(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 keys.push(*k);
             }
         }
+        Object::EqvHashtable(t) => {
+            for k in t.hash_map.keys() {
+                keys.push(k.obj);
+            }
+        }
+        Object::GenericHashtable(t) => {
+            for k in t.hash_map.keys() {
+                keys.push(k.org_key);
+            }
+        }
         _ => {}
     }
     Ok(vm.gc.new_vector(&keys))
 }
 fn string_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let s = as_sstring!(name, args, 0);
+    Ok(Object::Fixnum(string_hash_one(&s.string)))
 }
 fn eqv_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eqv-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::Fixnum(equal_hash_one(args[0])))
 }
 fn string_ci_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string-ci-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let s = as_sstring!(name, args, 0);
+    Ok(Object::Fixnum(string_hash_ci_one(&s.string)))
 }
 fn symbol_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "symbol-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let s = as_symbol!(name, args, 0);
+    Ok(Object::Fixnum(symbol_hash_one(s)))
 }
 fn equal_hash(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "equal-hash";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::Fixnum(equal_hash_one(args[0])))
 }
+
+fn symbol_hash_one(s: GcRef<Symbol>) -> isize {
+    // Symbol is interned, we can use pointer as hash value.
+    s.pointer.as_ptr() as isize
+}
+
+fn string_hash_one(s: &str) -> isize {
+    let mut hash = 0;
+    let chars: Vec<char> = s.chars().collect();
+    for ch in chars.iter() {
+        hash = (hash << 5) - hash + (*ch as isize);
+    }
+    hash
+}
+fn string_hash_ci_one(s: &str) -> isize {
+    let mut hash = 0;
+    let chars: Vec<char> = s.chars().collect();
+    for ch in chars.iter() {
+        hash = (hash << 5) - hash
+            + match ch.to_uppercase().next() {
+                Some(uch) => uch as isize,
+                None => *ch as isize,
+            };
+    }
+    hash
+}
+fn equal_hash_one(obj: Object) -> isize {
+    // borrowed from ypsilon scheme by Yoshikatsu Fujita
+    match obj {
+        Object::Pair(p) => {
+            let hash1: isize = equal_hash_one(p.car);
+            let hash2: isize = equal_hash_one(p.cdr);
+            hash1 + hash2.wrapping_mul(64) - hash2
+        }
+        Object::Vector(v) => {
+            let mut hash: isize = 1;
+            for e in v.data.iter() {
+                hash = hash.wrapping_mul(32) - hash + equal_hash_one(*e);
+            }
+            hash
+        }
+        Object::String(s) => string_hash_one(&s.string),
+        Object::Symbol(s) => symbol_hash_one(s),
+        _ => &obj as *const Object as isize,
+    }
+}
+
 fn eq_hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eq-hashtable-copy";
     check_argc!(name, args, 1);
     if let Object::EqHashtable(e) = args[0] {
         Ok(Object::EqHashtable(vm.gc.alloc(e.copy())))
     } else {
-        panic!("{}: eq-hashtable required but got {}", name, args[0]);
+        return Error::assertion_violation(name, "eq-hashtable required", &[args[0]]);
     }
 }
 fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2113,133 +2496,123 @@ fn vm_apply(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_pair(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "pair?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_pair()))
+    Ok(args[0].is_pair().to_obj())
 }
-fn make_custom_binary_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_custom_binary_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-binary-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let pos_proc = check_is_closure_or_false!(name, args, 2);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 3);
+    let close_proc = check_is_closure_or_false!(name, args, 4);
+    Ok(Object::CustomBinaryInputPort(vm.gc.alloc(
+        CustomBinaryInputPort::new(id, read_proc, pos_proc, set_pos_proc, close_proc),
+    )))
 }
-fn make_custom_binary_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_custom_binary_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-binary-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+    let id = &as_sstring!(name, args, 0).string;
+    let write_proc = check_is_closure!(name, args, 1);
+    let pos_proc = check_is_closure_or_false!(name, args, 2);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 3);
+    let close_proc = check_is_closure_or_false!(name, args, 4);
+    Ok(Object::CustomBinaryOutputPort(vm.gc.alloc(
+        CustomBinaryOutputPort::new(id, write_proc, pos_proc, set_pos_proc, close_proc),
+    )))
 }
-fn make_custom_textual_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_custom_textual_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-textual-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let pos_proc = check_is_closure_or_false!(name, args, 2);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 3);
+    let close_proc = check_is_closure_or_false!(name, args, 4);
+    Ok(Object::CustomTextInputPort(vm.gc.alloc(
+        CustomTextInputPort::new(id, read_proc, pos_proc, set_pos_proc, close_proc),
+    )))
 }
-fn make_custom_textual_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_custom_textual_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-textual-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 5);
+    let id = &as_sstring!(name, args, 0).string;
+    let write_proc = check_is_closure!(name, args, 1);
+    let pos_proc = check_is_closure_or_false!(name, args, 2);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 3);
+    let close_proc = check_is_closure_or_false!(name, args, 4);
+    Ok(Object::CustomTextOutputPort(vm.gc.alloc(
+        CustomTextOutputPort::new(id, write_proc, pos_proc, set_pos_proc, close_proc),
+    )))
 }
 fn get_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-u8";
     check_argc!(name, args, 1);
     let mut buf: Vec<u8> = vec![0; 1];
-    let result = match args[0] {
-        Object::BytevectorInputPort(mut port) => port.read(&mut buf),
-        Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
-        _ => {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "binary input port required",
-                &[args[0]],
-            ));
-        }
-    };
-    match result {
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.read(vm, &mut buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(_) => Ok(Object::Fixnum(buf[0] as isize)),
         Err(_) => Ok(Object::Eof),
     }
 }
-fn put_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn put_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-u8";
     check_argc!(name, args, 2);
-    let value = as_usize!(name, args, 1, &mut vm.gc);
+    let value = as_usize!(name, args, 1);
 
     match u8::from_usize(value) {
         Some(value) => {
-            let result = match args[0] {
-                Object::BytevectorOutputPort(mut port) => port.put_u8(value),
-                Object::BinaryFileOutputPort(mut port) => port.put_u8(value),
-                _ => {
-                    return Err(error::Error::new_from_string(
-                        &mut vm.gc,
-                        name,
-                        "binary output port required",
-                        &[args[0]],
-                    ));
-                }
-            };
-            match result {
+            let port = as_binary_output_port_mut!(name, args, 0);
+            match port.put_u8(value) {
                 Ok(_size) => Ok(Object::Unspecified),
-                Err(err) => Err(error::Error::new_from_string(
-                    &mut vm.gc,
-                    name,
-                    &format!("{:?}", err),
-                    &[args[0], args[1]],
-                )),
+                Err(err) => {
+                    Error::assertion_violation(name, &format!("{:?}", err), &[args[0], args[1]])
+                }
             }
         }
-        None => Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "u8 value required",
-            &[args[1]],
-        )),
+        None => Error::assertion_violation(name, "u8 value required", &[args[1]]),
     }
 }
-fn put_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn put_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-string";
     check_argc_between!(name, args, 2, 4);
     let argc = args.len();
-    let str = as_sstring!(name, args, 1, &mut vm.gc);
+    let str = as_sstring!(name, args, 1);
     let start = if argc >= 3 {
-        as_usize!(name, args, 2, &mut vm.gc)
+        as_usize!(name, args, 2)
     } else {
         0
     };
     let count = if argc >= 4 {
-        as_usize!(name, args, 3, &mut vm.gc)
+        as_usize!(name, args, 3)
     } else {
-        str.len()
+        str.len() - start
     };
-    let str = &str[start..count];
-    let result = match args[0] {
-        Object::FileOutputPort(mut port) => port.put_string(str),
-        Object::StdErrorPort(mut port) => port.put_string(str),
-        Object::StdOutputPort(mut port) => port.put_string(str),
-        Object::StringOutputPort(mut port) => port.put_string(str),
-        _ => panic!("{}", args[1]),
-    };
-    match result {
+
+    let str = &str[start..start + count];
+    let port = as_text_output_port_mut!(name, args, 0);
+    match port.put_string(str) {
         Ok(_) => Ok(Object::Unspecified),
-        Err(e) => Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            &format!("{:?}", e),
-            &[args[0]],
-        )),
+        Err(e) => Err(e),
     }
 }
 
 fn flush_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flush-output-port";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::FileOutputPort(mut port) => port.flush(),
-        Object::StdErrorPort(mut port) => port.flush(),
-        Object::StdOutputPort(mut port) => port.flush(),
-        Object::StringOutputPort(mut port) => port.flush(),
-        Object::BytevectorOutputPort(mut port) => port.flush(),
-        _ => panic!("{}", args[0]),
-    };
+    let port = as_output_port_mut!(name, args, 0);
+    port.flush();
     Ok(Object::Unspecified)
 }
-fn output_port_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn output_port_buffer_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "output-port-buffer-mode";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_port!(name, args, 0);
+    Ok(vm
+        .gc
+        .symbol_intern(&port.buffer_mode().to_string().to_lowercase()))
 }
 fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u8-set!";
@@ -2261,83 +2634,165 @@ fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
 }
 fn is_port_has_port_position(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-has-port-position?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_port!(name, args, 0);
+    Ok(port.has_position().to_obj())
 }
 fn is_port_has_set_port_position_destructive(
     _vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "port-has-set-port-position!?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_port!(name, args, 0);
+    Ok(port.has_set_position().to_obj())
 }
-fn port_position(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn port_position(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-position";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_port_mut!(name, args, 0);
+    if port.has_position() {
+        let pos = port.position(vm)?;
+        Ok(pos.to_obj(&mut vm.gc))
+    } else {
+        Error::assertion_violation(name, "port doesn't support port-position", &[args[0]])
+    }
 }
-fn set_port_position_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn set_port_position_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-port-position!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let port = as_port_mut!(name, args, 0);
+    if port.has_set_position() {
+        let pos = as_usize!(name, args, 1);
+        match port.set_position(vm, pos) {
+            Ok(_) => Ok(Object::Unspecified),
+            Err(_) => {
+                error::Error::io_invalid_position(name, &format!("invalid position {}", pos), args)
+            }
+        }
+    } else {
+        Error::assertion_violation(name, "port doesn't support set-ort-position!", &[args[0]])
+    }
 }
 fn get_bytevector_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-n!";
     check_argc!(name, args, 4);
-    let mut bv = as_bytevector!(name, args, 1, &mut vm.gc);
-    let start = as_usize!(name, args, 2, &mut vm.gc);
-    let count = as_usize!(name, args, 3, &mut vm.gc);
+    let mut bv = as_bytevector!(name, args, 1);
+    let start = as_usize!(name, args, 2);
+    let count = as_usize!(name, args, 3);
     if bv.len() < start + count {
-        return Err(error::Error::new_from_string(
-            &mut vm.gc,
+        return Error::assertion_violation(
             name,
             "bytevector must be a bytevector with at least start + count elements.",
             &[args[2], args[3]],
-        ));
+        );
     }
     let buf = &mut bv.data[start..start + count];
-    let result = match args[0] {
-        Object::BytevectorInputPort(mut port) => port.read(buf),
-        Object::BinaryFileInputPort(mut port) => port.read(buf),
-        _ => {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "binary input port required",
-                &[args[0]],
-            ));
-        }
-    };
-    match result {
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.read(vm, buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(size) => Ok(Object::Fixnum(size as isize)),
         Err(_) => Ok(Object::Eof),
     }
 }
-fn get_bytevector_some(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_bytevector_some(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-some";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_binary_input_port_mut!(name, args, 0);
+    let mut buf: Vec<u8> = vec![];
+    port.read_all(vm, &mut buf).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
+    if buf.len() == 0 {
+        Ok(Object::Eof)
+    } else {
+        Ok(vm.gc.new_bytevector_u8(&buf))
+    }
 }
-fn get_bytevector_all(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_bytevector_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-all";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_binary_input_port_mut!(name, args, 0);
+    let mut buf: Vec<u8> = vec![];
+    port.read_all(vm, &mut buf).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
+    Ok(vm.gc.new_bytevector_u8(&buf))
 }
 fn transcoded_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoded-port";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn latin_1_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn latin_1_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "latin-1-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::Latin1Codec(vm.gc.alloc(Latin1Codec::new())))
 }
-fn utf_8_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn utf_8_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf-8-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::UTF8Codec(vm.gc.alloc(UTF8Codec::new())))
 }
-fn utf_16_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn utf_16_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf-16-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::UTF16Codec(vm.gc.alloc(UTF16Codec::new())))
 }
-fn make_transcoder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-transcoder";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 3);
+    let codec = args[0];
+    let mut eol_style = EolStyle::Lf;
+    let mut mode = ErrorHandlingMode::ReplaceError;
+    if args.len() >= 2 {
+        let _eol_symbol = as_symbol!(name, args, 1);
+        let eol_symbol = args[1];
+        if eol_symbol == vm.gc.symbol_intern("lf") {
+            eol_style = EolStyle::Lf;
+        } else if eol_symbol == vm.gc.symbol_intern("cr") {
+            eol_style = EolStyle::Cr;
+        } else if eol_symbol == vm.gc.symbol_intern("nel") {
+            eol_style = EolStyle::Nel;
+        } else if eol_symbol == vm.gc.symbol_intern("ls") {
+            eol_style = EolStyle::Ls;
+        } else if eol_symbol == vm.gc.symbol_intern("crnel") {
+            eol_style = EolStyle::CrNel;
+        } else if eol_symbol == vm.gc.symbol_intern("crlf") {
+            eol_style = EolStyle::CrLf;
+        } else if eol_symbol == vm.gc.symbol_intern("none") {
+            eol_style = EolStyle::ENone;
+        } else {
+            return Error::assertion_violation(name, "invalid eol-style", &[args[1]]);
+        }
+    }
+
+    if args.len() >= 3 {
+        let _mode_symbol = as_symbol!(name, args, 2);
+        let mode_symbol = args[2];
+        if mode_symbol.eq(&vm.gc.symbol_intern("raise")) {
+            mode = ErrorHandlingMode::RaiseError;
+        } else if mode_symbol.eq(&vm.gc.symbol_intern("ignore")) {
+            mode = ErrorHandlingMode::IgnoreError;
+        } else if mode_symbol.eq(&vm.gc.symbol_intern("replace")) {
+            mode = ErrorHandlingMode::ReplaceError;
+        } else {
+            return Error::assertion_violation(name, "invalid error-handling-mode", &[args[2]]);
+        }
+    }
+
+    Ok(Object::Transcoder(
+        vm.gc.alloc(Transcoder::new(codec, eol_style, mode)),
+    ))
 }
 fn eof_object(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eof-object";
@@ -2353,7 +2808,11 @@ fn sys_open_bytevector_output_port(vm: &mut Vm, args: &mut [Object]) -> error::R
             vm.gc.alloc(BytevectorOutputPort::new()),
         ))
     } else {
-        todo!()
+        let _transcoder = as_transcoder!(name, args, 0);
+        let out_port = Object::BytevectorOutputPort(vm.gc.alloc(BytevectorOutputPort::new()));
+        Ok(Object::TranscodedOutputPort(
+            vm.gc.alloc(TranscodedOutputPort::new(out_port, args[0])),
+        ))
     }
 }
 
@@ -2361,13 +2820,16 @@ fn sys_get_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     let name: &str = "sys-get-bytevector";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::BytevectorOutputPort(port) => Ok(port.to_bytevector(&mut vm.gc)),
-        _ => Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "bytevector output port required",
-            &[args[0]],
-        )),
+        Object::BytevectorOutputPort(mut port) => Ok(port.to_bytevector(&mut vm.gc)),
+        Object::TranscodedOutputPort(port) => match port.out_port {
+            Object::BytevectorOutputPort(mut out_port) => Ok(out_port.to_bytevector(&mut vm.gc)),
+            _ => Error::assertion_violation(
+                name,
+                "transcoded port is supposed to have bytevector output port",
+                &[args[0]],
+            ),
+        },
+        _ => Error::assertion_violation(name, "bytevector output port required", &[args[0]]),
     }
 }
 fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2378,36 +2840,28 @@ fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         _ => panic!("{} bytevector required but got {}", name, args[0]),
     }
 }
-fn standard_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn standard_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "standard-input-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::StdInputPort(vm.gc.alloc(StdInputPort::new())))
 }
-fn standard_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn standard_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "standard-output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::StdOutputPort(vm.gc.alloc(StdOutputPort::new())))
 }
-fn standard_error_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn standard_error_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "standard-error-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::StdErrorPort(vm.gc.alloc(StdErrorPort::new())))
 }
 fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-bytevector-n";
     check_argc!(name, args, 2);
-    let size = as_usize!(name, args, 1, &mut vm.gc);
+    let size = as_usize!(name, args, 1);
     let mut buf: Vec<u8> = vec![0; size];
-    let result = match args[0] {
-        Object::BytevectorInputPort(mut port) => port.read(&mut buf),
-        Object::BinaryFileInputPort(mut port) => port.read(&mut buf),
-        _ => {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "binary input port required",
-                &[args[0]],
-            ));
-        }
-    };
-    match result {
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.read(vm, &mut buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(size) => Ok(Object::Bytevector(
             vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec().into())),
@@ -2463,7 +2917,11 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
 
     if argc == 1 {
         if file_exists {
-            panic!("{}: file already exists {}", name, path);
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );
         }
         let file = match open_options.open(&path) {
             Ok(file) => file,
@@ -2472,7 +2930,8 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             }
         };
         Ok(Object::BinaryFileOutputPort(
-            vm.gc.alloc(BinaryFileOutputPort::new(file)),
+            vm.gc
+                .alloc(BinaryFileOutputPort::new(file, BufferMode::Block)),
         ))
     } else {
         let file_options = match args[1] {
@@ -2496,16 +2955,28 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             .is_false();
 
         if file_exists && empty_p {
-            panic!("{}: file already exists {}", name, path)
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );
         } else if no_create_p && no_truncate_p {
             if !file_exists {
-                panic!("{}: file-options no-create: file not exist {}", name, path);
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
             }
         } else if no_create_p {
             if file_exists {
                 open_options.truncate(true);
             } else {
-                panic!("{}: file-options no-create: file not exist {}", name, path);
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
             }
         } else if no_fail_p && no_truncate_p {
             if !file_exists {
@@ -2515,100 +2986,145 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             open_options.truncate(true);
         } else if no_truncate_p {
             if file_exists {
-                panic!(
-                    "{}: file-options no-trucate: file already exists {}",
-                    name, path
+                return error::Error::io_file_already_exist(
+                    name,
+                    &format!("file already exists {}", path),
+                    args,
                 );
             } else {
                 open_options.truncate(true);
             }
         }
 
-        println!("WARNING {}: {:?} silently ignored", name, args);
-        let file = match open_options.open(&path) {
-            Ok(file) => file,
-            Err(err) => {
-                panic!("{}: {} {}", name, path, err);
+        // We ignore buffer-mode. This implmentation is not buffered at this momement.
+        // We may revisit this. Once we conform R7RS and R6RS.
+        let buffer_mode = if argc < 3 {
+            BufferMode::None
+        } else {
+            match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+                Some(mode) => mode,
+                None => {
+                    return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+                }
             }
         };
-        Ok(Object::FileOutputPort(
-            vm.gc.alloc(FileOutputPort::new(file)),
-        ))
+
+        let mut transcoder: Option<Object> = None;
+        if argc == 4 {
+            match args[3] {
+                Object::Transcoder(_) => transcoder = Some(args[3]),
+                Object::False => {}
+                _ => {
+                    return Error::assertion_violation(
+                        name,
+                        "transcoder or #f required",
+                        &[args[3]],
+                    );
+                }
+            }
+        }
+
+        let file = match open_options.open(path) {
+            Ok(file) => file,
+            Err(err) => return Error::assertion_violation(name, &format!("{}", err), &[args[0]]),
+        };
+
+        match transcoder {
+            Some(t) => {
+                let in_port = Object::BinaryFileOutputPort(
+                    vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
+                );
+                let port = TranscodedOutputPort::new(in_port, t);
+                Ok(Object::TranscodedOutputPort(vm.gc.alloc(port)))
+            }
+            None => Ok(Object::BinaryFileOutputPort(
+                vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
+            )),
+        }
     }
 }
+
+fn symbol_to_buffer_mode(sym: GcRef<Symbol>) -> Option<BufferMode> {
+    if sym.string == "line" {
+        Some(BufferMode::Line)
+    } else if sym.string == "block" {
+        Some(BufferMode::Block)
+    } else if sym.string == "none" {
+        Some(BufferMode::None)
+    } else {
+        None
+    }
+}
+
 fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-file-input-port";
     check_argc_between!(name, args, 1, 4);
     let argc = args.len();
 
+    let path = &as_sstring!(name, args, 0).string;
+    let mut transcoder: Option<Object> = None;
+
+    // We first check if the file is available in the binary as embdedd file.
+    if let Some(file) = StdLib::get(path) {
+        let in_port =
+            Object::BytevectorInputPort(vm.gc.alloc(BytevectorInputPort::new(&file.data)));
+        let transcoder = create_native_transcoder(&mut vm.gc);
+        let port = TranscodedInputPort::new(in_port, transcoder);
+        return Ok(Object::TranscodedInputPort(vm.gc.alloc(port)));
+    }
+
     // N.B. As R6RS says, we ignore "file-options" for input-port.
-    if argc == 1 {
-        if let Object::String(path) = args[0] {
-            let file = match File::open(&path.string) {
-                Ok(file) => file,
-                Err(err) => panic!("{}: {} {}", name, args[0], err),
-            };
-            Ok(Object::BinaryFileInputPort(
-                vm.gc.alloc(BinaryFileInputPort::new(file)),
-            ))
-        } else {
-            panic!("{}: path required but got {}", name, args[0]);
-        }
-    } else if argc == 2 {
-        todo!();
-    } else if argc == 3 {
-        todo!();
-    } else if argc == 4 {
-        match (args[0], args[1], args[2]) {
-            (
-                Object::String(path),
-                Object::SimpleStruct(_file_options),
-                Object::Symbol(buffer_mode),
-            ) => {
-                if buffer_mode.string.eq("block") || buffer_mode.string.eq("line") {
-                    match FileInputPort::open(&path.string) {
-                        Ok(port) => Ok(Object::FileInputPort(vm.gc.alloc(port))),
-                        Err(err) => {
-                            let who = vm.gc.new_string(name);
-                            let message = vm.gc.new_string(&format!("{}", err));
-                            return Err(error::Error::new(who, message, vm.gc.list1(args[0])));
-                        }
-                    }
-                } else if buffer_mode.string.eq("none") {
-                    todo!()
-                } else {
-                    panic!("{}: invalid buffer-mode option {}", name, args[2]);
-                }
-            }
-            _ => {
-                panic!(
-                    "{}: path, file-options and buffer-mode required but got {}, {} and {}",
-                    name, args[0], args[1], args[2]
-                )
-            }
-        }
+    let file = match File::open(path) {
+        Ok(file) => file,
+        Err(err) => return Error::error(name, &format!("{}", err), &[args[0]]),
+    };
+
+    // We also ignore buffer-mode so input port is always buffered.
+    let buffer_mode = if argc < 3 {
+        BufferMode::None
     } else {
-        todo!();
+        match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+            Some(mode) => mode,
+            None => {
+                return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+            }
+        }
+    };
+
+    if argc == 4 {
+        match args[3] {
+            Object::Transcoder(_) => transcoder = Some(args[3]),
+            Object::False => {}
+            _ => {
+                return Error::assertion_violation(name, "transcoder or #f required", &[args[3]]);
+            }
+        }
+    }
+
+    match transcoder {
+        Some(t) => {
+            let in_port = Object::BinaryFileInputPort(
+                vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
+            );
+            let port = TranscodedInputPort::new(in_port, t);
+            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
+        }
+        None => Ok(Object::BinaryFileInputPort(
+            vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
+        )),
     }
 }
-fn close_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-input-port";
     check_argc!(name, args, 1);
-    let port = args[0];
-    if !port.is_input_port() {
-        return Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "input_port required",
-            &[args[0]],
-        ));
-    }
-    match args[0] {
-        Object::BinaryFileInputPort(mut port) => port.close(),
-        Object::BytevectorInputPort(mut port) => port.close(),
-        Object::FileInputPort(mut port) => port.close(),
-        Object::StringInputPort(mut port) => port.close(),
-        _ => panic!(),
+    if args[0].is_binary_input_port() {
+        let port = as_binary_input_port_mut!(name, args, 0);
+        port.close();
+    } else if args[0].is_textual_input_port() {
+        let port = as_text_input_port_mut!(name, args, 0);
+        port.close();
+    } else {
+        return Error::assertion_violation(name, "input_port required", &[args[0]]);
     }
     Ok(Object::Unspecified)
 }
@@ -2679,9 +3195,26 @@ fn assq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     }
 }
-fn assoc(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn assoc(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "assoc";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let obj = args[0];
+    let list = args[1];
+    if !list.is_list() {
+        panic!("{}: list required but got {}", name, list);
+    }
+    let mut o = list;
+    loop {
+        if o.is_nil() {
+            break;
+        }
+        let e = Equal::new();
+        if e.is_equal(&mut vm.gc, &obj, &o.car_unchecked().car_unchecked()) {
+            return Ok(o.car_unchecked());
+        }
+        o = o.cdr_unchecked();
+    }
+    Ok(Object::False)
 }
 fn assv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "assv";
@@ -2755,7 +3288,7 @@ fn load(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_symbol(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "symbol?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_symbol()))
+    Ok(args[0].is_symbol().to_obj())
 }
 fn is_charle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "char<=?";
@@ -2871,23 +3404,14 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if argc == 0 {
         match vm.read() {
             Ok(obj) => Ok(obj),
-            Err(e) => Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                &format!("{:?}", e),
-                &[],
-            )),
+            Err(e) => Error::assertion_violation(name, &format!("{:?}", e), &[]),
         }
     } else if argc == 1 {
-        match args[0] {
-            Object::FileInputPort(mut port) => match port.read(&mut vm.gc) {
-                Ok(obj) => Ok(obj),
-                Err(err) => {
-                    panic!("{}: {:?} {:?}", name, err, port.reader.get_ref())
-                }
-            },
-            _ => {
-                panic!("{}: required input-port bug got {}", name, args[0]);
+        let port = as_text_input_port_mut!(name, args, 0);
+        match port.read(vm) {
+            Ok(obj) => Ok(obj),
+            Err(err) => {
+                panic!("{}: {:?}", name, err)
             }
         }
     } else {
@@ -3185,15 +3709,26 @@ fn set_symbol_value_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
         }
     }
 }
-fn make_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn make_hashtable(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-hashtable";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 3);
+    if args[0].is_callable() && args[1].is_callable() {
+        Ok(vm.gc.new_generic_hashtable(args[0], args[1]))
+    } else {
+        Error::assertion_violation(
+            name,
+            "hash function and eq function required",
+            &[args[0], args[1]],
+        )
+    }
 }
 fn is_hashtable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable?";
     check_argc!(name, args, 1);
     match args[0] {
         Object::EqHashtable(_) => Ok(Object::True),
+        Object::EqvHashtable(_) => Ok(Object::True),
+        Object::GenericHashtable(_) => Ok(Object::True),
         _ => Ok(Object::False),
     }
 }
@@ -3202,29 +3737,61 @@ fn hashtable_size(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     match args[0] {
         Object::EqHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
+        Object::EqvHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
+        Object::GenericHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
         }
     }
 }
-fn hashtable_delete_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_delete_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-delete!";
     check_argc!(name, args, 2);
     match args[0] {
-        Object::EqHashtable(mut hashtable) => hashtable.delte(args[1]),
+        Object::EqHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.delte(args[1])
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
+        Object::EqvHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.delte(EqvKey::new(args[1]))
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
+        Object::GenericHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                let key = args[1];
+                let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+                let key = GenericHashKey::new(hash_obj, key);
+                hashtable.delte(key);
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
         }
     }
     Ok(Object::Unspecified)
 }
-fn is_hashtable_contains(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_hashtable_contains(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-contains?";
     check_argc!(name, args, 2);
     match args[0] {
-        Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.contains(args[1]))),
+        Object::EqHashtable(hashtable) => Ok(hashtable.contains(args[1]).to_obj()),
+        Object::EqvHashtable(hashtable) => Ok(hashtable.contains(EqvKey::new(args[1])).to_obj()),
+        Object::GenericHashtable(hashtable) => {
+            let key = args[1];
+            let hash_obj = vm.call_closure1(hashtable.hash_func, key)?;
+            let key = GenericHashKey::new(hash_obj, key);
+            Ok(hashtable.contains(key).to_obj())
+        }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
         }
     }
 }
@@ -3244,8 +3811,35 @@ fn hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
             Ok(Object::EqHashtable(ret))
         }
+        Object::EqvHashtable(hashtable) => {
+            let mut ret = vm.gc.alloc(EqvHashtable::new());
+            for (key, value) in &hashtable.hash_map {
+                ret.set(*key, *value);
+            }
+            if args.len() == 2 && !args[1].is_false() {
+                ret.is_mutable = true;
+            } else {
+                ret.is_mutable = false;
+            }
+            Ok(Object::EqvHashtable(ret))
+        }
+        Object::GenericHashtable(hashtable) => {
+            let mut ret = vm.gc.alloc(GenericHashtable::new(
+                hashtable.hash_func,
+                hashtable.eq_func,
+            ));
+            for (key, value) in &hashtable.hash_map {
+                ret.set(*key, *value);
+            }
+            if args.len() == 2 && !args[1].is_false() {
+                ret.is_mutable = true;
+            } else {
+                ret.is_mutable = false;
+            }
+            Ok(Object::GenericHashtable(ret))
+        }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
         }
     }
 }
@@ -3253,7 +3847,9 @@ fn is_hashtable_mutable(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     let name: &str = "hashtable-mutable?";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::EqHashtable(hashtable) => Ok(Object::make_bool(hashtable.is_mutable())),
+        Object::EqHashtable(hashtable) => Ok(hashtable.is_mutable().to_obj()),
+        Object::EqvHashtable(hashtable) => Ok(hashtable.is_mutable().to_obj()),
+        Object::GenericHashtable(hashtable) => Ok(hashtable.is_mutable().to_obj()),
         _ => Ok(Object::False),
     }
 }
@@ -3261,21 +3857,55 @@ fn hashtable_clear_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Resu
     let name: &str = "hashtable-clear!";
     check_argc!(name, args, 1);
     match args[0] {
-        Object::EqHashtable(mut hashtable) => hashtable.clear(),
+        Object::EqHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.clear()
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
+        Object::EqvHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.clear()
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
+        Object::GenericHashtable(mut hashtable) => {
+            if hashtable.is_mutable() {
+                hashtable.clear()
+            } else {
+                return Error::assertion_violation(name, "hashtable is immutable", &[args[0]]);
+            }
+        }
         _ => {
-            panic!("{}: hashtable required but got {:?}", name, args)
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
         }
     }
     Ok(Object::Unspecified)
 }
 
-fn hashtable_equivalence_function(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn hashtable_equivalence_function(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-equivalence-function";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::EqHashtable(_) => Ok(vm.gc.new_procedure(is_eq, "eq?")),
+        Object::EqvHashtable(_) => Ok(vm.gc.new_procedure(is_eqv, "eqv?")),
+        Object::GenericHashtable(hashtable) => Ok(hashtable.eq_func),
+        _ => {
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+        }
+    }
 }
 fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "hashtable-hash-function";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::GenericHashtable(hashtable) => Ok(hashtable.hash_func),
+        _ => {
+            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+        }
+    }
 }
 // When non-continuable, we just print it and exit.
 fn throw(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3287,7 +3917,24 @@ fn throw(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "<";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::lt(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            panic!(
+                "{}: number required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
+        }
+    }
+    Ok(Object::True)
 }
 fn number_le(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "<=";
@@ -3295,7 +3942,23 @@ fn number_le(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = ">";
-    panic!("{}({}) not implemented", name, args.len());
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::gt(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            panic!(
+                "{}: number required but got {} {}",
+                name,
+                args[i],
+                args[i + 1]
+            );
+        }
+    }
+    Ok(Object::True)
 }
 fn number_ge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = ">=";
@@ -3444,43 +4107,33 @@ fn min(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     return Ok(min);
 }
-fn get_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.read_char(vm) {
+        Ok(Some(c)) => Ok(Object::Char(c)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e),
+    }
 }
-fn lookahead_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn lookahead_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-char";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::StringInputPort(mut port) => match port.lookahead_char() {
-            Some(c) => Ok(Object::Char(c)),
-            None => Ok(Object::Eof),
-        },
-        _ => {
-            panic!("{}: port required but got {}", name, args[0]);
-        }
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.lookahead_char(vm) {
+        Ok(Some(c)) => Ok(Object::Char(c)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e),
     }
 }
 fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-n";
     check_argc!(name, args, 2);
-    let n = as_usize!(name, args, 1, &mut vm.gc);
+    let n = as_usize!(name, args, 1);
     let mut s = String::new();
-    let result = match args[0] {
-        Object::FileInputPort(mut p) => p.read_n_to_string(&mut s, n),
-        Object::StdInputPort(mut p) => p.read_n_to_string(&mut s, n),
-        Object::StringInputPort(mut p) => p.read_n_to_string(&mut s, n),
-        _ => {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "text input port required",
-                &[args[0]],
-            ));
-        }
-    };
-
-    match result {
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.read_n_to_string(vm, &mut s, n) {
         Ok(_) => {
             if s.len() > 0 {
                 Ok(vm.gc.new_string(&s))
@@ -3492,40 +4145,74 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 }
 
-fn get_string_n_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-n!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let port = as_text_input_port_mut!(name, args, 0);
+    let mut dest = as_sstring!(name, args, 1);
+    let start = as_usize!(name, args, 2);
+    let count = as_usize!(name, args, 3);
+    if dest.len() < start + count {
+        return error::Error::assertion_violation(
+            name,
+            "string must be a string with at least start + count elements.",
+            args,
+        );
+    }
+    let mut s = String::new();
+    port.read_n_to_string(vm, &mut s, count).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
+    if s.is_empty() {
+        Ok(Object::Eof)
+    } else {
+        dest.string.replace_range(start..start + s.len(), &s);
+        Ok(s.len().to_obj(&mut vm.gc))
+    }
 }
-fn get_string_all(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_string_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-string-all";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_text_input_port_mut!(name, args, 0);
+    let mut s = String::new();
+    match port.read_to_string(vm, &mut s) {
+        Ok(_) => Ok(vm.gc.new_string(&s)),
+        Err(e) => Err(e),
+    }
 }
 fn get_line(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-line";
     check_argc!(name, args, 1);
     let mut s = String::new();
-    let result = match args[0] {
-        Object::FileInputPort(mut p) => p.read_line(&mut s),
-        Object::StdInputPort(mut p) => p.read_line(&mut s),
-        Object::StringInputPort(mut p) => p.read_line(&mut s),
-        _ => {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "text input port required",
-                &[args[0]],
-            ));
+    let port = as_text_input_port_mut!(name, args, 0);
+    match port.read_line(vm, &mut s) {
+        Ok(size) => {
+            if size == 0 {
+                Ok(Object::Eof)
+            } else {
+                Ok(vm.gc.new_string(&s))
+            }
         }
-    };
-
-    match result {
-        Ok(_) => Ok(vm.gc.new_string(&s)),
         Err(_) => Ok(Object::Eof),
     }
 }
-fn get_datum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn get_datum(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-datum";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_text_input_port_mut!(name, args, 0);
+    port.read(vm).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("read error {:?}", e),
+            &[args[0]],
+        )
+    })
 }
 fn is_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector?";
@@ -3555,9 +4242,14 @@ fn standard_library_path(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     check_argc!(name, args, 0);
     return Ok(vm.gc.new_string("."));
 }
-fn native_endianness(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn native_endianness(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-endianness";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    if cfg!(target_endian = "big") {
+        Ok(Object::Symbol(vm.gc.intern("big")))
+    } else {
+        Ok(Object::Symbol(vm.gc.intern("little")))
+    }
 }
 fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-bytevector";
@@ -3565,10 +4257,7 @@ fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let value: u8 = if args.len() == 1 {
         0
     } else {
-        match args[1] {
-            Object::Fixnum(n) if n >= 0 && n <= 255 => n as u8,
-            _ => panic!("{}: u8 value required but got {}", name, args[1]),
-        }
+        as_u8!(name, args, 1)
     };
     match args[0] {
         Object::Fixnum(len) => {
@@ -3587,7 +4276,10 @@ fn is_bytevectorequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
 }
 fn bytevector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-fill!";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut bv = as_bytevector!(name, args, 0);
+    let value = as_u8!(name, args, 1);
+    bv.fill(value);
+    Ok(Object::Unspecified)
 }
 fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-copy!";
@@ -3647,7 +4339,7 @@ fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 2);
     match (args[0], args[1]) {
         (Object::Bytevector(bv), Object::Fixnum(index)) => match bv.ref_u8(index as usize) {
-            Some(v) => Ok(Object::Fixnum(*v as isize)),
+            Some(v) => Ok(Object::Fixnum(v as isize)),
             None => panic!("{}: index out of range {}", name, index),
         },
         _ => {
@@ -3661,11 +4353,37 @@ fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
 
 fn bytevector_s8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s8-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::Bytevector(bv), Object::Fixnum(index)) => match bv.ref_i8(index as usize) {
+            Some(v) => Ok(Object::Fixnum(v as isize)),
+            None => panic!("{}: index out of range {}", name, index),
+        },
+        _ => {
+            panic!(
+                "{}: bytevector and index required but got {} and {}",
+                name, args[0], args[1]
+            )
+        }
+    }
 }
 fn bytevector_s8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s8-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    match (args[0], args[1], args[2]) {
+        (Object::Bytevector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
+            if (index as usize) < bv.len() && v >= -128 && v <= 127 =>
+        {
+            bv.set_i8_unchecked(index as usize, v as i8);
+            Ok(Object::Unspecified)
+        }
+        _ => {
+            panic!(
+                "{}: bytevector index i8 value required but got {}, {} and {}",
+                name, args[0], args[1], args[2]
+            );
+        }
+    }
 }
 fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector->u8-list";
@@ -3693,25 +4411,79 @@ fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         }
     }
 }
-fn bytevector_u16_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u16_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u16-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_u16_little(index)
+    } else {
+        bv.ref_u16_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_s16_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s16_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s16-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_s16_little(index)
+    } else {
+        bv.ref_s16_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_u16_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u16-native-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let ret = if cfg!(target_endian = "big") {
+        bv.ref_u16_big(index)
+    } else {
+        bv.ref_u16_little(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_s16_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s16-native-ref";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u16_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u16_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u16-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let value = as_isize!(name, args, 2) as u16;
+    let _endianness = as_symbol!(name, args, 3);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
+        bv.set_u16_little(index, value)
+    } else {
+        bv.set_u16_big(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_s16_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s16-set!";
@@ -3722,7 +4494,22 @@ fn bytevector_u16_native_set_destructive(
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-u16-native-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let value = as_isize!(name, args, 2) as u16;
+    let ret = if cfg!(target_endian = "big") {
+        bv.set_u16_big(index, value)
+    } else {
+        bv.set_u16_little(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_s16_native_set_destructive(
     _vm: &mut Vm,
@@ -3731,13 +4518,37 @@ fn bytevector_s16_native_set_destructive(
     let name: &str = "bytevector-s16-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u32_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u32_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u32-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_u32_little(index)
+    } else {
+        bv.ref_u32_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_s32_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s32_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s32-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_s32_little(index)
+    } else {
+        bv.ref_s32_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_u32_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u32-native-ref";
@@ -3769,13 +4580,37 @@ fn bytevector_s32_native_set_destructive(
     let name: &str = "bytevector-s32-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_u64_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u64-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_u64_little(index)
+    } else {
+        bv.ref_u64_big(index)
+    };
+    match ret {
+        Some(v) => Ok(v.to_obj(&mut vm.gc)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_s64_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s64-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_s64_little(index)
+    } else {
+        bv.ref_s64_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_u64_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u64-native-ref";
@@ -3807,13 +4642,43 @@ fn bytevector_s64_native_set_destructive(
     let name: &str = "bytevector-s64-native-set!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn bytevector_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector->string";
-    panic!("{}({}) not implemented", name, args.len());
+    let bv = as_bytevector!(name, args, 0);
+    let mut transcoder = as_transcoder!(name, args, 1);
+
+    let mut raw_port = BytevectorInputPort::new(&bv.data);
+    let port: &mut dyn BinaryInputPort = &mut raw_port;
+
+    // Set the port to i/o decoding error.
+    let s = &transcoder.read_string(vm, port).map_err(|mut e| {
+        e.irritants = vec![Object::BytevectorInputPort(vm.gc.alloc(raw_port))];
+        e
+    })?;
+    Ok(vm.gc.new_string(s))
 }
-fn string_to_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->bytevector";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let text = as_sstring!(name, args, 0);
+    let _transcoder = as_transcoder!(name, args, 1);
+    let transcoder = args[1];
+    let out_port = Object::BytevectorOutputPort(vm.gc.alloc(BytevectorOutputPort::new()));
+
+    let mut port = TranscodedOutputPort::new(out_port, transcoder);
+    for ch in text.string.chars() {
+        port.write_char(ch).map_err(|e| {
+            Error::new(
+                ErrorType::IoEncodingError,
+                name,
+                &format!("write error {}", e.to_string()),
+                &[Object::Char(ch), out_port],
+            )
+        })?;
+    }
+    Ok(out_port
+        .to_bytevector_output_port()
+        .to_bytevector(&mut vm.gc))
 }
 fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf8";
@@ -3852,47 +4717,201 @@ fn null_terminated_utf8_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::R
     let name: &str = "null-terminated-utf8->string";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn string_to_utf16(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_to_utf16(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf16";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let is_little = if args.len() == 2 {
+        args[1] == vm.gc.symbol_intern("little")
+    } else {
+        false // Default is Big.
+    };
+    let s = as_sstring!(name, args, 0);
+    let utf16_bytes: Vec<u16> = s.encode_utf16().collect();
+    let mut data = Vec::new();
+    for u in utf16_bytes {
+        if is_little {
+            let bytes = u.to_le_bytes();
+            data.extend_from_slice(&bytes);
+        } else {
+            let bytes = u.to_be_bytes();
+            data.extend_from_slice(&bytes);
+        }
+    }
+    Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&data))))
 }
-fn string_to_utf32(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn string_to_utf32(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "string->utf32";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let is_little = if args.len() == 2 {
+        args[1] == vm.gc.symbol_intern("little")
+    } else {
+        false // Default is Big.
+    };
+    let s = as_sstring!(name, args, 0);
+    let chars: Vec<char> = s.chars().collect();
+    let mut data = Vec::new();
+    for ch in chars.iter() {
+        if is_little {
+            let bytes = (*ch as u32).to_le_bytes();
+            data.extend_from_slice(&bytes);
+        } else {
+            let bytes = (*ch as u32).to_be_bytes();
+            data.extend_from_slice(&bytes);
+        }
+    }
+    Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&data))))
 }
-fn utf16_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+
+#[derive(Clone, Debug, PartialEq)]
+enum BomType {
+    Le,
+    Be,
+    No,
+}
+
+fn utf16_bom_type(bv: &GcRef<Bytevector>) -> BomType {
+    if bv.len() >= 2 {
+        if bv.data[0] == 0xfe && bv.data[1] == 0xff {
+            BomType::Be
+        } else if bv.data[0] == 0xff && bv.data[1] == 0xfe {
+            BomType::Le
+        } else {
+            BomType::No
+        }
+    } else {
+        BomType::No
+    }
+}
+
+fn u8_to_u16(input: &[u8], is_little_endian: bool) -> Vec<u16> {
+    let mut output: Vec<u16> = Vec::with_capacity(input.len() / 2);
+
+    for chunk in input.chunks_exact(2) {
+        let value = if is_little_endian {
+            u16::from_le_bytes([chunk[0], chunk[1]])
+        } else {
+            u16::from_be_bytes([chunk[0], chunk[1]])
+        };
+        output.push(value);
+    }
+    output
+}
+
+fn utf16_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf16->string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let mut endianness = BomType::No;
+    let mut skip_bom = false;
+    if args.len() == 2 {
+        endianness = utf16_bom_type(&bv);
+        if endianness != BomType::No {
+            skip_bom = true;
+        }
+    }
+
+    let endianness_mandatory = args.len() == 3 && !args[2].is_false();
+    if endianness_mandatory || endianness == BomType::No {
+        let _endianness_sym = as_symbol!(name, args, 1);
+        if args[1] == vm.gc.symbol_intern("little") {
+            endianness = BomType::Le;
+        } else if args[1] == vm.gc.symbol_intern("big") {
+            endianness = BomType::Be;
+        } else {
+            return error::Error::assertion_violation(
+                name,
+                "endianness should be little or big",
+                &[args[1]],
+            );
+        }
+    }
+    let is_little = endianness == BomType::Le;
+    let skip_size = if skip_bom { 2 } else { 0 };
+    let data = &bv.data[skip_size..];
+    let u16_data = u8_to_u16(data, is_little);
+    let s = String::from_utf16_lossy(&u16_data);
+    Ok(vm.gc.new_string(&s))
 }
-fn utf32_to_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+
+fn utf32_bom_type(bv: &GcRef<Bytevector>) -> BomType {
+    if bv.len() >= 4 {
+        if bv.data[0] == 0x00 && bv.data[1] == 0x00 && bv.data[2] == 0xfe && bv.data[3] == 0xff {
+            BomType::Be
+        } else if bv.data[3] == 0x00
+            && bv.data[2] == 0x00
+            && bv.data[1] == 0xfe
+            && bv.data[0] == 0xff
+        {
+            BomType::Le
+        } else {
+            BomType::No
+        }
+    } else {
+        BomType::No
+    }
+}
+
+fn utf32_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "utf32->string";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 2, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let mut endianness = BomType::No;
+    let mut skip_bom = false;
+    if args.len() == 2 {
+        endianness = utf32_bom_type(&bv);
+        if endianness != BomType::No {
+            skip_bom = true;
+        }
+    }
+
+    let endianness_mandatory = args.len() == 3 && !args[2].is_false();
+    if endianness_mandatory || endianness == BomType::No {
+        let _endianness_sym = as_symbol!(name, args, 1);
+        if args[1] == vm.gc.symbol_intern("little") {
+            endianness = BomType::Le;
+        } else if args[1] == vm.gc.symbol_intern("big") {
+            endianness = BomType::Be;
+        } else {
+            return error::Error::assertion_violation(
+                name,
+                "endianness should be little or big",
+                &[args[1]],
+            );
+        }
+    }
+    let is_little = endianness == BomType::Le;
+    let skip_size = if skip_bom { 4 } else { 0 };
+    let data = &bv.data[skip_size..];
+    let mut s = String::new();
+    let mut i = 0;
+    loop {
+        if i + 4 > data.len() {
+            break;
+        }
+        let bytes = &data[i..i + 4];
+        let value: u32 = match is_little {
+            true => LittleEndian::read_u32(bytes),
+            false => BigEndian::read_u32(bytes),
+        };
+        match char::from_u32(value) {
+            Some(ch) => s.push(ch),
+            None => {
+                return error::Error::assertion_violation(
+                    name,
+                    &format!("invalid utf32 char {:x}", value),
+                    &[args[0]],
+                );
+            }
+        }
+        i = i + 4;
+    }
+    Ok(vm.gc.new_string(&s))
 }
-fn close_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn close_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "close-port";
     check_argc!(name, args, 1);
-    let port = args[0];
-    if !port.is_port() {
-        return Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            "port required",
-            &[args[0]],
-        ));
-    }
-    match args[0] {
-        Object::BinaryFileInputPort(mut port) => port.close(),
-        Object::BinaryFileOutputPort(mut port) => port.close(),
-        Object::BytevectorInputPort(mut port) => port.close(),
-        Object::BytevectorOutputPort(mut port) => port.close(),
-        Object::FileInputPort(mut port) => port.close(),
-        Object::FileOutputPort(mut port) => port.close(),
-        Object::StdErrorPort(mut port) => port.close(),
-        Object::StdOutputPort(mut port) => port.close(),
-        Object::StringInputPort(mut port) => port.close(),
-        Object::StringOutputPort(mut port) => port.close(),
-        _ => panic!(),
-    }
+    let port = as_port_mut!(name, args, 0);
+    port.close();
     Ok(Object::Unspecified)
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3938,7 +4957,12 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match fasl.read(&mut vm.gc) {
             Ok(sexp) => Ok(sexp),
             Err(err) => {
-                panic!("{}: {} {}", name, err, args[0])
+                return Err(error::Error::new(
+                    ErrorType::IoError,
+                    name,
+                    &format!("{}", err.to_string()),
+                    &[args[0]],
+                ))
             }
         }
     } else {
@@ -3949,7 +4973,7 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_rational(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "rational?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_rational()))
+    Ok(args[0].is_rational().to_obj())
 }
 fn is_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flonum?";
@@ -3958,7 +4982,10 @@ fn is_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fixnum?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_number()))
+    match args[0] {
+        Object::Fixnum(_) => Ok(Object::True),
+        _ => Ok(Object::False),
+    }
 }
 fn is_bignum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bignum?";
@@ -3966,17 +4993,18 @@ fn is_bignum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn fixnum_width(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fixnum-width";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(Object::Fixnum(isize::BITS as isize))
 }
 fn least_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
-    let name: &str = "greatest-fixnum";
+    let name: &str = "least-fixnum";
     check_argc!(name, args, 0);
-    Ok(Object::Fixnum(-(2_isize.pow(62))))
+    Ok(Object::Fixnum(isize::MIN))
 }
 fn greatest_fixnum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "greatest-fixnum";
     check_argc!(name, args, 0);
-    Ok(Object::Fixnum(2_isize.pow(62) - 1))
+    Ok(Object::Fixnum(isize::MAX))
 }
 fn make_rectangular(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-rectangular";
@@ -4010,12 +5038,12 @@ fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "exact?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_exact()))
+    Ok(args[0].is_exact().to_obj())
 }
 fn is_inexact(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "inexact?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(!args[0].is_exact()))
+    Ok((!args[0].is_exact()).to_obj())
 }
 fn exact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "exact";
@@ -4034,26 +5062,29 @@ fn inexact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_nan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "nan?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
+    Ok((match args[0] {
         Object::Flonum(fl) => fl.is_nan(),
         _ => false,
-    }))
+    })
+    .to_obj())
 }
 fn is_infinite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "infinite?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
+    Ok((match args[0] {
         Object::Flonum(fl) => fl.is_infinite(),
         _ => false,
-    }))
+    })
+    .to_obj())
 }
 fn is_finite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "finite?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
+    Ok((match args[0] {
         Object::Flonum(fl) => fl.is_finite(),
         _ => true,
-    }))
+    })
+    .to_obj())
 }
 fn real_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real->flonum";
@@ -4061,439 +5092,1305 @@ fn real_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_flequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i);
+        let fl2 = as_f64!(name, args, i + 1);
+        if fl1 == fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fllt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl<?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i);
+        let fl2 = as_f64!(name, args, i + 1);
+        if fl1 < fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_flgt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i);
+        let fl2 = as_f64!(name, args, i + 1);
+        if fl1 > fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_flge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl>=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i);
+        let fl2 = as_f64!(name, args, i + 1);
+        if fl1 >= fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_flle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl<=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fl1 = as_f64!(name, args, i);
+        let fl2 = as_f64!(name, args, i + 1);
+        if fl1 <= fl2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_flinteger(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinteger?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0);
+    Ok(fl.is_integer().to_obj())
 }
 fn is_flzero(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flzero?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(fl.is_zero().to_obj())
 }
 fn is_flpositive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flpositive?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok((fl > 0.0).to_obj())
 }
 fn is_flnegative(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnegative?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok((fl < 0.0).to_obj())
 }
 fn is_flodd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flodd?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0);
+    Ok((!fl.is_even()).to_obj())
 }
 fn is_fleven(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fleven?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0);
+    Ok(fl.is_even().to_obj())
 }
 fn is_flfinite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfinite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(fl.is_finite().to_obj())
 }
 fn is_flinfinite(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flinfinite?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(fl.is_infinite().to_obj())
 }
 fn is_flnan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnan?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(fl.is_nan().to_obj())
 }
 fn flmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmax";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut max = f64::NEG_INFINITY;
+    for i in 0..args.len() {
+        let fl = as_f64!(name, args, i);
+        if fl.is_nan() {
+            return Ok(Object::Flonum(Flonum::new(f64::NAN)));
+        }
+        if fl > max {
+            max = fl;
+        }
+    }
+    Ok(Object::Flonum(Flonum::new(max)))
 }
 fn flmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut min = f64::INFINITY;
+    for i in 0..args.len() {
+        let fl = as_f64!(name, args, i);
+        if fl.is_nan() {
+            return Ok(Object::Flonum(Flonum::new(f64::NAN)));
+        }
+        if fl < min {
+            min = fl;
+        }
+    }
+    Ok(Object::Flonum(Flonum::new(min)))
 }
 fn fladd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl+";
-    panic!("{}({}) not implemented", name, args.len());
+    let argc = args.len();
+    if 0 == argc {
+        Ok(Object::Flonum(Flonum::new(0.0)))
+    } else if 1 == argc {
+        let _ = as_f64!(name, args, 0);
+        Ok(args[0])
+    } else {
+        let mut ret = 0.0;
+        for i in 0..args.len() {
+            let fl = as_f64!(name, args, i);
+            ret += fl;
+        }
+        Ok(Object::Flonum(Flonum::new(ret)))
+    }
 }
 fn flmul(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl*";
-    panic!("{}({}) not implemented", name, args.len());
+    let argc = args.len();
+    if 0 == argc {
+        Ok(Object::Flonum(Flonum::new(1.0)))
+    } else if 1 == argc {
+        let _ = as_f64!(name, args, 0);
+        Ok(args[0])
+    } else {
+        let mut ret = 1.0;
+        for i in 0..args.len() {
+            let fl = as_f64!(name, args, i);
+            ret *= fl;
+        }
+        Ok(Object::Flonum(Flonum::new(ret)))
+    }
 }
-fn flsub(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl-";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    if args.len() == 1 {
+        return Ok(args[0].neg(&mut vm.gc));
+    }
+
+    let mut ret = fl;
+    for i in 1..args.len() {
+        let fl = as_f64!(name, args, i);
+        ret -= fl;
+    }
+    Ok(Object::Flonum(Flonum::new(ret)))
 }
-fn fldiv_op(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fldiv_op(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fl/";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    if args.len() == 1 {
+        match numbers::div(&mut vm.gc, Object::Flonum(Flonum::new(1.0)), args[0]) {
+            Ok(v) => return Ok(v),
+            Err(_) => {
+                return Error::assertion_violation(
+                    name,
+                    "division by zero",
+                    &[args[0], args[1], args[2], args[3]],
+                );
+            }
+        }
+    }
+
+    let mut ret = fl;
+    for i in 1..args.len() {
+        let fl = as_f64!(name, args, i);
+        ret /= fl;
+    }
+    Ok(Object::Flonum(Flonum::new(ret)))
 }
 fn flabs(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flabs";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.abs())))
 }
 fn fldiv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldiv";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0);
+    let fl2 = as_flonum!(name, args, 1);
+    Ok(Object::Flonum(fl1.integer_div(&fl2)))
 }
 fn flmod(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmod";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0);
+    let fl2 = as_flonum!(name, args, 1);
+    Ok(Object::Flonum(fl1.integer_mod(&fl2)))
 }
 fn fldiv0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldiv0";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0);
+    let fl2 = as_flonum!(name, args, 1);
+    Ok(Object::Flonum(fl1.integer_div0(&fl2)))
 }
 fn flmod0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmod0";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_flonum!(name, args, 0);
+    let fl2 = as_flonum!(name, args, 1);
+    Ok(Object::Flonum(fl1.integer_mod0(&fl2)))
 }
-fn flnumerator(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn flnumerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flnumerator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0);
+    Ok(fl.numerator(&mut vm.gc))
 }
-fn fldenominator(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn fldenominator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fldenominator";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_flonum!(name, args, 0);
+    Ok(fl.denominator(&mut vm.gc))
 }
 fn flfloor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flfloor";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.floor())))
 }
 fn flceiling(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flceiling";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.ceil())))
 }
 fn fltruncate(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fltruncate";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.trunc())))
 }
 fn flround(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flround";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.round())))
 }
 fn flexp(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flexp";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.exp())))
 }
 fn fllog(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fllog";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let fl1 = as_f64!(name, args, 0);
+    if args.len() == 1 {
+        Ok(Object::Flonum(Flonum::new(fl1.ln())))
+    } else {
+        let fl2 = as_f64!(name, args, 1);
+        Ok(Object::Flonum(Flonum::new(fl1.log(fl2))))
+    }
 }
 fn flsin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flsin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.sin())))
 }
 fn flcos(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flcos";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.cos())))
 }
 fn fltan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fltan";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.tan())))
 }
 fn flasin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flasin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.asin())))
 }
 fn flacos(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flacos";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.acos())))
 }
 fn flatan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flatan";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let fl1 = as_f64!(name, args, 0);
+    if args.len() == 1 {
+        Ok(Object::Flonum(Flonum::new(fl1.atan())))
+    } else {
+        let fl2 = as_f64!(name, args, 1);
+        Ok(Object::Flonum(Flonum::new(fl1.atan2(fl2))))
+    }
 }
 fn flsqrt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flsqrt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fl = as_f64!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fl.sqrt())))
 }
 fn flexpt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flexpt";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fl1 = as_f64!(name, args, 0);
+    let fl2 = as_f64!(name, args, 1);
+    Ok(Object::Flonum(Flonum::new(fl1.powf(fl2))))
 }
 fn fixnum_to_flonum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fixnum->flonum";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0);
+    Ok(Object::Flonum(Flonum::new(fx1.to_f64().unwrap())))
 }
-fn bitwise_not(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_not(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-not";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => Ok(Object::Fixnum(!fx)),
+        Object::Bignum(b) => Ok((!b.value.clone()).to_obj(&mut vm.gc)),
+        _ => Error::assertion_violation(name, "exact integer required", &[args[0]]),
+    }
 }
-fn bitwise_and(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_and(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-and";
-    panic!("{}({}) not implemented", name, args.len());
+    if args.len() == 0 {
+        Ok(Object::Fixnum(-1))
+    } else if args.len() == 1 {
+        Ok(args[0])
+    } else {
+        let mut accum = match args[0] {
+            Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+            Object::Bignum(b) => b.value.clone(),
+            _ => {
+                return Error::assertion_violation(name, "exact integer required", &[args[0]]);
+            }
+        };
+        for i in 1..args.len() {
+            let v = match args[i] {
+                Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+                Object::Bignum(b) => b.value.clone(),
+                _ => {
+                    return Error::assertion_violation(name, "exact integer required", &[args[0]]);
+                }
+            };
+            accum = accum & v;
+        }
+        Ok(accum.to_obj(&mut vm.gc))
+    }
 }
-fn bitwise_ior(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_ior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-ior";
-    panic!("{}({}) not implemented", name, args.len());
+    if args.len() == 0 {
+        Ok(Object::Fixnum(-1))
+    } else if args.len() == 1 {
+        Ok(args[0])
+    } else {
+        let mut accum = match args[0] {
+            Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+            Object::Bignum(b) => b.value.clone(),
+            _ => {
+                return Error::assertion_violation(name, "exact integer required", &[args[0]]);
+            }
+        };
+        for i in 1..args.len() {
+            let v = match args[i] {
+                Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+                Object::Bignum(b) => b.value.clone(),
+                _ => {
+                    return Error::assertion_violation(name, "exact integer required", &[args[0]]);
+                }
+            };
+            accum = accum | v;
+        }
+        Ok(accum.to_obj(&mut vm.gc))
+    }
 }
-fn bitwise_xor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_xor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-xor";
-    panic!("{}({}) not implemented", name, args.len());
+    if args.len() == 0 {
+        Ok(Object::Fixnum(0))
+    } else if args.len() == 1 {
+        Ok(args[0])
+    } else {
+        let mut accum = match args[0] {
+            Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+            Object::Bignum(b) => b.value.clone(),
+            _ => {
+                return Error::assertion_violation(name, "exact integer required", &[args[0]]);
+            }
+        };
+        for i in 1..args.len() {
+            let v = match args[i] {
+                Object::Fixnum(fx) => BigInt::from_isize(fx).unwrap(),
+                Object::Bignum(b) => b.value.clone(),
+                _ => {
+                    return Error::assertion_violation(name, "exact integer required", &[args[0]]);
+                }
+            };
+            accum = accum ^ v;
+        }
+        Ok(accum.to_obj(&mut vm.gc))
+    }
 }
+
+fn bigint_count_ones(b: &BigInt) -> usize {
+    let mut num: usize = 0;
+    let mut value = b.clone();
+    let one = BigInt::from_isize(1).unwrap();
+    while !value.is_zero() {
+        if value.clone() & one.clone() == one {
+            num += 1;
+        }
+        value = value >> 1;
+    }
+    num
+}
+
 fn bitwise_bit_count(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-bit-count";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => {
+            if fx >= 0 {
+                Ok(Object::Fixnum(fx.count_ones() as isize))
+            } else {
+                let v = (!fx).count_ones() as isize;
+                Ok(Object::Fixnum(!v))
+            }
+        }
+        Object::Bignum(b) => {
+            if b.value >= BigInt::from_isize(0).unwrap() {
+                Ok(Object::Fixnum(bigint_count_ones(&b.value) as isize))
+            } else {
+                let v = bigint_count_ones(&(!b.value.clone())) as isize;
+                Ok(Object::Fixnum(!v))
+            }
+        }
+        _ => Error::assertion_violation(name, "exact integer required", &[args[0]]),
+    }
 }
 fn bitwise_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-length";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => {
+            let size_in_bytes = mem::size_of::<isize>();
+            let size_in_bits = size_in_bytes * 8;
+            let fx = if fx < 0 { !fx } else { fx };
+            Ok(Object::Fixnum(
+                (size_in_bits - fx.leading_zeros() as usize) as isize,
+            ))
+        }
+        Object::Bignum(b) => {
+            let b = if b.value < BigInt::from_isize(0).unwrap() {
+                !b.value.clone()
+            } else {
+                b.value.clone()
+            };
+            Ok(Object::Fixnum((b.bits()) as isize))
+        }
+        _ => Error::assertion_violation(name, "exact integer required", &[args[0]]),
+    }
 }
 fn bitwise_first_bit_set(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-first-bit-set";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    match args[0] {
+        Object::Fixnum(fx) => {
+            if fx == 0 {
+                Ok(Object::Fixnum(-1))
+            } else {
+                let idx = fx.trailing_zeros();
+                Ok(Object::Fixnum(idx as isize))
+            }
+        }
+        Object::Bignum(b) => match b.trailing_zeros() {
+            Some(idx) => Ok(Object::Fixnum(idx as isize)),
+            None => Ok(Object::Fixnum(-1)),
+        },
+        _ => Error::assertion_violation(name, "exact integer required", &[args[0]]),
+    }
 }
-fn bitwise_arithmetic_shift_left(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_arithmetic_shift_left(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-arithmetic-shift-left";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let offset = as_isize!(name, args, 1);
+    if offset < 0 {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+    match args[0] {
+        Object::Fixnum(fx) => {
+            let b = BigInt::from_isize(fx).unwrap();
+            let shifted = b << offset;
+            Ok(shifted.to_obj(&mut vm.gc))
+        }
+        Object::Bignum(b) => {
+            let shifted = b.value.clone() << offset;
+            Ok(shifted.to_obj(&mut vm.gc))
+        }
+        _ => Error::assertion_violation(name, "exact integer required", &[args[0]]),
+    }
 }
-fn bitwise_arithmetic_shift_right(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_arithmetic_shift_right(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-arithmetic-shift-right";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let offset = as_isize!(name, args, 1);
+    if offset < 0 {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+    match args[0] {
+        Object::Fixnum(fx) => {
+            let b = BigInt::from_isize(fx).unwrap();
+            let shifted = b >> offset;
+            Ok(shifted.to_obj(&mut vm.gc))
+        }
+        Object::Bignum(b) => {
+            let shifted = b.value.clone() >> offset;
+            Ok(shifted.to_obj(&mut vm.gc))
+        }
+        _ => Error::assertion_violation(name, "exact integer required", &[args[0]]),
+    }
 }
-fn bitwise_arithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bitwise_arithmetic_shift(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-arithmetic-shift";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    match (args[0], args[1]) {
+        (Object::Bignum(b), Object::Fixnum(fx)) => {
+            if fx >= 0 {
+                let shifted = b.value.clone() << fx;
+                Ok(shifted.to_obj(&mut vm.gc))
+            } else {
+                let shifted = b.value.clone() >> (-fx);
+                Ok(shifted.to_obj(&mut vm.gc))
+            }
+        }
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => {
+            let b = BigInt::from_isize(fx1).unwrap();
+            if fx2 >= 0 {
+                let shifted = b << fx2;
+                Ok(shifted.to_obj(&mut vm.gc))
+            } else {
+                let shifted = b >> (-fx2);
+                Ok(shifted.to_obj(&mut vm.gc))
+            }
+        }
+        _ => Error::assertion_violation(name, "exact integer required", &[args[0]]),
+    }
 }
 fn is_complex(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "complex?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_complex()))
+    Ok(args[0].is_complex().to_obj())
 }
 fn is_real(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_real()))
+    Ok(args[0].is_real().to_obj())
 }
 
 fn is_integer(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "integer?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_integer(&mut vm.gc)))
+    Ok(args[0].is_integer(&mut vm.gc).to_obj())
 }
 fn is_real_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "real-valued?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let n = args[0];
+    if n.is_number() && n.is_real_valued() {
+        Ok(Object::True)
+    } else {
+        Ok(Object::False)
+    }
 }
 fn is_rational_valued(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "rational-valued?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let n = args[0];
+    if n.is_number() && n.is_rational_valued() {
+        Ok(Object::True)
+    } else {
+        Ok(Object::False)
+    }
 }
 fn is_integer_valued(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "integer-valued?";
     check_argc!(name, args, 1);
 
     if args[0].is_number() {
-        Ok(Object::make_bool(args[0].is_integer_valued(&mut vm.gc)))
+        Ok(args[0].is_integer_valued(&mut vm.gc).to_obj())
     } else {
         Ok(Object::False)
     }
 }
 fn is_fxequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i);
+        let fx2 = as_isize!(name, args, i + 1);
+        if fx1 == fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fxgt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx>?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i);
+        let fx2 = as_isize!(name, args, i + 1);
+        if fx1 > fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fxlt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx<?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i);
+        let fx2 = as_isize!(name, args, i + 1);
+        if fx1 < fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fxge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx>=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i);
+        let fx2 = as_isize!(name, args, i + 1);
+        if fx1 >= fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fxle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx<=?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        let fx1 = as_isize!(name, args, i);
+        let fx2 = as_isize!(name, args, i + 1);
+        if fx1 <= fx2 {
+            continue;
+        } else {
+            return Ok(Object::False);
+        }
+    }
+    Ok(Object::True)
 }
 fn is_fxzero(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxzero?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok((fx == 0).to_obj())
 }
 fn is_fxpositive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxpositive?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok((fx > 0).to_obj())
 }
 fn is_fxnegative(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxnegative?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok((fx < 0).to_obj())
 }
 fn is_fxodd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxodd?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok((fx % 2 != 0).to_obj())
 }
 fn is_fxeven(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxeven?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok((fx % 2 == 0).to_obj())
 }
 fn fxmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmax";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut max = isize::MIN;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i);
+        if fx > max {
+            max = fx
+        }
+    }
+    Ok(Object::Fixnum(max))
 }
 fn fxmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmin";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut min = isize::MAX;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i);
+        if fx < min {
+            min = fx
+        }
+    }
+    Ok(Object::Fixnum(min))
 }
 fn fxadd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx+";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    match fx1.checked_add(fx2) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::implementation_restriction_violation(
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
 fn fxmul(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx*";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    match fx1.checked_mul(fx2) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::implementation_restriction_violation(
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
 fn fxsub(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fx-";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    let fx1 = as_isize!(name, args, 0);
+    if args.len() == 1 {
+        match fx1.checked_neg() {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::implementation_restriction_violation(
+                name,
+                "result is not fixnum",
+                &[args[0]],
+            ),
+        }
+    } else {
+        let fx2 = as_isize!(name, args, 1);
+        match fx1.checked_sub(fx2) {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::implementation_restriction_violation(
+                name,
+                "result is not fixnum",
+                &[args[0], args[1]],
+            ),
+        }
+    }
 }
 fn fxdiv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxdiv";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    match fx1.integer_div(fx2) {
+        Ok(v) => Ok(Object::Fixnum(v)),
+        Err(SchemeError::Overflow) => Error::implementation_restriction_violation(
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+        _ => Error::assertion_violation(name, "result is not fixnum", &[args[0], args[1]]),
+    }
 }
 fn fxmod(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmod";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    match fx1.modulo(fx2) {
+        Ok(v) => Ok(Object::Fixnum(v)),
+        Err(e) => Error::assertion_violation(name, &format!("{:?}", e), &[args[0], args[1]]),
+    }
 }
 fn fxdiv0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxdiv0";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    match fx1.div0(fx2) {
+        Ok(v) => Ok(Object::Fixnum(v)),
+        Err(SchemeError::Overflow) => Error::implementation_restriction_violation(
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+        _ => Error::assertion_violation(name, "result is not fixnum", &[args[0], args[1]]),
+    }
 }
 fn fxmod0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmod0";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    match fx1.modulo0(fx2) {
+        Ok(v) => Ok(Object::Fixnum(v)),
+        Err(_) => Error::assertion_violation(name, "result is not fixnum", &[args[0], args[1]]),
+    }
 }
 fn fxnot(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxnot";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok(Object::Fixnum(!fx))
 }
 fn fxand(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxand";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut ret = -1;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i);
+        ret = ret & fx;
+    }
+    Ok(Object::Fixnum(ret))
 }
 fn fxior(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxior";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut ret = 0;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i);
+        ret = ret | fx;
+    }
+    Ok(Object::Fixnum(ret))
 }
 fn fxxor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxxor";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let mut ret = 0;
+    for i in 0..args.len() {
+        let fx = as_isize!(name, args, i);
+        ret = ret ^ fx;
+    }
+    Ok(Object::Fixnum(ret))
 }
 fn fxif(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxif";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    let fx3 = as_isize!(name, args, 2);
+    Ok(Object::Fixnum(isize::fxif(fx1, fx2, fx3)))
 }
 fn fxbit_count(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-count";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok(Object::Fixnum(fx.bit_count() as isize))
 }
 fn fxlength(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxlength";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    Ok(Object::Fixnum(fx.length() as isize))
 }
 fn fxfirst_bit_set(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxfirst-bit-set";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let fx = as_isize!(name, args, 0);
+    if fx == 0 {
+        Ok(Object::Fixnum(-1))
+    } else {
+        Ok(Object::Fixnum(fx.trailing_zeros() as isize))
+    }
 }
 fn is_fxbit_set(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-set?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    if fx2 > (isize::BITS as isize) || fx2 < 0 {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+    Ok((((fx1 >> fx2) & 1) == 1).to_obj())
 }
 fn fxcopy_bit(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    let fx3 = as_isize!(name, args, 2);
+
+    if (fx2 < 0 || fx2 >= (isize::BITS as isize)) || (fx3 != 0 && fx3 != 1) {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+    let mask = 1 << fx2;
+    Ok(Object::Fixnum(isize::fxif(mask, fx3 << fx2, fx1)))
 }
 fn fxbit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    let fx3 = as_isize!(name, args, 2);
+
+    if (fx2 < 0 || fx2 >= (isize::BITS as isize))
+        || (fx3 < 0 || fx3 >= (isize::BITS as isize))
+        || fx2 > fx3
+    {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+    Ok(Object::Fixnum(isize::fxbitfield(fx1, fx2, fx3)))
 }
 fn fxcopy_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxcopy-bit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    let fx3 = as_isize!(name, args, 2);
+    let fx4 = as_isize!(name, args, 3);
+
+    if (fx2 < 0 || fx2 >= (isize::BITS as isize))
+        || (fx3 < 0 || fx3 >= (isize::BITS as isize))
+        || fx2 > fx3
+    {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+    Ok(Object::Fixnum(isize::fxbit_copy_bitfield(
+        fx1, fx2, fx3, fx4,
+    )))
 }
 fn fxarithmetic_shift(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    if fx2.abs() >= (isize::BITS) as isize {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+
+    if fx2 >= 0 {
+        // Check overflow.
+        let x = if fx1 < 0 { !fx1 } else { fx1 };
+        if (x >> (mem::size_of_val(&x) as isize * 8 - 1 - fx2)) != 0 {
+            return Error::implementation_restriction_violation(
+                name,
+                "result is not fixnum1",
+                &[args[0], args[1]],
+            );
+        }
+        match fx1.checked_shl(fx2 as u32) {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::assertion_violation(name, "result is not fixnum", &[args[0], args[1]]),
+        }
+    } else {
+        match fx1.checked_shr((-fx2) as u32) {
+            Some(v) => Ok(Object::Fixnum(v)),
+            None => Error::assertion_violation(name, "result is not fixnum", &[args[0], args[1]]),
+        }
+    }
 }
+
 fn fxarithmetic_shift_left(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift-left";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    if fx2 < 0 || fx2.abs() >= (isize::BITS) as isize {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+
+    // Check overflow.
+    let x = if fx1 < 0 { !fx1 } else { fx1 };
+    if (x >> (mem::size_of_val(&x) as isize * 8 - 1 - fx2)) != 0 {
+        return Error::implementation_restriction_violation(
+            name,
+            "result is not fixnum1",
+            &[args[0], args[1]],
+        );
+    }
+
+    match fx1.checked_shl(fx2 as u32) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::implementation_restriction_violation(
+            name,
+            "result is not fixnum2",
+            &[args[0], args[1]],
+        ),
+    }
 }
+
 fn fxarithmetic_shift_right(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxarithmetic-shift-right";
-    panic!("{}({}) not implemented", name, args.len());
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    if fx2 < 0 || fx2.abs() >= (isize::BITS) as isize {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1]]);
+    }
+
+    match fx1.checked_shr(fx2 as u32) {
+        Some(v) => Ok(Object::Fixnum(v)),
+        None => Error::implementation_restriction_violation(
+            name,
+            "result is not fixnum",
+            &[args[0], args[1]],
+        ),
+    }
 }
 fn fxrotate_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxrotate-bit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let fx1 = as_isize!(name, args, 0);
+    let fx2 = as_isize!(name, args, 1);
+    let fx3 = as_isize!(name, args, 2);
+    let fx4 = as_isize!(name, args, 3);
+
+    if (fx2 < 0 || fx2.abs() >= (isize::BITS) as isize)
+        || (fx3 < 0 || fx3.abs() >= (isize::BITS) as isize)
+        || (fx4 < 0 || fx4.abs() >= (isize::BITS) as isize)
+        || fx2 > fx3
+        || fx4 >= (fx3 - fx2)
+    {
+        return Error::implementation_restriction_violation(
+            name,
+            "out of range",
+            &[args[0], args[1], args[2], args[3]],
+        );
+    }
+
+    let width = fx3 - fx2;
+    if width > 0 {
+        let count = match fx4.modulo(width) {
+            Ok(v) => v,
+            Err(_) => {
+                return Error::assertion_violation(
+                    name,
+                    "division by zero",
+                    &[args[0], args[1], args[2], args[3]],
+                );
+            }
+        };
+        let field0 = isize::fxbitfield(fx1, fx2, fx3);
+        let field1 = field0 << fx4;
+        let field2 = field0 >> (width - count);
+        let field = field1 | field2;
+        Ok(Object::Fixnum(isize::fxbit_copy_bitfield(
+            fx1, fx2, fx3, field,
+        )))
+    } else {
+        Ok(Object::Fixnum(fx1))
+    }
 }
 fn fxreverse_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxreverse-bit-field";
-    panic!("{}({}) not implemented", name, args.len());
+    let mut bits = as_usize!(name, args, 0);
+    let mut start = as_isize!(name, args, 1);
+    let mut end = as_isize!(name, args, 2);
+    if start > (isize::BITS as isize) || start < 0 || end > (isize::BITS as isize) || end < 0 {
+        return Error::assertion_violation(name, "out of range", &[args[0], args[1], args[2]]);
+    }
+    end -= 1;
+
+    while start < end {
+        let sbit = (bits >> start) & 1;
+        let ebit = (bits >> end) & 1;
+
+        bits &= usize::MAX - (1 << end);
+        bits |= sbit << end;
+        bits &= usize::MAX - (1 << start);
+        bits |= ebit << start;
+
+        start += 1;
+        end -= 1;
+    }
+    return Ok(Object::Fixnum(bits as isize));
 }
 fn bytevector_ieee_single_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-native-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 4 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let ret = if cfg!(target_endian = "big") {
+        bv.ref_f32_big(index)
+    } else {
+        bv.ref_f32_little(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Flonum(Flonum::new(v as f64))),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_ieee_single_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_ieee_single_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_f32_little(index)
+    } else {
+        bv.ref_f32_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Flonum(Flonum::new(v as f64))),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_ieee_double_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-double-native-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 8 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let ret = if cfg!(target_endian = "big") {
+        bv.ref_f64_big(index)
+    } else {
+        bv.ref_f64_little(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Flonum(Flonum::new(v))),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_ieee_double_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_ieee_double_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-double-ref";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let _endianness = as_symbol!(name, args, 2);
+    let ret = if args[2] == vm.gc.symbol_intern("little") {
+        bv.ref_f64_little(index)
+    } else {
+        bv.ref_f64_big(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Flonum(Flonum::new(v))),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_ieee_single_native_set_destructive(
     _vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-native-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 4 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let value = as_f32!(name, args, 2);
+    let ret = if cfg!(target_endian = "big") {
+        bv.set_f32_big(index, value)
+    } else {
+        bv.set_f32_little(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_ieee_single_set_destructive(
-    _vm: &mut Vm,
+    vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let value = as_f32!(name, args, 2);
+    let _endianness = as_symbol!(name, args, 3);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
+        bv.set_f32_little(index, value)
+    } else {
+        bv.set_f32_big(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_ieee_double_native_set_destructive(
     _vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-double-native-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 8 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let value = as_f64!(name, args, 2);
+    let ret = if cfg!(target_endian = "big") {
+        bv.set_f64_big(index, value)
+    } else {
+        bv.set_f64_little(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_ieee_double_set_destructive(
-    _vm: &mut Vm,
+    vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-double-set!";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let value = as_f64!(name, args, 2);
+    let _endianness = as_symbol!(name, args, 3);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
+        bv.set_f64_little(index, value)
+    } else {
+        bv.set_f64_big(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn is_even(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "even?";
     check_argc!(name, args, 1);
     if args[0].is_integer(&mut vm.gc) {
-        Ok(Object::make_bool(args[0].is_even()))
+        Ok(args[0].is_even().to_obj())
     } else {
         panic!("{}: integer value required but got {}", name, args[0])
     }
@@ -4502,7 +6399,7 @@ fn is_odd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "odd?";
     check_argc!(name, args, 1);
     if args[0].is_integer(&mut vm.gc) {
-        Ok(Object::make_bool(!args[0].is_even()))
+        Ok((!args[0].is_even()).to_obj())
     } else {
         panic!("{}: integer value required but got {}", name, args[0])
     }
@@ -4525,10 +6422,10 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match integer_div(&mut vm.gc, n1, n2) {
             Ok(v) => Ok(v),
             Err(SchemeError::Div0) => {
-                panic!("{}: div by 0 is not defined", name)
+                Error::assertion_violation(name, "division by zero", &[n1, n2])
             }
             Err(SchemeError::NanOrInfinite) => {
-                panic!("{}: nan.0 or inifite not allowed", name)
+                Error::assertion_violation(name, "nan.0 or inf.0 not allowed", &[n1, n2])
             }
             _ => panic!(),
         }
@@ -4536,10 +6433,51 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         panic!("{}: real numbers required but got {} {}", name, n1, n2);
     }
 }
-fn div0(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "div0";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let n1 = args[0];
+    let n2 = args[1];
+    if !n1.is_real() || !n2.is_real() {
+        return Error::assertion_violation(name, "real numbers required", &[n1, n2]);
+    }
+    let d = div(vm, &mut [n1, n2])?;
+    let d2 = numbers::mul(&mut vm.gc, d, n2);
+    let modulo = numbers::sub(&mut vm.gc, n1, d2);
+    // We know div zero won't happen here.
+    let d3 = numbers::div(&mut vm.gc, n2, Object::Fixnum(2)).unwrap();
+    if numbers::lt(modulo, numbers::abs(&mut vm.gc, d3)) {
+        Ok(d)
+    } else {
+        if n2.is_negative() {
+            Ok(numbers::sub(&mut vm.gc, d, Object::Fixnum(1)))
+        } else {
+            Ok(numbers::add(&mut vm.gc, d, Object::Fixnum(1)))
+        }
+    }
 }
+
+/*
+   Object div = integerDivEx(theVM, argc, argv);
+   if (div.isUndef()) {
+       return Object::Undef;
+   }
+   Object mod = Arithmetic::sub(n1, Arithmetic::mul(div, n2));
+   // we can ignore isDiv0Error parameter of Arithmetic::div.
+   // Because we know division by zero never occur.
+   bool isDiv0Error = false;
+   if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2), isDiv0Error)))) {
+       return div;
+   } else {
+       if (Arithmetic::isNegative(n2)) {
+           return Arithmetic::sub(div, Object::makeFixnum(1));
+       } else {
+           return Arithmetic::add(div, Object::makeFixnum(1));
+       }
+   }
+
+*/
+
 fn numerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "numerator";
     check_argc!(name, args, 1);
@@ -4611,7 +6549,7 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             panic!("{}: number required but got {}", name, n);
         }
         if n.is_exact_zero() {
-            panic!("{} nonzero required but got {}", name, n);
+            return Error::assertion_violation(name, " nonzero required but got", &[n]);
         } else {
             return Ok(numbers::log(&mut vm.gc, n));
         }
@@ -4843,17 +6781,25 @@ fn is_fast_equal(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fast-equal?";
     check_argc!(name, args, 2);
     let e = Equal::new();
-    Ok(Object::make_bool(
-        e.is_equal(&mut vm.gc, &args[0], &args[1]),
-    ))
+    Ok(e.is_equal(&mut vm.gc, &args[0], &args[1]).to_obj())
 }
-fn native_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn native_eol_style(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-eol-style";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+    Ok(if std::env::consts::OS == "windows" {
+        vm.gc.symbol_intern("crlf")
+    } else {
+        vm.gc.symbol_intern("lf")
+    })
 }
-fn is_buffer_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_buffer_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "buffer-mode?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let _mode = as_symbol!(name, args, 0);
+    Ok((args[0] == vm.gc.symbol_intern("none")
+        || args[0] == vm.gc.symbol_intern("line")
+        || args[0] == vm.gc.symbol_intern("block"))
+    .to_obj())
 }
 fn microseconds(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "microseconds";
@@ -4895,29 +6841,64 @@ fn set_current_directory_destructive(_vm: &mut Vm, args: &mut [Object]) -> error
 fn is_binary_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "binary-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_binary_port()))
+    Ok(args[0].is_binary_port().to_obj())
 }
 fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "input-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_input_port()))
+    Ok(args[0].is_input_port().to_obj())
 }
-fn is_port_eof(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-eof?";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    if args[0].is_textual_input_port() {
+        let port = as_text_input_port_mut!(name, args, 0);
+        if !port.is_open() {
+            todo!()
+        }
+        Ok((port.lookahead_char(vm) == Ok(None)).to_obj())
+    } else if args[0].is_binary_input_port() {
+        let port = as_binary_input_port_mut!(name, args, 0);
+        if !port.is_open() {
+            todo!()
+        }
+        Ok((port.lookahead_u8(vm) == Ok(None)).to_obj())
+    } else {
+        panic!()
+    }
 }
-fn lookahead_u8(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn lookahead_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "lookahead-u8";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let port = as_binary_input_port_mut!(name, args, 0);
+    match port.lookahead_u8(vm) {
+        Ok(Some(u)) => Ok(Object::Fixnum(u as isize)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e),
+    }
 }
 
 fn open_bytevector_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-bytevector-input-port";
     check_argc_between!(name, args, 1, 2);
-    let bv = as_bytevector!(name, args, 0, &mut vm.gc);
-    Ok(Object::BytevectorInputPort(
-        vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
-    ))
+    let bv = as_bytevector!(name, args, 0);
+    if args.len() == 1 {
+        Ok(Object::BytevectorInputPort(
+            vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
+        ))
+    } else {
+        let transcoder = check_is_transcoder_or_false!(name, args, 1);
+        if transcoder.is_false() {
+            Ok(Object::BytevectorInputPort(
+                vm.gc.alloc(BytevectorInputPort::new(&bv.data)),
+            ))
+        } else {
+            let bin_port =
+                Object::BytevectorInputPort(vm.gc.alloc(BytevectorInputPort::new(&bv.data)));
+            let port = TranscodedInputPort::new(bin_port, transcoder);
+            Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
+        }
+    }
 }
 
 fn ffi_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4968,113 +6949,127 @@ fn host_os(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "output-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_output_port()))
+    Ok(args[0].is_output_port().to_obj())
 }
 fn is_textual_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "textual-port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_textual_port()))
+    Ok(args[0].is_textual_port().to_obj())
 }
 fn is_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_port()))
+    Ok(args[0].is_port().to_obj())
 }
 fn port_transcoder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-transcoder";
     panic!("{}({}) not implemented", name, args.len());
 }
+fn create_native_transcoder(gc: &mut Box<Gc>) -> Object {
+    let codec = Object::UTF8Codec(gc.alloc(UTF8Codec::new()));
+    let eol_style = if std::env::consts::OS == "windows" {
+        EolStyle::CrLf
+    } else {
+        EolStyle::Lf
+    };
+    Object::Transcoder(gc.alloc(Transcoder::new(
+        codec,
+        eol_style,
+        ErrorHandlingMode::RaiseError,
+    )))
+}
+
 fn native_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-transcoder";
     check_argc!(name, args, 0);
-    return Ok(vm.gc.new_string("TODO: native-transcoder"));
+    Ok(create_native_transcoder(&mut vm.gc))
 }
-fn put_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+
+fn put_bytevector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-bytevector";
     check_argc_between!(name, args, 2, 4);
-    let bv = as_bytevector!(name, args, 1, &mut vm.gc);
+    let bv = as_bytevector!(name, args, 1);
     let start = if args.len() >= 3 {
-        as_usize!(name, args, 2, &mut vm.gc)
+        as_usize!(name, args, 2)
     } else {
         0
     };
     let count = if args.len() >= 4 {
-        as_usize!(name, args, 3, &mut vm.gc)
+        as_usize!(name, args, 3)
     } else {
-        bv.len()
+        bv.len() - start
     };
     if bv.len() < start + count {
-        return Err(error::Error::new_from_string(
-            &mut vm.gc,
+        return Error::assertion_violation(
             name,
             "Bytevector must have a length of at least start + count.",
             &[args[1], args[2]],
-        ));
+        );
     }
 
     let buf = &bv.data[start..start + count];
-    let result = match args[0] {
-        Object::BytevectorOutputPort(mut port) => port.write(buf),
-        Object::BinaryFileOutputPort(mut port) => port.write(buf),
-        _ => {
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "binary output port required",
-                &[args[0]],
-            ));
-        }
-    };
-    match result {
+    let port = as_binary_output_port_mut!(name, args, 0);
+    match port.write(buf) {
         Ok(_size) => Ok(Object::Unspecified),
-        Err(err) => Err(error::Error::new_from_string(
-            &mut vm.gc,
-            name,
-            &format!("{:?}", err),
-            &[args[0], args[1]],
-        )),
+        Err(e) => Err(e),
     }
 }
 fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-char";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let port = as_text_output_port_mut!(name, args, 0);
+    let ch = as_char!(name, args, 1);
+    port.write_char(ch).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("write error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
+    Ok(Object::Unspecified)
 }
 fn write_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "write-char";
     check_argc_between!(name, args, 1, 2);
-    let c = as_char!(name, args, 0, &mut vm.gc);
-    if args.len() == 1 {
-        todo!();
+    let c = as_char!(name, args, 0);
+    let port = if args.len() == 1 {
+        vm.current_output_port()
     } else {
-        let result = match args[1] {
-            Object::FileOutputPort(mut port) => port.write_char(c),
-            Object::StdErrorPort(mut port) => port.write_char(c),
-            Object::StdOutputPort(mut port) => port.write_char(c),
-            Object::StringOutputPort(mut port) => port.write_char(c),
-            _ => panic!(),
-        };
-        match result {
-            Ok(_) => Ok(Object::Unspecified),
-            Err(_) => Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "write-char failed",
-                &[args[0]],
-            )),
-        }
+        args[1]
+    };
+    let port = obj_as_text_output_port_mut!(name, port);
+    match port.write_char(c) {
+        Ok(_) => Ok(Object::Unspecified),
+        Err(_) => error::Error::assertion_violation(name, "write-char failed", &[args[0]]),
     }
 }
 fn transcoder_codec(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-codec";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(args[0].to_transcoder().codec)
 }
-fn transcoder_eol_style(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn transcoder_eol_style(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-eol-style";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(match args[0].to_transcoder().eol_style {
+        EolStyle::Lf => vm.gc.symbol_intern("lf"),
+        EolStyle::Cr => vm.gc.symbol_intern("cr"),
+        EolStyle::Nel => vm.gc.symbol_intern("nel"),
+        EolStyle::Ls => vm.gc.symbol_intern("ls"),
+        EolStyle::CrNel => vm.gc.symbol_intern("crnel"),
+        EolStyle::CrLf => vm.gc.symbol_intern("crlf"),
+        EolStyle::ENone => vm.gc.symbol_intern("none"),
+    })
 }
-fn transcoder_error_handling_mode(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn transcoder_error_handling_mode(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoder-error-handling-mode";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(match args[0].to_transcoder().mode {
+        ErrorHandlingMode::IgnoreError => vm.gc.symbol_intern("ignore"),
+        ErrorHandlingMode::RaiseError => vm.gc.symbol_intern("raise"),
+        ErrorHandlingMode::ReplaceError => vm.gc.symbol_intern("replace"),
+    })
 }
 fn quotient(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "quotient";
@@ -5117,27 +7112,206 @@ fn modulo(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         _ => panic!(),
     }
 }
-fn open_file_input_output_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "open-file-input/output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 4);
+    let path = &as_sstring!(name, args, 0).string;
+    let file_exists = Path::new(&path).exists();
+    /*let file_readable = match fs::metadata(path) {
+        Ok(m) => !m.permissions().readonly(),
+        Err(_) => false,
+    };*/
+    let argc = args.len();
+    let mut open_options = OpenOptions::new();
+    open_options.write(true).create(true).read(true);
+    let mut transcoder: Option<Object> = None;
+    let file: File;
+    if argc == 1 {
+        if file_exists {
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );
+        }
+        file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                return error::Error::assertion_violation(
+                    name,
+                    &format!("file open error {}: {}", path, err.to_string()),
+                    args,
+                );
+            }
+        };
+    } else {
+        let file_options = match args[1] {
+            Object::SimpleStruct(s) => s.field(1),
+            _ => {
+                panic!("{}: file-options required but got {}", name, args[1])
+            }
+        };
+        let empty_p = file_options.is_nil();
+        let sym_no_create = vm.gc.symbol_intern("no-create");
+        let sym_no_truncate = vm.gc.symbol_intern("no-truncate");
+        let sym_no_fail = vm.gc.symbol_intern("no-fail");
+        let no_create_p = !memq(vm, &mut [sym_no_create, file_options])
+            .unwrap()
+            .is_false();
+        let no_truncate_p = !memq(vm, &mut [sym_no_truncate, file_options])
+            .unwrap()
+            .is_false();
+        let no_fail_p = !memq(vm, &mut [sym_no_fail, file_options])
+            .unwrap()
+            .is_false();
+
+        if file_exists && empty_p {
+            return error::Error::io_file_already_exist(
+                name,
+                &format!("file already exists {}", path),
+                args,
+            );
+        } else if no_create_p && no_truncate_p {
+            if !file_exists {
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
+            }
+        } else if no_create_p {
+            if file_exists {
+                open_options.truncate(true);
+            } else {
+                return error::Error::io_file_not_exist(
+                    name,
+                    &format!("file-options no-create: file not exist {}", path),
+                    args,
+                );
+            }
+        } else if no_fail_p && no_truncate_p {
+            if !file_exists {
+                open_options.truncate(true);
+            }
+        } else if no_fail_p {
+            open_options.truncate(true);
+        } else if no_truncate_p {
+            if file_exists {
+                return error::Error::io_file_already_exist(
+                    name,
+                    &format!("file already exists {}", path),
+                    args,
+                );
+            } else {
+                open_options.truncate(true);
+            }
+        }
+
+        if argc == 4 {
+            match args[3] {
+                Object::Transcoder(_) => transcoder = Some(args[3]),
+                Object::False => {}
+                _ => {
+                    return Error::assertion_violation(
+                        name,
+                        "transcoder or #f required",
+                        &[args[3]],
+                    );
+                }
+            }
+        }
+        file = match open_options.open(&path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{}: {} {}", name, path, err);
+            }
+        };
+    }
+
+    // We ignore buffer-mode. This implmentation is not buffered at this momement.
+    // We may revisit this. Once we conform R7RS and R6RS.
+    let buffer_mode = if argc < 3 {
+        BufferMode::None
+    } else {
+        match symbol_to_buffer_mode(as_symbol!(name, args, 2)) {
+            Some(mode) => mode,
+            None => {
+                return Error::assertion_violation(name, "invalid buffer-mode", &[args[2]]);
+            }
+        }
+    };
+
+    match transcoder {
+        Some(t) => {
+            let bin_port = Object::BinaryFileInputOutputPort(
+                vm.gc
+                    .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
+            );
+            let port = TranscodedInputOutputPort::new(bin_port, t);
+            Ok(Object::TranscodedInputOutputPort(vm.gc.alloc(port)))
+        }
+        None => Ok(Object::BinaryFileInputOutputPort(
+            vm.gc
+                .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
+        )),
+    }
 }
-fn make_custom_binary_input_output_port(
-    _vm: &mut Vm,
-    args: &mut [Object],
-) -> error::Result<Object> {
+fn make_custom_binary_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-custom-binary-input/output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 6);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let write_proc = check_is_closure!(name, args, 2);
+    let pos_proc = check_is_closure_or_false!(name, args, 3);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 4);
+    let close_proc = check_is_closure_or_false!(name, args, 5);
+    Ok(Object::CustomBinaryInputOutputPort(vm.gc.alloc(
+        CustomBinaryInputOutputPort::new(
+            id,
+            read_proc,
+            write_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        ),
+    )))
 }
 fn make_custom_textual_input_output_port(
-    _vm: &mut Vm,
+    vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "make-custom-textual-input/output-port";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 6);
+    let id = &as_sstring!(name, args, 0).string;
+    let read_proc = check_is_closure!(name, args, 1);
+    let write_proc = check_is_closure!(name, args, 2);
+    let pos_proc = check_is_closure_or_false!(name, args, 3);
+    let set_pos_proc = check_is_closure_or_false!(name, args, 4);
+    let close_proc = check_is_closure_or_false!(name, args, 5);
+    Ok(Object::CustomTextInputOutputPort(vm.gc.alloc(
+        CustomTextInputOutputPort::new(
+            id,
+            read_proc,
+            write_proc,
+            pos_proc,
+            set_pos_proc,
+            close_proc,
+        ),
+    )))
 }
 fn put_datum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "put-datum";
-    panic!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let port = as_text_output_port_mut!(name, args, 0);
+    port.write(args[1], false).map_err(|e| {
+        Error::new(
+            ErrorType::IoError,
+            name,
+            &format!("write error {}", e.to_string()),
+            &[args[0]],
+        )
+    })?;
+    Ok(Object::Unspecified)
 }
 fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "list-ref";
@@ -5396,27 +7570,42 @@ fn file_size_in_bytes(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     let name: &str = "file-size-in-bytes";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn file_stat_mtime(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn file_stat_mtime(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "file-stat-mtime";
     check_argc!(name, args, 1);
     if let Object::String(path) = args[0] {
-        let metadata = File::open(&path.string)
-            .map(|file| file.metadata())
-            .unwrap_or_else(|_| panic!("failed to retrieve metadata for {}", path.string));
+        if path.string.starts_with("/embed/stdlib") {
+            if let Some(file) = StdLib::get(&path.string) {
+                match file.metadata.last_modified() {
+                    Some(last_modified) => return Ok(last_modified.to_obj(&mut vm.gc)),
+                    None => {
+                        panic!("failed to retrieve last modified for {}", path.string);
+                    }
+                }
+            } else {
+                panic!("failed to retrieve metadata for {}", path.string);
+            }
+        } else {
+            let metadata = File::open(&path.string)
+                .map(|file| file.metadata())
+                .unwrap_or_else(|_| panic!("failed to retrieve metadata for {}", path.string));
 
-        // Get the last modification time
-        let mtime = metadata
-            .map(|metadata| metadata.modified())
-            .unwrap_or_else(|_| panic!("failed to retrieve modification time for {}", path.string));
+            // Get the last modification time
+            let mtime = metadata
+                .map(|metadata| metadata.modified())
+                .unwrap_or_else(|_| {
+                    panic!("failed to retrieve modification time for {}", path.string)
+                });
 
-        // Convert the last modification time to a system time
-        let mtime = mtime.unwrap_or(SystemTime::now());
-        let mtime_seconds = mtime
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
-            .as_secs();
+            // Convert the last modification time to a system time
+            let mtime = mtime.unwrap_or(SystemTime::now());
+            let mtime_seconds = mtime
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
+                .as_secs();
 
-        Ok(Object::Fixnum(mtime_seconds as isize))
+            Ok(Object::Fixnum(mtime_seconds as isize))
+        }
     } else {
         panic!("{}: file path required but got {}", name, args[0])
     }
@@ -5696,7 +7885,7 @@ fn is_same_marksmul(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
 fn is_same_marks(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "same-marks?";
     check_argc!(name, args, 2);
-    Ok(Object::make_bool(is_same_marks_raw(args[0], args[1])))
+    Ok(is_same_marks_raw(args[0], args[1]).to_obj())
 }
 
 /* psyntax/expander.ss
@@ -5917,23 +8106,8 @@ fn write_ss(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         args[1]
     };
     let shared_aware = true;
-    match port {
-        Object::StringOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::StdErrorPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        Object::FileOutputPort(mut port) => {
-            port.write(args[0], shared_aware).ok();
-        }
-        _ => {
-            println!("{}: port required but got {} {}", name, port, args[0])
-        }
-    }
+    let port = obj_as_text_output_port_mut!(name, port);
+    port.write(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
 fn monapi_message_send(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6014,7 +8188,7 @@ fn annotated_cons(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_annotated_pair(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "annotated-pair?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(args[0].is_pair()))
+    Ok(args[0].is_pair().to_obj())
 }
 fn get_annotation(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-annotation";
@@ -6051,30 +8225,11 @@ fn set_current_error_port_destructive(_vm: &mut Vm, args: &mut [Object]) -> erro
     let name: &str = "set-current-error-port!";
     panic!("{}({}) not implemented", name, args.len());
 }
-fn is_port_open(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn is_port_open(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "port-open?";
     check_argc!(name, args, 1);
-    Ok(Object::make_bool(match args[0] {
-        Object::BinaryFileInputPort(port) => port.is_open(),
-        Object::BinaryFileOutputPort(port) => port.is_open(),
-        Object::BytevectorInputPort(port) => port.is_open(),
-        Object::BytevectorOutputPort(port) => port.is_open(),
-        Object::FileInputPort(port) => port.is_open(),
-        Object::FileOutputPort(port) => port.is_open(),
-        Object::StdErrorPort(port) => port.is_open(),
-        Object::StdOutputPort(port) => port.is_open(),
-        Object::StringInputPort(port) => port.is_open(),
-        Object::StringOutputPort(port) => port.is_open(),
-        _ => {
-            let irritants = vm.gc.list1(args[0]);
-            return Err(error::Error::new_from_string(
-                &mut vm.gc,
-                name,
-                "port required",
-                &[irritants],
-            ));
-        }
-    }))
+    let port = as_port!(name, args, 0);
+    Ok(port.is_open().to_obj())
 }
 fn make_f64array(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-f64array";

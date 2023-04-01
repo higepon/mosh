@@ -447,4 +447,65 @@ jobs:
         working-directory: build
         run: |
           ctest --verbose .
+  # Experimental
+  build-rmosh-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt update
+          sudo apt install -y re2c
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Generate lexer
+        run: >
+          cd rmosh &&
+          make src/lexer_iter.rs &&
+          make src/number_lexer_iter.rs
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose --manifest-path rmosh/Cargo.toml
+
+      - name: Run tests
+        run: |
+          cd rmosh &&        
+          make test
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path rmosh/Cargo.toml --all -- --check
+
+      - name: Run Clippy (linter)
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path rmosh/Cargo.toml --all-targets --all-features -- -D warnings
 

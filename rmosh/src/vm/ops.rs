@@ -1,7 +1,7 @@
 use crate::{
     error,
     gc::GcRef,
-    numbers::{add, eqv, ge, gt, le, lt, sub},
+    numbers::{add, eqv, ge, gt, le, lt, sub, ObjectExt},
     objects::{Closure, Object, Symbol},
     op::Op,
     procs::{self},
@@ -15,7 +15,7 @@ macro_rules! number_cmp_op {
         {
             match ($self.pop(), $self.ac) {
                 (Object::Fixnum(l), Object::Fixnum(r)) => {
-                    $self.set_return_value(Object::make_bool(l $op r))
+                    $self.set_return_value((l $op r).to_obj())
                 }
                 obj => {
                     panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
@@ -39,10 +39,16 @@ impl Vm {
 
     #[inline(always)]
     pub(super) fn number_add_op(&mut self) {
-        match (self.pop(), self.ac) {
-            (Object::Fixnum(a), Object::Fixnum(b)) => {
-                self.set_return_value(Object::Fixnum(a + b));
-            }
+        let lhs = self.pop();
+        let rhs = self.ac;
+        match (lhs, rhs) {
+            (Object::Fixnum(a), Object::Fixnum(b)) => match a.checked_add(b) {
+                Some(v) => self.set_return_value(Object::Fixnum(v)),
+                None => {
+                    let val = add(&mut self.gc, lhs, rhs);
+                    self.set_return_value(val);
+                }
+            },
             (a, b) => {
                 let val = add(&mut self.gc, a, b);
                 self.set_return_value(val);
@@ -78,33 +84,140 @@ impl Vm {
                 self.set_return_value(pair.car);
                 Ok(Object::Unspecified)
             }
-            obj => self.assertion_violation("car", "pair required", obj),
+            obj => self.call_assertion_violation_after("car", "pair required", &[obj]),
         }
     }
 
-    pub(super) fn assertion_violation(
+    pub(super) fn call_assertion_violation_after(
         &mut self,
         who: &str,
         message: &str,
-        irritants: Object,
+        irritants: &[Object],
     ) -> error::Result<Object> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
-    pub(super) fn assertion_violation_err(&mut self, err: error::Error) -> error::Result<Object> {
-        self.raise_after3("assertion-violation", err.who, err.message, err.irritants)
+    pub(super) fn call_assertion_violation_obj_after(
+        &mut self,
+        who: Object,
+        message: Object,
+        irritants: Object,
+    ) -> error::Result<Object> {
+        self.raise_after3("assertion-violation", who, message, irritants)
     }
 
-    pub(super) fn raise_read_error(
+    pub(super) fn call_io_decoding_error_after(
         &mut self,
         who: &str,
         message: &str,
-        irritants: Object,
+        irritants: &[Object],
     ) -> error::Result<Object> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
+        self.raise_after3("raise-i/o-decoding-error", who, message, irritants)
+    }
+
+    pub(super) fn call_io_file_not_exist_after(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
+        self.raise_after3(
+            "raise-i/o-file-does-not-exist-error",
+            who,
+            message,
+            irritants,
+        )
+    }
+
+    pub(super) fn call_io_file_already_exist_after(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
+        self.raise_after3(
+            "raise-i/o-file-already-exists-error",
+            who,
+            message,
+            irritants,
+        )
+    }
+
+    pub(super) fn call_io_encoding_error_after(
+        &mut self,
+        who: &str,
+        message: &str,
+        ch: char,
+        irritants: &[Object],
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let ch = Object::Char(ch);
+        let irritants = self.gc.listn(irritants);
+        self.raise_after4("raise-i/o-encoding-error", who, message, ch, irritants)
+    }
+
+    pub(super) fn call_error_after(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
+        self.raise_after3("error", who, message, irritants)
+    }
+
+    pub(super) fn call_io_invalid_position_after(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
+        self.raise_after3("raise-i/o-invalid-position-error", who, message, irritants)
+    }
+    pub(super) fn implementation_restriction_violation_after(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
+        self.raise_after3(
+            "implementation-restriction-violation",
+            who,
+            message,
+            irritants,
+        )
+    }
+
+    pub(super) fn call_read_error_after(
+        &mut self,
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        let irritants = self.gc.listn(irritants);
         self.raise_after3("raise-i/o-read-error", who, message, irritants)
     }
 
@@ -127,13 +240,15 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn cdr_op(&mut self) {
+    pub(super) fn cdr_op(&mut self) -> error::Result<Object> {
         match self.ac {
             Object::Pair(pair) => {
                 self.set_return_value(pair.cdr);
+                Ok(Object::Unspecified)
             }
-            obj => {
-                self.arg_err("cdr", "pair", obj);
+            _ => {
+                let irritatns = self.gc.list1(self.ac);
+                self.call_assertion_violation_after("cdr", "pair required", &[irritatns])
             }
         }
     }
@@ -187,10 +302,10 @@ impl Vm {
                     // We convert apply call to Op::Call.
                     if procedure.func as usize == procs::apply as usize {
                         if argc == 1 {
-                            self.assertion_violation(
+                            self.call_assertion_violation_after(
                                 "apply",
                                 "need two or more arguments but only 1 argument",
-                                Object::Nil,
+                                &[],
                             )?;
                             return Ok(Object::Unspecified);
                         }
@@ -202,10 +317,10 @@ impl Vm {
                             if i == argc - 1 {
                                 let mut last_pair = args[i as usize];
                                 if !last_pair.is_list() {
-                                    self.assertion_violation(
+                                    self.call_assertion_violation_after(
                                         "apply",
                                         "last arguments shoulbe proper list but got",
-                                        last_pair,
+                                        &[last_pair],
                                     )?;
                                     return Ok(Object::Unspecified);
                                 }
@@ -345,7 +460,7 @@ impl Vm {
     pub(super) fn branch_not_eq_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = eqv(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -358,7 +473,7 @@ impl Vm {
     pub(super) fn branch_not_gt_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = gt(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -371,7 +486,7 @@ impl Vm {
     pub(super) fn branch_not_lt_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = lt(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -384,7 +499,7 @@ impl Vm {
     pub(super) fn branch_not_ge_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = ge(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {
@@ -397,7 +512,7 @@ impl Vm {
     pub(super) fn branch_not_le_op(&mut self) {
         let skip_offset = self.isize_operand();
         let op_result = le(self.pop(), self.ac);
-        self.set_return_value(Object::make_bool(op_result));
+        self.set_return_value(op_result.to_obj());
         if op_result {
             // go to then.
         } else {

@@ -233,7 +233,7 @@ impl Vm {
                 }
                 Object::Closure(closure) => {
                     if closure.src.is_pair() {
-                        eprint!("    {}. ", i);                        
+                        eprint!("    {}. ", i);
                         let proc = closure.src.cdr_unchecked();
                         let location = closure.src.car_unchecked();
                         if location.is_false() {
@@ -264,7 +264,7 @@ impl Vm {
                 const FP_OFFSET: isize = 1;
                 cl = unsafe { *self.dec(fp, CL_OFFSET) };
 
-                if !cl.is_closure() && !cl.is_proecdure() {
+                if !cl.is_closure() && !cl.is_procedure() {
                     break;
                 }
 
@@ -277,6 +277,9 @@ impl Vm {
                     }
                 };
             } else {
+                break;
+            }
+            if i > 20 {
                 break;
             }
         }

@@ -5,7 +5,7 @@
 (import (mosh file))
 (import (only (mosh) format))
 (import (only (rnrs) set! bytevector-s64-native-set! bytevector-u32-native-set! bytevector-u16-native-set! open-bytevector-output-port put-u8 put-bytevector))
-(import (only (rnrs) open-string-output-port string-titlecase bytevector->u8-list command-line))
+(import (only (rnrs) open-string-output-port string-titlecase bytevector->u8-list command-line bytevector-ieee-double-set!))
 (import (rnrs arithmetic flonums))
 (import (only (rnrs r5rs) modulo))
 (import (only (srfi :1) take drop))
@@ -28,6 +28,7 @@
 (define TAG_PAIR   7)
 (define TAG_VECTOR 8)
 (define TAG_COMPILER_INSN 9)
+(define TAG_FLONUM 15)
 
 (define (put-s64 port n)
   (let1 bv (make-bytevector 8)
@@ -87,14 +88,16 @@
           (put-u8 port TAG_NIL)]
         [(? vector? v)
           (put-u8 port TAG_VECTOR)
-          (put-u16 port (vector-length v))
+          (put-u32 port (vector-length v))
           (for-each
             (lambda (o)
               (write-sexp port o))
             (vector->list v))]
         [(? flonum? f)
-          ;; TODO
-          (write-sexp port 0)]
+          (put-u8 port TAG_FLONUM)
+          (let ([bv (make-bytevector 8)])
+             (bytevector-ieee-double-set! bv 0 f 'little)
+             (put-bytevector port bv))]
         [any
           (error (format "unknown sexp = ~a" any))]
       )]

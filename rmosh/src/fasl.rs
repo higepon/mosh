@@ -3,13 +3,14 @@ use std::{
     io::{self, Cursor, Read},
 };
 
+use num_bigint::{BigInt, Sign};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::{
     gc::Gc,
-    numbers::Flonum,
-    objects::{EqHashtable, Object, SimpleStruct},
+    numbers::{Bignum, Compnum, Flonum, Ratnum},
+    objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
     ports::BinaryOutputPort,
 };
 
@@ -33,6 +34,10 @@ enum Tag {
     Flonum = 15,
     Bytevector = 16,
     Eof = 17,
+    Ratnum = 18,
+    Compnum = 19,
+    Bignum = 20,
+    EqvHashtable = 21,
 }
 
 // S-expression serializer.
@@ -48,6 +53,10 @@ impl FaslWriter {
         let mut shared_id = 1;
         self.write_one(port, &mut seen, &mut shared_id, obj)
     }
+
+    pub fn write_error(&self) -> io::Error {
+        io::Error::new(io::ErrorKind::Other, "write error")
+    }
     pub fn write_one(
         &self,
         port: &mut dyn BinaryOutputPort,
@@ -62,54 +71,77 @@ impl FaslWriter {
         if seen_state.is_true() {
             seen.insert(obj, Object::Fixnum(*shared_id));
             self.put_tag(port, Tag::DefineShared)?;
-            port.put_u32(*shared_id as u32)?;
+            port.put_u32(*shared_id as u32)
+                .map_err(|_| self.write_error())?;
             seen.insert(obj, Object::Fixnum(*shared_id));
             *shared_id += 1;
             // We don't return here and write the object.
         } else if seen_state.is_fixnum() {
             self.put_tag(port, Tag::LookupShared)?;
-            port.put_u32(seen_state.to_isize() as u32)?;
+            port.put_u32(seen_state.to_isize() as u32)
+                .map_err(|_| self.write_error())?;
             return Ok(());
         }
         match obj {
             Object::Bytevector(bv) => {
                 self.put_tag(port, Tag::Bytevector)?;
-                port.put_u16(bv.len() as u16)?;
+                port.put_u32(bv.len() as u32)
+                    .map_err(|_| self.write_error())?;
                 for e in bv.data.iter() {
-                    port.put_u8(*e)?;
+                    port.put_u8(*e).map_err(|_| self.write_error())?;
                 }
             }
             Object::BytevectorInputPort(_) => todo!(),
             Object::BytevectorOutputPort(_) => todo!(),
             Object::Char(c) => {
                 self.put_tag(port, Tag::Char)?;
-                port.put_u32(c as u32)?;
+                port.put_u32(c as u32).map_err(|_| self.write_error())?;
             }
             Object::Closure(_) => todo!(),
             Object::Eof => {
                 self.put_tag(port, Tag::Eof)?;
             }
+            Object::GenericHashtable(_) => panic!("serializng generic hashtable is not supported"),
             Object::EqHashtable(t) => {
                 self.put_tag(port, Tag::EqHashtable)?;
-                port.put_u16(t.size() as u16)?;
+                port.put_u32(t.size() as u32)
+                    .map_err(|_| self.write_error())?;
                 for (key, value) in t.hash_map.iter() {
                     self.write_one(port, seen, shared_id, *key)?;
                     self.write_one(port, seen, shared_id, *value)?;
                 }
-                port.put_u8(if t.is_mutable { 1 } else { 0 })?;
+                port.put_u8(if t.is_mutable { 1 } else { 0 })
+                    .map_err(|_| self.write_error())?;
+            }
+            Object::EqvHashtable(t) => {
+                self.put_tag(port, Tag::EqvHashtable)?;
+                port.put_u32(t.size() as u32)
+                    .map_err(|_| self.write_error())?;
+                for (key, value) in t.hash_map.iter() {
+                    self.write_one(port, seen, shared_id, key.obj)?;
+                    self.write_one(port, seen, shared_id, *value)?;
+                }
+                port.put_u8(if t.is_mutable { 1 } else { 0 })
+                    .map_err(|_| self.write_error())?;
             }
             Object::False => {
                 self.put_tag(port, Tag::False)?;
             }
             Object::Flonum(f) => {
                 self.put_tag(port, Tag::Flonum)?;
-                port.put_u64(f.u64_value())?;
+                port.put_u64(f.u64_value())
+                    .map_err(|_| self.write_error())?;
             }
-            Object::Bignum(_r) => {
-                todo!();
+            Object::Bignum(b) => {
+                self.put_tag(port, Tag::Bignum)?;
+                let bigint = &b.value;
+                self.write_bigint(bigint, port)
+                    .map_err(|_| self.write_error())?;
             }
-            Object::Compnum(_r) => {
-                todo!();
+            Object::Compnum(c) => {
+                self.put_tag(port, Tag::Compnum)?;
+                self.write_one(port, seen, shared_id, c.real)?;
+                self.write_one(port, seen, shared_id, c.imag)?;
             }
             Object::Continuation(_r) => {
                 todo!();
@@ -117,31 +149,49 @@ impl FaslWriter {
             Object::ContinuationStack(_r) => {
                 todo!();
             }
-            Object::Ratnum(_r) => {
-                todo!();
+            Object::Ratnum(r) => {
+                self.put_tag(port, Tag::Ratnum)?;
+                self.write_bigint(r.ratio.numer(), port)
+                    .map_err(|_| self.write_error())?;
+                self.write_bigint(r.ratio.denom(), port)
+                    .map_err(|_| self.write_error())?;
             }
             Object::Regexp(_r) => {
-                todo!();
+                todo!()
             }
             Object::StringInputPort(_) => todo!(),
             Object::FileInputPort(_) => todo!(),
             Object::FileOutputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
+            Object::BinaryFileInputOutputPort(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
             Object::StdInputPort(_) => todo!(),
+            Object::CustomBinaryInputPort(_) => todo!(),
+            Object::CustomBinaryInputOutputPort(_) => todo!(),
+            Object::CustomBinaryOutputPort(_) => todo!(),
+            Object::CustomTextInputPort(_) => todo!(),
+            Object::CustomTextInputOutputPort(_) => todo!(),
+            Object::CustomTextOutputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StringOutputPort(_) => todo!(),
+            Object::Latin1Codec(_) => todo!(),
+            Object::UTF8Codec(_) => todo!(),
+            Object::UTF16Codec(_) => todo!(),
+            Object::Transcoder(_) => todo!(),
+            Object::TranscodedInputPort(_) => todo!(),
+            Object::TranscodedOutputPort(_) => todo!(),
+            Object::TranscodedInputOutputPort(_) => todo!(),
             Object::Instruction(op) => {
                 self.put_tag(port, Tag::CompilerInsn)?;
-                port.put_u8(op as u8)?;
+                port.put_u8(op as u8).map_err(|_| self.write_error())?;
             }
             Object::Nil => {
                 self.put_tag(port, Tag::Nil)?;
             }
             Object::Fixnum(n) => {
                 self.put_tag(port, Tag::Fixnum)?;
-                port.put_u64(n as u64)?;
+                port.put_u64(n as u64).map_err(|_| self.write_error())?;
             }
             Object::Pair(p) => {
                 self.put_tag(port, Tag::Pair)?;
@@ -151,24 +201,30 @@ impl FaslWriter {
             Object::Procedure(_) => todo!(),
             Object::SimpleStruct(s) => {
                 self.put_tag(port, Tag::Struct)?;
-                port.put_u16(s.len() as u16)?;
+                port.put_u16(s.len() as u16)
+                    .map_err(|_| self.write_error())?;
                 for i in 0..s.len() {
                     self.write_one(port, seen, shared_id, s.field(i))?;
                 }
                 self.write_one(port, seen, shared_id, s.name)?;
             }
             Object::String(s) => {
-                self.put_tag(port, Tag::String)?;
-                port.put_u16(s.string.len() as u16)?;
-                for c in s.string.chars() {
-                    port.put_u32(c as u32)?;
+                self.put_tag(port, Tag::String)
+                    .map_err(|_| self.write_error())?;
+                let chars: Vec<char> = s.chars().collect();
+                port.put_u16(chars.len() as u16)
+                    .map_err(|_| self.write_error())?;
+                for c in chars {
+                    port.put_u32(c as u32).map_err(|_| self.write_error())?;
                 }
             }
             Object::Symbol(s) => {
-                self.put_tag(port, Tag::Symbol)?;
-                port.put_u16(s.string.len() as u16)?;
+                self.put_tag(port, Tag::Symbol)
+                    .map_err(|_| self.write_error())?;
+                port.put_u16(s.string.len() as u16)
+                    .map_err(|_| self.write_error())?;
                 for c in s.string.chars() {
-                    port.put_u32(c as u32)?;
+                    port.put_u32(c as u32).map_err(|_| self.write_error())?;
                 }
             }
             Object::True => {
@@ -181,9 +237,10 @@ impl FaslWriter {
             Object::ProgramCounter(_) => todo!(),
             Object::Vector(v) => {
                 self.put_tag(port, Tag::Vector)?;
-                port.put_u16(v.len() as u16)?;
+                port.put_u32(v.len() as u32)
+                    .map_err(|_| self.write_error())?;
                 for i in 0..v.len() {
-                    self.write_one(port, seen, shared_id, v.data[i])?
+                    self.write_one(port, seen, shared_id, v.data[i])?;
                 }
             }
             Object::Vox(_) => todo!(),
@@ -193,7 +250,7 @@ impl FaslWriter {
     }
 
     fn put_tag(&self, port: &mut dyn BinaryOutputPort, tag: Tag) -> Result<(), io::Error> {
-        port.put_u8(tag as u8)?;
+        port.put_u8(tag as u8).map_err(|_| self.write_error())?;
         Ok(())
     }
 
@@ -202,39 +259,55 @@ impl FaslWriter {
         loop {
             match o {
                 Object::Bytevector(_)
-                | Object::BytevectorInputPort(_)
-                | Object::BytevectorOutputPort(_)
-                | Object::Closure(_)
-                | Object::Continuation(_)
-                | Object::ContinuationStack(_)
-                | Object::Vox(_)
-                | Object::ProgramCounter(_)
-                | Object::ObjectPointer(_)
-                | Object::Unspecified
-                | Object::True
-                | Object::Procedure(_)
-                | Object::Char(_)
-                | Object::EqHashtable(_)
-                | Object::False
-                | Object::Flonum(_)
-                | Object::StringInputPort(_)
-                | Object::FileInputPort(_)
-                | Object::Eof
                 | Object::Bignum(_)
-                | Object::Compnum(_)
-                | Object::Ratnum(_)
-                | Object::Regexp(_)
+                | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
+                | Object::BytevectorInputPort(_)
+                | Object::BytevectorOutputPort(_)
+                | Object::Char(_)
+                | Object::Closure(_)
+                | Object::Compnum(_)
+                | Object::Continuation(_)
+                | Object::ContinuationStack(_)
+                | Object::CustomBinaryInputPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::CustomBinaryOutputPort(_)
+                | Object::CustomTextInputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::CustomTextOutputPort(_)
+                | Object::Eof
+                | Object::EqHashtable(_)
+                | Object::EqvHashtable(_)
+                | Object::False
+                | Object::FileInputPort(_)
                 | Object::FileOutputPort(_)
-                | Object::StringOutputPort(_)
+                | Object::Flonum(_)
+                | Object::GenericHashtable(_)
+                | Object::Instruction(_)
+                | Object::Latin1Codec(_)
+                | Object::Nil
+                | Object::ObjectPointer(_)
+                | Object::Procedure(_)
+                | Object::ProgramCounter(_)
+                | Object::Ratnum(_)
+                | Object::Regexp(_)
+                | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
-                | Object::StdErrorPort(_)
-                | Object::Instruction(_)
-                | Object::Nil
-                | Object::Symbol(_)
                 | Object::String(_)
+                | Object::StringInputPort(_)
+                | Object::StringOutputPort(_)
+                | Object::Symbol(_)
+                | Object::TranscodedInputOutputPort(_)
+                | Object::TranscodedInputPort(_)
+                | Object::TranscodedOutputPort(_)
+                | Object::Transcoder(_)
+                | Object::True
+                | Object::Unspecified
+                | Object::UTF16Codec(_)
+                | Object::UTF8Codec(_)
+                | Object::Vox(_)
                 | Object::Fixnum(_) => return,
                 Object::Pair(p) => {
                     let val = match seen.get(&o) {
@@ -292,6 +365,26 @@ impl FaslWriter {
                 Object::DefinedShared(_) => todo!(),
             }
         }
+    }
+
+    fn write_bigint(
+        &self,
+        bigint: &BigInt,
+        port: &mut dyn BinaryOutputPort,
+    ) -> Result<(), io::Error> {
+        let (sign, bytes) = bigint.to_bytes_le();
+        let sign = if sign == Sign::Minus {
+            1
+        } else if sign == Sign::NoSign {
+            2
+        } else {
+            3
+        };
+        port.put_u8(sign).map_err(|_| self.write_error())?;
+        port.put_u16(bytes.len() as u16)
+            .map_err(|_| self.write_error())?;
+        port.write(&bytes).map_err(|_| self.write_error())?;
+        Ok(())
     }
 }
 
@@ -486,11 +579,15 @@ impl FaslReader {
             Tag::CompilerInsn => self.read_compiler_insn(),
             Tag::Struct => self.read_struct(gc),
             Tag::EqHashtable => self.read_eq_hashtable(gc),
+            Tag::EqvHashtable => self.read_eqv_hashtable(gc),
             Tag::DefineShared => self.read_define_shared(gc),
             Tag::LookupShared => self.read_lookup_shared(gc),
             Tag::Flonum => self.read_float(),
             Tag::Bytevector => self.read_bytevector(gc),
             Tag::Eof => Ok(Object::Eof),
+            Tag::Ratnum => self.read_ratnum(gc),
+            Tag::Compnum => self.read_compnum(gc),
+            Tag::Bignum => self.read_bignum(gc),
         }
     }
 
@@ -524,6 +621,37 @@ impl FaslReader {
         }
     }
 
+    fn read_bignum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let bigint = self.read_bigint()?;
+        Ok(Object::Bignum(gc.alloc(Bignum::new(bigint))))
+    }
+
+    fn read_bigint(&mut self) -> Result<BigInt, io::Error> {
+        let mut buf = [0; 1];
+        self.bytes.read_exact(&mut buf)?;
+        let sign = buf[0];
+        let sign = if sign == 1 {
+            Sign::Minus
+        } else if sign == 2 {
+            Sign::NoSign
+        } else {
+            Sign::Plus
+        };
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf);
+        let mut buf = vec![0; len as usize];
+        self.bytes.read_exact(&mut buf)?;
+        let bigint = BigInt::from_bytes_le(sign, &buf);
+        Ok(bigint)
+    }
+
+    fn read_ratnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let numer = self.read_bigint()?;
+        let denom = self.read_bigint()?;
+        Ok(Object::Ratnum(gc.alloc(Ratnum::new(numer, denom))))
+    }
+
     fn read_fixnum(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 8];
         self.bytes.read_exact(&mut buf)?;
@@ -549,7 +677,9 @@ impl FaslReader {
             let n = u32::from_le_bytes(buf);
             match char::from_u32(n) {
                 Some(c) => chars.push(c),
-                None => return Err(self.create_read_error("invalid char")),
+                None => {
+                    return Err(self.create_read_error(&format!("invalid char: {:x} in symbol", n)))
+                }
             }
         }
         Ok(gc.symbol_intern(&String::from_iter(chars)))
@@ -566,16 +696,18 @@ impl FaslReader {
             let n = u32::from_le_bytes(buf);
             match char::from_u32(n) {
                 Some(c) => chars.push(c),
-                None => return Err(self.create_read_error("invalid char")),
+                None => {
+                    return Err(self.create_read_error(&format!("invalid char: {:x} in string", n)))
+                }
             }
         }
         Ok(gc.new_string(&String::from_iter(chars)))
     }
 
     fn read_vector(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
-        let mut buf = [0; 2];
+        let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
-        let len = u16::from_le_bytes(buf);
+        let len = u32::from_le_bytes(buf);
         let mut objs = vec![];
         for _ in 0..len {
             objs.push(self.read_sexp(gc)?);
@@ -584,9 +716,9 @@ impl FaslReader {
     }
 
     fn read_bytevector(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
-        let mut buf = [0; 2];
+        let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
-        let len = u16::from_le_bytes(buf);
+        let len = u32::from_le_bytes(buf);
         let mut vu8 = vec![];
         let mut buf = [0; 1];
 
@@ -615,9 +747,9 @@ impl FaslReader {
 
     fn read_eq_hashtable(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let mut t = EqHashtable::new();
-        let mut buf = [0; 2];
+        let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
-        let len = u16::from_le_bytes(buf) as usize;
+        let len = u32::from_le_bytes(buf) as usize;
         for _ in 0..len {
             let key = self.read_sexp(gc)?;
             let value = self.read_sexp(gc)?;
@@ -629,13 +761,29 @@ impl FaslReader {
         Ok(Object::EqHashtable(gc.alloc(t)))
     }
 
+    fn read_eqv_hashtable(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut t = EqvHashtable::new();
+        let mut buf = [0; 4];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u32::from_le_bytes(buf) as usize;
+        for _ in 0..len {
+            let obj = self.read_sexp(gc)?;
+            let value = self.read_sexp(gc)?;
+            t.set(EqvKey::new(obj), value);
+        }
+        let mut buf = [0; 1];
+        self.bytes.read_exact(&mut buf)?;
+        t.is_mutable = buf[0] == 1;
+        Ok(Object::EqvHashtable(gc.alloc(t)))
+    }
+
     fn read_char(&mut self) -> Result<Object, io::Error> {
         let mut buf = [0; 4];
         self.bytes.read_exact(&mut buf)?;
         let n = u32::from_le_bytes(buf);
         match char::from_u32(n) {
             Some(c) => Ok(Object::Char(c)),
-            None => Err(self.create_read_error("invalid char")),
+            None => Err(self.create_read_error(&format!("invalid char: {:x}", n))),
         }
     }
 
@@ -643,6 +791,12 @@ impl FaslReader {
         let first = self.read_sexp(gc)?;
         let second = self.read_sexp(gc)?;
         Ok(gc.cons(first, second))
+    }
+
+    fn read_compnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let real = self.read_sexp(gc)?;
+        let imag = self.read_sexp(gc)?;
+        Ok(Object::Compnum(gc.alloc(Compnum::new(real, imag))))
     }
 
     fn create_read_error(&self, reason: &str) -> io::Error {
@@ -663,7 +817,7 @@ pub mod tests {
         equal::Equal,
         gc::Gc,
         numbers::Flonum,
-        objects::{Object, SimpleStruct},
+        objects::{Hashtable, Object, SimpleStruct},
         op::Op,
         ports::{BinaryOutputPort, BytevectorOutputPort},
     };

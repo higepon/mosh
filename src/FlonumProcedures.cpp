@@ -411,7 +411,7 @@ Object scheme::floddPEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::flnegativePEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("flpositive?");
+    DeclareProcedureName("flnegative?");
     checkArgumentLength(1);
     argumentAsFlonum(0, flonum);
     return Object::makeBool(Flonum::lt(flonum, 0L));

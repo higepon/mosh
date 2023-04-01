@@ -1,20 +1,26 @@
 use crate::gc::Gc;
 use crate::lexer;
+use crate::numbers;
 use crate::numbers::exact;
 use crate::numbers::inexact;
-use crate::numbers::Bignum;
 use crate::numbers::Compnum;
 use crate::numbers::Flonum;
 use crate::numbers::Ratnum;
 use crate::reader_util;
 use crate::reader_util::ReadError;
+use crate::reader_util::read_uinteger2;
+use crate::reader_util::read_uinteger8;
+use crate::reader_util::read_uinteger10;
+use crate::reader_util::read_uinteger16;
 use crate::objects::Object;
 use std::str::FromStr;
 use num_bigint::BigInt;
 use num_traits::Num;
+use regex::Regex;
 use lalrpop_util::ParseError;
+use num_traits::FromPrimitive;
 
-grammar(gc: &mut Box<Gc>);
+grammar(gc: &mut Box<Gc>, is_inexact_context: &mut bool);
 
 // R7RS small 7.1.2. External representations
 pub Number: Object = {
@@ -35,7 +41,13 @@ Number10: Object = {
                 }
             },
             Some(None) | None => {
-                c
+                // To handle #e1e1000.
+                // See below in decimal10 section.
+                if *is_inexact_context {
+                    inexact(gc, c)
+                } else {
+                    c
+                }
             },
         }
     },
@@ -152,6 +164,9 @@ Radix16 = {
 
 Complex10: Object = {
     Real10,
+    <lhs: Real10> "@" <rhs: Real10> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },    
     <real: Real10> "+" <imag: UReal10> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -168,6 +183,12 @@ Complex10: Object = {
     <real: Real10> "-inf.0" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Flonum(Flonum::new(f64:: NEG_INFINITY)))))
     },
+    "+inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Flonum(Flonum::new(f64:: INFINITY)))))
+    },
+    "-inf.0" "i" => {
+        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Flonum(Flonum::new(f64:: NEG_INFINITY)))))
+    },    
     <real: Real10> "-" "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, Object::Fixnum(-1))))
     },
@@ -175,7 +196,7 @@ Complex10: Object = {
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
     },
     "-" <imag: Real10> "i" => {
-        let imag = imag.neg(gc);        
+        let imag = imag.neg(gc);
         Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
     },
     "+" "i" => {
@@ -188,6 +209,9 @@ Complex10: Object = {
 
 Complex8: Object = {
     Real8,
+    <lhs: Real8> "@" <rhs: Real8> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },        
     <real: Real8> "+" <imag: UReal8> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -208,6 +232,9 @@ Complex8: Object = {
 
 Complex2: Object = {
     Real2,
+    <lhs: Real2> "@" <rhs: Real2> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },        
     <real: Real2> "+" <imag: UReal2> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -228,6 +255,9 @@ Complex2: Object = {
 
 Complex16: Object = {
     Real16,
+    <lhs: Real16> "@" <rhs: Real16> => {
+        numbers::make_polar(gc, lhs, rhs)
+    },        
     <real: Real16> "+" <imag: UReal16> "i" => {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     },
@@ -289,28 +319,24 @@ Real16: Object = {
 
 UReal10: Object = {
     UInteger10 =>? {
-        match isize::from_str(&<>) {
-            Ok(n) => {
-                Ok(Object::Fixnum(n))
-            }
+        match read_uinteger10(gc, &<>) {
+            Ok(obj) => Ok(obj),
             Err(err) => {
-                match BigInt::from_str(&<>) {
-                    Ok(b) => {
-                        Ok(Object::Bignum(gc.alloc(Bignum::new(b))))
-                    },
-                    Err(err2) => {
-                        Err(ParseError::User {
-                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
-                        })
-                    }
-                }
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
             }
         }
     },
     <numer: UInteger10> "/" <denom: UInteger10> =>? {
-        match (isize::from_str(&numer), isize::from_str(&denom)) {
+        match (BigInt::from_str(&numer), BigInt::from_str(&denom)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                if d == BigInt::from_isize(0).unwrap() {
+                    Err(ParseError::User {
+                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                    })
+                } else {
+                    Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                }
             }
             (Err(err), _) => {
                 Err(ParseError::User {
@@ -325,10 +351,23 @@ UReal10: Object = {
         }
     },
     Decimal10 =>? {
+        // To handle #e1e1000 case we parse 1e1000 style as exact.
+        // Then later makes them inexact if there's not #e prefix.
+        let re = Regex::new(r"^(\d+)e(\-?\d+)$").unwrap();
+        if let Some(captures) = re.captures(&<>) {
+            match (isize::from_str(&captures[1]), isize::from_str(&captures[2])) {
+                (Ok(lhs), Ok(rhs)) => {
+                    *is_inexact_context = true;
+                    let x = numbers::expt(gc, Object::Fixnum(10), Object::Fixnum(rhs));
+                    return Ok(numbers::mul(gc, Object::Fixnum(lhs), x))
+                }
+                _ => { /* fall through */ }
+            }
+        }
         match f64::from_str(&<>) {
             Ok(n) => {
                 Ok(Object::Flonum(Flonum::new(n)))
-            },
+            }
             Err(err) => {
                 Err(ParseError::User {
                     error: ReadError::NumberParseError { token: <>, description: err.to_string() }
@@ -340,28 +379,24 @@ UReal10: Object = {
 
 UReal16: Object = {
     UInteger16 =>? {
-        match isize::from_str_radix(&<>, 16) {
-            Ok(n) => {
-                Ok(Object::Fixnum(n))
-            }
+        match read_uinteger16(gc, &<>) {
+            Ok(obj) => Ok(obj),
             Err(err) => {
-                match BigInt::from_str_radix(&<>, 16) {
-                    Ok(b) => {
-                        Ok(Object::Bignum(gc.alloc(Bignum::new(b))))
-                    },
-                    Err(err2) => {
-                        Err(ParseError::User {
-                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
-                        })
-                    }
-                }
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
             }
         }
     },
     <numer: UInteger16> "/" <denom: UInteger16> =>? {
-        match (isize::from_str_radix(&numer, 16), isize::from_str_radix(&denom, 16)) {
+        match (BigInt::from_str_radix(&numer, 16), BigInt::from_str_radix(&denom, 16)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                if d == BigInt::from_isize(0).unwrap() {
+                    Err(ParseError::User {
+                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                    })
+                } else {
+                    Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                }
             }
             (Err(err), _) => {
                 Err(ParseError::User {
@@ -379,28 +414,24 @@ UReal16: Object = {
 
 UReal8: Object = {
     UInteger8 =>? {
-        match isize::from_str_radix(&<>, 8) {
-            Ok(n) => {
-                Ok(Object::Fixnum(n))
-            }
+        match read_uinteger8(gc, &<>) {
+            Ok(obj) => Ok(obj),
             Err(err) => {
-                match BigInt::from_str_radix(&<>, 8) {
-                    Ok(b) => {
-                        Ok(Object::Bignum(gc.alloc(Bignum::new(b))))
-                    },
-                    Err(err2) => {
-                        Err(ParseError::User {
-                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
-                        })
-                    }
-                }
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
             }
         }
     },
     <numer: UInteger8> "/" <denom: UInteger8> =>? {
-        match (isize::from_str_radix(&numer, 8), isize::from_str_radix(&denom, 8)) {
+        match (BigInt::from_str_radix(&numer, 8), BigInt::from_str_radix(&denom, 8)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                if d == BigInt::from_isize(0).unwrap() {
+                    Err(ParseError::User {
+                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                    })
+                } else {
+                    Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                }
             }
             (Err(err), _) => {
                 Err(ParseError::User {
@@ -418,28 +449,24 @@ UReal8: Object = {
 
 UReal2: Object = {
     UInteger2 =>? {
-        match isize::from_str_radix(&<>, 2) {
-            Ok(n) => {
-                Ok(Object::Fixnum(n))
-            }
+        match read_uinteger2(gc, &<>) {
+            Ok(obj) => Ok(obj),
             Err(err) => {
-                match BigInt::from_str_radix(&<>, 2) {
-                    Ok(b) => {
-                        Ok(Object::Bignum(gc.alloc(Bignum::new(b))))
-                    },
-                    Err(err2) => {
-                        Err(ParseError::User {
-                            error: ReadError::NumberParseError { token: <>, description: err2.to_string() }
-                        })
-                    }
-                }
+                Err(ParseError::User {
+                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
             }
         }
     },
     <numer: UInteger2> "/" <denom: UInteger2> =>? {
-        match (isize::from_str_radix(&numer, 2), isize::from_str_radix(&denom, 2)) {
+        match (BigInt::from_str_radix(&numer, 2), BigInt::from_str_radix(&denom, 2)) {
             (Ok(n), Ok(d)) => {
-                Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                if d == BigInt::from_isize(0).unwrap() {
+                    Err(ParseError::User {
+                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                    })
+                } else {
+                    Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
+                }
             }
             (Err(err), _) => {
                 Err(ParseError::User {
@@ -550,12 +577,13 @@ extern {
         "." => lexer::Token::Dot,
         "/" => lexer::Token::Slash,
         "#d" => lexer::Token::Radix10,
-        "#b" => lexer::Token::Radix2,        
+        "#b" => lexer::Token::Radix2,
         "#o" => lexer::Token::Radix8,
         "#x" => lexer::Token::Radix16,
         "#e" => lexer::Token::Exact,
         "#i" => lexer::Token::Inexact,
         "+" => lexer::Token::Plus,
+        "@" => lexer::Token::At,
         "digit" => lexer::Token::Digit { value: <String> },
         "bin_digit" => lexer::Token::BinDigit { value: <String> },
         "oct_digit" => lexer::Token::OctDigit { value: <String> },

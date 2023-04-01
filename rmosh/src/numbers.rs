@@ -4,22 +4,112 @@ use std::{
 };
 
 use num_bigint::BigInt;
-use num_rational::Rational64;
-use num_traits::{FromPrimitive, Signed, ToPrimitive};
+use num_rational::BigRational;
+use num_traits::{FromPrimitive, Signed, ToPrimitive, Zero};
 
 use crate::{
-    gc::{Gc, GcHeader, GcRef, ObjectType},
+    gc::{Gc, GcHeader, GcRef, ObjectType, Trace},
     objects::Object,
 };
 
+// GCed Object -> Object.
+pub trait GcObjectExt {
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object;
+}
+
+// BigInt => Fixnum or Bignum.
+impl GcObjectExt for BigInt {
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
+        match self.to_isize() {
+            Some(v) => Object::Fixnum(v),
+            None => Object::Bignum(gc.alloc(Bignum::new(self.clone()))),
+        }
+    }
+}
+
+// BigRational => Fixnum, Bignum or Ratnum.
+impl GcObjectExt for BigRational {
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
+        if self.is_integer() {
+            match self.to_isize() {
+                Some(v) => Object::Fixnum(v),
+                None => self.numer().clone().to_obj(gc),
+            }
+        } else {
+            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.clone())))
+        }
+    }
+}
+
+// u64 => Fixnum or Bignum
+impl GcObjectExt for u64 {
+    #[inline(always)]
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
+        match isize::from_u64(*self) {
+            Some(v) => v.to_obj(),
+            None => {
+                let b = BigInt::from_u64(*self).unwrap();
+                b.to_obj(gc)
+            }
+        }
+    }
+}
+
+// usize => Fixnum or Bignum
+impl GcObjectExt for usize {
+    #[inline(always)]
+    fn to_obj(&self, gc: &mut Box<Gc>) -> Object {
+        match isize::from_usize(*self) {
+            Some(v) => v.to_obj(),
+            None => {
+                let b = BigInt::from_usize(*self).unwrap();
+                b.to_obj(gc)
+            }
+        }
+    }
+}
+
+// Primitive -> Object.
+pub trait ObjectExt {
+    fn to_obj(&self) -> Object;
+}
+
+impl ObjectExt for isize {
+    #[inline(always)]
+    fn to_obj(&self) -> Object {
+        Object::Fixnum(*self)
+    }
+}
+
+impl ObjectExt for bool {
+    #[inline(always)]
+    fn to_obj(&self) -> Object {
+        if *self {
+            Object::True
+        } else {
+            Object::False
+        }
+    }
+}
+
 // Fixnum.
-trait FixnumExt {
+pub trait FixnumExt {
+    // Utils
+    fn bit_count(&self) -> isize;
+    fn length(&self) -> usize;
+    fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize;
+    fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize;
+    fn fxbit_copy_bitfield(fx1: isize, fx2: isize, fx3: isize, fx4: isize) -> isize;
+
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn sub(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn mul(self, gc: &mut Box<Gc>, fx: isize) -> Object;
     fn div(self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError>;
-    fn integer_div(self, fx: isize) -> Result<Object, SchemeError>;
+    fn integer_div(self, fx: isize) -> Result<isize, SchemeError>;
+    fn modulo(self, fx: isize) -> Result<isize, SchemeError>;
+    fn div0(self, fx: isize) -> Result<isize, SchemeError>;
+    fn modulo0(self, fx: isize) -> Result<isize, SchemeError>;
 
     // Fixnum vs Flonum
     fn add_fl(self, fl: &Flonum) -> Object;
@@ -34,6 +124,7 @@ trait FixnumExt {
     fn add_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
     fn sub_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
     fn mul_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object;
+    fn div_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Result<Object, SchemeError>;
     fn eqv_big(self, b: &Bignum) -> bool;
     fn lt_big(self, b: &Bignum) -> bool;
     fn gt_big(self, b: &Bignum) -> bool;
@@ -59,6 +150,35 @@ trait FixnumExt {
     fn sqrt(self, gc: &mut Box<Gc>) -> Object;
 }
 impl FixnumExt for isize {
+    fn bit_count(&self) -> isize {
+        if *self > 0 {
+            self.count_ones() as isize
+        } else {
+            !(!(*self)).bit_count() as isize
+        }
+    }
+    fn length(&self) -> usize {
+        if *self >= 0 {
+            std::mem::size_of::<isize>() * 8 - self.leading_zeros() as usize
+        } else {
+            std::mem::size_of::<isize>() * 8 - (!*self).leading_zeros() as usize
+        }
+    }
+    fn fxif(fx1: isize, fx2: isize, fx3: isize) -> isize {
+        (fx1 & fx2) | ((!fx1) & fx3)
+    }
+    fn fxbitfield(fx1: isize, fx2: isize, fx3: isize) -> isize {
+        let mask = !(-1isize << fx3);
+        (fx1 & mask) >> fx2
+    }
+
+    fn fxbit_copy_bitfield(fx1: isize, fx2: isize, fx3: isize, fx4: isize) -> isize {
+        let mask1 = -1 << fx2;
+        let mask2 = !(-1 << fx3);
+        let mask = mask1 & mask2;
+        isize::fxif(mask, fx4 << fx2, fx1)
+    }
+
     // Fixnum vs Fixnum
     fn add(self, gc: &mut Box<Gc>, fx: isize) -> Object {
         match self.checked_add(fx) {
@@ -67,7 +187,7 @@ impl FixnumExt for isize {
                 let b1 = BigInt::from_isize(self).unwrap();
                 let b2 = BigInt::from_isize(fx).unwrap();
                 let b = b1 + b2;
-                Object::Bignum(gc.alloc(Bignum::new(b)))
+                b.to_obj(gc)
             }
         }
     }
@@ -78,7 +198,7 @@ impl FixnumExt for isize {
                 let b1 = BigInt::from_isize(self).unwrap();
                 let b2 = BigInt::from_isize(fx).unwrap();
                 let b = b1 - b2;
-                Object::Bignum(gc.alloc(Bignum::new(b)))
+                b.to_obj(gc)
             }
         }
     }
@@ -89,7 +209,7 @@ impl FixnumExt for isize {
                 let b1 = BigInt::from_isize(self).unwrap();
                 let b2 = BigInt::from_isize(fx).unwrap();
                 let b = b1 * b2;
-                Object::Bignum(gc.alloc(Bignum::new(b)))
+                b.to_obj(gc)
             }
         }
     }
@@ -99,29 +219,54 @@ impl FixnumExt for isize {
         } else if fx == 1 {
             Ok(Object::Fixnum(self))
         } else {
-            let r = Ratnum::new(self, fx);
-            if r.is_integer() {
-                Ok(r.numer())
-            } else {
-                Ok(Object::Ratnum(gc.alloc(r)))
-            }
+            let r = Ratnum::new_from_isize(self, fx);
+            Ok(r.ratio.to_obj(gc))
         }
     }
-    fn integer_div(self, fx: isize) -> Result<Object, SchemeError> {
+    fn integer_div(self, fx: isize) -> Result<isize, SchemeError> {
         if fx == 0 {
             return Err(SchemeError::Div0);
         }
-        let ret;
         if self == 0 {
-            ret = 0;
+            Ok(0)
         } else if self > 0 {
-            ret = self / fx;
+            Ok(self / fx)
         } else if fx > 0 {
-            ret = (self - fx + 1) / fx;
+            match self.checked_add(-fx) {
+                Some(v) => match v.checked_add(1) {
+                    Some(v) => Ok(v / fx),
+                    None => Err(SchemeError::Overflow),
+                },
+                None => Err(SchemeError::Overflow),
+            }
         } else {
-            ret = (self + fx + 1) / fx;
+            match self.checked_add(fx) {
+                Some(v) => match v.checked_add(1) {
+                    Some(v) => Ok(v / fx),
+                    None => Err(SchemeError::Overflow),
+                },
+                None => Err(SchemeError::Overflow),
+            }
         }
-        Ok(Object::Fixnum(ret))
+    }
+    fn modulo(self, other: isize) -> Result<isize, SchemeError> {
+        let x = self.integer_div(other)?;
+        Ok(self - x * other)
+    }
+    fn div0(self, other: isize) -> Result<isize, SchemeError> {
+        let d = self.integer_div(other)?;
+        let m = self.modulo(other)?;
+        if m <= other.abs() / 2 {
+            Ok(d)
+        } else if other > 0 {
+            Ok(d + 1)
+        } else {
+            Ok(d - 1)
+        }
+    }
+    fn modulo0(self, other: isize) -> Result<isize, SchemeError> {
+        let x = self.div0(other)?;
+        Ok(self - x * other)
     }
 
     // Fixnum vs Flonum
@@ -163,25 +308,25 @@ impl FixnumExt for isize {
     fn add_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
         let other = BigInt::from_isize(self).unwrap();
         let result = b.value.clone() + other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     fn sub_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
-        let other = BigInt::from_isize(self).unwrap();
-        let result = b.value.clone() - other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        let self_b = BigInt::from_isize(self).unwrap();
+        let result = self_b - b.value.clone();
+        result.to_obj(gc)
     }
     fn mul_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Object {
         let other = BigInt::from_isize(self).unwrap();
         let result = b.value.clone() * other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        result.to_obj(gc)
+    }
+    fn div_big(self, gc: &mut Box<Gc>, b: &Bignum) -> Result<Object, SchemeError> {
+        if b.is_zero() {
+            Err(SchemeError::Div0)
+        } else {
+            let lhs = BigInt::from_isize(self).unwrap();
+            let r = BigRational::new(lhs, b.value.clone());
+            Ok(r.to_obj(gc))
         }
     }
     fn eqv_big(self, b: &Bignum) -> bool {
@@ -211,35 +356,35 @@ impl FixnumExt for isize {
 
     // Fixnum vs Ratnum
     fn add_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
-        let r = r.ratio + Rational64::new_raw(self as i64, 1);
-        Object::from_ratio(gc, &r)
+        let r = r.ratio.clone() + BigRational::new_from_isize(self, 1);
+        r.to_obj(gc)
     }
     fn sub_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
-        let r = r.ratio - Rational64::new_raw(self as i64, 1);
-        Object::from_ratio(gc, &r)
+        let r = BigRational::new_from_isize(self, 1) - r.ratio.clone();
+        r.to_obj(gc)
     }
     fn mul_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
-        let r = r.ratio * Rational64::new_raw(self as i64, 1);
-        Object::from_ratio(gc, &r)
+        let r = r.ratio.clone() * BigRational::new_from_isize(self, 1);
+        r.to_obj(gc)
     }
     fn div_rat(self, gc: &mut Box<Gc>, r: &Ratnum) -> Result<Object, SchemeError> {
-        let r = Rational64::new_raw(self as i64, 1) / r.ratio;
-        Ok(Object::from_ratio(gc, &r))
+        let r = BigRational::new_from_isize(self, 1) / r.ratio.clone();
+        Ok(r.to_obj(gc))
     }
     fn eqv_rat(self, r: &Ratnum) -> bool {
-        match Rational64::from_isize(self) {
+        match BigRational::from_isize(self) {
             Some(self_r) => self_r == r.ratio,
             None => false,
         }
     }
     fn lt_rat(self, r: &Ratnum) -> bool {
-        match Rational64::from_isize(self) {
+        match BigRational::from_isize(self) {
             Some(self_r) => self_r < r.ratio,
             None => todo!(),
         }
     }
     fn gt_rat(self, r: &Ratnum) -> bool {
-        match Rational64::from_isize(self) {
+        match BigRational::from_isize(self) {
             Some(self_r) => self_r > r.ratio,
             None => todo!(),
         }
@@ -376,13 +521,36 @@ impl Flonum {
         Ok(Object::Flonum(Flonum::new(self.value() / other.value())))
     }
 
-    pub fn integer_div(&self, other: &Flonum) -> Result<Object, SchemeError> {
+    pub fn integer_div(&self, other: &Flonum) -> Flonum {
         let ret = if other.value() > 0.0 {
             (self.value() / other.value()).floor()
         } else {
-            (self.value() / (-other.value())).floor()
+            -((self.value() / (-other.value())).floor())
         };
-        Ok(Object::Flonum(Flonum::new(ret)))
+        Flonum::new(ret)
+    }
+
+    pub fn integer_mod(&self, other: &Flonum) -> Flonum {
+        let d = self.integer_div(other);
+        let m = other.value() * d.value();
+        Flonum::new(self.value() - m)
+    }
+
+    pub fn integer_div0(&self, other: &Flonum) -> Flonum {
+        let d = self.integer_div(other).value();
+        let m = self.integer_mod(other).value();
+        if m < other.value().abs() / 2.0 {
+            Flonum::new(d)
+        } else if other.value() > 0.0 {
+            Flonum::new(d + 1.0)
+        } else {
+            Flonum::new(d - 1.0)
+        }
+    }
+
+    pub fn integer_mod0(&self, other: &Flonum) -> Flonum {
+        let d = self.integer_div0(other).value();
+        Flonum::new(self.value() - other.value() * d)
     }
 
     #[inline(always)]
@@ -400,9 +568,7 @@ impl Flonum {
         Object::Flonum(Flonum::new(value))
     }
     pub fn div_fx(&self, fx: isize) -> Result<Object, SchemeError> {
-        if fx == 0 {
-            Err(SchemeError::Div0)
-        } else if fx == 1 {
+        if fx == 1 {
             Ok(Object::Flonum(Flonum::new(self.value())))
         } else {
             let value = self.value() / (fx as f64);
@@ -423,12 +589,15 @@ impl Flonum {
             None => todo!(),
         }
     }
+    pub fn mul_rat(&self, r: &GcRef<Ratnum>) -> Object {
+        match r.to_f64() {
+            Some(rv) => Object::Flonum(Flonum::new(self.value() * rv)),
+            None => todo!(),
+        }
+    }
     pub fn eqv_rat(&self, r: &GcRef<Ratnum>) -> bool {
         match r.to_f64() {
-            Some(v) => {
-                println!("eqv_rat {} {}", v, self.value());
-                v == self.value()
-            }
+            Some(v) => v == self.value(),
             None => false,
         }
     }
@@ -446,6 +615,22 @@ impl Flonum {
     }
 
     // Flonum vs Bignum
+    pub fn add_big(&self, gc: &mut Box<Gc>, b: &GcRef<Bignum>) -> Object {
+        match BigInt::from_f64(self.value()) {
+            Some(bv) => (bv + b.value.clone()).to_obj(gc),
+            None => match b.to_f64() {
+                Some(fv) => Object::Flonum(Flonum::new(fv + self.value())),
+                None => panic!(),
+            },
+        }
+    }
+    pub fn mul_big(&self, _gc: &mut Box<Gc>, b: &GcRef<Bignum>) -> Object {
+        match b.to_f64() {
+            Some(fv) => Object::Flonum(Flonum::new(fv * self.value())),
+            None => panic!(),
+        }
+    }
+
     pub fn eqv_big(&self, b: &GcRef<Bignum>) -> bool {
         match BigInt::from_f64(self.value()) {
             Some(b2) => b2 == b.value,
@@ -480,9 +665,47 @@ impl Flonum {
         Object::Flonum(Flonum::new(self.value().round()))
     }
 
-    #[inline(always)]
-    pub fn sqrt(&self) -> Object {
-        Object::Flonum(Flonum::new(self.value().sqrt()))
+    pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
+        if self.value() < 0.0 {
+            Object::Compnum(gc.alloc(Compnum::new(
+                Object::Flonum(Flonum::new(0.0)),
+                Object::Flonum(Flonum::new(self.value().abs().sqrt())),
+            )))
+        } else {
+            Object::Flonum(Flonum::new(self.value().sqrt()))
+        }
+    }
+
+    pub fn numerator(&self, gc: &mut Box<Gc>) -> Object {
+        if self.value().is_infinite() {
+            Object::Flonum(Flonum::new(self.value()))
+        } else if self.value().is_zero() {
+            Object::Flonum(Flonum::new(0.0))
+        } else {
+            let value = self.to_exact(gc);
+            let num = numerator(gc, value);
+            inexact(gc, num)
+        }
+    }
+
+    pub fn denominator(&self, gc: &mut Box<Gc>) -> Object {
+        if self.value().is_infinite() {
+            Object::Flonum(Flonum::new(1.0))
+        } else if self.value().is_zero() {
+            Object::Flonum(Flonum::new(1.0))
+        } else {
+            let value = self.to_exact(gc);
+            let num = denominator(gc, value);
+            inexact(gc, num)
+        }
+    }
+
+    pub fn is_integer(&self) -> bool {
+        if self.value().is_infinite() || self.value().is_nan() {
+            false
+        } else {
+            self.value() == self.value().round()
+        }
     }
 
     #[inline(always)]
@@ -500,10 +723,10 @@ impl Flonum {
     }
 
     pub fn to_exact(&self, gc: &mut Box<Gc>) -> Object {
-        match Rational64::from_f64(**self) {
-            Some(r) => Object::from_ratio(gc, &r),
+        match BigRational::from_f64(**self) {
+            Some(r) => r.to_obj(gc),
             None => {
-                todo!()
+                todo!("{}", self.value())
             }
         }
     }
@@ -554,11 +777,15 @@ impl Debug for Flonum {
 #[repr(C)]
 pub struct Ratnum {
     pub header: GcHeader,
-    pub ratio: Rational64,
+    pub ratio: BigRational,
+}
+
+impl Trace for Ratnum {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl Deref for Ratnum {
-    type Target = Rational64;
+    type Target = BigRational;
 
     fn deref(&self) -> &Self::Target {
         &self.ratio
@@ -572,39 +799,60 @@ impl DerefMut for Ratnum {
 }
 
 impl Ratnum {
-    pub fn new(numer: isize, denom: isize) -> Self {
+    pub fn new(numer: BigInt, denom: BigInt) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Ratnum),
-            ratio: Rational64::new_raw(numer as i64, denom as i64).reduced(),
+            ratio: BigRational::new_raw(numer, denom).reduced(),
         }
     }
-    pub fn new_from_ratio(ratio: Rational64) -> Self {
+    pub fn new_from_isize(numer: isize, denom: isize) -> Self {
+        match (BigInt::from_isize(numer), BigInt::from_isize(denom)) {
+            (Some(b1), Some(b2)) => Self {
+                header: GcHeader::new(ObjectType::Ratnum),
+                ratio: BigRational::new_raw(b1, b2).reduced(),
+            },
+            _ => panic!(),
+        }
+    }
+    pub fn new_from_ratio(ratio: BigRational) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Ratnum),
             ratio: ratio,
         }
     }
 
-    pub fn denom(&self) -> Object {
-        Object::Fixnum(*self.ratio.denom() as isize)
+    pub fn denom(&self, gc: &mut Box<Gc>) -> Object {
+        match self.ratio.denom().to_isize() {
+            Some(fx) => Object::Fixnum(fx),
+            None => {
+                let denom = self.ratio.denom();
+                denom.clone().to_obj(gc)
+            }
+        }
     }
 
-    pub fn numer(&self) -> Object {
-        Object::Fixnum(*self.ratio.numer() as isize)
+    pub fn numer(&self, gc: &mut Box<Gc>) -> Object {
+        match self.ratio.numer().to_isize() {
+            Some(fx) => Object::Fixnum(fx),
+            None => {
+                let numer = self.ratio.numer();
+                numer.clone().to_obj(gc)
+            }
+        }
     }
 
     pub fn add(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
-        let r = self.ratio + other.ratio;
-        Object::from_ratio(gc, &r)
+        let r = self.ratio.clone() + other.ratio.clone();
+        r.to_obj(gc)
     }
 
     pub fn sub(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
-        let r = self.ratio - other.ratio;
-        Object::from_ratio(gc, &r)
+        let r = self.ratio.clone() - other.ratio.clone();
+        r.to_obj(gc)
     }
     pub fn mul(&self, gc: &mut Box<Gc>, other: &GcRef<Ratnum>) -> Object {
-        let r = self.ratio * other.ratio;
-        Object::from_ratio(gc, &r)
+        let r = self.ratio.clone() * other.ratio.clone();
+        r.to_obj(gc)
     }
 
     pub fn eqv(&self, other: &Ratnum) -> bool {
@@ -613,37 +861,37 @@ impl Ratnum {
 
     // Ratnum vs Fixnum
     pub fn sub_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
-        let r = self.ratio - Rational64::new_raw(fx as i64, 1);
-        Object::from_ratio(gc, &r)
+        let r = self.ratio.clone() - BigRational::new_from_isize(fx, 1);
+        r.to_obj(gc)
     }
 
     pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
         if fx == 0 {
             Err(SchemeError::Div0)
         } else {
-            let r = self.ratio / Rational64::new_raw(fx as i64, 1);
-            Ok(Object::from_ratio(gc, &r))
+            let r = self.ratio.clone() / BigRational::new_from_isize(fx, 1);
+            Ok(r.to_obj(gc))
         }
     }
 
     pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
-        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.abs())))
+        self.ratio.abs().to_obj(gc)
     }
 
     pub fn ceiling(&self, gc: &mut Box<Gc>) -> Object {
-        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.ceil())))
+        self.ratio.ceil().to_obj(gc)
     }
 
     pub fn floor(&self, gc: &mut Box<Gc>) -> Object {
-        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.floor())))
+        self.ratio.floor().to_obj(gc)
     }
 
     pub fn round(&self, gc: &mut Box<Gc>) -> Object {
-        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.round())))
+        self.ratio.round().to_obj(gc)
     }
 
     pub fn truncate(&self, gc: &mut Box<Gc>) -> Object {
-        Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(self.ratio.trunc())))
+        self.ratio.trunc().to_obj(gc)
     }
 }
 
@@ -659,11 +907,28 @@ impl Debug for Ratnum {
     }
 }
 
+trait BigRationalExt {
+    fn new_from_isize(numer: isize, denom: isize) -> BigRational;
+}
+
+impl BigRationalExt for BigRational {
+    fn new_from_isize(numer: isize, denom: isize) -> BigRational {
+        match (BigInt::from_isize(numer), BigInt::from_isize(denom)) {
+            (Some(numer), Some(denom)) => BigRational::new_raw(numer, denom),
+            _ => panic!("Should not fail"),
+        }
+    }
+}
+
 /// Big number.
 #[repr(C)]
 pub struct Bignum {
     pub header: GcHeader,
     pub value: BigInt,
+}
+
+impl Trace for Bignum {
+    fn trace(&self, _gc: &mut Gc) {}
 }
 
 impl Deref for Bignum {
@@ -688,18 +953,37 @@ impl Bignum {
         }
     }
 
+    pub fn add(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
+        let result = self.value.clone() + other.value.clone();
+        result.to_obj(gc)
+    }
     pub fn sub(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         let result = self.value.clone() - other.value.clone();
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
-        }
+        result.to_obj(gc)
     }
     pub fn mul(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
         let result = self.value.clone() * other.value.clone();
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        result.to_obj(gc)
+    }
+    pub fn div(&self, gc: &mut Box<Gc>, other: &Bignum) -> Result<Object, SchemeError> {
+        if other.value == BigInt::from_u8(0).unwrap() {
+            Err(SchemeError::Div0)
+        } else {
+            let r = BigRational::new(self.value.clone(), other.value.clone());
+            Ok(r.to_obj(gc))
+        }
+    }
+    pub fn remainder(&self, gc: &mut Box<Gc>, other: &Bignum) -> Object {
+        assert!(other.value != BigInt::from_u8(0).unwrap());
+        let ret = self.value.clone().rem(other.value.clone());
+        ret.to_obj(gc)
+    }
+    pub fn quotient(&self, gc: &mut Box<Gc>, other: &Bignum) -> Result<Object, SchemeError> {
+        if other.value == BigInt::from_u8(0).unwrap() {
+            Err(SchemeError::Div0)
+        } else {
+            let b = self.value.clone() / other.value.clone();
+            Ok(b.to_obj(gc))
         }
     }
 
@@ -712,13 +996,41 @@ impl Bignum {
     pub fn sub_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
         let other = BigInt::from_isize(fx).unwrap();
         let result = self.value.clone() - other;
-        match result.to_isize() {
-            Some(v) => Object::Fixnum(v),
-            None => Object::Bignum(gc.alloc(Bignum::new(result))),
+        result.to_obj(gc)
+    }
+
+    pub fn div_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+        if fx == 0 {
+            Err(SchemeError::Div0)
+        } else {
+            let b = BigInt::from_isize(fx).unwrap();
+            let r = BigRational::new(self.value.clone(), b);
+            Ok(r.to_obj(gc))
         }
     }
 
+    pub fn quotient_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Result<Object, SchemeError> {
+        if fx == 0 {
+            Err(SchemeError::Div0)
+        } else {
+            let b = BigInt::from_isize(fx).unwrap();
+            let b = self.value.clone() / b;
+            Ok(b.to_obj(gc))
+        }
+    }
+
+    pub fn remainder_fx(&self, gc: &mut Box<Gc>, fx: isize) -> Object {
+        assert!(fx != 0);
+        let ret = self.value.clone().rem(fx);
+        ret.to_obj(gc)
+    }
+
     // Bignum vs Ratnum.
+    pub fn mul_rat(&self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
+        let ratio = BigRational::new_raw(self.value.clone(), BigInt::from_isize(1).unwrap());
+        let ret = ratio * r.ratio.clone();
+        ret.to_obj(gc)
+    }
     pub fn eqv_rat(&self, r: &Ratnum) -> bool {
         match (self.to_f64(), r.to_f64()) {
             (Some(l), Some(r)) => l == r,
@@ -744,28 +1056,18 @@ impl Bignum {
     }
 
     pub fn abs(&self, gc: &mut Box<Gc>) -> Object {
-        Object::Bignum(gc.alloc(Bignum::new(self.value.abs())))
+        self.value.abs().to_obj(gc)
     }
 
     pub fn sqrt(&self, gc: &mut Box<Gc>) -> Object {
         if self.is_positive() {
             let b = self.value.sqrt();
-            match b.to_isize() {
-                Some(v) => Object::Fixnum(v),
-                None => Object::Bignum(gc.alloc(Bignum::new(b))),
-            }
+            b.to_obj(gc)
         } else {
             let b = self.value.clone().neg();
             let b = b.sqrt();
-            match b.to_isize() {
-                Some(v) => {
-                    Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(v))))
-                }
-                None => {
-                    let b = gc.alloc(Bignum::new(b));
-                    Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), Object::Bignum(b))))
-                }
-            }
+            let imag = b.to_obj(gc);
+            Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), imag)))
         }
     }
 }
@@ -787,8 +1089,15 @@ impl Debug for Bignum {
 #[repr(C)]
 pub struct Compnum {
     pub header: GcHeader,
-    real: Object,
-    imag: Object,
+    pub real: Object,
+    pub imag: Object,
+}
+
+impl Trace for Compnum {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.real);
+        gc.mark_object(self.imag);
+    }
 }
 
 impl Compnum {
@@ -826,6 +1135,48 @@ impl Compnum {
         let re = Object::Flonum(Flonum::new(r * imag.cos()));
         let im = Object::Flonum(Flonum::new(r * imag.sin()));
         Object::Compnum(gc.alloc(Compnum::new(re, im)))
+    }
+
+    // e^(z2log(z1))
+    pub fn expt(gc: &mut Box<Gc>, z1: Object, z2: Object) -> Object {
+        if z2.is_fixnum() {
+            let n = z2.to_isize();
+            if n == 0 {
+                Object::Fixnum(1)
+            } else if n > 0 {
+                let mut ret = z1;
+                for _ in 0..n - 1 {
+                    ret = mul(gc, ret, z1);
+                }
+                ret
+            } else {
+                let mut ret = Object::Fixnum(1);
+                for _i in 0..(-n) {
+                    match div(gc, ret, z1) {
+                        Ok(v) => ret = v,
+                        Err(_) => panic!(),
+                    }
+                }
+                ret
+            }
+        } else {
+            let x = log(gc, z1);
+            let x = mul(gc, z2, x);
+            exp(gc, x)
+        }
+    }
+
+    pub fn log(&self, gc: &mut Box<Gc>) -> Object {
+        let real = real_to_f64(self.real);
+        let imag = real_to_f64(self.imag);
+
+        let r = (real * real + imag * imag).sqrt();
+        let theta = f64::atan2(imag, real);
+
+        Object::Compnum(gc.alloc(Compnum::new(
+            Object::Flonum(Flonum::new(r.ln())),
+            Object::Flonum(Flonum::new(theta)),
+        )))
     }
 
     pub fn cos(&self, gc: &mut Box<Gc>) -> Object {
@@ -969,12 +1320,12 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.add_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.add(&fl2),
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.add_rat(&r),
-        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Bignum(b)) => fl.add_big(gc, &b),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.add_big(gc, &b),
-        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.add_big(gc, &b),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.add(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.add_rat(gc, &r),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
@@ -1023,28 +1374,31 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
 }
 
 pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
+    if !n1.is_number() {
+        panic!("n1={}", n1.to_string());
+    }
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.mul(gc, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.mul_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.mul_rat(gc, &r),
-        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Bignum(b)) => fx.mul_big(gc, &b),
         (Object::Fixnum(_), Object::Compnum(c)) => c.mul_real(gc, n1),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.mul_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.mul(&fl2),
-        (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Flonum(_), Object::Bignum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Ratnum(r)) => fl.mul_rat(&r),
+        (Object::Flonum(fl), Object::Bignum(b)) => fl.mul_big(gc, &b),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
-        (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => fx.mul_big(gc, &b),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.mul_big(gc, &b),
+        (Object::Bignum(b), Object::Ratnum(r)) => b.mul_rat(gc, &r),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.mul(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.mul_rat(gc, &r),
-        (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Flonum(fl)) => fl.mul_rat(&r),
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.mul(gc, &r2),
-        (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Ratnum(r), Object::Bignum(b)) => b.mul_rat(gc, &r),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
         (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Compnum(_), Object::Flonum(_)) => todo!(),
@@ -1054,30 +1408,31 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         _ => todo!(),
     }
 }
-
+#[derive(Debug)]
 pub enum SchemeError {
     Div0,
     NonZeroRequired,
     NanOrInfinite,
+    Overflow,
 }
 pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
-        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => fx1.div(gc, fx2),
+        (Object::Fixnum(fx1), Object::Fixnum(fx2)) => FixnumExt::div(fx1, gc, fx2),
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.div_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.div_rat(gc, &r),
-        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Bignum(b)) => fx.div_big(gc, &b),
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.div_fx(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.div(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => b.div_fx(gc, fx),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.div(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(r), Object::Fixnum(fx)) => r.div_fx(gc, fx),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
@@ -1119,9 +1474,21 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
     }
 
     if n1.is_fixnum() && n2.is_fixnum() {
-        return n1.to_isize().integer_div(n2.to_isize());
+        match n1.to_isize().integer_div(n2.to_isize()) {
+            Ok(v) => Ok(Object::Fixnum(v)),
+            Err(SchemeError::Div0) => Err(SchemeError::Div0),
+            Err(SchemeError::Overflow) => match BigInt::from_isize(n1.to_isize()) {
+                Some(b) => {
+                    let b1 = Object::Bignum(gc.alloc(Bignum::new(b)));
+                    return integer_div(gc, b1, n2);
+                }
+                None => panic!(""),
+            },
+            Err(x) => panic!("{:?}", x),
+        }
     } else if n1.is_flonum() && n2.is_flonum() {
-        n1.to_flonum().integer_div(&n2.to_flonum())
+        let ret = n1.to_flonum().integer_div(&n2.to_flonum());
+        Ok(Object::Flonum(ret))
     } else {
         let ret;
         if n2.is_negative() {
@@ -1213,7 +1580,7 @@ pub fn gt(n1: Object, n2: Object) -> bool {
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.gt_rat(&r),
         (Object::Flonum(fl), Object::Bignum(b)) => fl.gt_big(&b),
         (Object::Bignum(b), Object::Fixnum(fx)) => fx.lt_big(&b),
-        (Object::Bignum(b), Object::Flonum(fl)) => !fl.gt_big(&b),
+        (Object::Bignum(b), Object::Flonum(fl)) => fl.lt_big(&b),
         (Object::Bignum(b), Object::Ratnum(r)) => b.gt_rat(&r),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.gt(&b2),
         (Object::Ratnum(r), Object::Fixnum(fx)) => fx.lt_rat(&r),
@@ -1244,12 +1611,19 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(n2.is_number());
     assert!(!n2.is_bignum());
     match (n1, n2) {
-        (Object::Fixnum(f1), Object::Fixnum(f2)) => match (BigInt::from_isize(f1), f2 as u32) {
+        (Object::Fixnum(f1), Object::Fixnum(f2)) => match (BigInt::from_isize(f1), f2) {
             (Some(b1), b2) => {
-                let b = b1.pow(b2);
-                match b.to_isize() {
-                    Some(v) => Object::Fixnum(v),
-                    None => Object::Bignum(gc.alloc(Bignum::new(b))),
+                if f2 == 0 {
+                    Object::Fixnum(1)
+                } else if f2 > 0 {
+                    let b = b1.pow(b2 as u32);
+                    b.to_obj(gc)
+                } else {
+                    if f1 == 0 {
+                        return Object::Unspecified;
+                    }
+                    let b = b1.pow((f2 * -1) as u32);
+                    Object::Ratnum(gc.alloc(Ratnum::new(BigInt::from_isize(1).unwrap(), b)))
                 }
             }
             _ => todo!(),
@@ -1261,16 +1635,39 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         }
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Compnum(c)) => {
+            if fx == 0 {
+                if c.real.is_negative() {
+                    Object::Unspecified
+                } else {
+                    Object::Fixnum(0)
+                }
+            } else {
+                Compnum::expt(gc, n1, n2)
+            }
+        }
         (Object::Flonum(fl), Object::Fixnum(_)) => {
             let fl1 = fl.value();
             let fl2 = real_to_f64(n2);
             Object::Flonum(Flonum::new(fl1.powf(fl2)))
         }
-        (Object::Flonum(_), Object::Flonum(_)) => todo!(),
+        (Object::Flonum(fl1), Object::Flonum(fl2)) => {
+            Object::Flonum(Flonum::new(fl1.value().powf(fl2.value())))
+        }
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
-        (Object::Flonum(_), Object::Compnum(_)) => todo!(),
+        (Object::Flonum(fl), Object::Compnum(c)) => {
+            let fl = fl.value();
+            if fl == 0.0 {
+                if c.real.is_negative() {
+                    Object::Unspecified
+                } else {
+                    Object::Flonum(Flonum::new(0.0))
+                }
+            } else {
+                Compnum::expt(gc, n1, n2)
+            }
+        }
         (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
@@ -1290,7 +1687,7 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     }
 }
 
-pub fn quotient(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1312,10 +1709,16 @@ pub fn quotient(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sch
             (fl.value() / b.value.to_f64().unwrap()).trunc(),
         ))),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => {
+            if fx == 0 {
+                Err(SchemeError::NonZeroRequired)
+            } else {
+                b.quotient_fx(gc, fx)
+            }
+        }
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => b1.quotient(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
@@ -1378,7 +1781,7 @@ pub fn remainder(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sc
     }
 }
 
-pub fn modulo(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
+pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1407,10 +1810,44 @@ pub fn modulo(_gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Schem
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Bignum(b), Object::Fixnum(fx)) => {
+            if fx == 0 {
+                Err(SchemeError::NonZeroRequired)
+            } else {
+                let modulo = b.remainder_fx(gc, fx);
+                if eqv(modulo, Object::Fixnum(0)) {
+                    Ok(modulo)
+                } else {
+                    let a = n2.is_negative();
+                    let b = modulo.is_negative();
+                    if (a && !b) || (!a && b) {
+                        Ok(add(gc, modulo, n2))
+                    } else {
+                        Ok(modulo)
+                    }
+                }
+            }
+        }
         (Object::Bignum(_), Object::Flonum(_)) => todo!(),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Bignum(_), Object::Bignum(_)) => todo!(),
+        (Object::Bignum(b1), Object::Bignum(b2)) => {
+            if n2.is_zero() {
+                Err(SchemeError::NonZeroRequired)
+            } else {
+                let modulo = b1.remainder(gc, &b2);
+                if modulo.is_zero() {
+                    Ok(modulo)
+                } else {
+                    let a = n2.is_negative();
+                    let b = modulo.is_negative();
+                    if (a && !b) || (!a && b) {
+                        Ok(add(gc, modulo, n2))
+                    } else {
+                        Ok(modulo)
+                    }
+                }
+            }
+        }
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Fixnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Flonum(_)) => todo!(),
@@ -1446,10 +1883,18 @@ pub fn to_string(n: Object, radix: usize) -> String {
     assert!(radix == 2 || radix == 8 || radix == 10 || radix == 16);
     match n {
         Object::Fixnum(fx) if radix == 2 => {
-            format!("{:b}", fx)
+            if fx < 0 {
+                format!("-{:b}", -fx)
+            } else {
+                format!("{:b}", fx)
+            }
         }
         Object::Fixnum(fx) if radix == 8 => {
-            format!("{:o}", fx)
+            if fx < 0 {
+                format!("-{:o}", -fx)
+            } else {
+                format!("{:o}", fx)
+            }
         }
         Object::Fixnum(fx) if radix == 10 => {
             format!("{}", fx)
@@ -1458,7 +1903,31 @@ pub fn to_string(n: Object, radix: usize) -> String {
             format!("{}", n.to_string())
         }
         Object::Fixnum(fx) if radix == 16 => {
-            format!("{:x}", fx)
+            if fx < 0 {
+                format!("-{:x}", -fx)
+            } else {
+                format!("{:x}", fx)
+            }
+        }
+        Object::Ratnum(r) if radix == 16 => {
+            format!("{:x}", r.ratio)
+        }
+        Object::Ratnum(r) if radix == 8 => {
+            format!("{:o}", r.ratio)
+        }
+        Object::Ratnum(r) if radix == 2 => {
+            format!("{:b}", r.ratio)
+        }
+        Object::Compnum(c) => {
+            if ge(c.imag, Object::Fixnum(0)) {
+                if c.imag.is_flonum() && c.imag.to_flonum().is_infinite() {
+                    format!("{}{}i", c.real.to_string(), c.imag.to_string())
+                } else {
+                    format!("{}+{}i", to_string(c.real, radix), to_string(c.imag, radix))
+                }
+            } else {
+                format!("{}+{}i", to_string(c.real, radix), to_string(c.imag, radix))
+            }
         }
         _ => panic!("invalid n={}, radix={}", n, radix),
     }
@@ -1468,7 +1937,7 @@ pub fn log(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     match n {
         Object::Fixnum(fx) => fx.log(),
-        Object::Compnum(_) => todo!(),
+        Object::Compnum(c) => c.log(gc),
         _ => {
             let value = real_to_f64(n);
             if value.is_infinite() && n.is_bignum() && gt(n, Object::Fixnum(0)) {
@@ -1496,7 +1965,13 @@ pub fn log2(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeEr
 pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_real());
     match n {
-        Object::Fixnum(fx) => Object::Fixnum(fx.abs()),
+        Object::Fixnum(fx) => match fx.checked_abs() {
+            Some(v) => Object::Fixnum(v),
+            None => match BigInt::from_isize(fx) {
+                Some(bigint) => bigint.abs().to_obj(gc),
+                None => panic!(),
+            },
+        },
         Object::Flonum(fl) => fl.abs(),
         Object::Bignum(b) => b.abs(gc),
         Object::Ratnum(r) => r.abs(gc),
@@ -1606,7 +2081,8 @@ pub fn angle(_gc: &mut Box<Gc>, n: Object) -> Object {
     assert!(n.is_number());
     if n.is_real() {
         if n.is_negative() {
-            Object::Flonum(Flonum::new(-1.0f64.acos()))
+            // Pi
+            Object::Flonum(Flonum::new(f64::acos(-1.0)))
         } else {
             if n.is_flonum() {
                 Object::Flonum(Flonum::new(0.0))
@@ -1644,7 +2120,7 @@ pub fn round(gc: &mut Box<Gc>, n: Object) -> Object {
 pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
     match obj {
         Object::Fixnum(fx) => fx.sqrt(gc),
-        Object::Flonum(fl) => fl.sqrt(),
+        Object::Flonum(fl) => fl.sqrt(gc),
         Object::Bignum(b) => b.sqrt(gc),
         Object::Compnum(c) => c.sqrt(gc),
         Object::Ratnum(_r) => todo!(),
@@ -1709,7 +2185,7 @@ pub fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
 pub fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
     assert!(obj.is_rational());
     match obj {
-        Object::Ratnum(r) => r.denom(),
+        Object::Ratnum(r) => r.denom(gc),
         Object::Flonum(fl) => {
             let m = fl.to_exact(gc);
             let denom = denominator(gc, m);
@@ -1722,7 +2198,7 @@ pub fn denominator(gc: &mut Box<Gc>, obj: Object) -> Object {
 pub fn numerator(gc: &mut Box<Gc>, obj: Object) -> Object {
     assert!(obj.is_rational());
     match obj {
-        Object::Ratnum(r) => r.numer(),
+        Object::Ratnum(r) => r.numer(gc),
         Object::Flonum(fl) => {
             let m = fl.to_exact(gc);
             let denom = numerator(gc, m);
@@ -1853,16 +2329,28 @@ impl Object {
     }
 
     #[inline(always)]
-    fn is_negative(&self) -> bool {
+    pub fn is_negative(&self) -> bool {
         lt(*self, Object::Fixnum(0))
     }
 
-    fn is_real_valued(&self) -> bool {
+    pub fn is_real_valued(&self) -> bool {
         if self.is_real() {
             true
         } else if self.is_compnum() {
             let c = self.to_compnum();
             c.imag.is_zero()
+        } else {
+            false
+        }
+    }
+
+    pub fn is_rational_valued(&self) -> bool {
+        assert!(self.is_number());
+        if self.is_rational() {
+            true
+        } else if self.is_compnum() {
+            let c = self.to_compnum();
+            c.imag.is_zero() && c.real.is_rational_valued()
         } else {
             false
         }
@@ -1875,17 +2363,6 @@ impl Object {
             Object::Flonum(fl) => fl.is_even(),
             Object::Compnum(c) => c.real.is_even(),
             _ => panic!(),
-        }
-    }
-
-    pub fn from_ratio(gc: &mut Box<Gc>, r: &Rational64) -> Object {
-        if r.is_integer() {
-            match r.to_isize() {
-                Some(v) => Object::Fixnum(v),
-                None => Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(*r))),
-            }
-        } else {
-            Object::Ratnum(gc.alloc(Ratnum::new_from_ratio(*r)))
         }
     }
 }

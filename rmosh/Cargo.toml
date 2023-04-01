@@ -1,6 +1,6 @@
 [package]
 name = "rmosh"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -14,6 +14,7 @@ debug_log_gc = []
 lalrpop = "0.19.7"
 
 [dependencies]
+rust-embed="6.6.1"
 bumpalo = { version = "3.11.1" }
 mimalloc = { version = "0.1.27", default-features = false }
 enum-display-derive = "0.1.1"
@@ -25,3 +26,6 @@ lalrpop-util = { version = "^0.19", features = ["lexer"] }
 ordered-float = { version = "3.0", default-features = false }
 num-bigint = "0.4"
 num-rational = "0.4"
+clap = { version = "4.0", features = ["derive"] }
+byteorder = "1"
+once_cell = "1.5.2"

@@ -1,7 +1,4 @@
-use std::env;
-
-use rmosh::objects::Object;
-use rmosh::vm::Vm;
+use clap::Parser;
 extern crate num_derive;
 #[macro_use]
 extern crate lalrpop_util;
@@ -28,22 +25,45 @@ pub mod psyntax;
 pub mod reader_util;
 pub mod vm;
 
+/// rmosh R7RS & R6RS Scheme intepreter.
+#[derive(Parser)]
+struct Cli {
+    #[arg(long = "loadpath", help = "Add library loadpath.")]
+    loadpath: Option<String>,
+
+    #[arg(help = "Path to a Scheme program file.")]
+    file: Option<String>,
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    //if args.len() == 2 {
-    let mut vm = Vm::new();
+    let args = Cli::parse();
+    let vm = unsafe { &mut vm::CURRENT_VM };
     vm.should_load_compiler = true;
-    let mut vargs: Vec<Object> = vec![];
-    for i in 1..args.len() {
-        vargs.push(vm.gc.new_string(&args[i]));
+    let mut vargs: Vec<objects::Object> = vec![];
+    // The main program file.
+    if let Some(file) = args.file {
+        vargs.push(vm.gc.new_string(&file));
+    } else {
+        //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
+        //vargs.push(vm.gc.new_string("/root/cont.scm"));
+        /*
+        vargs.push(
+            vm.gc
+                .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps"),
+        )*/
+       // vargs.push(
+         //   vm.gc
+           //     .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/contrib.sps"),
+        //)
     }
-    //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
-    vargs.push(vm.gc.new_string("/root/cont.scm"));
+
     let vargs = vm.gc.listn(&vargs);
-    match vm.enable_r7rs(vargs) {
-        Ok(_ret) => println!("normal exit"),
+    //    let loadpath = args.loadpath;
+    let loadpath = Some("/root/mosh.git/tests/r6rs-test-suite/".to_string());
+    match vm.enable_r7rs(vargs, loadpath) {
+        Ok(_ret) => (),
         Err(e) => {
-            println!("e={}", e);
+            eprintln!("Abnormal exit {:?}", e);
         }
     }
 }

@@ -10,6 +10,7 @@ pub enum Token {
     AbbrevUnquoteSplicing,
     AbbrevUnsyntax,
     AbbrevUnsyntaxSplicing,
+    At,
     BinDigit { value: String },
     ByteVectorStart,
     Character { value: char },

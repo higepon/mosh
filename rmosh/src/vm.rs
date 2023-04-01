@@ -1,3 +1,4 @@
+use once_cell::sync::Lazy;
 use std::{
     collections::HashMap,
     env,
@@ -15,13 +16,22 @@ use crate::{
     compiler, error,
     fasl::FaslReader,
     gc::{Gc, GcRef},
+    obj_as_text_input_port_mut_or_panic,
     objects::{Closure, Object, Symbol},
     op::Op,
-    ports::{StdErrorPort, StdInputPort, StdOutputPort, TextInputPort},
+    ports::{
+        EolStyle, ErrorHandlingMode, StdErrorPort, StdInputPort, StdOutputPort, TextInputPort,
+        TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF8Codec,
+    },
     procs::default_free_vars,
     psyntax,
     reader_util::ReadError,
 };
+
+// This is introduced to support custom binary output port where we need vm.call_closure3().
+// We tried to pass Vm to the methods, but it turned out it breaks to_string() family badly.
+// So we decided to have this kind of global accessible Vm. We use this as less as possible to keep this code clean.
+pub static mut CURRENT_VM: Lazy<Vm> = Lazy::new(|| Vm::new());
 
 const STACK_SIZE: usize = 65536;
 const MAX_NUM_VALUES: usize = 256;
@@ -81,6 +91,9 @@ pub struct Vm {
     pub should_load_compiler: bool,
     pub dynamic_code_array: Vec<Vec<Object>>,
     pub call_by_name_code: Vec<Object>,
+    pub call_closure0_code: Vec<Object>,
+    pub call_closure1_code: Vec<Object>,
+    pub call_closure3_code: Vec<Object>,
     pub closure_for_evaluate: Object,
     current_input_port: Object,
     current_output_port: Object,
@@ -113,15 +126,65 @@ impl Vm {
             is_initialized: false,
             dynamic_code_array: vec![],
             call_by_name_code: vec![],
+            call_closure0_code: vec![],
+            call_closure1_code: vec![],
+            call_closure3_code: vec![],
             closure_for_evaluate: Object::Unspecified,
             current_input_port: Object::Unspecified,
             current_output_port: Object::Unspecified,
             current_error_port: Object::Unspecified,
             saved_registers: Registers::new(),
         };
-        ret.current_output_port = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
-        ret.current_error_port = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
-        ret.current_input_port = Object::StdInputPort(ret.gc.alloc(StdInputPort::new()));
+        let raw_stdport = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
+        let codec = Object::UTF8Codec(ret.gc.alloc(UTF8Codec::new()));
+        let eol_style = if std::env::consts::OS == "windows" {
+            EolStyle::CrLf
+        } else {
+            EolStyle::Lf
+        };
+        let transcoder = Object::Transcoder(ret.gc.alloc(Transcoder::new(
+            codec,
+            eol_style,
+            ErrorHandlingMode::RaiseError,
+        )));
+        ret.current_output_port = Object::TranscodedOutputPort(
+            ret.gc
+                .alloc(TranscodedOutputPort::new(raw_stdport, transcoder)),
+        );
+
+        let raw_errport = Object::StdErrorPort(ret.gc.alloc(StdErrorPort::new()));
+        let codec = Object::UTF8Codec(ret.gc.alloc(UTF8Codec::new()));
+        let eol_style = if std::env::consts::OS == "windows" {
+            EolStyle::CrLf
+        } else {
+            EolStyle::Lf
+        };
+        let transcoder = Object::Transcoder(ret.gc.alloc(Transcoder::new(
+            codec,
+            eol_style,
+            ErrorHandlingMode::RaiseError,
+        )));
+        ret.current_error_port = Object::TranscodedOutputPort(
+            ret.gc
+                .alloc(TranscodedOutputPort::new(raw_errport, transcoder)),
+        );
+
+        let raw_stdinport = Object::StdInputPort(ret.gc.alloc(StdInputPort::new()));
+        let codec = Object::UTF8Codec(ret.gc.alloc(UTF8Codec::new()));
+        let eol_style = if std::env::consts::OS == "windows" {
+            EolStyle::CrLf
+        } else {
+            EolStyle::Lf
+        };
+        let transcoder = Object::Transcoder(ret.gc.alloc(Transcoder::new(
+            codec,
+            eol_style,
+            ErrorHandlingMode::RaiseError,
+        )));
+        ret.current_input_port = Object::TranscodedInputPort(
+            ret.gc
+                .alloc(TranscodedInputPort::new(raw_stdinport, transcoder)),
+        );
 
         ret.call_by_name_code.push(Object::Instruction(Op::Frame));
         ret.call_by_name_code.push(Object::Fixnum(8));
@@ -136,10 +199,52 @@ impl Vm {
         ret.call_by_name_code.push(Object::Fixnum(1));
         ret.call_by_name_code.push(Object::Instruction(Op::Halt));
 
+        ret.call_closure0_code.push(Object::Instruction(Op::Frame));
+        ret.call_closure0_code.push(Object::Fixnum(5));
+        ret.call_closure0_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure0_code.push(Object::Unspecified);
+        ret.call_closure0_code.push(Object::Instruction(Op::Call));
+        ret.call_closure0_code.push(Object::Fixnum(0));
+        ret.call_closure0_code.push(Object::Instruction(Op::Halt));
+
+        ret.call_closure1_code.push(Object::Instruction(Op::Frame));
+        ret.call_closure1_code.push(Object::Fixnum(8));
+        ret.call_closure1_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure1_code.push(Object::Unspecified);
+        ret.call_closure1_code.push(Object::Instruction(Op::Push));
+        ret.call_closure1_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure1_code.push(Object::Unspecified);
+        ret.call_closure1_code.push(Object::Instruction(Op::Call));
+        ret.call_closure1_code.push(Object::Fixnum(1));
+        ret.call_closure1_code.push(Object::Instruction(Op::Halt));
+
+        ret.call_closure3_code.push(Object::Instruction(Op::Frame));
+        ret.call_closure3_code.push(Object::Fixnum(14));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Push));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Push));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Push));
+        ret.call_closure3_code
+            .push(Object::Instruction(Op::Constant));
+        ret.call_closure3_code.push(Object::Unspecified);
+        ret.call_closure3_code.push(Object::Instruction(Op::Call));
+        ret.call_closure3_code.push(Object::Fixnum(3));
+        ret.call_closure3_code.push(Object::Instruction(Op::Halt));
         ret
     }
 
-    pub fn enable_r7rs(&mut self, args: Object) -> error::Result<Object> {
+    pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {
         let mut fasl = FaslReader::new(psyntax::U8_ARRAY);
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
@@ -161,9 +266,14 @@ impl Vm {
             self.set_global_value(sym.to_symbol(), args);
 
             let sym = self.gc.symbol_intern("%loadpath");
-            // TODO: tentative.
-            let path = self.gc.new_string("/root/mosh.git/lib");
-            self.set_global_value(sym.to_symbol(), path);
+            let mut paths = String::new();
+            paths.push_str("/embed/stdlib");
+            if let Some(loadpath) = loadpath {
+                paths.push(':');
+                paths.push_str(&loadpath);
+            }
+            let paths = self.gc.new_string(&paths);
+            self.set_global_value(sym.to_symbol(), paths);
 
             let sym = self.gc.symbol_intern("%vm-import-spec");
             self.set_global_value(sym.to_symbol(), Object::False);
@@ -230,16 +340,13 @@ impl Vm {
         self.current_input_port = port;
     }
 
+    pub fn set_current_output_port(&mut self, port: Object) {
+        self.current_output_port = port;
+    }
+
     pub fn read(&mut self) -> Result<Object, ReadError> {
-        match self.current_input_port {
-            Object::FileInputPort(mut port) => port.read(&mut self.gc),
-            _ => {
-                panic!(
-                    "read: input-port required but got {}",
-                    self.current_input_port
-                )
-            }
-        }
+        let port = obj_as_text_input_port_mut_or_panic!(self.current_input_port);
+        port.read(self)
     }
     fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
         let free_vars = default_free_vars(&mut self.gc);
@@ -257,19 +364,15 @@ impl Vm {
 
         let top_level = self.gc.symbol_intern("<top-level>");
         let src = self.gc.list2(Object::False, top_level);
-        self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
-            null(),
-            0,
-            0,
-            false,
-            free_vars,
-            src,
-        )));
+        self.closure_for_evaluate =
+            Object::Closure(
+                self.gc
+                    .alloc(Closure::new(null(), 0, 0, false, free_vars, src)),
+            );
         self.dc = Object::Closure(display);
     }
 
     fn load_compiler(&mut self) -> error::Result<Object> {
-        
         let mut fasl = FaslReader::new(compiler::U8_ARRAY);
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)
