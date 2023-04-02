@@ -3238,7 +3238,7 @@ fn assv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn exit(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "exit";
-    check_argc_between!(name, args, 0, 1);
+    check_argc_max!(name, args, 1);
     if args.len() == 0 {
         process::exit(0)
     } else {

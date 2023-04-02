@@ -195,7 +195,7 @@ impl Vm {
                             vox.value = self.ac;
                         }
                         _ => {
-                            panic!("assign_free: vox not found")
+                            panic!("[BUG] assign_free: vox not found")
                         }
                     }
                 }
@@ -209,7 +209,7 @@ impl Vm {
                     match self.refer_local(n) {
                         Object::Vox(mut vox) => vox.value = self.ac,
                         _ => {
-                            panic!("assign_local: vox not found")
+                            panic!("[BUG] assign_local: vox not found")
                         }
                     }
                 }
@@ -349,7 +349,7 @@ impl Vm {
                             self.fp = fp;
                         }
                         obj => {
-                            panic!("leave: fp expected but got {:?}", obj);
+                            panic!("[BUG] leave: fp expected but got {:?}", obj);
                         }
                     }
                     self.dc = self.index(sp, 1);
@@ -419,7 +419,8 @@ impl Vm {
                         let op_result = ge(lhs, rhs);
                         self.set_return_value(op_result.to_obj());
                     } else {
-                        panic!(">=: numbers required but got {} {}", lhs, rhs);
+                        let err_args = self.gc.listn(&[lhs, rhs]);
+                        self.arg_err(">=", "numbers", err_args)?;
                     }
                 }
                 Op::NumberGt => {
@@ -429,7 +430,8 @@ impl Vm {
                         let op_result = gt(lhs, rhs);
                         self.set_return_value(op_result.to_obj());
                     } else {
-                        panic!(">: numbers required but got {} {}", lhs, rhs);
+                        let err_args = self.gc.listn(&[lhs, rhs]);
+                        self.arg_err(">", "numbers", err_args)?;
                     }
                 }
                 Op::NumberLe => {
@@ -439,7 +441,8 @@ impl Vm {
                         let op_result = le(lhs, rhs);
                         self.set_return_value(op_result.to_obj());
                     } else {
-                        panic!("<=: numbers required but got {} {}", lhs, rhs);
+                        let err_args = self.gc.listn(&[lhs, rhs]);
+                        self.arg_err("<=", "numbers", err_args)?;
                     }
                 }
                 Op::NumberLt => {
@@ -449,7 +452,8 @@ impl Vm {
                         let op_result = lt(lhs, rhs);
                         self.set_return_value(op_result.to_obj());
                     } else {
-                        panic!("<: numbers required but got {} {}", lhs, rhs);
+                        let err_args = self.gc.listn(&[lhs, rhs]);
+                        self.arg_err("<", "numbers", err_args)?;
                     }
                 }
                 Op::NumberMul => {
@@ -472,7 +476,7 @@ impl Vm {
                                 &[irritants],
                             )?;
                         }
-                        _ => panic!(),
+                        _ => panic!("BUG: unknown error"),
                     }
                 }
                 Op::NumberSub => {
@@ -656,7 +660,11 @@ impl Vm {
                     let n = self.usize_operand();
 
                     if n > MAX_NUM_VALUES + 1 {
-                        panic!("values too many values {}", n);
+                        self.call_assertion_violation_after(
+                            "values",
+                            &format!("too many values {}", n),
+                            &[self.ac],
+                        )?;
                     } else {
                         self.num_values = n;
 
@@ -679,15 +687,23 @@ impl Vm {
                     let num_req_args = self.usize_operand();
                     let num_opt_args = self.usize_operand();
                     if self.num_values < num_req_args {
-                        panic!(
-                            "receive: received fewer valeus than expected {} {}",
-                            num_req_args, self.num_values
-                        );
+                        self.call_assertion_violation_after(
+                            "receive",
+                            &format!(
+                                "received fewer valeus than expected {} {}",
+                                num_req_args, self.num_values
+                            ),
+                            &[],
+                        )?;
                     } else if num_opt_args == 0 && self.num_values > num_req_args {
-                        panic!(
-                            "receive: received more values than expected {} {}",
-                            num_req_args, self.num_values
-                        );
+                        self.call_assertion_violation_after(
+                            "receive",
+                            &format!(
+                                "receive: received more values than expected {} {}",
+                                num_req_args, self.num_values
+                            ),
+                            &[],
+                        )?;
                     }
                     // (receive (a b c) ...)
                     if num_opt_args == 0 {
@@ -778,10 +794,11 @@ impl Vm {
                         }
                     }
                     (a, b) => {
-                        panic!(
-                            "vecto-ref: vector and number required but got {:?} {:?}",
-                            a, b
-                        );
+                        self.call_assertion_violation_after(
+                            "vector-ref",
+                            "vector and number",
+                            &[a, b],
+                        )?;
                     }
                 },
                 Op::VectorSet => {
@@ -797,10 +814,11 @@ impl Vm {
                             }
                         }
                         (a, b) => {
-                            panic!(
-                                "vecto-set: vector and number required but got {:?} {:?}",
-                                a, b
-                            );
+                            self.call_assertion_violation_after(
+                                "vector-set!",
+                                "vector and number",
+                                &[a, b],
+                            )?;
                         }
                     }
                 }
@@ -930,7 +948,7 @@ impl Vm {
                             self.fp = self.dec(self.sp, argc);
                         }
                         obj => {
-                            panic!("LocalCall: Bug {}", obj)
+                            panic!("[BUG] LocalCall: {}", obj)
                         }
                     }
                 }
@@ -958,10 +976,11 @@ impl Vm {
                         self.set_return_value(s.data[idx as usize]);
                     }
                     (obj1, obj2) => {
-                        panic!(
-                            "simple-struct-ref: simple-struct and idx required but got {} {}",
-                            obj1, obj2
-                        );
+                        self.call_assertion_violation_after(
+                            "simple-struct-ref",
+                            "simple-struct and idx",
+                            &[obj1, obj2],
+                        )?;
                     }
                 },
                 Op::DynamicWinders => {
