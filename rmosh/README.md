@@ -1,6 +1,7 @@
 # rmosh
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Crates.io](https://img.shields.io/crates/v/rmosh.svg)](https://crates.io/crates/rmosh)
 
 rmosh is a Rust implementation of the Mosh Scheme interpreter, which was originally written in C++. It supports all of the features in R7RS small and R6RS standards. Please note that rmosh is currently in its alpha stage.
 
@@ -8,9 +9,21 @@ rmosh is a Rust implementation of the Mosh Scheme interpreter, which was origina
 
 The project is hosted at [https://github.com/higepon/mosh/tree/master/rmosh](https://github.com/higepon/mosh/tree/master/rmosh).
 
+## Crate
+
+The rmosh crate is available at [https://crates.io/crates/rmosh/](https://crates.io/crates/rmosh/).
+
+## Trying rmosh
+
+For most Rust users, the easiest way to try rmosh is by running the following command:
+
+```
+cargo install rmosh
+```
+
 ## Build Instructions
 
-To build rmosh, follow these steps:
+To build rmosh from source, follow these steps:
 
 1. Clone the repository:
    ```
@@ -25,9 +38,9 @@ To build rmosh, follow these steps:
 
 ## Installation
 
-To install rmosh, follow these steps:
+To install rmosh after building from source, follow these steps:
 
-1. After building the project, you can install the binary with the following command:
+1. Install the binary with the following command:
    ```
    cargo install --path .
    ```
