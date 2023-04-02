@@ -1018,12 +1018,12 @@ impl Gc {
         let mut previous: Option<NonNull<GcHeader>> = None;
         let mut current: Option<NonNull<GcHeader>> = self.first;
         while let Some(mut object) = current {
-          //  total += 1;
+            //  total += 1;
             unsafe {
                 let object_ptr = object.as_mut();
                 current = object_ptr.next;
                 if object_ptr.marked {
-            //        stayed += 1;
+                    //        stayed += 1;
                     object_ptr.marked = false;
                     previous = Some(object);
                 } else {

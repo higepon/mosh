@@ -51,9 +51,9 @@ fn main() {
             vm.gc
                 .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps"),
         )*/
-       // vargs.push(
-         //   vm.gc
-           //     .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/contrib.sps"),
+        // vargs.push(
+        //   vm.gc
+        //     .new_string("/root/mosh.git/tests/r6rs-test-suite/tests/r6rs/run/contrib.sps"),
         //)
     }
 

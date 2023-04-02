@@ -480,11 +480,6 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Generate lexer
-        run: >
-          cd rmosh &&
-          make src/lexer_iter.rs &&
-          make src/number_lexer_iter.rs
       - name: Build
         uses: actions-rs/cargo@v1
         with:
