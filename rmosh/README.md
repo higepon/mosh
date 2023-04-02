@@ -57,4 +57,4 @@ make test
 
 ## Limitations and Contributions
 
-Although rmosh passes the R6RS and R7RS tests, there are still some features to be implemented. You may find `todo!()` macros throughout the codebase, indicating areas where your help would be appreciated. Please feel free to submit pull requests to improve the project.
+Although rmosh passes the R6RS and R7RS tests, there are still some features to be implemented. You may find `todo!()` or `panic!()` macros throughout the codebase, indicating areas where your help would be appreciated. Please feel free to submit pull requests to improve the project.
