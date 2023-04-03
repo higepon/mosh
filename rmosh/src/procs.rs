@@ -1579,6 +1579,14 @@ fn pair_required_error(name: &str, args: & [Object]) -> error::Result<Object> {
         args,
     ));
 }
+fn char_required_error(name: &str, obj: Object) -> error::Result<Object> {
+    return Err(error::Error::new(
+        ErrorType::AssertionViolation,
+        name,
+        "char required",
+        &[obj],
+    ));
+}
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaaar";
     match args {
@@ -3319,12 +3327,12 @@ fn is_charle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        panic!("{}: char required but got {}", name, obj);
+                        return char_required_error(name, obj);
                     }
                 }
             }
             obj => {
-                panic!("{}: char required but got {}", name, obj);
+                return char_required_error(name, obj);
             }
         }
     }
@@ -3346,12 +3354,12 @@ fn is_charlt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        panic!("{}: char required but got {}", name, obj);
+                        return char_required_error(name, obj);
                     }
                 }
             }
             obj => {
-                panic!("{}: char required but got {}", name, obj);
+                return char_required_error(name, obj);
             }
         }
     }
@@ -3373,12 +3381,12 @@ fn is_charge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        panic!("{}: char required but got {}", name, obj);
+                        return char_required_error(name, obj);
                     }
                 }
             }
             obj => {
-                panic!("{}: char required but got {}", name, obj);
+                return char_required_error(name, obj);
             }
         }
     }
@@ -3400,12 +3408,12 @@ fn is_chargt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        panic!("{}: char required but got {}", name, obj);
+                        return char_required_error(name, obj);
                     }
                 }
             }
             obj => {
-                panic!("{}: char required but got {}", name, obj);
+                return char_required_error(name, obj);
             }
         }
     }
