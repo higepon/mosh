@@ -11,7 +11,7 @@ use crate::{
     gc::Gc,
     numbers::{Bignum, Compnum, Flonum, Ratnum},
     objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
-    ports::BinaryOutputPort,
+    ports::BinaryOutputPort, bug,
 };
 
 #[derive(FromPrimitive)]
@@ -101,7 +101,7 @@ impl FaslWriter {
             Object::Eof => {
                 self.put_tag(port, Tag::Eof)?;
             }
-            Object::GenericHashtable(_) => panic!("serializng generic hashtable is not supported"),
+            Object::GenericHashtable(_) => todo!("serializng generic hashtable is not supported"),
             Object::EqHashtable(t) => {
                 self.put_tag(port, Tag::EqHashtable)?;
                 port.put_u32(t.size() as u32)
@@ -511,7 +511,7 @@ impl FaslReader {
                                 Some(v) => {
                                     p.car = *v;
                                 }
-                                None => panic!(),
+                                None => bug!(),
                             }
                         } else {
                             self.link_shared(seen, p.car);
@@ -521,7 +521,7 @@ impl FaslReader {
                                 Some(v) => {
                                     p.cdr = *v;
                                 }
-                                None => panic!(),
+                                None => bug!(),
                             }
                         } else {
                             self.link_shared(seen, p.cdr);
@@ -535,7 +535,7 @@ impl FaslReader {
                                     Some(value) => {
                                         v.data[i] = *value;
                                     }
-                                    None => panic!(),
+                                    None => bug!(),
                                 }
                             } else {
                                 self.link_shared(seen, obj);
@@ -550,7 +550,7 @@ impl FaslReader {
                                     Some(value) => {
                                         st.set(i, *value);
                                     }
-                                    None => panic!(),
+                                    None => bug!(),
                                 }
                             } else {
                                 self.link_shared(seen, obj);
