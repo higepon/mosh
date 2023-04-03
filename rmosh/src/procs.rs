@@ -4336,7 +4336,7 @@ fn bytevector_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Bytevector(bv) => Ok(Object::Bytevector(vm.gc.alloc(bv.copy()))),
         _ => {
-            panic!("{}: bytevector required but got {}", name, args[0])
+            return type_required_error(name, "bytevector", &[args[0]]);
         }
     }
 }
@@ -4404,7 +4404,7 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         }
         Ok(ret)
     } else {
-        panic!("{}: bytevector required but got {}", name, args[0])
+        return type_required_error(name, "bytevector", &[args[0]]);
     }
 }
 fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4950,7 +4950,7 @@ fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
     } else {
-        panic!("{}: file path required but got {}", name, args[0])
+        return type_required_error(name, "file path", &[args[0]]);
     }
 }
 fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4972,7 +4972,7 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
     } else {
-        panic!("{}: file path required but got {}", name, args[0])
+        return type_required_error(name, "file path", &[args[0]]);
     }
 }
 
@@ -5020,7 +5020,7 @@ fn make_rectangular(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if n1.is_real() && n2.is_real() {
         Ok(Object::Compnum(vm.gc.alloc(Compnum::new(n1, n2))))
     } else {
-        panic!("{}: real numbers required but got {} {}", name, n1, n2);
+        return type_required_error(name, "real numbers", &[n1, n2]);
     }
 }
 fn real_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6436,7 +6436,7 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             _ => bug!(),
         }
     } else {
-        panic!("{}: real numbers required but got {} {}", name, n1, n2);
+        return type_required_error(name, "real numbers", &[n1, n2]);
     }
 }
 fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6668,7 +6668,7 @@ fn atan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if n1.is_real() && n2.is_real() {
             Ok(numbers::atan2(&mut vm.gc, n1, n2))
         } else {
-            panic!("{}: real numbers required but got {} {}", name, n1, n2)
+            return type_required_error(name, "real numbers", &[n1, n2]);
         }
     }
 }
@@ -6684,7 +6684,7 @@ fn expt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
         Ok(numbers::expt(&mut vm.gc, n1, n2))
     } else {
-        panic!("{}: numbers required but got {} and {}", name, n1, n2);
+        return type_required_error(name, "numbers", &[n1, n2]);
     }
 }
 
@@ -6696,7 +6696,7 @@ fn make_polar(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if n1.is_number() && n2.is_number() {
         Ok(numbers::make_polar(&mut vm.gc, n1, n2))
     } else {
-        panic!("{}: numbers required but got {} {}", name, n1, n2);
+        return type_required_error(name, "numbers", &[n1, n2]);
     }
 }
 fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6756,7 +6756,7 @@ fn vector_fill_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<O
     match args[0] {
         Object::Vector(mut v) => v.fill(args[1]),
         _ => {
-            panic!("{}: vector required but got {}", name, args[0])
+            return type_required_error(name, "vector", &[args[0]]);
         }
     }
     Ok(Object::Unspecified)
@@ -7359,7 +7359,7 @@ fn list_tail(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if obj.is_pair() {
             obj = obj.cdr_unchecked();
         } else {
-            panic!("{}: proper list required but got {}", name, obj);
+            return type_required_error(name, "proper list", &[obj]);
         }
         index -= 1;
     }
@@ -7613,7 +7613,7 @@ fn file_stat_mtime(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(Object::Fixnum(mtime_seconds as isize))
         }
     } else {
-        panic!("{}: file path required but got {}", name, args[0])
+        return type_required_error(name, "file path", &[args[0]]);
     }
 }
 fn file_stat_atime(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7831,10 +7831,7 @@ fn simple_struct_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
             Ok(Object::Unspecified)
         }
         _ => {
-            panic!(
-                "{}: simple-struct and number required but got {} and {}",
-                name, args[0], args[1]
-            )
+            return type_required_error(name, "simple struct and number", &[args[0], args[1]]);
         }
     }
 }
@@ -7844,7 +7841,7 @@ fn simple_struct_name(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     match args[0] {
         Object::SimpleStruct(s) => Ok(s.name),
         obj => {
-            panic!("{}: simple-struct required but got {}", name, obj)
+            return type_required_error(name, "simple struct", &[obj]);
         }
     }
 }
