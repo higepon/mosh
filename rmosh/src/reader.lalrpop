@@ -154,8 +154,14 @@ Character: Object = {
 
 
 Symbol: Object = {
-    "identifier" => {
-        gc.symbol_intern(&reader_util::read_symbol(&<>))
+    "identifier" =>? {
+        match reader_util::read_symbol(&<>) {
+            Ok(s) => Ok(gc.symbol_intern(&s)),
+            Err(err) => {
+                Err(ParseError::User {
+                    error: ReadError::SymbolParseError { token: <>, description: err.to_string() }})
+            }
+        }
     }
 }
 

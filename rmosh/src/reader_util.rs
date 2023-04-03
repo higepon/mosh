@@ -1,3 +1,4 @@
+use crate::error;
 use crate::gc::Gc;
 use crate::lexer;
 use crate::numbers::Bignum;
@@ -30,6 +31,10 @@ pub enum ReadError {
         token: String,
         description: String,
     },
+    SymbolParseError {
+        token: String,
+        description: String,
+    },    
     DivisionByZero {
         token: String,
         description: String,
@@ -243,7 +248,7 @@ pub fn read_string(s: &str) -> String {
     ret
 }
 
-pub fn read_symbol(s: &str) -> String {
+pub fn read_symbol(s: &str) -> error::Result<String> {
     let chars: Vec<char> = s.chars().collect();
     let mut ret = String::new();
     let mut i: usize = 0;
@@ -307,12 +312,12 @@ pub fn read_symbol(s: &str) -> String {
     if is_bar_symbol {
         let raw_symbol = &ret[1..ret.len() - 1];
         if has_only_alphabets(raw_symbol) {
-            return raw_symbol.to_string();
+            return Ok(raw_symbol.to_string());
         } else {
-            return ret;
+            return Ok(ret);
         }
     } else {
-        ret
+        Ok(ret)
     }
 }
 
