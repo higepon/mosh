@@ -13,7 +13,7 @@ use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
-use crate::error;
+use crate::error::{self, ErrorType};
 use crate::numbers::{Bignum, Compnum, Ratnum};
 use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
@@ -312,10 +312,20 @@ impl Gc {
                 if *n >= 0 && *n <= 255 {
                     u8_vec.push(*n as u8);
                 } else {
-                    panic!("malformed bytevector");
+                    return Err(error::Error::new(
+                        ErrorType::AssertionViolation,
+                        "bytevector",
+                        &format!("malformed bytevector: u8 value required but got {}", *n),
+                        &[],
+                    ));
                 }
             } else {
-                panic!("malformed bytevector");
+                return Err(error::Error::new(
+                    ErrorType::AssertionViolation,
+                    "bytevector",
+                    &format!("malformed bytevector: u8 value required"),
+                    &[*obj],
+                ));
             }
         }
         let bv = self.alloc(Bytevector::new(&u8_vec));
