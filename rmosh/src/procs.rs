@@ -1587,6 +1587,14 @@ fn char_required_error(name: &str, obj: Object) -> error::Result<Object> {
         &[obj],
     ));
 }
+fn number_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
+    return Err(error::Error::new(
+        ErrorType::AssertionViolation,
+        name,
+        "number required",
+        args,
+    ));
+}
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaaar";
     match args {
@@ -4016,7 +4024,7 @@ fn number_add(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if args[0].is_number() {
             Ok(args[0])
         } else {
-            panic!("{}: number required but got {}", name, args[0])
+            return number_required_error(name, &[args[0]]);
         }
     } else {
         let mut ret = Object::Fixnum(0);
@@ -4036,7 +4044,7 @@ fn nuber_sub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if args[0].is_number() {
             Ok(numbers::negate(&mut vm.gc, args[0]))
         } else {
-            panic!("{}: number required but got {}", name, args[0])
+            return number_required_error(name, &[args[0]]);
         }
     } else {
         let mut ret = args[0];
@@ -4055,13 +4063,13 @@ fn number_mul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if args[0].is_number() {
             Ok(args[0])
         } else {
-            panic!("{}: number required but got {}", name, args[0])
+            return number_required_error(name, &[args[0]]);
         }
     } else {
         let mut ret = Object::Fixnum(1);
         for obj in args {
             if !obj.is_number() {
-                panic!("{}: number required but got {}", name, obj)
+                return number_required_error(name, &[*obj]);
             }
             ret = numbers::mul(&mut vm.gc, ret, *obj);
         }
@@ -4102,7 +4110,7 @@ fn max(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 max_num = *n;
             }
         } else {
-            panic!("{}: real number required but got {}", name, n);
+            return number_required_error(name, &[n]);
         }
     }
     if is_exact {
@@ -4117,7 +4125,7 @@ fn min(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut min = Object::Flonum(Flonum::new(f64::INFINITY));
     for obj in args {
         if !obj.is_number() {
-            panic!("{}: number required but got {}", name, obj);
+            return number_required_error(name, &[*obj]);
         }
         if obj.is_flonum() && obj.to_flonum().is_nan() {
             return Ok(*obj);
@@ -4286,7 +4294,7 @@ fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&v))))
         }
         _ => {
-            panic!("{}: number required but got {}", name, args[0])
+            return number_required_error(name, &[args[0]]);
         }
     }
 }
@@ -4943,7 +4951,7 @@ fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
             FromPrimitive::from_u8(n as u8).expect("unknown Op"),
         )),
         _ => {
-            panic!("{}: number requred but got {}", name, args[0])
+            return number_required_error(name, &[args[0]]);
         }
     }
 }
@@ -5044,7 +5052,7 @@ fn real_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(real(args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0]);
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5053,7 +5061,7 @@ fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(imag(args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0]);
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5077,7 +5085,7 @@ fn inexact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::inexact(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn is_nan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6557,7 +6565,7 @@ fn exp(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::exp(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6567,7 +6575,7 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if argc == 1 {
         let n = args[0];
         if !n.is_number() {
-            panic!("{}: number required but got {}", name, n);
+            return number_required_error(name, &[n]);
         }
         if n.is_exact_zero() {
             return Error::assertion_violation(name, " nonzero required but got", &[n]);
@@ -6596,7 +6604,7 @@ fn sin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::sin(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn cos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6604,7 +6612,7 @@ fn cos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::cos(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn tan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6620,7 +6628,7 @@ fn tan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn asin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6629,7 +6637,7 @@ fn asin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::asin(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn acos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6638,7 +6646,7 @@ fn acos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::acos(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn sqrt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6652,7 +6660,7 @@ fn magnitude(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::magnitude(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn angle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6661,7 +6669,7 @@ fn angle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::angle(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: number required but got {}", name, args[0])
+        return number_required_error(name, &[args[0]]);
     }
 }
 fn atan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6730,7 +6738,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::String(s) => {
                 let start = args[1];
                 if !start.is_fixnum() {
-                    panic!("{}: number required but got {}", name, args[1]);
+                    return number_required_error(name, &[args[1]]);
                 }
                 let start = start.to_isize();
                 let len = s.string.len() as isize;
@@ -6746,7 +6754,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 } else {
                     let end = args[2];
                     if !end.is_fixnum() {
-                        panic!("{}: number required but got {}", name, args[1]);
+                        return number_required_error(name, &[args[2]]);
                     }
                     let end = end.to_isize();
                     if end < 0 || start > end || end > len {
@@ -7351,7 +7359,7 @@ fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         },
         _ => {
-            panic!("{}: number required but got {}", name, args[1])
+            return number_required_error(name, &[args[1]]);
         }
     }
     if obj.is_pair() {
@@ -7829,7 +7837,7 @@ fn make_simple_struct(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
             Ok(Object::SimpleStruct(s))
         }
         obj => {
-            panic!("{}: number required but got {}", name, obj)
+            return number_required_error(name, &[obj]);
         }
     }
 }
