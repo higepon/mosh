@@ -6412,7 +6412,7 @@ fn is_even(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_integer(&mut vm.gc) {
         Ok(args[0].is_even().to_obj())
     } else {
-        panic!("{}: integer value required but got {}", name, args[0])
+        return type_required_error(name, "integer value", &[args[0]]);
     }
 }
 fn is_odd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6421,7 +6421,7 @@ fn is_odd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_integer(&mut vm.gc) {
         Ok((!args[0].is_even()).to_obj())
     } else {
-        panic!("{}: integer value required but got {}", name, args[0])
+        return type_required_error(name, "integer value", &[args[0]]);
     }
 }
 fn abs(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6430,7 +6430,7 @@ fn abs(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::abs(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: real number required but got {}", name, args[0])
+        return type_required_error(name, "real number", &[args[0]]);
     }
 }
 fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6522,7 +6522,7 @@ fn floor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::floor(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: real number required but got {}", name, args[0])
+        return type_required_error(name, "real number", &[args[0]]);
     }
 }
 fn ceiling(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6537,7 +6537,7 @@ fn truncate(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "truncate";
     check_argc!(name, args, 1);
     if !args[0].is_real() {
-        panic!("{}: real number required but got {}", name, args[0])
+        return type_required_error(name, "real number", &[args[0]]);
     }
     Ok(numbers::truncate(&mut vm.gc, args[0]))
 }
