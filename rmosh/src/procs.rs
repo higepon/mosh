@@ -3484,7 +3484,7 @@ fn append(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if !p.is_list() {
             panic!("{}: list required but got {}", name, p);
         }
-        ret = vm.gc.append2(p, ret);
+        ret = vm.gc.append2(p, ret)?;
         i -= 1;
     }
     return Ok(ret);
@@ -8062,9 +8062,9 @@ fn join_wraps(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let values = [x, y, z];
         return Ok(vm.values(&values));
     } else {
-        let x = vm.gc.append2(m1_mul, m2_mul);
-        let y = vm.gc.append2(s1_mul, s2_mul);
-        let z = vm.gc.append2(ae1_mul, ae2_mul);
+        let x = vm.gc.append2(m1_mul, m2_mul)?;
+        let y = vm.gc.append2(s1_mul, s2_mul)?;
+        let z = vm.gc.append2(ae1_mul, ae2_mul)?;
         let values = [x, y, z];
         return Ok(vm.values(&values));
     }

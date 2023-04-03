@@ -173,7 +173,7 @@ impl Vm {
                 Op::Append2 => {
                     let head = self.pop();
                     if Pair::is_list(head) {
-                        let p = self.gc.append2(head, self.ac);
+                        let p = self.gc.append2(head, self.ac)?;
                         self.set_return_value(p);
                     } else {
                         self.arg_err("append", "pair", head)?;

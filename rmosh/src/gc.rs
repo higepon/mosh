@@ -350,9 +350,9 @@ impl Gc {
     // append o (list or obj) to l.
     // if l is not list return o.
     // allocate new cons sell.
-    pub fn append2(&mut self, list: Object, obj: Object) -> Object {
+    pub fn append2(&mut self, list: Object, obj: Object) -> error::Result<Object> {
         if !list.is_pair() {
-            return obj;
+            return Ok(obj);
         }
         let mut start = Object::Nil;
         let mut last = Object::Nil;
@@ -370,7 +370,12 @@ impl Gc {
                                 last = last_pair.cdr;
                             }
                             _ => {
-                                panic!("last is not pair");
+                                return Err(error::Error::new(
+                                    ErrorType::AssertionViolation,
+                                    "append",
+                                    "last is not pair",
+                                    &[last],
+                                ));
                             }
                         }
                     }
@@ -379,10 +384,15 @@ impl Gc {
                 _ => match last {
                     Object::Pair(mut pair) => {
                         pair.cdr = obj;
-                        return start;
+                        return Ok(start);
                     }
                     _ => {
-                        panic!("last is not pair");
+                        return Err(error::Error::new(
+                            ErrorType::AssertionViolation,
+                            "append",
+                            "last is not pair",
+                            &[last],
+                        ));
                     }
                 },
             }
