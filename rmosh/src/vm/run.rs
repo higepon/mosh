@@ -722,7 +722,7 @@ impl Vm {
                         };
                         if self.num_values >= 1 {
                             for i in 0..self.num_values - 1 {
-                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]))?;
                             }
                         }
                         self.push(ret);
@@ -734,7 +734,7 @@ impl Vm {
                             if i < num_req_args - 1 {
                                 self.push(self.values[i]);
                             } else {
-                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]));
+                                ret = Pair::append_destructive(ret, self.gc.list1(self.values[i]))?;
                             }
                         }
                         self.push(ret);

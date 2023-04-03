@@ -1,4 +1,5 @@
-use crate::error;
+use crate::error::ErrorType;
+use crate::{error, bug};
 use crate::gc::{Gc, GcRef, Trace};
 use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
@@ -265,7 +266,7 @@ impl Object {
             Object::True => true,
             Object::False => false,
             _ => {
-                panic!("Not a bool object")
+                bug!("Not a bool object")
             }
         }
     }
@@ -273,7 +274,7 @@ impl Object {
         if let Self::Fixnum(n) = self {
             n
         } else {
-            panic!("Not a Object::Fixnum but {}", self)
+            bug!("Not a Object::Fixnum but {}", self)
         }
     }
 
@@ -281,112 +282,112 @@ impl Object {
         if let Self::Char(c) = self {
             c
         } else {
-            panic!("Not a Object::Char but {}", self)
+            bug!("Not a Object::Char but {}", self)
         }
     }
     pub fn to_eq_hashtable(self) -> GcRef<EqHashtable> {
         if let Self::EqHashtable(e) = self {
             e
         } else {
-            panic!("Not a Object::EqHashtable")
+            bug!("Not a Object::EqHashtable")
         }
     }
     pub fn to_flonum(self) -> Flonum {
         if let Self::Flonum(fl) = self {
             fl
         } else {
-            panic!("Not a Object::Flonum")
+            bug!("Not a Object::Flonum")
         }
     }
     pub fn to_sstring(self) -> GcRef<SString> {
         if let Self::String(s) = self {
             s
         } else {
-            panic!("Not a Object::String")
+            bug!("Not a Object::String")
         }
     }
     pub fn to_simple_struc(self) -> GcRef<SimpleStruct> {
         if let Self::SimpleStruct(s) = self {
             s
         } else {
-            panic!("Not a Object::SimpleStruct")
+            bug!("Not a Object::SimpleStruct")
         }
     }
     pub fn to_bignum(self) -> GcRef<Bignum> {
         if let Self::Bignum(b) = self {
             b
         } else {
-            panic!("Not a Object::Bignum")
+            bug!("Not a Object::Bignum")
         }
     }
     pub fn to_bytevector_output_port(self) -> GcRef<BytevectorOutputPort> {
         if let Self::BytevectorOutputPort(b) = self {
             b
         } else {
-            panic!("Not a Object::BytevectorOutputPort")
+            bug!("Not a Object::BytevectorOutputPort")
         }
     }
     pub fn to_transcoder(self) -> GcRef<Transcoder> {
         if let Self::Transcoder(b) = self {
             b
         } else {
-            panic!("Not a Object::Transcoder")
+            bug!("Not a Object::Transcoder")
         }
     }
     pub fn to_latin1_codec(self) -> GcRef<Latin1Codec> {
         if let Self::Latin1Codec(b) = self {
             b
         } else {
-            panic!("Not a Object::Latin1Code")
+            bug!("Not a Object::Latin1Code")
         }
     }
     pub fn to_utf8_codec(self) -> GcRef<UTF8Codec> {
         if let Self::UTF8Codec(b) = self {
             b
         } else {
-            panic!("Not a Object::UTF8Codec")
+            bug!("Not a Object::UTF8Codec")
         }
     }
     pub fn to_utf16_codec(self) -> GcRef<UTF16Codec> {
         if let Self::UTF16Codec(b) = self {
             b
         } else {
-            panic!("Not a Object::UTF16Codec")
+            bug!("Not a Object::UTF16Codec")
         }
     }
     pub fn to_compnum(self) -> GcRef<Compnum> {
         if let Self::Compnum(c) = self {
             c
         } else {
-            panic!("Not a Object::Compnum")
+            bug!("Not a Object::Compnum")
         }
     }
     pub fn to_simple_struct(self) -> GcRef<SimpleStruct> {
         if let Self::SimpleStruct(s) = self {
             s
         } else {
-            panic!("Not a Object::SimpleStruct")
+            bug!("Not a Object::SimpleStruct")
         }
     }
     pub fn to_instruction(self) -> Op {
         if let Self::Instruction(p) = self {
             p
         } else {
-            panic!("Not a Object::Instruction {}", self)
+            bug!("Not a Object::Instruction {}", self)
         }
     }
     pub fn to_pair(self) -> GcRef<Pair> {
         if let Self::Pair(p) = self {
             p
         } else {
-            panic!("Not a Object::Pair but got {}", self)
+            bug!("Not a Object::Pair but got {}", self)
         }
     }
     pub fn to_continuation_stack(self) -> GcRef<ContinuationStack> {
         if let Self::ContinuationStack(c) = self {
             c
         } else {
-            panic!("Not a Object::Pair")
+            bug!("Not a Object::Pair")
         }
     }
     pub fn car_unchecked(self) -> Object {
@@ -399,7 +400,7 @@ impl Object {
         if let Self::Symbol(s) = self {
             s
         } else {
-            panic!("Not a Object::Symbol {}", self)
+            bug!("Not a Object::Symbol {}", self)
         }
     }
 
@@ -407,7 +408,7 @@ impl Object {
         if let Self::Vector(v) = self {
             v
         } else {
-            panic!("Not a Object::Vector")
+            bug!("Not a Object::Vector")
         }
     }
 
@@ -415,7 +416,7 @@ impl Object {
         if let Self::Bytevector(v) = self {
             v
         } else {
-            panic!("Not a Object::Bytevector")
+            bug!("Not a Object::Bytevector")
         }
     }
 
@@ -423,7 +424,7 @@ impl Object {
         if let Self::Vox(v) = self {
             v
         } else {
-            panic!("Not a Object::Vox")
+            bug!("Not a Object::Vox")
         }
     }
 
@@ -431,7 +432,7 @@ impl Object {
         if let Self::Closure(c) = self {
             c
         } else {
-            panic!("Not a Object::Closure but {}", self)
+            bug!("Not a Object::Closure but {}", self)
         }
     }
 
@@ -439,7 +440,7 @@ impl Object {
         if let Self::Procedure(p) = self {
             p
         } else {
-            panic!("Not a Object::Procedure but {}", self)
+            bug!("Not a Object::Procedure but {}", self)
         }
     }
 
@@ -1526,7 +1527,7 @@ impl Pair {
                                     }
                                 }
                                 _ => {
-                                    panic!("seen not a pair")
+                                    bug!("seen not a pair")
                                 }
                             }
                         }
@@ -1576,38 +1577,43 @@ impl Pair {
         }
     }
 
-    fn last_pair(p: Object) -> Object {
+    fn last_pair(p: Object) -> error::Result<Object> {
         let mut o = p;
         loop {
             match o {
                 Object::Pair(pair) => {
                     let kdr = pair.cdr;
                     if kdr.is_nil() {
-                        return o;
+                        return Ok(o);
                     } else {
                         o = kdr;
                     }
                 }
                 _ => {
-                    panic!("last_pair: pair requied but got {}", o);
+                    return Err(error::Error::new(
+                        ErrorType::AssertionViolation,
+                        "last_pair",
+                        &format!("last_pair: pair requied but got {}", o),
+                        &[o],
+                    ));                                
                 }
             }
         }
     }
 
     // append!
-    pub fn append_destructive(l1: Object, l2: Object) -> Object {
+    pub fn append_destructive(l1: Object, l2: Object) -> error::Result<Object> {
         if l1.is_nil() {
-            return l2;
+            return Ok(l2);
         }
-        let last = Self::last_pair(l1);
+        let last = Self::last_pair(l1)?;
         match last {
             Object::Pair(mut pair) => {
                 pair.cdr = l2;
-                return l1;
+                return Ok(l1);
             }
             _ => {
-                panic!("never reached");
+                bug!("never reached");
             }
         }
     }

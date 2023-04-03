@@ -3507,7 +3507,7 @@ fn append_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
                 if !args[i as usize].is_list() {
                     panic!("{}: list required but got {}", name, args[i as usize]);
                 }
-                ret = Pair::append_destructive(args[i as usize], ret);
+                ret = Pair::append_destructive(args[i as usize], ret)?;
                 i = i - 1;
             }
             Ok(ret)
