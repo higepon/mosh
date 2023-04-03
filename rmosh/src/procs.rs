@@ -896,14 +896,14 @@ fn consmul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 tail = e;
             }
             _ => {
-                panic!("{}: pair required but got {}", name, tail);
+                return type_required_error(name, "pair", &[tail]);
             }
         }
     }
     match tail {
         Object::Pair(mut pair) => pair.cdr = args[argc - 1],
         _ => {
-            panic!("{}: pair required but got {}", name, tail);
+            return type_required_error(name, "pair", &[tail]);
         }
     }
     Ok(obj)
@@ -914,7 +914,7 @@ fn car(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Pair(pair) => Ok(pair.car),
         _ => {
-            panic!("{}: pair required", name)
+            return type_required_error(name, "pair", &[args[0]]);
         }
     }
 }
@@ -925,7 +925,7 @@ fn cdr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Pair(pair) => Ok(pair.cdr),
         _ => {
-            panic!("{}: pair required", name)
+            return type_required_error(name, "pair", &[args[0]]);
         }
     }
 }
@@ -941,7 +941,7 @@ fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         p.car = args[1];
         Ok(Object::Unspecified)
     } else {
-        panic!("{}: pair required but got {}", name, args[0]);
+       return type_required_error(name, "pair", &[args[0]]);
     }
 }
 fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -951,7 +951,7 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         p.cdr = args[1];
         Ok(Object::Unspecified)
     } else {
-        panic!("{}: pair required but got {}", name, args[0]);
+       return type_required_error(name, "pair", &[args[0]]);
     }
 }
 fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1037,7 +1037,7 @@ fn string_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::String(s) => Ok(Object::Fixnum(s.string.chars().count().try_into().unwrap())),
         v => {
-            panic!("{}: string required but got {}", name, v)
+            return type_required_error(name, "string", &[v]);
         }
     }
 }
@@ -1047,7 +1047,7 @@ fn string_to_symbol(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::String(s) => Ok(vm.gc.symbol_intern(&s.string)),
         v => {
-            panic!("{}: string required but got {}", name, v)
+            return type_required_error(name, "string", &[v]);
         }
     }
 }
@@ -1103,7 +1103,7 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 }
             }
             _ => {
-                panic!("{}: string required but got {}", name, args[0])
+                return type_required_error(name, "string", &[args[0]]);
             }
         }
     }
@@ -1378,7 +1378,7 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(Object::False)
         }
     } else {
-        panic!("{}: string required but got {}", name, args[0])
+        return type_required_error(name, "string", &[args[0]]);
     }
 }
 fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3444,7 +3444,7 @@ fn vector_to_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Vector(v) => Ok(vm.gc.listn(&v.data[..])),
         obj => {
-            panic!("{}: vector required but got {}", name, obj);
+            return type_required_error(name, "vector", &[obj]);
         }
     }
 }
@@ -3461,7 +3461,7 @@ fn set_source_info_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Resu
             Ok(args[0])
         }
         obj => {
-            panic!("{}: pair required but got {}", name, obj);
+            return type_required_error(name, "pair", &[obj]);
         }
     }
 }
@@ -4708,7 +4708,7 @@ fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             vm.gc.alloc(Bytevector::new(&s.string.as_bytes().to_vec())),
         ))
     } else {
-        panic!("{}: string required but got {}", name, args[0]);
+        return type_required_error(name, "string", &[args[0]]);
     }
 }
 fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6721,7 +6721,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match args[0] {
             Object::String(s) => Ok(Object::String(vm.gc.alloc(SString::new(&s.string)))),
             _ => {
-                panic!("{}: string required but got {}", name, args[0])
+                return type_required_error(name, "string", &[args[0]]);
             }
         }
     } else {
@@ -6759,7 +6759,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 }
             }
             _ => {
-                panic!("{}: string required but got {}", name, args[0])
+                return type_required_error(name, "string", &[args[0]]);
             }
         }
     }
@@ -7346,7 +7346,7 @@ fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             if let Object::Pair(p) = obj {
                 obj = p.cdr;
             } else {
-                panic!("{}: pair required but got {}", name, obj)
+                return type_required_error(name, "pair", &[obj]);
             }
         },
         _ => {
@@ -7356,7 +7356,7 @@ fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if obj.is_pair() {
         Ok(obj.car_unchecked())
     } else {
-        panic!("{}: pair required but got {}", name, obj)
+        return type_required_error(name, "pair", &[obj]);
     }
 }
 
@@ -8216,7 +8216,7 @@ fn get_annotation(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Pair(p) => Ok(p.src),
         obj => {
-            panic!("{}: pair required but got {}", name, obj);
+            return type_required_error(name, "pair", &[obj]);
         }
     }
 }
@@ -8229,7 +8229,7 @@ fn set_annotation_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Resul
             Ok(Object::Unspecified)
         }
         obj => {
-            panic!("{}: pair required but got {}", name, obj);
+            return type_required_error(name, "pair", &[obj]);
         }
     }
 }
