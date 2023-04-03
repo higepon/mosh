@@ -9,22 +9,6 @@ use crate::{
 
 use super::Vm;
 
-#[macro_export]
-macro_rules! number_cmp_op {
-    ($op:tt, $self:ident) => {
-        {
-            match ($self.pop(), $self.ac) {
-                (Object::Fixnum(l), Object::Fixnum(r)) => {
-                    $self.set_return_value((l $op r).to_obj())
-                }
-                obj => {
-                    panic!("{}: numbers required but got {:?}",  stringify!($op), obj);
-                }
-            }
-        }
-    };
-}
-
 impl Vm {
     #[inline(always)]
     pub(super) fn push_op(&mut self) {
@@ -281,18 +265,26 @@ impl Vm {
                             self.fp = self.dec(sp, closure.argc);
                             self.sp = sp;
                         } else {
-                            panic!(
-                                "call: wrong number of arguments {} required bug got {}",
-                                closure.argc, argc
-                            );
+                            self.call_assertion_violation_after(
+                                "call",
+                                &format!(
+                                    "wrong number of arguments {} required bug got {}",
+                                    closure.argc, argc
+                                ),
+                                &[self.ac],
+                            )?;
                         }
                     } else if argc == closure.argc {
                         self.fp = self.dec(self.sp, argc);
                     } else {
-                        panic!(
-                            "call: wrong number of arguments {} required bug got {}",
-                            closure.argc, argc
-                        );
+                        self.call_assertion_violation_after(
+                            "call",
+                            &format!(
+                                "wrong number of arguments {} required bug got {}",
+                                closure.argc, argc
+                            ),
+                            &[self.ac],
+                        )?;
                     }
                 }
                 Object::Procedure(procedure) => {
@@ -341,7 +333,7 @@ impl Vm {
                                                 last_pair = pair.cdr;
                                             }
                                             _ => {
-                                                panic!("never reached");
+                                                panic!("[BUG] never reached");
                                             }
                                         }
                                     }
@@ -392,7 +384,14 @@ impl Vm {
                     self.pc = self.allocate_code(&code);
                 }
                 _ => {
-                    panic!("can't call {:?}", self.ac);
+                    self.call_assertion_violation_after(
+                        "call",
+                        &format!(
+                            "can't call {}",
+                            self.ac
+                        ),
+                        &[self.ac],
+                    )?;                    
                 }
             }
             break;
