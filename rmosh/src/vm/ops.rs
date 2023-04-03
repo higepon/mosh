@@ -4,7 +4,7 @@ use crate::{
     numbers::{add, eqv, ge, gt, le, lt, sub, ObjectExt},
     objects::{Closure, Object, Symbol},
     op::Op,
-    procs::{self},
+    procs::{self}, bug,
 };
 
 use super::Vm;
@@ -333,7 +333,7 @@ impl Vm {
                                                 last_pair = pair.cdr;
                                             }
                                             _ => {
-                                                panic!("[BUG] never reached");
+                                                bug!("Never reached");
                                             }
                                         }
                                     }

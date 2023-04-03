@@ -6,7 +6,7 @@ use crate::{
     numbers::{div, eqv, ge, gt, le, lt, mul, ObjectExt, SchemeError},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
-    ports::TextInputPort,
+    ports::TextInputPort, bug,
 };
 
 use super::{Vm, MAX_NUM_VALUES};
@@ -195,7 +195,7 @@ impl Vm {
                             vox.value = self.ac;
                         }
                         _ => {
-                            panic!("[BUG] assign_free: vox not found")
+                            bug!("assign_free: vox not found")
                         }
                     }
                 }
@@ -209,7 +209,7 @@ impl Vm {
                     match self.refer_local(n) {
                         Object::Vox(mut vox) => vox.value = self.ac,
                         _ => {
-                            panic!("[BUG] assign_local: vox not found")
+                            bug!("assign_local: vox not found")
                         }
                     }
                 }
@@ -349,7 +349,7 @@ impl Vm {
                             self.fp = fp;
                         }
                         obj => {
-                            panic!("[BUG] leave: fp expected but got {:?}", obj);
+                            bug!("leave: fp expected but got {:?}", obj);
                         }
                     }
                     self.dc = self.index(sp, 1);
@@ -476,7 +476,7 @@ impl Vm {
                                 &[irritants],
                             )?;
                         }
-                        _ => panic!("BUG: unknown error"),
+                        _ => bug!("Unknown error"),
                     }
                 }
                 Op::NumberSub => {
@@ -948,7 +948,7 @@ impl Vm {
                             self.fp = self.dec(self.sp, argc);
                         }
                         obj => {
-                            panic!("[BUG] LocalCall: {}", obj)
+                            bug!("LocalCall: {}", obj)
                         }
                     }
                 }

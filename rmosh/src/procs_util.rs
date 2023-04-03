@@ -1,4 +1,12 @@
 #[macro_export]
+macro_rules! bug {
+    () => (panic!("[BUG]"));
+    ($msg:expr) => (panic!(concat!("[BUG] ", $msg)));
+    ($msg:expr,) => (panic!(concat!("[BUG] ", $msg)));
+    ($fmt:expr, $($arg:tt)+) => (panic!(concat!("BUG ", $fmt), $($arg)+));
+}
+
+#[macro_export]
 macro_rules! as_bytevector {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];

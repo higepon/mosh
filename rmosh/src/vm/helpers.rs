@@ -2,7 +2,7 @@ use crate::{
     gc::GcRef,
     objects::{Object, Symbol},
     op::Op,
-    vm::Vm,
+    vm::Vm, bug,
 };
 
 use super::STACK_SIZE;
@@ -18,7 +18,7 @@ impl Vm {
                 self.fp = fp;
             }
             obj => {
-                panic!("not fp pointer but {}", obj)
+                bug!("not fp pointer but {}", obj)
             }
         }
 
@@ -29,7 +29,7 @@ impl Vm {
                 self.pc = next_pc;
             }
             _ => {
-                panic!("not a pc");
+                bug!("not a pc");
             }
         }
         self.sp = self.dec(sp, 4);
@@ -86,7 +86,7 @@ impl Vm {
             *self.sp = value;
             self.sp = self.inc(self.sp, 1);
             if self.stack_len() >= STACK_SIZE {
-                panic!("Stack Overflow")
+                bug!("Stack overflow")
             }
         }
     }
@@ -273,7 +273,7 @@ impl Vm {
                 match next_fp_obj {
                     Object::ObjectPointer(pointer) => fp = pointer,
                     _ => {
-                        panic!("object pointer expected but got {}", next_fp_obj)
+                        bug!("object pointer expected but got {}", next_fp_obj)
                     }
                 };
             } else {
