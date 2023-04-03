@@ -1571,30 +1571,21 @@ fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::True)
 }
-fn pair_required_error(name: &str, args: & [Object]) -> error::Result<Object> {
-    return Err(error::Error::new(
-        ErrorType::AssertionViolation,
-        name,
-        "pair required",
-        args,
-    ));
-}
-fn char_required_error(name: &str, obj: Object) -> error::Result<Object> {
-    return Err(error::Error::new(
-        ErrorType::AssertionViolation,
-        name,
-        "char required",
-        &[obj],
-    ));
+fn pair_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
+    type_required_error(name, "pair", args)
 }
 fn number_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
+    type_required_error(name, "number", args)
+}
+fn type_required_error(name: &str, type_str: &str, args: &[Object]) -> error::Result<Object> {
     return Err(error::Error::new(
         ErrorType::AssertionViolation,
         name,
-        "number required",
+        &format!("{} required", type_str),
         args,
     ));
 }
+
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaaar";
     match args {
@@ -3335,12 +3326,12 @@ fn is_charle(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        return char_required_error(name, obj);
+                        return type_required_error(name, "char", &[obj]);
                     }
                 }
             }
             obj => {
-                return char_required_error(name, obj);
+                return type_required_error(name, "char", &[obj]);
             }
         }
     }
@@ -3362,12 +3353,12 @@ fn is_charlt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        return char_required_error(name, obj);
+                        return type_required_error(name, "char", &[obj]);
                     }
                 }
             }
             obj => {
-                return char_required_error(name, obj);
+                return type_required_error(name, "char", &[obj]);
             }
         }
     }
@@ -3389,12 +3380,12 @@ fn is_charge(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        return char_required_error(name, obj);
+                        return type_required_error(name, "char", &[obj]);
                     }
                 }
             }
             obj => {
-                return char_required_error(name, obj);
+                return type_required_error(name, "char", &[obj]);
             }
         }
     }
@@ -3416,12 +3407,12 @@ fn is_chargt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                         }
                     }
                     obj => {
-                        return char_required_error(name, obj);
+                        return type_required_error(name, "char", &[obj]);
                     }
                 }
             }
             obj => {
-                return char_required_error(name, obj);
+                return type_required_error(name, "char", &[obj]);
             }
         }
     }
@@ -4110,7 +4101,7 @@ fn max(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 max_num = *n;
             }
         } else {
-            return number_required_error(name, &[n]);
+            return number_required_error(name, &[*n]);
         }
     }
     if is_exact {
