@@ -1571,6 +1571,14 @@ fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     Ok(Object::True)
 }
+fn pair_required_error(name: &str, args: & [Object]) -> error::Result<Object> {
+    return Err(error::Error::new(
+        ErrorType::AssertionViolation,
+        name,
+        "pair required",
+        args,
+    ));
+}
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "caaaar";
     match args {
@@ -1579,19 +1587,19 @@ fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1603,19 +1611,19 @@ fn caaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1626,15 +1634,15 @@ fn caaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.car {
                 Object::Pair(pair3) => return Ok(pair3.car),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1646,19 +1654,19 @@ fn caadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1670,19 +1678,19 @@ fn caaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1693,15 +1701,15 @@ fn caadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.car {
                 Object::Pair(pair3) => return Ok(pair3.car),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1717,19 +1725,19 @@ fn cadaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1741,19 +1749,19 @@ fn cadadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1764,15 +1772,15 @@ fn cadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.cdr {
                 Object::Pair(pair3) => return Ok(pair3.car),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1784,19 +1792,19 @@ fn caddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1808,19 +1816,19 @@ fn cadddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1831,15 +1839,15 @@ fn caddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.cdr {
                 Object::Pair(pair3) => return Ok(pair3.car),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1849,11 +1857,11 @@ fn cadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => return Ok(pair2.car),
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1865,19 +1873,19 @@ fn cdaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1889,19 +1897,19 @@ fn cdaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1912,15 +1920,15 @@ fn cdaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.cdr {
                 Object::Pair(pair3) => return Ok(pair3.cdr),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1932,22 +1940,23 @@ fn cdadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
+
 fn cdaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cdaddr";
     match args {
@@ -1956,19 +1965,19 @@ fn cdaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -1979,15 +1988,15 @@ fn cdadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.car {
                 Object::Pair(pair3) => return Ok(pair3.cdr),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -2003,19 +2012,19 @@ fn cddaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -2027,19 +2036,19 @@ fn cddadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -2050,15 +2059,15 @@ fn cddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.cdr {
                 Object::Pair(pair3) => return Ok(pair3.cdr),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -2070,19 +2079,19 @@ fn cdddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -2094,19 +2103,19 @@ fn cddddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        panic!("{}: pair required but got {:?}", name, args);
+                        return pair_required_error(name, args);
                     }
                 },
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
@@ -2117,15 +2126,15 @@ fn cdddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Pair(pair2) => match pair2.cdr {
                 Object::Pair(pair3) => return Ok(pair3.cdr),
                 _ => {
-                    panic!("{}: pair required but got {:?}", name, args);
+                    return pair_required_error(name, args);
                 }
             },
             _ => {
-                panic!("{}: pair required but got {:?}", name, args);
+                return pair_required_error(name, args);
             }
         },
         _ => {
-            panic!("{}: pair required but got {:?}", name, args);
+            return pair_required_error(name, args);
         }
     }
 }
