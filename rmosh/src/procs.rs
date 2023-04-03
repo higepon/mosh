@@ -2212,7 +2212,7 @@ fn memq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let key = args[0];
     let mut list = args[1];
     if !list.is_list() {
-        panic!("{}: list required but got {}", name, list);
+        return type_required_error(name, "list", &[list]);
     }
 
     loop {
@@ -2227,7 +2227,7 @@ fn memq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 list = pair.cdr;
             }
             _ => {
-                panic!("{}: list required but got {}", name, list);
+                return type_required_error(name, "list", &[list]);
             }
         }
     }
@@ -2247,7 +2247,7 @@ fn member(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let key = args[0];
     let mut list = args[1];
     if !list.is_list() {
-        panic!("{}: list required but got {}", name, list);
+        return type_required_error(name, "list", &[list]);
     }
 
     let e = Equal::new();
@@ -2264,7 +2264,7 @@ fn member(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 list = pair.cdr;
             }
             _ => {
-                panic!("{}: list required but got {}", name, list);
+                return type_required_error(name, "list", &[list]);
             }
         }
     }
@@ -3202,11 +3202,11 @@ fn assq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     alist = pair.cdr;
                 }
                 _ => {
-                    panic!("{}: alist required but got {}", name, pair.car);
+                    return type_required_error(name, "alist", &[pair.car]);
                 }
             },
             _ => {
-                panic!("{}: alist required but got {}", name, alist);
+                return type_required_error(name, "alist", &[alist]);
             }
         }
     }
@@ -3217,7 +3217,7 @@ fn assoc(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let obj = args[0];
     let list = args[1];
     if !list.is_list() {
-        panic!("{}: list required but got {}", name, list);
+        return type_required_error(name, "list", &[list]);
     }
     let mut o = list;
     loop {
@@ -3238,7 +3238,7 @@ fn assv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let obj = args[0];
     let list = args[1];
     if !list.is_list() {
-        panic!("{}: list required but got {}", name, list);
+        return type_required_error(name, "list", &[list]);
     }
     let mut o = list;
     loop {
@@ -6504,7 +6504,7 @@ fn numerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_rational() {
         Ok(numbers::numerator(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: rational number requied but got {}", name, args[0])
+        return type_required_error(name, "rational number", &[args[0]]);
     }
 }
 fn denominator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6513,7 +6513,7 @@ fn denominator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_rational() {
         Ok(numbers::denominator(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: rational number requied but got {}", name, args[0])
+        return type_required_error(name, "rational number", &[args[0]]);
     }
 }
 fn floor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6530,7 +6530,7 @@ fn ceiling(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::ceiling(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: real number requied but got {}", name, args[0])
+        return type_required_error(name, "real number", &[args[0]]);
     }
 }
 fn truncate(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6546,7 +6546,7 @@ fn round(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::round(&mut vm.gc, args[0]))
     } else {
-        panic!("{}: real number requied but got {}", name, args[0])
+        return type_required_error(name, "real number", &[args[0]]);
     }
 }
 
