@@ -9,7 +9,7 @@ use num_traits::{FromPrimitive, Signed, ToPrimitive, Zero};
 
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType, Trace},
-    objects::Object,
+    objects::Object, bug,
 };
 
 // GCed Object -> Object.
@@ -340,7 +340,7 @@ impl FixnumExt for isize {
             Some(v) => self < v,
             None => match BigInt::from_isize(self) {
                 Some(self_value) => self_value < b.value,
-                None => panic!(),
+                None => bug!(),
             },
         }
     }
@@ -349,7 +349,7 @@ impl FixnumExt for isize {
             Some(v) => self > v,
             None => match BigInt::from_isize(self) {
                 Some(self_value) => self_value > b.value,
-                None => panic!(),
+                None => bug!(),
             },
         }
     }
@@ -620,14 +620,14 @@ impl Flonum {
             Some(bv) => (bv + b.value.clone()).to_obj(gc),
             None => match b.to_f64() {
                 Some(fv) => Object::Flonum(Flonum::new(fv + self.value())),
-                None => panic!(),
+                None => bug!(),
             },
         }
     }
     pub fn mul_big(&self, _gc: &mut Box<Gc>, b: &GcRef<Bignum>) -> Object {
         match b.to_f64() {
             Some(fv) => Object::Flonum(Flonum::new(fv * self.value())),
-            None => panic!(),
+            None => bug!(),
         }
     }
 
@@ -811,7 +811,7 @@ impl Ratnum {
                 header: GcHeader::new(ObjectType::Ratnum),
                 ratio: BigRational::new_raw(b1, b2).reduced(),
             },
-            _ => panic!(),
+            _ => bug!(),
         }
     }
     pub fn new_from_ratio(ratio: BigRational) -> Self {
@@ -915,7 +915,7 @@ impl BigRationalExt for BigRational {
     fn new_from_isize(numer: isize, denom: isize) -> BigRational {
         match (BigInt::from_isize(numer), BigInt::from_isize(denom)) {
             (Some(numer), Some(denom)) => BigRational::new_raw(numer, denom),
-            _ => panic!("Should not fail"),
+            _ => bug!("Should not fail"),
         }
     }
 }
@@ -1154,7 +1154,7 @@ impl Compnum {
                 for _i in 0..(-n) {
                     match div(gc, ret, z1) {
                         Ok(v) => ret = v,
-                        Err(_) => panic!(),
+                        Err(_) => bug!(),
                     }
                 }
                 ret
@@ -1374,9 +1374,6 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
 }
 
 pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
-    if !n1.is_number() {
-        panic!("n1={}", n1.to_string());
-    }
     assert!(n1.is_number());
     assert!(n2.is_number());
     match (n1, n2) {
@@ -1482,9 +1479,9 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
                     let b1 = Object::Bignum(gc.alloc(Bignum::new(b)));
                     return integer_div(gc, b1, n2);
                 }
-                None => panic!(""),
+                None => bug!(""),
             },
-            Err(x) => panic!("{:?}", x),
+            Err(x) => bug!("{:?}", x),
         }
     } else if n1.is_flonum() && n2.is_flonum() {
         let ret = n1.to_flonum().integer_div(&n2.to_flonum());
@@ -1929,7 +1926,7 @@ pub fn to_string(n: Object, radix: usize) -> String {
                 format!("{}+{}i", to_string(c.real, radix), to_string(c.imag, radix))
             }
         }
-        _ => panic!("invalid n={}, radix={}", n, radix),
+        _ => bug!("invalid n={}, radix={}", n, radix),
     }
 }
 
@@ -1969,13 +1966,13 @@ pub fn abs(gc: &mut Box<Gc>, n: Object) -> Object {
             Some(v) => Object::Fixnum(v),
             None => match BigInt::from_isize(fx) {
                 Some(bigint) => bigint.abs().to_obj(gc),
-                None => panic!(),
+                None => bug!(),
             },
         },
         Object::Flonum(fl) => fl.abs(),
         Object::Bignum(b) => b.abs(gc),
         Object::Ratnum(r) => r.abs(gc),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -1985,7 +1982,7 @@ pub fn ceiling(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Fixnum(_) | Object::Bignum(_) => n,
         Object::Flonum(fl) => fl.ceiling(),
         Object::Ratnum(r) => r.ceiling(gc),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -1996,7 +1993,7 @@ pub fn cos(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Flonum(fl) => Object::Flonum(Flonum::new(fl.value().cos())),
         Object::Compnum(c) => c.cos(gc),
         _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).cos())),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2007,7 +2004,7 @@ pub fn sin(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Flonum(fl) => Object::Flonum(Flonum::new(fl.value().sin())),
         Object::Compnum(c) => c.sin(gc),
         _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).sin())),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2017,7 +2014,7 @@ pub fn tan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
         Object::Fixnum(fx) => Ok(fx.tan()),
         Object::Compnum(c) => c.tan(gc),
         _ if n.is_real() => Ok(Object::Flonum(Flonum::new(real_to_f64(n).tan()))),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2027,7 +2024,7 @@ pub fn asin(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Fixnum(fx) => fx.asin(),
         Object::Compnum(_c) => Compnum::asin(gc, n),
         _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).asin())),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2037,7 +2034,7 @@ pub fn acos(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Fixnum(fx) => fx.acos(),
         Object::Compnum(_c) => Compnum::acos(gc, n),
         _ if n.is_real() => Object::Flonum(Flonum::new(real_to_f64(n).acos())),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2047,7 +2044,7 @@ pub fn atan(gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
         Object::Fixnum(fx) => Ok(fx.atan()),
         Object::Compnum(_c) => Compnum::atan(gc, n),
         _ if n.is_real() => Ok(Object::Flonum(Flonum::new(real_to_f64(n).atan()))),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2073,7 +2070,7 @@ pub fn magnitude(gc: &mut Box<Gc>, n: Object) -> Object {
     } else if n.is_compnum() {
         n.to_compnum().magnitude(gc)
     } else {
-        panic!()
+        bug!()
     }
 }
 
@@ -2093,7 +2090,7 @@ pub fn angle(_gc: &mut Box<Gc>, n: Object) -> Object {
     } else if n.is_compnum() {
         n.to_compnum().angle()
     } else {
-        panic!()
+        bug!()
     }
 }
 
@@ -2103,7 +2100,7 @@ pub fn floor(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Fixnum(_) | Object::Bignum(_) => n,
         Object::Flonum(fl) => fl.floor(),
         Object::Ratnum(r) => r.floor(gc),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2113,7 +2110,7 @@ pub fn round(gc: &mut Box<Gc>, n: Object) -> Object {
         Object::Fixnum(_) | Object::Bignum(_) => n,
         Object::Flonum(fl) => fl.round(),
         Object::Ratnum(r) => r.round(gc),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2124,7 +2121,7 @@ pub fn sqrt(gc: &mut Box<Gc>, obj: Object) -> Object {
         Object::Bignum(b) => b.sqrt(gc),
         Object::Compnum(c) => c.sqrt(gc),
         Object::Ratnum(_r) => todo!(),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2139,7 +2136,7 @@ pub fn truncate(gc: &mut Box<Gc>, obj: Object) -> Object {
         Object::Fixnum(_) | Object::Bignum(_) => obj,
         Object::Flonum(f) => f.truncate(),
         Object::Ratnum(r) => r.truncate(gc),
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2153,7 +2150,7 @@ pub fn exact(gc: &mut Box<Gc>, n: Object) -> Object {
             let imag = exact(gc, c.imag);
             Object::Compnum(gc.alloc(Compnum::new(real, imag)))
         }
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2162,23 +2159,23 @@ pub fn inexact(gc: &mut Box<Gc>, obj: Object) -> Object {
     match obj {
         Object::Fixnum(f) => match f.to_f64() {
             Some(v) => Object::Flonum(Flonum::new(v)),
-            None => todo!(),
+            None => bug!(),
         },
         Object::Bignum(b) => match b.to_f64() {
             Some(v) => Object::Flonum(Flonum::new(v)),
-            None => todo!(),
+            None => bug!(),
         },
         Object::Flonum(_) => obj,
         Object::Ratnum(r) => match r.to_f64() {
             Some(v) => Object::Flonum(Flonum::new(v)),
-            None => todo!(),
+            None => bug!(),
         },
         Object::Compnum(c) => {
             let real = inexact(gc, c.real);
             let imag = inexact(gc, c.imag);
             Object::Compnum(gc.alloc(Compnum::new(real, imag)))
         }
-        _ => todo!(),
+        _ => bug!(),
     }
 }
 
@@ -2225,13 +2222,13 @@ pub fn real_to_f64(n: Object) -> f64 {
         Object::Flonum(fl) => fl.value(),
         Object::Bignum(b) => match b.to_f64() {
             Some(v) => v,
-            None => todo!(),
+            None => bug!(),
         },
         Object::Ratnum(r) => match r.to_f64() {
             Some(v) => v,
-            None => todo!(),
+            None => bug!(),
         },
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 
@@ -2267,7 +2264,7 @@ impl Object {
             Object::Fixnum(_) | Object::Bignum(_) | Object::Ratnum(_) => true,
             Object::Flonum(_) => false,
             Object::Compnum(c) => c.real.is_exact() && c.imag.is_exact(),
-            _ => todo!(),
+            _ => bug!(),
         }
     }
     #[inline(always)]
@@ -2362,7 +2359,7 @@ impl Object {
             Object::Bignum(b) => b.is_even(),
             Object::Flonum(fl) => fl.is_even(),
             Object::Compnum(c) => c.real.is_even(),
-            _ => panic!(),
+            _ => bug!(),
         }
     }
 }
