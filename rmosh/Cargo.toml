@@ -1,6 +1,6 @@
 [package]
 name = "rmosh"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["higepon@gmail.com>"]
 edition = "2021"
 description = "R6RS & R7RS Scheme Interpreter"
