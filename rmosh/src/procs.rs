@@ -1,3 +1,4 @@
+use crate::bug;
 use crate::ports::StdLib;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -2284,7 +2285,7 @@ fn symbol_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Symbol(s) => Ok(vm.gc.new_string(&s.string)),
         obj => {
-            panic!("{}: symbol required but got {}", name, obj);
+            return type_required_error(name, "symbol", &[obj]);
         }
     }
 }
@@ -2853,7 +2854,7 @@ fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     match args[0] {
         Object::Bytevector(bv) => Ok(Object::Fixnum(bv.len() as isize)),
-        _ => panic!("{} bytevector required but got {}", name, args[0]),
+        _ => return type_required_error(name, "bytevector", &[args[0]])
     }
 }
 fn standard_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3278,7 +3279,7 @@ fn memv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let arg1 = args[0];
     let p = args[1];
     if !p.is_list() {
-        panic!("{}: list required but got {}", name, p);
+        return type_required_error(name, "list", &[p]);
     }
     let mut o = p;
     loop {
@@ -3498,7 +3499,7 @@ fn append(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
         let p = args[i as usize];
         if !p.is_list() {
-            panic!("{}: list required but got {}", name, p);
+            return type_required_error(name, "list", &[p]);
         }
         ret = vm.gc.append2(p, ret)?;
         i -= 1;
@@ -3521,7 +3522,7 @@ fn append_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
                     break;
                 }
                 if !args[i as usize].is_list() {
-                    panic!("{}: list required but got {}", name, args[i as usize]);
+                    return type_required_error(name, "list", &[args[i as usize]]);
                 }
                 ret = Pair::append_destructive(args[i as usize], ret)?;
                 i = i - 1;
@@ -3602,7 +3603,7 @@ fn length(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     if !Pair::is_list(args[0]) {
         vm.print_stack();
-        panic!("{}: list require but got {}", name, args[0]);
+        return type_required_error(name, "list", &[args[0]]);
     }
     let mut len = 0;
     let mut obj = args[0];
@@ -3616,7 +3617,7 @@ fn length(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 len += 1;
             }
             _ => {
-                panic!("{}: list require bug got {}", name, args[0]);
+                return type_required_error(name, "list", &[args[0]]);
             }
         }
     }
@@ -3626,7 +3627,7 @@ fn list_to_vector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "list->vector";
     check_argc!(name, args, 1);
     if !Pair::is_list(args[0]) {
-        panic!("{}: list require bug got {}", name, args[0]);
+        return type_required_error(name, "list", &[args[0]]);
     }
     let mut v = vec![];
     let mut obj = args[0];
@@ -3712,7 +3713,7 @@ fn symbol_value(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         },
         obj => {
-            panic!("{}: symbol required but got {}", name, obj)
+            return type_required_error(name, "symbol", &[obj]);
         }
     }
 }
@@ -3725,7 +3726,7 @@ fn set_symbol_value_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
             Ok(Object::Unspecified)
         }
         obj => {
-            panic!("{}: symbol required but got {}", name, obj)
+            return type_required_error(name, "symbol", &[obj]);
         }
     }
 }
@@ -3946,12 +3947,7 @@ fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Ok(Object::False);
             }
         } else {
-            panic!(
-                "{}: number required but got {} {}",
-                name,
-                args[i],
-                args[i + 1]
-            );
+            return type_required_error(name, "number", &[args[i], args[i+1]]);
         }
     }
     Ok(Object::True)
@@ -3970,12 +3966,7 @@ fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Ok(Object::False);
             }
         } else {
-            panic!(
-                "{}: number required but got {} {}",
-                name,
-                args[i],
-                args[i + 1]
-            );
+            return type_required_error(name, "number", &[args[i], args[i+1]]);
         }
     }
     Ok(Object::True)
@@ -3995,12 +3986,7 @@ fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Ok(Object::False);
             }
         } else {
-            panic!(
-                "{}: number required but got {} {}",
-                name,
-                args[i],
-                args[i + 1]
-            );
+            return type_required_error(name, "number", &[args[i], args[i+1]]);
         }
     }
     Ok(Object::True)
@@ -4077,7 +4063,7 @@ fn number_div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Err(SchemeError::Div0) => {
                 panic!("/: division by zero {}", args[0])
             }
-            _ => panic!(),
+            _ => bug!(),
         }
     } else {
         todo!();
@@ -6447,7 +6433,7 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Err(SchemeError::NanOrInfinite) => {
                 Error::assertion_violation(name, "nan.0 or inf.0 not allowed", &[n1, n2])
             }
-            _ => panic!(),
+            _ => bug!(),
         }
     } else {
         panic!("{}: real numbers required but got {} {}", name, n1, n2);
@@ -6584,7 +6570,7 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Err(SchemeError::Div0) => {
                 panic!("{}: div by zero {} {}", name, n1, n2)
             }
-            _ => panic!(),
+            _ => bug!(),
         }
     }
 }
@@ -6615,7 +6601,7 @@ fn tan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 panic!("{}: div by zero {}", name, args[0])
             }
             Err(_) => {
-                panic!()
+                bug!()
             }
         }
     } else {
@@ -6674,7 +6660,7 @@ fn atan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Err(SchemeError::Div0) => {
                 panic!("{}: div by zero {}", name, n)
             }
-            _ => panic!(),
+            _ => bug!(),
         }
     } else {
         let n1 = args[0];
@@ -6884,7 +6870,7 @@ fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
         Ok((port.lookahead_u8(vm) == Ok(None)).to_obj())
     } else {
-        panic!()
+        bug!()
     }
 }
 fn lookahead_u8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7102,7 +7088,7 @@ fn quotient(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 name, args[0], args[1]
             )
         }
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 fn remainder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7116,7 +7102,7 @@ fn remainder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 name, args[0], args[1]
             )
         }
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 fn modulo(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7129,7 +7115,7 @@ fn modulo(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 name, args[0], args[1]
             )
         }
-        _ => panic!(),
+        _ => bug!(),
     }
 }
 fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
