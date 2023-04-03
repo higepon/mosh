@@ -926,7 +926,7 @@ impl Vm {
                 }
                 Op::ReferGlobalPush => {
                     let symbol = self.symbol_operand();
-                    self.refer_global_op(symbol);
+                    self.refer_global_op(symbol)?;
                     self.push_op();
                     // println!("symbol={}", Object::Symbol(symbol));
                 }
