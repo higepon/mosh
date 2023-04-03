@@ -1643,7 +1643,7 @@ impl Display for Pair {
                     write!(f, "{}", car_str)?;
                     e = pair.cdr;
                 }
-                _ => panic!("should not reach"),
+                _ => bug!("should not reach"),
             }
         } else {
             let car_str = self.car.to_string();
@@ -2416,7 +2416,7 @@ pub mod tests {
                 assert_eq!(s.string, "define");
             }
             _ => {
-                panic!("not a symbo");
+                bug!("not a symbol");
             }
         }
     }
@@ -2429,7 +2429,7 @@ pub mod tests {
         match (p.func)(&mut vm, &mut stack[0..1]) {
             Ok(Object::Fixnum(1)) => {}
             _ => {
-                panic!("Wrong return value");
+                bug!("Wrong return value");
             }
         }
     }
