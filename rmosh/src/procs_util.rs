@@ -393,7 +393,7 @@ macro_rules! obj_as_binary_input_port_mut_or_panic {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
             _ => {
-                panic!("BUG: binary-input-port expected")
+                bug!("binary-input-port expected")
             }
         };
         port
@@ -418,7 +418,7 @@ macro_rules! obj_as_text_input_port_mut_or_panic {
                 p.pointer.as_mut() as &mut dyn TextInputPort
             },
             _ => {
-                panic!("BUG: text-input-port expected")
+                bug!("text-input-port expected")
             }
         };
         port
@@ -527,7 +527,7 @@ macro_rules! obj_as_binary_output_port_mut_or_panic {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
             _ => {
-                panic!("binary output port required but got {}", $obj);
+                bug!("binary output port required but got {}", $obj);
             }
         };
         port

@@ -13,7 +13,7 @@ mod ops;
 mod run;
 
 use crate::{
-    compiler, error,
+    bug, compiler, error,
     fasl::FaslReader,
     gc::{Gc, GcRef},
     obj_as_text_input_port_mut_or_panic,
