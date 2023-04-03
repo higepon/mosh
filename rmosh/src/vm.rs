@@ -13,7 +13,8 @@ mod ops;
 mod run;
 
 use crate::{
-    bug, compiler, error,
+    bug, compiler,
+    error::{self, ErrorType},
     fasl::FaslReader,
     gc::{Gc, GcRef},
     obj_as_text_input_port_mut_or_panic,
@@ -285,20 +286,25 @@ impl Vm {
         self.run(self.lib_psyntax.as_ptr(), self.lib_psyntax.len())
     }
 
-    pub fn values(&mut self, values: &[Object]) -> Object {
+    pub fn values(&mut self, values: &[Object]) -> error::Result<Object> {
         let n = values.len();
         self.num_values = n;
         if 0 == n {
-            return Object::Unspecified;
+            return Ok(Object::Unspecified);
         }
         for i in 1..n as usize {
             if i >= MAX_NUM_VALUES {
-                panic!("values: too many values");
+                return Err(error::Error::new(
+                    ErrorType::AssertionViolation,
+                    "values",
+                    "Too many values",
+                    &[],
+                ));
             }
             self.values[i - 1] = values[i];
         }
         // this is set to ac later.
-        return values[0];
+        return Ok(values[0]);
     }
 
     pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {

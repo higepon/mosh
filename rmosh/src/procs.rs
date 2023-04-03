@@ -2487,7 +2487,7 @@ fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     Ok(vm.current_error_port())
 }
 fn values(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
-    Ok(vm.values(args))
+    vm.values(args)
 }
 fn vm_apply(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "vm/apply";
@@ -8060,13 +8060,13 @@ fn join_wraps(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let y = cancel(&mut vm.gc, s1_mul, s2_mul);
         let z = cancel(&mut vm.gc, ae1_mul, ae2_mul);
         let values = [x, y, z];
-        return Ok(vm.values(&values));
+        return Ok(vm.values(&values))?;
     } else {
         let x = vm.gc.append2(m1_mul, m2_mul)?;
         let y = vm.gc.append2(s1_mul, s2_mul)?;
         let z = vm.gc.append2(ae1_mul, ae2_mul)?;
         let values = [x, y, z];
-        return Ok(vm.values(&values));
+        return Ok(vm.values(&values))?;
     }
 }
 
