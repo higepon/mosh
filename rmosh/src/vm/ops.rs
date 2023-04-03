@@ -228,15 +228,20 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn refer_global_op(&mut self, symbol: GcRef<Symbol>) {
+    pub(super) fn refer_global_op(&mut self, symbol: GcRef<Symbol>) -> error::Result<Object> {
         match self.globals.get(&symbol) {
             Some(&value) => {
                 self.set_return_value(value);
             }
             None => {
-                panic!("identifier {} not found", symbol.string);
+                self.call_assertion_violation_after(
+                    "identifier",
+                    "not found",
+                    &[Object::Symbol(symbol)],
+                )?;
             }
         }
+        Ok(Object::Unspecified)
     }
 
     #[inline(always)]

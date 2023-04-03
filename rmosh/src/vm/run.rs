@@ -584,7 +584,7 @@ impl Vm {
                 }
                 Op::ReferGlobal => {
                     let symbol = self.symbol_operand();
-                    self.refer_global_op(symbol);
+                    self.refer_global_op(symbol)?;
                     //println!("symbol={}", Object::Symbol(symbol));
                 }
                 Op::ReferLocal => {
@@ -873,7 +873,7 @@ impl Vm {
                 Op::ReferGlobalCall => {
                     let symbol = self.symbol_operand();
                     let argc = self.isize_operand();
-                    self.refer_global_op(symbol);
+                    self.refer_global_op(symbol)?;
                     raise_or_exit!(self, self.call_op(argc));
                 }
                 Op::ReferFreePush => {
