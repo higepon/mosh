@@ -180,8 +180,19 @@ impl<'input> Iterator for Lexer<'input> {
                     "#\\" ANY_CHARACTER {
                         return self.with_location(Token::Character{value: self.extract_character()});
                     }
-                    "#\\x" HEX_SCALAR_VALUE {
-                        return self.with_location(Token::Character{value: self.extract_hex_character()});
+                    "#\\x" HEX_SCALAR_VALUE {   
+                        match self.extract_hex_character() {
+                            Some(ch) => {
+                                return self.with_location(Token::Character{value:ch});
+                            }
+                            None => {
+                                return Some(Err(ReadError::InvalidToken {
+                                    start: self.tok,
+                                    end: self.cursor,
+                                    token: self.extract_token()
+                                }))
+                            }
+                        }
                     }
                     "'" {
                         return self.with_location(Token::AbbrevQuote);

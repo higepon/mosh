@@ -105,18 +105,18 @@ impl<'input> Lexer<'input> {
         self.s[self.tok + 1..self.cursor - 1].iter().collect()
     }
 
-    pub fn extract_hex_character(&self) -> char {
+    pub fn extract_hex_character(&self) -> Option<char> {
         // #\xAB
         let hex_str: String = self.s[self.tok + 3..self.cursor].iter().collect();
         match u32::from_str_radix(&hex_str, 16) {
             Ok(n) => match char::from_u32(n) {
-                Some(c) => c,
+                Some(c) => return Some(c),
                 None => {
-                    panic!("malformed hex scalar value character")
+                    return None;
                 }
             },
-            Err(e) => {
-                panic!("malformed hex scalar value character: {} in {}", e, hex_str)
+            Err(_e) => {
+                return None;
             }
         }
     }
