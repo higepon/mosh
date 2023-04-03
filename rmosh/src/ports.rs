@@ -11,7 +11,7 @@ use crate::{
 };
 use crate::{
     obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
-    obj_as_binary_output_port_mut_or_panic,
+    obj_as_binary_output_port_mut_or_panic, bug,
 };
 use core::panic;
 use lalrpop_util::ParseError;
@@ -190,7 +190,7 @@ pub trait TextInputPort: Port {
                         Some(v) => {
                             p.car = *v;
                         }
-                        None => panic!(),
+                        None => bug!(),
                     }
                 } else {
                     self.link_shared(gc, shared_map, p.car);
@@ -200,7 +200,7 @@ pub trait TextInputPort: Port {
                         Some(v) => {
                             p.cdr = *v;
                         }
-                        None => panic!(),
+                        None => bug!(),
                     }
                 } else {
                     self.link_shared(gc, shared_map, p.cdr);
@@ -214,7 +214,7 @@ pub trait TextInputPort: Port {
                             Some(value) => {
                                 v.data[i] = *value;
                             }
-                            None => panic!(),
+                            None => bug!(),
                         }
                     } else {
                         self.link_shared(gc, shared_map, obj);
@@ -3117,7 +3117,7 @@ impl Port for CustomTextInputPort {
 
 impl TextInputPort for CustomTextInputPort {
     fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> error::Result<usize> {
-        panic!();
+        todo!();
     }
 
     fn input_src(&self) -> String {
@@ -3803,7 +3803,7 @@ impl Display for CustomTextInputOutputPort {
 
 impl TextInputPort for CustomTextInputOutputPort {
     fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> error::Result<usize> {
-        panic!();
+        todo!();
     }
 
     fn input_src(&self) -> String {
