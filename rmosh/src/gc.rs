@@ -852,7 +852,6 @@ impl Gc {
         let free_size = match object_type {
             ObjectType::Symbol => 0,
             ObjectType::Procedure => {
-                //  panic!("procedure should not be freed");
                 0
             }
             ObjectType::CustomBinaryInputPort => {
