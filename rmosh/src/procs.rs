@@ -817,11 +817,10 @@ pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
 macro_rules! check_argc {
     ($name:ident, $args:ident, $argc:expr) => {{
         if $args.len() != $argc {
-            panic!(
-                "{}: {} arguments required but got {}",
+            return type_required_error(
                 $name,
-                $argc,
-                $args.len()
+                &format!("{} arguments required but got {}", $argc, $args.len()),
+                &[],
             );
         }
     }};
@@ -831,12 +830,11 @@ macro_rules! check_argc {
 macro_rules! check_argc_at_least {
     ($name:ident, $args:ident, $argc:expr) => {{
         if $args.len() < $argc {
-            panic!(
-                "{}: at least {} arguments required but got {}",
+            return type_required_error(
                 $name,
-                $argc,
-                $args.len()
-            );
+                &format!("at least {} arguments required but got {}", $argc, $args.len()),
+                &[],
+            );            
         }
     }};
 }
@@ -845,12 +843,11 @@ macro_rules! check_argc_at_least {
 macro_rules! check_argc_max {
     ($name:ident, $args:ident, $max:expr) => {{
         if $args.len() > $max {
-            panic!(
-                "{}: max {} arguments required but got {}",
+            return type_required_error(
                 $name,
-                $max,
-                $args.len()
-            );
+                &format!("at least {} arguments required but got {}", $max, $args.len()),
+                &[],
+            );             
         }
     }};
 }
@@ -859,13 +856,13 @@ macro_rules! check_argc_max {
 macro_rules! check_argc_between {
     ($name:ident, $args:ident, $min:expr, $max:expr) => {{
         if $args.len() > $max || $args.len() < $min {
-            panic!(
-                "{}: {}-{} arguments required but got {}",
-                $name,
-                $min,
-                $max,
-                $args.len()
-            );
+            if $args.len() > $max {
+                return type_required_error(
+                    $name,
+                    &format!("{}-{} arguments required but got {}", $min, $max, $args.len()),
+                    &[],
+                );             
+            }            
         }
     }};
 }
@@ -942,7 +939,7 @@ fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         p.car = args[1];
         Ok(Object::Unspecified)
     } else {
-       return type_required_error(name, "pair", &[args[0]]);
+        return type_required_error(name, "pair", &[args[0]]);
     }
 }
 fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -952,7 +949,7 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         p.cdr = args[1];
         Ok(Object::Unspecified)
     } else {
-       return type_required_error(name, "pair", &[args[0]]);
+        return type_required_error(name, "pair", &[args[0]]);
     }
 }
 fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1267,7 +1264,7 @@ fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     return Ok(Object::False);
                 }
             } else {
-               return type_required_error(name, "char", &[args[i]]);
+                return type_required_error(name, "char", &[args[i]]);
             }
         }
         return Ok(Object::True);
@@ -1322,7 +1319,7 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obj
             Ok(Object::StringInputPort(vm.gc.alloc(port)))
         }
         _ => {
-           return type_required_error(name, "string", &[args[0]]);
+            return type_required_error(name, "string", &[args[0]]);
         }
     }
 }
@@ -2851,7 +2848,7 @@ fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     match args[0] {
         Object::Bytevector(bv) => Ok(Object::Fixnum(bv.len() as isize)),
-        _ => return type_required_error(name, "bytevector", &[args[0]])
+        _ => return type_required_error(name, "bytevector", &[args[0]]),
     }
 }
 fn standard_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3944,7 +3941,7 @@ fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Ok(Object::False);
             }
         } else {
-            return type_required_error(name, "number", &[args[i], args[i+1]]);
+            return type_required_error(name, "number", &[args[i], args[i + 1]]);
         }
     }
     Ok(Object::True)
@@ -3963,7 +3960,7 @@ fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Ok(Object::False);
             }
         } else {
-            return type_required_error(name, "number", &[args[i], args[i+1]]);
+            return type_required_error(name, "number", &[args[i], args[i + 1]]);
         }
     }
     Ok(Object::True)
@@ -3983,7 +3980,7 @@ fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Ok(Object::False);
             }
         } else {
-            return type_required_error(name, "number", &[args[i], args[i+1]]);
+            return type_required_error(name, "number", &[args[i], args[i + 1]]);
         }
     }
     Ok(Object::True)
@@ -6769,7 +6766,7 @@ fn ungensym(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(args[0])
         }
     } else {
-       return type_required_error(name, "symbol", &[args[0]]);
+        return type_required_error(name, "symbol", &[args[0]]);
     }
 }
 fn disasm(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -8073,7 +8070,7 @@ fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
         unsafe { GENSYM_PREFIX = s.string.chars().nth(0).unwrap() };
         Ok(Object::Unspecified)
     } else {
-       return type_required_error(name, "symbol", &[args[0]]);
+        return type_required_error(name, "symbol", &[args[0]]);
     }
 }
 
