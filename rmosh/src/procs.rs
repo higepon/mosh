@@ -1085,7 +1085,7 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 prefix.push_str("#x");
             }
             _ => {
-                panic!("{}: radix 2, 8, 10 or 16 required but got {}", name, radix)
+                return type_required_error(name, "2, 8, 10 or 16", &[args[1]]);
             }
         }
         match args[0] {
@@ -1153,7 +1153,7 @@ fn string_append(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 ret = ret + &s.string;
             }
             obj => {
-                panic!("{}: string required but got {}", name, obj);
+                return type_required_error(name, "string", &[*obj]);
             }
         }
     }
@@ -1172,7 +1172,7 @@ fn string_split(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(l)
         }
         _ => {
-            panic!("{}: string and char required but got {:?}", name, args);
+            return type_required_error(name, "string and char", &[args[0], args[1]]);
         }
     }
 }
@@ -1185,7 +1185,7 @@ fn string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 chars.push(*c);
             }
             v => {
-                panic!("{}: char required but got {}", name, v)
+                return type_required_error(name, "char", &[*v]);
             }
         }
     }
@@ -1202,7 +1202,7 @@ fn number_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     } else {
         let radix = args[1];
         if !radix.is_fixnum() {
-            panic!("{}: radix number required but got {}", name, radix);
+            return type_required_error(name, "radix number", &[args[1]]);
         }
         let radix = radix.to_isize();
         if radix == 2 || radix == 8 || radix == 10 || radix == 16 {
@@ -1267,12 +1267,12 @@ fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     return Ok(Object::False);
                 }
             } else {
-                panic!("{}: character required but got {}", name, args[i]);
+               return type_required_error(name, "char", &[args[i]]);
             }
         }
         return Ok(Object::True);
     } else {
-        panic!("{}: character required but got {}", name, args[0]);
+        return type_required_error(name, "char", &[args[0]]);
     }
 }
 fn is_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1292,7 +1292,7 @@ fn get_environment_variable(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
             Err(_) => Ok(Object::False),
         }
     } else {
-        panic!("{}: string key required but got {}", name, args[0])
+        return type_required_error(name, "string key", &[args[0]]);
     }
 }
 fn get_environment_variables(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1322,7 +1322,7 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obj
             Ok(Object::StringInputPort(vm.gc.alloc(port)))
         }
         _ => {
-            panic!("{}: string required but got {:?}", name, args);
+           return type_required_error(name, "string", &[args[0]]);
         }
     }
 }
@@ -1414,7 +1414,7 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if let Object::Char(c) = args[0] {
         Ok(Object::Fixnum(c as isize))
     } else {
-        panic!("{}: char required but got {}", name, args[0]);
+        return type_required_error(name, "char", &[args[0]]);
     }
 }
 fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1426,7 +1426,7 @@ fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             None => Error::assertion_violation(name, "integer out of range", &[args[0]]),
         }
     } else {
-        panic!("{}: integer required but got {}", name, args[0]);
+        return type_required_error(name, "integer number", &[args[0]]);
     }
 }
 fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1489,9 +1489,6 @@ fn current_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
 fn set_current_input_port_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "set-current-input-port!";
     check_argc!(name, args, 1);
-    //if !args[0].is_input_port() {
-    //panic!("{}: input-port required but got {}", name, args[0]);
-    //    }
     vm.set_current_input_port(args[0]);
     Ok(Object::Unspecified)
 }
@@ -2303,7 +2300,7 @@ fn string_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
         _ => {
-            panic!("{}: string and number required but got {:?}", name, args)
+            return type_required_error(name, "string and number", &[args[0], args[1]]);
         }
     }
 }
@@ -2923,7 +2920,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     let path = match args[0] {
         Object::String(s) => s.string.to_owned(),
         _ => {
-            panic!("{}: path string required but got {}", name, args[0])
+            return type_required_error(name, "path", &[args[0]]);
         }
     };
     let file_exists = Path::new(&path).exists();
@@ -2954,7 +2951,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         let file_options = match args[1] {
             Object::SimpleStruct(s) => s.field(1),
             _ => {
-                panic!("{}: file-options required but got {}", name, args[1])
+                return type_required_error(name, "file-options", &[args[1]]);
             }
         };
         let empty_p = file_options.is_nil();
@@ -3263,7 +3260,7 @@ fn exit(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Object::Fixnum(fx) => process::exit(fx as i32),
             Object::False => process::exit(-1),
             _ => {
-                panic!("{}: integer or boolean required but got {}", name, args[0])
+                return type_required_error(name, "integer or boolean", &[args[0], args[1]]);
             }
         }
     }
@@ -4413,7 +4410,7 @@ fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     match Bytevector::from_list(args[0]) {
         Some(bv) => Ok(Object::Bytevector(vm.gc.alloc(bv))),
         None => {
-            panic!("{}: u8 list required but got {}", name, args[0])
+            return type_required_error(name, "u8 list", &[args[0]]);
         }
     }
 }
@@ -4708,7 +4705,7 @@ fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         },
         _ => {
-            panic!("{}: bytevector required bug got {}", name, args[0])
+            return type_required_error(name, "bytevector", &[args[0]]);
         }
     }
 }
@@ -6772,7 +6769,7 @@ fn ungensym(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(args[0])
         }
     } else {
-        panic!("{}: symbol required but got {}", name, args[0]);
+       return type_required_error(name, "symbol", &[args[0]]);
     }
 }
 fn disasm(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7154,7 +7151,7 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
         let file_options = match args[1] {
             Object::SimpleStruct(s) => s.field(1),
             _ => {
-                panic!("{}: file-options required but got {}", name, args[1])
+                return type_required_error(name, "file-options", &[args[1]]);
             }
         };
         let empty_p = file_options.is_nil();
@@ -7351,7 +7348,7 @@ fn list_tail(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 2);
     let index = args[1];
     if !index.is_fixnum() || index.to_isize() < 0 {
-        panic!("{}: number index > 0 required but got {}", name, index);
+        return type_required_error(name, "number index > 0", &[args[1]]);
     }
     let mut index = index.to_isize();
     let mut obj = args[0];
@@ -7533,7 +7530,7 @@ fn create_directory(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
             }
         }
     } else {
-        panic!("{}: string path required but got {}", name, args[0])
+        return type_required_error(name, "path", &[args[0]]);
     }
 }
 fn delete_directory(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -8027,7 +8024,7 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
     } else {
-        panic!("{}: simple-struct required but got {}", name, args[0]);
+        return type_required_error(name, "simple-struct", &[args[0]]);
     }
 }
 
@@ -8076,7 +8073,7 @@ fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
         unsafe { GENSYM_PREFIX = s.string.chars().nth(0).unwrap() };
         Ok(Object::Unspecified)
     } else {
-        panic!("{}: symbol required but got {}", name, args[0]);
+       return type_required_error(name, "symbol", &[args[0]]);
     }
 }
 
