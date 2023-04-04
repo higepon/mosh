@@ -50,6 +50,31 @@ use num_traits::{FromPrimitive, ToPrimitive, Zero};
 static mut GENSYM_PREFIX: char = 'a';
 static mut GENSYM_INDEX: isize = 0;
 
+fn pair_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
+    type_required_error(name, "pair", args)
+}
+fn number_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
+    type_required_error(name, "number", args)
+}
+fn type_required_error(name: &str, type_str: &str, args: &[Object]) -> error::Result<Object> {
+    return Err(error::Error::new(
+        ErrorType::AssertionViolation,
+        name,
+        &format!("{} required", type_str),
+        args,
+    ));
+}
+
+#[macro_export]
+macro_rules! generic_error {
+    ($name:expr, $args:expr, $fmt:expr, $($fmt_arg:tt)+) => (Err(error::Error::new(
+        ErrorType::AssertionViolation,
+        $name,
+        &format!($fmt, $($fmt_arg)+),
+        $args,
+    )));
+}
+
 pub fn default_free_vars(gc: &mut Gc) -> Vec<Object> {
     vec![
         gc.new_procedure(is_number, "number?"),
@@ -832,9 +857,13 @@ macro_rules! check_argc_at_least {
         if $args.len() < $argc {
             return type_required_error(
                 $name,
-                &format!("at least {} arguments required but got {}", $argc, $args.len()),
+                &format!(
+                    "at least {} arguments required but got {}",
+                    $argc,
+                    $args.len()
+                ),
                 &[],
-            );            
+            );
         }
     }};
 }
@@ -845,9 +874,13 @@ macro_rules! check_argc_max {
         if $args.len() > $max {
             return type_required_error(
                 $name,
-                &format!("at least {} arguments required but got {}", $max, $args.len()),
+                &format!(
+                    "at least {} arguments required but got {}",
+                    $max,
+                    $args.len()
+                ),
                 &[],
-            );             
+            );
         }
     }};
 }
@@ -859,10 +892,15 @@ macro_rules! check_argc_between {
             if $args.len() > $max {
                 return type_required_error(
                     $name,
-                    &format!("{}-{} arguments required but got {}", $min, $max, $args.len()),
+                    &format!(
+                        "{}-{} arguments required but got {}",
+                        $min,
+                        $max,
+                        $args.len()
+                    ),
                     &[],
-                );             
-            }            
+                );
+            }
         }
     }};
 }
@@ -1007,9 +1045,7 @@ fn make_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         [Object::Fixnum(n), Object::Char(c)] => {
             Ok(vm.gc.new_string(&*c.to_string().repeat(*n as usize)))
         }
-        _ => {
-            panic!("{}: wrong arguments {:?}", name, args)
-        }
+        _ => return generic_error!(name, args, "wrong arguments {:?}", args),
     }
 }
 fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1022,10 +1058,7 @@ fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Ob
             Ok(Object::Unspecified)
         }
         _ => {
-            panic!(
-                "{}: string, number and char required but got {:?}",
-                name, args
-            )
+            return type_required_error(name, "string, number and char", args);
         }
     }
 }
@@ -1097,7 +1130,7 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     NumberLexer::new(&chars),
                 ) {
                     Ok(n) => Ok(n),
-                    Err(err) => panic!("{}: {:?}", name, err),
+                    Err(err) => generic_error!(name, args, "{:?}", err),
                 }
             }
             _ => {
@@ -1205,7 +1238,7 @@ fn number_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if radix == 2 || radix == 8 || radix == 10 || radix == 16 {
             Ok(vm.gc.new_string(&numbers::to_string(n, radix as usize)))
         } else {
-            panic!("{}: unsupported radix {}", name, args[1]);
+            return generic_error!(name, &[args[1]], "unsupported radix {}", args[1]);
         }
     }
 }
@@ -1345,14 +1378,11 @@ fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         (Object::Char(c), Object::Fixnum(radix)) => match c.to_digit(radix as u32) {
             Some(v) => Ok(Object::Fixnum(v as isize)),
             None => {
-                panic!("{}: could not convert ({}, {})", name, args[0], args[1]);
+                return generic_error!(name, args, "could not convert ({}, {})", args[0], args[1]);
             }
         },
         _ => {
-            panic!(
-                "{}: char and number required but got {} and {}",
-                name, args[0], args[1]
-            );
+            return type_required_error(name, "char and number", args);
         }
     }
 }
@@ -1398,7 +1428,7 @@ fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     if let Object::StringOutputPort(mut s) = args[0] {
         Ok(vm.gc.new_string(&s.string()))
     } else {
-        panic!("{}: string-output-port require but got {}", name, args[0])
+        return type_required_error(name, "string-output-port", args);
     }
 }
 fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1447,31 +1477,11 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 port.format(&s.string, &mut args[1..])?;
                 return Ok(vm.gc.new_string(&port.string()));
             }
-            (x, y) => panic!("x={} y={}", x, y),
+            (x, y) => bug!("x={} y={}", x, y),
         }
-    }
-    println!("***{} called", "format");
-    for i in 0..args.len() {
-        println!("  arg[{}]={}", i, args[i]);
-    }
-
-    // TODO
-    let text = if args.len() == 2 {
-        format!("{} {}", args[0], args[1])
-    } else if args.len() == 3 {
-        format!("{} {} {}", args[0], args[1], args[2])
-    } else if args.len() == 4 {
-        format!("{} {} {} {}", args[0], args[1], args[2], args[3])
-    } else if args.len() == 5 {
-        format!(
-            "{} {} {} {} {}",
-            args[0], args[1], args[2], args[3], args[4]
-        )
     } else {
-        panic!("format {:?}", args);
-    };
-    println!("{}", &text);
-    Ok(vm.gc.new_string(&text))
+        Ok(Object::Unspecified)
+    }
 }
 fn current_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "current-input-port";
@@ -1555,30 +1565,11 @@ fn is_stringequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 }
             }
             _ => {
-                panic!(
-                    "{}: string required but got {} {}",
-                    name,
-                    args[i],
-                    args[i + 1]
-                );
+                return type_required_error(name, "string", &[args[i], args[i + 1]]);
             }
         }
     }
     Ok(Object::True)
-}
-fn pair_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
-    type_required_error(name, "pair", args)
-}
-fn number_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
-    type_required_error(name, "number", args)
-}
-fn type_required_error(name: &str, type_str: &str, args: &[Object]) -> error::Result<Object> {
-    return Err(error::Error::new(
-        ErrorType::AssertionViolation,
-        name,
-        &format!("{} required", type_str),
-        args,
-    ));
 }
 
 fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2155,12 +2146,7 @@ fn is_symbolequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Ok(Object::False);
             }
         } else {
-            panic!(
-                "{}: symbol required but got {} {}",
-                name,
-                args[i],
-                args[i + 1]
-            );
+            return type_required_error(name, "symbol", &[args[i], args[i + 1]]);
         }
     }
     Ok(Object::True)
@@ -2292,7 +2278,7 @@ fn string_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             match s.string.chars().nth(idx) {
                 Some(c) => Ok(Object::Char(c)),
                 _ => {
-                    panic!("{}: string index out of bound {:?}", name, args)
+                    generic_error!(name, args, "string index out of bound {:?}", args)
                 }
             }
         }
@@ -2636,10 +2622,7 @@ fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
             Ok(Object::Unspecified)
         }
         _ => {
-            panic!(
-                "{}: bytevector index u8 value required but got {}, {} and {}",
-                name, args[0], args[1], args[2]
-            );
+            return type_required_error(name, "bytevector index u8 value", args);
         }
     }
 }
@@ -2937,7 +2920,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         let file = match open_options.open(&path) {
             Ok(file) => file,
             Err(err) => {
-                panic!("{}: {} {}", name, path, err);
+                return generic_error!(name, &[args[0]], "{}", err);
             }
         };
         Ok(Object::BinaryFileOutputPort(
@@ -3174,7 +3157,7 @@ fn eval_compiled(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 // We make apply public so that Vm can access.
 pub fn apply(_vm: &mut Vm, _args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "apply";
-    panic!("{} should not be called. It is handled in call in vm", name);
+    bug!("{} should not be called. It is handled in call in vm", name);
 }
 fn assq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "assq";
@@ -3182,7 +3165,7 @@ fn assq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let key = args[0];
     let mut alist = args[1];
     if !alist.is_list() {
-        panic!("{}: requires list but got {}", name, alist);
+        return type_required_error(name, "list", &[alist]);
     }
     loop {
         if alist.is_nil() {
@@ -3426,7 +3409,7 @@ fn read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match port.read(vm) {
             Ok(obj) => Ok(obj),
             Err(err) => {
-                panic!("{}: {:?}", name, err)
+                return generic_error!(name, &[args[0]], "{:?}", err);
             }
         }
     } else {
@@ -3703,7 +3686,7 @@ fn symbol_value(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::Symbol(symbol) => match vm.global_value(symbol) {
             Some(&value) => Ok(value),
             None => {
-                panic!("identifier {} not found", symbol.string);
+                return generic_error!(name, args, "identifier {} not found", symbol.string);
             }
         },
         obj => {
@@ -4055,7 +4038,7 @@ fn number_div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match numbers::div(&mut vm.gc, Object::Fixnum(1), args[0]) {
             Ok(value) => Ok(value),
             Err(SchemeError::Div0) => {
-                panic!("/: division by zero {}", args[0])
+                return generic_error!(name, &[args[0]], "division by zero {}", args[0]);
             }
             _ => bug!(),
         }
@@ -4229,11 +4212,11 @@ fn current_directory(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         Ok(path_buf) => match path_buf.as_os_str().to_str() {
             Some(s) => Ok(vm.gc.new_string(s)),
             None => {
-                panic!("{}: osstr conversion error ", name);
+                return generic_error!(name, args, "{} conversion error", "os_str");
             }
         },
         Err(err) => {
-            panic!("{}: failed {}", name, err);
+            return generic_error!(name, args, "{}", err);
         }
     }
 }
@@ -4312,14 +4295,18 @@ fn bytevector_copy_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Resu
                     }
                 }
             } else {
-                panic!("{}: invalid range", name)
+                return generic_error!(
+                    name,
+                    args,
+                    "invalid range src-start-{} dst-strt={} k={}",
+                    src_start,
+                    dst_start,
+                    k
+                );
             }
         }
         _ => {
-            panic!(
-                "{}: (bv1 start1 bv2 start2 k) required but got {}, {}, {}, {} and {}",
-                name, args[0], args[1], args[2], args[3], args[4]
-            );
+            return type_required_error(name, "(bv1 start1 bv2 start2 k)", args);
         }
     }
     Ok(Object::Unspecified)
@@ -4340,13 +4327,10 @@ fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     match (args[0], args[1]) {
         (Object::Bytevector(bv), Object::Fixnum(index)) => match bv.ref_u8(index as usize) {
             Some(v) => Ok(Object::Fixnum(v as isize)),
-            None => panic!("{}: index out of range {}", name, index),
+            None => generic_error!(name, args, "index out of range {}", index),
         },
         _ => {
-            panic!(
-                "{}: bytevector and index required but got {} and {}",
-                name, args[0], args[1]
-            )
+            return type_required_error(name, "bytevector and index", args);
         }
     }
 }
@@ -4357,13 +4341,10 @@ fn bytevector_s8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     match (args[0], args[1]) {
         (Object::Bytevector(bv), Object::Fixnum(index)) => match bv.ref_i8(index as usize) {
             Some(v) => Ok(Object::Fixnum(v as isize)),
-            None => panic!("{}: index out of range {}", name, index),
+            None => generic_error!(name, args, "index out of range {}", index),
         },
         _ => {
-            panic!(
-                "{}: bytevector and index required but got {} and {}",
-                name, args[0], args[1]
-            )
+            return type_required_error(name, "bytevector and index", args);
         }
     }
 }
@@ -4378,10 +4359,7 @@ fn bytevector_s8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
             Ok(Object::Unspecified)
         }
         _ => {
-            panic!(
-                "{}: bytevector index i8 value required but got {}, {} and {}",
-                name, args[0], args[1], args[2]
-            );
+            return type_required_error(name, "bytevector index i8", args);
         }
     }
 }
@@ -4698,7 +4676,7 @@ fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::Bytevector(bv) => match std::str::from_utf8(&bv.data) {
             Ok(s) => Ok(Object::String(vm.gc.alloc(SString::new(&s)))),
             Err(err) => {
-                panic!("{}: {}", name, err)
+                return generic_error!(name, args, "{}", err);
             }
         },
         _ => {
@@ -4940,7 +4918,7 @@ fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match fasl.write(bin_port, args[0]) {
             Ok(()) => Ok(Object::Unspecified),
             Err(err) => {
-                panic!("{}: {} {} {}", name, err, args[0], args[1])
+                return generic_error!(name, args, "{} {} {}", err, args[0], args[1]);
             }
         }
     } else {
@@ -6557,12 +6535,12 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let n1 = args[0];
         let n2 = args[1];
         if n1.is_exact_zero() && n2.is_exact_zero() {
-            panic!("{}: nonzero reauired but got {} {}", name, n1, n2);
+            return type_required_error(name, "nonzero", args);
         }
         match log2(&mut vm.gc, n1, n2) {
             Ok(ret) => Ok(ret),
             Err(SchemeError::Div0) => {
-                panic!("{}: div by zero {} {}", name, n1, n2)
+                return generic_error!(name, args, "div by zero {} {}", n1, n2);
             }
             _ => bug!(),
         }
@@ -6592,7 +6570,7 @@ fn tan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match numbers::tan(&mut vm.gc, args[0]) {
             Ok(v) => Ok(v),
             Err(SchemeError::Div0) => {
-                panic!("{}: div by zero {}", name, args[0])
+                return generic_error!(name, args, "div by zero {}", args[0]);
             }
             Err(_) => {
                 bug!()
@@ -6652,7 +6630,7 @@ fn atan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match numbers::atan(&mut vm.gc, n) {
             Ok(v) => Ok(v),
             Err(SchemeError::Div0) => {
-                panic!("{}: div by zero {}", name, n)
+                return generic_error!(name, args, "div by zero {}", n);
             }
             _ => bug!(),
         }
@@ -6674,7 +6652,7 @@ fn expt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let n2 = args[1];
     if n1.is_number() && n2.is_number() {
         if n2.is_bignum() {
-            panic!("{}: number ({}, {}) too big", name, n1, n2);
+            return generic_error!(name, args, "number ({}, {}) too big", n1, n2);
         }
         Ok(numbers::expt(&mut vm.gc, n1, n2))
     } else {
@@ -6714,7 +6692,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 let start = start.to_isize();
                 let len = s.string.len() as isize;
                 if start < 0 || start > len {
-                    panic!("{}: start out of range {}", name, args[1]);
+                    return generic_error!(name, args, "start out of range {}", args[1]);
                 }
                 if argc == 2 {
                     let start = start as usize;
@@ -6729,7 +6707,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     }
                     let end = end.to_isize();
                     if end < 0 || start > end || end > len {
-                        panic!("{}: end out of range {}", name, args[1]);
+                        return generic_error!(name, args, "end out of range {}", args[1]);
                     }
                     let start = start as usize;
                     let end = end as usize;
@@ -7077,10 +7055,13 @@ fn quotient(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match numbers::quotient(&mut vm.gc, args[0], args[1]) {
         Ok(v) => Ok(v),
         Err(SchemeError::NonZeroRequired) => {
-            panic!(
-                "{}: none zero required but got {} {}",
-                name, args[0], args[1]
-            )
+            return generic_error!(
+                name,
+                args,
+                "none zero required but got {} {}",
+                args[0],
+                args[1]
+            );
         }
         _ => bug!(),
     }
@@ -7091,10 +7072,13 @@ fn remainder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match numbers::remainder(&mut vm.gc, args[0], args[1]) {
         Ok(v) => Ok(v),
         Err(SchemeError::NonZeroRequired) => {
-            panic!(
-                "{}: none zero required but got {} {}",
-                name, args[0], args[1]
-            )
+            return generic_error!(
+                name,
+                args,
+                "none zero required but got {} {}",
+                args[0],
+                args[1]
+            );
         }
         _ => bug!(),
     }
@@ -7104,10 +7088,13 @@ fn modulo(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match numbers::modulo(&mut vm.gc, args[0], args[1]) {
         Ok(v) => Ok(v),
         Err(SchemeError::NonZeroRequired) => {
-            panic!(
-                "{}: none zero required but got {} {}",
-                name, args[0], args[1]
-            )
+            return generic_error!(
+                name,
+                args,
+                "none zero required but got {} {}",
+                args[0],
+                args[1]
+            );
         }
         _ => bug!(),
     }
@@ -7223,7 +7210,7 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
         file = match open_options.open(&path) {
             Ok(file) => file,
             Err(err) => {
-                panic!("{}: {} {}", name, path, err);
+                return generic_error!(name, args, "{}", err);
             }
         };
     }
@@ -7370,11 +7357,11 @@ fn mosh_executable_path(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         Ok(path_buf) => match path_buf.as_os_str().to_str() {
             Some(s) => Ok(vm.gc.new_string(s)),
             None => {
-                panic!("{}: osstr conversion error ", name);
+                return generic_error!(name, args, "{} conversion error", "os_str");
             }
         },
         Err(err) => {
-            panic!("{}: failed {}", name, err);
+            return generic_error!(name, args, "{}", err);
         }
     }
 }
@@ -7523,7 +7510,7 @@ fn create_directory(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         match fs::create_dir(&path.string) {
             Ok(()) => Ok(Object::Unspecified),
             Err(err) => {
-                panic!("{}: {} {}", name, args[0], err)
+                return generic_error!(name, args, "{}", err);
             }
         }
     } else {
@@ -7579,29 +7566,43 @@ fn file_stat_mtime(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 match file.metadata.last_modified() {
                     Some(last_modified) => return Ok(last_modified.to_obj(&mut vm.gc)),
                     None => {
-                        panic!("failed to retrieve last modified for {}", path.string);
+                        return generic_error!(
+                            name,
+                            args,
+                            "failed to retrieve last modified for {}",
+                            path.string
+                        );
                     }
                 }
             } else {
-                panic!("failed to retrieve metadata for {}", path.string);
+                return generic_error!(
+                    name,
+                    args,
+                    "failed to retrieve metadata for {}",
+                    path.string
+                );
             }
         } else {
             let metadata = File::open(&path.string)
                 .map(|file| file.metadata())
-                .unwrap_or_else(|_| panic!("failed to retrieve metadata for {}", path.string));
+                .unwrap_or_else(|_| {
+                    bug!("failed to retrieve metadata for {}", path.string);
+                });
 
             // Get the last modification time
             let mtime = metadata
                 .map(|metadata| metadata.modified())
                 .unwrap_or_else(|_| {
-                    panic!("failed to retrieve modification time for {}", path.string)
+                    bug!("failed to retrieve modification time for {}", path.string);
                 });
 
             // Convert the last modification time to a system time
             let mtime = mtime.unwrap_or(SystemTime::now());
             let mtime_seconds = mtime
                 .duration_since(UNIX_EPOCH)
-                .unwrap_or_else(|_| panic!("system time before UNIX epoch"))
+                .unwrap_or_else(|_| {
+                    bug!("system time before UNIX epoch");
+                })
                 .as_secs();
 
             Ok(Object::Fixnum(mtime_seconds as isize))
