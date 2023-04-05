@@ -1,8 +1,9 @@
 use crate::{
+    bug,
     gc::GcRef,
     objects::{Object, Symbol},
     op::Op,
-    vm::Vm, bug,
+    vm::Vm,
 };
 
 use super::STACK_SIZE;

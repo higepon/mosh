@@ -851,9 +851,7 @@ impl Gc {
 
         let free_size = match object_type {
             ObjectType::Symbol => 0,
-            ObjectType::Procedure => {
-                0
-            }
+            ObjectType::Procedure => 0,
             ObjectType::CustomBinaryInputPort => {
                 let x: &CustomBinaryInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(x)

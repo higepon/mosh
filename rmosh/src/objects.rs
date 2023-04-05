@@ -1,5 +1,4 @@
 use crate::error::ErrorType;
-use crate::{error, bug};
 use crate::gc::{Gc, GcRef, Trace};
 use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
@@ -13,6 +12,7 @@ use crate::ports::{
     TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::vm::Vm;
+use crate::{bug, error};
 
 use std::cmp::min;
 use std::collections::HashMap;
@@ -1595,7 +1595,7 @@ impl Pair {
                         "last_pair",
                         &format!("last_pair: pair requied but got {}", o),
                         &[o],
-                    ));                                
+                    ));
                 }
             }
         }

@@ -1,10 +1,10 @@
 use crate::{
-    error,
+    bug, error,
     gc::GcRef,
     numbers::{add, eqv, ge, gt, le, lt, sub, ObjectExt},
     objects::{Closure, Object, Symbol},
     op::Op,
-    procs::{self}, bug,
+    procs::{self},
 };
 
 use super::Vm;
@@ -386,12 +386,9 @@ impl Vm {
                 _ => {
                     self.call_assertion_violation_after(
                         "call",
-                        &format!(
-                            "can't call {}",
-                            self.ac
-                        ),
+                        &format!("can't call {}", self.ac),
                         &[self.ac],
-                    )?;                    
+                    )?;
                 }
             }
             break;

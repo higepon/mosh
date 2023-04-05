@@ -1,12 +1,13 @@
 use std::ptr::null;
 
 use crate::{
+    bug,
     equal::Equal,
     error,
     numbers::{div, eqv, ge, gt, le, lt, mul, ObjectExt, SchemeError},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
-    ports::TextInputPort, bug,
+    ports::TextInputPort,
 };
 
 use super::{Vm, MAX_NUM_VALUES};

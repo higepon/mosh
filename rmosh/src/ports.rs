@@ -3,15 +3,15 @@ use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::vm::{Vm, CURRENT_VM};
 use crate::{
+    bug, obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
+    obj_as_binary_output_port_mut_or_panic,
+};
+use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
     lexer::{self},
     objects::{CharExt, Object, Pair, SimpleStruct, Vector},
     reader::DatumParser,
     reader_util::ReadError,
-};
-use crate::{
-    obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
-    obj_as_binary_output_port_mut_or_panic, bug,
 };
 use core::panic;
 use lalrpop_util::ParseError;

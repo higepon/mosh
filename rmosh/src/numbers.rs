@@ -8,8 +8,9 @@ use num_rational::BigRational;
 use num_traits::{FromPrimitive, Signed, ToPrimitive, Zero};
 
 use crate::{
+    bug,
     gc::{Gc, GcHeader, GcRef, ObjectType, Trace},
-    objects::Object, bug,
+    objects::Object,
 };
 
 // GCed Object -> Object.

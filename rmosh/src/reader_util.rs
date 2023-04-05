@@ -34,7 +34,7 @@ pub enum ReadError {
     SymbolParseError {
         token: String,
         description: String,
-    },    
+    },
     DivisionByZero {
         token: String,
         description: String,

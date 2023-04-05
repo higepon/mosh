@@ -8,10 +8,11 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::{
+    bug,
     gc::Gc,
     numbers::{Bignum, Compnum, Flonum, Ratnum},
     objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
-    ports::BinaryOutputPort, bug,
+    ports::BinaryOutputPort,
 };
 
 #[derive(FromPrimitive)]
