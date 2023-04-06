@@ -142,11 +142,7 @@ pub fn read_string(s: &str) -> String {
     let chars: Vec<char> = s.chars().collect();
     let mut ret = String::new();
     let mut i: usize = 0;
-    loop {
-        let ch = match chars.get(i) {
-            Some(c) => c,
-            None => break,
-        };
+    while let Some(ch) = chars.get(i) {
         i += 1;
         if *ch == '\\' {
             let ch2 = match chars.get(i) {
@@ -213,12 +209,7 @@ pub fn read_string(s: &str) -> String {
                 // <intraline whitespace>*<line ending>
                 // <intraline whitespace>*
                 // NB: Lexical syntax has already checked by the scanner.
-                loop {
-                    let ch3 = match chars.get(i) {
-                        Some(c) => c,
-                        None => break,
-                    };
-
+                while let Some(ch3) = chars.get(i) {
                     // <line ending>
                     if *ch3 == '\r' ||
                        *ch3 == '\n' ||
@@ -252,11 +243,7 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
     let chars: Vec<char> = s.chars().collect();
     let mut ret = String::new();
     let mut i: usize = 0;
-    loop {
-        let ch = match chars.get(i) {
-            Some(c) => c,
-            None => break,
-        };
+    while let Some(ch) = chars.get(i) {
         i += 1;
         if *ch == '\\' {
             let ch2 = match chars.get(i) {
