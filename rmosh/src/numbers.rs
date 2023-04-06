@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Debug, Display},
-    ops::{Deref, DerefMut, Neg, Rem},
+    ops::{Deref, DerefMut, Neg, Rem}, cmp::Ordering,
 };
 
 use num_bigint::BigInt;
@@ -482,9 +482,7 @@ impl Flonum {
     }
 
     pub fn new_from_64(u64_value: u64) -> Self {
-        Self {
-            u64_value,
-        }
+        Self { u64_value }
     }
 
     #[inline(always)]
@@ -1142,23 +1140,27 @@ impl Compnum {
     pub fn expt(gc: &mut Box<Gc>, z1: Object, z2: Object) -> Object {
         if z2.is_fixnum() {
             let n = z2.to_isize();
-            if n == 0 {
-                Object::Fixnum(1)
-            } else if n > 0 {
-                let mut ret = z1;
-                for _ in 0..n - 1 {
-                    ret = mul(gc, ret, z1);
+            match n.cmp(&0) {
+                Ordering::Equal => {
+                    Object::Fixnum(1)
                 }
-                ret
-            } else {
-                let mut ret = Object::Fixnum(1);
-                for _i in 0..(-n) {
-                    match div(gc, ret, z1) {
-                        Ok(v) => ret = v,
-                        Err(_) => bug!(),
+                Ordering::Greater => {
+                    let mut ret = z1;
+                    for _ in 0..n - 1 {
+                        ret = mul(gc, ret, z1);
                     }
+                    ret
                 }
-                ret
+                Ordering::Less => {
+                    let mut ret = Object::Fixnum(1);
+                    for _i in 0..(-n) {
+                        match div(gc, ret, z1) {
+                            Ok(v) => ret = v,
+                            Err(_) => bug!(),
+                        }
+                    }
+                    ret
+                }
             }
         } else {
             let x = log(gc, z1);
@@ -1488,7 +1490,6 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
         let ret = n1.to_flonum().integer_div(&n2.to_flonum());
         Ok(Object::Flonum(ret))
     } else {
-        
         let ret = if n2.is_negative() {
             let r = negate(gc, n2);
             let r = div(gc, n1, r)?;
@@ -1610,20 +1611,20 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
     assert!(!n2.is_bignum());
     match (n1, n2) {
         (Object::Fixnum(f1), Object::Fixnum(f2)) => match (BigInt::from_isize(f1), f2) {
-            (Some(b1), b2) => {
-                if f2 == 0 {
-                    Object::Fixnum(1)
-                } else if f2 > 0 {
+            (Some(b1), b2) => match f2.cmp(&0) {
+                Ordering::Equal => Object::Fixnum(1),
+                Ordering::Greater => {
                     let b = b1.pow(b2 as u32);
                     b.to_obj(gc)
-                } else {
+                }
+                Ordering::Less => {
                     if f1 == 0 {
                         return Object::Unspecified;
                     }
                     let b = b1.pow(-f2 as u32);
                     Object::Ratnum(gc.alloc(Ratnum::new(BigInt::from_isize(1).unwrap(), b)))
                 }
-            }
+            },
             _ => todo!(),
         },
         (Object::Fixnum(_), Object::Flonum(fl)) => {
@@ -1897,9 +1898,7 @@ pub fn to_string(n: Object, radix: usize) -> String {
         Object::Fixnum(fx) if radix == 10 => {
             format!("{}", fx)
         }
-        _ if radix == 10 => {
-            n.to_string()
-        }
+        _ if radix == 10 => n.to_string(),
         Object::Fixnum(fx) if radix == 16 => {
             if fx < 0 {
                 format!("-{:x}", -fx)
