@@ -1488,16 +1488,16 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
         let ret = n1.to_flonum().integer_div(&n2.to_flonum());
         Ok(Object::Flonum(ret))
     } else {
-        let ret;
-        if n2.is_negative() {
+        
+        let ret = if n2.is_negative() {
             let r = negate(gc, n2);
             let r = div(gc, n1, r)?;
             let r = floor(gc, r);
-            ret = negate(gc, r);
+            negate(gc, r)
         } else {
             let r = div(gc, n1, n2)?;
-            ret = floor(gc, r);
-        }
+            floor(gc, r)
+        };
         return Ok(ret);
     }
 }
