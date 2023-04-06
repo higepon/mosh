@@ -1,4 +1,4 @@
-use crate::bug;
+use crate::{bug, as_isize2};
 use crate::ports::StdLib;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -5576,8 +5576,10 @@ fn fxmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmax";
     check_argc_at_least!(name, args, 1);
     let mut max = isize::MIN;
-    for i in 0..args.len() {
-        let fx = as_isize!(name, args, i);
+
+    for arg in args {
+        let fx = as_isize2!(name, arg);
+
         if fx > max {
             max = fx
         }
@@ -5588,8 +5590,9 @@ fn fxmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxmin";
     check_argc_at_least!(name, args, 1);
     let mut min = isize::MAX;
-    for i in 0..args.len() {
-        let fx = as_isize!(name, args, i);
+
+    for arg in args {
+        let fx = as_isize2!(name, arg);
         if fx < min {
             min = fx
         }
@@ -5707,8 +5710,8 @@ fn fxand(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxand";
     check_argc_at_least!(name, args, 1);
     let mut ret = -1;
-    for i in 0..args.len() {
-        let fx = as_isize!(name, args, i);
+    for arg in args {
+        let fx = as_isize2!(name, arg);    
         ret &= fx;
     }
     Ok(Object::Fixnum(ret))
@@ -5717,8 +5720,8 @@ fn fxior(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxior";
     check_argc_at_least!(name, args, 1);
     let mut ret = 0;
-    for i in 0..args.len() {
-        let fx = as_isize!(name, args, i);
+    for arg in args {
+        let fx = as_isize2!(name, arg);
         ret |= fx;
     }
     Ok(Object::Fixnum(ret))
@@ -5727,8 +5730,8 @@ fn fxxor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxxor";
     check_argc_at_least!(name, args, 1);
     let mut ret = 0;
-    for i in 0..args.len() {
-        let fx = as_isize!(name, args, i);
+        for arg in args {
+            let fx = as_isize2!(name, arg);        
         ret ^= fx;
     }
     Ok(Object::Fixnum(ret))

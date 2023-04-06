@@ -84,6 +84,16 @@ macro_rules! as_isize {
 }
 
 #[macro_export]
+macro_rules! as_isize2 {
+    ($name:ident, $o:ident) => {{
+        if !$o.is_fixnum() {
+            return error::Error::assertion_violation($name, "number required", &[*$o]);
+        }
+        $o.to_isize()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_f64 {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
