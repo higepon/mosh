@@ -203,7 +203,7 @@ impl Vm {
         code.as_ptr()
     }
 
-    pub(super) fn allocate_code(&mut self, src: &Vec<Object>) -> *const Object {
+    pub(super) fn allocate_code(&mut self, src: &[Object]) -> *const Object {
         self.dynamic_code_array.push(vec![]);
         let code = self.dynamic_code_array.last_mut().unwrap();
         for obj in src.iter() {
