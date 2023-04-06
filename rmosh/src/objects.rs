@@ -102,17 +102,11 @@ impl Object {
     }
 
     pub fn is_false(&self) -> bool {
-        match self {
-            Object::False => true,
-            _ => false,
-        }
+        matches!(self, Object::False)
     }
 
     pub fn is_true(&self) -> bool {
-        match self {
-            Object::True => true,
-            _ => false,
-        }
+        matches!(self, Object::True)
     }
 
     pub fn is_list(&self) -> bool {
@@ -120,141 +114,76 @@ impl Object {
     }
 
     pub fn is_pair(&self) -> bool {
-        match self {
-            Object::Pair(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Pair(_))
     }
 
     pub fn is_bytevector(&self) -> bool {
-        match self {
-            Object::Bytevector(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Bytevector(_))
     }
 
     pub fn is_transcoder(&self) -> bool {
-        match self {
-            Object::Transcoder(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Transcoder(_))
     }
 
     pub fn is_vox(&self) -> bool {
-        match self {
-            Object::Vox(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Vox(_))
     }
     pub fn is_boolean(&self) -> bool {
-        match self {
-            Object::True => true,
-            Object::False => true,
-            _ => false,
-        }
+        matches!(self, Object::True | Object::False)
     }
     pub fn is_bignum(&self) -> bool {
-        match self {
-            Object::Bignum(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Bignum(_))
     }
 
     pub fn is_fixnum(&self) -> bool {
-        match self {
-            Object::Fixnum(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Fixnum(_))
     }
 
     pub fn is_char(&self) -> bool {
-        match self {
-            Object::Char(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Char(_))
     }
     pub fn is_flonum(&self) -> bool {
-        match self {
-            Object::Flonum(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Flonum(_))
     }
     pub fn is_ratnum(&self) -> bool {
-        match self {
-            Object::Ratnum(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Ratnum(_))
     }
     pub fn is_compnum(&self) -> bool {
-        match self {
-            Object::Compnum(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Compnum(_))
     }
     pub fn is_procedure(&self) -> bool {
-        match self {
-            Object::Procedure(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Procedure(_))
     }
     pub fn is_object_pointer(&self) -> bool {
-        match self {
-            Object::ObjectPointer(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::ObjectPointer(_))
     }
     pub fn is_closure(&self) -> bool {
-        match self {
-            Object::Closure(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Closure(_))
     }
     pub fn is_callable(&self) -> bool {
-        match self {
-            Object::Closure(_) => true,
-            Object::Procedure(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Closure(_) | Object::Procedure(_))
     }
     pub fn is_regexp(&self) -> bool {
-        match self {
-            Object::Regexp(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Regexp(_))
     }
     pub fn is_nil(&self) -> bool {
-        match self {
-            Object::Nil => true,
-            _ => false,
-        }
+        matches!(self, Object::Nil)
     }
 
     pub fn is_symbol(&self) -> bool {
-        match self {
-            Object::Symbol(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::Symbol(_))
     }
 
     pub fn is_simple_struct(&self) -> bool {
-        match self {
-            Object::SimpleStruct(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::SimpleStruct(_))
     }
 
     pub fn is_string(&self) -> bool {
-        match self {
-            Object::String(_) => true,
-            _ => false,
-        }
+        matches!(self, Object::String(_))
     }
 
     pub fn is_unspecified(&self) -> bool {
-        match self {
-            Object::Unspecified => true,
-            _ => false,
-        }
+        matches!(self, Object::Unspecified)
     }
 
     pub fn eq(&self, other: &Self) -> bool {
@@ -445,8 +374,7 @@ impl Object {
     }
 
     pub fn is_input_port(self) -> bool {
-        match self {
-            Object::BinaryFileInputPort(_)
+        matches!(self, Object::BinaryFileInputPort(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::FileInputPort(_)
             | Object::StdInputPort(_)
@@ -456,14 +384,11 @@ impl Object {
             | Object::CustomTextInputOutputPort(_)
             | Object::TranscodedInputPort(_)
             | Object::BytevectorInputPort(_)
-            | Object::StringInputPort(_) => true,
-            _ => false,
-        }
+            | Object::StringInputPort(_))
     }
 
     pub fn is_binary_port(self) -> bool {
-        match self {
-            Object::BinaryFileInputPort(_)
+        matches!(self, Object::BinaryFileInputPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
             | Object::StdErrorPort(_)
@@ -473,14 +398,11 @@ impl Object {
             | Object::CustomBinaryInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorOutputPort(_)
-            | Object::BytevectorInputPort(_) => true,
-            _ => false,
-        }
+            | Object::BytevectorInputPort(_))
     }
 
     pub fn is_port(self) -> bool {
-        match self {
-            Object::BinaryFileInputPort(_)
+        matches!(self, Object::BinaryFileInputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::FileInputPort(_)
@@ -497,14 +419,11 @@ impl Object {
             | Object::TranscodedOutputPort(_)
             | Object::StdOutputPort(_)
             | Object::StringInputPort(_)
-            | Object::StringOutputPort(_) => true,
-            _ => false,
-        }
+            | Object::StringOutputPort(_))
     }
 
     pub fn is_output_port(self) -> bool {
-        match self {
-            Object::BinaryFileInputOutputPort(_)
+        matches!(self, Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorOutputPort(_)
             | Object::CustomTextInputOutputPort(_)
@@ -517,14 +436,11 @@ impl Object {
             | Object::StdErrorPort(_)
             | Object::StringOutputPort(_)
             | Object::TranscodedOutputPort(_)
-            | Object::TranscodedInputOutputPort(_) => true,
-            _ => false,
-        }
+            | Object::TranscodedInputOutputPort(_))
     }
 
     pub fn is_textual_port(self) -> bool {
-        match self {
-            Object::FileInputPort(_)
+        matches!(self, Object::FileInputPort(_)
             | Object::CustomTextInputPort(_)
             | Object::CustomTextInputOutputPort(_)
             | Object::CustomTextOutputPort(_)
@@ -532,43 +448,32 @@ impl Object {
             | Object::TranscodedInputPort(_)
             | Object::TranscodedOutputPort(_)
             | Object::StringInputPort(_)
-            | Object::StringOutputPort(_) => true,
-            _ => false,
-        }
+            | Object::StringOutputPort(_))
     }
 
     pub fn is_textual_output_port(self) -> bool {
-        match self {
-            Object::FileOutputPort(_)
+        matches!(self, Object::FileOutputPort(_)
             | Object::CustomTextOutputPort(_)
             | Object::CustomTextInputOutputPort(_)
             | Object::TranscodedOutputPort(_)
-            | Object::StringOutputPort(_) => true,
-            _ => false,
-        }
+            | Object::StringOutputPort(_))
     }
 
     pub fn is_textual_input_port(self) -> bool {
-        match self {
-            Object::TranscodedInputPort(_)
+        matches!(self, Object::TranscodedInputPort(_)
             | Object::FileInputPort(_)
             | Object::CustomTextInputPort(_)
             | Object::CustomTextInputOutputPort(_)
-            | Object::StringInputPort(_) => true,
-            _ => false,
-        }
+            | Object::StringInputPort(_))
     }
 
     pub fn is_binary_input_port(self) -> bool {
-        match self {
-            Object::BinaryFileInputPort(_)
+        matches!(self, Object::BinaryFileInputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::CustomBinaryInputPort(_)
             | Object::StdInputPort(_)
             | Object::CustomBinaryInputOutputPort(_)
-            | Object::BinaryFileInputOutputPort(_) => true,
-            _ => false,
-        }
+            | Object::BinaryFileInputOutputPort(_))
     }
 
     pub fn eqv(&self, other: &Self) -> bool {
@@ -785,12 +690,12 @@ impl Debug for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                let name;
-                if closure.src.is_false() {
-                    name = Object::False
+                
+                let name = if closure.src.is_false() {
+                    Object::False
                 } else {
-                    name = closure.src.cdr_unchecked();
-                }
+                    closure.src.cdr_unchecked()
+                };
                 write!(
                     f,
                     "#<closure {} {:?}>",
@@ -967,12 +872,12 @@ impl Display for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                let name;
-                if closure.src.is_false() {
-                    name = Object::False
+                
+                let name = if closure.src.is_false() {
+                    Object::False
                 } else {
-                    name = closure.src.cdr_unchecked();
-                }
+                    closure.src.cdr_unchecked()
+                };
                 write!(
                     f,
                     "#<closure {} {:?}>",
@@ -1103,11 +1008,7 @@ impl Bytevector {
     }
 
     pub fn is_little_endian() -> bool {
-        if cfg!(target_endian = "big") {
-            false
-        } else {
-            true
-        }
+        !cfg!(target_endian = "big")
     }
 
     pub fn from_list(list: Object) -> Option<Self> {
@@ -1996,7 +1897,7 @@ impl ContinuationStack {
         c
     }
 
-    pub fn restore(&self, dest: &mut Vec<Object>) -> usize {
+    pub fn restore(&self, dest: &mut [Object]) -> usize {
         for (index, element) in self.data.iter().enumerate() {
             dest[index] = *element;
         }
@@ -2099,16 +2000,12 @@ where
     }
 
     fn contains(&'a self, key: Self::Key) -> bool {
-        match self.get_map().get(&key) {
-            Some(_) => true,
-            _ => false,
-        }
+        matches!(self.get_map().get(&key), Some(_))
     }
 
     fn set(&'a mut self, key: Self::Key, value: Object) {
-        match self.get_mut_map().insert(key, value) {
-            _ => (),
-        }
+        self.get_mut_map().insert(key, value);
+        ();
     }
 
     fn size(&'a self) -> usize {
@@ -2116,9 +2013,8 @@ where
     }
 
     fn delte(&'a mut self, key: Self::Key) {
-        match self.get_mut_map().remove(&key) {
-            _ => (),
-        }
+        self.get_mut_map().remove(&key);
+        ();
     }
 
     fn clear(&'a mut self) {
@@ -2143,6 +2039,12 @@ impl Trace for EqHashtable {
         for &obj in self.hash_map.keys() {
             gc.mark_object(obj);
         }
+    }
+}
+
+impl Default for EqHashtable {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -2351,6 +2253,12 @@ impl Trace for EqvHashtable {
         for &key in self.hash_map.keys() {
             gc.mark_object(key.obj);
         }
+    }
+}
+
+impl Default for EqvHashtable {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
