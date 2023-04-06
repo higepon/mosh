@@ -1,4 +1,4 @@
-#[allow(clippy)]
+#![allow(clippy)]
 use std::alloc;
 use std::sync::atomic::AtomicUsize;
 

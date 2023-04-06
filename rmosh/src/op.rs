@@ -1,4 +1,4 @@
-#[allow(clippy)]
+#![allow(clippy)]
 use std::fmt::{self, Display};
 
 use num_derive::FromPrimitive;

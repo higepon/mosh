@@ -1,4 +1,4 @@
-#[allow(clippy)]
+#![allow(clippy)]
 use std::{
     fmt::{self, Debug, Display},
     ops::{Deref, DerefMut, Neg, Rem},

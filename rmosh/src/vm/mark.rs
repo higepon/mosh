@@ -1,4 +1,4 @@
-#[allow(clippy)]
+#![allow(clippy)]
 use std::ptr::null;
 
 use crate::{
