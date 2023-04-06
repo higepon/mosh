@@ -256,6 +256,12 @@ impl Trace for StdInputPort {
     fn trace(&self, _gc: &mut Gc) {}
 }
 
+impl Default for StdInputPort {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StdInputPort {
     pub fn new() -> Self {
         StdInputPort {
@@ -1265,6 +1271,12 @@ impl Trace for BytevectorOutputPort {
     fn trace(&self, _gc: &mut Gc) {}
 }
 
+impl Default for BytevectorOutputPort {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BytevectorOutputPort {
     pub fn new() -> Self {
         BytevectorOutputPort {
@@ -1552,6 +1564,12 @@ impl Trace for StdOutputPort {
     fn trace(&self, _gc: &mut Gc) {}
 }
 
+impl Default for StdOutputPort {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StdOutputPort {
     pub fn new() -> Self {
         Self {
@@ -1598,6 +1616,12 @@ pub struct StdErrorPort {
 
 impl Trace for StdErrorPort {
     fn trace(&self, _gc: &mut Gc) {}
+}
+
+impl Default for StdErrorPort {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl StdErrorPort {
@@ -1647,6 +1671,12 @@ pub struct StringOutputPort {
 
 impl Trace for StringOutputPort {
     fn trace(&self, _gc: &mut Gc) {}
+}
+
+impl Default for StringOutputPort {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl StringOutputPort {
@@ -2150,6 +2180,12 @@ impl Trace for Latin1Codec {
     fn trace(&self, _gc: &mut Gc) {}
 }
 
+impl Default for Latin1Codec {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Latin1Codec {
     pub fn new() -> Self {
         Self {
@@ -2240,6 +2276,12 @@ pub struct UTF8Codec {
 
 impl Trace for UTF8Codec {
     fn trace(&self, _gc: &mut Gc) {}
+}
+
+impl Default for UTF8Codec {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl UTF8Codec {
@@ -2410,6 +2452,12 @@ pub struct UTF16Codec {
 
 impl Trace for UTF16Codec {
     fn trace(&self, _gc: &mut Gc) {}
+}
+
+impl Default for UTF16Codec {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl UTF16Codec {
@@ -2680,16 +2728,13 @@ impl Transcoder {
     ) -> error::Result<Option<char>> {
         let ch = self.read_char_raw(vm, port)?;
 
-        match ch {
-            Some(ch) => {
-                if self.eol_style == EolStyle::ENone {
-                    if ch == char::LF {
-                        self.lineno += 1;
-                    }
-                    return Ok(Some(ch));
+        if let Some(ch) = ch {
+            if self.eol_style == EolStyle::ENone {
+                if ch == char::LF {
+                    self.lineno += 1;
                 }
+                return Ok(Some(ch));
             }
-            _ => {}
         }
         match ch {
             Some(char::LF) | Some(char::NEL) | Some(char::LS) => {
@@ -2743,14 +2788,11 @@ impl Transcoder {
     }
 
     fn unget_char(&mut self, ch: Option<char>) {
-        match ch {
-            Some(ch) => {
-                self.buffer.push(ch);
-                if ch == char::LF {
-                    self.lineno += 1;
-                }
+        if let Some(ch) = ch {
+            self.buffer.push(ch);
+            if ch == char::LF {
+                self.lineno += 1;
             }
-            None => (),
         }
     }
 }
@@ -3841,7 +3883,7 @@ impl TextInputPort for CustomTextInputOutputPort {
         };
 
         let source = &s.to_sstring().string;
-        let mut i = 0;
+        let _i = 0;
         for (i, ch) in source.chars().enumerate() {
             if i >= read_size {
                 break;
