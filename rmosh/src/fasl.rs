@@ -50,7 +50,7 @@ impl FaslWriter {
     }
     pub fn write(&self, port: &mut dyn BinaryOutputPort, obj: Object) -> Result<(), io::Error> {
         let mut seen: HashMap<Object, Object> = HashMap::new();
-        self.scan(obj, &mut seen);
+        Self::scan(obj, &mut seen);
         let mut shared_id = 1;
         self.write_one(port, &mut seen, &mut shared_id, obj)
     }
@@ -255,7 +255,7 @@ impl FaslWriter {
         Ok(())
     }
 
-    fn scan(&self, obj: Object, seen: &mut HashMap<Object, Object>) {
+    fn scan(obj: Object, seen: &mut HashMap<Object, Object>) {
         let mut o = obj;
         loop {
             match o {
@@ -323,7 +323,7 @@ impl FaslWriter {
                     } else {
                         seen.insert(obj, Object::False);
                     }
-                    self.scan(p.car, seen);
+                    Self::scan(p.car, seen);
                     o = p.cdr;
                     continue;
                 }
@@ -341,7 +341,7 @@ impl FaslWriter {
                         seen.insert(obj, Object::False);
                     }
                     for i in 0..v.len() {
-                        self.scan(v.data[i], seen);
+                        Self::scan(v.data[i], seen);
                     }
                     break;
                 }
@@ -359,7 +359,7 @@ impl FaslWriter {
                         seen.insert(obj, Object::False);
                     }
                     for i in 0..s.len() {
-                        self.scan(s.field(i), seen);
+                        Self::scan(s.field(i), seen);
                     }
                     break;
                 }
@@ -740,8 +740,8 @@ impl FaslReader {
         }
         let name = self.read_sexp(gc)?;
         let mut s = SimpleStruct::new(name, len);
-        for i in 0..len {
-            s.set(i, objs[i]);
+        for (i, obj) in objs.iter().enumerate().take(len) {
+            s.set(i, *obj);
         }
         Ok(Object::SimpleStruct(gc.alloc(s)))
     }
