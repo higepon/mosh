@@ -169,10 +169,6 @@ pub fn read_string(s: &str) -> String {
                 ret.push(0xd as char);
             } else if *ch2 == 't' {
                 ret.push(9 as char);
-            } else if *ch2 == 't' {
-                ret.push(9 as char);
-            } else if *ch2 == 't' {
-                ret.push(9 as char);
             } else if *ch2 == 'x' {
                 let mut current_ch = 0 as char;
                 loop {
