@@ -1,4 +1,4 @@
-#![allow(clippy)]
+#![allow(clippy::all)]
 use once_cell::sync::Lazy;
 use std::{
     collections::HashMap,

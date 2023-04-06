@@ -1,4 +1,4 @@
-#![allow(clippy)]
+#![allow(clippy::all)]
 #[macro_export]
 macro_rules! bug {
     () => (panic!("[BUG]"));

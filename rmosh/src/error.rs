@@ -1,4 +1,4 @@
-#![allow(clippy)]
+#![allow(clippy::all)]
 use crate::objects::Object;
 use core::fmt;
 use std::error;

@@ -4,7 +4,7 @@
 // TODO
 // https://github.com/ceronman/loxido/issues/3
 //
-#![allow(clippy)]
+#![allow(clippy::all)]
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;

@@ -1,4 +1,4 @@
-#![allow(clippy)]
+#![allow(clippy::all)]
 use crate::{
     bug, error,
     gc::GcRef,
