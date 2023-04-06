@@ -46,7 +46,7 @@ impl Error {
         ))
     }
 
-    pub fn error(who: &str, message: &str, irritants: &[Object]) -> Result<Object> {
+    pub fn scheme_error(who: &str, message: &str, irritants: &[Object]) -> Result<Object> {
         Err(Self::new(ErrorType::Error, who, message, irritants))
     }
 
