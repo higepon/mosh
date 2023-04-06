@@ -37,7 +37,7 @@ impl Equal {
     //     (let ([k (pre? x y k0)])
     //       (and k (or (> k 0) (interleave? x y 0)))))
     fn is_precheck_interleave_equal(&self, gc: &mut Box<Gc>, x: &Object, y: &Object) -> bool {
-        let k = self.is_pre(gc, x, y, self.k0);
+        let k = Self::is_pre(gc, x, y, self.k0);
         if k.is_false() {
             return false;
         }
@@ -73,7 +73,7 @@ impl Equal {
     //       [(string? x) (and (string? y) (string=? x y) k)]
     //       [(bytevector? x) (and (bytevector? y) (bytevector=? x y) k)]
     //       [else (and (eqv? x y) k)]))
-    fn is_pre(&self, _gc: &mut Box<Gc>, x: &Object, y: &Object, k: Object) -> Object {
+    fn is_pre(_gc: &mut Box<Gc>, x: &Object, y: &Object, k: Object) -> Object {
         if x == y {
             return k;
         }
@@ -83,11 +83,11 @@ impl Equal {
                     k
                 } else {
                     let k2 =
-                        self.is_pre(_gc, &pair1.car, &pair2.car, Object::Fixnum(k.to_isize() - 1));
+                        Self::is_pre(_gc, &pair1.car, &pair2.car, Object::Fixnum(k.to_isize() - 1));
                     if k2.is_false() {
                         return Object::False;
                     }
-                    self.is_pre(_gc, &pair1.cdr, &pair2.cdr, k2)
+                    Self::is_pre(_gc, &pair1.cdr, &pair2.cdr, k2)
                 }
             }
             (Object::Bytevector(bv1), Object::Bytevector(bv2)) => {
@@ -108,7 +108,7 @@ impl Equal {
                     if i == n || k.to_isize() <= 0 {
                         return k;
                     } else {
-                        let k2 = self.is_pre(
+                        let k2 = Self::is_pre(
                             _gc,
                             &v1.data[i],
                             &v2.data[i],
