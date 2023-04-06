@@ -477,15 +477,8 @@ impl FaslReader {
     }
     pub fn read_all_sexp(&mut self, gc: &mut Gc) -> Vec<Object> {
         let mut objects = vec![];
-        loop {
-            match self.read(gc) {
-                Ok(sexp) => {
-                    objects.push(sexp);
-                }
-                Err(_) => {
-                    break;
-                }
-            }
+        while let Ok(sexp) = self.read(gc) {
+            objects.push(sexp);
         }
         objects
     }
