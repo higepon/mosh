@@ -2433,7 +2433,7 @@ impl Codec for UTF16Codec {
         &mut self,
         vm: &mut Vm,
         port: &mut dyn BinaryInputPort,
-        mode: ErrorHandlingMode,
+        _mode: ErrorHandlingMode,
         should_check_bom: bool,
     ) -> error::Result<Option<char>> {
         match (port.read_u8(vm), port.read_u8(vm)) {
@@ -2443,10 +2443,10 @@ impl Codec for UTF16Codec {
                 if should_check_bom && !self.dont_check_bom {
                     if a == 0xFE && b == 0xFF {
                         self.is_little_endian = false;
-                        return self.read_char(vm, port, mode, false);
+                        return self.read_char(vm, port, _mode, false);
                     } else if a == 0xFF && b == 0xFE {
                         self.is_little_endian = true;
-                        return self.read_char(vm, port, mode, false);
+                        return self.read_char(vm, port, _mode, false);
                     } else {
                         self.is_little_endian = self.is_native_little_endian;
                         // fall through.
