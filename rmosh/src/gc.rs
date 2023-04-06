@@ -160,6 +160,12 @@ pub struct Gc {
     current_alloc_size: usize,
 }
 
+impl Default for Gc {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Gc {
     const HEAP_GROW_FACTOR: usize = 2;
 
