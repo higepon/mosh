@@ -3,8 +3,12 @@ extern crate num_derive;
 #[macro_use]
 extern crate lalrpop_util;
 
-lalrpop_mod!(pub reader); // synthesized by LALRPOP
-lalrpop_mod!(pub number_reader); // synthesized by LALRPOP
+lalrpop_mod!(
+    #[allow(clippy::all)]
+    pub reader); // synthesized by LALRPOP
+lalrpop_mod!(
+    #[allow(clippy::all)]
+    pub number_reader); // synthesized by LALRPOP
 pub mod alloc;
 pub mod compiler;
 pub mod equal;

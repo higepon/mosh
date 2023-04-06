@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 use crate::lexer::Spanned;
 use crate::number_lexer::NumberLexer;
 use crate::lexer::Token;

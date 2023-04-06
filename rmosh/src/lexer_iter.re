@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 use crate::lexer::{Lexer, Spanned, Token};
 use crate::reader_util::ReadError;
 
