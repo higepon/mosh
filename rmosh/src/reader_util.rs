@@ -291,10 +291,7 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
         }
     }
     let is_bar_symbol = ret.len() > 2
-        && match (ret.chars().next(), ret.chars().last()) {
-            (Some('|'), Some('|')) => true,
-            _ => false,
-        };
+        && matches!((ret.chars().next(), ret.chars().last()), (Some('|'), Some('|')));
     if is_bar_symbol {
         let raw_symbol = &ret[1..ret.len() - 1];
         if has_only_alphabets(raw_symbol) {
