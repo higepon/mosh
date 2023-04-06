@@ -33,9 +33,7 @@ fn show_size() {
 */
 static SIZE_OF_MIN_VM: usize = SIZE_OF_CLOSURE * 2
     + (SIZE_OF_PROCEDURE * 623 * 2)
-    + SIZE_OF_CLOSURE * 0
-    + SIZE_OF_SYMBOL * 0
-    + SIZE_OF_STRING * 0 + 192 + 96 + 536 /* todo */;
+    + 192 + 96 + 536 /* todo */;
 
 fn test_ops_with_size(vm: &mut Vm, ops: Vec<Object>, expected: Object, expected_heap_diff: usize) {
     // Keep reference so that it won't be freed.
@@ -107,7 +105,7 @@ fn call0() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -226,7 +224,7 @@ fn define0() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -633,7 +631,7 @@ fn test7() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 20,
     );
 }
 
@@ -672,7 +670,7 @@ fn test8() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -715,7 +713,7 @@ fn test9() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 20,
     );
 }
 
@@ -772,7 +770,7 @@ fn test10() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -992,7 +990,7 @@ fn test197() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 20,
     );
 }
 
@@ -1035,7 +1033,7 @@ fn test144() {
         &mut vm,
         ops,
         expected,
-        0 + SIZE_OF_PAIR * 4,
+        SIZE_OF_PAIR * 4,
     );
 }
 
@@ -1110,7 +1108,7 @@ fn test58() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -1203,7 +1201,7 @@ fn test14() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 20,
     );
 }
 
@@ -1299,7 +1297,7 @@ fn test287() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -1566,7 +1564,7 @@ fn test185() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0 + SIZE_OF_PAIR,
+        SIZE_OF_SYMBOL0 + SIZE_OF_PAIR,
     );
 }
 
@@ -1632,7 +1630,7 @@ fn test184() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0 + SIZE_OF_PAIR,
+        SIZE_OF_SYMBOL0 + SIZE_OF_PAIR,
     );
 }
 
@@ -1654,7 +1652,7 @@ fn test128() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -1773,7 +1771,7 @@ fn test221() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 3 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 30,
     );
 }
 */
@@ -1862,7 +1860,7 @@ fn test217() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0 + SIZE_OF_VECTOR,
+        SIZE_OF_SYMBOL0 + SIZE_OF_VECTOR,
     );
 }
 
@@ -1904,7 +1902,7 @@ fn test11() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL * 20,
     );
 }
 
@@ -1974,7 +1972,7 @@ fn test191() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
@@ -2040,7 +2038,7 @@ fn test55() {
         &mut vm,
         ops,
         expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 0,
+        SIZE_OF_SYMBOL0,
     );
 }
 
