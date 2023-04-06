@@ -3422,10 +3422,10 @@ fn do_transpose(vm: &mut Vm, each_len: usize, args: &mut [Object]) -> Object {
         let elt = vm.gc.cons(args[0].car_unchecked(), Object::Nil);
         let mut elt_tail = elt;
         args[0] = args[0].cdr_unchecked();
-        for n in 1..args.len() {
-            elt_tail.to_pair().cdr = vm.gc.cons(args[n].car_unchecked(), Object::Nil);
+        for arg in args.iter_mut().skip(1) {
+            elt_tail.to_pair().cdr = vm.gc.cons(arg.car_unchecked(), Object::Nil);
             elt_tail = elt_tail.cdr_unchecked();
-            args[n] = args[n].cdr_unchecked();
+            *arg = arg.cdr_unchecked();
         }
         if ans == Object::Nil {
             ans = vm.gc.cons(elt, Object::Nil);
@@ -3446,10 +3446,9 @@ fn list_transposeadd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         return Ok(Object::False);
     }
     let length = Pair::list_len(lst0);
-    for i in 1..args.len() {
-        let lst = args[i];
+    for lst in args.iter().skip(1) {
         if lst.is_list() {
-            if Pair::list_len(lst) != length {
+            if Pair::list_len(*lst) != length {
                 return Ok(Object::False);
             }
         } else {
@@ -5039,8 +5038,8 @@ fn fldiv_op(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 
     let mut ret = fl;
-    for i in 1..args.len() {
-        let fl = as_f64!(name, args, i);
+    for arg in args.iter().skip(1) {
+        let fl = as_f64!(name, arg);
         ret /= fl;
     }
     Ok(Object::Flonum(Flonum::new(ret)))

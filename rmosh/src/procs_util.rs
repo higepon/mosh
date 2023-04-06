@@ -98,6 +98,12 @@ macro_rules! as_f64 {
         }
         o.to_flonum().value()
     }};
+    ($name:ident, $o:ident) => {{
+        if !$o.is_flonum() {
+            return error::Error::assertion_violation($name, "flonum required", &[*$o]);
+        }
+        $o.to_flonum().value()
+    }};    
 }
 
 #[macro_export]
