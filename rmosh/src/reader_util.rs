@@ -58,12 +58,11 @@ pub enum ReadError {
 pub fn count_lineno(content: &str, position: usize) -> usize {
     let chars: Vec<char> = content.chars().collect();
     let mut lineno: usize = 1;
-    for (i, ch) in chars.enumerate() {
+    for (i, ch) in chars.iter().enumerate() {
         if i == position {
             break;
         }
-        let ch = chars[i];
-        if ch == '\n' {
+        if *ch == '\n' {
             lineno += 1;
         }
     }
