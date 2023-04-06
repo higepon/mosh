@@ -182,7 +182,7 @@ pub trait TextInputPort: Port {
         }
     }
 
-    fn link_shared(&self, gc: &mut Box<Gc>, shared_map: &HashMap<u32, Object>, obj: Object) {
+    fn link_shared(&self, _gc: &mut Box<Gc>, shared_map: &HashMap<u32, Object>, obj: Object) {
         match obj {
             Object::Pair(mut p) => {
                 if let Object::DefinedShared(index) = p.car {
@@ -193,7 +193,7 @@ pub trait TextInputPort: Port {
                         None => bug!(),
                     }
                 } else {
-                    self.link_shared(gc, shared_map, p.car);
+                    self.link_shared(_gc, shared_map, p.car);
                 }
                 if let Object::DefinedShared(index) = p.cdr {
                     match shared_map.get(&index) {
@@ -203,7 +203,7 @@ pub trait TextInputPort: Port {
                         None => bug!(),
                     }
                 } else {
-                    self.link_shared(gc, shared_map, p.cdr);
+                    self.link_shared(_gc, shared_map, p.cdr);
                 }
             }
             Object::Vector(mut v) => {
@@ -217,7 +217,7 @@ pub trait TextInputPort: Port {
                             None => bug!(),
                         }
                     } else {
-                        self.link_shared(gc, shared_map, obj);
+                        self.link_shared(_gc, shared_map, obj);
                     }
                 }
             }
