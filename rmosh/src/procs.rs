@@ -1,3 +1,4 @@
+use crate::bug;
 use crate::ports::StdLib;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -5710,7 +5711,7 @@ fn fxand(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_at_least!(name, args, 1);
     let mut ret = -1;
     for arg in args {
-        let fx = as_isize!(name, arg);    
+        let fx = as_isize!(name, arg);
         ret &= fx;
     }
     Ok(Object::Fixnum(ret))
@@ -5729,8 +5730,8 @@ fn fxxor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxxor";
     check_argc_at_least!(name, args, 1);
     let mut ret = 0;
-        for arg in args {
-            let fx = as_isize!(name, arg);        
+    for arg in args {
+        let fx = as_isize!(name, arg);
         ret ^= fx;
     }
     Ok(Object::Fixnum(ret))
