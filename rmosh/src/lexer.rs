@@ -1,4 +1,3 @@
-#![allow(clippy::all)]
 use crate::reader_util::{read_string, ReadError};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
