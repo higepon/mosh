@@ -292,7 +292,7 @@ impl Vm {
         if 0 == n {
             return Ok(Object::Unspecified);
         }
-        for i in 1..n {
+        for (i, value) in values.iter().enumerate().take(n).skip(1)  {
             if i >= MAX_NUM_VALUES {
                 return Err(error::Error::new(
                     ErrorType::AssertionViolation,
@@ -301,7 +301,7 @@ impl Vm {
                     &[],
                 ));
             }
-            self.values[i - 1] = values[i];
+            self.values[i - 1] = *value;
         }
         // this is set to ac later.
         Ok(values[0])
@@ -335,7 +335,7 @@ impl Vm {
     }
 
     pub fn current_error_port(&self) -> Object {
-        self.current_output_port
+        self.current_error_port
     }
 
     pub fn current_input_port(&self) -> Object {
