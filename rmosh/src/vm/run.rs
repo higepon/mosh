@@ -144,7 +144,7 @@ impl Vm {
                 }
                 Op::BranchNotEq => {
                     let skip_offset = self.isize_operand();
-                    let pred = self.pop().eq(&self.ac);
+                    let pred = self.pop().scheme_eq(&self.ac);
                     self.set_return_value(pred.to_obj());
                     if !pred {
                         // Branch and jump to else.
@@ -317,7 +317,7 @@ impl Vm {
                     self.enter_op(n)
                 }
                 Op::Eq => {
-                    let ret = self.pop().eq(&self.ac);
+                    let ret = self.pop().scheme_eq(&self.ac);
                     self.set_return_value(ret.to_obj());
                 }
                 Op::Eqv => {

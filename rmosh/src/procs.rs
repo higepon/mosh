@@ -2141,7 +2141,7 @@ fn is_symbolequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_at_least!(name, args, 2);
     for i in 0..args.len() - 1 {
         if args[i].is_symbol() && args[i + 1].is_symbol() {
-            if args[i].eq(&args[i + 1]) {
+            if args[i].scheme_eq(&args[i + 1]) {
                 continue;
             } else {
                 return Ok(Object::False);
@@ -2157,7 +2157,7 @@ fn is_booleanequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_at_least!(name, args, 2);
     let argc = args.len();
     for i in 0..argc - 1 {
-        if args[i].is_boolean() && args[i + 1].is_boolean() && args[i].eq(&args[i + 1]) {
+        if args[i].is_boolean() && args[i + 1].is_boolean() && args[i].scheme_eq(&args[i + 1]) {
             continue;
         } else {
             return Ok(Object::False);
@@ -2217,7 +2217,7 @@ fn memq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn is_eq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eq?";
     check_argc!(name, args, 2);
-    Ok(args[0].eq(&args[1]).to_obj())
+    Ok(args[0].scheme_eq(&args[1]).to_obj())
 }
 fn is_eqv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eqv?";
@@ -2774,11 +2774,11 @@ fn make_transcoder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args.len() >= 3 {
         let _mode_symbol = as_symbol!(name, args, 2);
         let mode_symbol = args[2];
-        if mode_symbol.eq(&vm.gc.symbol_intern("raise")) {
+        if mode_symbol.scheme_eq(&vm.gc.symbol_intern("raise")) {
             mode = ErrorHandlingMode::RaiseError;
-        } else if mode_symbol.eq(&vm.gc.symbol_intern("ignore")) {
+        } else if mode_symbol.scheme_eq(&vm.gc.symbol_intern("ignore")) {
             mode = ErrorHandlingMode::IgnoreError;
-        } else if mode_symbol.eq(&vm.gc.symbol_intern("replace")) {
+        } else if mode_symbol.scheme_eq(&vm.gc.symbol_intern("replace")) {
             mode = ErrorHandlingMode::ReplaceError;
         } else {
             return Error::assertion_violation(name, "invalid error-handling-mode", &[args[2]]);

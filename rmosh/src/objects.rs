@@ -186,7 +186,7 @@ impl Object {
         matches!(self, Object::Unspecified)
     }
 
-    pub fn eq(&self, other: &Self) -> bool {
+    pub fn scheme_eq(&self, other: &Self) -> bool {
         self == other
     }
 
@@ -498,7 +498,7 @@ impl Object {
                 (Object::Latin1Codec(_), Object::Latin1Codec(_)) => true,
                 (Object::UTF8Codec(_), Object::UTF8Codec(_)) => true,
                 (Object::UTF16Codec(_), Object::UTF16Codec(_)) => true,
-                _ => self.eq(other),
+                _ => self.scheme_eq(other),
             }
         }
     }
@@ -2550,7 +2550,7 @@ pub mod tests {
         let mut x: HashMap<EqvKey, Object> = HashMap::new();
         let s1 = Object::Bignum(gc.alloc(Bignum::new(BigInt::from_isize(0).unwrap())));
         let s2 = Object::Bignum(gc.alloc(Bignum::new(BigInt::from_isize(0).unwrap())));
-        assert!(!s1.eq(&s2));
+        assert!(!s1.scheme_eq(&s2));
         assert!(s1.eqv(&s2));
         x.insert(EqvKey::new(s1), Object::Fixnum(3));
         println!("value={:?}", x.get(&EqvKey::new(s2)));
