@@ -82,6 +82,7 @@ pub enum Object {
 }
 
 impl Object {
+    #![allow(clippy::inherent_to_string_shadow_display)]
     pub fn to_string(&self) -> String {
         const SHARED_AWARE: bool = false;
         let mut port = StringOutputPort::new();
