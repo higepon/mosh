@@ -2432,19 +2432,16 @@ fn test_compiler2() {
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len()).unwrap();
-    match ret {
-        Object::Vector(v) => {
-            let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
-            vm.expected = Object::Fixnum(141);
-            // Remove reference to ret.
-            vm.ac = Object::Unspecified;
-            let e = Equal::new();
-            if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
-                println!("ret={} expected={}", ret, vm.expected);
-                assert_eq!(ret, vm.expected);
-            }
+    if let Object::Vector(v) = ret {
+        let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
+        vm.expected = Object::Fixnum(141);
+        // Remove reference to ret.
+        vm.ac = Object::Unspecified;
+        let e = Equal::new();
+        if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+            println!("ret={} expected={}", ret, vm.expected);
+            assert_eq!(ret, vm.expected);
         }
-        _ => {}
     }
 }
 
@@ -2466,19 +2463,16 @@ fn test_compiler() {
         Object::Instruction(Op::Halt),
     ];
     let ret = vm.run(ops.as_ptr(), ops.len()).unwrap();
-    match ret {
-        Object::Vector(v) => {
-            let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
-            vm.expected = Object::Fixnum(121);
-            // Remove reference to ret.
-            vm.ac = Object::Unspecified;
-            let e = Equal::new();
-            if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
-                println!("ret={} expected={}", ret, vm.expected);
-                assert_eq!(ret, vm.expected);
-            }
+    if let Object::Vector(v) = ret {
+        let ret = vm.run(v.data.as_ptr(), v.data.len()).unwrap();
+        vm.expected = Object::Fixnum(121);
+        // Remove reference to ret.
+        vm.ac = Object::Unspecified;
+        let e = Equal::new();
+        if !e.is_equal(&mut vm.gc, &ret, &vm.expected) {
+            println!("ret={} expected={}", ret, vm.expected);
+            assert_eq!(ret, vm.expected);
         }
-        _ => {}
     }
 }
 /*
