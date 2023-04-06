@@ -137,7 +137,7 @@ macro_rules! as_u8 {
             return error::Error::assertion_violation($name, "number required", &[o]);
         }
         let fx = o.to_isize();
-        if -128 <= fx && fx <= 255 {
+        if (-128..=255).contains(&fx) {
             fx as u8
         } else {
             return error::Error::assertion_violation($name, "u8 value required", &[o]);
