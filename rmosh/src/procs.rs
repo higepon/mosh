@@ -924,8 +924,8 @@ fn consmul(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
     let obj = vm.gc.cons(args[0], Object::Nil);
     let mut tail = obj;
-    for i in 1..argc - 1 {
-        let e = vm.gc.cons(args[i], Object::Nil);
+    for arg in args.iter().take(argc - 1).skip(1) {
+        let e = vm.gc.cons(*arg, Object::Nil);
         match tail {
             Object::Pair(mut pair) => {
                 pair.cdr = e;
@@ -1271,13 +1271,13 @@ fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "char=?";
     check_argc_at_least!(name, args, 2);
     if let Object::Char(c) = args[0] {
-        for i in 1..args.len() {
-            if let Object::Char(c2) = args[i] {
+        for arg in args.iter().skip(1) {
+            if let Object::Char(c2) = *arg {
                 if c != c2 {
                     return Ok(Object::False);
                 }
             } else {
-                return type_required_error(name, "char", &[args[i]]);
+                return type_required_error(name, "char", &[*arg]);
             }
         }
         Ok(Object::True)
@@ -3767,8 +3767,8 @@ fn nuber_sub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
     } else {
         let mut ret = args[0];
-        for i in 1..argc - 1 {
-            ret = numbers::sub(&mut vm.gc, ret, args[i]);
+        for arg in args.iter().take(argc - 1).skip(1) {
+            ret = numbers::sub(&mut vm.gc, ret, *arg);
         }
         Ok(ret)
     }
@@ -4945,8 +4945,8 @@ fn flmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmax";
     check_argc_at_least!(name, args, 1);
     let mut max = f64::NEG_INFINITY;
-    for i in 0..args.len() {
-        let fl = as_f64!(name, args, i);
+    for arg in args {
+        let fl = as_f64!(name, arg);
         if fl.is_nan() {
             return Ok(Object::Flonum(Flonum::new(f64::NAN)));
         }
@@ -4960,8 +4960,8 @@ fn flmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "flmin";
     check_argc_at_least!(name, args, 1);
     let mut min = f64::INFINITY;
-    for i in 0..args.len() {
-        let fl = as_f64!(name, args, i);
+    for arg in args {
+        let fl = as_f64!(name, arg);
         if fl.is_nan() {
             return Ok(Object::Flonum(Flonum::new(f64::NAN)));
         }
@@ -4981,8 +4981,8 @@ fn fladd(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Ok(args[0])
     } else {
         let mut ret = 0.0;
-        for i in 0..args.len() {
-            let fl = as_f64!(name, args, i);
+        for arg in args {
+            let fl = as_f64!(name, arg);
             ret += fl;
         }
         Ok(Object::Flonum(Flonum::new(ret)))
@@ -4998,8 +4998,8 @@ fn flmul(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Ok(args[0])
     } else {
         let mut ret = 1.0;
-        for i in 0..args.len() {
-            let fl = as_f64!(name, args, i);
+        for arg in args {
+            let fl = as_f64!(name, arg);
             ret *= fl;
         }
         Ok(Object::Flonum(Flonum::new(ret)))
@@ -5014,8 +5014,8 @@ fn flsub(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     }
 
     let mut ret = fl;
-    for i in 1..args.len() {
-        let fl = as_f64!(name, args, i);
+    for arg in args.iter().skip(1) {
+        let fl = as_f64!(name, arg);
         ret -= fl;
     }
     Ok(Object::Flonum(Flonum::new(ret)))
