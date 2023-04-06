@@ -1,6 +1,7 @@
 use std::{
+    cmp::Ordering,
     fmt::{self, Debug, Display},
-    ops::{Deref, DerefMut, Neg, Rem}, cmp::Ordering,
+    ops::{Deref, DerefMut, Neg, Rem},
 };
 
 use num_bigint::BigInt;
@@ -427,31 +428,33 @@ impl FixnumExt for isize {
         Object::Flonum(Flonum::new((self as f64).atan()))
     }
     fn sqrt(self, gc: &mut Box<Gc>) -> Object {
-        if self == 0 {
-            Object::Fixnum(0)
-        } else if self > 0 {
-            let root = (self as f64).sqrt();
-            let root_as_int = root.floor() as isize;
-            // exact
-            if root_as_int * root_as_int == self {
-                Object::Fixnum(root_as_int)
-            } else {
-                Object::Flonum(Flonum::new(root))
+        match self.cmp(&0) {
+            Ordering::Equal => Object::Fixnum(0),
+            Ordering::Greater => {
+                let root = (self as f64).sqrt();
+                let root_as_int = root.floor() as isize;
+                // exact
+                if root_as_int * root_as_int == self {
+                    Object::Fixnum(root_as_int)
+                } else {
+                    Object::Flonum(Flonum::new(root))
+                }
             }
-        } else {
-            // negative
-            let root = (-self as f64).sqrt();
-            let root_as_int = root.floor() as isize;
-            // exact
-            if root_as_int * root_as_int == -self {
-                Object::Compnum(
-                    gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(root_as_int))),
-                )
-            } else {
-                Object::Compnum(gc.alloc(Compnum::new(
-                    Object::Flonum(Flonum::new(0.0)),
-                    Object::Flonum(Flonum::new(root)),
-                )))
+            Ordering::Less => {
+                // negative
+                let root = (-self as f64).sqrt();
+                let root_as_int = root.floor() as isize;
+                // exact
+                if root_as_int * root_as_int == -self {
+                    Object::Compnum(
+                        gc.alloc(Compnum::new(Object::Fixnum(0), Object::Fixnum(root_as_int))),
+                    )
+                } else {
+                    Object::Compnum(gc.alloc(Compnum::new(
+                        Object::Flonum(Flonum::new(0.0)),
+                        Object::Flonum(Flonum::new(root)),
+                    )))
+                }
             }
         }
     }
@@ -1141,9 +1144,7 @@ impl Compnum {
         if z2.is_fixnum() {
             let n = z2.to_isize();
             match n.cmp(&0) {
-                Ordering::Equal => {
-                    Object::Fixnum(1)
-                }
+                Ordering::Equal => Object::Fixnum(1),
                 Ordering::Greater => {
                     let mut ret = z1;
                     for _ in 0..n - 1 {
