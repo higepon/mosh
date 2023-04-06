@@ -1,4 +1,3 @@
-use crate::{bug, as_isize2};
 use crate::ports::StdLib;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -5578,7 +5577,7 @@ fn fxmax(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut max = isize::MIN;
 
     for arg in args {
-        let fx = as_isize2!(name, arg);
+        let fx = as_isize!(name, arg);
 
         if fx > max {
             max = fx
@@ -5592,7 +5591,7 @@ fn fxmin(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut min = isize::MAX;
 
     for arg in args {
-        let fx = as_isize2!(name, arg);
+        let fx = as_isize!(name, arg);
         if fx < min {
             min = fx
         }
@@ -5711,7 +5710,7 @@ fn fxand(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_at_least!(name, args, 1);
     let mut ret = -1;
     for arg in args {
-        let fx = as_isize2!(name, arg);    
+        let fx = as_isize!(name, arg);    
         ret &= fx;
     }
     Ok(Object::Fixnum(ret))
@@ -5721,7 +5720,7 @@ fn fxior(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_at_least!(name, args, 1);
     let mut ret = 0;
     for arg in args {
-        let fx = as_isize2!(name, arg);
+        let fx = as_isize!(name, arg);
         ret |= fx;
     }
     Ok(Object::Fixnum(ret))
@@ -5731,7 +5730,7 @@ fn fxxor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc_at_least!(name, args, 1);
     let mut ret = 0;
         for arg in args {
-            let fx = as_isize2!(name, arg);        
+            let fx = as_isize!(name, arg);        
         ret ^= fx;
     }
     Ok(Object::Fixnum(ret))

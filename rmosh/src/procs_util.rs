@@ -81,10 +81,6 @@ macro_rules! as_isize {
         }
         o.to_isize()
     }};
-}
-
-#[macro_export]
-macro_rules! as_isize2 {
     ($name:ident, $o:ident) => {{
         if !$o.is_fixnum() {
             return error::Error::assertion_violation($name, "number required", &[*$o]);
