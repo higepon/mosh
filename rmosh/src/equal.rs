@@ -16,6 +16,12 @@ pub struct Equal {
     k0: Object,
     kb: Object,
 }
+impl Default for Equal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Equal {
     pub fn new() -> Self {
         Self {
@@ -377,7 +383,7 @@ impl Equal {
                 }
             }
             (Object::Procedure(p1), Object::Procedure(p2)) => {
-                if p1.func as isize == p2.func as isize {
+                if p1.func as usize == p2.func as usize {
                     Object::True
                 } else {
                     Object::False
@@ -468,7 +474,7 @@ impl Equal {
                 }
             }
             (Object::Procedure(p1), Object::Procedure(p2)) => {
-                if p1.func as isize == p2.func as isize {
+                if p1.func as usize == p2.func as usize {
                     k
                 } else {
                     Object::False
