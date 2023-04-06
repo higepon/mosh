@@ -354,7 +354,7 @@ fn propagate_lexer_error() {
         NumberLexer::new(&chars),
     ) {
         Ok(_) => {
-            assert!(false);
+            unreachable!();
         }
         Err(ParseError::User {
             error: ReadError::InvalidToken { start, end, token },
@@ -364,7 +364,7 @@ fn propagate_lexer_error() {
             assert_eq!("?", token);
         }
         _ => {
-            assert!(false);
+            unreachable!();
         }
     }
 }
