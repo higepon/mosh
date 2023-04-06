@@ -969,6 +969,10 @@ impl Vector {
         self.data.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn fill(&mut self, obj: Object) {
         self.data.fill(obj);
     }
@@ -1251,6 +1255,10 @@ impl Bytevector {
         self.data.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }    
+
     pub fn fill(&mut self, value: u8) {
         for e in self.data.iter_mut() {
             *e = value;
@@ -1324,6 +1332,10 @@ impl SimpleStruct {
     pub fn len(&self) -> usize {
         self.len
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }    
 }
 
 impl Display for SimpleStruct {
@@ -2005,7 +2017,6 @@ where
 
     fn set(&'a mut self, key: Self::Key, value: Object) {
         self.get_mut_map().insert(key, value);
-        ();
     }
 
     fn size(&'a self) -> usize {
@@ -2014,7 +2025,6 @@ where
 
     fn delte(&'a mut self, key: Self::Key) {
         self.get_mut_map().remove(&key);
-        ();
     }
 
     fn clear(&'a mut self) {
