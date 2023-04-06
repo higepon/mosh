@@ -143,7 +143,7 @@ pub trait TextInputPort: Port {
                 lexer::Lexer::new(&chars),
             ) {
                 Ok(parsed) => {
-                    if shared_map.len() > 0 {
+                    if !shared_map.is_empty() {
                         self.link_shared(&mut vm.gc, &shared_map, parsed);
                     }
                     self.set_parsed(parsed);
@@ -152,20 +152,20 @@ pub trait TextInputPort: Port {
                     return Err(error);
                 }
                 Err(ParseError::InvalidToken { location }) => {
-                    return Err(ReadError::LalrpopInvalidToken { location: location })
+                    return Err(ReadError::LalrpopInvalidToken { location })
                 }
                 Err(ParseError::UnrecognizedEOF {
                     location,
                     expected: _,
-                }) => return Err(ReadError::UnrecognizedEOF { location: location }),
+                }) => return Err(ReadError::UnrecognizedEOF { location }),
                 Err(ParseError::UnrecognizedToken { token, expected }) => {
                     let context_start = max(0, (token.0 as isize) - 10) as usize;
                     // Show what is causing this error.
                     let context = format!("reader: {}", &s[context_start..token.2]);
                     return Err(ReadError::UnrecognizedToken {
                         token: token.1,
-                        expected: expected,
-                        context: context.to_string(),
+                        expected,
+                        context,
                     });
                 }
                 Err(ParseError::ExtraToken { token }) => {
@@ -174,11 +174,11 @@ pub trait TextInputPort: Port {
             }
         }
         if self.parsed().is_nil() {
-            return Ok(Object::Eof);
+            Ok(Object::Eof)
         } else {
             let obj = self.parsed().car_unchecked();
             self.set_parsed(self.parsed().cdr_unchecked());
-            return Ok(obj);
+            Ok(obj)
         }
     }
 
@@ -240,7 +240,7 @@ pub trait TextInputPort: Port {
     }
 
     fn unget_char(&mut self, c: char) {
-        assert!(self.ahead_char() == None);
+        assert!(self.ahead_char().is_none());
         self.set_ahead_char(Some(c));
     }
 }
@@ -285,7 +285,7 @@ impl BinaryInputPort for StdInputPort {
             error::Error::new(
                 ErrorType::IoError,
                 "read",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         })
@@ -356,7 +356,7 @@ impl TextInputPort for FileInputPort {
             error::Error::new(
                 ErrorType::IoError,
                 "read",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         })
@@ -384,11 +384,11 @@ impl TextInputPort for FileInputPort {
                 let mut str = String::new();
                 match self.read_n_to_string(vm, &mut str, 1) {
                     Ok(_) => {
-                        if str.len() == 0 {
+                        if str.is_empty() {
                             Ok(None)
                         } else {
                             let mut chars = str.chars();
-                            Ok(chars.nth(0))
+                            Ok(chars.next())
                         }
                     }
                     Err(e) => Err(e),
@@ -414,7 +414,7 @@ impl TextInputPort for FileInputPort {
                     Err(e) => Err(Error::new(
                         ErrorType::IoDecodingError,
                         "read",
-                        &format!("read error {}", e.to_string()),
+                        &format!("read error {}", e),
                         &[],
                     )),
                 }
@@ -422,7 +422,7 @@ impl TextInputPort for FileInputPort {
             Err(e) => Err(error::Error::new(
                 ErrorType::IoError,
                 "read",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )),
         }
@@ -521,7 +521,7 @@ impl TextInputPort for StringInputPort {
             None => {
                 let mut chars = self.source.chars();
                 let ret = chars.nth(self.idx);
-                self.idx = self.idx + 1;
+                self.idx += 1;
                 Ok(ret)
             }
         }
@@ -574,12 +574,12 @@ pub trait TextOutputPort: OutputPort {
         if self.is_open() {
             self.put_string(&c.to_string())
         } else {
-            return Err(error::Error::new(
+            Err(error::Error::new(
                 ErrorType::IoError,
                 "write-char",
-                &format!("port is closed"),
+                "port is closed",
                 &[],
-            ));
+            ))
         }
     }
 
@@ -774,7 +774,7 @@ pub trait TextOutputPort: OutputPort {
                 return true;
             }
         }
-        return false;
+        false
     }
 
     fn display_pair(&mut self, p: GcRef<Pair>, human_readable: bool) -> error::Result<()> {
@@ -807,7 +807,7 @@ pub trait TextOutputPort: OutputPort {
             }
         }
         if !abbreviated {
-            return self.put_string(")");
+            self.put_string(")")
         } else {
             Ok(())
         }
@@ -853,7 +853,7 @@ pub trait TextOutputPort: OutputPort {
             }
         }
         if !abbreviated {
-            return self.put_string(")");
+            self.put_string(")")
         } else {
             Ok(())
         }
@@ -1056,7 +1056,7 @@ pub trait TextOutputPort: OutputPort {
                             return Err(error::Error::new(
                                 ErrorType::IoError,
                                 "format",
-                                &format!("not enough arguments"),
+                                "not enough arguments",
                                 &[],
                             ));
                         }
@@ -1069,7 +1069,7 @@ pub trait TextOutputPort: OutputPort {
                             return Err(error::Error::new(
                                 ErrorType::IoError,
                                 "format",
-                                &format!("not enough arguments"),
+                                "not enough arguments",
                                 &[],
                             ));
                         }
@@ -1148,7 +1148,7 @@ pub trait BinaryInputPort: Port {
     }
 
     fn unget_u8(&mut self, u: u8) {
-        assert!(self.ahead_u8() == None);
+        assert!(self.ahead_u8().is_none());
         self.set_ahead_u8(Some(u));
     }
 }
@@ -1344,7 +1344,7 @@ impl BinaryFileInputPort {
             is_closed: false,
             reader: BufReader::new(file),
             ahead_u8: None,
-            buffer_mode: buffer_mode,
+            buffer_mode,
         }
     }
 
@@ -1374,7 +1374,7 @@ impl BinaryInputPort for BinaryFileInputPort {
         let read_start: usize;
         match self.ahead_u8() {
             Some(u) => {
-                if buf.len() >= 1 {
+                if !buf.is_empty() {
                     buf[0] = u;
                     read_start = 1
                 } else {
@@ -1387,7 +1387,7 @@ impl BinaryInputPort for BinaryFileInputPort {
             error::Error::new(
                 ErrorType::IoError,
                 "read",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         })
@@ -1428,9 +1428,9 @@ impl BinaryFileInputOutputPort {
         BinaryFileInputOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputOutputPort),
             is_closed: false,
-            file: file,
+            file,
             ahead_u8: None,
-            buffer_mode: buffer_mode,
+            buffer_mode,
         }
     }
 
@@ -1461,7 +1461,7 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
         let read_start: usize;
         match self.ahead_u8() {
             Some(u) => {
-                if buf.len() >= 1 {
+                if !buf.is_empty() {
                     buf[0] = u;
                     read_start = 1
                 } else {
@@ -1474,7 +1474,7 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
             error::Error::new(
                 ErrorType::IoError,
                 "read",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         })
@@ -1495,7 +1495,7 @@ impl BinaryOutputPort for BinaryFileInputOutputPort {
             error::Error::new(
                 ErrorType::IoError,
                 "write",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         })
@@ -1565,7 +1565,7 @@ impl TextOutputPort for FileOutputPort {
             Error::new(
                 ErrorType::IoError,
                 "put-string",
-                &format!("write error {}", e.to_string()),
+                &format!("write error {}", e),
                 &[],
             )
         })
@@ -1616,7 +1616,7 @@ impl BinaryOutputPort for StdOutputPort {
             error::Error::new(
                 ErrorType::IoError,
                 "write",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         });
@@ -1669,7 +1669,7 @@ impl BinaryOutputPort for StdErrorPort {
             error::Error::new(
                 ErrorType::IoError,
                 "write",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         })
@@ -1762,8 +1762,8 @@ impl TranscodedInputPort {
         TranscodedInputPort {
             header: GcHeader::new(ObjectType::TranscodedInputPort),
             is_closed: false,
-            in_port: in_port,
-            transcoder: transcoder,
+            in_port,
+            transcoder,
             ahead_char: None,
             parsed: Object::Unspecified,
         }
@@ -1884,8 +1884,8 @@ impl TranscodedOutputPort {
         TranscodedOutputPort {
             header: GcHeader::new(ObjectType::TranscodedOutputPort),
             is_closed: false,
-            out_port: out_port,
-            transcoder: transcoder,
+            out_port,
+            transcoder,
         }
     }
 }
@@ -1951,8 +1951,8 @@ impl TranscodedInputOutputPort {
         TranscodedInputOutputPort {
             header: GcHeader::new(ObjectType::TranscodedInputOutputPort),
             is_closed: false,
-            port: port,
-            transcoder: transcoder,
+            port,
+            transcoder,
             ahead_char: None,
             parsed: Object::Unspecified,
         }
@@ -2086,7 +2086,7 @@ impl BinaryFileOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileOutputPort),
             is_closed: false,
             writer: BufWriter::new(file),
-            buffer_mode: buffer_mode,
+            buffer_mode,
         }
     }
 
@@ -2110,12 +2110,12 @@ impl Port for BinaryFileOutputPort {
     }
     fn position(&mut self, _vm: &mut Vm) -> error::Result<usize> {
         self.writer.flush().ok();
-        match self.writer.seek(SeekFrom::Current(0)) {
+        match self.writer.stream_position() {
             Ok(pos) => Ok(pos as usize),
             Err(e) => Err(error::Error::new(
                 ErrorType::IoError,
                 "position",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )),
         }
@@ -2130,7 +2130,7 @@ impl Port for BinaryFileOutputPort {
             Err(e) => Err(error::Error::new(
                 ErrorType::IoError,
                 "set_position!",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )),
         }
@@ -2153,7 +2153,7 @@ impl BinaryOutputPort for BinaryFileOutputPort {
             error::Error::new(
                 ErrorType::IoError,
                 "write",
-                &format!("{}", e.to_string()),
+                &format!("{}", e),
                 &[],
             )
         })
@@ -2250,12 +2250,12 @@ impl Codec for Latin1Codec {
                     return Err(Error::new(
                         ErrorType::IoEncodingError,
                         "latin-1-codec",
-                        &"writer error",
+                        "writer error",
                         &[Object::Char(ch)],
                     ))
                 }
                 ErrorHandlingMode::ReplaceError => {
-                    buf.push('?' as u8);
+                    buf.push(b'?');
                 }
             }
         }
@@ -2263,7 +2263,7 @@ impl Codec for Latin1Codec {
             Error::new(
                 ErrorType::IoEncodingError,
                 "latin-1-codec",
-                &format!("writer error {}", e.to_string()),
+                &format!("writer error {}", e),
                 &[Object::Char(ch)],
             )
         })
@@ -2295,7 +2295,7 @@ impl UTF8Codec {
     }
 
     fn is_utf8_tail(&self, u: u8) -> bool {
-        0x80 <= u && u <= 0xbf
+        (0x80..=0xbf).contains(&u)
     }
 
     fn decoding_error(&self) -> error::Result<Option<char>> {
@@ -2315,31 +2315,31 @@ impl Codec for UTF8Codec {
             Ok(Some(first)) => {
                 match first {
                     // UTF8-1(ascii) = %x00-7F
-                    0..=0x7F => return Ok(Some(first as char)),
+                    0..=0x7F => Ok(Some(first as char)),
                     // UTF8-2 = %xC2-DF UTF8-tail
                     0xC2..=0xDF => match port.read_u8(vm) {
                         Ok(Some(second)) => {
                             if self.is_utf8_tail(second) {
                                 let u = (((first as u32) & 0x1f) << 6) | ((second as u32) & 0x3f);
                                 match char::from_u32(u) {
-                                    Some(ch) => return Ok(Some(ch)),
-                                    None => return self.decoding_error(),
+                                    Some(ch) => Ok(Some(ch)),
+                                    None => self.decoding_error(),
                                 }
                             } else {
-                                return self.decoding_error();
+                                self.decoding_error()
                             }
                         }
-                        Ok(None) | Err(_) => return self.decoding_error(),
+                        Ok(None) | Err(_) => self.decoding_error(),
                     },
                     // UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
                     //          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
                     0xE0..=0xEF => match (port.read_u8(vm), port.read_u8(vm)) {
                         (Ok(Some(second)), Ok(Some(third))) => {
                             if !self.is_utf8_tail(second) {
-                                return self.decoding_error();
-                            } else if (0xe0 == first && 0xa0 <= second && second <= 0xbf)
-                                || (0xed == first && 0x80 <= second && second <= 0x9f)
-                                || (0xe1 <= first && first <= 0xec && self.is_utf8_tail(second))
+                                self.decoding_error()
+                            } else if (0xe0 == first && (0xa0..=0xbf).contains(&second))
+                                || (0xed == first && (0x80..=0x9f).contains(&second))
+                                || ((0xe1..=0xec).contains(&first) && self.is_utf8_tail(second))
                                 || ((0xee == first || 0xef == first) && self.is_utf8_tail(second))
                             {
                                 let u = (((first as u32) & 0xf) << 12)
@@ -2353,17 +2353,17 @@ impl Codec for UTF8Codec {
                                 return self.decoding_error();
                             }
                         }
-                        _ => return self.decoding_error(),
+                        _ => self.decoding_error(),
                     },
                     // UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
                     //          %xF4 %x80-8F 2( UTF8-tail )
                     0xf0..=0xf4 => match (port.read_u8(vm), port.read_u8(vm), port.read_u8(vm)) {
                         (Ok(Some(second)), Ok(Some(third)), Ok(Some(fourth))) => {
                             if !self.is_utf8_tail(third) || !self.is_utf8_tail(fourth) {
-                                return self.decoding_error();
-                            } else if (0xf0 == first && 0x90 <= second && second <= 0xbf)
-                                || (0xf4 == first && 0x80 <= second && second <= 0x8f)
-                                || (0xf1 <= first && first <= 0xf3 && self.is_utf8_tail(second))
+                                self.decoding_error()
+                            } else if (0xf0 == first && (0x90..=0xbf).contains(&second))
+                                || (0xf4 == first && (0x80..=0x8f).contains(&second))
+                                || ((0xf1..=0xf3).contains(&first) && self.is_utf8_tail(second))
                             {
                                 let u = (((first as u32) & 0x7) << 18)
                                     | (((second as u32) & 0x3f) << 12)
@@ -2377,13 +2377,13 @@ impl Codec for UTF8Codec {
                                 return self.decoding_error();
                             }
                         }
-                        _ => return self.decoding_error(),
+                        _ => self.decoding_error(),
                     },
-                    _ => return self.decoding_error(),
+                    _ => self.decoding_error(),
                 }
             }
             Ok(None) => Ok(None),
-            Err(_) => return self.decoding_error(),
+            Err(_) => self.decoding_error(),
         }
     }
     fn write_char(
@@ -2416,7 +2416,7 @@ impl Codec for UTF8Codec {
                     return Err(Error::new(
                         ErrorType::IoDecodingError,
                         "utf-8-code",
-                        &"invalid utf-8 sequence",
+                        "invalid utf-8 sequence",
                         &[],
                     ))
                 }
@@ -2430,7 +2430,7 @@ impl Codec for UTF8Codec {
             Error::new(
                 ErrorType::IoDecodingError,
                 "utf-8-code",
-                &format!("writer error {}", e.to_string()),
+                &format!("writer error {}", e),
                 &[],
             )
         })
@@ -2505,7 +2505,7 @@ impl Codec for UTF16Codec {
                 } else {
                     (a << 8) | b
                 };
-                if val1 < 0xD800 || val1 > 0xDFFF {
+                if !(0xD800..=0xDFFF).contains(&val1) {
                     match char::from_u32(val1 as u32) {
                         Some(ch) => return Ok(Some(ch)),
                         None => return self.decoding_error(),
@@ -2513,7 +2513,7 @@ impl Codec for UTF16Codec {
                 }
                 match (port.read_u8(vm), port.read_u8(vm)) {
                     (Ok(None), _) | (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => {
-                        return self.decoding_error();
+                        self.decoding_error()
                     }
                     (Ok(Some(c)), Ok(Some(d))) => {
                         let c = c as u16;
@@ -2556,7 +2556,7 @@ impl Codec for UTF16Codec {
                     return Err(Error::new(
                         ErrorType::IoEncodingError,
                         "utf-16-codec",
-                        &"character out of utf16 range",
+                        "character out of utf16 range",
                         &[Object::Char(ch)],
                     ))
                 }
@@ -2601,7 +2601,7 @@ impl Codec for UTF16Codec {
             Error::new(
                 ErrorType::IoEncodingError,
                 "utf-8-code",
-                &format!("writer error {}", e.to_string()),
+                &format!("writer error {}", e),
                 &[Object::Char(ch)],
             )
         })
@@ -2637,9 +2637,9 @@ impl Transcoder {
     pub fn new(codec: Object, eol_style: EolStyle, mode: ErrorHandlingMode) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Transcoder),
-            codec: codec,
-            eol_style: eol_style,
-            mode: mode,
+            codec,
+            eol_style,
+            mode,
             lineno: 1,
             is_beginning: true,
             buffer: vec![],
@@ -2670,7 +2670,7 @@ impl Transcoder {
             _ => todo!(),
         };
         if self.eol_style == EolStyle::ENone {
-            return codec.write_char(port, ch, self.mode);
+            codec.write_char(port, ch, self.mode)
         } else if ch == char::LF {
             match self.eol_style {
                 EolStyle::Lf => return codec.write_char(port, char::LF, self.mode),
@@ -2739,14 +2739,14 @@ impl Transcoder {
         match ch {
             Some(char::LF) | Some(char::NEL) | Some(char::LS) => {
                 self.lineno += 1;
-                return Ok(Some(char::LF));
+                Ok(Some(char::LF))
             }
             Some(char::CR) => {
                 let ch2 = self.read_char_raw(vm, port)?;
                 self.lineno += 1;
                 match ch2 {
                     Some(char::LF) | Some(char::NEL) => {
-                        return Ok(Some(char::LF));
+                        Ok(Some(char::LF))
                     }
                     _ => {
                         self.unget_char(ch2);
@@ -2797,7 +2797,7 @@ impl Transcoder {
                     self.lineno += 1;
                 }
             }
-            None => return,
+            None => (),
         }
     }
 }
@@ -2921,12 +2921,12 @@ impl Port for CustomBinaryInputPort {
                 Err(e) => Err(e),
             }
         } else {
-            return Err(error::Error::new(
+            Err(error::Error::new(
                 ErrorType::IoError,
                 "position",
-                &format!("position! not supported"),
+                "position! not supported",
                 &[],
-            ));
+            ))
         }
     }
 
@@ -2937,12 +2937,12 @@ impl Port for CustomBinaryInputPort {
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            return Err(error::Error::new(
+            Err(error::Error::new(
                 ErrorType::IoError,
                 "set-position!",
-                &format!("set-position! not supported"),
+                "set-position! not supported",
                 &[],
-            ));
+            ))
         }
     }
 }
@@ -3162,7 +3162,7 @@ impl TextInputPort for CustomTextInputPort {
                 if read_size == 0 {
                     Ok(None)
                 } else {
-                    Ok(s.to_sstring().string.chars().nth(0))
+                    Ok(s.to_sstring().string.chars().next())
                 }
             }
         }
@@ -3828,11 +3828,11 @@ impl TextInputPort for CustomTextInputOutputPort {
                 let mut str = String::new();
                 match self.read_n_to_string(vm, &mut str, 1) {
                     Ok(_) => {
-                        if str.len() == 0 {
+                        if str.is_empty() {
                             Ok(None)
                         } else {
                             let mut chars = str.chars();
-                            Ok(chars.nth(0))
+                            Ok(chars.next())
                         }
                     }
                     Err(e) => Err(e),

@@ -36,7 +36,7 @@ impl Equal {
             return false;
         }
         if k.to_isize() > 0 {
-            return true;
+            true
         } else {
             self.is_interleave(gc, x, y, Object::Fixnum(0))
         }
@@ -74,21 +74,21 @@ impl Equal {
         match (x, y) {
             (Object::Pair(pair1), Object::Pair(pair2)) => {
                 if k.to_isize() <= 0 {
-                    return k;
+                    k
                 } else {
                     let k2 =
                         self.is_pre(gc, &pair1.car, &pair2.car, Object::Fixnum(k.to_isize() - 1));
                     if k2.is_false() {
                         return Object::False;
                     }
-                    return self.is_pre(gc, &pair1.cdr, &pair2.cdr, k2);
+                    self.is_pre(gc, &pair1.cdr, &pair2.cdr, k2)
                 }
             }
             (Object::Bytevector(bv1), Object::Bytevector(bv2)) => {
-                if bv1.equal(&bv2) {
-                    return k;
+                if bv1.equal(bv2) {
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             (Object::Vector(v1), Object::Vector(v2)) => {
@@ -118,21 +118,21 @@ impl Equal {
             }
             (Object::String(s1), Object::String(s2)) => {
                 if s1.string.eq(&s2.string) {
-                    return k;
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             (Object::Procedure(p1), Object::Procedure(p2)) => {
                 if p1.func as isize == p2.func as isize {
-                    return k;
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             _ => {
                 if x.eqv(y) {
-                    return k;
+                    k
                 } else {
                     Object::False
                 }
@@ -144,11 +144,7 @@ impl Equal {
     //       (and (e? x y k) #t))
     fn is_interleave(&self, gc: &mut Box<Gc>, x: &Object, y: &Object, k: Object) -> bool {
         let mut hashmap: HashMap<Object, Object> = HashMap::new();
-        if self.is_e(gc, &mut hashmap, x, y, k).is_false() {
-            false
-        } else {
-            true
-        }
+        !self.is_e(gc, &mut hashmap, x, y, k).is_false()
     }
 
     //       (define (call-union-find x y)
@@ -161,7 +157,7 @@ impl Equal {
         x: &Object,
         y: &Object,
     ) -> Object {
-        return self.union_find(gc, hashmap, x, y);
+        self.union_find(gc, hashmap, x, y)
     }
 
     // (define (find b)
@@ -187,7 +183,7 @@ impl Equal {
                 }
             }
         } else {
-            return b;
+            b
         }
     }
 
@@ -236,11 +232,11 @@ impl Equal {
                 let b = Object::Vox(gc.alloc(Vox::new(Object::Fixnum(1))));
                 hm.insert(*x, b);
                 hm.insert(*y, b);
-                return Object::False;
+                Object::False
             } else {
                 let ry = self.find(by);
                 hm.insert(*x, ry);
-                return Object::False;
+                Object::False
             }
         } else if by.is_false() {
             let rx = self.find(bx);
@@ -282,12 +278,12 @@ impl Equal {
             if k == self.kb {
                 let mut rng = rand::thread_rng();
                 let next_k = Object::Fixnum(rng.gen::<isize>() % (2 * self.k0.to_isize()));
-                return self.is_fast(gc, hashmap, &x, &y, next_k);
+                self.is_fast(gc, hashmap, x, y, next_k)
             } else {
-                return self.is_slow(gc, hashmap, x, y, k);
+                self.is_slow(gc, hashmap, x, y, k)
             }
         } else {
-            return self.is_fast(gc, hashmap, x, y, k);
+            self.is_fast(gc, hashmap, x, y, k)
         }
     }
 
@@ -330,7 +326,7 @@ impl Equal {
         match (x, y) {
             (Object::Pair(pair1), Object::Pair(pair2)) => {
                 if !self.call_union_find(gc, hashmap, x, y).is_false() {
-                    return Object::Fixnum(0);
+                    Object::Fixnum(0)
                 } else {
                     let k = self.is_e(
                         gc,
@@ -342,14 +338,14 @@ impl Equal {
                     if k.is_false() {
                         return Object::False;
                     }
-                    return self.is_e(gc, hashmap, &pair1.cdr, &pair2.cdr, k);
+                    self.is_e(gc, hashmap, &pair1.cdr, &pair2.cdr, k)
                 }
             }
             (Object::Bytevector(bv1), Object::Bytevector(bv2)) => {
-                if bv1.equal(&bv2) {
-                    return k;
+                if bv1.equal(bv2) {
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             (Object::Vector(v1), Object::Vector(v2)) => {
@@ -375,23 +371,23 @@ impl Equal {
             }
             (Object::String(s1), Object::String(s2)) => {
                 if s1.string.eq(&s2.string) {
-                    return k;
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             (Object::Procedure(p1), Object::Procedure(p2)) => {
                 if p1.func as isize == p2.func as isize {
-                    return Object::True;
+                    Object::True
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             _ => {
-                if x.eqv(&y) {
-                    return k;
+                if x.eqv(y) {
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
         }
@@ -437,13 +433,13 @@ impl Equal {
                 if k.is_false() {
                     return Object::False;
                 }
-                return self.is_e(gc, hashmap, &pair1.cdr, &pair2.cdr, k);
+                self.is_e(gc, hashmap, &pair1.cdr, &pair2.cdr, k)
             }
             (Object::Bytevector(bv1), Object::Bytevector(bv2)) => {
-                if bv1.equal(&bv2) {
-                    return k;
+                if bv1.equal(bv2) {
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             (Object::Vector(v1), Object::Vector(v2)) => {
@@ -466,23 +462,23 @@ impl Equal {
             }
             (Object::String(s1), Object::String(s2)) => {
                 if s1.string.eq(&s2.string) {
-                    return k;
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             (Object::Procedure(p1), Object::Procedure(p2)) => {
                 if p1.func as isize == p2.func as isize {
-                    return k;
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
             _ => {
                 if x.eqv(y) {
-                    return k;
+                    k
                 } else {
-                    return Object::False;
+                    Object::False
                 }
             }
         }

@@ -337,7 +337,7 @@ impl Vm {
                                             }
                                         }
                                     }
-                                    j = j + 1;
+                                    j += 1;
                                 }
                             } else {
                                 self.push(args[i as usize]);

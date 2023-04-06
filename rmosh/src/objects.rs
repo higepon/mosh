@@ -593,7 +593,7 @@ impl Object {
                 (Object::Latin1Codec(_), Object::Latin1Codec(_)) => true,
                 (Object::UTF8Codec(_), Object::UTF8Codec(_)) => true,
                 (Object::UTF16Codec(_), Object::UTF16Codec(_)) => true,
-                _ => self.eq(&other),
+                _ => self.eq(other),
             }
         }
     }
@@ -1116,7 +1116,7 @@ impl Bytevector {
         loop {
             match obj {
                 Object::Pair(p) => match p.car {
-                    Object::Fixnum(fx) if fx >= 0 && fx <= 255 => {
+                    Object::Fixnum(fx) if (0..=255).contains(&fx) => {
                         v.push(fx as u8);
                         obj = p.cdr;
                     }
@@ -1133,17 +1133,11 @@ impl Bytevector {
     }
 
     pub fn ref_i8(&self, i: usize) -> Option<i8> {
-        match self.data.get(i) {
-            Some(v) => Some(*v as i8),
-            None => None,
-        }
+        self.data.get(i).map(|v| *v as i8)
     }
 
     pub fn ref_u8(&self, i: usize) -> Option<u8> {
-        match self.data.get(i) {
-            Some(v) => Some(*v),
-            None => None,
-        }
+        self.data.get(i).copied()
     }
 
     pub fn ref_u8_unchecked(&self, i: usize) -> u8 {
@@ -1315,7 +1309,7 @@ impl Bytevector {
             let e = (self.data[i + 3] as u64) << 24;
             let f = (self.data[i + 2] as u64) << 16;
             let g = (self.data[i + 1] as u64) << 8;
-            let h = self.data[i + 0] as u64;
+            let h = self.data[i] as u64;
             Some(a | b | c | d | e | f | g | h)
         }
     }
@@ -1324,7 +1318,7 @@ impl Bytevector {
         if i + 7 >= self.len() {
             None
         } else {
-            let a = (self.data[i + 0] as u64) << 56;
+            let a = (self.data[i] as u64) << 56;
             let b = (self.data[i + 1] as u64) << 48;
             let c = (self.data[i + 2] as u64) << 40;
             let d = (self.data[i + 3] as u64) << 32;
@@ -1399,9 +1393,9 @@ impl SimpleStruct {
     pub fn new(name: Object, len: usize) -> Self {
         SimpleStruct {
             header: GcHeader::new(ObjectType::SimpleStruct),
-            name: name,
+            name,
             data: vec![Object::Unspecified; len],
-            len: len,
+            len,
         }
     }
 
@@ -1564,15 +1558,15 @@ impl Pair {
                                 }
                             }
                         }
-                        return false;
+                        false
                     }
                     _ => {
-                        return false;
+                        false
                     }
                 }
             }
             _ => {
-                return false;
+                false
             }
         }
     }
@@ -1610,7 +1604,7 @@ impl Pair {
         match last {
             Object::Pair(mut pair) => {
                 pair.cdr = l2;
-                return Ok(l1);
+                Ok(l1)
             }
             _ => {
                 bug!("never reached");
@@ -1628,7 +1622,7 @@ impl Pair {
             ret = gc.cons(p.car_unchecked(), ret);
             p = p.cdr_unchecked();
         }
-        return ret;
+        ret
     }
 }
 
@@ -1698,7 +1692,7 @@ impl Vox {
     pub fn new(value: Object) -> Self {
         Vox {
             header: GcHeader::new(ObjectType::Vox),
-            value: value,
+            value,
         }
     }
 }
@@ -1850,7 +1844,7 @@ impl Symbol {
     pub fn new(string: String) -> Self {
         Symbol {
             header: GcHeader::new(ObjectType::Symbol),
-            string: string,
+            string,
         }
     }
 }
@@ -1866,7 +1860,7 @@ impl Debug for Symbol {
         let content: Vec<char> = self.string.chars().collect();
         let start = content[0];
         let is_bar_symbol = (start == '|') && content[content.len() - 1] == '|';
-        if start >= '0' && start <= '9' || start == ' ' {
+        if ('0'..='9').contains(&start) || start == ' ' {
             write!(f, "\\x{:x};", start as u32)?;
         } else {
             write!(f, "{}", start)?;
@@ -1900,8 +1894,8 @@ impl Procedure {
     pub fn new(func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>, name: String) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
-            func: func,
-            name: name,
+            func,
+            name,
         }
     }
 }
@@ -1958,9 +1952,9 @@ impl Continuation {
     pub fn new(shift_size: isize, stack: Object, winders: Object) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Continuation),
-            shift_size: shift_size,
-            stack: stack,
-            winders: winders,
+            shift_size,
+            stack,
+            winders,
         }
     }
 }
@@ -2069,12 +2063,12 @@ impl Closure {
         Closure {
             header: GcHeader::new(ObjectType::Closure),
             ops,
-            ops_len: ops_len,
-            argc: argc,
-            is_optional_arg: is_optional_arg,
-            free_vars: free_vars,
+            ops_len,
+            argc,
+            is_optional_arg,
+            free_vars,
             prev: Object::Unspecified,
-            src: src,
+            src,
         }
     }
 
@@ -2188,7 +2182,7 @@ where
         &self.hash_map
     }
     fn is_mutable(&self) -> bool {
-        return self.is_mutable;
+        self.is_mutable
     }
 }
 
@@ -2201,8 +2195,8 @@ pub struct GenericHashKey {
 impl GenericHashKey {
     pub fn new(hash_obj: Object, org_key: Object) -> Self {
         Self {
-            hash_obj: hash_obj,
-            org_key: org_key,
+            hash_obj,
+            org_key,
         }
     }
 }
@@ -2255,8 +2249,8 @@ impl GenericHashtable {
         GenericHashtable {
             header: GcHeader::new(ObjectType::GenericHashtable),
             hash_map: HashMap::new(),
-            hash_func: hash_func,
-            eq_func: eq_func,
+            hash_func,
+            eq_func,
             is_mutable: true,
         }
     }
@@ -2271,7 +2265,7 @@ impl GenericHashtable {
     }
 
     pub fn is_mutable(&self) -> bool {
-        return self.is_mutable;
+        self.is_mutable
     }
 }
 
@@ -2293,7 +2287,7 @@ where
         &self.hash_map
     }
     fn is_mutable(&self) -> bool {
-        return self.is_mutable;
+        self.is_mutable
     }
 }
 
@@ -2304,7 +2298,7 @@ pub struct EqvKey {
 
 impl EqvKey {
     pub fn new(obj: Object) -> Self {
-        Self { obj: obj }
+        Self { obj }
     }
 }
 
@@ -2337,7 +2331,7 @@ where
         &self.hash_map
     }
     fn is_mutable(&self) -> bool {
-        return self.is_mutable;
+        self.is_mutable
     }
 }
 
@@ -2378,7 +2372,7 @@ impl EqvHashtable {
     }
 
     pub fn is_mutable(&self) -> bool {
-        return self.is_mutable;
+        self.is_mutable
     }
 }
 

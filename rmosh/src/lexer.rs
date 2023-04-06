@@ -109,14 +109,9 @@ impl<'input> Lexer<'input> {
         // #\xAB
         let hex_str: String = self.s[self.tok + 3..self.cursor].iter().collect();
         match u32::from_str_radix(&hex_str, 16) {
-            Ok(n) => match char::from_u32(n) {
-                Some(c) => return Some(c),
-                None => {
-                    return None;
-                }
-            },
+            Ok(n) => char::from_u32(n),
             Err(_e) => {
-                return None;
+                None
             }
         }
     }

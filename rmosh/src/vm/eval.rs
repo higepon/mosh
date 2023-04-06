@@ -38,7 +38,7 @@ impl Vm {
             Object::False,
         ));
 
-        return self.set_after_trigger0(Object::Closure(c));
+        self.set_after_trigger0(Object::Closure(c))
     }
 
     pub fn eval_compiled(&mut self, sexp: Object) -> error::Result<Object> {
@@ -65,7 +65,7 @@ impl Vm {
             Object::False,
         ));
 
-        return self.set_after_trigger0(Object::Closure(c));
+        self.set_after_trigger0(Object::Closure(c))
     }
 
     fn set_after_trigger0(&mut self, closure: Object) -> error::Result<Object> {
@@ -81,7 +81,7 @@ impl Vm {
         code.push(Object::Instruction(Op::Halt));
 
         self.pc = self.allocate_code(&code);
-        return Ok(self.ac);
+        Ok(self.ac)
     }
 
     fn set_after_trigger3(
@@ -112,7 +112,7 @@ impl Vm {
         code.push(Object::Instruction(Op::Halt));
 
         self.pc = self.allocate_code(&code);
-        return Ok(self.ac);
+        Ok(self.ac)
     }
 
     fn set_after_trigger4(
@@ -147,7 +147,7 @@ impl Vm {
         code.push(Object::Instruction(Op::Halt));
 
         self.pc = self.allocate_code(&code);
-        return Ok(self.ac);
+        Ok(self.ac)
     }
 
     pub(super) fn raise_after3(

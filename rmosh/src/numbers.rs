@@ -155,7 +155,7 @@ impl FixnumExt for isize {
         if *self > 0 {
             self.count_ones() as isize
         } else {
-            !(!(*self)).bit_count() as isize
+            !(!(*self)).bit_count()
         }
     }
     fn length(&self) -> usize {
@@ -428,7 +428,7 @@ impl FixnumExt for isize {
     }
     fn sqrt(self, gc: &mut Box<Gc>) -> Object {
         if self == 0 {
-            return Object::Fixnum(0);
+            Object::Fixnum(0)
         } else if self > 0 {
             let root = (self as f64).sqrt();
             let root_as_int = root.floor() as isize;
@@ -478,12 +478,12 @@ impl std::hash::Hash for Flonum {
 
 impl Flonum {
     pub fn new(value: f64) -> Self {
-        Self { value: value }
+        Self { value }
     }
 
     pub fn new_from_64(u64_value: u64) -> Self {
         Self {
-            u64_value: u64_value,
+            u64_value,
         }
     }
 
@@ -818,7 +818,7 @@ impl Ratnum {
     pub fn new_from_ratio(ratio: BigRational) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Ratnum),
-            ratio: ratio,
+            ratio,
         }
     }
 
@@ -950,7 +950,7 @@ impl Bignum {
     pub fn new(value: BigInt) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Bignum),
-            value: value,
+            value,
         }
     }
 
@@ -1105,8 +1105,8 @@ impl Compnum {
     pub fn new(real: Object, imag: Object) -> Self {
         Self {
             header: GcHeader::new(ObjectType::Compnum),
-            real: real,
-            imag: imag,
+            real,
+            imag,
         }
     }
     pub fn eqv(&self, other: &Compnum) -> bool {
@@ -1251,7 +1251,7 @@ impl Compnum {
         let d = div(gc, b, c)?;
         let d = log(gc, d);
         let e = div(gc, Object::Fixnum(1), Object::Fixnum(2))?;
-        Object::Compnum(gc.alloc(Compnum::new(Object::Fixnum(0), e)));
+        gc.alloc(Compnum::new(Object::Fixnum(0), e));
         Ok(mul(gc, e, d))
     }
 
@@ -1478,7 +1478,7 @@ pub fn integer_div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, S
             Err(SchemeError::Overflow) => match BigInt::from_isize(n1.to_isize()) {
                 Some(b) => {
                     let b1 = Object::Bignum(gc.alloc(Bignum::new(b)));
-                    return integer_div(gc, b1, n2);
+                    integer_div(gc, b1, n2)
                 }
                 None => bug!(""),
             },
@@ -1620,7 +1620,7 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
                     if f1 == 0 {
                         return Object::Unspecified;
                     }
-                    let b = b1.pow((f2 * -1) as u32);
+                    let b = b1.pow(-f2 as u32);
                     Object::Ratnum(gc.alloc(Ratnum::new(BigInt::from_isize(1).unwrap(), b)))
                 }
             }
@@ -1791,7 +1791,7 @@ pub fn modulo(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Scheme
                 return Ok(Object::Fixnum(0));
             }
             if (fx2 > 0 && r <= 0) || (fx2 <= 0 && r > 0) {
-                r = r + fx2
+                r += fx2
             }
             Ok(Object::Fixnum(r))
         }
@@ -1898,7 +1898,7 @@ pub fn to_string(n: Object, radix: usize) -> String {
             format!("{}", fx)
         }
         _ if radix == 10 => {
-            format!("{}", n.to_string())
+            n.to_string()
         }
         Object::Fixnum(fx) if radix == 16 => {
             if fx < 0 {
@@ -2081,12 +2081,10 @@ pub fn angle(_gc: &mut Box<Gc>, n: Object) -> Object {
         if n.is_negative() {
             // Pi
             Object::Flonum(Flonum::new(f64::acos(-1.0)))
+        } else if n.is_flonum() {
+            Object::Flonum(Flonum::new(0.0))
         } else {
-            if n.is_flonum() {
-                Object::Flonum(Flonum::new(0.0))
-            } else {
-                Object::Fixnum(0)
-            }
+            Object::Fixnum(0)
         }
     } else if n.is_compnum() {
         n.to_compnum().angle()

@@ -30,7 +30,7 @@ pub struct Error {
 impl Error {
     pub fn new(error_type: ErrorType, who: &str, message: &str, irritants: &[Object]) -> Self {
         Self {
-            error_type: error_type,
+            error_type,
             who: who.to_string(),
             message: message.to_string(),
             irritants: irritants.to_owned(),
@@ -104,8 +104,8 @@ impl Display for Error {
             f,
             "type: {:?} who: {} message: {} irritants {:?}",
             self.error_type,
-            self.who.to_string(),
-            self.message.to_string(),
+            self.who,
+            self.message,
             self.irritants,
         )
     }
@@ -116,8 +116,8 @@ impl Debug for Error {
         write!(
             f,
             "who: {} message: {} irritants {:?}",
-            self.who.to_string(),
-            self.message.to_string(),
+            self.who,
+            self.message,
             self.irritants,
         )
     }

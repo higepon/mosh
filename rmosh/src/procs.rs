@@ -950,7 +950,7 @@ fn car(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Pair(pair) => Ok(pair.car),
         _ => {
-            return type_required_error(name, "pair", &[args[0]]);
+            type_required_error(name, "pair", &[args[0]])
         }
     }
 }
@@ -961,7 +961,7 @@ fn cdr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Pair(pair) => Ok(pair.cdr),
         _ => {
-            return type_required_error(name, "pair", &[args[0]]);
+            type_required_error(name, "pair", &[args[0]])
         }
     }
 }
@@ -977,7 +977,7 @@ fn set_car_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         p.car = args[1];
         Ok(Object::Unspecified)
     } else {
-        return type_required_error(name, "pair", &[args[0]]);
+        type_required_error(name, "pair", &[args[0]])
     }
 }
 fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -987,7 +987,7 @@ fn set_cdr_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         p.cdr = args[1];
         Ok(Object::Unspecified)
     } else {
-        return type_required_error(name, "pair", &[args[0]]);
+        type_required_error(name, "pair", &[args[0]])
     }
 }
 fn sys_display(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1043,9 +1043,9 @@ fn make_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Fixnum(n)] => Ok(vm.gc.new_string(&" ".repeat(*n as usize))),
         [Object::Fixnum(n), Object::Char(c)] => {
-            Ok(vm.gc.new_string(&*c.to_string().repeat(*n as usize)))
+            Ok(vm.gc.new_string(&c.to_string().repeat(*n as usize)))
         }
-        _ => return generic_error!(name, args, "wrong arguments {:?}", args),
+        _ => generic_error!(name, args, "wrong arguments {:?}", args),
     }
 }
 fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1058,7 +1058,7 @@ fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Ob
             Ok(Object::Unspecified)
         }
         _ => {
-            return type_required_error(name, "string, number and char", args);
+            type_required_error(name, "string, number and char", args)
         }
     }
 }
@@ -1068,7 +1068,7 @@ fn string_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::String(s) => Ok(Object::Fixnum(s.string.chars().count().try_into().unwrap())),
         v => {
-            return type_required_error(name, "string", &[v]);
+            type_required_error(name, "string", &[v])
         }
     }
 }
@@ -1078,7 +1078,7 @@ fn string_to_symbol(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::String(s) => Ok(vm.gc.symbol_intern(&s.string)),
         v => {
-            return type_required_error(name, "string", &[v]);
+            type_required_error(name, "string", &[v])
         }
     }
 }
@@ -1134,7 +1134,7 @@ fn string_to_number(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 }
             }
             _ => {
-                return type_required_error(name, "string", &[args[0]]);
+                type_required_error(name, "string", &[args[0]])
             }
         }
     }
@@ -1202,7 +1202,7 @@ fn string_split(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(l)
         }
         _ => {
-            return type_required_error(name, "string and char", &[args[0], args[1]]);
+            type_required_error(name, "string and char", &[args[0], args[1]])
         }
     }
 }
@@ -1238,7 +1238,7 @@ fn number_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if radix == 2 || radix == 8 || radix == 10 || radix == 16 {
             Ok(vm.gc.new_string(&numbers::to_string(n, radix as usize)))
         } else {
-            return generic_error!(name, &[args[1]], "unsupported radix {}", args[1]);
+            generic_error!(name, &[args[1]], "unsupported radix {}", args[1])
         }
     }
 }
@@ -1258,7 +1258,7 @@ fn reverse(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
     }
-    return Ok(ret);
+    Ok(ret)
 }
 fn is_eof_object(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eof-object?";
@@ -1275,7 +1275,7 @@ fn read_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "peek-char";
     check_argc_max!(name, args, 1);
-    let port = if args.len() == 0 {
+    let port = if args.is_empty() {
         vm.current_input_port()
     } else {
         args[0]
@@ -1300,9 +1300,9 @@ fn is_charequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return type_required_error(name, "char", &[args[i]]);
             }
         }
-        return Ok(Object::True);
+        Ok(Object::True)
     } else {
-        return type_required_error(name, "char", &[args[0]]);
+        type_required_error(name, "char", &[args[0]])
     }
 }
 fn is_string(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1322,7 +1322,7 @@ fn get_environment_variable(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
             Err(_) => Ok(Object::False),
         }
     } else {
-        return type_required_error(name, "string key", &[args[0]]);
+        type_required_error(name, "string key", &[args[0]])
     }
 }
 fn get_environment_variables(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1352,7 +1352,7 @@ fn open_string_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obj
             Ok(Object::StringInputPort(vm.gc.alloc(port)))
         }
         _ => {
-            return type_required_error(name, "string", &[args[0]]);
+            type_required_error(name, "string", &[args[0]])
         }
     }
 }
@@ -1378,11 +1378,11 @@ fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         (Object::Char(c), Object::Fixnum(radix)) => match c.to_digit(radix as u32) {
             Some(v) => Ok(Object::Fixnum(v as isize)),
             None => {
-                return generic_error!(name, args, "could not convert ({}, {})", args[0], args[1]);
+                generic_error!(name, args, "could not convert ({}, {})", args[0], args[1])
             }
         },
         _ => {
-            return type_required_error(name, "char and number", args);
+            type_required_error(name, "char and number", args)
         }
     }
 }
@@ -1406,7 +1406,7 @@ fn is_file_exists(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(Object::False)
         }
     } else {
-        return type_required_error(name, "string", &[args[0]]);
+        type_required_error(name, "string", &[args[0]])
     }
 }
 fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1417,7 +1417,7 @@ fn delete_file(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Ok(_) => Ok(Object::Unspecified),
         Err(e) => Error::assertion_violation(
             name,
-            &format!("delete file failed {}", e.to_string()),
+            &format!("delete file failed {}", e),
             &[args[0]],
         ),
     }
@@ -1428,7 +1428,7 @@ fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     if let Object::StringOutputPort(mut s) = args[0] {
         Ok(vm.gc.new_string(&s.string()))
     } else {
-        return type_required_error(name, "string-output-port", args);
+        type_required_error(name, "string-output-port", args)
     }
 }
 fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1441,7 +1441,7 @@ fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if let Object::Char(c) = args[0] {
         Ok(Object::Fixnum(c as isize))
     } else {
-        return type_required_error(name, "char", &[args[0]]);
+        type_required_error(name, "char", &[args[0]])
     }
 }
 fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1453,7 +1453,7 @@ fn integer_to_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             None => Error::assertion_violation(name, "integer out of range", &[args[0]]),
         }
     } else {
-        return type_required_error(name, "integer number", &[args[0]]);
+        type_required_error(name, "integer number", &[args[0]])
     }
 }
 fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -1464,18 +1464,18 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             (Object::False, Object::String(s)) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[2..])?;
-                return Ok(vm.gc.new_string(&port.string()));
+                Ok(vm.gc.new_string(&port.string()))
             }
             (obj, Object::String(s)) if obj.is_textual_output_port() => {
                 let port = obj_as_text_output_port_mut!(name, obj);
                 port.format(&s.string, &mut args[2..])?;
-                return Ok(Object::Unspecified);
+                Ok(Object::Unspecified)
             }
 
             (Object::String(s), _) => {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[1..])?;
-                return Ok(vm.gc.new_string(&port.string()));
+                Ok(vm.gc.new_string(&port.string()))
             }
             (x, y) => bug!("x={} y={}", x, y),
         }
@@ -1580,19 +1580,19 @@ fn caaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1604,19 +1604,19 @@ fn caaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1625,17 +1625,17 @@ fn caaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.car {
             Object::Pair(pair2) => match pair2.car {
-                Object::Pair(pair3) => return Ok(pair3.car),
+                Object::Pair(pair3) => Ok(pair3.car),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1647,19 +1647,19 @@ fn caadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1671,19 +1671,19 @@ fn caaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1692,17 +1692,17 @@ fn caadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => match pair2.car {
-                Object::Pair(pair3) => return Ok(pair3.car),
+                Object::Pair(pair3) => Ok(pair3.car),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1718,19 +1718,19 @@ fn cadaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1742,19 +1742,19 @@ fn cadadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1763,17 +1763,17 @@ fn cadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.car {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => return Ok(pair3.car),
+                Object::Pair(pair3) => Ok(pair3.car),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1785,19 +1785,19 @@ fn caddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1809,19 +1809,19 @@ fn cadddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.car),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1830,17 +1830,17 @@ fn caddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => return Ok(pair3.car),
+                Object::Pair(pair3) => Ok(pair3.car),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1848,13 +1848,13 @@ fn cadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "cadr";
     match args {
         [Object::Pair(pair)] => match pair.cdr {
-            Object::Pair(pair2) => return Ok(pair2.car),
+            Object::Pair(pair2) => Ok(pair2.car),
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1866,19 +1866,19 @@ fn cdaaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1890,19 +1890,19 @@ fn cdaadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1911,17 +1911,17 @@ fn cdaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.car {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => return Ok(pair3.cdr),
+                Object::Pair(pair3) => Ok(pair3.cdr),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1933,19 +1933,19 @@ fn cdadar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1958,19 +1958,19 @@ fn cdaddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.car {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -1979,17 +1979,17 @@ fn cdadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => match pair2.car {
-                Object::Pair(pair3) => return Ok(pair3.cdr),
+                Object::Pair(pair3) => Ok(pair3.cdr),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -2005,19 +2005,19 @@ fn cddaar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -2029,19 +2029,19 @@ fn cddadr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -2050,17 +2050,17 @@ fn cddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.car {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => return Ok(pair3.cdr),
+                Object::Pair(pair3) => Ok(pair3.cdr),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -2072,19 +2072,19 @@ fn cdddar(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -2096,19 +2096,19 @@ fn cddddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 Object::Pair(pair3) => match pair3.cdr {
                     Object::Pair(pair4) => Ok(pair4.cdr),
                     _ => {
-                        return pair_required_error(name, args);
+                        pair_required_error(name, args)
                     }
                 },
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -2117,17 +2117,17 @@ fn cdddr(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args {
         [Object::Pair(pair)] => match pair.cdr {
             Object::Pair(pair2) => match pair2.cdr {
-                Object::Pair(pair3) => return Ok(pair3.cdr),
+                Object::Pair(pair3) => Ok(pair3.cdr),
                 _ => {
-                    return pair_required_error(name, args);
+                    pair_required_error(name, args)
                 }
             },
             _ => {
-                return pair_required_error(name, args);
+                pair_required_error(name, args)
             }
         },
         _ => {
-            return pair_required_error(name, args);
+            pair_required_error(name, args)
         }
     }
 }
@@ -2182,7 +2182,7 @@ fn list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             break;
         }
         obj = vm.gc.cons(args[i as usize], obj);
-        i = i - 1;
+        i -= 1;
     }
     Ok(obj)
 }
@@ -2265,7 +2265,7 @@ fn symbol_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Symbol(s) => Ok(vm.gc.new_string(&s.string)),
         obj => {
-            return type_required_error(name, "symbol", &[obj]);
+            type_required_error(name, "symbol", &[obj])
         }
     }
 }
@@ -2283,7 +2283,7 @@ fn string_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
         _ => {
-            return type_required_error(name, "string and number", &[args[0], args[1]]);
+            type_required_error(name, "string and number", &[args[0], args[1]])
         }
     }
 }
@@ -2366,7 +2366,7 @@ fn hashtable_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
         _ => {
-            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+            Error::assertion_violation(name, "hashtable required", &[args[0]])
         }
     }
 }
@@ -2475,7 +2475,7 @@ fn eq_hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
     if let Object::EqHashtable(e) = args[0] {
         Ok(Object::EqHashtable(vm.gc.alloc(e.copy())))
     } else {
-        return Error::assertion_violation(name, "eq-hashtable required", &[args[0]]);
+        Error::assertion_violation(name, "eq-hashtable required", &[args[0]])
     }
 }
 fn current_error_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2616,13 +2616,13 @@ fn bytevector_u8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
     check_argc!(name, args, 3);
     match (args[0], args[1], args[2]) {
         (Object::Bytevector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
-            if (index as usize) < bv.len() && v >= 0 && v <= 255 =>
+            if (index as usize) < bv.len() && (0..=255).contains(&v) =>
         {
             bv.set_u8_unchecked(index as usize, v as u8);
             Ok(Object::Unspecified)
         }
         _ => {
-            return type_required_error(name, "bytevector index u8 value", args);
+            type_required_error(name, "bytevector index u8 value", args)
         }
     }
 }
@@ -2698,11 +2698,11 @@ fn get_bytevector_some(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
         Error::new(
             ErrorType::IoError,
             name,
-            &format!("read error {}", e.to_string()),
+            &format!("read error {}", e),
             &[args[0]],
         )
     })?;
-    if buf.len() == 0 {
+    if buf.is_empty() {
         Ok(Object::Eof)
     } else {
         Ok(vm.gc.new_bytevector_u8(&buf))
@@ -2717,7 +2717,7 @@ fn get_bytevector_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
         Error::new(
             ErrorType::IoError,
             name,
-            &format!("read error {}", e.to_string()),
+            &format!("read error {}", e),
             &[args[0]],
         )
     })?;
@@ -2831,7 +2831,7 @@ fn bytevector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     check_argc!(name, args, 1);
     match args[0] {
         Object::Bytevector(bv) => Ok(Object::Fixnum(bv.len() as isize)),
-        _ => return type_required_error(name, "bytevector", &[args[0]]),
+        _ => type_required_error(name, "bytevector", &[args[0]]),
     }
 }
 fn standard_input_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -2858,7 +2858,7 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match port.read(vm, &mut buf) {
         Ok(0) => Ok(Object::Eof),
         Ok(size) => Ok(Object::Bytevector(
-            vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec().into())),
+            vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec())),
         )),
         Err(_) => Ok(Object::Eof),
     }
@@ -3233,14 +3233,14 @@ fn assv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 fn exit(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "exit";
     check_argc_max!(name, args, 1);
-    if args.len() == 0 {
+    if args.is_empty() {
         process::exit(0)
     } else {
         match args[0] {
             Object::Fixnum(fx) => process::exit(fx as i32),
             Object::False => process::exit(-1),
             _ => {
-                return type_required_error(name, "integer or boolean", &[args[0], args[1]]);
+                type_required_error(name, "integer or boolean", &[args[0], args[1]])
             }
         }
     }
@@ -3268,7 +3268,7 @@ fn memv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
         o = o.cdr_unchecked();
     }
-    return Ok(Object::False);
+    Ok(Object::False)
 }
 
 fn is_procedure(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3422,7 +3422,7 @@ fn vector_to_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Vector(v) => Ok(vm.gc.listn(&v.data[..])),
         obj => {
-            return type_required_error(name, "vector", &[obj]);
+            type_required_error(name, "vector", &[obj])
         }
     }
 }
@@ -3439,7 +3439,7 @@ fn set_source_info_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Resu
             Ok(args[0])
         }
         obj => {
-            return type_required_error(name, "pair", &[obj]);
+            type_required_error(name, "pair", &[obj])
         }
     }
 }
@@ -3465,7 +3465,7 @@ fn get_closure_name(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
 }
 fn append(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "append";
-    if args.len() == 0 {
+    if args.is_empty() {
         return Ok(Object::Nil);
     }
     let mut ret = args[args.len() - 1];
@@ -3481,7 +3481,7 @@ fn append(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         ret = vm.gc.append2(p, ret)?;
         i -= 1;
     }
-    return Ok(ret);
+    Ok(ret)
 }
 fn append2(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "append2";
@@ -3502,7 +3502,7 @@ fn append_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
                     return type_required_error(name, "list", &[args[i as usize]]);
                 }
                 ret = Pair::append_destructive(args[i as usize], ret)?;
-                i = i - 1;
+                i -= 1;
             }
             Ok(ret)
         }
@@ -3523,7 +3523,7 @@ fn pass4_fixup_labels(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
 fn make_code_builder(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "make-code-builder";
     println!("{}({}) not implemented", name, args.len());
-    return Ok(Object::False);
+    Ok(Object::False)
 }
 fn code_builder_put_extra1_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "code-builder-put-extra1!";
@@ -3655,7 +3655,7 @@ fn do_transpose(vm: &mut Vm, each_len: usize, args: &mut [Object]) -> Object {
             ans_tail = ans_tail.cdr_unchecked();
         }
     }
-    return ans;
+    ans
 }
 
 fn list_transposeadd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3676,7 +3676,7 @@ fn list_transposeadd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
             return Ok(Object::False);
         }
     }
-    return Ok(do_transpose(vm, length, args));
+    Ok(do_transpose(vm, length, args))
 }
 
 fn symbol_value(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -3686,11 +3686,11 @@ fn symbol_value(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::Symbol(symbol) => match vm.global_value(symbol) {
             Some(&value) => Ok(value),
             None => {
-                return generic_error!(name, args, "identifier {} not found", symbol.string);
+                generic_error!(name, args, "identifier {} not found", symbol.string)
             }
         },
         obj => {
-            return type_required_error(name, "symbol", &[obj]);
+            type_required_error(name, "symbol", &[obj])
         }
     }
 }
@@ -3703,7 +3703,7 @@ fn set_symbol_value_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Resu
             Ok(Object::Unspecified)
         }
         obj => {
-            return type_required_error(name, "symbol", &[obj]);
+            type_required_error(name, "symbol", &[obj])
         }
     }
 }
@@ -3738,7 +3738,7 @@ fn hashtable_size(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Object::EqvHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
         Object::GenericHashtable(hashtable) => Ok(Object::Fixnum(hashtable.size() as isize)),
         _ => {
-            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+            Error::assertion_violation(name, "hashtable required", &[args[0]])
         }
     }
 }
@@ -3789,7 +3789,7 @@ fn is_hashtable_contains(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
             Ok(hashtable.contains(key).to_obj())
         }
         _ => {
-            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+            Error::assertion_violation(name, "hashtable required", &[args[0]])
         }
     }
 }
@@ -3837,7 +3837,7 @@ fn hashtable_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(Object::GenericHashtable(ret))
         }
         _ => {
-            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+            Error::assertion_violation(name, "hashtable required", &[args[0]])
         }
     }
 }
@@ -3891,7 +3891,7 @@ fn hashtable_equivalence_function(vm: &mut Vm, args: &mut [Object]) -> error::Re
         Object::EqvHashtable(_) => Ok(vm.gc.new_procedure(is_eqv, "eqv?")),
         Object::GenericHashtable(hashtable) => Ok(hashtable.eq_func),
         _ => {
-            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+            Error::assertion_violation(name, "hashtable required", &[args[0]])
         }
     }
 }
@@ -3901,7 +3901,7 @@ fn hashtable_hash_function(_vm: &mut Vm, args: &mut [Object]) -> error::Result<O
     match args[0] {
         Object::GenericHashtable(hashtable) => Ok(hashtable.hash_func),
         _ => {
-            return Error::assertion_violation(name, "hashtable required", &[args[0]]);
+            Error::assertion_violation(name, "hashtable required", &[args[0]])
         }
     }
 }
@@ -4038,7 +4038,7 @@ fn number_div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match numbers::div(&mut vm.gc, Object::Fixnum(1), args[0]) {
             Ok(value) => Ok(value),
             Err(SchemeError::Div0) => {
-                return generic_error!(name, &[args[0]], "division by zero {}", args[0]);
+                generic_error!(name, &[args[0]], "division by zero {}", args[0])
             }
             _ => bug!(),
         }
@@ -4088,7 +4088,7 @@ fn min(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             min = *obj;
         }
     }
-    return Ok(min);
+    Ok(min)
 }
 fn get_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "get-char";
@@ -4118,7 +4118,7 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let port = as_text_input_port_mut!(name, args, 0);
     match port.read_n_to_string(vm, &mut s, n) {
         Ok(_) => {
-            if s.len() > 0 {
+            if !s.is_empty() {
                 Ok(vm.gc.new_string(&s))
             } else {
                 Ok(Object::Eof)
@@ -4147,7 +4147,7 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<O
         Error::new(
             ErrorType::IoError,
             name,
-            &format!("read error {}", e.to_string()),
+            &format!("read error {}", e),
             &[args[0]],
         )
     })?;
@@ -4212,18 +4212,18 @@ fn current_directory(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         Ok(path_buf) => match path_buf.as_os_str().to_str() {
             Some(s) => Ok(vm.gc.new_string(s)),
             None => {
-                return generic_error!(name, args, "{} conversion error", "os_str");
+                generic_error!(name, args, "{} conversion error", "os_str")
             }
         },
         Err(err) => {
-            return generic_error!(name, args, "{}", err);
+            generic_error!(name, args, "{}", err)
         }
     }
 }
 fn standard_library_path(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "standard-library-path";
     check_argc!(name, args, 0);
-    return Ok(vm.gc.new_string("."));
+    Ok(vm.gc.new_string("."))
 }
 fn native_endianness(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "native-endianness";
@@ -4248,7 +4248,7 @@ fn make_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(Object::Bytevector(vm.gc.alloc(Bytevector::new(&v))))
         }
         _ => {
-            return number_required_error(name, &[args[0]]);
+            number_required_error(name, &[args[0]])
         }
     }
 }
@@ -4317,7 +4317,7 @@ fn bytevector_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Bytevector(bv) => Ok(Object::Bytevector(vm.gc.alloc(bv.copy()))),
         _ => {
-            return type_required_error(name, "bytevector", &[args[0]]);
+            type_required_error(name, "bytevector", &[args[0]])
         }
     }
 }
@@ -4330,7 +4330,7 @@ fn bytevector_u8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
             None => generic_error!(name, args, "index out of range {}", index),
         },
         _ => {
-            return type_required_error(name, "bytevector and index", args);
+            type_required_error(name, "bytevector and index", args)
         }
     }
 }
@@ -4344,7 +4344,7 @@ fn bytevector_s8_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
             None => generic_error!(name, args, "index out of range {}", index),
         },
         _ => {
-            return type_required_error(name, "bytevector and index", args);
+            type_required_error(name, "bytevector and index", args)
         }
     }
 }
@@ -4353,13 +4353,13 @@ fn bytevector_s8_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
     check_argc!(name, args, 3);
     match (args[0], args[1], args[2]) {
         (Object::Bytevector(mut bv), Object::Fixnum(index), Object::Fixnum(v))
-            if (index as usize) < bv.len() && v >= -128 && v <= 127 =>
+            if (index as usize) < bv.len() && (-128..=127).contains(&v) =>
         {
             bv.set_i8_unchecked(index as usize, v as i8);
             Ok(Object::Unspecified)
         }
         _ => {
-            return type_required_error(name, "bytevector index i8", args);
+            type_required_error(name, "bytevector index i8", args)
         }
     }
 }
@@ -4376,7 +4376,7 @@ fn bytevector_to_u8_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
         }
         Ok(ret)
     } else {
-        return type_required_error(name, "bytevector", &[args[0]]);
+        type_required_error(name, "bytevector", &[args[0]])
     }
 }
 fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4385,7 +4385,7 @@ fn u8_list_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Obje
     match Bytevector::from_list(args[0]) {
         Some(bv) => Ok(Object::Bytevector(vm.gc.alloc(bv))),
         None => {
-            return type_required_error(name, "u8 list", &[args[0]]);
+            type_required_error(name, "u8 list", &[args[0]])
         }
     }
 }
@@ -4649,7 +4649,7 @@ fn string_to_bytevector(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
             Error::new(
                 ErrorType::IoEncodingError,
                 name,
-                &format!("write error {}", e.to_string()),
+                &format!("write error {}", e),
                 &[Object::Char(ch), out_port],
             )
         })?;
@@ -4666,7 +4666,7 @@ fn string_to_utf8(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             vm.gc.alloc(Bytevector::new(&s.string.as_bytes().to_vec())),
         ))
     } else {
-        return type_required_error(name, "string", &[args[0]]);
+        type_required_error(name, "string", &[args[0]])
     }
 }
 fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4674,13 +4674,13 @@ fn utf8_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     check_argc!(name, args, 1);
     match args[0] {
         Object::Bytevector(bv) => match std::str::from_utf8(&bv.data) {
-            Ok(s) => Ok(Object::String(vm.gc.alloc(SString::new(&s)))),
+            Ok(s) => Ok(Object::String(vm.gc.alloc(SString::new(s)))),
             Err(err) => {
-                return generic_error!(name, args, "{}", err);
+                generic_error!(name, args, "{}", err)
             }
         },
         _ => {
-            return type_required_error(name, "bytevector", &[args[0]]);
+            type_required_error(name, "bytevector", &[args[0]])
         }
     }
 }
@@ -4881,7 +4881,7 @@ fn utf32_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 );
             }
         }
-        i = i + 4;
+        i += 4;
     }
     Ok(vm.gc.new_string(&s))
 }
@@ -4900,7 +4900,7 @@ fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
             FromPrimitive::from_u8(n as u8).expect("unknown Op"),
         )),
         _ => {
-            return number_required_error(name, &[args[0]]);
+            number_required_error(name, &[args[0]])
         }
     }
 }
@@ -4918,11 +4918,11 @@ fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match fasl.write(bin_port, args[0]) {
             Ok(()) => Ok(Object::Unspecified),
             Err(err) => {
-                return generic_error!(name, args, "{} {} {}", err, args[0], args[1]);
+                generic_error!(name, args, "{} {} {}", err, args[0], args[1])
             }
         }
     } else {
-        return type_required_error(name, "file path", &[args[0]]);
+        type_required_error(name, "file path", &[args[0]])
     }
 }
 fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4938,13 +4938,13 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 return Err(error::Error::new(
                     ErrorType::IoError,
                     name,
-                    &format!("{}", err.to_string()),
+                    &format!("{}", err),
                     &[args[0]],
                 ))
             }
         }
     } else {
-        return type_required_error(name, "file path", &[args[0]]);
+        type_required_error(name, "file path", &[args[0]])
     }
 }
 
@@ -4992,7 +4992,7 @@ fn make_rectangular(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if n1.is_real() && n2.is_real() {
         Ok(Object::Compnum(vm.gc.alloc(Compnum::new(n1, n2))))
     } else {
-        return type_required_error(name, "real numbers", &[n1, n2]);
+        type_required_error(name, "real numbers", &[n1, n2])
     }
 }
 fn real_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5001,7 +5001,7 @@ fn real_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(real(args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5010,7 +5010,7 @@ fn imag_part(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(imag(args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn is_exact(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5034,7 +5034,7 @@ fn inexact(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::inexact(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn is_nan(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -5452,7 +5452,7 @@ fn bitwise_not(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn bitwise_and(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-and";
-    if args.len() == 0 {
+    if args.is_empty() {
         Ok(Object::Fixnum(-1))
     } else if args.len() == 1 {
         Ok(args[0])
@@ -5472,14 +5472,14 @@ fn bitwise_and(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     return Error::assertion_violation(name, "exact integer required", &[args[0]]);
                 }
             };
-            accum = accum & v;
+            accum &= v;
         }
         Ok(accum.to_obj(&mut vm.gc))
     }
 }
 fn bitwise_ior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-ior";
-    if args.len() == 0 {
+    if args.is_empty() {
         Ok(Object::Fixnum(-1))
     } else if args.len() == 1 {
         Ok(args[0])
@@ -5499,14 +5499,14 @@ fn bitwise_ior(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     return Error::assertion_violation(name, "exact integer required", &[args[0]]);
                 }
             };
-            accum = accum | v;
+            accum |= v;
         }
         Ok(accum.to_obj(&mut vm.gc))
     }
 }
 fn bitwise_xor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bitwise-xor";
-    if args.len() == 0 {
+    if args.is_empty() {
         Ok(Object::Fixnum(0))
     } else if args.len() == 1 {
         Ok(args[0])
@@ -5526,7 +5526,7 @@ fn bitwise_xor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                     return Error::assertion_violation(name, "exact integer required", &[args[0]]);
                 }
             };
-            accum = accum ^ v;
+            accum ^= v;
         }
         Ok(accum.to_obj(&mut vm.gc))
     }
@@ -5540,7 +5540,7 @@ fn bigint_count_ones(b: &BigInt) -> usize {
         if value.clone() & one.clone() == one {
             num += 1;
         }
-        value = value >> 1;
+        value >>= 1;
     }
     num
 }
@@ -5959,7 +5959,7 @@ fn fxand(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut ret = -1;
     for i in 0..args.len() {
         let fx = as_isize!(name, args, i);
-        ret = ret & fx;
+        ret &= fx;
     }
     Ok(Object::Fixnum(ret))
 }
@@ -5969,7 +5969,7 @@ fn fxior(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut ret = 0;
     for i in 0..args.len() {
         let fx = as_isize!(name, args, i);
-        ret = ret | fx;
+        ret |= fx;
     }
     Ok(Object::Fixnum(ret))
 }
@@ -5979,7 +5979,7 @@ fn fxxor(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let mut ret = 0;
     for i in 0..args.len() {
         let fx = as_isize!(name, args, i);
-        ret = ret ^ fx;
+        ret ^= fx;
     }
     Ok(Object::Fixnum(ret))
 }
@@ -5995,7 +5995,7 @@ fn fxbit_count(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxbit-count";
     check_argc!(name, args, 1);
     let fx = as_isize!(name, args, 0);
-    Ok(Object::Fixnum(fx.bit_count() as isize))
+    Ok(Object::Fixnum(fx.bit_count()))
 }
 fn fxlength(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "fxlength";
@@ -6210,7 +6210,7 @@ fn fxreverse_bit_field(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         start += 1;
         end -= 1;
     }
-    return Ok(Object::Fixnum(bits as isize));
+    Ok(Object::Fixnum(bits as isize))
 }
 fn bytevector_ieee_single_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-ieee-single-native-ref";
@@ -6370,7 +6370,7 @@ fn is_even(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_integer(&mut vm.gc) {
         Ok(args[0].is_even().to_obj())
     } else {
-        return type_required_error(name, "integer value", &[args[0]]);
+        type_required_error(name, "integer value", &[args[0]])
     }
 }
 fn is_odd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6379,7 +6379,7 @@ fn is_odd(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_integer(&mut vm.gc) {
         Ok((!args[0].is_even()).to_obj())
     } else {
-        return type_required_error(name, "integer value", &[args[0]]);
+        type_required_error(name, "integer value", &[args[0]])
     }
 }
 fn abs(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6388,7 +6388,7 @@ fn abs(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::abs(&mut vm.gc, args[0]))
     } else {
-        return type_required_error(name, "real number", &[args[0]]);
+        type_required_error(name, "real number", &[args[0]])
     }
 }
 fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6408,7 +6408,7 @@ fn div(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             _ => bug!(),
         }
     } else {
-        return type_required_error(name, "real numbers", &[n1, n2]);
+        type_required_error(name, "real numbers", &[n1, n2])
     }
 }
 fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6426,12 +6426,10 @@ fn div0(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let d3 = numbers::div(&mut vm.gc, n2, Object::Fixnum(2)).unwrap();
     if numbers::lt(modulo, numbers::abs(&mut vm.gc, d3)) {
         Ok(d)
+    } else if n2.is_negative() {
+        Ok(numbers::sub(&mut vm.gc, d, Object::Fixnum(1)))
     } else {
-        if n2.is_negative() {
-            Ok(numbers::sub(&mut vm.gc, d, Object::Fixnum(1)))
-        } else {
-            Ok(numbers::add(&mut vm.gc, d, Object::Fixnum(1)))
-        }
+        Ok(numbers::add(&mut vm.gc, d, Object::Fixnum(1)))
     }
 }
 
@@ -6462,7 +6460,7 @@ fn numerator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_rational() {
         Ok(numbers::numerator(&mut vm.gc, args[0]))
     } else {
-        return type_required_error(name, "rational number", &[args[0]]);
+        type_required_error(name, "rational number", &[args[0]])
     }
 }
 fn denominator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6471,7 +6469,7 @@ fn denominator(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_rational() {
         Ok(numbers::denominator(&mut vm.gc, args[0]))
     } else {
-        return type_required_error(name, "rational number", &[args[0]]);
+        type_required_error(name, "rational number", &[args[0]])
     }
 }
 fn floor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6480,7 +6478,7 @@ fn floor(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::floor(&mut vm.gc, args[0]))
     } else {
-        return type_required_error(name, "real number", &[args[0]]);
+        type_required_error(name, "real number", &[args[0]])
     }
 }
 fn ceiling(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6488,7 +6486,7 @@ fn ceiling(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::ceiling(&mut vm.gc, args[0]))
     } else {
-        return type_required_error(name, "real number", &[args[0]]);
+        type_required_error(name, "real number", &[args[0]])
     }
 }
 fn truncate(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6504,7 +6502,7 @@ fn round(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_real() {
         Ok(numbers::round(&mut vm.gc, args[0]))
     } else {
-        return type_required_error(name, "real number", &[args[0]]);
+        type_required_error(name, "real number", &[args[0]])
     }
 }
 
@@ -6514,7 +6512,7 @@ fn exp(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::exp(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6527,9 +6525,9 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             return number_required_error(name, &[n]);
         }
         if n.is_exact_zero() {
-            return Error::assertion_violation(name, " nonzero required but got", &[n]);
+            Error::assertion_violation(name, " nonzero required but got", &[n])
         } else {
-            return Ok(numbers::log(&mut vm.gc, n));
+            Ok(numbers::log(&mut vm.gc, n))
         }
     } else {
         let n1 = args[0];
@@ -6540,7 +6538,7 @@ fn log(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match log2(&mut vm.gc, n1, n2) {
             Ok(ret) => Ok(ret),
             Err(SchemeError::Div0) => {
-                return generic_error!(name, args, "div by zero {} {}", n1, n2);
+                generic_error!(name, args, "div by zero {} {}", n1, n2)
             }
             _ => bug!(),
         }
@@ -6553,7 +6551,7 @@ fn sin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::sin(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn cos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6561,7 +6559,7 @@ fn cos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::cos(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn tan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6570,14 +6568,14 @@ fn tan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match numbers::tan(&mut vm.gc, args[0]) {
             Ok(v) => Ok(v),
             Err(SchemeError::Div0) => {
-                return generic_error!(name, args, "div by zero {}", args[0]);
+                generic_error!(name, args, "div by zero {}", args[0])
             }
             Err(_) => {
                 bug!()
             }
         }
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn asin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6586,7 +6584,7 @@ fn asin(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::asin(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn acos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6595,7 +6593,7 @@ fn acos(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::acos(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn sqrt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6609,7 +6607,7 @@ fn magnitude(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::magnitude(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn angle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6618,7 +6616,7 @@ fn angle(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if args[0].is_number() {
         Ok(numbers::angle(&mut vm.gc, args[0]))
     } else {
-        return number_required_error(name, &[args[0]]);
+        number_required_error(name, &[args[0]])
     }
 }
 fn atan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6630,7 +6628,7 @@ fn atan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match numbers::atan(&mut vm.gc, n) {
             Ok(v) => Ok(v),
             Err(SchemeError::Div0) => {
-                return generic_error!(name, args, "div by zero {}", n);
+                generic_error!(name, args, "div by zero {}", n)
             }
             _ => bug!(),
         }
@@ -6640,7 +6638,7 @@ fn atan(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if n1.is_real() && n2.is_real() {
             Ok(numbers::atan2(&mut vm.gc, n1, n2))
         } else {
-            return type_required_error(name, "real numbers", &[n1, n2]);
+            type_required_error(name, "real numbers", &[n1, n2])
         }
     }
 }
@@ -6656,7 +6654,7 @@ fn expt(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         }
         Ok(numbers::expt(&mut vm.gc, n1, n2))
     } else {
-        return type_required_error(name, "numbers", &[n1, n2]);
+        type_required_error(name, "numbers", &[n1, n2])
     }
 }
 
@@ -6668,7 +6666,7 @@ fn make_polar(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if n1.is_number() && n2.is_number() {
         Ok(numbers::make_polar(&mut vm.gc, n1, n2))
     } else {
-        return type_required_error(name, "numbers", &[n1, n2]);
+        type_required_error(name, "numbers", &[n1, n2])
     }
 }
 fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -6679,7 +6677,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         match args[0] {
             Object::String(s) => Ok(Object::String(vm.gc.alloc(SString::new(&s.string)))),
             _ => {
-                return type_required_error(name, "string", &[args[0]]);
+                type_required_error(name, "string", &[args[0]])
             }
         }
     } else {
@@ -6717,7 +6715,7 @@ fn string_copy(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
                 }
             }
             _ => {
-                return type_required_error(name, "string", &[args[0]]);
+                type_required_error(name, "string", &[args[0]])
             }
         }
     }
@@ -6744,7 +6742,7 @@ fn ungensym(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(args[0])
         }
     } else {
-        return type_required_error(name, "symbol", &[args[0]]);
+        type_required_error(name, "symbol", &[args[0]])
     }
 }
 fn disasm(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7001,7 +6999,7 @@ fn put_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Error::new(
             ErrorType::IoError,
             name,
-            &format!("write error {}", e.to_string()),
+            &format!("write error {}", e),
             &[args[0]],
         )
     })?;
@@ -7055,13 +7053,13 @@ fn quotient(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match numbers::quotient(&mut vm.gc, args[0], args[1]) {
         Ok(v) => Ok(v),
         Err(SchemeError::NonZeroRequired) => {
-            return generic_error!(
+            generic_error!(
                 name,
                 args,
                 "none zero required but got {} {}",
                 args[0],
                 args[1]
-            );
+            )
         }
         _ => bug!(),
     }
@@ -7072,13 +7070,13 @@ fn remainder(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match numbers::remainder(&mut vm.gc, args[0], args[1]) {
         Ok(v) => Ok(v),
         Err(SchemeError::NonZeroRequired) => {
-            return generic_error!(
+            generic_error!(
                 name,
                 args,
                 "none zero required but got {} {}",
                 args[0],
                 args[1]
-            );
+            )
         }
         _ => bug!(),
     }
@@ -7088,13 +7086,13 @@ fn modulo(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match numbers::modulo(&mut vm.gc, args[0], args[1]) {
         Ok(v) => Ok(v),
         Err(SchemeError::NonZeroRequired) => {
-            return generic_error!(
+            generic_error!(
                 name,
                 args,
                 "none zero required but got {} {}",
                 args[0],
                 args[1]
-            );
+            )
         }
         _ => bug!(),
     }
@@ -7121,12 +7119,12 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
                 args,
             );
         }
-        file = match open_options.open(&path) {
+        file = match open_options.open(path) {
             Ok(file) => file,
             Err(err) => {
                 return error::Error::assertion_violation(
                     name,
-                    &format!("file open error {}: {}", path, err.to_string()),
+                    &format!("file open error {}: {}", path, err),
                     args,
                 );
             }
@@ -7207,7 +7205,7 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> error::Resul
                 }
             }
         }
-        file = match open_options.open(&path) {
+        file = match open_options.open(path) {
             Ok(file) => file,
             Err(err) => {
                 return generic_error!(name, args, "{}", err);
@@ -7294,7 +7292,7 @@ fn put_datum(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         Error::new(
             ErrorType::IoError,
             name,
-            &format!("write error {}", e.to_string()),
+            &format!("write error {}", e),
             &[args[0]],
         )
     })?;
@@ -7323,7 +7321,7 @@ fn list_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     if obj.is_pair() {
         Ok(obj.car_unchecked())
     } else {
-        return type_required_error(name, "pair", &[obj]);
+        type_required_error(name, "pair", &[obj])
     }
 }
 
@@ -7357,11 +7355,11 @@ fn mosh_executable_path(vm: &mut Vm, args: &mut [Object]) -> error::Result<Objec
         Ok(path_buf) => match path_buf.as_os_str().to_str() {
             Some(s) => Ok(vm.gc.new_string(s)),
             None => {
-                return generic_error!(name, args, "{} conversion error", "os_str");
+                generic_error!(name, args, "{} conversion error", "os_str")
             }
         },
         Err(err) => {
-            return generic_error!(name, args, "{}", err);
+            generic_error!(name, args, "{}", err)
         }
     }
 }
@@ -7510,11 +7508,11 @@ fn create_directory(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> 
         match fs::create_dir(&path.string) {
             Ok(()) => Ok(Object::Unspecified),
             Err(err) => {
-                return generic_error!(name, args, "{}", err);
+                generic_error!(name, args, "{}", err)
             }
         }
     } else {
-        return type_required_error(name, "path", &[args[0]]);
+        type_required_error(name, "path", &[args[0]])
     }
 }
 fn delete_directory(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7564,23 +7562,23 @@ fn file_stat_mtime(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         if path.string.starts_with("/embed/stdlib") {
             if let Some(file) = StdLib::get(&path.string) {
                 match file.metadata.last_modified() {
-                    Some(last_modified) => return Ok(last_modified.to_obj(&mut vm.gc)),
+                    Some(last_modified) => Ok(last_modified.to_obj(&mut vm.gc)),
                     None => {
-                        return generic_error!(
+                        generic_error!(
                             name,
                             args,
                             "failed to retrieve last modified for {}",
                             path.string
-                        );
+                        )
                     }
                 }
             } else {
-                return generic_error!(
+                generic_error!(
                     name,
                     args,
                     "failed to retrieve metadata for {}",
                     path.string
-                );
+                )
             }
         } else {
             let metadata = File::open(&path.string)
@@ -7608,7 +7606,7 @@ fn file_stat_mtime(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             Ok(Object::Fixnum(mtime_seconds as isize))
         }
     } else {
-        return type_required_error(name, "file path", &[args[0]]);
+        type_required_error(name, "file path", &[args[0]])
     }
 }
 fn file_stat_atime(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -7809,7 +7807,7 @@ fn make_simple_struct(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
             Ok(Object::SimpleStruct(s))
         }
         obj => {
-            return number_required_error(name, &[obj]);
+            number_required_error(name, &[obj])
         }
     }
 }
@@ -7826,7 +7824,7 @@ fn simple_struct_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
             Ok(Object::Unspecified)
         }
         _ => {
-            return type_required_error(name, "simple struct and number", &[args[0], args[1]]);
+            type_required_error(name, "simple struct and number", &[args[0], args[1]])
         }
     }
 }
@@ -7836,7 +7834,7 @@ fn simple_struct_name(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object
     match args[0] {
         Object::SimpleStruct(s) => Ok(s.name),
         obj => {
-            return type_required_error(name, "simple struct", &[obj]);
+            type_required_error(name, "simple struct", &[obj])
         }
     }
 }
@@ -8022,16 +8020,16 @@ fn id_to_real_label(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             }
         }
     } else {
-        return type_required_error(name, "simple-struct", &[args[0]]);
+        type_required_error(name, "simple-struct", &[args[0]])
     }
 }
 
 fn f(gc: &mut Box<Gc>, x: Object, ls1: Object, ls2: Object) -> Object {
     if ls1.is_nil() {
-        return ls2.cdr_unchecked();
+        ls2.cdr_unchecked()
     } else {
         let kdr = f(gc, ls1.car_unchecked(), ls1.cdr_unchecked(), ls2);
-        return gc.cons(x, kdr);
+        gc.cons(x, kdr)
     }
 }
 
@@ -8054,13 +8052,13 @@ fn join_wraps(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let y = cancel(&mut vm.gc, s1_mul, s2_mul);
         let z = cancel(&mut vm.gc, ae1_mul, ae2_mul);
         let values = [x, y, z];
-        return Ok(vm.values(&values))?;
+        Ok(vm.values(&values))?
     } else {
         let x = vm.gc.append2(m1_mul, m2_mul)?;
         let y = vm.gc.append2(s1_mul, s2_mul)?;
         let z = vm.gc.append2(ae1_mul, ae2_mul)?;
         let values = [x, y, z];
-        return Ok(vm.values(&values))?;
+        Ok(vm.values(&values))?
     }
 }
 
@@ -8068,10 +8066,10 @@ fn gensym_prefix_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Re
     let name: &str = "gensym-prefix-set!";
     check_argc!(name, args, 1);
     if let Object::Symbol(s) = args[0] {
-        unsafe { GENSYM_PREFIX = s.string.chars().nth(0).unwrap() };
+        unsafe { GENSYM_PREFIX = s.string.chars().next().unwrap() };
         Ok(Object::Unspecified)
     } else {
-        return type_required_error(name, "symbol", &[args[0]]);
+        type_required_error(name, "symbol", &[args[0]])
     }
 }
 
@@ -8080,10 +8078,10 @@ fn current_dynamic_winders(vm: &mut Vm, args: &mut [Object]) -> error::Result<Ob
     check_argc_max!(name, args, 1);
     let argc = args.len();
     if argc == 0 {
-        return Ok(vm.dynamic_winders);
+        Ok(vm.dynamic_winders)
     } else {
         vm.dynamic_winders = args[0];
-        return Ok(Object::Unspecified);
+        Ok(Object::Unspecified)
     }
 }
 fn sexp_map(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -8194,7 +8192,7 @@ fn get_annotation(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     match args[0] {
         Object::Pair(p) => Ok(p.src),
         obj => {
-            return type_required_error(name, "pair", &[obj]);
+            type_required_error(name, "pair", &[obj])
         }
     }
 }
@@ -8207,7 +8205,7 @@ fn set_annotation_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Resul
             Ok(Object::Unspecified)
         }
         obj => {
-            return type_required_error(name, "pair", &[obj]);
+            type_required_error(name, "pair", &[obj])
         }
     }
 }

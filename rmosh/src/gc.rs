@@ -301,7 +301,7 @@ impl Gc {
     }
 
     pub fn new_bytevector_u8(&mut self, values: &Vec<u8>) -> Object {
-        let bv = self.alloc(Bytevector::new(&values));
+        let bv = self.alloc(Bytevector::new(values));
         Object::Bytevector(bv)
     }
 
@@ -323,7 +323,7 @@ impl Gc {
                 return Err(error::Error::new(
                     ErrorType::AssertionViolation,
                     "bytevector",
-                    &format!("malformed bytevector: u8 value required"),
+                    "malformed bytevector: u8 value required",
                     &[*obj],
                 ));
             }

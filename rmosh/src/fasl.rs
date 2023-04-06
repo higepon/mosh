@@ -502,7 +502,7 @@ impl FaslReader {
     fn link_shared(&self, seen: &mut HashMap<Object, bool>, obj: Object) {
         println!("link shared");
         match seen.get(&obj) {
-            Some(_) => return,
+            Some(_) => (),
             None => {
                 seen.insert(obj, true);
                 match obj {
@@ -739,7 +739,7 @@ impl FaslReader {
             objs.push(self.read_sexp(gc)?);
         }
         let name = self.read_sexp(gc)?;
-        let mut s = SimpleStruct::new(name, len as usize);
+        let mut s = SimpleStruct::new(name, len);
         for i in 0..len {
             s.set(i, objs[i]);
         }

@@ -32,7 +32,7 @@ use crate::{
 // This is introduced to support custom binary output port where we need vm.call_closure3().
 // We tried to pass Vm to the methods, but it turned out it breaks to_string() family badly.
 // So we decided to have this kind of global accessible Vm. We use this as less as possible to keep this code clean.
-pub static mut CURRENT_VM: Lazy<Vm> = Lazy::new(|| Vm::new());
+pub static mut CURRENT_VM: Lazy<Vm> = Lazy::new(Vm::new);
 
 const STACK_SIZE: usize = 65536;
 const MAX_NUM_VALUES: usize = 256;
@@ -292,7 +292,7 @@ impl Vm {
         if 0 == n {
             return Ok(Object::Unspecified);
         }
-        for i in 1..n as usize {
+        for i in 1..n {
             if i >= MAX_NUM_VALUES {
                 return Err(error::Error::new(
                     ErrorType::AssertionViolation,
@@ -304,7 +304,7 @@ impl Vm {
             self.values[i - 1] = values[i];
         }
         // this is set to ac later.
-        return Ok(values[0]);
+        Ok(values[0])
     }
 
     pub fn set_symbol_value(&mut self, symbol: GcRef<Symbol>, value: Object) {

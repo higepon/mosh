@@ -117,7 +117,7 @@ impl Vm {
         let mut i = depth - 1;
         while i >= 0 {
             self.index_set(sp, i + diff, self.index(self.sp, i));
-            i = i - 1;
+            i -= 1;
         }
         self.dec(sp, diff)
     }
@@ -152,7 +152,7 @@ impl Vm {
         let next_pc = self.jump(self.pc, 1);
         self.pc = next_pc;
         //unsafe { *next_pc }
-        return obj;
+        obj
     }
 
     #[inline(always)]

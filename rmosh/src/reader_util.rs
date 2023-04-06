@@ -126,13 +126,13 @@ pub fn read_number(
             let context_start = max(0, (token.0 as isize) - 10) as usize;
             // Show what is causing this error.
             let context = format!("number_reader: {}", &s[context_start..token.2]);
-            return Err(ParseError::User {
+            Err(ParseError::User {
                 error: ReadError::UnrecognizedToken {
                     token: token.1,
                     expected,
-                    context: context.to_string(),
+                    context,
                 },
-            });
+            })
         }
         _ => parsed,
     }
@@ -192,7 +192,7 @@ pub fn read_string(s: &str) -> String {
                     if *hex_ch == ';' {
                         ret.push(current_ch);
                         break;
-                    } else if hex_ch.is_digit(10) {
+                    } else if hex_ch.is_ascii_digit() {
                         let lhs = (current_ch as u32) << 4;
                         let rhs = (*hex_ch as u32) - ('0' as u32);
                         current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
@@ -278,7 +278,7 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
                     if *hex_ch == ';' {
                         ret.push(current_ch);
                         break;
-                    } else if hex_ch.is_digit(10) {
+                    } else if hex_ch.is_ascii_digit() {
                         let lhs = (current_ch as u32) << 4;
                         let rhs = (*hex_ch as u32) - ('0' as u32);
                         current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
@@ -312,9 +312,9 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
     if is_bar_symbol {
         let raw_symbol = &ret[1..ret.len() - 1];
         if has_only_alphabets(raw_symbol) {
-            return Ok(raw_symbol.to_string());
+            Ok(raw_symbol.to_string())
         } else {
-            return Ok(ret);
+            Ok(ret)
         }
     } else {
         Ok(ret)
@@ -327,5 +327,5 @@ fn has_only_alphabets(s: &str) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
