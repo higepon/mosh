@@ -281,14 +281,9 @@ impl Port for StdInputPort {
 
 impl BinaryInputPort for StdInputPort {
     fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
-        io::stdin().read(buf).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "read",
-                &format!("{}", e),
-                &[],
-            )
-        })
+        io::stdin()
+            .read(buf)
+            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -352,14 +347,9 @@ impl Port for FileInputPort {
 
 impl TextInputPort for FileInputPort {
     fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> error::Result<usize> {
-        self.reader.read_to_string(str).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "read",
-                &format!("{}", e),
-                &[],
-            )
-        })
+        self.reader
+            .read_to_string(str)
+            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
     }
 
     fn input_src(&self) -> String {
@@ -1119,17 +1109,12 @@ pub trait BinaryInputPort: Port {
     // This default implementation is not very efficient :)
     fn read_all(&mut self, vm: &mut Vm, buf: &mut Vec<u8>) -> error::Result<usize> {
         let mut size = 0;
-        loop {
-            match self.read_u8(vm) {
-                Ok(Some(u)) => {
-                    buf.push(u);
-                    size += 1;
-                }
-                _ => {
-                    break;
-                }
-            }
+
+        while let Some(u) = self.read_u8(vm) {
+            buf.push(u);
+            size += 1;
         }
+
         Ok(size)
     }
 
@@ -1383,14 +1368,9 @@ impl BinaryInputPort for BinaryFileInputPort {
             }
             None => read_start = 0,
         }
-        self.reader.read(&mut buf[read_start..]).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "read",
-                &format!("{}", e),
-                &[],
-            )
-        })
+        self.reader
+            .read(&mut buf[read_start..])
+            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1470,14 +1450,9 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
             }
             None => read_start = 0,
         }
-        self.file.read(&mut buf[read_start..]).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "read",
-                &format!("{}", e),
-                &[],
-            )
-        })
+        self.file
+            .read(&mut buf[read_start..])
+            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1491,14 +1466,9 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
 
 impl BinaryOutputPort for BinaryFileInputOutputPort {
     fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
-        self.file.write(buf).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "write",
-                &format!("{}", e),
-                &[],
-            )
-        })
+        self.file
+            .write(buf)
+            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]))
     }
 }
 
@@ -1612,14 +1582,9 @@ impl OutputPort for StdOutputPort {
 
 impl BinaryOutputPort for StdOutputPort {
     fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
-        let ret = io::stdout().write(buf).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "write",
-                &format!("{}", e),
-                &[],
-            )
-        });
+        let ret = io::stdout()
+            .write(buf)
+            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]));
         self.flush();
         ret
     }
@@ -1665,14 +1630,9 @@ impl OutputPort for StdErrorPort {
 
 impl BinaryOutputPort for StdErrorPort {
     fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
-        io::stderr().write(buf).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "write",
-                &format!("{}", e),
-                &[],
-            )
-        })
+        io::stderr()
+            .write(buf)
+            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]))
     }
 }
 
@@ -2149,14 +2109,9 @@ impl OutputPort for BinaryFileOutputPort {
 
 impl BinaryOutputPort for BinaryFileOutputPort {
     fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
-        self.writer.write(buf).map_err(|e| {
-            error::Error::new(
-                ErrorType::IoError,
-                "write",
-                &format!("{}", e),
-                &[],
-            )
-        })
+        self.writer
+            .write(buf)
+            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]))
     }
 }
 
@@ -2745,9 +2700,7 @@ impl Transcoder {
                 let ch2 = self.read_char_raw(vm, port)?;
                 self.lineno += 1;
                 match ch2 {
-                    Some(char::LF) | Some(char::NEL) => {
-                        Ok(Some(char::LF))
-                    }
+                    Some(char::LF) | Some(char::NEL) => Ok(Some(char::LF)),
                     _ => {
                         self.unget_char(ch2);
                         Ok(Some(char::LF))
