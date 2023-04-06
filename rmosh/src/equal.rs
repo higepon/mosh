@@ -67,7 +67,7 @@ impl Equal {
     //       [(string? x) (and (string? y) (string=? x y) k)]
     //       [(bytevector? x) (and (bytevector? y) (bytevector=? x y) k)]
     //       [else (and (eqv? x y) k)]))
-    fn is_pre(&self, gc: &mut Box<Gc>, x: &Object, y: &Object, k: Object) -> Object {
+    fn is_pre(&self, _gc: &mut Box<Gc>, x: &Object, y: &Object, k: Object) -> Object {
         if x == y {
             return k;
         }
@@ -77,11 +77,11 @@ impl Equal {
                     k
                 } else {
                     let k2 =
-                        self.is_pre(gc, &pair1.car, &pair2.car, Object::Fixnum(k.to_isize() - 1));
+                        self.is_pre(_gc, &pair1.car, &pair2.car, Object::Fixnum(k.to_isize() - 1));
                     if k2.is_false() {
                         return Object::False;
                     }
-                    self.is_pre(gc, &pair1.cdr, &pair2.cdr, k2)
+                    self.is_pre(_gc, &pair1.cdr, &pair2.cdr, k2)
                 }
             }
             (Object::Bytevector(bv1), Object::Bytevector(bv2)) => {
@@ -103,7 +103,7 @@ impl Equal {
                         return k;
                     } else {
                         let k2 = self.is_pre(
-                            gc,
+                            _gc,
                             &v1.data[i],
                             &v2.data[i],
                             Object::Fixnum(k.to_isize() - 1),
@@ -124,7 +124,7 @@ impl Equal {
                 }
             }
             (Object::Procedure(p1), Object::Procedure(p2)) => {
-                if p1.func as isize == p2.func as isize {
+                if p1.func as usize == p2.func as usize {
                     k
                 } else {
                     Object::False
@@ -245,7 +245,7 @@ impl Equal {
         } else {
             let rx = self.find(bx);
             let ry = self.find(by);
-            if rx == rx {
+            if rx == ry {
                 return Object::True;
             }
             let nx = rx.to_vox().value;
