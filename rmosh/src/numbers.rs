@@ -691,9 +691,7 @@ impl Flonum {
     }
 
     pub fn denominator(&self, gc: &mut Box<Gc>) -> Object {
-        if self.value().is_infinite() {
-            Object::Flonum(Flonum::new(1.0))
-        } else if self.value().is_zero() {
+        if self.value().is_infinite() || self.value().is_zero() {
             Object::Flonum(Flonum::new(1.0))
         } else {
             let value = self.to_exact(gc);
