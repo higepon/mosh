@@ -1,4 +1,3 @@
-#![allow(clippy::all)]
 use crate::{
     bug,
     gc::GcRef,
