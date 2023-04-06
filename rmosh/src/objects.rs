@@ -1866,10 +1866,9 @@ impl Debug for Symbol {
             write!(f, "{}", start)?;
         }
 
-        for i in 1..content.len() {
-            let ch = content[i];
-            if !is_bar_symbol && ch == ' ' {
-                write!(f, "\\x{:x};", ch as u32)?;
+        for ch in content.iter().skip(1) {
+            if !is_bar_symbol && *ch == ' ' {
+                write!(f, "\\x{:x};", *ch as u32)?;
             } else {
                 write!(f, "{}", ch)?;
             }
