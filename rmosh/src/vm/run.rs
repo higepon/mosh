@@ -485,12 +485,12 @@ impl Vm {
                 }
                 Op::PairP => self.set_return_value(self.ac.is_pair().to_obj()),
                 Op::Read => {
-                    let port;
+                    let port = 
                     if self.ac.is_nil() {
-                        port = self.current_input_port;
+                        self.current_input_port
                     } else {
-                        port = self.ac;
-                    }
+                        self.ac
+                    };
                     match port {
                         Object::FileInputPort(mut p) => match p.read(self) {
                             Ok(obj) => {
