@@ -1,3 +1,4 @@
+#[allow(clippy)]
 use std::collections::HashMap;
 
 use rand::Rng;

@@ -1,3 +1,4 @@
+#[allow(clippy)]
 use std::ptr::null_mut;
 
 use crate::{

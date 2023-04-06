@@ -1,3 +1,4 @@
+#[allow(clippy)]
 use crate::error::{self, Error, ErrorType};
 use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};

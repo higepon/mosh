@@ -1,3 +1,4 @@
+#[allow(clippy)]
 use crate::error;
 use crate::gc::Gc;
 use crate::lexer;

@@ -1,3 +1,4 @@
+#[allow(clippy)]
 use crate::bug;
 use crate::ports::StdLib;
 /// Scheme procedures written in Rust.
