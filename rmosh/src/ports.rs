@@ -3842,12 +3842,11 @@ impl TextInputPort for CustomTextInputOutputPort {
 
         let source = &s.to_sstring().string;
         let mut i = 0;
-        for ch in source.chars() {
+        for (i, ch) in source.chars().enumerate() {
             if i >= read_size {
                 break;
             }
             dst.push(ch);
-            i += 1;
         }
         Ok(read_start + read_size)
     }
