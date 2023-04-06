@@ -71,15 +71,15 @@ impl Vm {
     fn set_after_trigger0(&mut self, closure: Object) -> error::Result<Object> {
         self.make_frame(self.pc);
 
-        let mut code = vec![];
-        code.push(Object::Instruction(Op::Constant));
-        code.push(closure);
-        code.push(Object::Instruction(Op::Call));
-        code.push(Object::Fixnum(0));
-        code.push(Object::Instruction(Op::Return));
-        code.push(Object::Fixnum(0));
-        code.push(Object::Instruction(Op::Halt));
-
+        let code = vec![
+            Object::Instruction(Op::Constant),
+            closure,
+            Object::Instruction(Op::Call),
+            Object::Fixnum(0),
+            Object::Instruction(Op::Return),
+            Object::Fixnum(0),
+            Object::Instruction(Op::Halt),
+        ];
         self.pc = self.allocate_code(&code);
         Ok(self.ac)
     }
@@ -93,23 +93,24 @@ impl Vm {
     ) -> error::Result<Object> {
         self.make_frame(self.pc);
 
-        let mut code = vec![];
-        code.push(Object::Instruction(Op::Constant));
-        code.push(arg1);
-        code.push(Object::Instruction(Op::Push));
-        code.push(Object::Instruction(Op::Constant));
-        code.push(arg2);
-        code.push(Object::Instruction(Op::Push));
-        code.push(Object::Instruction(Op::Constant));
-        code.push(arg3);
-        code.push(Object::Instruction(Op::Push));
-        code.push(Object::Instruction(Op::Constant));
-        code.push(closure);
-        code.push(Object::Instruction(Op::Call));
-        code.push(Object::Fixnum(3));
-        code.push(Object::Instruction(Op::Return));
-        code.push(Object::Fixnum(0));
-        code.push(Object::Instruction(Op::Halt));
+        let code = vec![
+            Object::Instruction(Op::Constant),
+            arg1,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            arg2,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            arg3,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            closure,
+            Object::Instruction(Op::Call),
+            Object::Fixnum(3),
+            Object::Instruction(Op::Return),
+            Object::Fixnum(0),
+            Object::Instruction(Op::Halt),
+        ];
 
         self.pc = self.allocate_code(&code);
         Ok(self.ac)
@@ -125,26 +126,27 @@ impl Vm {
     ) -> error::Result<Object> {
         self.make_frame(self.pc);
 
-        let mut code = vec![];
-        code.push(Object::Instruction(Op::Constant));
-        code.push(arg1);
-        code.push(Object::Instruction(Op::Push));
-        code.push(Object::Instruction(Op::Constant));
-        code.push(arg2);
-        code.push(Object::Instruction(Op::Push));
-        code.push(Object::Instruction(Op::Constant));
-        code.push(arg3);
-        code.push(Object::Instruction(Op::Push));
-        code.push(Object::Instruction(Op::Constant));
-        code.push(arg4);
-        code.push(Object::Instruction(Op::Push));
-        code.push(Object::Instruction(Op::Constant));
-        code.push(closure);
-        code.push(Object::Instruction(Op::Call));
-        code.push(Object::Fixnum(4));
-        code.push(Object::Instruction(Op::Return));
-        code.push(Object::Fixnum(0));
-        code.push(Object::Instruction(Op::Halt));
+        let code = vec![
+            Object::Instruction(Op::Constant),
+            arg1,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            arg2,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            arg3,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            arg4,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            closure,
+            Object::Instruction(Op::Call),
+            Object::Fixnum(4),
+            Object::Instruction(Op::Return),
+            Object::Fixnum(0),
+            Object::Instruction(Op::Halt),
+        ];
 
         self.pc = self.allocate_code(&code);
         Ok(self.ac)
