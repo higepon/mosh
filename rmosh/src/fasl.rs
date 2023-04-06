@@ -44,6 +44,12 @@ enum Tag {
 // S-expression serializer.
 pub struct FaslWriter {}
 
+impl Default for FaslWriter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FaslWriter {
     pub fn new() -> Self {
         Self {}
