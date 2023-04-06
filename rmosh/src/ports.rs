@@ -1110,7 +1110,7 @@ pub trait BinaryInputPort: Port {
     fn read_all(&mut self, vm: &mut Vm, buf: &mut Vec<u8>) -> error::Result<usize> {
         let mut size = 0;
 
-        while let Some(u) = self.read_u8(vm) {
+        while let Ok(Some(u)) = self.read_u8(vm) {
             buf.push(u);
             size += 1;
         }
