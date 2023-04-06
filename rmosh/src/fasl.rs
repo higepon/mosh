@@ -1,4 +1,3 @@
-#![allow(clippy::all)]
 use std::{
     collections::HashMap,
     io::{self, Cursor, Read},
