@@ -363,7 +363,7 @@ impl Vm {
                     }
                 }
                 Object::Continuation(c) => {
-                    let mut code = vec![
+                    let code = vec![
                         Object::Instruction(Op::ConstantPush),
                         c.winders,
                         Object::Instruction(Op::DynamicWinders),

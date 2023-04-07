@@ -104,6 +104,12 @@ pub struct Vm {
     // Otherwise they can cause memory leak or double free.
 }
 
+impl Default for Vm {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Vm {
     pub fn new() -> Self {
         let mut ret = Self {
