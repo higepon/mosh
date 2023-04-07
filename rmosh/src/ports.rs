@@ -3844,7 +3844,7 @@ impl TextInputPort for CustomTextInputOutputPort {
         if n == 0 {
             return Ok(0);
         }
-        
+
         let read_start: usize = match self.ahead_char {
             Some(ch) => {
                 dst.push(ch);
@@ -3855,9 +3855,7 @@ impl TextInputPort for CustomTextInputOutputPort {
                 }
                 1
             }
-            None => {
-                0
-            }
+            None => 0,
         };
 
         let size = n - read_start;

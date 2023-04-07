@@ -375,106 +375,130 @@ impl Object {
     }
 
     pub fn is_input_port(self) -> bool {
-        matches!(self, Object::BinaryFileInputPort(_)
-            | Object::BinaryFileInputOutputPort(_)
-            | Object::FileInputPort(_)
-            | Object::StdInputPort(_)
-            | Object::CustomBinaryInputPort(_)
-            | Object::CustomBinaryInputOutputPort(_)
-            | Object::CustomTextInputPort(_)
-            | Object::CustomTextInputOutputPort(_)
-            | Object::TranscodedInputPort(_)
-            | Object::BytevectorInputPort(_)
-            | Object::StringInputPort(_))
+        matches!(
+            self,
+            Object::BinaryFileInputPort(_)
+                | Object::BinaryFileInputOutputPort(_)
+                | Object::FileInputPort(_)
+                | Object::StdInputPort(_)
+                | Object::CustomBinaryInputPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::CustomTextInputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::TranscodedInputPort(_)
+                | Object::BytevectorInputPort(_)
+                | Object::StringInputPort(_)
+        )
     }
 
     pub fn is_binary_port(self) -> bool {
-        matches!(self, Object::BinaryFileInputPort(_)
-            | Object::StdInputPort(_)
-            | Object::StdOutputPort(_)
-            | Object::StdErrorPort(_)
-            | Object::BinaryFileInputOutputPort(_)
-            | Object::CustomBinaryOutputPort(_)
-            | Object::CustomBinaryInputPort(_)
-            | Object::CustomBinaryInputOutputPort(_)
-            | Object::BinaryFileOutputPort(_)
-            | Object::BytevectorOutputPort(_)
-            | Object::BytevectorInputPort(_))
+        matches!(
+            self,
+            Object::BinaryFileInputPort(_)
+                | Object::StdInputPort(_)
+                | Object::StdOutputPort(_)
+                | Object::StdErrorPort(_)
+                | Object::BinaryFileInputOutputPort(_)
+                | Object::CustomBinaryOutputPort(_)
+                | Object::CustomBinaryInputPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::BinaryFileOutputPort(_)
+                | Object::BytevectorOutputPort(_)
+                | Object::BytevectorInputPort(_)
+        )
     }
 
     pub fn is_port(self) -> bool {
-        matches!(self, Object::BinaryFileInputPort(_)
-            | Object::BinaryFileOutputPort(_)
-            | Object::BinaryFileInputOutputPort(_)
-            | Object::FileInputPort(_)
-            | Object::FileOutputPort(_)
-            | Object::CustomBinaryInputPort(_)
-            | Object::CustomBinaryInputOutputPort(_)
-            | Object::CustomBinaryOutputPort(_)
-            | Object::CustomTextInputPort(_)
-            | Object::CustomTextInputOutputPort(_)
-            | Object::CustomTextOutputPort(_)
-            | Object::StdErrorPort(_)
-            | Object::StdInputPort(_)
-            | Object::TranscodedInputPort(_)
-            | Object::TranscodedOutputPort(_)
-            | Object::StdOutputPort(_)
-            | Object::StringInputPort(_)
-            | Object::StringOutputPort(_))
+        matches!(
+            self,
+            Object::BinaryFileInputPort(_)
+                | Object::BinaryFileOutputPort(_)
+                | Object::BinaryFileInputOutputPort(_)
+                | Object::FileInputPort(_)
+                | Object::FileOutputPort(_)
+                | Object::CustomBinaryInputPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::CustomBinaryOutputPort(_)
+                | Object::CustomTextInputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::CustomTextOutputPort(_)
+                | Object::StdErrorPort(_)
+                | Object::StdInputPort(_)
+                | Object::TranscodedInputPort(_)
+                | Object::TranscodedOutputPort(_)
+                | Object::StdOutputPort(_)
+                | Object::StringInputPort(_)
+                | Object::StringOutputPort(_)
+        )
     }
 
     pub fn is_output_port(self) -> bool {
-        matches!(self, Object::BinaryFileInputOutputPort(_)
-            | Object::BinaryFileOutputPort(_)
-            | Object::BytevectorOutputPort(_)
-            | Object::CustomTextInputOutputPort(_)
-            | Object::CustomTextOutputPort(_)
-            | Object::CustomBinaryInputOutputPort(_)
-            | Object::CustomBinaryOutputPort(_)
-            | Object::FileInputPort(_)
-            | Object::FileOutputPort(_)
-            | Object::StdOutputPort(_)
-            | Object::StdErrorPort(_)
-            | Object::StringOutputPort(_)
-            | Object::TranscodedOutputPort(_)
-            | Object::TranscodedInputOutputPort(_))
+        matches!(
+            self,
+            Object::BinaryFileInputOutputPort(_)
+                | Object::BinaryFileOutputPort(_)
+                | Object::BytevectorOutputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::CustomTextOutputPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::CustomBinaryOutputPort(_)
+                | Object::FileInputPort(_)
+                | Object::FileOutputPort(_)
+                | Object::StdOutputPort(_)
+                | Object::StdErrorPort(_)
+                | Object::StringOutputPort(_)
+                | Object::TranscodedOutputPort(_)
+                | Object::TranscodedInputOutputPort(_)
+        )
     }
 
     pub fn is_textual_port(self) -> bool {
-        matches!(self, Object::FileInputPort(_)
-            | Object::CustomTextInputPort(_)
-            | Object::CustomTextInputOutputPort(_)
-            | Object::CustomTextOutputPort(_)
-            | Object::FileOutputPort(_)
-            | Object::TranscodedInputPort(_)
-            | Object::TranscodedOutputPort(_)
-            | Object::StringInputPort(_)
-            | Object::StringOutputPort(_))
+        matches!(
+            self,
+            Object::FileInputPort(_)
+                | Object::CustomTextInputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::CustomTextOutputPort(_)
+                | Object::FileOutputPort(_)
+                | Object::TranscodedInputPort(_)
+                | Object::TranscodedOutputPort(_)
+                | Object::StringInputPort(_)
+                | Object::StringOutputPort(_)
+        )
     }
 
     pub fn is_textual_output_port(self) -> bool {
-        matches!(self, Object::FileOutputPort(_)
-            | Object::CustomTextOutputPort(_)
-            | Object::CustomTextInputOutputPort(_)
-            | Object::TranscodedOutputPort(_)
-            | Object::StringOutputPort(_))
+        matches!(
+            self,
+            Object::FileOutputPort(_)
+                | Object::CustomTextOutputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::TranscodedOutputPort(_)
+                | Object::StringOutputPort(_)
+        )
     }
 
     pub fn is_textual_input_port(self) -> bool {
-        matches!(self, Object::TranscodedInputPort(_)
-            | Object::FileInputPort(_)
-            | Object::CustomTextInputPort(_)
-            | Object::CustomTextInputOutputPort(_)
-            | Object::StringInputPort(_))
+        matches!(
+            self,
+            Object::TranscodedInputPort(_)
+                | Object::FileInputPort(_)
+                | Object::CustomTextInputPort(_)
+                | Object::CustomTextInputOutputPort(_)
+                | Object::StringInputPort(_)
+        )
     }
 
     pub fn is_binary_input_port(self) -> bool {
-        matches!(self, Object::BinaryFileInputPort(_)
-            | Object::BytevectorInputPort(_)
-            | Object::CustomBinaryInputPort(_)
-            | Object::StdInputPort(_)
-            | Object::CustomBinaryInputOutputPort(_)
-            | Object::BinaryFileInputOutputPort(_))
+        matches!(
+            self,
+            Object::BinaryFileInputPort(_)
+                | Object::BytevectorInputPort(_)
+                | Object::CustomBinaryInputPort(_)
+                | Object::StdInputPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::BinaryFileInputOutputPort(_)
+        )
     }
 
     pub fn eqv(&self, other: &Self) -> bool {
@@ -691,7 +715,6 @@ impl Debug for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                
                 let name = if closure.src.is_false() {
                     Object::False
                 } else {
@@ -873,7 +896,6 @@ impl Display for Object {
                 write!(f, "#<vox {}>", obj.value)
             }
             Object::Closure(closure) => {
-                
                 let name = if closure.src.is_false() {
                     Object::False
                 } else {
@@ -1258,7 +1280,7 @@ impl Bytevector {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
-    }    
+    }
 
     pub fn fill(&mut self, value: u8) {
         for e in self.data.iter_mut() {
@@ -1336,7 +1358,7 @@ impl SimpleStruct {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
-    }    
+    }
 }
 
 impl Display for SimpleStruct {
@@ -1474,14 +1496,10 @@ impl Pair {
                         }
                         false
                     }
-                    _ => {
-                        false
-                    }
+                    _ => false,
                 }
             }
-            _ => {
-                false
-            }
+            _ => false,
         }
     }
 
@@ -2106,10 +2124,7 @@ pub struct GenericHashKey {
 
 impl GenericHashKey {
     pub fn new(hash_obj: Object, org_key: Object) -> Self {
-        Self {
-            hash_obj,
-            org_key,
-        }
+        Self { hash_obj, org_key }
     }
 }
 

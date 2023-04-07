@@ -485,8 +485,7 @@ impl Vm {
                 }
                 Op::PairP => self.set_return_value(self.ac.is_pair().to_obj()),
                 Op::Read => {
-                    let port = 
-                    if self.ac.is_nil() {
+                    let port = if self.ac.is_nil() {
                         self.current_input_port
                     } else {
                         self.ac

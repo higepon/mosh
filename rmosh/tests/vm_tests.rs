@@ -61,12 +61,7 @@ fn and() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // ((lambda () 3))
@@ -100,12 +95,7 @@ fn call0() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // ((lambda (a) (+ a a)) 1)
@@ -147,12 +137,7 @@ fn call1() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(2);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_STRING);
 }
 
 // ((lambda (a b) (+ a b)) 1 2)
@@ -198,12 +183,7 @@ fn call2() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2 + SIZE_OF_STRING);
 }
 
 // (define a 3)
@@ -219,12 +199,7 @@ fn define0() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // (if 1 2 3)
@@ -248,12 +223,7 @@ fn if0() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(2);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (if #f 2 3)
@@ -277,12 +247,7 @@ fn if1() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (if #f #f #t)
@@ -306,12 +271,7 @@ fn if2() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (let ((x 0)) x)
@@ -334,12 +294,7 @@ fn let0() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(0);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (let ((x 1) (y 2)) (+ x y))
@@ -369,12 +324,7 @@ fn let1() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (let ((x 1)) (let ((y 2)) (+ x y)))
@@ -415,12 +365,7 @@ fn nested_let0() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (let ((x 1)) (let ((y 2)) (let ((z 3)) (+ x y z))))
@@ -482,12 +427,7 @@ fn nested_let1() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(6);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // #t
@@ -501,12 +441,7 @@ fn test0() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (if #f #f #t)
@@ -530,12 +465,7 @@ fn test5() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // ((lambda (a) 3) 4)
@@ -573,12 +503,7 @@ fn test6() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_STRING);
 }
 
 // ((lambda (a) (if 3 7 5)) 6)
@@ -626,12 +551,7 @@ fn test7() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(7);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
 }
 
 // ((lambda () 3))
@@ -665,12 +585,7 @@ fn test8() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // ((lambda (a) a) 101)
@@ -708,12 +623,7 @@ fn test9() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(101);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
 }
 
 // (((lambda () (lambda () 102))))
@@ -765,12 +675,7 @@ fn test10() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(102);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // (<= 1 2 3)
@@ -796,12 +701,7 @@ fn test119() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (>= 3 3 3)
@@ -827,12 +727,7 @@ fn test112() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (< 1 5 3)
@@ -858,12 +753,7 @@ fn test117() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::False;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (> 4 3 2)
@@ -889,12 +779,7 @@ fn test110() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (= 3 3 3)
@@ -920,12 +805,7 @@ fn test71() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (begin (let ((xxx 'a)) (case xxx ((b) 'b) ((a) 'a))))
@@ -985,12 +865,7 @@ fn test197() {
         Object::Instruction(Op::Nop),
     ];
     let expected = sym0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
 }
 
 // (let ((a '(1 2 3))) `(,@a 4))
@@ -1028,12 +903,7 @@ fn test144() {
         Object::Instruction(Op::Halt),
     ];
     let expected = list0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_PAIR * 4,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_PAIR * 4);
 }
 
 // (let ((a 0) (b 1)) (let ((c (lambda () (set! b 3) b))) (c)))
@@ -1103,12 +973,7 @@ fn test58() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // ((lambda () (set! a 4) a))
@@ -1146,12 +1011,7 @@ fn test80() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(4);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_STRING);
 }
 
 // ((lambda (a) (set! a 12) a) 2)
@@ -1196,12 +1056,7 @@ fn test14() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(12);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
 }
 
 // (car (cons 2 3))
@@ -1220,12 +1075,7 @@ fn test28() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(2);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (cdr (cons 2 3))
@@ -1244,12 +1094,7 @@ fn test29() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (eq? #t #t)
@@ -1267,12 +1112,7 @@ fn test122() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (eqv? 'a 'a)
@@ -1292,12 +1132,7 @@ fn test287() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // (equal? '(1 2 (3)) '(1 2 (3)))
@@ -1320,12 +1155,7 @@ fn test169() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (vector-length (make-vector 3))
@@ -1344,12 +1174,7 @@ fn test187() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (not 3)
@@ -1364,12 +1189,7 @@ fn test101() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::False;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (null? '())
@@ -1384,12 +1204,7 @@ fn test75() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (* 2 3)
@@ -1407,12 +1222,7 @@ fn test199() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(6);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (- (/ 1 2) (/ 1 4) (/ 1 4))
@@ -1446,12 +1256,7 @@ fn test318() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(0);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (let ((p (open-string-input-port "12345"))) (read-char p) (read-char p))
@@ -1493,12 +1298,7 @@ fn test195() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Char('2');
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // ((lambda () (define q (cons 1 2)) (set-car! q 3) q))
@@ -1559,12 +1359,7 @@ fn test185() {
         Object::Instruction(Op::Nop),
     ];
     let expected = pair0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL + SIZE_OF_PAIR,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_PAIR);
 }
 
 // ((lambda () (define p (cons 1 2)) (set-cdr! p 3) p))
@@ -1625,12 +1420,7 @@ fn test184() {
         Object::Instruction(Op::Nop),
     ];
     let expected = pair0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL + SIZE_OF_PAIR,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_PAIR);
 }
 
 // (symbol? 'a)
@@ -1647,12 +1437,7 @@ fn test128() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // (if (values 1 2 3) #t #f)
@@ -1679,12 +1464,7 @@ fn test220() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (call-with-values (lambda () (values 4 5)) (lambda (a b) b))
@@ -1788,12 +1568,7 @@ fn test213() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::True;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (begin (define z (make-vector 2)) (vector-set! z 0 1) (vector-set! z 1 2) (make-vector 3) (null? 3) (vector-set! z 1 3) (vector-ref z 1))
@@ -1855,12 +1630,7 @@ fn test217() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL + SIZE_OF_VECTOR,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_VECTOR);
 }
 
 // (((lambda () (lambda (a) 102))) 101)
@@ -1897,12 +1667,7 @@ fn test11() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(102);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
 }
 
 // (- (/ 1 2) (/ 1 4) (/ 1 4))
@@ -1931,12 +1696,7 @@ fn test318_2() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(0);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (eq? (list 'a) (list 'a))
@@ -1967,12 +1727,7 @@ fn test191() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::False;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // (let1 a 3 (let1 b 4 (let1 c (lambda () b) (set! a c))) (a))
@@ -2033,12 +1788,7 @@ fn test55() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(4);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0))
@@ -2080,12 +1830,7 @@ fn test62() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(10);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (cond ((cons 1 2) => car) (#f 2) (else 3))
@@ -2132,12 +1877,7 @@ fn test133() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(1);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (let ((a '())) (let ((G68 (lambda (i) (if (>= i 1000) i (a (+ i 1)))))) (set! a G68) (a 0)))
@@ -2223,12 +1963,7 @@ fn test63() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(1000);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL * 2,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL * 2);
 }
 
 // (begin (define str1 (make-string 3 #\c)) (string-set! str1 1 #\b) str1)
@@ -2268,12 +2003,7 @@ fn test205() {
         Object::Instruction(Op::Nop),
     ];
     let expected = str0;
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL + SIZE_OF_STRING * 2,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL + SIZE_OF_STRING * 2);
 }
 
 // (let1 a 100 (let1 c (let1 d (lambda () a) d) (c)))
@@ -2322,12 +2052,7 @@ fn test60() {
         Object::Instruction(Op::Nop),
     ];
     let expected = Object::Fixnum(100);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        SIZE_OF_SYMBOL,
-    );
+    test_ops_with_size(&mut vm, ops, expected, SIZE_OF_SYMBOL);
 }
 
 // (vector-length (make-vector 3))
@@ -2345,12 +2070,7 @@ fn test187_2() {
         Object::Instruction(Op::Halt),
     ];
     let expected = Object::Fixnum(3);
-    test_ops_with_size(
-        &mut vm,
-        ops,
-        expected,
-        0,
-    );
+    test_ops_with_size(&mut vm, ops, expected, 0);
 }
 
 // (let ((vec (vector 0 '(2 2 2 2) "Anna"))) (vector-set! vec 1 '("Sue" "Sue")) vec)

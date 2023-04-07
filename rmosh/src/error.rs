@@ -103,10 +103,7 @@ impl Display for Error {
         write!(
             f,
             "type: {:?} who: {} message: {} irritants {:?}",
-            self.error_type,
-            self.who,
-            self.message,
-            self.irritants,
+            self.error_type, self.who, self.message, self.irritants,
         )
     }
 }
@@ -116,9 +113,7 @@ impl Debug for Error {
         write!(
             f,
             "who: {} message: {} irritants {:?}",
-            self.who,
-            self.message,
-            self.irritants,
+            self.who, self.message, self.irritants,
         )
     }
 }

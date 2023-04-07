@@ -110,9 +110,7 @@ impl<'input> Lexer<'input> {
         let hex_str: String = self.s[self.tok + 3..self.cursor].iter().collect();
         match u32::from_str_radix(&hex_str, 16) {
             Ok(n) => char::from_u32(n),
-            Err(_e) => {
-                None
-            }
+            Err(_e) => None,
         }
     }
 

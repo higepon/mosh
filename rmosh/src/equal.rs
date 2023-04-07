@@ -82,8 +82,12 @@ impl Equal {
                 if k.to_isize() <= 0 {
                     k
                 } else {
-                    let k2 =
-                        Self::is_pre(_gc, &pair1.car, &pair2.car, Object::Fixnum(k.to_isize() - 1));
+                    let k2 = Self::is_pre(
+                        _gc,
+                        &pair1.car,
+                        &pair2.car,
+                        Object::Fixnum(k.to_isize() - 1),
+                    );
                     if k2.is_false() {
                         return Object::False;
                     }
