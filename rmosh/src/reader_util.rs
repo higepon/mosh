@@ -167,8 +167,6 @@ pub fn read_string(s: &str) -> String {
                 ret.push(0xc as char);
             } else if *ch2 == 'r' {
                 ret.push(0xd as char);
-            } else if *ch2 == 't' {
-                ret.push(9 as char);
             } else if *ch2 == 'x' {
                 let mut current_ch = 0 as char;
                 loop {
@@ -218,7 +216,7 @@ pub fn read_string(s: &str) -> String {
                        (*ch3 as u32) ==  0x202f ||
                        (*ch3 as u32) ==  0x205f ||
                        (*ch3 as u32) ==  0x3000 ||
-                       ((0x2000 <= (*ch3 as u32)) && (((*ch3 as u32)) <= 0x200a))
+                       ((0x2000 <= (*ch3 as u32)) && ((*ch3 as u32) <= 0x200a))
                     {
                         i += 1;
                         continue;
@@ -287,7 +285,10 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
         }
     }
     let is_bar_symbol = ret.len() > 2
-        && matches!((ret.chars().next(), ret.chars().last()), (Some('|'), Some('|')));
+        && matches!(
+            (ret.chars().next(), ret.chars().last()),
+            (Some('|'), Some('|'))
+        );
     if is_bar_symbol {
         let raw_symbol = &ret[1..ret.len() - 1];
         if has_only_alphabets(raw_symbol) {
