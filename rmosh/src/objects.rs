@@ -122,6 +122,10 @@ impl Object {
         matches!(self, Object::Bytevector(_))
     }
 
+    pub fn is_vector(&self) -> bool {
+        matches!(self, Object::Vector(_))
+    }    
+
     pub fn is_transcoder(&self) -> bool {
         matches!(self, Object::Transcoder(_))
     }
@@ -1193,6 +1197,39 @@ impl Bytevector {
             Err(_) => None,
         }
     }
+
+    pub fn set_u64_little(&mut self, i: usize, v: u64) -> Option<()> {
+        let data = v.to_le_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_s64_big(&mut self, i: usize, v: i64) -> Option<()> {
+        let data = v.to_be_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }    
+
+    pub fn set_s64_little(&mut self, i: usize, v: i64) -> Option<()> {
+        let data = v.to_le_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_u64_big(&mut self, i: usize, v: u64) -> Option<()> {
+        let data = v.to_be_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }    
+
 
     pub fn ref_u32_little(&self, i: usize) -> Option<u32> {
         if i + 3 >= self.len() {

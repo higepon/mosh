@@ -27,6 +27,11 @@ pub enum ReadError {
         end: usize,
         token: String,
     },
+    UnmatchedParen {
+        start: usize,
+        end: usize,
+        token: String,
+    },
     NumberParseError {
         token: String,
         description: String,

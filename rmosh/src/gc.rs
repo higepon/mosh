@@ -425,7 +425,6 @@ impl Gc {
             #[cfg(feature = "debug_log_gc")]
             let repr = format!("{}", object)
                 .chars()
-                .into_iter()
                 .take(32)
                 .collect::<String>();
 

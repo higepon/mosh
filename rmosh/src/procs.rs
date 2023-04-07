@@ -1,4 +1,3 @@
-use crate::bug;
 use crate::ports::StdLib;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -34,6 +33,7 @@ use crate::{
     },
     vm::Vm,
 };
+use crate::{as_vector, bug};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
     env::{self, current_dir, current_exe},
@@ -2989,11 +2989,16 @@ fn assoc(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
             break;
         }
         let e = Equal::new();
-        if e.is_equal(&mut vm.gc, &obj, &o.car_unchecked().car_unchecked()) {
-            return Ok(o.car_unchecked());
+        if o.is_pair() && o.car_unchecked().is_pair() {
+            if e.is_equal(&mut vm.gc, &obj, &o.car_unchecked().car_unchecked()) {
+                return Ok(o.car_unchecked());
+            }
+        } else {
+            return type_required_error(name, "assoc requires chain of pairs", &[list]);
         }
         o = o.cdr_unchecked();
     }
+
     Ok(Object::False)
 }
 fn assv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4345,33 +4350,117 @@ fn bytevector_s64_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
 }
 fn bytevector_u64_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u64-native-ref";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let ret = if cfg!(target_endian = "big") {
+        bv.ref_u64_big(index)
+    } else {
+        bv.ref_u64_little(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_s64_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s64_native_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s64-native-ref";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let ret = if cfg!(target_endian = "big") {
+        bv.ref_s64_big(index)
+    } else {
+        bv.ref_s64_little(index)
+    };
+    match ret {
+        Some(v) => Ok(Object::Fixnum(v as isize)),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_u64_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_u64_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-u64-set!";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let value = as_usize!(name, args, 2) as u64;
+    let _endianness = as_symbol!(name, args, 3);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
+        bv.set_u64_little(index, value)
+    } else {
+        bv.set_u64_big(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
-fn bytevector_s64_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s64_set_destructive(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s64-set!";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 4);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    let value = as_isize!(name, args, 2) as i64;
+    let _endianness = as_symbol!(name, args, 3);
+    let ret = if args[3] == vm.gc.symbol_intern("little") {
+        bv.set_s64_little(index, value)
+    } else {
+        bv.set_s64_big(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_u64_native_set_destructive(
     _vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-u64-native-set!";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let value = as_usize!(name, args, 2) as u64;
+    let ret = if cfg!(target_endian = "big") {
+        bv.set_u64_big(index, value)
+    } else {
+        bv.set_u64_little(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_s64_native_set_destructive(
     _vm: &mut Vm,
     args: &mut [Object],
 ) -> error::Result<Object> {
     let name: &str = "bytevector-s64-native-set!";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut bv = as_bytevector!(name, args, 0);
+    let index = as_usize!(name, args, 1);
+    if index % 2 != 0 {
+        return error::Error::assertion_violation(name, "index not aligned", &[args[1]]);
+    }
+    let value = as_isize!(name, args, 2) as i64;
+    let ret = if cfg!(target_endian = "big") {
+        bv.set_s64_big(index, value)
+    } else {
+        bv.set_s64_little(index, value)
+    };
+    match ret {
+        Some(_) => Ok(Object::Unspecified),
+        None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
+    }
 }
 fn bytevector_to_string(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector->string";
@@ -7243,11 +7332,26 @@ fn vector_length(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn vector_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "vector-ref";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let v = as_vector!(name, args, 0);
+    let i = as_usize!(name, args, 1);
+    match v.data.get(i) {
+        Some(obj) => Ok(*obj),
+        None => {
+            generic_error!(name, args, "vector index out of bound {:?}", args)
+        }
+    }
 }
 fn vector_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "vector-set!";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let mut v = as_vector!(name, args, 0);
+    let i = as_usize!(name, args, 1);
+    match v.data.get_mut(i) {
+        Some(obj) => *obj = args[2],
+        None => return generic_error!(name, args, "vector index out of bound {:?}", args),
+    }
+    Ok(Object::Unspecified)
 }
 fn create_directory(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "create-directory";
