@@ -242,6 +242,7 @@ impl Vm {
         }
     }
 
+    #[allow(clippy::mut_range_bound)]
     #[inline(always)]
     pub(super) fn call_op(&mut self, argc: isize) -> error::Result<Object> {
         let mut argc = argc;
@@ -362,25 +363,26 @@ impl Vm {
                     }
                 }
                 Object::Continuation(c) => {
-                    let mut code = vec![];
-                    code.push(Object::Instruction(Op::ConstantPush));
-                    code.push(c.winders);
-                    code.push(Object::Instruction(Op::DynamicWinders));
-                    code.push(Object::Instruction(Op::BranchNotEq));
-                    code.push(Object::Fixnum(3));
-                    code.push(Object::Instruction(Op::LocalJmp));
-                    code.push(Object::Fixnum(8));
-                    code.push(Object::Instruction(Op::Frame));
-                    code.push(Object::Fixnum(6));
-                    code.push(Object::Instruction(Op::ConstantPush));
-                    code.push(c.winders);
-                    code.push(Object::Instruction(Op::ReferGlobalCall));
-                    code.push(self.gc.symbol_intern("perform-dynamic-wind"));
-                    code.push(Object::Fixnum(1));
-                    code.push(Object::Instruction(Op::RestoreContinuation));
-                    code.push(Object::Fixnum(argc));
-                    code.push(c.stack);
-                    code.push(Object::Fixnum(c.shift_size));
+                    let mut code = vec![
+                        Object::Instruction(Op::ConstantPush),
+                        c.winders,
+                        Object::Instruction(Op::DynamicWinders),
+                        Object::Instruction(Op::BranchNotEq),
+                        Object::Fixnum(3),
+                        Object::Instruction(Op::LocalJmp),
+                        Object::Fixnum(8),
+                        Object::Instruction(Op::Frame),
+                        Object::Fixnum(6),
+                        Object::Instruction(Op::ConstantPush),
+                        c.winders,
+                        Object::Instruction(Op::ReferGlobalCall),
+                        self.gc.symbol_intern("perform-dynamic-wind"),
+                        Object::Fixnum(1),
+                        Object::Instruction(Op::RestoreContinuation),
+                        Object::Fixnum(argc),
+                        c.stack,
+                        Object::Fixnum(c.shift_size),
+                    ];
                     self.pc = self.allocate_code(&code);
                 }
                 _ => {
