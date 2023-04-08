@@ -56,8 +56,7 @@ misc-test:
 	cargo run ../tests/shorten.scm
 	cargo run ../tests/r7rs/top-level.scm	
 	cargo run ../tests/r7rs/import-all.scm
-
-#	cargo run ../tests/srfi/srfi-151.scm
+	cargo run ../tests/srfi/srfi-151.scm
 #	cargo run ../tests/srfi/srfi-194.scm		
 
 # 	cargo run --loadpath=".:./tests/mylib" tests/use-foo.scm # test : separated loadpath

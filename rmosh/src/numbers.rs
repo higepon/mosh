@@ -1694,7 +1694,19 @@ pub fn quotient(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, Sche
         (Object::Fixnum(fx1), Object::Fixnum(fx2)) => Ok(Object::Fixnum(fx1 / fx2)),
         (Object::Fixnum(_), Object::Flonum(_)) => todo!(),
         (Object::Fixnum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Fixnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Bignum(b2)) => {
+            if n2.is_zero() {
+                Err(SchemeError::NonZeroRequired)
+            } else {
+                match BigInt::from_isize(fx) {
+                    Some(bigint) => {
+                        let b1 = Bignum::new(bigint);
+                        b1.quotient(gc, &b2)
+                    }
+                    None => bug!(),
+                }
+            }
+        }
         (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
         (Object::Flonum(_), Object::Fixnum(fx)) if fx == 0 => Err(SchemeError::NonZeroRequired),
         (Object::Flonum(fl), Object::Fixnum(fx)) => Ok(Object::Flonum(Flonum::new(
