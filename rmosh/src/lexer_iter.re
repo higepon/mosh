@@ -13,8 +13,8 @@ use crate::reader_util::ReadError;
     re2c:eof = 0;
     // Conforms to R7RS.
     ANY_CHARACTER          = [^];
-    TRUE                   = "#t" | "#true";
-    FALSE                  = "#f" | "#false";
+    TRUE                   = '#t' | "#true";
+    FALSE                  = '#f' | "#false";
     LETTER                 = [A-Za-z];
     SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~];
     DIGIT                  = [0-9];
