@@ -1025,6 +1025,14 @@ impl Bignum {
         ret.to_obj(gc)
     }
 
+    // Bignum vs Flonum.
+    pub fn sub_fl(&self, fl2: &Flonum) -> Object {
+        match self.to_f64() {
+            Some(fl1) => Flonum::new(fl1).sub(fl2),
+            None => bug!(),
+        }
+    }
+
     // Bignum vs Ratnum.
     pub fn mul_rat(&self, gc: &mut Box<Gc>, r: &Ratnum) -> Object {
         let ratio = BigRational::new_raw(self.value.clone(), BigInt::from_isize(1).unwrap());
@@ -1108,6 +1116,19 @@ impl Compnum {
             imag,
         }
     }
+
+    pub fn add(&self, gc: &mut Box<Gc>, other: &Compnum) -> Object { 
+        let real = add(gc, self.real, other.real);
+        let imag = add(gc, self.imag, other.imag);
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))        
+    }
+
+    pub fn sub(&self, gc: &mut Box<Gc>, other: &Compnum) -> Object { 
+        let real = sub(gc, self.real, other.real);
+        let imag = sub(gc, self.imag, other.imag);
+        Object::Compnum(gc.alloc(Compnum::new(real, imag)))        
+    }    
+    
     pub fn eqv(&self, other: &Compnum) -> bool {
         eqv(self.real, other.real) && eqv(other.imag, other.imag)
     }
@@ -1210,6 +1231,7 @@ impl Compnum {
         let re = Object::Flonum(Flonum::new(real.cos() * (a - b) * 0.5));
         Object::Compnum(gc.alloc(Compnum::new(re, im)))
     }
+
     pub fn tan(&self, gc: &mut Box<Gc>) -> Result<Object, SchemeError> {
         let lhs = self.sin(gc);
         let rhs = self.cos(gc);
@@ -1338,7 +1360,7 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Compnum(_), Object::Flonum(_)) => todo!(),
         (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Compnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(c1), Object::Compnum(c2)) => c1.add(gc, &c2),
         _ => todo!(),
     }
 }
@@ -1357,7 +1379,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Flonum(_), Object::Bignum(_)) => todo!(),
         (Object::Flonum(_), Object::Compnum(_)) => todo!(),
         (Object::Bignum(b), Object::Fixnum(fx)) => b.sub_fx(gc, fx),
-        (Object::Bignum(_), Object::Flonum(_)) => todo!(),
+        (Object::Bignum(b), Object::Flonum(fl)) => b.sub_fl(&fl),
         (Object::Bignum(_), Object::Ratnum(_)) => todo!(),
         (Object::Bignum(b1), Object::Bignum(b2)) => b1.sub(gc, &b2),
         (Object::Bignum(_), Object::Compnum(_)) => todo!(),
@@ -1370,7 +1392,7 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Compnum(_), Object::Flonum(_)) => todo!(),
         (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Compnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(c1), Object::Compnum(c2)) => c1.sub(gc, &c2),
         _ => todo!(),
     }
 }
