@@ -47,15 +47,29 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
 
 misc-test:
+	cargo run ../tests/lists.scm
 	cargo run ../tests/match.scm
+	cargo run ../tests/srfi8.scm
+	cargo run ../tests/srfi-39.scm
+	cargo run ../tests/shorten.scm
+	cargo run ../tests/r7rs/top-level.scm	
+	cargo run ../tests/r7rs/import-all.scm
+#	cargo run ../tests/r7rs/vector.scm
+#	cargo run ../tests/import-srfi.scm	
+#	cargo run ../tests/srfi/srfi-151.scm
+#	cargo run ../tests/srfi/srfi-194.scm		
 #	cargo run ../tests/misc.scm
 # 	cargo run --loadpath=".:./tests/mylib" tests/use-foo.scm # test : separated loadpath
 # 	cargo run -5 src/all-tests.scm
-# 	cargo run ../tests/template.scm
-# 	cargo run ../tests/testing.scm
-# 	cargo run ../tests/comment.scm
-# 	cargo run ../tests/mosh-test.scm
-# 	cargo run ../tests/io-error.scm
+#	cargo run ../tests/template.scm
+#	cargo run ../tests/testing.scm
+	cargo run ../tests/comment.scm
+	cargo run ../tests/srfi19.scm
+	cargo run ../tests/clos.scm
+	cargo run ../tests/srfi-misc.scm	
+#	cargo run ../tests/number.scm	
+#	cargo run ../tests/mosh-test.scm
+#	cargo run ../tests/io-error.scm
 # 	cargo run ../tests/input-output-port.scm
 # 	cargo run ../tests/input-port.scm < tests/input.txt
 # 	cargo run ../tests/output-port.scm
@@ -64,16 +78,13 @@ misc-test:
 # 	cargo run ../tests/rbtree-test.scm
 # 	cargo run ../tests/exception.scm
 # 	cargo run ../tests/unicode.scm
-# 	cargo run ../tests/srfi8.scm
-# 	cargo run ../tests/srfi19.scm
-# 	cargo run ../tests/clos.scm
-# 	cargo run ../tests/srfi-misc.scm
-# 	cargo run ../tests/lists.scm
-# 	cargo run ../tests/match.scm
-# 	cargo run ../tests/srfi-39.scm
-# 	cargo run ../tests/number.scm
+# 	
+
+# 	
+# 	
+
 # 	cargo run ../tests/cgi.scm
-# 	cargo run ../tests/shorten.scm
+# 	
 # 	! cargo run --disable-acc --loadpath=tests/mylib tests/import_bad_regexp.scm 2>/dev/null
 # 	cargo run --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
 # 	cargo run --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm
@@ -94,12 +105,8 @@ misc-test:
 # 	cargo run --loadpath=tests/mylib tests/fasl.scm
 # 	cargo run --loadpath=tests/mylib tests/fasl.scm
 # 	cargo run ../tests/r7rs/r7rs-tests.scm
-# 	cargo run ../tests/r7rs/top-level.scm	
-# 	cargo run ../tests/r7rs/import-all.scm
-# 	cargo run ../tests/r7rs/vector.scm
-# 	cargo run ../tests/import-srfi.scm
-# 	cargo run ../tests/srfi/srfi-151.scm
-# 	cargo run ../tests/srfi/srfi-194.scm	
+
+
 # 	$(MAKE) -C tests/r7rs/library-converter
 # 	$(MAKE) test -C tests/mnist
 # 	cargo run --loadpath=./tests tests/unicode-path.scm	
