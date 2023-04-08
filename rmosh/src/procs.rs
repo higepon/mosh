@@ -1961,7 +1961,8 @@ fn is_booleanequal(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_vector(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "vector?";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(args[0].is_vector().to_obj())
 }
 fn is_list(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "list?";
