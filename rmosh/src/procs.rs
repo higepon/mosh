@@ -2015,7 +2015,8 @@ fn is_eq(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn is_eqv(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "eqv?";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    Ok(args[0].eqv(&args[1]).to_obj())
 }
 fn member(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "member";
