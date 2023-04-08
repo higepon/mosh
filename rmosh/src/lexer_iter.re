@@ -30,7 +30,7 @@ use crate::reader_util::ReadError;
     SIGN_SUBSEQUENT        = INITIAL | EXPLICIT_SIGN | "@";
     DOT                    = ".";
     VECTOR_START           = "#(";
-    BYTEVECTOR_START       = "#u8(" | "#vu8(";
+    BYTEVECTOR_START       = "#u8(" | "#vu8(" | "#u8[" | "#vu8[";
     DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | DOT;
     // Per R7RS Small Errata, we allow \\\\ and \\\" here.
     MNEMONIC_ESCAPE        = ('\\' [abtnr\\\\|"]);
@@ -141,10 +141,10 @@ impl<'input> Iterator for Lexer<'input> {
                         return self.with_location(Token::Dot);
                     }
                     BYTEVECTOR_START {
-                        return self.with_location(Token::ByteVectorStart);
+                        return self.with_location(Token::ByteVectorStart {value: self.extract_token()});
                     }
                     VECTOR_START {
-                        return self.with_location(Token::VectorStart);
+                        return self.with_location(Token::VectorStart {value: self.extract_token()});                        
                     }
                     "#\\alarm" {
                         return self.with_location(Token::Character { value: char::from(7) });

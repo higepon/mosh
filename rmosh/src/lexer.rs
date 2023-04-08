@@ -12,7 +12,7 @@ pub enum Token {
     AbbrevUnsyntaxSplicing,
     At,
     BinDigit { value: String },
-    ByteVectorStart,
+    ByteVectorStart { value: String },
     Character { value: char },
     DatumComment,
     DefinedShared { value: String },
@@ -47,7 +47,7 @@ pub enum Token {
     Slash,
     String { value: String },
     True,
-    VectorStart,
+    VectorStart { value: String },
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
