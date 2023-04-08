@@ -1828,7 +1828,7 @@ impl Debug for Symbol {
         let content: Vec<char> = self.string.chars().collect();
         let start = content[0];
         let is_bar_symbol = (start == '|') && content[content.len() - 1] == '|';
-        if ('0'..='9').contains(&start) || start == ' ' {
+        if start.is_ascii_digit() || start == ' ' {
             write!(f, "\\x{:x};", start as u32)?;
         } else {
             write!(f, "{}", start)?;

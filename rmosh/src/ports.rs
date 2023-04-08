@@ -2905,14 +2905,12 @@ impl Port for CustomBinaryInputPort {
                     Some(_) => Ok((pos - 1) as usize),
                     None => Ok(pos as usize),
                 },
-                Ok(obj) => {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
-                        "position",
-                        &format!("pos procedure returned non integer {}", obj),
-                        &[self.pos_proc, obj],
-                    ))
-                }
+                Ok(obj) => Err(error::Error::new(
+                    ErrorType::IoError,
+                    "position",
+                    &format!("pos procedure returned non integer {}", obj),
+                    &[self.pos_proc, obj],
+                )),
                 Err(e) => Err(e),
             }
         } else {
@@ -3074,14 +3072,12 @@ impl Port for CustomTextInputPort {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
-                        "position",
-                        &format!("pos procedure returned non integer {}", obj),
-                        &[self.pos_proc, obj],
-                    ))
-                }
+                Ok(obj) => Err(error::Error::new(
+                    ErrorType::IoError,
+                    "position",
+                    &format!("pos procedure returned non integer {}", obj),
+                    &[self.pos_proc, obj],
+                )),
                 Err(e) => Err(e),
             }
         } else {
@@ -3257,14 +3253,12 @@ impl Port for CustomBinaryOutputPort {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
-                        "position",
-                        &format!("pos procedure returned non integer {}", obj),
-                        &[self.pos_proc, obj],
-                    ))
-                }
+                Ok(obj) => Err(error::Error::new(
+                    ErrorType::IoError,
+                    "position",
+                    &format!("pos procedure returned non integer {}", obj),
+                    &[self.pos_proc, obj],
+                )),
                 Err(e) => Err(e),
             }
         } else {
@@ -3388,14 +3382,12 @@ impl Port for CustomTextOutputPort {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
-                        "position",
-                        &format!("pos procedure returned non integer {}", obj),
-                        &[self.pos_proc, obj],
-                    ))
-                }
+                Ok(obj) => Err(error::Error::new(
+                    ErrorType::IoError,
+                    "position",
+                    &format!("pos procedure returned non integer {}", obj),
+                    &[self.pos_proc, obj],
+                )),
                 Err(e) => Err(e),
             }
         } else {
@@ -3524,14 +3516,12 @@ impl Port for CustomBinaryInputOutputPort {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
-                        "position",
-                        &format!("pos procedure returned non integer {}", obj),
-                        &[self.pos_proc, obj],
-                    ))
-                }
+                Ok(obj) => Err(error::Error::new(
+                    ErrorType::IoError,
+                    "position",
+                    &format!("pos procedure returned non integer {}", obj),
+                    &[self.pos_proc, obj],
+                )),
                 Err(e) => Err(e),
             }
         } else {
@@ -3726,14 +3716,12 @@ impl Port for CustomTextInputOutputPort {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
-                        "position",
-                        &format!("pos procedure returned non integer {}", obj),
-                        &[self.pos_proc, obj],
-                    ))
-                }
+                Ok(obj) => Err(error::Error::new(
+                    ErrorType::IoError,
+                    "position",
+                    &format!("pos procedure returned non integer {}", obj),
+                    &[self.pos_proc, obj],
+                )),
                 Err(e) => Err(e),
             }
         } else {

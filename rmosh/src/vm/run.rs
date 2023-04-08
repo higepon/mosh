@@ -1018,19 +1018,15 @@ impl Vm {
         Ok(self.ac)
     }
 
-    fn dispatch_read_error(&mut self, err: ReadError, port: Object) -> Result<(), error::Error> {
-        Ok(match err {
+    fn dispatch_read_error(&mut self, err: ReadError, port: Object) -> error::Result<Object> {
+        match err {
             ReadError::UnmatchedParen {
                 start: _,
                 end: _,
                 token: _,
-            } => {
-                self.call_raise_lexical_violation_read_error_after("read", &format!("{:?}", err))?;
-            }
-            _ => {
-                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
-            }
-        })
+            } => self.call_raise_lexical_violation_read_error_after("read", &format!("{:?}", err)),
+            _ => self.call_read_error_after("read", &format!("{:?}", err), &[port]),
+        }
     }
 
     pub fn print_stack(&self) {

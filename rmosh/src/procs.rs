@@ -58,12 +58,12 @@ fn number_required_error(name: &str, args: &[Object]) -> error::Result<Object> {
     type_required_error(name, "number", args)
 }
 fn type_required_error(name: &str, type_str: &str, args: &[Object]) -> error::Result<Object> {
-    return Err(error::Error::new(
+    Err(error::Error::new(
         ErrorType::AssertionViolation,
         name,
         &format!("{} required", type_str),
         args,
-    ));
+    ))
 }
 
 #[macro_export]
@@ -4775,14 +4775,12 @@ fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         let mut fasl = FaslReader::new(&content[..]);
         match fasl.read(&mut vm.gc) {
             Ok(sexp) => Ok(sexp),
-            Err(err) => {
-                return Err(error::Error::new(
-                    ErrorType::IoError,
-                    name,
-                    &format!("{}", err),
-                    &[args[0]],
-                ))
-            }
+            Err(err) => Err(error::Error::new(
+                ErrorType::IoError,
+                name,
+                &format!("{}", err),
+                &[args[0]],
+            )),
         }
     } else {
         type_required_error(name, "file path", &[args[0]])
