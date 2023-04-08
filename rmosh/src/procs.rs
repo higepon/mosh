@@ -1,4 +1,5 @@
 use crate::ports::StdLib;
+use crate::reader_util::ReadError;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -3187,22 +3188,24 @@ fn is_chargt(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
 }
 fn read(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "read";
+    check_argc_max!(name, args, 1);
     let argc = args.len();
-    if argc == 0 {
-        match vm.read() {
-            Ok(obj) => Ok(obj),
-            Err(e) => Error::assertion_violation(name, &format!("{:?}", e), &[]),
-        }
-    } else if argc == 1 {
-        let port = as_text_input_port_mut!(name, args, 0);
-        match port.read(vm) {
-            Ok(obj) => Ok(obj),
-            Err(err) => {
-                return generic_error!(name, &[args[0]], "{:?}", err);
-            }
-        }
+    let ret = if argc == 0 {
+        vm.read()
     } else {
-        todo!("{}({}) not implemented", name, args.len());
+        let port = as_text_input_port_mut!(name, args, 0);
+        port.read(vm)
+    };
+    match ret {
+        Ok(obj) => Ok(obj),
+        Err(err) => match err {
+            ReadError::UnmatchedParen {
+                start: _,
+                end: _,
+                token: _,
+            } => Error::lexical_violation_read_error(name, "unmatched paren"),
+            _ => Error::assertion_violation(name, &format!("{:?}", err), &[]),
+        },
     }
 }
 fn vector_to_list(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
@@ -4366,7 +4369,7 @@ fn bytevector_u64_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result
         None => error::Error::assertion_violation(name, "index out of range", &[args[1]]),
     }
 }
-fn bytevector_s64_native_ref(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn bytevector_s64_native_ref(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "bytevector-s64-native-ref";
     check_argc!(name, args, 2);
     let bv = as_bytevector!(name, args, 0);

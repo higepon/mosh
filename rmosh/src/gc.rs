@@ -423,10 +423,7 @@ impl Gc {
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
             #[cfg(feature = "debug_log_gc")]
-            let repr = format!("{}", object)
-                .chars()
-                .take(32)
-                .collect::<String>();
+            let repr = format!("{}", object).chars().take(32).collect::<String>();
 
             let alloc_size = std::mem::size_of_val(&object);
             self.current_alloc_size += alloc_size;

@@ -8,6 +8,7 @@ use crate::{
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
+    reader_util::ReadError,
 };
 
 use super::{Vm, MAX_NUM_VALUES};
@@ -73,6 +74,12 @@ macro_rules! raise_or_exit {
                 message: message,
                 irritants: irritants,
             }) => $self.call_io_invalid_position_after(&who, &message, &irritants[..])?,
+            Err(error::Error {
+                error_type: error::ErrorType::LexicalViolationReadError,
+                who: who,
+                message: message,
+                irritants: _irritants,
+            }) => $self.call_raise_lexical_violation_read_error_after(&who, &message)?,
             Err(error::Error {
                 error_type: error::ErrorType::IoError,
                 who: who,
@@ -496,7 +503,7 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
+                                self.dispatch_read_error(err, port)?;
                             }
                         },
                         Object::StringInputPort(mut p) => match p.read(self) {
@@ -504,7 +511,7 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
+                                self.dispatch_read_error(err, port)?;
                             }
                         },
                         Object::TranscodedInputPort(mut p) => match p.read(self) {
@@ -512,7 +519,7 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
+                                self.dispatch_read_error(err, port)?;
                             }
                         },
                         _ => {
@@ -1009,6 +1016,21 @@ impl Vm {
             //self.pc = self.jump(self.pc, 1);
         }
         Ok(self.ac)
+    }
+
+    fn dispatch_read_error(&mut self, err: ReadError, port: Object) -> Result<(), error::Error> {
+        Ok(match err {
+            ReadError::UnmatchedParen {
+                start: _,
+                end: _,
+                token: _,
+            } => {
+                self.call_raise_lexical_violation_read_error_after("read", &format!("{:?}", err))?;
+            }
+            _ => {
+                self.call_read_error_after("read", &format!("{:?}", err), &[port])?;
+            }
+        })
     }
 
     pub fn print_stack(&self) {

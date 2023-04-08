@@ -108,8 +108,12 @@ impl<'input> Iterator for Lexer<'input> {
             'lex: loop {
                 self.tok = self.cursor;
                 /*!re2c
-                    LEFT_PAREN { return self.with_location(Token::LeftParen); }
-                    RIGHT_PAREN { return self.with_location(Token::RightParen); }
+                    LEFT_PAREN {
+                        return self.with_location(Token::LeftParen {value: self.extract_token()});
+                    }
+                    RIGHT_PAREN {
+                        return self.with_location(Token::RightParen {value: self.extract_token()});
+                    }                    
                     TRUE  { return self.with_location(Token::True); }
                     FALSE { return self.with_location(Token::False); }
                     NUM_10 {

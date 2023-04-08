@@ -43,11 +43,16 @@ SimpleDatum: Object = {
 }
 
 List: Object = {
-    <lo:@L> "(" <objects: Datum *> ")" => {
-        let file = gc.new_string(input_src);
-        let lineno = count_lineno(content, lo);
-        let src = gc.list2(file, Object::Fixnum(lineno as isize));
-        gc.listn_src(&objects, src)
+    <lo:@L> <left: "("> <objects: Datum *> <right: ")"> <ro:@R>=>? {
+        if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {
+            let file = gc.new_string(input_src);
+            let lineno = count_lineno(content, lo);
+            let src = gc.list2(file, Object::Fixnum(lineno as isize));
+            Ok(gc.listn_src(&objects, src))
+        } else {
+            return Err(ParseError::User {
+                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+        }
     },
     <lo:@L> "(" <objects: Datum *> "#;" Datum ")" => {
         let file = gc.new_string(input_src);
@@ -195,9 +200,8 @@ extern {
         "." => lexer::Token::Dot,
         "true" => lexer::Token::True,
         "false" => lexer::Token::False,
-        "(" => lexer::Token::LeftParen,
-        ")" => lexer::Token::RightParen,
-        ")" => lexer::Token::RightParen,
+        "(" => lexer::Token::LeftParen { value: <String> },
+        ")" => lexer::Token::RightParen { value: <String> },
         "#(" => lexer::Token::VectorStart,
         "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },

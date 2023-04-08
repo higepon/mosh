@@ -16,6 +16,7 @@ pub enum ErrorType {
     IoFileNotExist,
     IoFileAlreadyExist,
     IoInvalidPosition,
+    LexicalViolationReadError,
     Error,
 }
 
@@ -43,6 +44,15 @@ impl Error {
             who,
             message,
             irritants,
+        ))
+    }
+
+    pub fn lexical_violation_read_error(who: &str, message: &str) -> Result<Object> {
+        Err(Self::new(
+            ErrorType::LexicalViolationReadError,
+            who,
+            message,
+            &[],
         ))
     }
 

@@ -176,6 +176,7 @@ impl Vm {
         let irritants = self.gc.listn(irritants);
         self.raise_after3("raise-i/o-invalid-position-error", who, message, irritants)
     }
+
     pub(super) fn implementation_restriction_violation_after(
         &mut self,
         who: &str,
@@ -203,6 +204,16 @@ impl Vm {
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
         self.raise_after3("raise-i/o-read-error", who, message, irritants)
+    }
+
+    pub(super) fn call_raise_lexical_violation_read_error_after(
+        &mut self,
+        who: &str,
+        message: &str,
+    ) -> error::Result<Object> {
+        let who = self.gc.new_string(who);
+        let message = self.gc.new_string(message);
+        self.raise_after2("raise-lexical-violation-read-error", who, message)
     }
 
     #[inline(always)]
