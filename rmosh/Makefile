@@ -5,8 +5,9 @@ FEATURES = #--features debug_log_vm # --features debug_log_gc
 
 test: rust-test r7rs-test r6rs-test 
 
+## test-threads should be 1 because we have static mut CURRENT_VM, which could be shared.
 rust-test: src/lexer_iter.rs src/number_lexer_iter.rs
-	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture # -- --test-threads 1
+	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --test-threads 1
 
 rust-miri-test:	src/lexer_iter.rs src/number_lexer_iter.rs
 	MIRIFLAGS="-Zmiri-symbolic-alignment-check -Zmiri-ignore-leaks" cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --
