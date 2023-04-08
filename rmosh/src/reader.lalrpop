@@ -54,7 +54,7 @@ List: Object = {
                 error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
         }
     },
-    <lo:@L> <left: "("> <objects: Datum *> "#;" Datum ")" <right: ")"> <ro:@R> =>? {
+    <lo:@L> <left: "("> <objects: Datum *> "#;" Datum <right: ")"> <ro:@R> =>? {
         if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {        
             let file = gc.new_string(input_src);
             let lineno = count_lineno(content, lo);        
