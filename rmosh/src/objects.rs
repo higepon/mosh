@@ -1906,12 +1906,16 @@ pub struct Continuation {
     pub shift_size: isize,
     pub stack: Object,
     pub winders: Object,
+    pub restore_code: Vec<Object>
 }
 
 impl Trace for Continuation {
     fn trace(&self, gc: &mut Gc) {
         gc.mark_object(self.stack);
         gc.mark_object(self.winders);
+        for obj in self.restore_code.iter() {
+            gc.mark_object(*obj);
+        }
     }
 }
 
@@ -1922,6 +1926,7 @@ impl Continuation {
             shift_size,
             stack,
             winders,
+            restore_code: vec![],
         }
     }
 }

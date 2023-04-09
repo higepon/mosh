@@ -373,28 +373,34 @@ impl Vm {
                         self.ac = (procedure.func)(self, args)?;
                     }
                 }
-                Object::Continuation(c) => {
-                    let code = vec![
-                        Object::Instruction(Op::ConstantPush),
-                        c.winders,
-                        Object::Instruction(Op::DynamicWinders),
-                        Object::Instruction(Op::BranchNotEq),
-                        Object::Fixnum(3),
-                        Object::Instruction(Op::LocalJmp),
-                        Object::Fixnum(8),
-                        Object::Instruction(Op::Frame),
-                        Object::Fixnum(6),
-                        Object::Instruction(Op::ConstantPush),
-                        c.winders,
-                        Object::Instruction(Op::ReferGlobalCall),
-                        self.gc.symbol_intern("perform-dynamic-wind"),
-                        Object::Fixnum(1),
-                        Object::Instruction(Op::RestoreContinuation),
-                        Object::Fixnum(argc),
-                        c.stack,
-                        Object::Fixnum(c.shift_size),
-                    ];
-                    self.pc = self.allocate_code(&code);
+                Object::Continuation(mut c) => {
+                    if c.restore_code.is_empty() {
+                        let winders = c.winders;
+                        let stack = c.stack;
+                        let shift_size = c.shift_size;
+                        c.restore_code.push(Object::Instruction(Op::ConstantPush));
+                        c.restore_code.push(winders);
+                        c.restore_code.push(Object::Instruction(Op::DynamicWinders));
+                        c.restore_code.push(Object::Instruction(Op::BranchNotEq));
+                        c.restore_code.push(Object::Fixnum(3));
+                        c.restore_code.push(Object::Instruction(Op::LocalJmp));
+                        c.restore_code.push(Object::Fixnum(8));
+                        c.restore_code.push(Object::Instruction(Op::Frame));
+                        c.restore_code.push(Object::Fixnum(6));
+                        c.restore_code.push(Object::Instruction(Op::ConstantPush));
+                        c.restore_code.push(winders);
+                        c.restore_code
+                            .push(Object::Instruction(Op::ReferGlobalCall));
+                        c.restore_code
+                            .push(self.gc.symbol_intern("perform-dynamic-wind"));
+                        c.restore_code.push(Object::Fixnum(1));
+                        c.restore_code
+                            .push(Object::Instruction(Op::RestoreContinuation));
+                        c.restore_code.push(Object::Fixnum(argc));
+                        c.restore_code.push(stack);
+                        c.restore_code.push(Object::Fixnum(shift_size));
+                    }
+                    self.pc = c.restore_code.as_ptr();
                 }
                 _ => {
                     self.call_assertion_violation_after(
