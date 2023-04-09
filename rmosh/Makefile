@@ -10,7 +10,7 @@ rust-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --test-threads 1
 
 rust-miri-test:	src/lexer_iter.rs src/number_lexer_iter.rs
-	MIRIFLAGS="-Zmiri-symbolic-alignment-check -Zmiri-ignore-leaks" cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --
+	MIRIFLAGS="-Zmiri-symbolic-alignment-check -Zmiri-ignore-leaks" cargo +nightly miri test $(TESTS) $(FEATURES) --features test_gc_size -- --nocapture --test-threads 1
 
 scheme-test:
 	make -C scripts test

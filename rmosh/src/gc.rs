@@ -11,7 +11,7 @@ use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
-
+use proc_status::ProcStatus;
 use crate::error::{self, ErrorType};
 use crate::numbers::{Bignum, Compnum, Ratnum};
 use crate::objects::{
@@ -1030,18 +1030,18 @@ impl Gc {
     }
 
     fn sweep(&mut self) {
-        //let mut total = 0;
-        //let mut stayed = 0;
+        let mut total = 0;
+        let mut stayed = 0;
         let mut _freed = 0;
         let mut previous: Option<NonNull<GcHeader>> = None;
         let mut current: Option<NonNull<GcHeader>> = self.first;
         while let Some(mut object) = current {
-            //  total += 1;
+              total += 1;
             unsafe {
                 let object_ptr = object.as_mut();
                 current = object_ptr.next;
                 if object_ptr.marked {
-                    //        stayed += 1;
+                            stayed += 1;
                     object_ptr.marked = false;
                     previous = Some(object);
                 } else {
@@ -1054,12 +1054,15 @@ impl Gc {
                 }
             }
         }
-        /*
+
+        let mem = proc_status::mem_usage().unwrap();
+        eprintln!("Mem usage in bytes: current={}, peak={}", mem.current as f64 / 1024.0 / 1024.0, mem.peak as f64/1024.0/1024.0);
         eprintln!(
             "{}/{}={}%",
             stayed,
             total,
             (stayed as f64) / (total as f64) * 100.0
-        );*/
+        );
+
     }
 }

@@ -2,6 +2,7 @@ use clap::Parser;
 extern crate num_derive;
 #[macro_use]
 extern crate lalrpop_util;
+extern crate jemalloc_ctl;
 
 lalrpop_mod!(
     #[allow(clippy::all)]
@@ -48,6 +49,7 @@ fn main() {
     if let Some(file) = args.file {
         vargs.push(vm.gc.new_string(&file));
     } else {
+        vargs.push(vm.gc.new_string("/root/mosh.git/tests/srfi/srfi-194.scm"));
         //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
         /*
