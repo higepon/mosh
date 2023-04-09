@@ -4,6 +4,13 @@
 // TODO
 // https://github.com/ceronman/loxido/issues/3
 //
+use crate::error::{self, ErrorType};
+use crate::numbers::{Bignum, Compnum, Ratnum};
+use crate::objects::{
+    Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
+    GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
+};
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
@@ -11,13 +18,6 @@ use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
-use proc_status::ProcStatus;
-use crate::error::{self, ErrorType};
-use crate::numbers::{Bignum, Compnum, Ratnum};
-use crate::objects::{
-    Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
-    GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
-};
 
 use crate::ports::{
     BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
@@ -78,7 +78,7 @@ impl<T> DerefMut for GcRef<T> {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum ObjectType {
     Bignum,
     BinaryFileInputPort,
@@ -158,6 +158,7 @@ pub struct Gc {
     marked_objects: Vec<NonNull<GcHeader>>,
     pub symbols: HashMap<String, GcRef<Symbol>>,
     current_alloc_size: usize,
+    pub show_stats: bool,
 }
 
 impl Default for Gc {
@@ -176,6 +177,7 @@ impl Gc {
             marked_objects: Vec::new(),
             symbols: HashMap::new(),
             current_alloc_size: 0,
+            show_stats: false,
         }
     }
 
@@ -1035,13 +1037,17 @@ impl Gc {
         let mut _freed = 0;
         let mut previous: Option<NonNull<GcHeader>> = None;
         let mut current: Option<NonNull<GcHeader>> = self.first;
+        let mut counter_map: HashMap<ObjectType, usize> = HashMap::new();
         while let Some(mut object) = current {
-              total += 1;
+            total += 1;
             unsafe {
                 let object_ptr = object.as_mut();
                 current = object_ptr.next;
                 if object_ptr.marked {
-                            stayed += 1;
+                    if self.show_stats {
+                        stayed += 1;
+                        *counter_map.entry(object_ptr.obj_type).or_insert(0) += 1;
+                    }
                     object_ptr.marked = false;
                     previous = Some(object);
                 } else {
@@ -1055,14 +1061,35 @@ impl Gc {
             }
         }
 
-        let mem = proc_status::mem_usage().unwrap();
-        eprintln!("Mem usage in bytes: current={}, peak={}", mem.current as f64 / 1024.0 / 1024.0, mem.peak as f64/1024.0/1024.0);
-        eprintln!(
-            "{}/{}={}%",
-            stayed,
-            total,
-            (stayed as f64) / (total as f64) * 100.0
-        );
+        if self.show_stats {
+            let mem = proc_status::mem_usage().unwrap();
+            eprintln!(
+                "[GC] Mem usage in bytes: current={:.1}mb, peak={:.1}mb",
+                mem.current as f64 / 1024.0 / 1024.0,
+                mem.peak as f64 / 1024.0 / 1024.0
+            );
 
+            // Collect the key-value pairs into a Vec
+            let mut counter_vec: Vec<(&ObjectType, &usize)> = counter_map.iter().collect();
+
+            // Sort the Vec by value in descending order
+            counter_vec.sort_by(|a, b| match b.1.cmp(a.1) {
+                Ordering::Less => Ordering::Less,
+                Ordering::Greater => Ordering::Greater,
+                Ordering::Equal => Ordering::Equal,
+            });
+
+            // Iterate through the sorted Vec and print the key-value pairs
+            for (key, value) in counter_vec {
+                eprintln!("  {:?}: {}", key, value);
+            }
+
+            eprintln!(
+                "  {}/{}={}%",
+                stayed,
+                total,
+                (stayed as f64) / (total as f64) * 100.0
+            );
+        }
     }
 }

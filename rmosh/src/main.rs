@@ -2,7 +2,6 @@ use clap::Parser;
 extern crate num_derive;
 #[macro_use]
 extern crate lalrpop_util;
-extern crate jemalloc_ctl;
 
 lalrpop_mod!(
     #[allow(clippy::all)]
@@ -38,6 +37,9 @@ struct Cli {
 
     #[arg(help = "Path to a Scheme program file.")]
     file: Option<String>,
+
+    #[clap(long, short, action)]
+    show_gc_stats: bool,    
 }
 
 fn main() {
@@ -63,6 +65,7 @@ fn main() {
         //)
     }
 
+    vm.gc.show_stats = args.show_gc_stats;
     let vargs = vm.gc.listn(&vargs);
     let loadpath = args.loadpath;
     //let loadpath = Some("/root/mosh.git/tests/r6rs-test-suite/".to_string());
