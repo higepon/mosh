@@ -39,7 +39,7 @@ struct Cli {
     file: Option<String>,
 
     #[clap(long, short, action)]
-    show_gc_stats: bool,    
+    show_gc_stats: bool,
 }
 
 fn main() {
