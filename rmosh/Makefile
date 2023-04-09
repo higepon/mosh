@@ -16,7 +16,7 @@ scheme-test:
 	make -C scripts test
 
 r7rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
-	cargo run  ../tests/r7rs/r7rs-tests.scm	
+	cargo run  ../tests/r7rs/r7rs-tests.scm	-s
 
 r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=../tests/r6rs-test-suite/	

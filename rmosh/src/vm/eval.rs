@@ -4,7 +4,6 @@ use crate::{
     error,
     objects::{Closure, Object},
     op::Op,
-    procs::default_free_vars,
 };
 
 use super::Vm;
@@ -27,14 +26,12 @@ impl Vm {
         // We can't share them between multiple eval calls.
         let code_ptr = self.allocate_code(&code);
 
-        // todo: Should share this!
-        let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
             code_ptr,
             body_size,
             0,
             false,
-            free_vars,
+            self.default_free_vars.to_vec(),
             Object::False,
         ));
 
@@ -54,14 +51,12 @@ impl Vm {
         // We allocate new code array for every eval calls.
         // We can't share them between multiple eval calls.
         let code_ptr = self.allocate_code(&code);
-        // todo: Should share this!
-        let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
             code_ptr,
             body_size,
             0,
             false,
-            free_vars,
+            self.default_free_vars.to_vec(),
             Object::False,
         ));
 
