@@ -1685,7 +1685,7 @@ impl Trace for SString {
 impl SString {
     pub fn new(string: &str) -> Self {
         SString {
-            header: GcHeader::new(ObjectType::String),
+            header: GcHeader::new(ObjectType::SString),
             string: string.to_string(),
         }
     }

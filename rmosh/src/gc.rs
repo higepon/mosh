@@ -112,7 +112,7 @@ pub enum ObjectType {
     StdErrorPort,
     StdInputPort,
     StdOutputPort,
-    String,
+    SString,
     StringInputPort,
     StringOutputPort,
     Symbol,
@@ -795,7 +795,7 @@ impl Gc {
                 let port: &StringOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 port.trace(self);
             }
-            ObjectType::String => {
+            ObjectType::SString => {
                 let obj: &SString = unsafe { mem::transmute(pointer.as_ref()) };
                 obj.trace(self);
             }
@@ -1225,7 +1225,7 @@ impl Gc {
                     drop(Box::from_raw(x));
                 }
             }
-            ObjectType::String => {
+            ObjectType::SString => {
                 let x: *mut SString = unsafe { mem::transmute(object_ptr) };
                 unsafe {
                     drop(Box::from_raw(x));
