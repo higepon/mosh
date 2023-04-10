@@ -13,8 +13,8 @@ use crate::reader_util::ReadError;
     re2c:eof = 0;
     // Conforms to R7RS.
     ANY_CHARACTER          = [^];
-    TRUE                   = "#t" | "#true";
-    FALSE                  = "#f" | "#false";
+    TRUE                   = '#t' | "#true";
+    FALSE                  = '#f' | "#false";
     LETTER                 = [A-Za-z];
     SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~];
     DIGIT                  = [0-9];
@@ -30,7 +30,7 @@ use crate::reader_util::ReadError;
     SIGN_SUBSEQUENT        = INITIAL | EXPLICIT_SIGN | "@";
     DOT                    = ".";
     VECTOR_START           = "#(";
-    BYTEVECTOR_START       = "#u8(" | "#vu8(";
+    BYTEVECTOR_START       = "#u8(" | "#vu8(" | "#u8[" | "#vu8[";
     DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | DOT;
     // Per R7RS Small Errata, we allow \\\\ and \\\" here.
     MNEMONIC_ESCAPE        = ('\\' [abtnr\\\\|"]);
@@ -108,8 +108,12 @@ impl<'input> Iterator for Lexer<'input> {
             'lex: loop {
                 self.tok = self.cursor;
                 /*!re2c
-                    LEFT_PAREN { return self.with_location(Token::LeftParen); }
-                    RIGHT_PAREN { return self.with_location(Token::RightParen); }
+                    LEFT_PAREN {
+                        return self.with_location(Token::LeftParen {value: self.extract_token()});
+                    }
+                    RIGHT_PAREN {
+                        return self.with_location(Token::RightParen {value: self.extract_token()});
+                    }                    
                     TRUE  { return self.with_location(Token::True); }
                     FALSE { return self.with_location(Token::False); }
                     NUM_10 {
@@ -137,10 +141,10 @@ impl<'input> Iterator for Lexer<'input> {
                         return self.with_location(Token::Dot);
                     }
                     BYTEVECTOR_START {
-                        return self.with_location(Token::ByteVectorStart);
+                        return self.with_location(Token::ByteVectorStart {value: self.extract_token()});
                     }
                     VECTOR_START {
-                        return self.with_location(Token::VectorStart);
+                        return self.with_location(Token::VectorStart {value: self.extract_token()});                        
                     }
                     "#\\alarm" {
                         return self.with_location(Token::Character { value: char::from(7) });

@@ -224,33 +224,32 @@ impl Equal {
     fn union_find(
         &self,
         gc: &mut Box<Gc>,
-        hashmap: *mut HashMap<Object, Object>,
+        hashmap: &mut HashMap<Object, Object>,
         x: &Object,
         y: &Object,
     ) -> Object {
-        let hm: &mut HashMap<Object, Object> = unsafe { hashmap.as_mut().unwrap() };
-        let bx = match hm.get(x) {
+        let bx = match hashmap.get(x) {
             Some(v) => *v,
             None => Object::False,
         };
-        let by = match hm.get(y) {
+        let by = match hashmap.get(y) {
             Some(v) => *v,
             None => Object::False,
         };
         if bx.is_false() {
             if by.is_false() {
                 let b = Object::Vox(gc.alloc(Vox::new(Object::Fixnum(1))));
-                hm.insert(*x, b);
-                hm.insert(*y, b);
+                hashmap.insert(*x, b);
+                hashmap.insert(*y, b);
                 Object::False
             } else {
                 let ry = self.find(by);
-                hm.insert(*x, ry);
+                hashmap.insert(*x, ry);
                 Object::False
             }
         } else if by.is_false() {
             let rx = self.find(bx);
-            hm.insert(*y, rx);
+            hashmap.insert(*y, rx);
             return Object::False;
         } else {
             let rx = self.find(bx);

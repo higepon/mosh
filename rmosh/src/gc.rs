@@ -4,6 +4,13 @@
 // TODO
 // https://github.com/ceronman/loxido/issues/3
 //
+use crate::error::{self, ErrorType};
+use crate::numbers::{Bignum, Compnum, Ratnum};
+use crate::objects::{
+    Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
+    GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
+};
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
@@ -11,13 +18,6 @@ use std::hash::{Hash, Hasher};
 use std::mem;
 use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
-
-use crate::error::{self, ErrorType};
-use crate::numbers::{Bignum, Compnum, Ratnum};
-use crate::objects::{
-    Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
-    GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
-};
 
 use crate::ports::{
     BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
@@ -78,13 +78,13 @@ impl<T> DerefMut for GcRef<T> {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum ObjectType {
     Bignum,
     BinaryFileInputPort,
     BinaryFileInputOutputPort,
     BinaryFileOutputPort,
-    ByteVector,
+    Bytevector,
     BytevectorInputPort,
     BytevectorOutputPort,
     Closure,
@@ -112,7 +112,7 @@ pub enum ObjectType {
     StdErrorPort,
     StdInputPort,
     StdOutputPort,
-    String,
+    SString,
     StringInputPort,
     StringOutputPort,
     Symbol,
@@ -158,6 +158,7 @@ pub struct Gc {
     marked_objects: Vec<NonNull<GcHeader>>,
     pub symbols: HashMap<String, GcRef<Symbol>>,
     current_alloc_size: usize,
+    pub show_stats: bool,
 }
 
 impl Default for Gc {
@@ -167,8 +168,6 @@ impl Default for Gc {
 }
 
 impl Gc {
-    const HEAP_GROW_FACTOR: usize = 2;
-
     pub fn new() -> Self {
         Gc {
             next_gc: 1024 * 1024,
@@ -176,6 +175,7 @@ impl Gc {
             marked_objects: Vec::new(),
             symbols: HashMap::new(),
             current_alloc_size: 0,
+            show_stats: false,
         }
     }
 
@@ -423,11 +423,7 @@ impl Gc {
     pub fn alloc<T: Display + 'static>(&mut self, object: T) -> GcRef<T> {
         unsafe {
             #[cfg(feature = "debug_log_gc")]
-            let repr = format!("{}", object)
-                .chars()
-                .into_iter()
-                .take(32)
-                .collect::<String>();
+            let repr = format!("{}", object).chars().take(32).collect::<String>();
 
             let alloc_size = std::mem::size_of_val(&object);
             self.current_alloc_size += alloc_size;
@@ -642,7 +638,7 @@ impl Gc {
         self.trace_references();
         self.sweep();
 
-        self.next_gc = self.current_alloc_size * Gc::HEAP_GROW_FACTOR;
+        self.next_gc = self.current_alloc_size + 100 * 1024 * 1024;
 
         #[cfg(feature = "debug_log_gc")]
         println!(
@@ -799,7 +795,7 @@ impl Gc {
                 let port: &StringOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 port.trace(self);
             }
-            ObjectType::String => {
+            ObjectType::SString => {
                 let obj: &SString = unsafe { mem::transmute(pointer.as_ref()) };
                 obj.trace(self);
             }
@@ -831,7 +827,7 @@ impl Gc {
                 let obj: &Bignum = unsafe { mem::transmute(pointer.as_ref()) };
                 obj.trace(self);
             }
-            ObjectType::ByteVector => {
+            ObjectType::Bytevector => {
                 let obj: &Bytevector = unsafe { mem::transmute(pointer.as_ref()) };
                 obj.trace(self);
             }
@@ -881,7 +877,7 @@ impl Gc {
                 let x: &CustomTextOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(x)
             }
-            ObjectType::String => {
+            ObjectType::SString => {
                 let sstring: &SString = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(sstring)
             }
@@ -965,7 +961,7 @@ impl Gc {
                 let s: &SimpleStruct = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(s)
             }
-            ObjectType::ByteVector => {
+            ObjectType::Bytevector => {
                 let v: &Bytevector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)
             }
@@ -1023,32 +1019,293 @@ impl Gc {
             "free(adr:{:?}) type={:?} size={} ******* ",
             object_ptr as *mut GcHeader, object_type, free_size
         );
-
         self.current_alloc_size -= free_size;
         unsafe { drop(Box::from_raw(object_ptr)) }
     }
 
     #[cfg(not(feature = "test_gc_size"))]
-    fn free(&self, object_ptr: &mut GcHeader) {
-        unsafe { drop(Box::from_raw(object_ptr)) }
+    #[inline(always)]
+    fn free(&self, object_ptr: *mut GcHeader) {
+        match unsafe { (*object_ptr).obj_type } {
+            ObjectType::Symbol => {
+                let x: *mut Symbol = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Bignum => {
+                let x: *mut Bignum = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::BinaryFileInputPort => {
+                let x: *mut BinaryFileInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::BinaryFileInputOutputPort => {
+                let x: *mut BinaryFileInputOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::BinaryFileOutputPort => {
+                let x: *mut BinaryFileOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Bytevector => {
+                let x: *mut Bytevector = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::BytevectorInputPort => {
+                let x: *mut BytevectorInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::BytevectorOutputPort => {
+                let x: *mut BytevectorOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Closure => {
+                let x: *mut Closure = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Compnum => {
+                let x: *mut Compnum = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Continuation => {
+                let x: *mut Continuation = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::ContinuationStack => {
+                let x: *mut ContinuationStack = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::CustomTextInputPort => {
+                let x: *mut CustomTextInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::CustomTextInputOutputPort => {
+                let x: *mut CustomTextInputOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::CustomTextOutputPort => {
+                let x: *mut CustomTextOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::CustomBinaryInputPort => {
+                let x: *mut CustomBinaryInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::CustomBinaryInputOutputPort => {
+                let x: *mut CustomBinaryInputOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::CustomBinaryOutputPort => {
+                let x: *mut CustomBinaryOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::EqHashtable => {
+                let x: *mut EqHashtable = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::EqvHashtable => {
+                let x: *mut EqvHashtable = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::FileInputPort => {
+                let x: *mut FileInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::FileOutputPort => {
+                let x: *mut FileOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Latin1Codec => {
+                let x: *mut Latin1Codec = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::UTF8Codec => {
+                let x: *mut UTF8Codec = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::UTF16Codec => {
+                let x: *mut UTF16Codec = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::GenericHashtable => {
+                let x: *mut GenericHashtable = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Pair => {
+                let x: *mut Pair = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Procedure => {
+                let x: *mut Procedure = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Ratnum => {
+                let x: *mut Ratnum = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::SimpleStruct => {
+                let x: *mut SimpleStruct = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::StdErrorPort => {
+                let x: *mut StdErrorPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::StdInputPort => {
+                let x: *mut StdInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::StdOutputPort => {
+                let x: *mut StdOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::SString => {
+                let x: *mut SString = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::StringInputPort => {
+                let x: *mut StringInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::StringOutputPort => {
+                let x: *mut StringOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Transcoder => {
+                let x: *mut Transcoder = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::TranscodedInputPort => {
+                let x: *mut TranscodedInputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::TranscodedInputOutputPort => {
+                let x: *mut TranscodedInputOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::TranscodedOutputPort => {
+                let x: *mut TranscodedOutputPort = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Vector => {
+                let x: *mut Vector = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Vox => {
+                let x: *mut Vox = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+        }
     }
 
     fn sweep(&mut self) {
-        //let mut total = 0;
-        //let mut stayed = 0;
+        let mut total = 0;
+        let mut stayed = 0;
         let mut _freed = 0;
         let mut previous: Option<NonNull<GcHeader>> = None;
         let mut current: Option<NonNull<GcHeader>> = self.first;
+        let mut counter_map: HashMap<ObjectType, usize> = HashMap::new();
+        let mut freed_map: HashMap<ObjectType, usize> = HashMap::new();
         while let Some(mut object) = current {
-            //  total += 1;
+            total += 1;
             unsafe {
                 let object_ptr = object.as_mut();
                 current = object_ptr.next;
                 if object_ptr.marked {
-                    //        stayed += 1;
+                    if self.show_stats {
+                        stayed += 1;
+                        *counter_map.entry(object_ptr.obj_type).or_insert(0) += 1;
+                    }
                     object_ptr.marked = false;
                     previous = Some(object);
                 } else {
+                    if self.show_stats {
+                        *freed_map.entry(object_ptr.obj_type).or_insert(0) += 1;
+                    }
                     if let Some(mut previous) = previous {
                         previous.as_mut().next = object_ptr.next
                     } else {
@@ -1058,12 +1315,53 @@ impl Gc {
                 }
             }
         }
-        /*
-        eprintln!(
-            "{}/{}={}%",
-            stayed,
-            total,
-            (stayed as f64) / (total as f64) * 100.0
-        );*/
+
+        if self.show_stats {
+            let mem = proc_status::mem_usage().unwrap();
+            eprintln!(
+                "[GC] Mem usage: current={:.1}mb, peak={:.1}mb",
+                mem.current as f64 / 1024.0 / 1024.0,
+                mem.peak as f64 / 1024.0 / 1024.0
+            );
+
+            // Collect the key-value pairs into a Vec
+            let mut counter_vec: Vec<(&ObjectType, &usize)> = counter_map.iter().collect();
+
+            // Sort the Vec by value in descending order
+            counter_vec.sort_by(|a, b| match b.1.cmp(a.1) {
+                Ordering::Less => Ordering::Less,
+                Ordering::Greater => Ordering::Greater,
+                Ordering::Equal => Ordering::Equal,
+            });
+
+            // Iterate through the sorted Vec and print the key-value pairs
+            println!("Living Objects");
+            for (key, value) in counter_vec {
+                eprintln!("  {:?}: {}", key, value);
+            }
+
+            // Collect the key-value pairs into a Vec
+            let mut freed_vec: Vec<(&ObjectType, &usize)> = freed_map.iter().collect();
+
+            // Sort the Vec by value in descending order
+            freed_vec.sort_by(|a, b| match b.1.cmp(a.1) {
+                Ordering::Less => Ordering::Less,
+                Ordering::Greater => Ordering::Greater,
+                Ordering::Equal => Ordering::Equal,
+            });
+
+            println!("Freed Objects");
+            // Iterate through the sorted Vec and print the key-value pairs
+            for (key, value) in freed_vec {
+                eprintln!("  {:?}: {}", key, value);
+            }
+
+            eprintln!(
+                "  {}/{}={:.1}%",
+                stayed,
+                total,
+                (stayed as f64) / (total as f64) * 100.0
+            );
+        }
     }
 }

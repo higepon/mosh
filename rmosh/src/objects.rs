@@ -122,6 +122,10 @@ impl Object {
         matches!(self, Object::Bytevector(_))
     }
 
+    pub fn is_vector(&self) -> bool {
+        matches!(self, Object::Vector(_))
+    }
+
     pub fn is_transcoder(&self) -> bool {
         matches!(self, Object::Transcoder(_))
     }
@@ -1029,7 +1033,7 @@ impl Trace for Bytevector {
 impl Bytevector {
     pub fn new(data: &Vec<u8>) -> Self {
         Bytevector {
-            header: GcHeader::new(ObjectType::ByteVector),
+            header: GcHeader::new(ObjectType::Bytevector),
             data: data.to_owned(),
         }
     }
@@ -1187,6 +1191,38 @@ impl Bytevector {
     }
 
     pub fn set_f64_big(&mut self, i: usize, v: f64) -> Option<()> {
+        let data = v.to_be_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_u64_little(&mut self, i: usize, v: u64) -> Option<()> {
+        let data = v.to_le_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_s64_big(&mut self, i: usize, v: i64) -> Option<()> {
+        let data = v.to_be_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_s64_little(&mut self, i: usize, v: i64) -> Option<()> {
+        let data = v.to_le_bytes();
+        match (&mut self.data[i..i + 8]).write(&data) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
+    }
+
+    pub fn set_u64_big(&mut self, i: usize, v: u64) -> Option<()> {
         let data = v.to_be_bytes();
         match (&mut self.data[i..i + 8]).write(&data) {
             Ok(_) => Some(()),
@@ -1649,7 +1685,7 @@ impl Trace for SString {
 impl SString {
     pub fn new(string: &str) -> Self {
         SString {
-            header: GcHeader::new(ObjectType::String),
+            header: GcHeader::new(ObjectType::SString),
             string: string.to_string(),
         }
     }
@@ -1792,7 +1828,7 @@ impl Debug for Symbol {
         let content: Vec<char> = self.string.chars().collect();
         let start = content[0];
         let is_bar_symbol = (start == '|') && content[content.len() - 1] == '|';
-        if ('0'..='9').contains(&start) || start == ' ' {
+        if start.is_ascii_digit() || start == ' ' {
             write!(f, "\\x{:x};", start as u32)?;
         } else {
             write!(f, "{}", start)?;
@@ -1870,12 +1906,16 @@ pub struct Continuation {
     pub shift_size: isize,
     pub stack: Object,
     pub winders: Object,
+    pub restore_code: Vec<Object>,
 }
 
 impl Trace for Continuation {
     fn trace(&self, gc: &mut Gc) {
         gc.mark_object(self.stack);
         gc.mark_object(self.winders);
+        for obj in self.restore_code.iter() {
+            gc.mark_object(*obj);
+        }
     }
 }
 
@@ -1886,6 +1926,7 @@ impl Continuation {
             shift_size,
             stack,
             winders,
+            restore_code: vec![],
         }
     }
 }

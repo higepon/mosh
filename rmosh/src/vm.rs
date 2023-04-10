@@ -102,6 +102,7 @@ pub struct Vm {
     saved_registers: Registers,
     // Note when we add new vars here, please make sure we take care of them in mark_roots.
     // Otherwise they can cause memory leak or double free.
+    default_free_vars: Vec<Object>,
 }
 
 impl Default for Vm {
@@ -112,8 +113,10 @@ impl Default for Vm {
 
 impl Vm {
     pub fn new() -> Self {
+        let mut gc = Box::new(Gc::new());
+        let free_vars = default_free_vars(&mut gc);
         let mut ret = Self {
-            gc: Box::new(Gc::new()),
+            gc: gc,
             stack: vec![Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
@@ -141,6 +144,7 @@ impl Vm {
             current_output_port: Object::Unspecified,
             current_error_port: Object::Unspecified,
             saved_registers: Registers::new(),
+            default_free_vars: free_vars,
         };
         let raw_stdport = Object::StdOutputPort(ret.gc.alloc(StdOutputPort::new()));
         let codec = Object::UTF8Codec(ret.gc.alloc(UTF8Codec::new()));
@@ -361,26 +365,27 @@ impl Vm {
         port.read(self)
     }
     fn initialize_free_vars(&mut self, ops: *const Object, ops_len: usize) {
-        let free_vars = default_free_vars(&mut self.gc);
         let mut display = self.gc.alloc(Closure::new(
             ops,
             ops_len,
             0,
             false,
-            free_vars,
+            self.default_free_vars.to_vec(),
             Object::False,
         ));
 
         display.prev = self.dc;
-        let free_vars = default_free_vars(&mut self.gc);
 
         let top_level = self.gc.symbol_intern("<top-level>");
         let src = self.gc.list2(Object::False, top_level);
-        self.closure_for_evaluate =
-            Object::Closure(
-                self.gc
-                    .alloc(Closure::new(null(), 0, 0, false, free_vars, src)),
-            );
+        self.closure_for_evaluate = Object::Closure(self.gc.alloc(Closure::new(
+            null(),
+            0,
+            0,
+            false,
+            self.default_free_vars.to_vec(),
+            src,
+        )));
         self.dc = Object::Closure(display);
     }
 

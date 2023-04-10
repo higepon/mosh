@@ -9,7 +9,6 @@ lalrpop_mod!(
 lalrpop_mod!(
     #[allow(clippy::all)]
     pub number_reader); // synthesized by LALRPOP
-pub mod alloc;
 pub mod compiler;
 pub mod equal;
 pub mod error;
@@ -37,6 +36,9 @@ struct Cli {
 
     #[arg(help = "Path to a Scheme program file.")]
     file: Option<String>,
+
+    #[clap(long, short, action)]
+    show_gc_stats: bool,
 }
 
 fn main() {
@@ -48,6 +50,7 @@ fn main() {
     if let Some(file) = args.file {
         vargs.push(vm.gc.new_string(&file));
     } else {
+        vargs.push(vm.gc.new_string("/root/mosh.git/tests/srfi/srfi-194.scm"));
         //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
         /*
@@ -61,6 +64,7 @@ fn main() {
         //)
     }
 
+    vm.gc.show_stats = args.show_gc_stats;
     let vargs = vm.gc.listn(&vargs);
     let loadpath = args.loadpath;
     //let loadpath = Some("/root/mosh.git/tests/r6rs-test-suite/".to_string());

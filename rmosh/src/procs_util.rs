@@ -18,6 +18,17 @@ macro_rules! as_bytevector {
 }
 
 #[macro_export]
+macro_rules! as_vector {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !o.is_vector() {
+            return error::Error::assertion_violation($name, "vector required", &[o]);
+        }
+        o.to_vector()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_char {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];

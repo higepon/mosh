@@ -4,7 +4,6 @@ use crate::{
     error,
     objects::{Closure, Object},
     op::Op,
-    procs::default_free_vars,
 };
 
 use super::Vm;
@@ -27,14 +26,12 @@ impl Vm {
         // We can't share them between multiple eval calls.
         let code_ptr = self.allocate_code(&code);
 
-        // todo: Should share this!
-        let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
             code_ptr,
             body_size,
             0,
             false,
-            free_vars,
+            self.default_free_vars.to_vec(),
             Object::False,
         ));
 
@@ -54,14 +51,12 @@ impl Vm {
         // We allocate new code array for every eval calls.
         // We can't share them between multiple eval calls.
         let code_ptr = self.allocate_code(&code);
-        // todo: Should share this!
-        let free_vars = default_free_vars(&mut self.gc);
         let c = self.gc.alloc(Closure::new(
             code_ptr,
             body_size,
             0,
             false,
-            free_vars,
+            self.default_free_vars.to_vec(),
             Object::False,
         ));
 
@@ -80,6 +75,34 @@ impl Vm {
             Object::Fixnum(0),
             Object::Instruction(Op::Halt),
         ];
+        self.pc = self.allocate_code(&code);
+        Ok(self.ac)
+    }
+
+    fn set_after_trigger2(
+        &mut self,
+        closure: Object,
+        arg1: Object,
+        arg2: Object,
+    ) -> error::Result<Object> {
+        self.make_frame(self.pc);
+
+        let code = vec![
+            Object::Instruction(Op::Constant),
+            arg1,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            arg2,
+            Object::Instruction(Op::Push),
+            Object::Instruction(Op::Constant),
+            closure,
+            Object::Instruction(Op::Call),
+            Object::Fixnum(2),
+            Object::Instruction(Op::Return),
+            Object::Fixnum(0),
+            Object::Instruction(Op::Halt),
+        ];
+
         self.pc = self.allocate_code(&code);
         Ok(self.ac)
     }
@@ -150,6 +173,23 @@ impl Vm {
 
         self.pc = self.allocate_code(&code);
         Ok(self.ac)
+    }
+
+    pub(super) fn raise_after2(
+        &mut self,
+        closure_name: &str,
+        who: Object,
+        message: Object,
+    ) -> error::Result<Object> {
+        let symbol = self.gc.symbol_intern(closure_name).to_symbol();
+        match self.globals.get(&symbol) {
+            // The exception system is ready to use.
+            Some(closure) => self.set_after_trigger2(*closure, who, message),
+            None => {
+                eprintln!("Warning:The underlying exception is not ready to use");
+                error::Error::assertion_violation(&who.to_string(), &message.to_string(), &[])
+            }
+        }
     }
 
     pub(super) fn raise_after3(

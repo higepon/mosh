@@ -29,6 +29,11 @@ impl Vm {
     }
 
     pub(super) fn mark_roots(&mut self) {
+        // free_vars
+        for &obj in self.default_free_vars.iter() {
+            self.gc.mark_object(obj);
+        }
+
         // Stack.
         for &obj in &self.stack[0..self.stack_len()] {
             self.gc.mark_object(obj);

@@ -43,64 +43,107 @@ SimpleDatum: Object = {
 }
 
 List: Object = {
-    <lo:@L> "(" <objects: Datum *> ")" => {
-        let file = gc.new_string(input_src);
-        let lineno = count_lineno(content, lo);
-        let src = gc.list2(file, Object::Fixnum(lineno as isize));
-        gc.listn_src(&objects, src)
+    <lo:@L> <left: "("> <objects: Datum *> <right: ")"> <ro:@R> =>? {
+        if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {
+            let file = gc.new_string(input_src);
+            let lineno = count_lineno(content, lo);
+            let src = gc.list2(file, Object::Fixnum(lineno as isize));
+            Ok(gc.listn_src(&objects, src))
+        } else {
+            Err(ParseError::User {
+                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+        }
     },
-    <lo:@L> "(" <objects: Datum *> "#;" Datum ")" => {
-        let file = gc.new_string(input_src);
-        let lineno = count_lineno(content, lo);        
-        let src = gc.list2(file, Object::Fixnum(lineno as isize));
-        gc.listn_src(&objects, src)
+    <lo:@L> <left: "("> <objects: Datum *> "#;" Datum <right: ")"> <ro:@R> =>? {
+        if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {        
+            let file = gc.new_string(input_src);
+            let lineno = count_lineno(content, lo);        
+            let src = gc.list2(file, Object::Fixnum(lineno as isize));
+            Ok(gc.listn_src(&objects, src))
+        } else {
+            Err(ParseError::User {
+                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+        }        
     },
     // TODO: There should be a better way to skip datum comment.
-    <lo:@L> "(" <objects: Datum *> "#;" Datum "#;" Datum ")" => {
-        let file = gc.new_string(input_src);
-        let lineno = count_lineno(content, lo);        
-        let src = gc.list2(file, Object::Fixnum(lineno as isize));
-        gc.listn_src(&objects, src)
+    <lo:@L> <left: "("> <objects: Datum *> "#;" Datum "#;" Datum  <right: ")"> <ro:@R> =>? {
+        if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {          
+            let file = gc.new_string(input_src);
+            let lineno = count_lineno(content, lo);        
+            let src = gc.list2(file, Object::Fixnum(lineno as isize));
+            Ok(gc.listn_src(&objects, src))
+        } else {
+            Err(ParseError::User {
+                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+        }          
     },
-    <lo:@L> "(" <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum ")" => {
-        let file = gc.new_string(input_src);
-        let lineno = count_lineno(content, lo);        
-        let src = gc.list2(file, Object::Fixnum(lineno as isize));
-        gc.listn_src(&objects, src)
+    <lo:@L> <left: "("> <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum  <right: ")"> <ro:@R> =>? {
+        if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {          
+            let file = gc.new_string(input_src);
+            let lineno = count_lineno(content, lo);        
+            let src = gc.list2(file, Object::Fixnum(lineno as isize));
+            Ok(gc.listn_src(&objects, src))
+        } else {
+            Err(ParseError::User {
+                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+        }          
     },
-    <lo:@L> "(" <objects: Datum +> "." <last: Datum> "#;" Datum ")" => {
-        let file = gc.new_string(input_src);
-        let lineno = count_lineno(content, lo);        
-        let src = gc.list2(file, Object::Fixnum(lineno as isize));
-        gc.dot_pair_src(&objects, last, src)
+    <lo:@L> <left: "("> <objects: Datum +> "." <last: Datum> "#;" Datum  <right: ")"> <ro:@R> =>? {
+        if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {  
+            let file = gc.new_string(input_src);
+            let lineno = count_lineno(content, lo);        
+            let src = gc.list2(file, Object::Fixnum(lineno as isize));
+            Ok(gc.dot_pair_src(&objects, last, src))
+        } else {
+            Err(ParseError::User {
+                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+        }          
     },
-    <lo:@L> "(" <objects: Datum +> "." <last: Datum> ")" => {
-        let file = gc.new_string(input_src);
-        let lineno = count_lineno(content, lo);        
-        let src = gc.list2(file, Object::Fixnum(lineno as isize));
-        gc.dot_pair_src(&objects, last, src)
+    <lo:@L> <left: "("> <objects: Datum +> "." <last: Datum>  <right: ")"> <ro:@R> =>? {
+        if (left.eq("(") && right.eq(")")) || (left.eq("[") && right.eq("]")) {  
+            let file = gc.new_string(input_src);
+            let lineno = count_lineno(content, lo);        
+            let src = gc.list2(file, Object::Fixnum(lineno as isize));
+            Ok(gc.dot_pair_src(&objects, last, src))
+        } else {
+            Err(ParseError::User {
+                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+        }          
     }
 }
 
 ByteVector: Object = {
-    "#u8(" <objects: Datum *> ")" =>? {
-        let mut u8_vec: Vec<u8> = vec![];        
-        for obj in objects {
-            if let Object::Fixnum(n) = obj {
-                if n >= 0 && n <= 255 {
-                    u8_vec.push(n as u8);            
-                } else {
-                    return Err(ParseError::User {
-                        error:ReadError::MalformedBytevector { start:0, end:0, token:"hige".to_string() }})
-                }
-        }}
-        let bv = gc.alloc(Bytevector::new(&u8_vec));
-        Ok(Object::Bytevector(bv))
+    <lo:@L> <left: "#u8("> <objects: Datum *>  <right: ")"> <ro:@R> =>? {
+        if (left.eq("#u8(") && right.eq(")")) || (left.eq("#u8[") && right.eq("]")) ||
+           (left.eq("#vu8(") && right.eq(")")) || (left.eq("#vu8[") && right.eq("]")) {          
+            let mut u8_vec: Vec<u8> = vec![];        
+            for obj in objects {
+                if let Object::Fixnum(n) = obj {
+                    if n >= 0 && n <= 255 {
+                        u8_vec.push(n as u8);            
+                    } else {
+                        return Err(ParseError::User {
+                            error:ReadError::MalformedBytevector { start:0, end:0, token:"hige".to_string() }})
+                    }
+            }}
+            let bv = gc.alloc(Bytevector::new(&u8_vec));
+            Ok(Object::Bytevector(bv))
+    } else {
+        Err(ParseError::User {
+            error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+    }          
     }
 }
 
 Vector: Object = {
-    "#(" <objects: Datum *> ")" => gc.new_vector(&objects),
+    <lo:@L> <left: "#("> <objects: Datum *>  <right: ")"> <ro:@R> =>? {
+        if (left.eq("#(") && right.eq(")")) || (left.eq("#[") && right.eq("]")) {          
+            Ok(gc.new_vector(&objects))
+    } else {
+        Err(ParseError::User {
+            error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+    }          
+    }
 }
 
 Abbreviation: Object = {
@@ -191,14 +234,13 @@ extern {
         "#," => lexer::Token::AbbrevUnsyntax,
         "#,@" => lexer::Token::AbbrevUnsyntaxSplicing,
         "#;" => lexer::Token::DatumComment,
-        "#u8(" => lexer::Token::ByteVectorStart,
+        "#u8(" => lexer::Token::ByteVectorStart { value: <String> },
         "." => lexer::Token::Dot,
         "true" => lexer::Token::True,
         "false" => lexer::Token::False,
-        "(" => lexer::Token::LeftParen,
-        ")" => lexer::Token::RightParen,
-        ")" => lexer::Token::RightParen,
-        "#(" => lexer::Token::VectorStart,
+        "(" => lexer::Token::LeftParen { value: <String> },
+        ")" => lexer::Token::RightParen { value: <String> },
+        "#(" => lexer::Token::VectorStart { value: <String> },
         "character" => lexer::Token::Character { value: <char> },
         "identifier" => lexer::Token::Identifier { value: <String> },
         "number10" => lexer::Token::Number10 { value: <String> },
