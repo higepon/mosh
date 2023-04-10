@@ -84,7 +84,7 @@ pub enum ObjectType {
     BinaryFileInputPort,
     BinaryFileInputOutputPort,
     BinaryFileOutputPort,
-    ByteVector,
+    Bytevector,
     BytevectorInputPort,
     BytevectorOutputPort,
     Closure,
@@ -125,8 +125,7 @@ pub enum ObjectType {
 }
 
 #[repr(C)]
-#[derive(Debug)]
-pub struct GcHeader {
+#[derive(Debug)]pub struct GcHeader {
     marked: bool,
     next: Option<NonNull<GcHeader>>,
     obj_type: ObjectType,
@@ -827,7 +826,7 @@ impl Gc {
                 let obj: &Bignum = unsafe { mem::transmute(pointer.as_ref()) };
                 obj.trace(self);
             }
-            ObjectType::ByteVector => {
+            ObjectType::Bytevector => {
                 let obj: &Bytevector = unsafe { mem::transmute(pointer.as_ref()) };
                 obj.trace(self);
             }
@@ -961,7 +960,7 @@ impl Gc {
                 let s: &SimpleStruct = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(s)
             }
-            ObjectType::ByteVector => {
+            ObjectType::Bytevector => {
                 let v: &Bytevector = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(v)
             }
@@ -1057,7 +1056,7 @@ impl Gc {
                     drop(Box::from_raw(x));
                 }
             }
-            ObjectType::ByteVector => {
+            ObjectType::Bytevector => {
                 let x: *mut Bytevector = unsafe { mem::transmute(object_ptr) };
                 unsafe {
                     drop(Box::from_raw(x));

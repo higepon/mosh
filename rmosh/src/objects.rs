@@ -1033,7 +1033,7 @@ impl Trace for Bytevector {
 impl Bytevector {
     pub fn new(data: &Vec<u8>) -> Self {
         Bytevector {
-            header: GcHeader::new(ObjectType::ByteVector),
+            header: GcHeader::new(ObjectType::Bytevector),
             data: data.to_owned(),
         }
     }
