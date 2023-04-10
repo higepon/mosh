@@ -125,7 +125,8 @@ pub enum ObjectType {
 }
 
 #[repr(C)]
-#[derive(Debug)]pub struct GcHeader {
+#[derive(Debug)]
+pub struct GcHeader {
     marked: bool,
     next: Option<NonNull<GcHeader>>,
     obj_type: ObjectType,
@@ -1348,7 +1349,6 @@ impl Gc {
                 Ordering::Greater => Ordering::Greater,
                 Ordering::Equal => Ordering::Equal,
             });
-
 
             println!("Freed Objects");
             // Iterate through the sorted Vec and print the key-value pairs

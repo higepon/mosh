@@ -1906,7 +1906,7 @@ pub struct Continuation {
     pub shift_size: isize,
     pub stack: Object,
     pub winders: Object,
-    pub restore_code: Vec<Object>
+    pub restore_code: Vec<Object>,
 }
 
 impl Trace for Continuation {
