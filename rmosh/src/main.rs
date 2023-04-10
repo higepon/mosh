@@ -9,7 +9,6 @@ lalrpop_mod!(
 lalrpop_mod!(
     #[allow(clippy::all)]
     pub number_reader); // synthesized by LALRPOP
-pub mod alloc;
 pub mod compiler;
 pub mod equal;
 pub mod error;

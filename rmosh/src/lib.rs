@@ -1,4 +1,3 @@
-pub mod alloc;
 pub mod compiler;
 pub mod equal;
 pub mod error;
