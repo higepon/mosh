@@ -79,18 +79,10 @@ misc-test:
 # 	cargo run ../tests/input-port.scm < tests/input.txt
 # 	cargo run ../tests/output-port.scm
 # 	cargo run --loadpath="tests/mylib" tests/record.scm
-
 # 	cargo run ../tests/unicode.scm
 #	cargo run ../tests/misc.scm
 	# cargo run ../tests/template.scm
 	# cargo run ../tests/testing.scm	
-# cargo run ../tests/unicode.scm
-# 	
-
-# 	
-# 	
-
-# 	
 # 	! cargo run --disable-acc --loadpath=tests/mylib tests/import_bad_regexp.scm 2>/dev/null
 # 	cargo run --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
 # 	cargo run --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm
