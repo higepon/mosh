@@ -47,6 +47,7 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
 
 misc-test:
+	cargo run ../tests/cgi.scm
 	cargo run ../tests/condition.scm
 	cargo run ../tests/rbtree-test.scm
 	cargo run ../tests/exception.scm
@@ -88,7 +89,6 @@ misc-test:
 # 	
 # 	
 
-# 	cargo run ../tests/cgi.scm
 # 	
 # 	! cargo run --disable-acc --loadpath=tests/mylib tests/import_bad_regexp.scm 2>/dev/null
 # 	cargo run --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm

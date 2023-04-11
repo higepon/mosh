@@ -2512,9 +2512,25 @@ fn get_bytevector_all(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object>
     })?;
     Ok(vm.gc.new_bytevector_u8(&buf))
 }
-fn transcoded_port(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn transcoded_port(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "transcoded-port";
-    todo!("{}({}) not implemented", name, args.len());
+    let _transcoder = as_transcoder!(name, args, 1);
+    let port = args[0];
+    if port.is_binary_input_output_port() {
+        Ok(Object::TranscodedInputOutputPort(
+            vm.gc.alloc(TranscodedInputOutputPort::new(port, args[1])),
+        ))
+    } else if port.is_binary_input_port() {
+        Ok(Object::TranscodedInputPort(
+            vm.gc.alloc(TranscodedInputPort::new(port, args[1])),
+        ))
+    } else if port.is_binary_output_port() {
+        Ok(Object::TranscodedOutputPort(
+            vm.gc.alloc(TranscodedOutputPort::new(port, args[1])),
+        ))
+    } else {
+        Error::assertion_violation(name, "binary port", &[args[0]])
+    }
 }
 fn latin_1_codec(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "latin-1-codec";
