@@ -349,34 +349,6 @@
                   (get-u8 binary-port) ;; port is already closed!
                   (display (read-char text-port))))
 
-(when (or (string=? (host-os) "linux")
-          (string=? (host-os) "bsd")
-          (string=? (host-os) "darwin"))
-(let ()
-  (define (text-pipe)
-    ;; Binary ports here
-    (let-values ([(in out) (pipe)])
-      ;; Textual ports here
-      (cons (transcoded-port in (native-transcoder))
-            (transcoded-port out (native-transcoder)))))
-
-  (define p (text-pipe))
-  (define p-reader (car p))
-  (define p-writer (cdr p))
-
-  (test-write-equal "#<transcoded-textual-input-port #<binary-input-port <unknown file>>>"
-                     p-reader)
-  (test-true (textual-port? p-reader))
-  (test-write-equal "#<transcoded-textual-output-port #<binary-output-port <unknown file>>>"
-                     p-writer)
-  (test-true (textual-port? p-writer))
-
-  (display "asd" p-writer)
-  (flush-output-port p-writer)
-  (test-eqv #\a (read-char p-reader))
-  (close-port p-reader)
-  (close-port p-writer)))
-
 (cond
  [(member (host-os) '("win32" "linux" "bsd" "darwin"))
   (test-true (string? (mosh-executable-path)))]

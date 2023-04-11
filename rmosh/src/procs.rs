@@ -1249,9 +1249,20 @@ fn is_eof_object(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
         _ => Ok(Object::False),
     }
 }
-fn read_char(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+fn read_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "read-char";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_max!(name, args, 1);
+    let port = if args.is_empty() {
+        vm.current_input_port()
+    } else {
+        args[0]
+    };
+    let port = obj_as_text_input_port_mut!(name, port);
+    match port.read_char(vm) {
+        Ok(Some(c)) => Ok(Object::Char(c)),
+        Ok(None) => Ok(Object::Eof),
+        Err(e) => Err(e),
+    }
 }
 fn peek_char(vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
     let name: &str = "peek-char";
