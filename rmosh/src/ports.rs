@@ -2295,8 +2295,12 @@ impl UTF8Codec {
         (0x80..=0xbf).contains(&u)
     }
 
-    fn decoding_error(&self) -> error::Result<Option<char>> {
-        error::Error::io_decoding_error("utf-8-codec", "invalid utf8 sequence", &[])
+    fn decoding_error(&self, msg: &str) -> error::Result<Option<char>> {
+        error::Error::io_decoding_error(
+            "utf-8-codec",
+            &format!("invalid utf8 sequence: {}", msg),
+            &[],
+        )
     }
 }
 
@@ -2305,84 +2309,189 @@ impl Codec for UTF8Codec {
         &mut self,
         vm: &mut Vm,
         port: &mut dyn BinaryInputPort,
-        _mode: ErrorHandlingMode,
+        mode: ErrorHandlingMode,
         _should_check_bom: bool,
     ) -> error::Result<Option<char>> {
-        match port.read_u8(vm) {
-            Ok(Some(first)) => {
-                match first {
-                    // UTF8-1(ascii) = %x00-7F
-                    0..=0x7F => Ok(Some(first as char)),
-                    // UTF8-2 = %xC2-DF UTF8-tail
-                    0xC2..=0xDF => match port.read_u8(vm) {
-                        Ok(Some(second)) => {
-                            if self.is_utf8_tail(second) {
-                                let u = (((first as u32) & 0x1f) << 6) | ((second as u32) & 0x3f);
-                                match char::from_u32(u) {
-                                    Some(ch) => Ok(Some(ch)),
-                                    None => self.decoding_error(),
+        'retry: loop {
+            match port.read_u8(vm) {
+                Ok(Some(first)) => {
+                    match first {
+                        // UTF8-1(ascii) = %x00-7F
+                        0..=0x7F => return Ok(Some(first as char)),
+                        // UTF8-2 = %xC2-DF UTF8-tail
+                        0xC2..=0xDF => match port.read_u8(vm) {
+                            Ok(Some(second)) => {
+                                if self.is_utf8_tail(second) {
+                                    let u =
+                                        (((first as u32) & 0x1f) << 6) | ((second as u32) & 0x3f);
+                                    match char::from_u32(u) {
+                                        Some(ch) => return Ok(Some(ch)),
+                                        None => match mode {
+                                            ErrorHandlingMode::IgnoreError => continue 'retry,
+                                            ErrorHandlingMode::RaiseError => {
+                                                return self.decoding_error(&format!(
+                                                    "can't convert {} to char",
+                                                    u
+                                                ))
+                                            }
+                                            ErrorHandlingMode::ReplaceError => {
+                                                return Ok(Some('\u{FFFD}'))
+                                            }
+                                        },
+                                    }
+                                } else {
+                                    match mode {
+                                        ErrorHandlingMode::IgnoreError => continue 'retry,
+                                        ErrorHandlingMode::RaiseError => {
+                                            return self.decoding_error(&format!(
+                                                "second byte <{}> is not utf8 tail",
+                                                second
+                                            ));
+                                        }
+                                        ErrorHandlingMode::ReplaceError => {
+                                            return Ok(Some('\u{FFFD}'))
+                                        }
+                                    }
                                 }
-                            } else {
-                                self.decoding_error()
                             }
-                        }
-                        Ok(None) | Err(_) => self.decoding_error(),
-                    },
-                    // UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
-                    //          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
-                    0xE0..=0xEF => match (port.read_u8(vm), port.read_u8(vm)) {
-                        (Ok(Some(second)), Ok(Some(third))) => {
-                            if !self.is_utf8_tail(second) {
-                                self.decoding_error()
-                            } else if (0xe0 == first && (0xa0..=0xbf).contains(&second))
-                                || (0xed == first && (0x80..=0x9f).contains(&second))
-                                || ((0xe1..=0xec).contains(&first) && self.is_utf8_tail(second))
-                                || ((0xee == first || 0xef == first) && self.is_utf8_tail(second))
-                            {
-                                let u = (((first as u32) & 0xf) << 12)
-                                    | (((second as u32) & 0x3f) << 6)
-                                    | ((third as u32) & 0x3f);
-                                match char::from_u32(u) {
-                                    Some(ch) => return Ok(Some(ch)),
-                                    None => return self.decoding_error(),
+                            // EOF
+                            Ok(None) | Err(_) => return Ok(None),
+                        },
+                        // UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
+                        //          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
+                        0xE0..=0xEF => match (port.read_u8(vm), port.read_u8(vm)) {
+                            (Ok(Some(second)), Ok(Some(third))) => {
+                                if !self.is_utf8_tail(second) {
+                                    match mode {
+                                        ErrorHandlingMode::IgnoreError => continue 'retry,
+                                        ErrorHandlingMode::RaiseError => {
+                                            return self.decoding_error(&format!(
+                                                "second byte <{}> is not utf8 tail",
+                                                second
+                                            ));
+                                        }
+                                        ErrorHandlingMode::ReplaceError => {
+                                            return Ok(Some('\u{FFFD}'))
+                                        }
+                                    }
+                                } else if (0xe0 == first && (0xa0..=0xbf).contains(&second))
+                                    || (0xed == first && (0x80..=0x9f).contains(&second))
+                                    || ((0xe1..=0xec).contains(&first) && self.is_utf8_tail(second))
+                                    || ((0xee == first || 0xef == first)
+                                        && self.is_utf8_tail(second))
+                                {
+                                    let u = (((first as u32) & 0xf) << 12)
+                                        | (((second as u32) & 0x3f) << 6)
+                                        | ((third as u32) & 0x3f);
+                                    match char::from_u32(u) {
+                                        Some(ch) => return Ok(Some(ch)),
+                                        None => match mode {
+                                            ErrorHandlingMode::IgnoreError => continue 'retry,
+                                            ErrorHandlingMode::RaiseError => {
+                                                return self.decoding_error(&format!(
+                                                    "can't convert {} to char",
+                                                    u
+                                                ))
+                                            }
+                                            ErrorHandlingMode::ReplaceError => {
+                                                return Ok(Some('\u{FFFD}'))
+                                            }
+                                        },
+                                    }
+                                } else {
+                                    match mode {
+                                        ErrorHandlingMode::IgnoreError => continue 'retry,
+                                        ErrorHandlingMode::RaiseError => {
+                                            return self.decoding_error(&format!(
+                                            "malformed bytes second byte <{}>, third byte <{}> ",
+                                            second, third
+                                        ));
+                                        }
+                                        ErrorHandlingMode::ReplaceError => {
+                                            return Ok(Some('\u{FFFD}'))
+                                        }
+                                    }
                                 }
-                            } else {
-                                return self.decoding_error();
                             }
-                        }
-                        _ => self.decoding_error(),
-                    },
-                    // UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
-                    //          %xF4 %x80-8F 2( UTF8-tail )
-                    0xf0..=0xf4 => match (port.read_u8(vm), port.read_u8(vm), port.read_u8(vm)) {
-                        (Ok(Some(second)), Ok(Some(third)), Ok(Some(fourth))) => {
-                            if !self.is_utf8_tail(third) || !self.is_utf8_tail(fourth) {
-                                self.decoding_error()
-                            } else if (0xf0 == first && (0x90..=0xbf).contains(&second))
-                                || (0xf4 == first && (0x80..=0x8f).contains(&second))
-                                || ((0xf1..=0xf3).contains(&first) && self.is_utf8_tail(second))
-                            {
-                                let u = (((first as u32) & 0x7) << 18)
-                                    | (((second as u32) & 0x3f) << 12)
-                                    | (((third as u32) & 0x3f) << 6)
-                                    | (fourth as u32);
-                                match char::from_u32(u) {
-                                    Some(ch) => return Ok(Some(ch)),
-                                    None => return self.decoding_error(),
+                            _ => return Ok(None),
+                        },
+                        // UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
+                        //          %xF4 %x80-8F 2( UTF8-tail )
+                        0xf0..=0xf4 => match (port.read_u8(vm), port.read_u8(vm), port.read_u8(vm))
+                        {
+                            (Ok(Some(second)), Ok(Some(third)), Ok(Some(fourth))) => {
+                                if !self.is_utf8_tail(third) || !self.is_utf8_tail(fourth) {
+                                    match mode {
+                                        ErrorHandlingMode::IgnoreError => continue 'retry,
+                                        ErrorHandlingMode::RaiseError => {
+                                            return self.decoding_error(&format!(
+                                            "third byte <{}> and forth byte <{}> are not utf8 tail",
+                                            third, fourth,
+                                        ));
+                                        }
+                                        ErrorHandlingMode::ReplaceError => {
+                                            return Ok(Some('\u{FFFD}'))
+                                        }
+                                    }
+                                } else if (0xf0 == first && (0x90..=0xbf).contains(&second))
+                                    || (0xf4 == first && (0x80..=0x8f).contains(&second))
+                                    || ((0xf1..=0xf3).contains(&first) && self.is_utf8_tail(second))
+                                {
+                                    let u = (((first as u32) & 0x7) << 18)
+                                        | (((second as u32) & 0x3f) << 12)
+                                        | (((third as u32) & 0x3f) << 6)
+                                        | (fourth as u32);
+                                    match char::from_u32(u) {
+                                        Some(ch) => return Ok(Some(ch)),
+                                        None => match mode {
+                                            ErrorHandlingMode::IgnoreError => continue 'retry,
+                                            ErrorHandlingMode::RaiseError => {
+                                                return self.decoding_error(&format!(
+                                                    "can't convert {} to char",
+                                                    u
+                                                ))
+                                            }
+                                            ErrorHandlingMode::ReplaceError => {
+                                                return Ok(Some('\u{FFFD}'))
+                                            }
+                                        },
+                                    }
+                                } else {
+                                    match mode {
+                                        ErrorHandlingMode::IgnoreError => continue 'retry,
+                                        ErrorHandlingMode::RaiseError => {
+                                            return self.decoding_error(&format!(
+                                                "malformed utf8 {} {} {} {}",
+                                                first, second, third, fourth,
+                                            ));
+                                        }
+                                        ErrorHandlingMode::ReplaceError => {
+                                            return Ok(Some('\u{FFFD}'))
+                                        }
+                                    }
                                 }
-                            } else {
-                                return self.decoding_error();
                             }
-                        }
-                        _ => self.decoding_error(),
-                    },
-                    _ => self.decoding_error(),
+                            _ => return Ok(None),
+                        },
+                        _ => match mode {
+                            ErrorHandlingMode::IgnoreError => continue 'retry,
+                            ErrorHandlingMode::RaiseError => {
+                                return self.decoding_error(&format!(
+                                    "malformed utf8 first byte was {}",
+                                    first
+                                ))
+                            }
+                            ErrorHandlingMode::ReplaceError => return Ok(Some('\u{FFFD}')),
+                        },
+                    }
                 }
+                // EOF
+                Ok(None) => return Ok(None),
+                Err(e) => return self.decoding_error(&format!("{}", e)),
             }
-            Ok(None) => Ok(None),
-            Err(_) => self.decoding_error(),
         }
     }
+
     fn write_char(
         &mut self,
         port: &mut dyn BinaryOutputPort,
@@ -2412,8 +2521,8 @@ impl Codec for UTF8Codec {
                 ErrorHandlingMode::RaiseError => {
                     return Err(Error::new(
                         ErrorType::IoDecodingError,
-                        "utf-8-code",
-                        "invalid utf-8 sequence",
+                        "utf-8-codec",
+                        &format!("invalid utf-8 sequence: {}", u),
                         &[],
                     ))
                 }
@@ -2426,7 +2535,7 @@ impl Codec for UTF8Codec {
         port.write(&buf).map_err(|e| {
             Error::new(
                 ErrorType::IoDecodingError,
-                "utf-8-code",
+                "utf-8-codec",
                 &format!("writer error {}", e),
                 &[],
             )
@@ -2471,7 +2580,6 @@ impl UTF16Codec {
     }
 
     fn decoding_error(&self) -> error::Result<Option<char>> {
-        println!("decoding error");
         error::Error::io_decoding_error("utf-16-codec", "invalid utf16 sequence", &[])
     }
 }
@@ -2481,61 +2589,71 @@ impl Codec for UTF16Codec {
         &mut self,
         vm: &mut Vm,
         port: &mut dyn BinaryInputPort,
-        _mode: ErrorHandlingMode,
+        mode: ErrorHandlingMode,
         should_check_bom: bool,
     ) -> error::Result<Option<char>> {
-        match (port.read_u8(vm), port.read_u8(vm)) {
-            (Ok(None), _) => Ok(None),
-            (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => self.decoding_error(),
-            (Ok(Some(a)), Ok(Some(b))) => {
-                if should_check_bom && !self.dont_check_bom {
-                    if a == 0xFE && b == 0xFF {
-                        self.is_little_endian = false;
-                        return self.read_char(vm, port, _mode, false);
-                    } else if a == 0xFF && b == 0xFE {
-                        self.is_little_endian = true;
-                        return self.read_char(vm, port, _mode, false);
-                    } else {
-                        self.is_little_endian = self.is_native_little_endian;
-                        // fall through.
-                    }
-                }
-                let a = a as u16;
-                let b = b as u16;
-
-                let val1 = if self.is_little_endian {
-                    (b << 8) | a
-                } else {
-                    (a << 8) | b
-                };
-                if !(0xD800..=0xDFFF).contains(&val1) {
-                    match char::from_u32(val1 as u32) {
-                        Some(ch) => return Ok(Some(ch)),
-                        None => return self.decoding_error(),
-                    }
-                }
-                match (port.read_u8(vm), port.read_u8(vm)) {
-                    (Ok(None), _) | (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => {
-                        self.decoding_error()
-                    }
-                    (Ok(Some(c)), Ok(Some(d))) => {
-                        let c = c as u16;
-                        let d = d as u16;
-                        let val2 = if self.is_little_endian {
-                            (d << 8) | c
+        'retry: loop {
+            match (port.read_u8(vm), port.read_u8(vm)) {
+                (Ok(None), _) => return Ok(None),
+                (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => return Ok(None),
+                (Ok(Some(a)), Ok(Some(b))) => {
+                    if should_check_bom && !self.dont_check_bom {
+                        if a == 0xFE && b == 0xFF {
+                            self.is_little_endian = false;
+                            return self.read_char(vm, port, mode, false);
+                        } else if a == 0xFF && b == 0xFE {
+                            self.is_little_endian = true;
+                            return self.read_char(vm, port, mode, false);
                         } else {
-                            (c << 8) | d
-                        };
-                        // http://unicode.org/faq/utf_bom.html#utf16-3
-                        let hi = val1 as u32;
-                        let lo = val2 as u32;
-                        let x = (hi & ((1 << 6) - 1)) << 10 | (lo & ((1 << 10) - 1));
-                        let w = (hi >> 6) & ((1 << 5) - 1);
-                        let u = w + 1;
-                        let c = u << 16 | x;
-                        match char::from_u32(c) {
-                            Some(ch) => Ok(Some(ch)),
-                            None => self.decoding_error(),
+                            self.is_little_endian = self.is_native_little_endian;
+                            // fall through.
+                        }
+                    }
+                    let a = a as u16;
+                    let b = b as u16;
+
+                    let val1 = if self.is_little_endian {
+                        (b << 8) | a
+                    } else {
+                        (a << 8) | b
+                    };
+                    if !(0xD800..=0xDFFF).contains(&val1) {
+                        match char::from_u32(val1 as u32) {
+                            Some(ch) => return Ok(Some(ch)),
+                            None => match mode {
+                                ErrorHandlingMode::IgnoreError => continue 'retry,
+                                ErrorHandlingMode::RaiseError => return self.decoding_error(),
+                                ErrorHandlingMode::ReplaceError => return Ok(Some('\u{FFFD}')),
+                            },
+                        }
+                    }
+                    match (port.read_u8(vm), port.read_u8(vm)) {
+                        (Ok(None), _) | (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => {
+                            return Ok(None)
+                        }
+                        (Ok(Some(c)), Ok(Some(d))) => {
+                            let c = c as u16;
+                            let d = d as u16;
+                            let val2 = if self.is_little_endian {
+                                (d << 8) | c
+                            } else {
+                                (c << 8) | d
+                            };
+                            // http://unicode.org/faq/utf_bom.html#utf16-3
+                            let hi = val1 as u32;
+                            let lo = val2 as u32;
+                            let x = (hi & ((1 << 6) - 1)) << 10 | (lo & ((1 << 10) - 1));
+                            let w = (hi >> 6) & ((1 << 5) - 1);
+                            let u = w + 1;
+                            let c = u << 16 | x;
+                            match char::from_u32(c) {
+                                Some(ch) => return Ok(Some(ch)),
+                                None => match mode {
+                                    ErrorHandlingMode::IgnoreError => continue 'retry,
+                                    ErrorHandlingMode::RaiseError => return self.decoding_error(),
+                                    ErrorHandlingMode::ReplaceError => return Ok(Some('\u{FFFD}')),
+                                },
+                            }
                         }
                     }
                 }

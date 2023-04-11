@@ -73,7 +73,6 @@ misc-test:
 	cargo run ../tests/clos.scm
 	cargo run ../tests/srfi-misc.scm	
 #	cargo run ../tests/number.scm	
-#	cargo run ../tests/mosh-test.scm
 #	cargo run ../tests/io-error.scm
 # 	cargo run ../tests/input-output-port.scm
 # 	cargo run ../tests/input-port.scm < tests/input.txt
