@@ -47,6 +47,9 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ../tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=../tests/r6rs-test-suite/
 
 misc-test:
+	cargo run ../tests/condition.scm
+	cargo run ../tests/rbtree-test.scm
+	cargo run ../tests/exception.scm
 	cargo run ../tests/srfi/srfi-194.scm	
 	cargo run ../tests/import-srfi.scm	
 	cargo run ../tests/r7rs/vector.scm
@@ -62,8 +65,7 @@ misc-test:
 
 # 	cargo run --loadpath=".:./tests/mylib" tests/use-foo.scm # test : separated loadpath
 # 	cargo run -5 src/all-tests.scm
-#	cargo run ../tests/template.scm
-#	cargo run ../tests/testing.scm
+
 	cargo run ../tests/comment.scm
 	cargo run ../tests/srfi19.scm
 	cargo run ../tests/clos.scm
@@ -75,11 +77,12 @@ misc-test:
 # 	cargo run ../tests/input-port.scm < tests/input.txt
 # 	cargo run ../tests/output-port.scm
 # 	cargo run --loadpath="tests/mylib" tests/record.scm
-# 	cargo run ../tests/condition.scm
-# 	cargo run ../tests/rbtree-test.scm
-# 	cargo run ../tests/exception.scm
+
 # 	cargo run ../tests/unicode.scm
 #	cargo run ../tests/misc.scm
+	# cargo run ../tests/template.scm
+	# cargo run ../tests/testing.scm	
+# cargo run ../tests/unicode.scm
 # 	
 
 # 	
