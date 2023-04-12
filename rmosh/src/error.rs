@@ -4,6 +4,20 @@ use std::error;
 use std::fmt::Debug;
 use std::fmt::Display;
 
+#[derive(Clone, PartialEq, Hash)]
+pub enum SchemeError {
+    AssertionViolation,
+    ImplementationRestrictionViolation,
+    IoError,
+    IoEncodingError,
+    IoDecodingError,
+    IoFileNotExist,
+    IoFileAlreadyExist,
+    IoInvalidPosition,
+    LexicalViolationReadError { who: String, message: String },
+    Error,
+}
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone, PartialEq)]

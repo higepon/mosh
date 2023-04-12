@@ -1,6 +1,6 @@
 #![allow(clippy::all)]
 use crate::lexer::{Lexer, Spanned, Token};
-use crate::reader_util::ReadError;
+use crate::error::SchemeError;
 
 /*!re2c
     re2c:define:YYCTYPE = usize; // We have Vec<char> and treat char as usize.
@@ -99,7 +99,7 @@ use crate::reader_util::ReadError;
 */
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Spanned<Token, usize, ReadError>;
+    type Item = Spanned<Token, usize, SchemeError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -191,11 +191,15 @@ impl<'input> Iterator for Lexer<'input> {
                                 return self.with_location(Token::Character{value:ch});
                             }
                             None => {
-                                return Some(Err(ReadError::InvalidToken {
-                                    start: self.tok,
-                                    end: self.cursor,
-                                    token: self.extract_token()
-                                }))
+                                return Some(Err(SchemeError::LexicalViolationReadError {
+                                    who: "lexer".to_string(),
+                                    message: format!(
+                                        "invalid hex scalar {} at {}:{}",
+                                        self.extract_token(),
+                                        self.tok,
+                                        self.cursor,
+                                    ),
+                                }));                                
                             }
                         }
                     }
@@ -254,11 +258,17 @@ impl<'input> Iterator for Lexer<'input> {
                         break 'lex;
                     }
                     $ { return None; }
-                    * { println!("invalid token {}", self.extract_token());return Some(Err(ReadError::InvalidToken {
-                            start: self.tok,
-                            end: self.cursor,
-                            token: self.extract_token()
-                        })); }
+                    * {
+                        return Some(Err(SchemeError::LexicalViolationReadError {
+                            who: "lexer".to_string(),
+                            message: format!(
+                                "invalid token {} at {}:{}",
+                                self.extract_token(),
+                                self.tok,
+                                self.cursor
+                            ),
+                        }));                        
+                      }
                 */
             }
             if should_skip_comment {

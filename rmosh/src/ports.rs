@@ -2595,13 +2595,11 @@ impl Codec for UTF16Codec {
         'retry: loop {
             match (port.read_u8(vm), port.read_u8(vm)) {
                 (Ok(None), _) => return Ok(None),
-                (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => {
-                    match mode {
-                        ErrorHandlingMode::IgnoreError => continue 'retry,
-                        ErrorHandlingMode::RaiseError => return self.decoding_error(),
-                        ErrorHandlingMode::ReplaceError => return Ok(Some('\u{FFFD}')),
-                    }                    
-                }
+                (_, Ok(None)) | (Err(_), _) | (_, Err(_)) => match mode {
+                    ErrorHandlingMode::IgnoreError => continue 'retry,
+                    ErrorHandlingMode::RaiseError => return self.decoding_error(),
+                    ErrorHandlingMode::ReplaceError => return Ok(Some('\u{FFFD}')),
+                },
                 (Ok(Some(a)), Ok(Some(b))) => {
                     if should_check_bom && !self.dont_check_bom {
                         if a == 0xFE && b == 0xFF {

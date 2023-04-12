@@ -516,15 +516,14 @@ impl Object {
                 | Object::CustomBinaryInputOutputPort(_)
                 | Object::BinaryFileInputOutputPort(_)
         )
-    }    
+    }
 
     pub fn is_binary_input_output_port(self) -> bool {
         matches!(
             self,
-                Object::CustomBinaryInputOutputPort(_)
-                | Object::BinaryFileInputOutputPort(_)
+            Object::CustomBinaryInputOutputPort(_) | Object::BinaryFileInputOutputPort(_)
         )
-    }    
+    }
 
     pub fn eqv(&self, other: &Self) -> bool {
         if self.is_number() {
