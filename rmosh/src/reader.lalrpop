@@ -7,6 +7,7 @@ use crate::reader_util::count_lineno;
 use crate::reader_util;
 use lalrpop_util::ParseError;
 use std::collections::HashMap;
+use crate::error::SchemeError;
 
 
 grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<u32, Object>, input_src: &str, content: &str);
@@ -222,7 +223,7 @@ Boolean: Object = {
 
 extern {
     type Location = usize;
-    type Error = ReadError;
+    type Error = SchemeError;
 
     enum lexer::Token {
         "'" => lexer::Token::AbbrevQuote,

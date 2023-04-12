@@ -1,4 +1,4 @@
-use crate::error::{self, Error, ErrorType};
+use crate::error::{self, Error, ErrorType, SchemeError};
 use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::vm::{Vm, CURRENT_VM};
@@ -116,7 +116,7 @@ pub trait TextInputPort: Port {
     // (read ...)
     // LALRPOP doesn't support multiple calls of parse.
     // We parse all S-Expressions once then store them.
-    fn read(&mut self, vm: &mut Vm) -> Result<Object, ReadError> {
+    fn read(&mut self, vm: &mut Vm) -> Result<Object, SchemeError> {
         //
         if self.parsed().is_unspecified() {
             let mut s = String::new();
@@ -152,24 +152,37 @@ pub trait TextInputPort: Port {
                     return Err(error);
                 }
                 Err(ParseError::InvalidToken { location }) => {
-                    return Err(ReadError::LalrpopInvalidToken { location })
+                    return Err(SchemeError::LexicalViolationReadError {
+                        who: "read".to_string(),
+                        message: format!("invalid token at {}", location),
+                    });
                 }
                 Err(ParseError::UnrecognizedEOF {
                     location,
                     expected: _,
-                }) => return Err(ReadError::UnrecognizedEOF { location }),
+                }) => {
+                    return Err(SchemeError::LexicalViolationReadError {
+                        who: "read".to_string(),
+                        message: format!("unexpected EOF at {}", location),
+                    });
+                }
                 Err(ParseError::UnrecognizedToken { token, expected }) => {
                     let context_start = max(0, (token.0 as isize) - 10) as usize;
                     // Show what is causing this error.
                     let context = format!("reader: {}", &s[context_start..token.2]);
-                    return Err(ReadError::UnrecognizedToken {
-                        token: token.1,
-                        expected,
-                        context,
+                    return Err(SchemeError::LexicalViolationReadError {
+                        who: "read".to_string(),
+                        message: format!(
+                            "unrecognized token: {:?} expected: {:?} context: {}",
+                            token.1, expected, context
+                        ),
                     });
                 }
                 Err(ParseError::ExtraToken { token }) => {
-                    return Err(ReadError::ExtraToken { token: token.1 })
+                    return Err(SchemeError::LexicalViolationReadError {
+                        who: "read".to_string(),
+                        message: format!("found extra token {:?}", token.1,),
+                    });
                 }
             }
         }
