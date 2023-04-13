@@ -1,4 +1,4 @@
-use crate::error;
+use crate::error::SchemeError;
 use crate::gc::Gc;
 use crate::lexer;
 use crate::numbers::Bignum;
@@ -237,7 +237,7 @@ pub fn read_string(s: &str) -> String {
     ret
 }
 
-pub fn read_symbol(s: &str) -> error::Result<String> {
+pub fn read_symbol(s: &str) -> Result<String, SchemeError> {
     let chars: Vec<char> = s.chars().collect();
     let mut ret = String::new();
     let mut i: usize = 0;
@@ -255,8 +255,10 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
                     let hex_ch = match chars.get(i) {
                         Some(c) => c,
                         None => {
-                            eprintln!("invalid \\x in symbol end");
-                            break;
+                            return Err(SchemeError::lexical_violation_read_error(
+                                "reader",
+                                "invalid \\x in symbol end",
+                            ));
                         }
                     };
                     i += 1;
@@ -276,7 +278,10 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
                         let rhs = (*hex_ch as u32) - ('A' as u32) + 10;
                         current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
                     } else {
-                        eprintln!("invalid \\x in symbol {}", hex_ch);
+                        return Err(SchemeError::lexical_violation_read_error(
+                            "reader",
+                            &format!("invalid \\x in symbol {}", ch),
+                        ));
                     }
                 }
             } else if *ch2 == '"' {
