@@ -136,7 +136,7 @@ impl SchemeError {
             who: who.to_string(),
             message: message.to_string(),
             irritants: irritants.to_vec(),
-            position: position,
+            position,
         }
     }
 
