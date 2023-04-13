@@ -11,7 +11,7 @@ use num_traits::{FromPrimitive, Signed, ToPrimitive, Zero};
 use crate::{
     bug,
     gc::{Gc, GcHeader, GcRef, ObjectType, Trace},
-    objects::Object,
+    objects::Object, error::SchemeError,
 };
 
 // GCed Object -> Object.
@@ -1477,13 +1477,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         _ => todo!(),
     }
 }
-#[derive(Debug)]
-pub enum SchemeError {
-    Div0,
-    NonZeroRequired,
-    NanOrInfinite,
-    Overflow,
-}
+
 pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeError> {
     assert!(n1.is_number());
     assert!(n2.is_number());

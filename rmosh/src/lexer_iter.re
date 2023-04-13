@@ -191,15 +191,15 @@ impl<'input> Iterator for Lexer<'input> {
                                 return self.with_location(Token::Character{value:ch});
                             }
                             None => {
-                                return Some(Err(SchemeError::LexicalViolationReadError {
-                                    who: "lexer".to_string(),
-                                    message: format!(
+                                return Some(Err(SchemeError::lexical_violation_read_error(
+                                    "lexer",
+                                    &format!(
                                         "invalid hex scalar {} at {}:{}",
                                         self.extract_token(),
                                         self.tok,
                                         self.cursor,
                                     ),
-                                }));                                
+                                )));                                
                             }
                         }
                     }
@@ -259,15 +259,15 @@ impl<'input> Iterator for Lexer<'input> {
                     }
                     $ { return None; }
                     * {
-                        return Some(Err(SchemeError::LexicalViolationReadError {
-                            who: "lexer".to_string(),
-                            message: format!(
+                        return Some(Err(SchemeError::lexical_violation_read_error(
+                            "lexer",
+                            &format!(
                                 "invalid token {} at {}:{}",
                                 self.extract_token(),
                                 self.tok,
                                 self.cursor
                             ),
-                        }));                        
+                        )));                        
                       }
                 */
             }

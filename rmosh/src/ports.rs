@@ -1,4 +1,4 @@
-use crate::error::{self, Error, ErrorType, SchemeError};
+use crate::error::{self, SchemeError};
 use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::vm::{Vm, CURRENT_VM};
@@ -11,7 +11,6 @@ use crate::{
     lexer::{self},
     objects::{CharExt, Object, Pair, SimpleStruct, Vector},
     reader::DatumParser,
-    reader_util::ReadError,
 };
 use core::panic;
 use lalrpop_util::ParseError;
@@ -55,22 +54,20 @@ pub trait Port {
     fn has_position(&self) -> bool {
         false
     }
-    fn position(&mut self, _vm: &mut Vm) -> error::Result<usize> {
-        Err(error::Error::new(
-            ErrorType::IoError,
+    fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
+        Err(SchemeError::implementation_restriction_violation(
             "position",
-            "position not supported",
+            "not supported",
             &[],
         ))
     }
     fn has_set_position(&self) -> bool {
         false
     }
-    fn set_position(&mut self, _vm: &mut Vm, _pos: usize) -> error::Result<usize> {
-        Err(error::Error::new(
-            ErrorType::IoError,
-            "set-position!",
-            "set-position! not supported",
+    fn set_position(&mut self, _vm: &mut Vm, _pos: usize) -> Result<usize, SchemeError> {
+        Err(SchemeError::implementation_restriction_violation(
+            "set-position",
+            "not supported",
             &[],
         ))
     }
@@ -87,15 +84,19 @@ pub trait OutputPort: Port {
 // Trait for TextInputPort.
 pub trait TextInputPort: Port {
     // The methods you have to implement.
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize>;
-    fn read_n_to_string(&mut self, vm: &mut Vm, str: &mut String, n: usize)
-        -> error::Result<usize>;
-    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>>;
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> Result<usize, SchemeError>;
+    fn read_n_to_string(
+        &mut self,
+        vm: &mut Vm,
+        str: &mut String,
+        n: usize,
+    ) -> Result<usize, SchemeError>;
+    fn read_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError>;
     fn ahead_char(&self) -> Option<char>;
     fn set_ahead_char(&mut self, c: Option<char>);
     fn input_src(&self) -> String;
 
-    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
+    fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> Result<usize, SchemeError> {
         loop {
             match self.read_char(vm) {
                 Ok(Some(ch)) => {
@@ -120,14 +121,7 @@ pub trait TextInputPort: Port {
         //
         if self.parsed().is_unspecified() {
             let mut s = String::new();
-            match self.read_to_string(vm, &mut s) {
-                Ok(_) => {}
-                Err(err) => {
-                    return Err(ReadError::ContentNotFound {
-                        description: err.to_string(),
-                    });
-                }
-            }
+            self.read_to_string(vm, &mut s)?;
             let s = "(".to_string() + &s;
             //println!("TRY to read {}", s);
             // re2c assumes null terminated string.
@@ -152,37 +146,37 @@ pub trait TextInputPort: Port {
                     return Err(error);
                 }
                 Err(ParseError::InvalidToken { location }) => {
-                    return Err(SchemeError::LexicalViolationReadError {
-                        who: "read".to_string(),
-                        message: format!("invalid token at {}", location),
-                    });
+                    return Err(SchemeError::lexical_violation_read_error(
+                        "read",
+                        &format!("invalid token at {}", location),
+                    ));
                 }
                 Err(ParseError::UnrecognizedEOF {
                     location,
                     expected: _,
                 }) => {
-                    return Err(SchemeError::LexicalViolationReadError {
-                        who: "read".to_string(),
-                        message: format!("unexpected EOF at {}", location),
-                    });
+                    return Err(SchemeError::lexical_violation_read_error(
+                        "read",
+                        &format!("unexpected EOF at {}", location),
+                    ));
                 }
                 Err(ParseError::UnrecognizedToken { token, expected }) => {
                     let context_start = max(0, (token.0 as isize) - 10) as usize;
                     // Show what is causing this error.
                     let context = format!("reader: {}", &s[context_start..token.2]);
-                    return Err(SchemeError::LexicalViolationReadError {
-                        who: "read".to_string(),
-                        message: format!(
+                    return Err(SchemeError::lexical_violation_read_error(
+                        "read",
+                        &format!(
                             "unrecognized token: {:?} expected: {:?} context: {}",
                             token.1, expected, context
                         ),
-                    });
+                    ));
                 }
                 Err(ParseError::ExtraToken { token }) => {
-                    return Err(SchemeError::LexicalViolationReadError {
-                        who: "read".to_string(),
-                        message: format!("found extra token {:?}", token.1,),
-                    });
+                    return Err(SchemeError::lexical_violation_read_error(
+                        "read",
+                        &format!("found extra token {:?}", token.1,),
+                    ));
                 }
             }
         }
@@ -238,7 +232,7 @@ pub trait TextInputPort: Port {
         }
     }
 
-    fn lookahead_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
+    fn lookahead_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError> {
         match self.ahead_char() {
             Some(ch) => Ok(Some(ch)),
             None => match self.read_char(vm) {
@@ -299,10 +293,10 @@ impl Port for StdInputPort {
 }
 
 impl BinaryInputPort for StdInputPort {
-    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
         io::stdin()
             .read(buf)
-            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
+            .map_err(|e| SchemeError::io_error("read", &e.to_string(), &[]))
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -365,10 +359,10 @@ impl Port for FileInputPort {
 }
 
 impl TextInputPort for FileInputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> error::Result<usize> {
-        self.reader
-            .read_to_string(str)
-            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
+    fn read_to_string(&mut self, _vm: &mut Vm, str: &mut String) -> Result<usize, SchemeError> {
+        self.reader.read_to_string(str).map_err(|e| {
+            error::SchemeError::lexical_violation_read_error("read", &format!("{}", e))
+        })
     }
 
     fn input_src(&self) -> String {
@@ -383,7 +377,7 @@ impl TextInputPort for FileInputPort {
         self.ahead_char = c;
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
+    fn read_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -410,7 +404,7 @@ impl TextInputPort for FileInputPort {
         _vm: &mut Vm,
         str: &mut String,
         n: usize,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let mut buf = vec![0; n];
         match self.reader.read(&mut buf) {
             Ok(size) => {
@@ -420,20 +414,14 @@ impl TextInputPort for FileInputPort {
                         str.push_str(s);
                         Ok(str.len())
                     }
-                    Err(e) => Err(Error::new(
-                        ErrorType::IoDecodingError,
+                    Err(e) => Err(SchemeError::io_decoding_error(
                         "read",
-                        &format!("read error {}", e),
+                        &format!("{}", e),
                         &[],
                     )),
                 }
             }
-            Err(e) => Err(error::Error::new(
-                ErrorType::IoError,
-                "read",
-                &format!("{}", e),
-                &[],
-            )),
+            Err(e) => Err(SchemeError::io_error("read", &format!("{}", e), &[])),
         }
     }
 
@@ -497,7 +485,7 @@ impl Display for StringInputPort {
 }
 
 impl TextInputPort for StringInputPort {
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> Result<usize, SchemeError> {
         let mut read_size = 0;
         loop {
             match self.read_char(vm) {
@@ -521,7 +509,7 @@ impl TextInputPort for StringInputPort {
     fn set_ahead_char(&mut self, c: Option<char>) {
         self.ahead_char = c;
     }
-    fn read_char(&mut self, _vm: &mut Vm) -> error::Result<Option<char>> {
+    fn read_char(&mut self, _vm: &mut Vm) -> Result<Option<char>, SchemeError> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -540,7 +528,7 @@ impl TextInputPort for StringInputPort {
         vm: &mut Vm,
         str: &mut String,
         n: usize,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let mut read_size = 0;
         loop {
             if read_size >= n {
@@ -576,15 +564,14 @@ impl Port for StringInputPort {
 // Trait for TextOutputPort.
 
 pub trait TextOutputPort: OutputPort {
-    fn put_string(&mut self, s: &str) -> error::Result<()>;
+    fn put_string(&mut self, s: &str) -> Result<(), SchemeError>;
 
     // (write-char c).
-    fn write_char(&mut self, c: char) -> error::Result<()> {
+    fn write_char(&mut self, c: char) -> Result<(), SchemeError> {
         if self.is_open() {
             self.put_string(&c.to_string())
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "write-char",
                 "port is closed",
                 &[],
@@ -593,7 +580,7 @@ pub trait TextOutputPort: OutputPort {
     }
 
     // (write obj): Machine readable print.
-    fn write(&mut self, obj: Object, shared_aware: bool) -> error::Result<()> {
+    fn write(&mut self, obj: Object, shared_aware: bool) -> Result<(), SchemeError> {
         if shared_aware {
             let mut shared_id = 1;
             let mut seen: HashMap<Object, Object> = HashMap::new();
@@ -605,7 +592,7 @@ pub trait TextOutputPort: OutputPort {
     }
 
     // (display obj): Human readable print.
-    fn display(&mut self, obj: Object, shared_aware: bool) -> error::Result<()> {
+    fn display(&mut self, obj: Object, shared_aware: bool) -> Result<(), SchemeError> {
         if shared_aware {
             let mut shared_id = 1;
             let mut seen: HashMap<Object, Object> = HashMap::new();
@@ -616,7 +603,7 @@ pub trait TextOutputPort: OutputPort {
         }
     }
 
-    fn display_one(&mut self, obj: Object, human_readable: bool) -> error::Result<()> {
+    fn display_one(&mut self, obj: Object, human_readable: bool) -> Result<(), SchemeError> {
         match obj {
             Object::Pair(p) => self.display_pair(p, human_readable),
             Object::Vector(v) => self.display_vector(v, human_readable),
@@ -688,7 +675,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> error::Result<()> {
+    ) -> Result<(), SchemeError> {
         let seen_state = match seen.get(&obj) {
             Some(val) => *val,
             None => Object::False,
@@ -786,7 +773,7 @@ pub trait TextOutputPort: OutputPort {
         false
     }
 
-    fn display_pair(&mut self, p: GcRef<Pair>, human_readable: bool) -> error::Result<()> {
+    fn display_pair(&mut self, p: GcRef<Pair>, human_readable: bool) -> Result<(), SchemeError> {
         let mut p = p;
         let abbreviated =
             p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
@@ -828,7 +815,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> error::Result<()> {
+    ) -> Result<(), SchemeError> {
         let mut p = p;
         let abbreviated =
             p.cdr.is_pair() && p.cdr.cdr_unchecked().is_nil() && self.display_abbreviated(p.car);
@@ -868,15 +855,15 @@ pub trait TextOutputPort: OutputPort {
         }
     }
 
-    fn as_display(&mut self, obj: Object) -> error::Result<()> {
+    fn as_display(&mut self, obj: Object) -> Result<(), SchemeError> {
         self.put_string(&format!("{}", obj))
     }
 
-    fn as_write(&mut self, obj: Object) -> error::Result<()> {
+    fn as_write(&mut self, obj: Object) -> Result<(), SchemeError> {
         self.put_string(&format!("{:?}", obj))
     }
 
-    fn display_vector(&mut self, v: GcRef<Vector>, human_readable: bool) -> error::Result<()> {
+    fn display_vector(&mut self, v: GcRef<Vector>, human_readable: bool) -> Result<(), SchemeError> {
         self.put_string("#(")?;
         for i in 0..v.len() {
             self.display_one(v.data[i], human_readable)?;
@@ -893,7 +880,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> error::Result<()> {
+    ) -> Result<(), SchemeError> {
         self.put_string("#(")?;
         for i in 0..v.len() {
             self.display_shared_one(v.data[i], seen, shared_id, human_readable)?;
@@ -908,7 +895,7 @@ pub trait TextOutputPort: OutputPort {
         &mut self,
         s: GcRef<SimpleStruct>,
         human_readable: bool,
-    ) -> error::Result<()> {
+    ) -> Result<(), SchemeError> {
         self.put_string(&format!("#<simple-stuct {} ", s.name))?;
         for i in 0..s.len() {
             self.display_one(s.field(i), human_readable)?;
@@ -925,7 +912,7 @@ pub trait TextOutputPort: OutputPort {
         seen: &mut HashMap<Object, Object>,
         shared_id: &mut isize,
         human_readable: bool,
-    ) -> error::Result<()> {
+    ) -> Result<(), SchemeError> {
         self.put_string(&format!("#<simple-stuct {} ", s.name))?;
         for i in 0..s.len() {
             self.display_shared_one(s.field(i), seen, shared_id, human_readable)?;
@@ -1050,7 +1037,7 @@ pub trait TextOutputPort: OutputPort {
     }
 
     // (format ...).
-    fn format(&mut self, fmt: &str, args: &mut [Object]) -> error::Result<()> {
+    fn format(&mut self, fmt: &str, args: &mut [Object]) -> Result<(), SchemeError> {
         let mut chars = fmt.chars();
         let mut i = 0;
         while let Some(c) = chars.next() {
@@ -1062,8 +1049,7 @@ pub trait TextOutputPort: OutputPort {
                             self.display(args[i], shared_aware).ok();
                             i += 1;
                         } else {
-                            return Err(error::Error::new(
-                                ErrorType::IoError,
+                            return Err(SchemeError::io_error(
                                 "format",
                                 "not enough arguments",
                                 &[],
@@ -1075,16 +1061,14 @@ pub trait TextOutputPort: OutputPort {
                             self.write(args[i], shared_aware).ok();
                             i += 1;
                         } else {
-                            return Err(error::Error::new(
-                                ErrorType::IoError,
+                            return Err(SchemeError::io_error(
                                 "format",
                                 "not enough arguments",
                                 &[],
                             ));
                         }
                     } else {
-                        return Err(error::Error::new(
-                            ErrorType::IoError,
+                        return Err(SchemeError::io_error(
                             "format",
                             &format!("unknown format specifier ~{}", c),
                             &[],
@@ -1103,11 +1087,11 @@ pub trait TextOutputPort: OutputPort {
 
 // Trait for Port.
 pub trait BinaryInputPort: Port {
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize>;
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError>;
     fn ahead_u8(&self) -> Option<u8>;
     fn set_ahead_u8(&mut self, c: Option<u8>);
 
-    fn read_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
+    fn read_u8(&mut self, vm: &mut Vm) -> Result<Option<u8>, SchemeError> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -1126,7 +1110,7 @@ pub trait BinaryInputPort: Port {
     }
 
     // This default implementation is not very efficient :)
-    fn read_all(&mut self, vm: &mut Vm, buf: &mut Vec<u8>) -> error::Result<usize> {
+    fn read_all(&mut self, vm: &mut Vm, buf: &mut Vec<u8>) -> Result<usize, SchemeError> {
         let mut size = 0;
 
         while let Ok(Some(u)) = self.read_u8(vm) {
@@ -1137,7 +1121,7 @@ pub trait BinaryInputPort: Port {
         Ok(size)
     }
 
-    fn lookahead_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
+    fn lookahead_u8(&mut self, vm: &mut Vm) -> Result<Option<u8>, SchemeError> {
         match self.ahead_u8() {
             Some(u) => Ok(Some(u)),
             None => match self.read_u8(vm) {
@@ -1194,7 +1178,7 @@ impl Port for BytevectorInputPort {
 }
 
 impl BinaryInputPort for BytevectorInputPort {
-    fn read_u8(&mut self, _vm: &mut Vm) -> error::Result<Option<u8>> {
+    fn read_u8(&mut self, _vm: &mut Vm) -> Result<Option<u8>, SchemeError> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -1210,7 +1194,7 @@ impl BinaryInputPort for BytevectorInputPort {
         }
     }
 
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
         let size = buf.len();
         let mut i = 0;
         loop {
@@ -1249,25 +1233,25 @@ impl Display for BytevectorInputPort {
 
 // Trait for binary output port.
 pub trait BinaryOutputPort: OutputPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize>;
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError>;
 
-    fn put_u8(&mut self, value: u8) -> error::Result<usize> {
+    fn put_u8(&mut self, value: u8) -> Result<usize, SchemeError> {
         self.write(&[value])
     }
 
-    fn put_u16(&mut self, value: u16) -> error::Result<usize> {
+    fn put_u16(&mut self, value: u16) -> Result<usize, SchemeError> {
         self.write(&value.to_le_bytes())
     }
 
-    fn put_u32(&mut self, value: u32) -> error::Result<usize> {
+    fn put_u32(&mut self, value: u32) -> Result<usize, SchemeError> {
         self.write(&value.to_le_bytes())
     }
 
-    fn put_u64(&mut self, value: u64) -> error::Result<usize> {
+    fn put_u64(&mut self, value: u64) -> Result<usize, SchemeError> {
         self.write(&value.to_le_bytes())
     }
 
-    fn put_i64(&mut self, value: i64) -> error::Result<usize> {
+    fn put_i64(&mut self, value: i64) -> Result<usize, SchemeError> {
         self.write(&value.to_le_bytes())
     }
 }
@@ -1316,7 +1300,7 @@ impl Port for BytevectorOutputPort {
 }
 
 impl BinaryOutputPort for BytevectorOutputPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         self.data.extend_from_slice(buf);
         Ok(buf.len())
     }
@@ -1380,7 +1364,7 @@ impl Port for BinaryFileInputPort {
 }
 
 impl BinaryInputPort for BinaryFileInputPort {
-    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
         let read_start: usize;
         match self.ahead_u8() {
             Some(u) => {
@@ -1395,7 +1379,7 @@ impl BinaryInputPort for BinaryFileInputPort {
         }
         self.reader
             .read(&mut buf[read_start..])
-            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
+            .map_err(|e| SchemeError::io_error("read", &e.to_string(), &[]))
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1462,7 +1446,7 @@ impl Port for BinaryFileInputOutputPort {
 }
 
 impl BinaryInputPort for BinaryFileInputOutputPort {
-    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
         let read_start: usize;
         match self.ahead_u8() {
             Some(u) => {
@@ -1477,7 +1461,7 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
         }
         self.file
             .read(&mut buf[read_start..])
-            .map_err(|e| error::Error::new(ErrorType::IoError, "read", &format!("{}", e), &[]))
+            .map_err(|e| SchemeError::io_error("read", &e.to_string(), &[]))
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1490,10 +1474,10 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
 }
 
 impl BinaryOutputPort for BinaryFileInputOutputPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         self.file
             .write(buf)
-            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]))
+            .map_err(|e| SchemeError::io_error("write", &e.to_string(), &[]))
     }
 }
 
@@ -1555,10 +1539,9 @@ impl OutputPort for FileOutputPort {
 }
 
 impl TextOutputPort for FileOutputPort {
-    fn put_string(&mut self, s: &str) -> error::Result<()> {
+    fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
         write!(self.writer, "{}", s).map_err(|e| {
-            Error::new(
-                ErrorType::IoError,
+            SchemeError::io_error(
                 "put-string",
                 &format!("write error {}", e),
                 &[],
@@ -1612,10 +1595,10 @@ impl OutputPort for StdOutputPort {
 }
 
 impl BinaryOutputPort for StdOutputPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         let ret = io::stdout()
             .write(buf)
-            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]));
+            .map_err(|e| SchemeError::io_error("write", &e.to_string(), &[]));
         self.flush();
         ret
     }
@@ -1666,10 +1649,10 @@ impl OutputPort for StdErrorPort {
 }
 
 impl BinaryOutputPort for StdErrorPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         io::stderr()
             .write(buf)
-            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]))
+            .map_err(|e| SchemeError::io_error("write", &e.to_string(), &[]))
     }
 }
 
@@ -1734,7 +1717,7 @@ impl OutputPort for StringOutputPort {
 }
 
 impl TextOutputPort for StringOutputPort {
-    fn put_string(&mut self, s: &str) -> error::Result<()> {
+    fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
         self.string.push_str(s);
         Ok(())
     }
@@ -1793,7 +1776,7 @@ impl Display for TranscodedInputPort {
 }
 
 impl TextInputPort for TranscodedInputPort {
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> Result<usize, SchemeError> {
         let mut i: usize = 1;
         loop {
             match self.read_char(vm) {
@@ -1811,7 +1794,7 @@ impl TextInputPort for TranscodedInputPort {
         vm: &mut Vm,
         str: &mut String,
         n: usize,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let mut size = 0;
         loop {
             match self.read_char(vm) {
@@ -1827,7 +1810,7 @@ impl TextInputPort for TranscodedInputPort {
         Ok(n)
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
+    fn read_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -1922,7 +1905,7 @@ impl OutputPort for TranscodedOutputPort {
 }
 
 impl TextOutputPort for TranscodedOutputPort {
-    fn put_string(&mut self, s: &str) -> error::Result<()> {
+    fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
         let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
         let mut transcoder = self.transcoder.to_transcoder();
         transcoder.write_string(port, s)
@@ -1982,7 +1965,7 @@ impl Display for TranscodedInputOutputPort {
 }
 
 impl TextInputPort for TranscodedInputOutputPort {
-    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> error::Result<usize> {
+    fn read_to_string(&mut self, vm: &mut Vm, str: &mut String) -> Result<usize, SchemeError> {
         let mut i: usize = 1;
         loop {
             match self.read_char(vm) {
@@ -2000,7 +1983,7 @@ impl TextInputPort for TranscodedInputOutputPort {
         vm: &mut Vm,
         str: &mut String,
         n: usize,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let mut size = 0;
         loop {
             match self.read_char(vm) {
@@ -2016,7 +1999,7 @@ impl TextInputPort for TranscodedInputOutputPort {
         Ok(n)
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
+    fn read_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -2062,7 +2045,7 @@ impl OutputPort for TranscodedInputOutputPort {
 }
 
 impl TextOutputPort for TranscodedInputOutputPort {
-    fn put_string(&mut self, s: &str) -> error::Result<()> {
+    fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
         let port = obj_as_binary_output_port_mut!("put-string", self.port);
         let mut transcoder = self.transcoder.to_transcoder();
         transcoder.write_string(port, s)
@@ -2111,31 +2094,21 @@ impl Port for BinaryFileOutputPort {
     fn has_position(&self) -> bool {
         true
     }
-    fn position(&mut self, _vm: &mut Vm) -> error::Result<usize> {
+    fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
         self.writer.flush().ok();
         match self.writer.stream_position() {
             Ok(pos) => Ok(pos as usize),
-            Err(e) => Err(error::Error::new(
-                ErrorType::IoError,
-                "position",
-                &format!("{}", e),
-                &[],
-            )),
+            Err(e) => Err(SchemeError::io_error("position", &e.to_string(), &[])),
         }
     }
     fn has_set_position(&self) -> bool {
         true
     }
-    fn set_position(&mut self, _vm: &mut Vm, pos: usize) -> error::Result<usize> {
+    fn set_position(&mut self, _vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         self.writer.flush().ok();
         match self.writer.seek(SeekFrom::Start(pos as u64)) {
             Ok(pos) => Ok(pos as usize),
-            Err(e) => Err(error::Error::new(
-                ErrorType::IoError,
-                "set_position!",
-                &format!("{}", e),
-                &[],
-            )),
+            Err(e) => Err(SchemeError::io_error("set-position!", &e.to_string(), &[])),
         }
     }
 
@@ -2151,10 +2124,10 @@ impl OutputPort for BinaryFileOutputPort {
 }
 
 impl BinaryOutputPort for BinaryFileOutputPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         self.writer
             .write(buf)
-            .map_err(|e| error::Error::new(ErrorType::IoError, "write", &format!("{}", e), &[]))
+            .map_err(|e| SchemeError::io_error("write", &e.to_string(), &[]))
     }
 }
 
@@ -2172,14 +2145,14 @@ pub trait Codec {
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
         should_check_bom: bool,
-    ) -> error::Result<Option<char>>;
+    ) -> Result<Option<char>, SchemeError>;
 
     fn write_char(
         &mut self,
         port: &mut dyn BinaryOutputPort,
         ch: char,
         mode: ErrorHandlingMode,
-    ) -> error::Result<usize>;
+    ) -> Result<usize, SchemeError>;
 }
 
 /// Latin1Codec
@@ -2214,23 +2187,19 @@ impl Codec for Latin1Codec {
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
         _should_check_bom: bool,
-    ) -> error::Result<Option<char>> {
+    ) -> Result<Option<char>, SchemeError> {
         loop {
             match port.read_u8(vm) {
                 Ok(Some(u)) => return Ok(Some(u as char)),
                 Ok(None) => {
                     return Ok(None);
                 }
-                Err(_) => match mode {
+                Err(e) => match mode {
                     ErrorHandlingMode::IgnoreError => {
                         continue;
                     }
                     ErrorHandlingMode::RaiseError => {
-                        return error::Error::io_decoding_error(
-                            "latin-1-codec",
-                            "invalid latin-1 byte sequence",
-                            &[],
-                        )
+                        return Err(e);
                     }
                     ErrorHandlingMode::ReplaceError => return Ok(Some('\u{FFFD}')),
                 },
@@ -2242,7 +2211,7 @@ impl Codec for Latin1Codec {
         port: &mut dyn BinaryOutputPort,
         ch: char,
         mode: ErrorHandlingMode,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let u = ch as u32;
         let mut buf: Vec<u8> = vec![];
         if u < 0xff {
@@ -2251,10 +2220,9 @@ impl Codec for Latin1Codec {
             match mode {
                 ErrorHandlingMode::IgnoreError => return Ok(0),
                 ErrorHandlingMode::RaiseError => {
-                    return Err(Error::new(
-                        ErrorType::IoEncodingError,
+                    return Err(SchemeError::io_encoding_error(
                         "latin-1-codec",
-                        "writer error",
+                        "char should be smaller 0xff",
                         &[Object::Char(ch)],
                     ))
                 }
@@ -2263,14 +2231,7 @@ impl Codec for Latin1Codec {
                 }
             }
         }
-        port.write(&buf).map_err(|e| {
-            Error::new(
-                ErrorType::IoEncodingError,
-                "latin-1-codec",
-                &format!("writer error {}", e),
-                &[Object::Char(ch)],
-            )
-        })
+        port.write(&buf)
     }
 }
 
@@ -2308,12 +2269,12 @@ impl UTF8Codec {
         (0x80..=0xbf).contains(&u)
     }
 
-    fn decoding_error(&self, msg: &str) -> error::Result<Option<char>> {
-        error::Error::io_decoding_error(
+    fn decoding_error(&self, msg: &str) -> Result<Option<char>, SchemeError> {
+        Err(SchemeError::io_decoding_error(
             "utf-8-codec",
             &format!("invalid utf8 sequence: {}", msg),
             &[],
-        )
+        ))
     }
 }
 
@@ -2324,7 +2285,7 @@ impl Codec for UTF8Codec {
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
         _should_check_bom: bool,
-    ) -> error::Result<Option<char>> {
+    ) -> Result<Option<char>, SchemeError> {
         'retry: loop {
             match port.read_u8(vm) {
                 Ok(Some(first)) => {
@@ -2500,7 +2461,7 @@ impl Codec for UTF8Codec {
                 }
                 // EOF
                 Ok(None) => return Ok(None),
-                Err(e) => return self.decoding_error(&format!("{}", e)),
+                Err(e) => return self.decoding_error(&format!("{:?}", e)),
             }
         }
     }
@@ -2510,7 +2471,7 @@ impl Codec for UTF8Codec {
         port: &mut dyn BinaryOutputPort,
         ch: char,
         mode: ErrorHandlingMode,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let u = ch as u32;
         let mut buf: Vec<u8> = vec![];
         // UTF8-1
@@ -2532,8 +2493,7 @@ impl Codec for UTF8Codec {
             match mode {
                 ErrorHandlingMode::IgnoreError => return Ok(buf.len()),
                 ErrorHandlingMode::RaiseError => {
-                    return Err(Error::new(
-                        ErrorType::IoDecodingError,
+                    return Err(SchemeError::io_decoding_error(
                         "utf-8-codec",
                         &format!("invalid utf-8 sequence: {}", u),
                         &[],
@@ -2545,14 +2505,7 @@ impl Codec for UTF8Codec {
                 }
             }
         }
-        port.write(&buf).map_err(|e| {
-            Error::new(
-                ErrorType::IoDecodingError,
-                "utf-8-codec",
-                &format!("writer error {}", e),
-                &[],
-            )
-        })
+        port.write(&buf)
     }
 }
 
@@ -2592,8 +2545,12 @@ impl UTF16Codec {
         }
     }
 
-    fn decoding_error(&self) -> error::Result<Option<char>> {
-        error::Error::io_decoding_error("utf-16-codec", "invalid utf16 sequence", &[])
+    fn decoding_error(&self) -> Result<Option<char>, SchemeError> {
+        Err(SchemeError::io_decoding_error(
+            "utf-16-codec",
+            "invalid utf16 sequence",
+            &[],
+        ))
     }
 }
 
@@ -2604,7 +2561,7 @@ impl Codec for UTF16Codec {
         port: &mut dyn BinaryInputPort,
         mode: ErrorHandlingMode,
         should_check_bom: bool,
-    ) -> error::Result<Option<char>> {
+    ) -> Result<Option<char>, SchemeError> {
         'retry: loop {
             match (port.read_u8(vm), port.read_u8(vm)) {
                 (Ok(None), _) => return Ok(None),
@@ -2682,7 +2639,7 @@ impl Codec for UTF16Codec {
         port: &mut dyn BinaryOutputPort,
         ch: char,
         mode: ErrorHandlingMode,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let u = ch as u32;
         let mut buf: Vec<u8> = vec![];
         if u > 0x10FFFF {
@@ -2691,8 +2648,7 @@ impl Codec for UTF16Codec {
                     return Ok(0);
                 }
                 ErrorHandlingMode::RaiseError => {
-                    return Err(Error::new(
-                        ErrorType::IoEncodingError,
+                    return Err(SchemeError::io_encoding_error(
                         "utf-16-codec",
                         "character out of utf16 range",
                         &[Object::Char(ch)],
@@ -2735,14 +2691,7 @@ impl Codec for UTF16Codec {
                 buf.push((lo_surrogate & 0xff) as u8);
             }
         }
-        port.write(&buf).map_err(|e| {
-            Error::new(
-                ErrorType::IoEncodingError,
-                "utf-8-code",
-                &format!("writer error {}", e),
-                &[Object::Char(ch)],
-            )
-        })
+        port.write(&buf)
     }
 }
 
@@ -2788,7 +2737,7 @@ impl Transcoder {
         &mut self,
         port: &mut dyn BinaryOutputPort,
         ch: char,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         if !self.buffer.is_empty() {
             self.buffer.pop();
         }
@@ -2830,7 +2779,11 @@ impl Transcoder {
         }
     }
 
-    pub fn write_string(&mut self, port: &mut dyn BinaryOutputPort, s: &str) -> error::Result<()> {
+    pub fn write_string(
+        &mut self,
+        port: &mut dyn BinaryOutputPort,
+        s: &str,
+    ) -> Result<(), SchemeError> {
         for ch in s.chars() {
             self.write_char(port, ch)?;
         }
@@ -2841,7 +2794,7 @@ impl Transcoder {
         &mut self,
         vm: &mut Vm,
         port: &mut dyn BinaryInputPort,
-    ) -> error::Result<String> {
+    ) -> Result<String, SchemeError> {
         let mut s = String::new();
         loop {
             let ch = self.read_char(vm, port)?;
@@ -2860,7 +2813,7 @@ impl Transcoder {
         &mut self,
         vm: &mut Vm,
         port: &mut dyn BinaryInputPort,
-    ) -> error::Result<Option<char>> {
+    ) -> Result<Option<char>, SchemeError> {
         let ch = self.read_char_raw(vm, port)?;
 
         if let Some(ch) = ch {
@@ -2895,7 +2848,7 @@ impl Transcoder {
         &mut self,
         vm: &mut Vm,
         port: &mut dyn BinaryInputPort,
-    ) -> error::Result<Option<char>> {
+    ) -> Result<Option<char>, SchemeError> {
         let codec = match self.codec {
             Object::Latin1Codec(mut codec) => {
                 let codec: &mut dyn Codec = unsafe { codec.pointer.as_mut() };
@@ -3033,15 +2986,14 @@ impl Port for CustomBinaryInputPort {
         !self.set_pos_proc.is_false()
     }
 
-    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
+    fn position(&mut self, vm: &mut Vm) -> Result<usize, SchemeError> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => match self.ahead_u8() {
                     Some(_) => Ok((pos - 1) as usize),
                     None => Ok(pos as usize),
                 },
-                Ok(obj) => Err(error::Error::new(
-                    ErrorType::IoError,
+                Ok(obj) => Err(SchemeError::io_error(
                     "position",
                     &format!("pos procedure returned non integer {}", obj),
                     &[self.pos_proc, obj],
@@ -3049,8 +3001,7 @@ impl Port for CustomBinaryInputPort {
                 Err(e) => Err(e),
             }
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "position",
                 "position! not supported",
                 &[],
@@ -3058,15 +3009,14 @@ impl Port for CustomBinaryInputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         if self.has_set_position() {
             self.set_ahead_u8(None);
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "set-position!",
                 "set-position! not supported",
                 &[],
@@ -3076,7 +3026,7 @@ impl Port for CustomBinaryInputPort {
 }
 
 impl BinaryInputPort for CustomBinaryInputPort {
-    fn read_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
+    fn read_u8(&mut self, vm: &mut Vm) -> Result<Option<u8>, SchemeError> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -3097,8 +3047,7 @@ impl BinaryInputPort for CustomBinaryInputPort {
                         }
                     }
                     Ok(obj) => {
-                        Err(error::Error::new(
-                            ErrorType::IoError,
+                        Err(SchemeError::io_error(
                             "read_u8",
                             &format!("custom-binary-input-port read procedure should return exact integer but got {}", obj),
                             &[obj],
@@ -3110,7 +3059,7 @@ impl BinaryInputPort for CustomBinaryInputPort {
         }
     }
 
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
         let size = buf.len();
         let mut i = 0;
         loop {
@@ -3203,12 +3152,11 @@ impl Port for CustomTextInputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
+    fn position(&mut self, vm: &mut Vm) -> Result<usize, SchemeError> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => Err(error::Error::new(
-                    ErrorType::IoError,
+                Ok(obj) => Err(SchemeError::io_error(
                     "position",
                     &format!("pos procedure returned non integer {}", obj),
                     &[self.pos_proc, obj],
@@ -3216,8 +3164,7 @@ impl Port for CustomTextInputPort {
                 Err(e) => Err(e),
             }
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "position",
                 "position not supported",
                 &[],
@@ -3225,14 +3172,13 @@ impl Port for CustomTextInputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "set-position!",
                 "set-position! not supported",
                 &[],
@@ -3242,7 +3188,7 @@ impl Port for CustomTextInputPort {
 }
 
 impl TextInputPort for CustomTextInputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> error::Result<usize> {
+    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> Result<usize, SchemeError> {
         todo!();
     }
 
@@ -3258,7 +3204,7 @@ impl TextInputPort for CustomTextInputPort {
         self.ahead_char = c;
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
+    fn read_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -3274,8 +3220,7 @@ impl TextInputPort for CustomTextInputPort {
                 let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
                     Ok(obj) => {
                         if !obj.is_fixnum() {
-                            return Err(error::Error::new(
-                                ErrorType::IoError,
+                            return Err(SchemeError::io_error(
                                 "read_u8",
                                 &format!("custom-text-input-port read procedure should return exact integer but got {}", obj),
                                 &[obj],
@@ -3298,7 +3243,7 @@ impl TextInputPort for CustomTextInputPort {
         vm: &mut Vm,
         dst: &mut String,
         n: usize,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         let mut size = 0;
         loop {
             if size >= n {
@@ -3384,12 +3329,11 @@ impl Port for CustomBinaryOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
+    fn position(&mut self, vm: &mut Vm) -> Result<usize, SchemeError> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => Err(error::Error::new(
-                    ErrorType::IoError,
+                Ok(obj) => Err(SchemeError::io_error(
                     "position",
                     &format!("pos procedure returned non integer {}", obj),
                     &[self.pos_proc, obj],
@@ -3397,8 +3341,7 @@ impl Port for CustomBinaryOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "position",
                 "position not supported",
                 &[],
@@ -3406,14 +3349,13 @@ impl Port for CustomBinaryOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "set-position!",
                 "set-position! not supported",
                 &[],
@@ -3423,7 +3365,7 @@ impl Port for CustomBinaryOutputPort {
 }
 
 impl BinaryOutputPort for CustomBinaryOutputPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         let vm = unsafe { &mut CURRENT_VM };
         let write_buf = buf.to_vec();
         let bv = vm.gc.new_bytevector_u8(&write_buf);
@@ -3432,8 +3374,7 @@ impl BinaryOutputPort for CustomBinaryOutputPort {
         let write_size = match vm.call_closure3(self.write_proc, bv, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
+                    return Err(SchemeError::io_error(
                         "write",
                         &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
                         &[obj],
@@ -3513,12 +3454,11 @@ impl Port for CustomTextOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
+    fn position(&mut self, vm: &mut Vm) -> Result<usize, SchemeError> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => Err(error::Error::new(
-                    ErrorType::IoError,
+                Ok(obj) => Err(SchemeError::io_error(
                     "position",
                     &format!("pos procedure returned non integer {}", obj),
                     &[self.pos_proc, obj],
@@ -3526,8 +3466,7 @@ impl Port for CustomTextOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "position",
                 "position not supported",
                 &[],
@@ -3535,14 +3474,13 @@ impl Port for CustomTextOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "set-position!",
                 "set-position! not supported",
                 &[],
@@ -3552,7 +3490,7 @@ impl Port for CustomTextOutputPort {
 }
 
 impl TextOutputPort for CustomTextOutputPort {
-    fn put_string(&mut self, s: &str) -> error::Result<()> {
+    fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
         let vm = unsafe { &mut CURRENT_VM };
         let str = vm.gc.new_string(s);
         let start = 0_isize.to_obj();
@@ -3560,8 +3498,7 @@ impl TextOutputPort for CustomTextOutputPort {
         let _write_size = match vm.call_closure3(self.write_proc, str, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
+                    return Err(SchemeError::io_error(
                         "read",
                         &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
                         &[obj],
@@ -3647,12 +3584,11 @@ impl Port for CustomBinaryInputOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
+    fn position(&mut self, vm: &mut Vm) -> Result<usize, SchemeError> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => Err(error::Error::new(
-                    ErrorType::IoError,
+                Ok(obj) => Err(SchemeError::io_error(
                     "position",
                     &format!("pos procedure returned non integer {}", obj),
                     &[self.pos_proc, obj],
@@ -3660,8 +3596,7 @@ impl Port for CustomBinaryInputOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "position",
                 "position not supported",
                 &[],
@@ -3669,15 +3604,14 @@ impl Port for CustomBinaryInputOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         if self.has_set_position() {
             self.set_ahead_u8(None);
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "set-position!",
                 "set-position! not supported",
                 &[],
@@ -3687,7 +3621,7 @@ impl Port for CustomBinaryInputOutputPort {
 }
 
 impl BinaryOutputPort for CustomBinaryInputOutputPort {
-    fn write(&mut self, buf: &[u8]) -> error::Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         let vm = unsafe { &mut CURRENT_VM };
         let write_buf = buf.to_vec();
         let bv = vm.gc.new_bytevector_u8(&write_buf);
@@ -3696,8 +3630,7 @@ impl BinaryOutputPort for CustomBinaryInputOutputPort {
         let write_size = match vm.call_closure3(self.write_proc, bv, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
+                    return Err(SchemeError::io_error(
                         "write",
                         &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
                         &[obj],
@@ -3712,7 +3645,7 @@ impl BinaryOutputPort for CustomBinaryInputOutputPort {
 }
 
 impl BinaryInputPort for CustomBinaryInputOutputPort {
-    fn read_u8(&mut self, vm: &mut Vm) -> error::Result<Option<u8>> {
+    fn read_u8(&mut self, vm: &mut Vm) -> Result<Option<u8>, SchemeError> {
         match self.ahead_u8() {
             Some(u) => {
                 self.set_ahead_u8(None);
@@ -3733,8 +3666,7 @@ impl BinaryInputPort for CustomBinaryInputOutputPort {
                         }
                     }
                     Ok(obj) => {
-                        Err(error::Error::new(
-                            ErrorType::IoError,
+                        Err(SchemeError::io_error(
                             "read_u8",
                             &format!("custom-binary-input/output-port read procedure should return exact integer but got {}", obj),
                             &[obj],
@@ -3746,7 +3678,7 @@ impl BinaryInputPort for CustomBinaryInputOutputPort {
         }
     }
 
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> error::Result<usize> {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
         let size = buf.len();
         let mut i = 0;
         loop {
@@ -3847,12 +3779,11 @@ impl Port for CustomTextInputOutputPort {
     fn has_set_position(&self) -> bool {
         !self.set_pos_proc.is_false()
     }
-    fn position(&mut self, vm: &mut Vm) -> error::Result<usize> {
+    fn position(&mut self, vm: &mut Vm) -> Result<usize, SchemeError> {
         if self.has_position() {
             match vm.call_closure0(self.pos_proc) {
                 Ok(Object::Fixnum(pos)) => Ok(pos as usize),
-                Ok(obj) => Err(error::Error::new(
-                    ErrorType::IoError,
+                Ok(obj) => Err(SchemeError::io_error(
                     "position",
                     &format!("pos procedure returned non integer {}", obj),
                     &[self.pos_proc, obj],
@@ -3860,8 +3791,7 @@ impl Port for CustomTextInputOutputPort {
                 Err(e) => Err(e),
             }
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "position",
                 "position not supported",
                 &[],
@@ -3869,14 +3799,13 @@ impl Port for CustomTextInputOutputPort {
         }
     }
 
-    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> error::Result<usize> {
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         if self.has_set_position() {
             let pos = pos.to_obj(&mut vm.gc);
             vm.call_closure1(self.set_pos_proc, pos)?;
             Ok(0)
         } else {
-            Err(error::Error::new(
-                ErrorType::IoError,
+            Err(SchemeError::io_error(
                 "set-position!",
                 "set-position! not supported",
                 &[],
@@ -3886,7 +3815,7 @@ impl Port for CustomTextInputOutputPort {
 }
 
 impl TextOutputPort for CustomTextInputOutputPort {
-    fn put_string(&mut self, s: &str) -> error::Result<()> {
+    fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
         let vm = unsafe { &mut CURRENT_VM };
         let str = vm.gc.new_string(s);
         let start = 0_isize.to_obj();
@@ -3894,8 +3823,7 @@ impl TextOutputPort for CustomTextInputOutputPort {
         let _write_size = match vm.call_closure3(self.write_proc, str, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
+                    return Err(SchemeError::io_error(
                         "write",
                         &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
                         &[obj],
@@ -3920,7 +3848,7 @@ impl Display for CustomTextInputOutputPort {
 }
 
 impl TextInputPort for CustomTextInputOutputPort {
-    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> error::Result<usize> {
+    fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> Result<usize, SchemeError> {
         todo!();
     }
 
@@ -3936,7 +3864,7 @@ impl TextInputPort for CustomTextInputOutputPort {
         self.ahead_char = c;
     }
 
-    fn read_char(&mut self, vm: &mut Vm) -> error::Result<Option<char>> {
+    fn read_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError> {
         match self.ahead_char {
             Some(c) => {
                 self.ahead_char = None;
@@ -3963,7 +3891,7 @@ impl TextInputPort for CustomTextInputOutputPort {
         vm: &mut Vm,
         dst: &mut String,
         n: usize,
-    ) -> error::Result<usize> {
+    ) -> Result<usize, SchemeError> {
         if n == 0 {
             return Ok(0);
         }
@@ -3991,8 +3919,7 @@ impl TextInputPort for CustomTextInputOutputPort {
         let read_size = match vm.call_closure3(self.read_proc, s, start, count) {
             Ok(obj) => {
                 if !obj.is_fixnum() {
-                    return Err(error::Error::new(
-                        ErrorType::IoError,
+                    return Err(SchemeError::io_error(
                         "read",
                         &format!("custom-binary-input/output-port write procedure should return exact integer but got {}", obj),
                         &[obj],

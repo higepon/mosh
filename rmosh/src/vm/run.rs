@@ -3,8 +3,8 @@ use std::ptr::null;
 use crate::{
     bug,
     equal::Equal,
-    error,
-    numbers::{div, eqv, ge, gt, le, lt, mul, ObjectExt, SchemeError},
+    error::SchemeError,
+    numbers::{div, eqv, ge, gt, le, lt, mul, ObjectExt},
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
@@ -21,34 +21,29 @@ macro_rules! raise_or_exit {
     ($self:ident, $call:expr) => {{
         match $call {
             Ok(_) => Object::Unspecified,
-            Err(error::Error {
-                error_type: error::ErrorType::AssertionViolation,
+            Err(SchemeError::AssertionViolation {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => $self.call_assertion_violation_after(&who, &message, &irritants[..])?,
-            Err(error::Error {
-                error_type: error::ErrorType::Error,
+            Err(SchemeError::Error {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => $self.call_error_after(&who, &message, &irritants[..])?,
-            Err(error::Error {
-                error_type: error::ErrorType::ImplementationRestrictionViolation,
+            Err(SchemeError::ImplementationRestrictionViolation {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => {
                 $self.implementation_restriction_violation_after(&who, &message, &irritants[..])?
             }
-            Err(error::Error {
-                error_type: error::ErrorType::IoDecodingError,
+            Err(SchemeError::IoDecodingError {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => $self.call_io_decoding_error_after(&who, &message, &irritants[..])?,
-            Err(error::Error {
-                error_type: error::ErrorType::IoEncodingError,
+            Err(SchemeError::IoEncodingError {
                 who: who,
                 message: message,
                 irritants: irritants,
@@ -56,42 +51,37 @@ macro_rules! raise_or_exit {
                 let ch = irritants[0].to_char();
                 $self.call_io_encoding_error_after(&who, &message, ch, &irritants[..])?
             }
-            Err(error::Error {
-                error_type: error::ErrorType::IoFileNotExist,
+            Err(SchemeError::IoFileNotExist {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => $self.call_io_file_not_exist_after(&who, &message, &irritants[..])?,
-            Err(error::Error {
-                error_type: error::ErrorType::IoFileAlreadyExist,
+            Err(SchemeError::IoFileAlreadyExist {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => $self.call_io_file_already_exist_after(&who, &message, &irritants[..])?,
-            Err(error::Error {
-                error_type: error::ErrorType::IoInvalidPosition,
+            Err(SchemeError::IoInvalidPosition {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => $self.call_io_invalid_position_after(&who, &message, &irritants[..])?,
-            Err(error::Error {
-                error_type: error::ErrorType::LexicalViolationReadError,
+            Err(SchemeError::LexicalViolationReadError {
                 who: who,
                 message: message,
-                irritants: _irritants,
             }) => $self.call_raise_lexical_violation_read_error_after(&who, &message)?,
-            Err(error::Error {
-                error_type: error::ErrorType::IoError,
+            Err(SchemeError::IoError {
                 who: who,
                 message: message,
                 irritants: irritants,
             }) => $self.call_assertion_violation_after(&who, &message, &irritants[..])?,
+            _ => bug!(),
         };
     }};
 }
 
 impl Vm {
-    pub fn run(&mut self, ops: *const Object, ops_len: usize) -> error::Result<Object> {
+    pub fn run(&mut self, ops: *const Object, ops_len: usize) -> Result<Object, SchemeError> {
         if !self.is_initialized {
             self.sp = self.stack.as_mut_ptr();
             self.fp = self.sp;
@@ -111,7 +101,7 @@ impl Vm {
         ret
     }
 
-    pub(super) fn run_ops(&mut self, ops: *const Object) -> error::Result<Object> {
+    pub(super) fn run_ops(&mut self, ops: *const Object) -> Result<Object, SchemeError> {
         self.pc = ops;
         loop {
             let op: Op = unsafe { *self.pc }.to_instruction();
@@ -503,7 +493,7 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.dispatch_read_error(err, port)?;
+                                raise_or_exit!(self, Err::<Object, SchemeError>(err));
                             }
                         },
                         Object::StringInputPort(mut p) => match p.read(self) {
@@ -511,7 +501,7 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.dispatch_read_error(err, port)?;
+                                raise_or_exit!(self, Err::<Object, SchemeError>(err));
                             }
                         },
                         Object::TranscodedInputPort(mut p) => match p.read(self) {
@@ -519,7 +509,7 @@ impl Vm {
                                 self.set_return_value(obj);
                             }
                             Err(err) => {
-                                self.dispatch_read_error(err, port)?;
+                                raise_or_exit!(self, Err::<Object, SchemeError>(err));
                             }
                         },
                         _ => {
@@ -541,12 +531,8 @@ impl Vm {
                             Ok(None) => {
                                 self.set_return_value(Object::Eof);
                             }
-                            Err(e) => {
-                                self.call_read_error_after(
-                                    "read",
-                                    &format!("read error {}", e),
-                                    &[port],
-                                )?;
+                            Err(err) => {
+                                raise_or_exit!(self, Err::<Option<char>, SchemeError>(err));
                             }
                         },
                         Object::StringInputPort(mut p) => match p.read_char(self) {
@@ -556,12 +542,8 @@ impl Vm {
                             Ok(None) => {
                                 self.set_return_value(Object::Eof);
                             }
-                            Err(e) => {
-                                self.call_read_error_after(
-                                    "read",
-                                    &format!("read error {}", e),
-                                    &[port],
-                                )?;
+                            Err(err) => {
+                                raise_or_exit!(self, Err::<Option<char>, SchemeError>(err));
                             }
                         },
                         Object::TranscodedInputPort(mut p) => match p.read_char(self) {
@@ -571,12 +553,8 @@ impl Vm {
                             Ok(None) => {
                                 self.set_return_value(Object::Eof);
                             }
-                            Err(e) => {
-                                self.call_read_error_after(
-                                    "read",
-                                    &format!("read error {}", e),
-                                    &[port],
-                                )?;
+                            Err(err) => {
+                                raise_or_exit!(self, Err::<Option<char>, SchemeError>(err));
                             }
                         },
                         _ => {
@@ -1018,7 +996,8 @@ impl Vm {
         Ok(self.ac)
     }
 
-    fn dispatch_read_error(&mut self, err: ReadError, port: Object) -> error::Result<Object> {
+    // TODO: remove
+    fn dispatch_read_error(&mut self, err: ReadError, port: Object) -> Result<Object, SchemeError> {
         match err {
             ReadError::UnmatchedParen {
                 start: _,
@@ -1064,7 +1043,7 @@ impl Vm {
         who: &str,
         expected: &str,
         actual: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         self.call_assertion_violation_after(who, &format!("{} required", expected), &[actual])
     }
 }
