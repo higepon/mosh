@@ -10,8 +10,9 @@ use num_traits::{FromPrimitive, Signed, ToPrimitive, Zero};
 
 use crate::{
     bug,
+    error::SchemeError,
     gc::{Gc, GcHeader, GcRef, ObjectType, Trace},
-    objects::Object, error::SchemeError,
+    objects::Object,
 };
 
 // GCed Object -> Object.

@@ -86,7 +86,7 @@ impl SchemeError {
             message: message.to_string(),
             irritants: irritants.to_vec(),
         }
-    }    
+    }
 
     pub fn io_file_already_exist(who: &str, message: &str, irritants: &[Object]) -> Self {
         Self::IoFileAlreadyExist {

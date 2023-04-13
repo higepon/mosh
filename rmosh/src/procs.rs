@@ -6051,18 +6051,16 @@ fn fxdiv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let fx2 = as_isize!(name, args, 1);
     match fx1.integer_div(fx2) {
         Ok(v) => Ok(Object::Fixnum(v)),
-        Err(SchemeError::Overflow) => {
-            Err(SchemeError::implementation_restriction_violation(
-                name,
-                "oveflow",
-                &[args[0], args[1]],
-            ))
-        }
+        Err(SchemeError::Overflow) => Err(SchemeError::implementation_restriction_violation(
+            name,
+            "oveflow",
+            &[args[0], args[1]],
+        )),
         Err(SchemeError::Div0) => Err(SchemeError::assertion_violation(
             name,
             "division by zero",
             &[args[0], args[1]],
-        )),        
+        )),
         x => bug!("{:?}", x),
     }
 }

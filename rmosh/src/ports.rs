@@ -571,11 +571,7 @@ pub trait TextOutputPort: OutputPort {
         if self.is_open() {
             self.put_string(&c.to_string())
         } else {
-            Err(SchemeError::io_error(
-                "write-char",
-                "port is closed",
-                &[],
-            ))
+            Err(SchemeError::io_error("write-char", "port is closed", &[]))
         }
     }
 
@@ -863,7 +859,11 @@ pub trait TextOutputPort: OutputPort {
         self.put_string(&format!("{:?}", obj))
     }
 
-    fn display_vector(&mut self, v: GcRef<Vector>, human_readable: bool) -> Result<(), SchemeError> {
+    fn display_vector(
+        &mut self,
+        v: GcRef<Vector>,
+        human_readable: bool,
+    ) -> Result<(), SchemeError> {
         self.put_string("#(")?;
         for i in 0..v.len() {
             self.display_one(v.data[i], human_readable)?;
@@ -1540,13 +1540,8 @@ impl OutputPort for FileOutputPort {
 
 impl TextOutputPort for FileOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
-        write!(self.writer, "{}", s).map_err(|e| {
-            SchemeError::io_error(
-                "put-string",
-                &format!("write error {}", e),
-                &[],
-            )
-        })
+        write!(self.writer, "{}", s)
+            .map_err(|e| SchemeError::io_error("put-string", &format!("write error {}", e), &[]))
     }
 }
 

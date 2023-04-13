@@ -1,9 +1,10 @@
 use std::ptr::null_mut;
 
 use crate::{
-    error::{SchemeError},
+    bug,
+    error::SchemeError,
     objects::{Closure, Object},
-    op::Op, bug,
+    op::Op,
 };
 
 use super::Vm;
