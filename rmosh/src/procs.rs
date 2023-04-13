@@ -6069,19 +6069,19 @@ fn fxmod(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     check_argc!(name, args, 2);
     let fx1 = as_isize!(name, args, 0);
     let fx2 = as_isize!(name, args, 1);
-    fx1.modulo(fx2).map(|v| Object::Fixnum(v))
+    fx1.modulo(fx2).map(Object::Fixnum)
 }
 fn fxdiv0(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fxdiv0";
     let fx1 = as_isize!(name, args, 0);
     let fx2 = as_isize!(name, args, 1);
-    fx1.div0(fx2).map(|v| Object::Fixnum(v))
+    fx1.div0(fx2).map(Object::Fixnum)
 }
 fn fxmod0(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fxmod0";
     let fx1 = as_isize!(name, args, 0);
     let fx2 = as_isize!(name, args, 1);
-    fx1.modulo0(fx2).map(|v| Object::Fixnum(v))
+    fx1.modulo0(fx2).map(Object::Fixnum)
 }
 fn fxnot(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fxnot";

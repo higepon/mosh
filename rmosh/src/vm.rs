@@ -115,7 +115,7 @@ impl Vm {
         let mut gc = Box::new(Gc::new());
         let free_vars = default_free_vars(&mut gc);
         let mut ret = Self {
-            gc: gc,
+            gc,
             stack: vec![Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
