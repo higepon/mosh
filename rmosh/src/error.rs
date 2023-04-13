@@ -6,6 +6,7 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
 pub enum SchemeError {
+    // Errors which have corresponding Scheme errors.
     AssertionViolation {
         who: String,
         message: String,
@@ -55,6 +56,7 @@ pub enum SchemeError {
         message: String,
         irritants: Vec<Object>,
     },
+    // Non-Scheme errors. This will be converted to assertion-violation.
     Div0,
     NonZeroRequired,
     NanOrInfinite,
@@ -76,6 +78,15 @@ impl SchemeError {
             irritants: irritants.to_vec(),
         }
     }
+
+    pub fn division_by_zero(who: &str, message: &str, irritants: &[Object]) -> Self {
+        // Note we don't use Div0 here.
+        Self::AssertionViolation {
+            who: who.to_string(),
+            message: message.to_string(),
+            irritants: irritants.to_vec(),
+        }
+    }    
 
     pub fn io_file_already_exist(who: &str, message: &str, irritants: &[Object]) -> Self {
         Self::IoFileAlreadyExist {

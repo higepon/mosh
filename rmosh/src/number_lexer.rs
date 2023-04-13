@@ -1,7 +1,7 @@
-use crate::{lexer::Token, reader_util::ReadError};
+use crate::{lexer::Token, error::SchemeError};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, ReadError>;
+pub type LexerItem = Spanned<Token, usize, SchemeError>;
 
 #[derive(Clone, Debug)]
 pub struct NumberLexer<'input> {

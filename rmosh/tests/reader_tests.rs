@@ -1,15 +1,12 @@
-use lalrpop_util::ParseError;
-use rmosh::number_lexer::NumberLexer;
+use rmosh::error::SchemeError;
 use rmosh::{
     equal::Equal,
-    number_reader::NumberParser,
     objects::Object,
     ports::{StringInputPort, TextInputPort},
-    reader_util::ReadError,
     vm::Vm,
 };
 
-fn read(vm: &mut Vm, s: &str) -> Result<Object, ReadError> {
+fn read(vm: &mut Vm, s: &str) -> Result<Object, SchemeError> {
     let mut port = StringInputPort::new(s);
     port.read(vm)
 }
@@ -337,34 +334,5 @@ fn parse_special_chars() {
     {
         let obj = read(&mut vm, "#\\tab").unwrap();
         assert_equal!(vm.gc, Object::Char('\t'), obj);
-    }
-}
-
-#[test]
-fn propagate_lexer_error() {
-    // Lexter finds an invalid token and bubble up the error to the parser.
-    let s = "?3";
-    let mut vm = Vm::new();
-    let mut chars: Vec<char> = s.chars().collect();
-    chars.push('\0');
-    let mut is_inexact_context = false;
-    match NumberParser::new().parse(
-        &mut vm.gc,
-        &mut is_inexact_context,
-        NumberLexer::new(&chars),
-    ) {
-        Ok(_) => {
-            unreachable!();
-        }
-        Err(ParseError::User {
-            error: ReadError::InvalidToken { start, end, token },
-        }) => {
-            assert_eq!(0, start);
-            assert_eq!(1, end);
-            assert_eq!("?", token);
-        }
-        _ => {
-            unreachable!();
-        }
     }
 }

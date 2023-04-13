@@ -8,7 +8,6 @@ use crate::{
     objects::{Closure, Continuation, ContinuationStack, Object, Pair, Vox},
     op::Op,
     ports::TextInputPort,
-    reader_util::ReadError,
 };
 
 use super::{Vm, MAX_NUM_VALUES};
@@ -994,18 +993,6 @@ impl Vm {
             //self.pc = self.jump(self.pc, 1);
         }
         Ok(self.ac)
-    }
-
-    // TODO: remove
-    fn dispatch_read_error(&mut self, err: ReadError, port: Object) -> Result<Object, SchemeError> {
-        match err {
-            ReadError::UnmatchedParen {
-                start: _,
-                end: _,
-                token: _,
-            } => self.call_raise_lexical_violation_read_error_after("read", &format!("{:?}", err)),
-            _ => self.call_read_error_after("read", &format!("{:?}", err), &[port]),
-        }
     }
 
     pub fn print_stack(&self) {
