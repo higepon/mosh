@@ -2,12 +2,11 @@ use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
 use crate::objects::Bytevector;
-use crate::reader_util::ReadError;
 use crate::reader_util::count_lineno;
 use crate::reader_util;
 use lalrpop_util::ParseError;
 use std::collections::HashMap;
-
+use crate::error::SchemeError;
 
 grammar(gc: &mut Box<Gc>, shared_map: &mut HashMap<u32, Object>, input_src: &str, content: &str);
 
@@ -51,7 +50,11 @@ List: Object = {
             Ok(gc.listn_src(&objects, src))
         } else {
             Err(ParseError::User {
-                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+                error: SchemeError::lexical_violation_read_error(
+                    "reader",
+                    &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+                ),
+            })  
         }
     },
     <lo:@L> <left: "("> <objects: Datum *> "#;" Datum <right: ")"> <ro:@R> =>? {
@@ -62,7 +65,11 @@ List: Object = {
             Ok(gc.listn_src(&objects, src))
         } else {
             Err(ParseError::User {
-                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+                error: SchemeError::lexical_violation_read_error(
+                    "reader",
+                    &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+                ),
+            })                      
         }        
     },
     // TODO: There should be a better way to skip datum comment.
@@ -74,7 +81,11 @@ List: Object = {
             Ok(gc.listn_src(&objects, src))
         } else {
             Err(ParseError::User {
-                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+                error: SchemeError::lexical_violation_read_error(
+                    "reader",
+                    &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+                ),
+            })           
         }          
     },
     <lo:@L> <left: "("> <objects: Datum *> "#;" Datum "#;" Datum "#;" Datum  <right: ")"> <ro:@R> =>? {
@@ -85,7 +96,11 @@ List: Object = {
             Ok(gc.listn_src(&objects, src))
         } else {
             Err(ParseError::User {
-                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+                error: SchemeError::lexical_violation_read_error(
+                    "reader",
+                    &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+                ),
+            })        
         }          
     },
     <lo:@L> <left: "("> <objects: Datum +> "." <last: Datum> "#;" Datum  <right: ")"> <ro:@R> =>? {
@@ -96,7 +111,11 @@ List: Object = {
             Ok(gc.dot_pair_src(&objects, last, src))
         } else {
             Err(ParseError::User {
-                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+                error: SchemeError::lexical_violation_read_error(
+                    "reader",
+                    &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+                ),
+            })             
         }          
     },
     <lo:@L> <left: "("> <objects: Datum +> "." <last: Datum>  <right: ")"> <ro:@R> =>? {
@@ -107,7 +126,11 @@ List: Object = {
             Ok(gc.dot_pair_src(&objects, last, src))
         } else {
             Err(ParseError::User {
-                error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+                error: SchemeError::lexical_violation_read_error(
+                    "reader",
+                    &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+                ),
+            })            
         }          
     }
 }
@@ -123,14 +146,22 @@ ByteVector: Object = {
                         u8_vec.push(n as u8);            
                     } else {
                         return Err(ParseError::User {
-                            error:ReadError::MalformedBytevector { start:0, end:0, token:"hige".to_string() }})
+                            error: SchemeError::lexical_violation_read_error(
+                                "reader",
+                                &format!("malformed bytevector literal got value {}", n),
+                            ),
+                        })                          
                     }
             }}
             let bv = gc.alloc(Bytevector::new(&u8_vec));
             Ok(Object::Bytevector(bv))
     } else {
         Err(ParseError::User {
-            error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+            error: SchemeError::lexical_violation_read_error(
+                "reader",
+                &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+            ),
+        })             
     }          
     }
 }
@@ -141,7 +172,11 @@ Vector: Object = {
             Ok(gc.new_vector(&objects))
     } else {
         Err(ParseError::User {
-            error:ReadError::UnmatchedParen { start:lo, end:ro, token:left }})            
+            error: SchemeError::lexical_violation_read_error(
+                "reader",
+                &format!("unmatched paren at {}:{} around {}", lo, ro, left),
+            ),
+        })            
     }          
     }
 }
@@ -201,10 +236,9 @@ Symbol: Object = {
         match reader_util::read_symbol(&<>) {
             Ok(s) => Ok(gc.symbol_intern(&s)),
             Err(err) => {
-                Err(ParseError::User {
-                    error: ReadError::SymbolParseError { token: <>, description: err.to_string() }})
+                Err(ParseError::User { error: err })
             }
-        }
+        }        
     }
 }
 
@@ -222,7 +256,7 @@ Boolean: Object = {
 
 extern {
     type Location = usize;
-    type Error = ReadError;
+    type Error = SchemeError;
 
     enum lexer::Token {
         "'" => lexer::Token::AbbrevQuote,

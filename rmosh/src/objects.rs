@@ -1,4 +1,5 @@
-use crate::error::ErrorType;
+use crate::bug;
+use crate::error::SchemeError;
 use crate::gc::{Gc, GcRef, Trace};
 use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
@@ -12,7 +13,6 @@ use crate::ports::{
     TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::vm::Vm;
-use crate::{bug, error};
 
 use std::cmp::min;
 use std::collections::HashMap;
@@ -502,6 +502,26 @@ impl Object {
                 | Object::StdInputPort(_)
                 | Object::CustomBinaryInputOutputPort(_)
                 | Object::BinaryFileInputOutputPort(_)
+        )
+    }
+
+    pub fn is_binary_output_port(self) -> bool {
+        matches!(
+            self,
+            Object::BinaryFileOutputPort(_)
+                | Object::BytevectorOutputPort(_)
+                | Object::CustomBinaryOutputPort(_)
+                | Object::StdOutputPort(_)
+                | Object::StdErrorPort(_)
+                | Object::CustomBinaryInputOutputPort(_)
+                | Object::BinaryFileInputOutputPort(_)
+        )
+    }
+
+    pub fn is_binary_input_output_port(self) -> bool {
+        matches!(
+            self,
+            Object::CustomBinaryInputOutputPort(_) | Object::BinaryFileInputOutputPort(_)
         )
     }
 
@@ -1539,7 +1559,7 @@ impl Pair {
         }
     }
 
-    fn last_pair(p: Object) -> error::Result<Object> {
+    fn last_pair(p: Object) -> Result<Object, SchemeError> {
         let mut o = p;
         loop {
             match o {
@@ -1552,8 +1572,7 @@ impl Pair {
                     }
                 }
                 _ => {
-                    return Err(error::Error::new(
-                        ErrorType::AssertionViolation,
+                    return Err(SchemeError::assertion_violation(
                         "last_pair",
                         &format!("last_pair: pair requied but got {}", o),
                         &[o],
@@ -1564,7 +1583,7 @@ impl Pair {
     }
 
     // append!
-    pub fn append_destructive(l1: Object, l2: Object) -> error::Result<Object> {
+    pub fn append_destructive(l1: Object, l2: Object) -> Result<Object, SchemeError> {
         if l1.is_nil() {
             return Ok(l2);
         }
@@ -1849,7 +1868,7 @@ impl Debug for Symbol {
 #[repr(C)]
 pub struct Procedure {
     pub header: GcHeader,
-    pub func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>,
+    pub func: fn(&mut Vm, &mut [Object]) -> Result<Object, SchemeError>,
     pub name: String,
 }
 
@@ -1858,7 +1877,10 @@ impl Trace for Procedure {
 }
 
 impl Procedure {
-    pub fn new(func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>, name: String) -> Self {
+    pub fn new(
+        func: fn(&mut Vm, &mut [Object]) -> Result<Object, SchemeError>,
+        name: String,
+    ) -> Self {
         Procedure {
             header: GcHeader::new(ObjectType::Procedure),
             func,
@@ -2369,7 +2391,7 @@ pub mod tests {
     use regex::Regex;
 
     // Helpers.
-    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> error::Result<Object> {
+    fn procedure1(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
         assert_eq!(args.len(), 1);
         Ok(args[0])
     }

@@ -11,7 +11,11 @@ macro_rules! as_bytevector {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_bytevector() {
-            return error::Error::assertion_violation($name, "bytevector required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "bytevector required",
+                &[o],
+            ));
         }
         o.to_bytevector()
     }};
@@ -22,7 +26,11 @@ macro_rules! as_vector {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_vector() {
-            return error::Error::assertion_violation($name, "vector required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "vector required",
+                &[o],
+            ));
         }
         o.to_vector()
     }};
@@ -33,7 +41,11 @@ macro_rules! as_char {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_char() {
-            return error::Error::assertion_violation($name, "char required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "char required",
+                &[o],
+            ));
         }
         o.to_char()
     }};
@@ -44,7 +56,11 @@ macro_rules! as_sstring {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_string() {
-            return error::Error::assertion_violation($name, "string required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "string required",
+                &[o],
+            ));
         }
         o.to_sstring()
     }};
@@ -55,7 +71,11 @@ macro_rules! as_simple_struct {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_simple_struct() {
-            return error::Error::assertion_violation($name, "simple_struct required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "simple_struct required",
+                &[o],
+            ));
         }
         o.to_simple_struct()
     }};
@@ -66,7 +86,11 @@ macro_rules! as_symbol {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_symbol() {
-            return error::Error::assertion_violation($name, "symbol required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "symbol required",
+                &[o],
+            ));
         }
         o.to_symbol()
     }};
@@ -77,7 +101,11 @@ macro_rules! as_usize {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_fixnum() {
-            return error::Error::assertion_violation($name, "number required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "number required",
+                &[o],
+            ));
         }
         o.to_isize() as usize
     }};
@@ -88,13 +116,21 @@ macro_rules! as_isize {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_fixnum() {
-            return error::Error::assertion_violation($name, "number required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "number required",
+                &[o],
+            ));
         }
         o.to_isize()
     }};
     ($name:ident, $o:ident) => {{
         if !$o.is_fixnum() {
-            return error::Error::assertion_violation($name, "number required", &[*$o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "number required",
+                &[*$o],
+            ));
         }
         $o.to_isize()
     }};
@@ -105,13 +141,21 @@ macro_rules! as_f64 {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_flonum() {
-            return error::Error::assertion_violation($name, "flonum required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "flonum required",
+                &[o],
+            ));
         }
         o.to_flonum().value()
     }};
     ($name:ident, $o:ident) => {{
         if !$o.is_flonum() {
-            return error::Error::assertion_violation($name, "flonum required", &[*$o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "flonum required",
+                &[*$o],
+            ));
         }
         $o.to_flonum().value()
     }};
@@ -122,7 +166,11 @@ macro_rules! as_f32 {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_flonum() {
-            return error::Error::assertion_violation($name, "flonum required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "flonum required",
+                &[o],
+            ));
         }
         o.to_flonum().value() as f32
     }};
@@ -133,7 +181,11 @@ macro_rules! as_flonum {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_flonum() {
-            return error::Error::assertion_violation($name, "flonum required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "flonum required",
+                &[o],
+            ));
         }
         o.to_flonum()
     }};
@@ -145,13 +197,21 @@ macro_rules! as_u8 {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_fixnum() {
-            return error::Error::assertion_violation($name, "number required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "number required",
+                &[o],
+            ));
         }
         let fx = o.to_isize();
         if (-128..=255).contains(&fx) {
             fx as u8
         } else {
-            return error::Error::assertion_violation($name, "u8 value required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "u8 value required",
+                &[o],
+            ));
         }
     }};
 }
@@ -161,7 +221,11 @@ macro_rules! as_transcoder {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_transcoder() {
-            return error::Error::assertion_violation($name, "transcoder required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "transcoder required",
+                &[o],
+            ));
         }
         o.to_transcoder()
     }};
@@ -199,7 +263,13 @@ macro_rules! as_port {
             Object::TranscodedOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::TranscodedInputOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
             Object::FileOutputPort(p) => unsafe { p.pointer.as_ref() as &dyn Port },
-            _ => return error::Error::assertion_violation($name, "port required", &[o]),
+            _ => {
+                return Err(SchemeError::assertion_violation(
+                    $name,
+                    "port required",
+                    &[o],
+                ))
+            }
         };
         port
     }};
@@ -239,7 +309,13 @@ macro_rules! as_port_mut {
                 p.pointer.as_mut() as &mut dyn Port
             },
             Object::FileOutputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
-            _ => return error::Error::assertion_violation($name, "port required", &[o]),
+            _ => {
+                return Err(SchemeError::assertion_violation(
+                    $name,
+                    "port required",
+                    &[o],
+                ))
+            }
         };
         port
     }};
@@ -281,7 +357,13 @@ macro_rules! as_output_port_mut {
             Object::TranscodedInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn OutputPort
             },
-            _ => return error::Error::assertion_violation($name, "output port required", &[o]),
+            _ => {
+                return Err(SchemeError::assertion_violation(
+                    $name,
+                    "output port required",
+                    &[o],
+                ))
+            }
         };
         port
     }};
@@ -317,11 +399,11 @@ macro_rules! obj_as_text_input_port_mut {
             },
             Object::FileInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn TextInputPort },
             _ => {
-                return error::Error::assertion_violation(
+                return Err(SchemeError::assertion_violation(
                     $name,
                     "text input port required",
                     &[$obj],
-                )
+                ))
             }
         };
         port
@@ -351,11 +433,11 @@ macro_rules! obj_as_text_output_port_mut {
                 p.pointer.as_mut() as &mut dyn TextOutputPort
             },
             _ => {
-                return error::Error::assertion_violation(
+                return Err(SchemeError::assertion_violation(
                     $name,
                     "text output port required",
                     &[$obj],
-                )
+                ))
             }
         };
         port
@@ -386,7 +468,11 @@ macro_rules! as_binary_input_port_mut {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
             _ => {
-                return error::Error::assertion_violation($name, "binary input port required", &[o])
+                return Err(SchemeError::assertion_violation(
+                    $name,
+                    "binary input port required",
+                    &[o],
+                ))
             }
         };
         port
@@ -475,11 +561,11 @@ macro_rules! as_binary_output_port_mut {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
             _ => {
-                return error::Error::assertion_violation(
+                return Err(SchemeError::assertion_violation(
                     $name,
                     "binary output port required",
                     &[o],
-                )
+                ))
             }
         };
         port
@@ -512,8 +598,7 @@ macro_rules! obj_as_binary_output_port_mut {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
             x => {
-                return Err(error::Error::new(
-                    ErrorType::AssertionViolation,
+                return Err(SchemeError::assertion_violation(
                     $name,
                     &format!("binary-output-port required but got {}", x),
                     &[],
@@ -581,7 +666,11 @@ macro_rules! as_text_output_port_mut {
                 p.pointer.as_mut() as &mut dyn TextOutputPort
             },
             _ => {
-                return error::Error::assertion_violation($name, "text output port required", &[o])
+                return Err(SchemeError::assertion_violation(
+                    $name,
+                    "text output port required",
+                    &[o],
+                ))
             }
         };
         port
@@ -593,7 +682,11 @@ macro_rules! check_is_closure {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_closure() {
-            return error::Error::assertion_violation($name, "procedure required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "procedure required",
+                &[o],
+            ));
         }
         o
     }};
@@ -604,7 +697,11 @@ macro_rules! check_is_closure_or_false {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !(o.is_closure() || o.is_false()) {
-            return error::Error::assertion_violation($name, "procedure or #f required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "procedure or #f required",
+                &[o],
+            ));
         }
         o
     }};
@@ -615,7 +712,11 @@ macro_rules! check_is_transcoder_or_false {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !(o.is_transcoder() || o.is_false()) {
-            return error::Error::assertion_violation($name, "transcoder or #f required", &[o]);
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "transcoder or #f required",
+                &[o],
+            ));
         }
         o
     }};

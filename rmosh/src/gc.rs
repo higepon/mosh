@@ -4,7 +4,7 @@
 // TODO
 // https://github.com/ceronman/loxido/issues/3
 //
-use crate::error::{self, ErrorType};
+use crate::error::SchemeError;
 use crate::numbers::{Bignum, Compnum, Ratnum};
 use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
@@ -289,7 +289,7 @@ impl Gc {
 
     pub fn new_procedure(
         &mut self,
-        func: fn(&mut Vm, &mut [Object]) -> error::Result<Object>,
+        func: fn(&mut Vm, &mut [Object]) -> Result<Object, SchemeError>,
         name: &str,
     ) -> Object {
         Object::Procedure(self.alloc(Procedure::new(func, name.to_string())))
@@ -310,23 +310,21 @@ impl Gc {
         Object::Bytevector(bv)
     }
 
-    pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> error::Result<Object> {
+    pub fn new_bytevector(&mut self, objects: &Vec<Object>) -> Result<Object, SchemeError> {
         let mut u8_vec: Vec<u8> = vec![];
         for obj in objects {
             if let Object::Fixnum(n) = obj {
                 if *n >= 0 && *n <= 255 {
                     u8_vec.push(*n as u8);
                 } else {
-                    return Err(error::Error::new(
-                        ErrorType::AssertionViolation,
+                    return Err(SchemeError::assertion_violation(
                         "bytevector",
                         &format!("malformed bytevector: u8 value required but got {}", *n),
                         &[],
                     ));
                 }
             } else {
-                return Err(error::Error::new(
-                    ErrorType::AssertionViolation,
+                return Err(SchemeError::assertion_violation(
                     "bytevector",
                     "malformed bytevector: u8 value required",
                     &[*obj],
@@ -355,7 +353,7 @@ impl Gc {
     // append o (list or obj) to l.
     // if l is not list return o.
     // allocate new cons sell.
-    pub fn append2(&mut self, list: Object, obj: Object) -> error::Result<Object> {
+    pub fn append2(&mut self, list: Object, obj: Object) -> Result<Object, SchemeError> {
         if !list.is_pair() {
             return Ok(obj);
         }
@@ -375,8 +373,7 @@ impl Gc {
                                 last = last_pair.cdr;
                             }
                             _ => {
-                                return Err(error::Error::new(
-                                    ErrorType::AssertionViolation,
+                                return Err(SchemeError::assertion_violation(
                                     "append",
                                     "last is not pair",
                                     &[last],
@@ -392,8 +389,7 @@ impl Gc {
                         return Ok(start);
                     }
                     _ => {
-                        return Err(error::Error::new(
-                            ErrorType::AssertionViolation,
+                        return Err(SchemeError::assertion_violation(
                             "append",
                             "last is not pair",
                             &[last],

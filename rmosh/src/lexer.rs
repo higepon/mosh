@@ -1,5 +1,5 @@
-use crate::reader_util::{read_string, ReadError};
-
+use crate::error::SchemeError;
+use crate::reader_util::read_string;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Token {
     AbbrevQuasiquote,
@@ -51,7 +51,7 @@ pub enum Token {
 }
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type LexerItem = Spanned<Token, usize, ReadError>;
+pub type LexerItem = Spanned<Token, usize, SchemeError>;
 
 #[derive(Clone, Debug)]
 pub struct Lexer<'input> {

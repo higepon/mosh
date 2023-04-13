@@ -1,5 +1,6 @@
 use crate::{
-    bug, error,
+    bug,
+    error::SchemeError,
     gc::GcRef,
     numbers::{add, eqv, ge, gt, le, lt, sub, ObjectExt},
     objects::{Closure, Object, Symbol},
@@ -62,7 +63,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn car_op(&mut self) -> error::Result<Object> {
+    pub(super) fn car_op(&mut self) -> Result<Object, SchemeError> {
         match self.ac {
             Object::Pair(pair) => {
                 self.set_return_value(pair.car);
@@ -77,7 +78,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -89,7 +90,7 @@ impl Vm {
         who: Object,
         message: Object,
         irritants: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         self.raise_after3("assertion-violation", who, message, irritants)
     }
 
@@ -98,7 +99,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -110,7 +111,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -127,7 +128,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -145,7 +146,7 @@ impl Vm {
         message: &str,
         ch: char,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let ch = Object::Char(ch);
@@ -158,7 +159,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -170,7 +171,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -182,7 +183,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -199,7 +200,7 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
@@ -210,7 +211,7 @@ impl Vm {
         &mut self,
         who: &str,
         message: &str,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         self.raise_after2("raise-lexical-violation-read-error", who, message)
@@ -223,7 +224,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn refer_global_op(&mut self, symbol: GcRef<Symbol>) -> error::Result<Object> {
+    pub(super) fn refer_global_op(&mut self, symbol: GcRef<Symbol>) -> Result<Object, SchemeError> {
         match self.globals.get(&symbol) {
             Some(&value) => {
                 self.set_return_value(value);
@@ -240,7 +241,7 @@ impl Vm {
     }
 
     #[inline(always)]
-    pub(super) fn cdr_op(&mut self) -> error::Result<Object> {
+    pub(super) fn cdr_op(&mut self) -> Result<Object, SchemeError> {
         match self.ac {
             Object::Pair(pair) => {
                 self.set_return_value(pair.cdr);
@@ -255,7 +256,7 @@ impl Vm {
 
     #[allow(clippy::mut_range_bound)]
     #[inline(always)]
-    pub(super) fn call_op(&mut self, argc: isize) -> error::Result<Object> {
+    pub(super) fn call_op(&mut self, argc: isize) -> Result<Object, SchemeError> {
         let mut argc = argc;
         'call: loop {
             match self.ac {

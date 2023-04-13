@@ -1,11 +1,10 @@
-use crate::error;
+use crate::error::SchemeError;
 use crate::gc::Gc;
 use crate::lexer;
 use crate::numbers::Bignum;
 use crate::objects::Object;
 use lalrpop_util::ParseError;
 use num_bigint::BigInt;
-use num_bigint::ParseBigIntError;
 use num_traits::Num;
 use std::cmp::max;
 use std::str::FromStr;
@@ -74,42 +73,54 @@ pub fn count_lineno(content: &str, position: usize) -> usize {
     lineno
 }
 
-pub fn read_uinteger2(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+pub fn read_uinteger2(gc: &mut Box<Gc>, s: &str) -> Result<Object, SchemeError> {
     match isize::from_str_radix(s, 2) {
         Ok(fx) => Ok(Object::Fixnum(fx)),
         Err(_) => match BigInt::from_str_radix(s, 2) {
             Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
-            Err(e) => Err(e),
+            Err(e) => Err(SchemeError::lexical_violation_read_error(
+                "reader",
+                &format!("number parse error {}", e),
+            )),
         },
     }
 }
 
-pub fn read_uinteger8(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+pub fn read_uinteger8(gc: &mut Box<Gc>, s: &str) -> Result<Object, SchemeError> {
     match isize::from_str_radix(s, 8) {
         Ok(fx) => Ok(Object::Fixnum(fx)),
         Err(_) => match BigInt::from_str_radix(s, 8) {
             Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
-            Err(e) => Err(e),
+            Err(e) => Err(SchemeError::lexical_violation_read_error(
+                "reader",
+                &format!("number parse error {}", e),
+            )),
         },
     }
 }
 
-pub fn read_uinteger10(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+pub fn read_uinteger10(gc: &mut Box<Gc>, s: &str) -> Result<Object, SchemeError> {
     match isize::from_str(s) {
         Ok(fx) => Ok(Object::Fixnum(fx)),
         Err(_) => match BigInt::from_str(s) {
             Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
-            Err(e) => Err(e),
+            Err(e) => Err(SchemeError::lexical_violation_read_error(
+                "reader",
+                &format!("number parse error {}", e),
+            )),
         },
     }
 }
 
-pub fn read_uinteger16(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntError> {
+pub fn read_uinteger16(gc: &mut Box<Gc>, s: &str) -> Result<Object, SchemeError> {
     match isize::from_str_radix(s, 16) {
         Ok(fx) => Ok(Object::Fixnum(fx)),
         Err(_) => match BigInt::from_str_radix(s, 16) {
             Ok(b) => Ok(Object::Bignum(gc.alloc(Bignum::new(b)))),
-            Err(e) => Err(e),
+            Err(e) => Err(SchemeError::lexical_violation_read_error(
+                "reader",
+                &format!("number parse error {}", e),
+            )),
         },
     }
 }
@@ -117,7 +128,7 @@ pub fn read_uinteger16(gc: &mut Box<Gc>, s: &str) -> Result<Object, ParseBigIntE
 pub fn read_number(
     gc: &mut Box<Gc>,
     s: &str,
-) -> Result<Object, ParseError<usize, lexer::Token, ReadError>> {
+) -> Result<Object, ParseError<usize, lexer::Token, SchemeError>> {
     let mut chars: Vec<char> = s.chars().collect();
     chars.push('\0');
     let mut is_inexact_context = false;
@@ -131,11 +142,13 @@ pub fn read_number(
             // Show what is causing this error.
             let context = format!("number_reader: {}", &s[context_start..token.2]);
             Err(ParseError::User {
-                error: ReadError::UnrecognizedToken {
-                    token: token.1,
-                    expected,
-                    context,
-                },
+                error: SchemeError::lexical_violation_read_error(
+                    "number-reader",
+                    &format!(
+                        "unrecognized token: {:?} expected: {:?} context: {}",
+                        token.1, expected, context
+                    ),
+                ),
             })
         }
         _ => parsed,
@@ -237,7 +250,7 @@ pub fn read_string(s: &str) -> String {
     ret
 }
 
-pub fn read_symbol(s: &str) -> error::Result<String> {
+pub fn read_symbol(s: &str) -> Result<String, SchemeError> {
     let chars: Vec<char> = s.chars().collect();
     let mut ret = String::new();
     let mut i: usize = 0;
@@ -255,8 +268,10 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
                     let hex_ch = match chars.get(i) {
                         Some(c) => c,
                         None => {
-                            eprintln!("invalid \\x in symbol end");
-                            break;
+                            return Err(SchemeError::lexical_violation_read_error(
+                                "reader",
+                                "invalid \\x in symbol end",
+                            ));
                         }
                     };
                     i += 1;
@@ -276,7 +291,10 @@ pub fn read_symbol(s: &str) -> error::Result<String> {
                         let rhs = (*hex_ch as u32) - ('A' as u32) + 10;
                         current_ch = char::from_u32(lhs | rhs).unwrap_or('*');
                     } else {
-                        eprintln!("invalid \\x in symbol {}", hex_ch);
+                        return Err(SchemeError::lexical_violation_read_error(
+                            "reader",
+                            &format!("invalid \\x in symbol {}", ch),
+                        ));
                     }
                 }
             } else if *ch2 == '"' {

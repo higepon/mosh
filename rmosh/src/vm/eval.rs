@@ -1,7 +1,8 @@
 use std::ptr::null_mut;
 
 use crate::{
-    error,
+    bug,
+    error::SchemeError,
     objects::{Closure, Object},
     op::Op,
 };
@@ -10,7 +11,7 @@ use super::Vm;
 
 impl Vm {
     // Main entry point for eval.
-    pub fn eval_after(&mut self, sexp: Object) -> error::Result<Object> {
+    pub fn eval_after(&mut self, sexp: Object) -> Result<Object, SchemeError> {
         //println!("eval_after={}", sexp);
         let name = self.gc.symbol_intern("compile-w/o-halt");
         let v = self.call_by_name(name, sexp)?;
@@ -38,7 +39,7 @@ impl Vm {
         self.set_after_trigger0(Object::Closure(c))
     }
 
-    pub fn eval_compiled(&mut self, sexp: Object) -> error::Result<Object> {
+    pub fn eval_compiled(&mut self, sexp: Object) -> Result<Object, SchemeError> {
         //println!("eval={}", sexp);
         let v = sexp.to_vector();
         let code_size = v.len();
@@ -63,7 +64,7 @@ impl Vm {
         self.set_after_trigger0(Object::Closure(c))
     }
 
-    fn set_after_trigger0(&mut self, closure: Object) -> error::Result<Object> {
+    fn set_after_trigger0(&mut self, closure: Object) -> Result<Object, SchemeError> {
         self.make_frame(self.pc);
 
         let code = vec![
@@ -84,7 +85,7 @@ impl Vm {
         closure: Object,
         arg1: Object,
         arg2: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         self.make_frame(self.pc);
 
         let code = vec![
@@ -113,7 +114,7 @@ impl Vm {
         arg1: Object,
         arg2: Object,
         arg3: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         self.make_frame(self.pc);
 
         let code = vec![
@@ -146,7 +147,7 @@ impl Vm {
         arg2: Object,
         arg3: Object,
         arg4: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         self.make_frame(self.pc);
 
         let code = vec![
@@ -180,14 +181,14 @@ impl Vm {
         closure_name: &str,
         who: Object,
         message: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let symbol = self.gc.symbol_intern(closure_name).to_symbol();
         match self.globals.get(&symbol) {
             // The exception system is ready to use.
             Some(closure) => self.set_after_trigger2(*closure, who, message),
             None => {
                 eprintln!("Warning:The underlying exception is not ready to use");
-                error::Error::assertion_violation(&who.to_string(), &message.to_string(), &[])
+                bug!()
             }
         }
     }
@@ -198,18 +199,14 @@ impl Vm {
         who: Object,
         message: Object,
         irritants: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let symbol = self.gc.symbol_intern(closure_name).to_symbol();
         match self.globals.get(&symbol) {
             // The exception system is ready to use.
             Some(closure) => self.set_after_trigger3(*closure, who, message, irritants),
             None => {
                 eprintln!("Warning:The underlying exception is not ready to use");
-                error::Error::assertion_violation(
-                    &who.to_string(),
-                    &message.to_string(),
-                    &[irritants],
-                )
+                bug!()
             }
         }
     }
@@ -221,34 +218,30 @@ impl Vm {
         message: Object,
         arg1: Object,
         irritants: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         let symbol = self.gc.symbol_intern(closure_name).to_symbol();
         match self.globals.get(&symbol) {
             // The exception system is ready to use.
             Some(closure) => self.set_after_trigger4(*closure, who, message, arg1, irritants),
             None => {
                 eprintln!("Warning:The underlying exception is not ready to use");
-                error::Error::assertion_violation(
-                    &who.to_string(),
-                    &message.to_string(),
-                    &[irritants],
-                )
+                bug!()
             }
         }
     }
 
-    fn call_by_name(&mut self, name: Object, arg: Object) -> error::Result<Object> {
+    fn call_by_name(&mut self, name: Object, arg: Object) -> Result<Object, SchemeError> {
         self.call_by_name_code[3] = arg;
         self.call_by_name_code[6] = name;
         self.evaluate_safe(self.call_by_name_code.as_ptr())
     }
 
-    pub fn call_closure0(&mut self, func: Object) -> error::Result<Object> {
+    pub fn call_closure0(&mut self, func: Object) -> Result<Object, SchemeError> {
         self.call_closure0_code[3] = func;
         self.evaluate_safe(self.call_closure0_code.as_ptr())
     }
 
-    pub fn call_closure1(&mut self, func: Object, arg1: Object) -> error::Result<Object> {
+    pub fn call_closure1(&mut self, func: Object, arg1: Object) -> Result<Object, SchemeError> {
         self.call_closure1_code[3] = arg1;
         self.call_closure1_code[6] = func;
         self.evaluate_safe(self.call_closure1_code.as_ptr())
@@ -260,7 +253,7 @@ impl Vm {
         arg1: Object,
         arg2: Object,
         arg3: Object,
-    ) -> error::Result<Object> {
+    ) -> Result<Object, SchemeError> {
         self.call_closure3_code[3] = arg1;
         self.call_closure3_code[6] = arg2;
         self.call_closure3_code[9] = arg3;
@@ -268,14 +261,14 @@ impl Vm {
         self.evaluate_safe(self.call_closure3_code.as_ptr())
     }
 
-    fn evaluate_safe(&mut self, ops: *const Object) -> error::Result<Object> {
+    fn evaluate_safe(&mut self, ops: *const Object) -> Result<Object, SchemeError> {
         self.save_registers();
         let ret = self.evaluate_unsafe(ops);
         self.restore_registers();
         ret
     }
 
-    fn evaluate_unsafe(&mut self, ops: *const Object) -> error::Result<Object> {
+    fn evaluate_unsafe(&mut self, ops: *const Object) -> Result<Object, SchemeError> {
         self.closure_for_evaluate.to_closure().ops = ops;
         self.ac = self.closure_for_evaluate;
         self.dc = self.closure_for_evaluate;

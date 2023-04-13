@@ -14,7 +14,7 @@ mod run;
 
 use crate::{
     bug, compiler,
-    error::{self, ErrorType},
+    error::SchemeError,
     fasl::FaslReader,
     gc::{Gc, GcRef},
     obj_as_text_input_port_mut_or_panic,
@@ -26,7 +26,6 @@ use crate::{
     },
     procs::default_free_vars,
     psyntax,
-    reader_util::ReadError,
 };
 
 // This is introduced to support custom binary output port where we need vm.call_closure3().
@@ -116,7 +115,7 @@ impl Vm {
         let mut gc = Box::new(Gc::new());
         let free_vars = default_free_vars(&mut gc);
         let mut ret = Self {
-            gc: gc,
+            gc,
             stack: vec![Object::Unspecified; STACK_SIZE],
             ac: Object::Unspecified,
             dc: Object::Unspecified,
@@ -255,7 +254,11 @@ impl Vm {
         ret
     }
 
-    pub fn enable_r7rs(&mut self, args: Object, loadpath: Option<String>) -> error::Result<Object> {
+    pub fn enable_r7rs(
+        &mut self,
+        args: Object,
+        loadpath: Option<String>,
+    ) -> Result<Object, SchemeError> {
         let mut fasl = FaslReader::new(psyntax::U8_ARRAY);
         self.lib_psyntax = if self.should_load_compiler {
             env::set_var("MOSH_CACHE_DIR", "/.rmosh");
@@ -296,7 +299,7 @@ impl Vm {
         self.run(self.lib_psyntax.as_ptr(), self.lib_psyntax.len())
     }
 
-    pub fn values(&mut self, values: &[Object]) -> error::Result<Object> {
+    pub fn values(&mut self, values: &[Object]) -> Result<Object, SchemeError> {
         let n = values.len();
         self.num_values = n;
         if 0 == n {
@@ -304,8 +307,7 @@ impl Vm {
         }
         for (i, value) in values.iter().enumerate().take(n).skip(1) {
             if i >= MAX_NUM_VALUES {
-                return Err(error::Error::new(
-                    ErrorType::AssertionViolation,
+                return Err(SchemeError::assertion_violation(
                     "values",
                     "Too many values",
                     &[],
@@ -360,7 +362,7 @@ impl Vm {
         self.current_output_port = port;
     }
 
-    pub fn read(&mut self) -> Result<Object, ReadError> {
+    pub fn read(&mut self) -> Result<Object, SchemeError> {
         let port = obj_as_text_input_port_mut_or_panic!(self.current_input_port);
         port.read(self)
     }
@@ -389,7 +391,7 @@ impl Vm {
         self.dc = Object::Closure(display);
     }
 
-    fn load_compiler(&mut self) -> error::Result<Object> {
+    fn load_compiler(&mut self) -> Result<Object, SchemeError> {
         let mut fasl = FaslReader::new(compiler::U8_ARRAY);
         self.lib_compiler = if self.should_load_compiler {
             fasl.read_all_sexp(&mut self.gc)

@@ -6,8 +6,7 @@ use crate::numbers::inexact;
 use crate::numbers::Compnum;
 use crate::numbers::Flonum;
 use crate::numbers::Ratnum;
-use crate::reader_util;
-use crate::reader_util::ReadError;
+use crate::error::SchemeError;
 use crate::reader_util::read_uinteger2;
 use crate::reader_util::read_uinteger8;
 use crate::reader_util::read_uinteger10;
@@ -322,8 +321,7 @@ UReal10: Object = {
         match read_uinteger10(gc, &<>) {
             Ok(obj) => Ok(obj),
             Err(err) => {
-                Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
+                Err(ParseError::User { error: err })
             }
         }
     },
@@ -332,7 +330,7 @@ UReal10: Object = {
             (Ok(n), Ok(d)) => {
                 if d == BigInt::from_isize(0).unwrap() {
                     Err(ParseError::User {
-                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                        error: SchemeError::division_by_zero("read", &format!("number={} denom={}", n, d), &[])
                     })
                 } else {
                     Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
@@ -340,12 +338,12 @@ UReal10: Object = {
             }
             (Err(err), _) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?}: token: {}", err, numer))
                 })
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, denom))
                 })
             }
         }
@@ -370,7 +368,7 @@ UReal10: Object = {
             }
             Err(err) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("reader", &format!("number parse error: {:?} token: {}", err, <>))
                 })
             }
         }
@@ -383,7 +381,8 @@ UReal16: Object = {
             Ok(obj) => Ok(obj),
             Err(err) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, <>))
+                })
             }
         }
     },
@@ -392,7 +391,7 @@ UReal16: Object = {
             (Ok(n), Ok(d)) => {
                 if d == BigInt::from_isize(0).unwrap() {
                     Err(ParseError::User {
-                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                        error: SchemeError::division_by_zero("read", &format!("number={} denom={}", n, d), &[])
                     })
                 } else {
                     Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
@@ -400,12 +399,12 @@ UReal16: Object = {
             }
             (Err(err), _) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, numer))
                 })
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, denom))
                 })
             }
         }
@@ -418,7 +417,8 @@ UReal8: Object = {
             Ok(obj) => Ok(obj),
             Err(err) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, <>))
+                })
             }
         }
     },
@@ -427,7 +427,7 @@ UReal8: Object = {
             (Ok(n), Ok(d)) => {
                 if d == BigInt::from_isize(0).unwrap() {
                     Err(ParseError::User {
-                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                        error: SchemeError::division_by_zero("read", &format!("numer={} denom={}", n, d), &[])
                     })
                 } else {
                     Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
@@ -435,12 +435,12 @@ UReal8: Object = {
             }
             (Err(err), _) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
+                    error:  SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, numer))
                 })
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, denom))
                 })
             }
         }
@@ -453,7 +453,8 @@ UReal2: Object = {
             Ok(obj) => Ok(obj),
             Err(err) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: <>, description: err.to_string() }})
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, <>))
+                })
             }
         }
     },
@@ -462,7 +463,7 @@ UReal2: Object = {
             (Ok(n), Ok(d)) => {
                 if d == BigInt::from_isize(0).unwrap() {
                     Err(ParseError::User {
-                        error: ReadError::DivisionByZero { token: denom, description: "division by zero".to_string() }
+                        error: SchemeError::division_by_zero("read", &format!("numer={} denom={}", n, d), &[])
                     })
                 } else {
                     Ok(Object::Ratnum(gc.alloc(Ratnum::new(n, d))))
@@ -470,12 +471,12 @@ UReal2: Object = {
             }
             (Err(err), _) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: numer, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, numer))
                 })
             }
             (_, Err(err)) => {
                 Err(ParseError::User {
-                    error: ReadError::NumberParseError { token: denom, description: err.to_string() }
+                    error: SchemeError::lexical_violation_read_error("read", &format!("number parse error: {:?} token: {}", err, denom))
                 })
             }
         }
@@ -570,7 +571,7 @@ Digit16: String = {
 
 extern {
     type Location = usize;
-    type Error = reader_util::ReadError;
+    type Error = SchemeError;
 
     enum lexer::Token {
         "-" => lexer::Token::Minus,
