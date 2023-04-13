@@ -2953,7 +2953,7 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sche
     let file = match File::open(path) {
         Ok(file) => file,
         Err(err) => {
-            return Err(SchemeError::assertion_violation(
+            return Err(SchemeError::io_file_not_exist(
                 name,
                 &format!("{}", err),
                 &[args[0]],
@@ -6049,7 +6049,22 @@ fn fxdiv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     check_argc!(name, args, 2);
     let fx1 = as_isize!(name, args, 0);
     let fx2 = as_isize!(name, args, 1);
-    fx1.integer_div(fx2).map(|v| Object::Fixnum(v))
+    match fx1.integer_div(fx2) {
+        Ok(v) => Ok(Object::Fixnum(v)),
+        Err(SchemeError::Overflow) => {
+            Err(SchemeError::implementation_restriction_violation(
+                name,
+                "oveflow",
+                &[args[0], args[1]],
+            ))
+        }
+        Err(SchemeError::Div0) => Err(SchemeError::assertion_violation(
+            name,
+            "division by zero",
+            &[args[0], args[1]],
+        )),        
+        x => bug!("{:?}", x),
+    }
 }
 fn fxmod(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fxmod";

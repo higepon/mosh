@@ -74,7 +74,13 @@ macro_rules! raise_or_exit {
                 message: message,
                 irritants: irritants,
             }) => $self.call_assertion_violation_after(&who, &message, &irritants[..])?,
-            _ => bug!(),
+            Err(SchemeError::Div0) => {
+               $self.call_assertion_violation_after("", "division by zero", &[])?
+            },
+            Err(SchemeError::Overflow) => {
+                $self.implementation_restriction_violation_after("", "overflow", &[])?
+            },            
+            x => bug!("{:?}", x),
         };
     }};
 }
