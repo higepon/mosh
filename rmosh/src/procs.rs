@@ -2506,6 +2506,15 @@ fn set_port_position_destructive(vm: &mut Vm, args: &mut [Object]) -> Result<Obj
     check_argc!(name, args, 2);
     let port = as_port_mut!(name, args, 0);
     if port.has_set_position() {
+        let pos = as_isize!(name, args, 1);
+        if pos < 0 {
+            return Err(SchemeError::io_invalid_position(
+                name,
+                "non-negative position required",
+                &[pos.to_obj()],
+                pos,
+            ));
+        }
         let pos = as_usize!(name, args, 1);
         match port.set_position(vm, pos) {
             Ok(_) => Ok(Object::Unspecified),
@@ -4069,7 +4078,7 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError>
                 Ok(Object::Eof)
             }
         }
-        Err(_) => Ok(Object::Eof),
+        Err(e) => add_context(e, name, &[args[0]]),
     }
 }
 
@@ -4119,7 +4128,7 @@ fn get_line(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
                 Ok(vm.gc.new_string(&s))
             }
         }
-        Err(_) => Ok(Object::Eof),
+        Err(e) => add_context(e, name, &[args[0]]),
     }
 }
 fn get_datum(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
@@ -7056,6 +7065,73 @@ fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeErro
     check_argc!(name, args, 1);
     Ok(args[0].is_input_port().to_obj())
 }
+
+fn add_context(e: SchemeError, who: &str, irritants: &[Object]) -> Result<Object, SchemeError> {
+    let mut new_irritants: Vec<Object> = irritants.to_vec();
+    Err(match e {
+        SchemeError::AssertionViolation {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::assertion_violation(who, &message, &new_irritants)
+        }
+        SchemeError::ImplementationRestrictionViolation {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::implementation_restriction_violation(who, &message, &new_irritants)
+        }
+        SchemeError::IoError {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_error(who, &message, &new_irritants)
+        }
+        SchemeError::IoEncodingError {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_encoding_error(who, &message, &new_irritants)
+        }
+        SchemeError::IoDecodingError {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_decoding_error(who, &message, &new_irritants)
+        }
+        SchemeError::IoFileNotExist {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_file_not_exist(who, &message, &new_irritants)
+        }
+        SchemeError::IoFileAlreadyExist {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_file_already_exist(who, &message, &new_irritants)
+        }
+        SchemeError::LexicalViolationReadError { who: _, message } => {
+            SchemeError::lexical_violation_read_error(who, &message)
+        }
+        x => x,
+    })
+}
+
 fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "port-eof?";
     check_argc!(name, args, 1);
@@ -7064,13 +7140,21 @@ fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_char(vm) == Ok(None)).to_obj())
+        match port.lookahead_char(vm) {
+            Ok(None) => Ok(Object::True),
+            Ok(_) => Ok(Object::False),
+            Err(e) => add_context(e, name, &[args[0]]),
+        }
     } else if args[0].is_binary_input_port() {
         let port = as_binary_input_port_mut!(name, args, 0);
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_u8(vm) == Ok(None)).to_obj())
+        match port.lookahead_u8(vm) {
+            Ok(None) => Ok(Object::True),
+            Ok(_) => Ok(Object::False),
+            Err(e) => add_context(e, name, &[args[0]]),
+        }
     } else {
         bug!()
     }

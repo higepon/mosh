@@ -1361,6 +1361,22 @@ impl Port for BinaryFileInputPort {
     fn buffer_mode(&self) -> BufferMode {
         self.buffer_mode
     }
+
+    fn has_set_position(&self) -> bool {
+        true
+    }
+
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
+        match self.reader.seek(SeekFrom::Start(pos as u64)) {
+            Ok(pos) => Ok(pos as usize),
+            Err(e) => Err(SchemeError::io_invalid_position(
+                "set-position!",
+                &format!("invalid position: {}", e),
+                &[pos.to_obj(&mut vm.gc)],
+                pos as isize,
+            )),
+        }
+    }
 }
 
 impl BinaryInputPort for BinaryFileInputPort {

@@ -43,6 +43,7 @@ pub enum SchemeError {
         who: String,
         message: String,
         irritants: Vec<Object>,
+        position: isize,
     },
     LexicalViolationReadError {
         who: String,
@@ -122,6 +123,20 @@ impl SchemeError {
             who: who.to_string(),
             message: message.to_string(),
             irritants: irritants.to_vec(),
+        }
+    }
+
+    pub fn io_invalid_position(
+        who: &str,
+        message: &str,
+        irritants: &[Object],
+        position: isize,
+    ) -> Self {
+        Self::IoInvalidPosition {
+            who: who.to_string(),
+            message: message.to_string(),
+            irritants: irritants.to_vec(),
+            position: position,
         }
     }
 

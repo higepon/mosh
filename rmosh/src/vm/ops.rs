@@ -171,11 +171,18 @@ impl Vm {
         who: &str,
         message: &str,
         irritants: &[Object],
+        position: Object,
     ) -> Result<Object, SchemeError> {
         let who = self.gc.new_string(who);
         let message = self.gc.new_string(message);
         let irritants = self.gc.listn(irritants);
-        self.raise_after3("raise-i/o-invalid-position-error", who, message, irritants)
+        self.raise_after4(
+            "raise-i/o-invalid-position-error",
+            who,
+            message,
+            position,
+            irritants,
+        )
     }
 
     pub(super) fn implementation_restriction_violation_after(
@@ -281,7 +288,7 @@ impl Vm {
                             self.call_assertion_violation_after(
                                 "call",
                                 &format!(
-                                    "wrong number of arguments {} required bug got {}",
+                                    "wrong number of arguments {} required but got {}",
                                     closure.argc, argc
                                 ),
                                 &[self.ac],
@@ -293,7 +300,7 @@ impl Vm {
                         self.call_assertion_violation_after(
                             "call",
                             &format!(
-                                "wrong number of arguments {} required bug got {}",
+                                "wrong number of arguments {} required but got {}",
                                 closure.argc, argc
                             ),
                             &[self.ac],

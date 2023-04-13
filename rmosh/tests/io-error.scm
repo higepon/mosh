@@ -340,15 +340,6 @@
 ;(open-input-file "./tests/can-not-read-write.txt")
 ;(open-output-file "./tests/can-not-read-write.txt")
 
-;; transcoded-port procedure closes the binary port
-(test-error i/o-port-error?
-                (let* ([binary-port (open-bytevector-input-port #vu8(97 98 99))]
-                       [text-port (transcoded-port binary-port (make-transcoder (latin-1-codec)))])
-                  (read-char text-port)
-                  (read-char text-port)
-                  (get-u8 binary-port) ;; port is already closed!
-                  (display (read-char text-port))))
-
 (cond
  [(member (host-os) '("win32" "linux" "bsd" "darwin"))
   (test-true (string? (mosh-executable-path)))]

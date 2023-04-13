@@ -64,7 +64,13 @@ macro_rules! raise_or_exit {
                 who: who,
                 message: message,
                 irritants: irritants,
-            }) => $self.call_io_invalid_position_after(&who, &message, &irritants[..])?,
+                position: position,
+            }) => $self.call_io_invalid_position_after(
+                &who,
+                &message,
+                &irritants[..],
+                position.to_obj(),
+            )?,
             Err(SchemeError::LexicalViolationReadError {
                 who: who,
                 message: message,
