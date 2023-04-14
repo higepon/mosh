@@ -3951,7 +3951,7 @@ fn nuber_sub(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
         if args[0].is_number() {
             Ok(numbers::negate(&mut vm.gc, args[0]))
         } else {
-            return number_required_error(name, &[args[0]]);
+            number_required_error(name, &[args[0]])
         }
     } else {
         let mut ret = args[0];

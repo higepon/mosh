@@ -1464,7 +1464,7 @@ impl Port for BinaryFileInputOutputPort {
         true
     }
     fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
-        let current_position = self.file.seek(SeekFrom::Current(0)).map_err(|e| {
+        let current_position = self.file.stream_position().map_err(|e| {
             SchemeError::assertion_violation(
                 "port-position",
                 &format!("failed get port-position {}", e),
