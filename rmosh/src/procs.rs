@@ -2738,10 +2738,9 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeEr
     let port = as_binary_input_port_mut!(name, args, 0);
     match port.read(vm, &mut buf) {
         Ok(0) => Ok(Object::Eof),
-        Ok(size) => {
-            Ok(Object::Bytevector(
+        Ok(size) => Ok(Object::Bytevector(
             vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec())),
-        ))},
+        )),
         Err(_) => Ok(Object::Eof),
     }
 }
@@ -3967,8 +3966,7 @@ fn number_mul(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let argc = args.len();
     if argc == 0 {
         Ok(Object::Fixnum(1))
-    } else if argc == 1
-     {
+    } else if argc == 1 {
         if args[0].is_number() {
             Ok(args[0])
         } else {
