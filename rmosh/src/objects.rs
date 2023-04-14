@@ -489,6 +489,7 @@ impl Object {
                 | Object::FileInputPort(_)
                 | Object::CustomTextInputPort(_)
                 | Object::CustomTextInputOutputPort(_)
+                | Object::TranscodedInputOutputPort(_)
                 | Object::StringInputPort(_)
         )
     }

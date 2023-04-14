@@ -1459,6 +1459,33 @@ impl Port for BinaryFileInputOutputPort {
     fn buffer_mode(&self) -> BufferMode {
         self.buffer_mode
     }
+    fn has_position(&self) -> bool {
+        true
+    }
+    fn has_set_position(&self) -> bool {
+        true
+    }
+    fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
+        let current_position = self.file.seek(SeekFrom::Current(0)).map_err(|e| {
+            SchemeError::assertion_violation(
+                "port-position",
+                &format!("failed get port-position {}", e),
+                &[],
+            )
+        })?;
+        Ok(current_position as usize)
+    }
+    fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
+        match self.file.seek(SeekFrom::Start(pos as u64)) {
+            Ok(pos) => Ok(pos as usize),
+            Err(e) => Err(SchemeError::io_invalid_position(
+                "set-position!",
+                &format!("invalid position: {}", e),
+                &[pos.to_obj(&mut vm.gc)],
+                pos as isize,
+            )),
+        }
+    }
 }
 
 impl BinaryInputPort for BinaryFileInputOutputPort {
@@ -1475,9 +1502,10 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
             }
             None => read_start = 0,
         }
-        self.file
-            .read(&mut buf[read_start..])
-            .map_err(|e| SchemeError::io_error("read", &e.to_string(), &[]))
+        match self.file.read(&mut buf[read_start..]) {
+            Ok(size) => Ok(size + read_start),
+            Err(e) => Err(SchemeError::io_error("read", &e.to_string(), &[])),
+        }
     }
 
     fn ahead_u8(&self) -> Option<u8> {
@@ -1487,6 +1515,22 @@ impl BinaryInputPort for BinaryFileInputOutputPort {
     fn set_ahead_u8(&mut self, u: Option<u8>) {
         self.ahead_u8 = u;
     }
+
+    fn lookahead_u8(&mut self, vm: &mut Vm) -> Result<Option<u8>, SchemeError> {
+        let pos = self.position(vm)?;
+        match self.ahead_u8() {
+            Some(u) => Ok(Some(u)),
+            None => match self.read_u8(vm) {
+                Ok(Some(u)) => {
+                    self.set_position(vm, pos)?;
+                    self.unget_u8(u);
+                    Ok(Some(u))
+                }
+                Ok(None) => Ok(None),
+                Err(e) => Err(e),
+            },
+        }
+    }    
 }
 
 impl BinaryOutputPort for BinaryFileInputOutputPort {

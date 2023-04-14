@@ -523,6 +523,14 @@ impl Vm {
                                 raise_or_exit!(self, Err::<Object, SchemeError>(err));
                             }
                         },
+                        Object::TranscodedInputOutputPort(mut p) => match p.read(self) {
+                            Ok(obj) => {
+                                self.set_return_value(obj);
+                            }
+                            Err(err) => {
+                                raise_or_exit!(self, Err::<Object, SchemeError>(err));
+                            }
+                        },
                         _ => {
                             self.call_read_error_after("read", "input port required", &[port])?;
                         }
@@ -568,8 +576,23 @@ impl Vm {
                                 raise_or_exit!(self, Err::<Option<char>, SchemeError>(err));
                             }
                         },
+                        Object::TranscodedInputOutputPort(mut p) => match p.read_char(self) {
+                            Ok(Some(c)) => {
+                                self.set_return_value(Object::Char(c));
+                            }
+                            Ok(None) => {
+                                self.set_return_value(Object::Eof);
+                            }
+                            Err(err) => {
+                                raise_or_exit!(self, Err::<Option<char>, SchemeError>(err));
+                            }
+                        },
                         _ => {
-                            self.call_read_error_after("read", "input port required", &[port])?;
+                            self.call_read_error_after(
+                                "read-char",
+                                "input port required",
+                                &[port],
+                            )?;
                         }
                     }
                 }
