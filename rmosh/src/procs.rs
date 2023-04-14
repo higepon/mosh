@@ -2806,10 +2806,9 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sch
                 return generic_error!(name, &[args[0]], "{}", err);
             }
         };
-        Ok(Object::BinaryFileOutputPort(
-            vm.gc
-                .alloc(BinaryFileOutputPort::new(file, BufferMode::Block)),
-        ))
+        Ok(Object::BinaryFileOutputPort(vm.gc.alloc(
+            BinaryFileOutputPort::new(file, &path, BufferMode::Block),
+        )))
     } else {
         let file_options = match args[1] {
             Object::SimpleStruct(s) => s.field(1),
@@ -2905,7 +2904,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sch
             }
         }
 
-        let file = match open_options.open(path) {
+        let file = match open_options.open(path.to_string()) {
             Ok(file) => file,
             Err(err) => {
                 return Err(SchemeError::assertion_violation(
@@ -2918,14 +2917,17 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sch
 
         match transcoder {
             Some(t) => {
-                let in_port = Object::BinaryFileOutputPort(
-                    vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
-                );
+                let in_port = Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(
+                    file,
+                    &path,
+                    buffer_mode,
+                )));
                 let port = TranscodedOutputPort::new(in_port, t);
                 Ok(Object::TranscodedOutputPort(vm.gc.alloc(port)))
             }
             None => Ok(Object::BinaryFileOutputPort(
-                vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
+                vm.gc
+                    .alloc(BinaryFileOutputPort::new(file, &path, buffer_mode)),
             )),
         }
     }
@@ -3004,14 +3006,17 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sche
 
     match transcoder {
         Some(t) => {
-            let in_port = Object::BinaryFileInputPort(
-                vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
-            );
+            let in_port = Object::BinaryFileInputPort(vm.gc.alloc(BinaryFileInputPort::new(
+                file,
+                path,
+                buffer_mode,
+            )));
             let port = TranscodedInputPort::new(in_port, t);
             Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
         }
         None => Ok(Object::BinaryFileInputPort(
-            vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
+            vm.gc
+                .alloc(BinaryFileInputPort::new(file, path, buffer_mode)),
         )),
     }
 }
@@ -7554,14 +7559,14 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Objec
         Some(t) => {
             let bin_port = Object::BinaryFileInputOutputPort(
                 vm.gc
-                    .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
+                    .alloc(BinaryFileInputOutputPort::new(file, path, buffer_mode)),
             );
             let port = TranscodedInputOutputPort::new(bin_port, t);
             Ok(Object::TranscodedInputOutputPort(vm.gc.alloc(port)))
         }
         None => Ok(Object::BinaryFileInputOutputPort(
             vm.gc
-                .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
+                .alloc(BinaryFileInputOutputPort::new(file, path, buffer_mode)),
         )),
     }
 }

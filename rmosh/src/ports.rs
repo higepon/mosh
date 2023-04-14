@@ -75,6 +75,8 @@ pub trait Port {
     fn buffer_mode(&self) -> BufferMode {
         BufferMode::None
     }
+
+    fn input_src(&self) -> String;
 }
 
 pub trait OutputPort: Port {
@@ -94,7 +96,6 @@ pub trait TextInputPort: Port {
     fn read_char(&mut self, vm: &mut Vm) -> Result<Option<char>, SchemeError>;
     fn ahead_char(&self) -> Option<char>;
     fn set_ahead_char(&mut self, c: Option<char>);
-    fn input_src(&self) -> String;
 
     fn read_line(&mut self, vm: &mut Vm, str: &mut String) -> Result<usize, SchemeError> {
         loop {
@@ -290,6 +291,10 @@ impl Port for StdInputPort {
     }
 
     fn close(&mut self) {}
+
+    fn input_src(&self) -> String {
+        "stdin".to_string()
+    }
 }
 
 impl BinaryInputPort for StdInputPort {
@@ -356,6 +361,10 @@ impl Port for FileInputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+
+    fn input_src(&self) -> String {
+        self.path.to_string()
+    }
 }
 
 impl TextInputPort for FileInputPort {
@@ -363,10 +372,6 @@ impl TextInputPort for FileInputPort {
         self.reader.read_to_string(str).map_err(|e| {
             error::SchemeError::lexical_violation_read_error("read", &format!("{}", e))
         })
-    }
-
-    fn input_src(&self) -> String {
-        self.path.to_string()
     }
 
     fn ahead_char(&self) -> Option<char> {
@@ -498,10 +503,6 @@ impl TextInputPort for StringInputPort {
         Ok(read_size)
     }
 
-    fn input_src(&self) -> String {
-        "#<string-input-port>".to_string()
-    }
-
     fn ahead_char(&self) -> Option<char> {
         self.ahead_char
     }
@@ -558,6 +559,10 @@ impl Port for StringInputPort {
 
     fn close(&mut self) {
         self.is_closed = true
+    }
+
+    fn input_src(&self) -> String {
+        "string-input-port".to_string()
     }
 }
 
@@ -1175,6 +1180,10 @@ impl Port for BytevectorInputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+
+    fn input_src(&self) -> String {
+        "bytevector-input-port".to_string()
+    }
 }
 
 impl BinaryInputPort for BytevectorInputPort {
@@ -1297,6 +1306,10 @@ impl Port for BytevectorOutputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+
+    fn input_src(&self) -> String {
+        "bytevector-output-port".to_string()
+    }
 }
 
 impl BinaryOutputPort for BytevectorOutputPort {
@@ -1322,6 +1335,7 @@ impl Display for BytevectorOutputPort {
 pub struct BinaryFileInputPort {
     pub header: GcHeader,
     pub reader: BufReader<File>,
+    path: String,
     is_closed: bool,
     ahead_u8: Option<u8>,
     buffer_mode: BufferMode,
@@ -1332,11 +1346,12 @@ impl Trace for BinaryFileInputPort {
 }
 
 impl BinaryFileInputPort {
-    pub fn new(file: File, buffer_mode: BufferMode) -> Self {
+    pub fn new(file: File, path: &str, buffer_mode: BufferMode) -> Self {
         BinaryFileInputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputPort),
             is_closed: false,
             reader: BufReader::new(file),
+            path: path.to_string(),
             ahead_u8: None,
             buffer_mode,
         }
@@ -1377,6 +1392,10 @@ impl Port for BinaryFileInputPort {
             )),
         }
     }
+
+    fn input_src(&self) -> String {
+        self.path.to_owned()
+    }
 }
 
 impl BinaryInputPort for BinaryFileInputPort {
@@ -1409,7 +1428,7 @@ impl BinaryInputPort for BinaryFileInputPort {
 
 impl Display for BinaryFileInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<binary-file-input-port {:?}>", self.reader.get_ref())
+        write!(f, "#<binary-file-input-port {}>", self.path)
     }
 }
 
@@ -1419,6 +1438,7 @@ impl Display for BinaryFileInputPort {
 pub struct BinaryFileInputOutputPort {
     pub header: GcHeader,
     pub file: File,
+    path: String,
     is_closed: bool,
     buffer_mode: BufferMode,
 }
@@ -1428,11 +1448,12 @@ impl Trace for BinaryFileInputOutputPort {
 }
 
 impl BinaryFileInputOutputPort {
-    pub fn new(file: File, buffer_mode: BufferMode) -> Self {
+    pub fn new(file: File, path: &str, buffer_mode: BufferMode) -> Self {
         BinaryFileInputOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputOutputPort),
             is_closed: false,
-            file,
+            file: file,
+            path: path.to_string(),
             buffer_mode,
         }
     }
@@ -1484,6 +1505,10 @@ impl Port for BinaryFileInputOutputPort {
             )),
         }
     }
+
+    fn input_src(&self) -> String {
+        self.path.to_owned()
+    }
 }
 
 impl BinaryInputPort for BinaryFileInputOutputPort {
@@ -1528,7 +1553,7 @@ impl OutputPort for BinaryFileInputOutputPort {
 
 impl Display for BinaryFileInputOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<binary-file-input-output-port {:?}>", self.file)
+        write!(f, "#<binary-file-input-output-port {}>", self.path)
     }
 }
 
@@ -1538,6 +1563,7 @@ impl Display for BinaryFileInputOutputPort {
 pub struct FileOutputPort {
     pub header: GcHeader,
     writer: BufWriter<File>,
+    path: String,
     is_closed: bool,
 }
 
@@ -1546,11 +1572,12 @@ impl Trace for FileOutputPort {
 }
 
 impl FileOutputPort {
-    pub fn new(file: File) -> Self {
+    pub fn new(file: File, path: &str) -> Self {
         FileOutputPort {
             header: GcHeader::new(ObjectType::FileOutputPort),
             is_closed: false,
             writer: BufWriter::new(file),
+            path: path.to_string(),
         }
     }
 }
@@ -1562,6 +1589,10 @@ impl Port for FileOutputPort {
     fn close(&mut self) {
         self.writer.flush().unwrap();
         self.is_closed = true;
+    }
+
+    fn input_src(&self) -> String {
+        self.path.to_owned()
     }
 }
 
@@ -1615,6 +1646,10 @@ impl Port for StdOutputPort {
     fn close(&mut self) {}
     fn buffer_mode(&self) -> BufferMode {
         BufferMode::Line
+    }
+
+    fn input_src(&self) -> String {
+        "stdout".to_string()
     }
 }
 
@@ -1673,6 +1708,10 @@ impl Port for StdErrorPort {
     fn buffer_mode(&self) -> BufferMode {
         BufferMode::None
     }
+
+    fn input_src(&self) -> String {
+        "stderr".to_string()
+    }    
 }
 
 impl Display for StdErrorPort {
@@ -1770,6 +1809,10 @@ impl Port for StringOutputPort {
     fn has_set_position(&self) -> bool {
         true
     }
+
+    fn input_src(&self) -> String {
+        "string-output-port".to_string()
+    }
 }
 
 impl Display for StringOutputPort {
@@ -1840,6 +1883,11 @@ impl Port for TranscodedInputPort {
         let port = obj_as_binary_input_port_mut_or_panic!(self.in_port);
         port.buffer_mode()
     }
+
+    fn input_src(&self) -> String {
+        let port = obj_as_binary_input_port_mut_or_panic!(self.in_port);
+        port.input_src()
+    }
 }
 
 impl Display for TranscodedInputPort {
@@ -1909,10 +1957,6 @@ impl TextInputPort for TranscodedInputPort {
         self.ahead_char = c;
     }
 
-    fn input_src(&self) -> String {
-        "todo: input source".to_string()
-    }
-
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -1961,6 +2005,10 @@ impl Port for TranscodedOutputPort {
     fn buffer_mode(&self) -> BufferMode {
         let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
         port.buffer_mode()
+    }
+    fn input_src(&self) -> String {
+        let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
+        port.input_src()
     }
 }
 
@@ -2028,6 +2076,11 @@ impl Port for TranscodedInputOutputPort {
     fn buffer_mode(&self) -> BufferMode {
         let port = obj_as_binary_input_port_mut_or_panic!(self.port);
         port.buffer_mode()
+    }
+
+    fn input_src(&self) -> String {
+        let port = obj_as_binary_input_port_mut_or_panic!(self.port);
+        port.input_src()
     }
 }
 
@@ -2098,10 +2151,6 @@ impl TextInputPort for TranscodedInputOutputPort {
         self.ahead_char = c;
     }
 
-    fn input_src(&self) -> String {
-        "todo: input source".to_string()
-    }
-
     fn set_parsed(&mut self, obj: Object) {
         self.parsed = obj;
     }
@@ -2131,6 +2180,7 @@ impl TextOutputPort for TranscodedInputOutputPort {
 pub struct BinaryFileOutputPort {
     pub header: GcHeader,
     pub writer: BufWriter<File>,
+    path: String,
     is_closed: bool,
     buffer_mode: BufferMode,
 }
@@ -2140,11 +2190,12 @@ impl Trace for BinaryFileOutputPort {
 }
 
 impl BinaryFileOutputPort {
-    pub fn new(file: File, buffer_mode: BufferMode) -> Self {
+    pub fn new(file: File, path: &str, buffer_mode: BufferMode) -> Self {
         BinaryFileOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileOutputPort),
             is_closed: false,
             writer: BufWriter::new(file),
+            path: path.to_string(),
             buffer_mode,
         }
     }
@@ -2187,6 +2238,10 @@ impl Port for BinaryFileOutputPort {
 
     fn buffer_mode(&self) -> BufferMode {
         self.buffer_mode
+    }
+
+    fn input_src(&self) -> String {
+        self.path.to_owned()
     }
 }
 
@@ -3096,6 +3151,9 @@ impl Port for CustomBinaryInputPort {
             ))
         }
     }
+    fn input_src(&self) -> String {
+        "custom-binary-input-port".to_string()
+    }
 }
 
 impl BinaryInputPort for CustomBinaryInputPort {
@@ -3258,15 +3316,15 @@ impl Port for CustomTextInputPort {
             ))
         }
     }
+
+    fn input_src(&self) -> String {
+        "custom text port".to_string()
+    }
 }
 
 impl TextInputPort for CustomTextInputPort {
     fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> Result<usize, SchemeError> {
         todo!();
-    }
-
-    fn input_src(&self) -> String {
-        "custom text port".to_string()
     }
 
     fn ahead_char(&self) -> Option<char> {
@@ -3435,6 +3493,9 @@ impl Port for CustomBinaryOutputPort {
             ))
         }
     }
+    fn input_src(&self) -> String {
+        "custom-binary-output-port".to_string()
+    }
 }
 
 impl BinaryOutputPort for CustomBinaryOutputPort {
@@ -3559,6 +3620,9 @@ impl Port for CustomTextOutputPort {
                 &[],
             ))
         }
+    }
+    fn input_src(&self) -> String {
+        "custom-text-output-port".to_string()
     }
 }
 
@@ -3690,6 +3754,9 @@ impl Port for CustomBinaryInputOutputPort {
                 &[],
             ))
         }
+    }
+    fn input_src(&self) -> String {
+        "custom-binary-input/output-port".to_string()
     }
 }
 
@@ -3885,6 +3952,10 @@ impl Port for CustomTextInputOutputPort {
             ))
         }
     }
+
+    fn input_src(&self) -> String {
+        "custom text port".to_string()
+    }
 }
 
 impl TextOutputPort for CustomTextInputOutputPort {
@@ -3923,10 +3994,6 @@ impl Display for CustomTextInputOutputPort {
 impl TextInputPort for CustomTextInputOutputPort {
     fn read_to_string(&mut self, _vm: &mut Vm, _str: &mut String) -> Result<usize, SchemeError> {
         todo!();
-    }
-
-    fn input_src(&self) -> String {
-        "custom text port".to_string()
     }
 
     fn ahead_char(&self) -> Option<char> {
