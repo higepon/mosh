@@ -156,7 +156,7 @@ Object scheme::inexactPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("inexact?");
     checkArgumentLength(1);
     argumentCheckNumber(0, number);
-    return Object::makeBooü(!Arithmetic::isExact(number));
+    return Object::makeBoolü!Arithmetic::isExact(number));
 }
 
 Object scheme::realPartEx(VM* theVM, int argc, const Object* argv)
