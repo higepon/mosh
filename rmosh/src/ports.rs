@@ -1613,6 +1613,9 @@ impl Port for StdOutputPort {
         true
     }
     fn close(&mut self) {}
+    fn buffer_mode(&self) -> BufferMode {
+        BufferMode::Line
+    }
 }
 
 impl Display for StdOutputPort {
@@ -1667,6 +1670,9 @@ impl Port for StdErrorPort {
         true
     }
     fn close(&mut self) {}
+    fn buffer_mode(&self) -> BufferMode {
+        BufferMode::None
+    }
 }
 
 impl Display for StdErrorPort {
@@ -1696,6 +1702,7 @@ impl BinaryOutputPort for StdErrorPort {
 pub struct StringOutputPort {
     pub header: GcHeader,
     string: String,
+    pos: usize,
     is_closed: bool,
 }
 
@@ -1715,6 +1722,7 @@ impl StringOutputPort {
             header: GcHeader::new(ObjectType::StringOutputPort),
             is_closed: false,
             string: "".to_string(),
+            pos: 0,
         }
     }
     pub fn open(_path: &str) -> std::io::Result<StringOutputPort> {
@@ -1723,6 +1731,11 @@ impl StringOutputPort {
 
     pub fn close(&mut self) {
         self.is_closed = true;
+    }
+
+    pub fn reset(&mut self) {
+        self.pos = 0;
+        self.string = String::new();
     }
 
     pub fn string(&mut self) -> String {
@@ -1739,6 +1752,24 @@ impl Port for StringOutputPort {
     fn close(&mut self) {
         self.is_closed = true;
     }
+    fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
+        Ok(self.pos)
+    }
+    fn set_position(&mut self, _vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
+        if pos > self.pos {
+            for _ in 0..(pos - self.pos) {
+                self.string.push(' ');
+            }
+        }
+        self.pos = pos;
+        Ok(self.pos)
+    }
+    fn has_position(&self) -> bool {
+        true
+    }
+    fn has_set_position(&self) -> bool {
+        true
+    }
 }
 
 impl Display for StringOutputPort {
@@ -1752,7 +1783,15 @@ impl OutputPort for StringOutputPort {
 
 impl TextOutputPort for StringOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
-        self.string.push_str(s);
+        for c in s.chars() {
+            if self.string.len() > self.pos {
+                self.string
+                    .replace_range(self.pos..self.pos + 1, &c.to_string());
+            } else {
+                self.string.push(c);
+            }
+            self.pos += 1;
+        }
         Ok(())
     }
 }

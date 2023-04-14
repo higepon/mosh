@@ -1410,7 +1410,9 @@ fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
     let name: &str = "get-output-string";
     check_argc!(name, args, 1);
     if let Object::StringOutputPort(mut s) = args[0] {
-        Ok(vm.gc.new_string(&s.string()))
+        let ret = s.string();
+        s.reset();
+        Ok(vm.gc.new_string(&ret))
     } else {
         type_required_error(name, "string-output-port", args)
     }
