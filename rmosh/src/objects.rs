@@ -390,6 +390,7 @@ impl Object {
                 | Object::CustomTextInputPort(_)
                 | Object::CustomTextInputOutputPort(_)
                 | Object::TranscodedInputPort(_)
+                | Object::TranscodedInputOutputPort(_)
                 | Object::BytevectorInputPort(_)
                 | Object::StringInputPort(_)
         )
