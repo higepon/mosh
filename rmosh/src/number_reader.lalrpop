@@ -33,20 +33,40 @@ Number10: Object = {
     <e: Prefix10?> <c: Complex10> => {
         match e {
             Some(Some(is_exact)) => {
-                if is_exact {
+                let n = if is_exact {
                     exact(gc, c)
                 } else {
                     inexact(gc, c)
+                };
+                if n.is_compnum() {
+                    let c = n.to_compnum();
+                    if c.imag.is_exact_zero() {
+                        c.real
+                    } else {
+                        n
+                    }
+                } else {
+                    n
                 }
             },
             Some(None) | None => {
                 // To handle #e1e1000.
                 // See below in decimal10 section.
-                if *is_inexact_context {
+                let n = if *is_inexact_context {
                     inexact(gc, c)
                 } else {
                     c
-                }
+                };
+                if n.is_compnum() {
+                    let c = n.to_compnum();
+                    if c.imag.is_exact_zero() {
+                        c.real
+                    } else {
+                        n
+                    }
+                } else {
+                    n
+                }                
             },
         }
     },

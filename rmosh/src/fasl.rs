@@ -10,7 +10,7 @@ use num_traits::FromPrimitive;
 use crate::{
     bug,
     gc::Gc,
-    numbers::{Bignum, Compnum, Flonum, Ratnum},
+    numbers::{Bignum, Flonum, Ratnum},
     objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
     ports::BinaryOutputPort,
 };
@@ -796,7 +796,7 @@ impl FaslReader {
     fn read_compnum(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
         let real = self.read_sexp(gc)?;
         let imag = self.read_sexp(gc)?;
-        Ok(Object::Compnum(gc.alloc(Compnum::new(real, imag))))
+        Ok(gc.new_compnum(real, imag))
     }
 
     fn create_read_error(&self, reason: &str) -> io::Error {

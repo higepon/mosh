@@ -47,6 +47,7 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=./tests/r6rs-test-suite/
 
 misc-test:
+	cargo run ./tests/number.scm
 	cargo run ./tests/io-error.scm
 	cargo run ./tests/mosh-test.scm
 	cargo run ./tests/cgi.scm
@@ -73,7 +74,7 @@ misc-test:
 	cargo run ./tests/srfi19.scm
 	cargo run ./tests/clos.scm
 	cargo run ./tests/srfi-misc.scm	
-#	cargo run ./tests/number.scm	
+	
 #	
 # 	cargo run ./tests/input-output-port.scm
 # 	cargo run ./tests/input-port.scm < tests/input.txt

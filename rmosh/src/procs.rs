@@ -3945,10 +3945,9 @@ fn number_add(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 
 fn nuber_sub(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "-";
+    check_argc_at_least!(name, args, 1);
     let argc = args.len();
-    if argc == 0 {
-        Ok(Object::Fixnum(0))
-    } else if argc == 1 {
+    if argc == 1 {
         if args[0].is_number() {
             Ok(numbers::negate(&mut vm.gc, args[0]))
         } else {
