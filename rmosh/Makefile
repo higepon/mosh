@@ -76,6 +76,7 @@ misc-test:
 	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
 	cargo run tests/record.scm --loadpath="tests/mylib" 
 	cargo run ./tests/testing.scm
+	cargo run tests/unicode-path.scm --loadpath=./tests
 
 #	failing
 #	cargo run ./tests/print.scm # this needs regexp support
