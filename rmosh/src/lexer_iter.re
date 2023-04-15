@@ -262,8 +262,9 @@ impl<'input> Iterator for Lexer<'input> {
                         return Some(Err(SchemeError::lexical_violation_read_error(
                             "lexer",
                             &format!(
-                                "invalid token {} at {}:{}",
+                                "invalid token {} at {} {}:{}",
                                 self.extract_token(),
+                                self.input_src,
                                 self.tok,
                                 self.cursor
                             ),

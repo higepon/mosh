@@ -135,7 +135,7 @@ pub trait TextInputPort: Port {
                 &mut shared_map,
                 &self.input_src(),
                 &s,
-                lexer::Lexer::new(&chars),
+                lexer::Lexer::new(&chars, &self.input_src()),
             ) {
                 Ok(parsed) => {
                     if !shared_map.is_empty() {

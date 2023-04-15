@@ -48,7 +48,7 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 
 misc-test:
 	cargo run ./tests/annotated-pair.scm
- 	cargo run ./tests/output-port.scm
+	cargo run ./tests/output-port.scm
 	cargo run ./tests/input-output-port.scm
 	cargo run ./tests/number.scm
 	cargo run ./tests/io-error.scm
