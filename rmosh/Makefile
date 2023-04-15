@@ -77,7 +77,7 @@ misc-test:
 	cargo run ./tests/testing.scm
 
 #	failing
-#	cargo run ./tests/print.scm
+#	cargo run ./tests/print.scm # this needs regexp support
 #   cargo run ./tests/misc.scm
 #   cargo run ./tests/unicode.scm
 #   cargo run ./tests/template.scm

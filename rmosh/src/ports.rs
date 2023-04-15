@@ -757,16 +757,16 @@ pub trait TextOutputPort: OutputPort {
 
     fn display_abbreviated(&mut self, obj: Object) -> bool {
         if let Object::Symbol(s) = obj {
-            if s.string.eq("quote") {
+            if s.string.to_lowercase().eq("quote") {
                 self.put_string("'").ok();
                 return true;
-            } else if s.string.eq("unquote") {
+            } else if s.string.to_lowercase().eq("unquote") {
                 self.put_string(",").ok();
                 return true;
-            } else if s.string.eq("unquote-splicing") {
+            } else if s.string.to_lowercase().eq("unquote-splicing") {
                 self.put_string(",@").ok();
                 return true;
-            } else if s.string.eq("quasiquote") {
+            } else if s.string.to_lowercase().eq("quasiquote") {
                 self.put_string("`").ok();
                 return true;
             }
@@ -1711,7 +1711,7 @@ impl Port for StdErrorPort {
 
     fn input_src(&self) -> String {
         "stderr".to_string()
-    }    
+    }
 }
 
 impl Display for StdErrorPort {
@@ -1892,7 +1892,7 @@ impl Port for TranscodedInputPort {
 
 impl Display for TranscodedInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<transcoded-input-port>")
+        write!(f, "#<transcoded-textual-input-port {}>", self.in_port)
     }
 }
 
@@ -2639,7 +2639,7 @@ impl Codec for UTF8Codec {
 
 impl Display for UTF8Codec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<utf-8-codec>")
+        write!(f, "#<codec utf-8-codec>")
     }
 }
 
@@ -3400,7 +3400,7 @@ impl TextInputPort for CustomTextInputPort {
 
 impl Display for CustomTextInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custom-text-input-port>")
+        write!(f, "#<custom-textual-input-port>")
     }
 }
 
@@ -3622,7 +3622,7 @@ impl Port for CustomTextOutputPort {
         }
     }
     fn input_src(&self) -> String {
-        "custom-text-output-port".to_string()
+        "custom-textual-output-port".to_string()
     }
 }
 
@@ -3655,7 +3655,7 @@ impl OutputPort for CustomTextOutputPort {
 
 impl Display for CustomTextOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custom-text-output-port>")
+        write!(f, "#<custom-textual-output-port>")
     }
 }
 
@@ -3987,7 +3987,7 @@ impl OutputPort for CustomTextInputOutputPort {
 
 impl Display for CustomTextInputOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custom-text-input/output-port>")
+        write!(f, "#<custom-textual-input/output-port>")
     }
 }
 
