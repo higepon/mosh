@@ -74,13 +74,14 @@ misc-test:
 	cargo run ./tests/srfi-misc.scm		
 	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
 	cargo run tests/record.scm --loadpath="tests/mylib" 
+	cargo run ./tests/testing.scm
 
 #	failing
 #	cargo run ./tests/print.scm
 #   cargo run ./tests/misc.scm
 #   cargo run ./tests/unicode.scm
 #   cargo run ./tests/template.scm
-#	cargo run ./tests/testing.scm	
+#	
 # 	cargo run tests/unicode-path.scm --loadpath=./tests 
 # 	cargo run ./tests/input-port.scm < tests/input.txt
 #   cargo run ./tests/error-with-circular.scm
