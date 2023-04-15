@@ -2904,7 +2904,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sch
             }
         }
 
-        let file = match open_options.open(path.to_string()) {
+        let file = match open_options.open(&path) {
             Ok(file) => file,
             Err(err) => {
                 return Err(SchemeError::assertion_violation(

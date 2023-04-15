@@ -1452,7 +1452,7 @@ impl BinaryFileInputOutputPort {
         BinaryFileInputOutputPort {
             header: GcHeader::new(ObjectType::BinaryFileInputOutputPort),
             is_closed: false,
-            file: file,
+            file,
             path: path.to_string(),
             buffer_mode,
         }
