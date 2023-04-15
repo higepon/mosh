@@ -1827,7 +1827,7 @@ impl OutputPort for StringOutputPort {
 impl TextOutputPort for StringOutputPort {
     fn put_string(&mut self, s: &str) -> Result<(), SchemeError> {
         for c in s.chars() {
-            if self.string.len() > self.pos {
+            if self.string.chars().count() > self.pos {
                 self.string
                     .replace_range(self.pos..self.pos + 1, &c.to_string());
             } else {
