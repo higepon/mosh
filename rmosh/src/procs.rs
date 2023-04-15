@@ -7690,7 +7690,8 @@ fn mosh_executable_path(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sche
 }
 fn is_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket?";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::False)
 }
 fn socket_accept(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket-accept";
