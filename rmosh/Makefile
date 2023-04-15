@@ -83,7 +83,6 @@ misc-test:
 #   cargo run ./tests/misc.scm
 #   cargo run ./tests/template.scm
 #	
-# 	cargo run tests/unicode-path.scm --loadpath=./tests 
 # 	cargo run ./tests/input-port.scm < tests/input.txt
 #   cargo run ./tests/error-with-circular.scm
 # 	cargo run ./tests/jsonmsgpack.sps	
