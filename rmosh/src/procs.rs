@@ -1041,14 +1041,31 @@ fn make_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
         _ => generic_error!(name, args, "wrong arguments {:?}", args),
     }
 }
+
+fn replace_char_at_idx(s: &str, idx: usize, new_char: char) -> String {
+    let mut result = String::with_capacity(s.len());
+    for (i, c) in s.chars().enumerate() {
+        if i == idx {
+            result.push(new_char);
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
 fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "string-set!";
     check_argc!(name, args, 3);
     match args {
         [Object::String(mut s), Object::Fixnum(idx), Object::Char(c)] => {
             let idx = *idx as usize;
-            s.string.replace_range(idx..idx + 1, &c.to_string());
-            Ok(Object::Unspecified)
+            if idx < s.string.chars().count() {
+                let ret = replace_char_at_idx(&s.string, idx, *c);
+                s.string = ret;
+                Ok(Object::Unspecified)
+            } else {
+                type_required_error(name, "index out of ranage", args)
+            }
         }
         _ => type_required_error(name, "string, number and char", args),
     }
@@ -4108,7 +4125,7 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> Result<Object, 
         Ok(Object::Eof)
     } else {
         dest.string.replace_range(start..start + s.len(), &s);
-        Ok(s.len().to_obj(&mut vm.gc))
+        Ok(s.chars().count().to_obj(&mut vm.gc))
     }
 }
 fn get_string_all(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {

@@ -47,6 +47,7 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=./tests/r6rs-test-suite/
 
 misc-test:
+	cargo run ./tests/unicode.scm
 	cargo run ./tests/annotated-pair.scm
 	cargo run ./tests/output-port.scm
 	cargo run ./tests/input-output-port.scm
@@ -79,7 +80,6 @@ misc-test:
 #	failing
 #	cargo run ./tests/print.scm # this needs regexp support
 #   cargo run ./tests/misc.scm
-#   cargo run ./tests/unicode.scm
 #   cargo run ./tests/template.scm
 #	
 # 	cargo run tests/unicode-path.scm --loadpath=./tests 
