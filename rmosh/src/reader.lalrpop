@@ -218,7 +218,13 @@ Abbreviation: Object = {
 }
 
 Regexp: Object = {
-    "regexp" => Object::Regexp(gc.alloc(Regexp::new(&<>)))
+    "regexp" =>? {
+        Regexp::new(&<>).map(|r| {
+            Object::Regexp(gc.alloc(r))
+        }).map_err(|err| {
+            ParseError::User { error: err }
+        })
+    }
 }
 
 
