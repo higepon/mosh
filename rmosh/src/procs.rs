@@ -1371,7 +1371,7 @@ fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, Scheme
     let name: &str = "close-output-port";
     check_argc!(name, args, 1);
     let port = as_output_port_mut!(name, args, 0);
-    port.close();
+    port.close()?;
     Ok(Object::Unspecified)
 }
 fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
@@ -3042,10 +3042,10 @@ fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
     check_argc!(name, args, 1);
     if args[0].is_binary_input_port() {
         let port = as_binary_input_port_mut!(name, args, 0);
-        port.close();
+        port.close()?;
     } else if args[0].is_textual_input_port() {
         let port = as_text_input_port_mut!(name, args, 0);
-        port.close();
+        port.close()?;
     } else {
         return Err(SchemeError::assertion_violation(
             name,
@@ -5012,7 +5012,7 @@ fn close_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
     let name: &str = "close-port";
     check_argc!(name, args, 1);
     let port = as_port_mut!(name, args, 0);
-    port.close();
+    port.close()?;
     Ok(Object::Unspecified)
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {

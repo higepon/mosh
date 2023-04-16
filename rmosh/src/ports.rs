@@ -50,7 +50,7 @@ impl StdLibExt for StdLib {
 // Trait for Port.
 pub trait Port {
     fn is_open(&self) -> bool;
-    fn close(&mut self);
+    fn close(&mut self) -> Result<(), SchemeError>;
     fn has_position(&self) -> bool {
         false
     }
@@ -290,7 +290,9 @@ impl Port for StdInputPort {
         true
     }
 
-    fn close(&mut self) {}
+    fn close(&mut self) -> Result<(), SchemeError> {
+        Ok(())
+    }
 
     fn input_src(&self) -> String {
         "stdin".to_string()
@@ -358,8 +360,9 @@ impl Port for FileInputPort {
         !self.is_closed
     }
 
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.is_closed = true;
+        Ok(())
     }
 
     fn input_src(&self) -> String {
@@ -557,8 +560,9 @@ impl Port for StringInputPort {
         !self.is_closed
     }
 
-    fn close(&mut self) {
-        self.is_closed = true
+    fn close(&mut self) -> Result<(), SchemeError> {
+        self.is_closed = true;
+        Ok(())
     }
 
     fn input_src(&self) -> String {
@@ -1203,8 +1207,9 @@ impl Port for BytevectorInputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.is_closed = true;
+        Ok(())
     }
 
     fn input_src(&self) -> String {
@@ -1329,8 +1334,9 @@ impl Port for BytevectorOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.is_closed = true;
+        Ok(())
     }
 
     fn input_src(&self) -> String {
@@ -1394,8 +1400,9 @@ impl Port for BinaryFileInputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.is_closed = true;
+        Ok(())
     }
     fn buffer_mode(&self) -> BufferMode {
         self.buffer_mode
@@ -1517,9 +1524,10 @@ impl Port for BinaryFileInputOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.file.flush().ok();
         self.is_closed = true;
+        Ok(())
     }
     fn buffer_mode(&self) -> BufferMode {
         self.buffer_mode
@@ -1632,9 +1640,10 @@ impl Port for FileOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.writer.flush().unwrap();
         self.is_closed = true;
+        Ok(())
     }
 
     fn input_src(&self) -> String {
@@ -1689,7 +1698,9 @@ impl Port for StdOutputPort {
     fn is_open(&self) -> bool {
         true
     }
-    fn close(&mut self) {}
+    fn close(&mut self) -> Result<(), SchemeError> {
+        Ok(())
+    }
     fn buffer_mode(&self) -> BufferMode {
         BufferMode::Line
     }
@@ -1750,7 +1761,9 @@ impl Port for StdErrorPort {
     fn is_open(&self) -> bool {
         true
     }
-    fn close(&mut self) {}
+    fn close(&mut self) -> Result<(), SchemeError> {
+        Ok(())
+    }
     fn buffer_mode(&self) -> BufferMode {
         BufferMode::None
     }
@@ -1834,8 +1847,9 @@ impl Port for StringOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.is_closed = true;
+        Ok(())
     }
     fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
         Ok(self.pos)
@@ -1922,8 +1936,9 @@ impl Port for TranscodedInputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.is_closed = true;
+        Ok(())
     }
     fn buffer_mode(&self) -> BufferMode {
         let port = obj_as_binary_input_port_mut_or_panic!(self.in_port);
@@ -2043,10 +2058,11 @@ impl Port for TranscodedOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
-        port.close();
+        port.close()?;
         self.is_closed = true;
+        Ok(())
     }
     fn buffer_mode(&self) -> BufferMode {
         let port = obj_as_binary_output_port_mut_or_panic!(self.out_port);
@@ -2116,8 +2132,9 @@ impl Port for TranscodedInputOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.is_closed = true;
+        Ok(())
     }
     fn buffer_mode(&self) -> BufferMode {
         let port = obj_as_binary_input_port_mut_or_panic!(self.port);
@@ -2256,9 +2273,10 @@ impl Port for BinaryFileOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
         self.flush();
         self.is_closed = true;
+        Ok(())
     }
 
     fn has_position(&self) -> bool {
@@ -3148,8 +3166,13 @@ impl Port for CustomBinaryInputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
+        if !self.close_proc.is_false() {
+            let vm = unsafe { &mut CURRENT_VM };
+            vm.call_closure0(self.close_proc)?;
+        }
         self.is_closed = true;
+        Ok(())
     }
 
     fn has_position(&self) -> bool {
@@ -3319,8 +3342,14 @@ impl Port for CustomTextInputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+
+    fn close(&mut self) -> Result<(), SchemeError> {
+        if !self.close_proc.is_false() {
+            let vm = unsafe { &mut CURRENT_VM };
+            vm.call_closure0(self.close_proc)?;
+        }
         self.is_closed = true;
+        Ok(())
     }
     fn has_position(&self) -> bool {
         !self.pos_proc.is_false()
@@ -3496,8 +3525,13 @@ impl Port for CustomBinaryOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
+        if !self.close_proc.is_false() {
+            let vm = unsafe { &mut CURRENT_VM };
+            vm.call_closure0(self.close_proc)?;
+        }
         self.is_closed = true;
+        Ok(())
     }
     fn has_position(&self) -> bool {
         !self.pos_proc.is_false()
@@ -3624,8 +3658,13 @@ impl Port for CustomTextOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
+        if !self.close_proc.is_false() {
+            let vm = unsafe { &mut CURRENT_VM };
+            vm.call_closure0(self.close_proc)?;
+        }
         self.is_closed = true;
+        Ok(())
     }
     fn has_position(&self) -> bool {
         !self.pos_proc.is_false()
@@ -3757,8 +3796,13 @@ impl Port for CustomBinaryInputOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
+        if !self.close_proc.is_false() {
+            let vm = unsafe { &mut CURRENT_VM };
+            vm.call_closure0(self.close_proc)?;
+        }
         self.is_closed = true;
+        Ok(())
     }
     fn has_position(&self) -> bool {
         !self.pos_proc.is_false()
@@ -3955,8 +3999,13 @@ impl Port for CustomTextInputOutputPort {
     fn is_open(&self) -> bool {
         !self.is_closed
     }
-    fn close(&mut self) {
+    fn close(&mut self) -> Result<(), SchemeError> {
+        if !self.close_proc.is_false() {
+            let vm = unsafe { &mut CURRENT_VM };
+            vm.call_closure0(self.close_proc)?;
+        }
         self.is_closed = true;
+        Ok(())
     }
     fn has_position(&self) -> bool {
         !self.pos_proc.is_false()
