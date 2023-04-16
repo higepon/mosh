@@ -50,8 +50,8 @@ fn main() {
     if let Some(file) = args.file {
         vargs.push(vm.gc.new_string(&file));
     } else {
-        vargs.push(vm.gc.new_string("/root/mosh.git/tests/srfi/srfi-194.scm"));
-        //vargs.push(vm.gc.new_string("/root/mosh.git/tests/r7rs/r7rs-tests.scm"));
+        //vargs.push(vm.gc.new_string("/root/mosh.git/tests/srfi/srfi-194.scm"));
+        vargs.push(vm.gc.new_string("/root/mosh.git/tests/unicode.scm"));
         //vargs.push(vm.gc.new_string("/root/cont.scm"));
         /*
         vargs.push(

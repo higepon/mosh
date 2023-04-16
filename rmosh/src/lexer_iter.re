@@ -33,7 +33,7 @@ use crate::error::SchemeError;
     BYTEVECTOR_START       = "#u8(" | "#vu8(" | "#u8[" | "#vu8[";
     DOT_SUBSEQUENT         = SIGN_SUBSEQUENT | DOT;
     // Per R7RS Small Errata, we allow \\\\ and \\\" here.
-    MNEMONIC_ESCAPE        = ('\\' [abtnr\\\\|"]);
+    MNEMONIC_ESCAPE        = ('\\' [vfabtnr\\\\|"]);
     PECULIAR_IDENTIFIER    = EXPLICIT_SIGN | EXPLICIT_SIGN SIGN_SUBSEQUENT SUBSEQUENT * | EXPLICIT_SIGN "." DOT_SUBSEQUENT SUBSEQUENT * | "." DOT_SUBSEQUENT SUBSEQUENT *;
     SYMBOL_ELEMENT         = [^\|\\] | "\\|" | INLINE_HEX_ESCAPE | MNEMONIC_ESCAPE;
     IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | VERTICAL_LINE SYMBOL_ELEMENT * VERTICAL_LINE | PECULIAR_IDENTIFIER;
@@ -262,8 +262,9 @@ impl<'input> Iterator for Lexer<'input> {
                         return Some(Err(SchemeError::lexical_violation_read_error(
                             "lexer",
                             &format!(
-                                "invalid token {} at {}:{}",
+                                "invalid token {} at {} {}:{}",
                                 self.extract_token(),
+                                self.input_src,
                                 self.tok,
                                 self.cursor
                             ),

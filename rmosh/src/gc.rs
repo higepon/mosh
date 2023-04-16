@@ -287,6 +287,14 @@ impl Gc {
         Object::Symbol(symbol)
     }
 
+    pub fn new_compnum(&mut self, real: Object, imag: Object) -> Object {
+        if imag.is_exact_zero() {
+            real
+        } else {
+            Object::Compnum(self.alloc(Compnum::new(real, imag)))
+        }
+    }
+
     pub fn new_procedure(
         &mut self,
         func: fn(&mut Vm, &mut [Object]) -> Result<Object, SchemeError>,

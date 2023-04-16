@@ -61,12 +61,13 @@ pub struct Lexer<'input> {
     pub limit: usize,
     pub tok: usize,
     pub(super) is_fold_case: bool,
+    pub input_src: String,
 }
 
 // TODO:
 // - Fix range in Some.
 impl<'input> Lexer<'input> {
-    pub fn new(input: &'input [char]) -> Self {
+    pub fn new(input: &'input [char], input_src: &str) -> Self {
         Self {
             s: input,
             cursor: 0,
@@ -74,6 +75,7 @@ impl<'input> Lexer<'input> {
             tok: 0,
             limit: input.len() - 1,
             is_fold_case: false,
+            input_src: input_src.to_string(),
         }
     }
 

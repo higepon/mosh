@@ -141,6 +141,10 @@ pub trait FixnumExt {
     fn lt_rat(self, r: &Ratnum) -> bool;
     fn gt_rat(self, r: &Ratnum) -> bool;
 
+    // Fixnum vs Compnum
+    fn add_comp(self, gc: &mut Box<Gc>, c: &Compnum) -> Object;
+    fn div_comp(self, gc: &mut Box<Gc>, c: &Compnum) -> Result<Object, SchemeError>;
+
     // Arith
     fn exp(self) -> Object;
     fn log(self) -> Object;
@@ -332,6 +336,7 @@ impl FixnumExt for isize {
             Ok(r.to_obj(gc))
         }
     }
+
     fn eqv_big(self, b: &Bignum) -> bool {
         match b.to_isize() {
             Some(v) => v == self,
@@ -391,6 +396,21 @@ impl FixnumExt for isize {
             Some(self_r) => self_r > r.ratio,
             None => todo!(),
         }
+    }
+
+    // Fixnum vs Compnum
+    fn div_comp(self, gc: &mut Box<Gc>, c: &Compnum) -> Result<Object, SchemeError> {
+        if c.real.is_exact_zero() && c.imag.is_exact_zero() {
+            Err(SchemeError::Div0)
+        } else {
+            let c1 = Compnum::new(Object::Fixnum(self), Object::Fixnum(0));
+            c1.div(gc, c)
+        }
+    }
+
+    fn add_comp(self, gc: &mut Box<Gc>, c: &Compnum) -> Object {
+        let real = add(gc, Object::Fixnum(self), c.real);
+        gc.new_compnum(real, c.imag)
     }
 
     // Arith
@@ -1168,6 +1188,39 @@ impl Compnum {
         Object::Compnum(gc.alloc(Compnum::new(real, imag)))
     }
 
+    pub fn mul(&self, gc: &mut Box<Gc>, other: &Compnum) -> Object {
+        let r1 = mul(gc, self.real, other.real);
+        let r2 = mul(gc, self.imag, other.imag);
+        let r = sub(gc, r1, r2);
+        let i1 = mul(gc, self.real, other.imag);
+        let i2 = mul(gc, other.real, self.imag);
+        let i = add(gc, i1, i2);
+        Object::Compnum(gc.alloc(Compnum::new(r, i)))
+    }
+
+    pub fn div(&self, gc: &mut Box<Gc>, other: &Compnum) -> Result<Object, SchemeError> {
+        if other.real.is_exact_zero() && other.imag.is_exact_zero() {
+            Err(SchemeError::Div0)
+        } else {
+            let d1 = mul(gc, other.real, other.real);
+            let d2 = mul(gc, other.imag, other.imag);
+            let denom = add(gc, d1, d2);
+            let n1 = mul(gc, self.real, other.real);
+            let n2 = mul(gc, self.imag, other.imag);
+            let numer_real = add(gc, n1, n2);
+            let n3 = mul(gc, self.imag, other.real);
+            let n4 = mul(gc, self.real, other.imag);
+            let numer_imag = add(gc, n3, n4);
+            let numer = Object::Compnum(gc.alloc(Compnum::new(numer_real, numer_imag)));
+            div(gc, numer, denom)
+        }
+    }
+
+    pub fn sub_number(&self, gc: &mut Box<Gc>, n: Object) -> Object {
+        let real = sub(gc, self.real, n);
+        Object::Compnum(gc.alloc(Compnum::new(real, self.imag)))
+    }
+
     pub fn div_number(&self, gc: &mut Box<Gc>, n: Object) -> Result<Object, SchemeError> {
         if n.is_exact_zero() {
             Err(SchemeError::Div0)
@@ -1369,7 +1422,9 @@ impl Compnum {
 impl Display for Compnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if ge(self.imag, Object::Fixnum(0)) {
-            if self.imag.is_flonum() && self.imag.to_flonum().is_infinite() {
+            if self.imag.is_exact_zero() {
+                write!(f, "{}", self.real.to_string())
+            } else if self.imag.is_flonum() && self.imag.to_flonum().is_infinite() {
                 write!(f, "{}{}i", self.real.to_string(), self.imag.to_string())
             } else {
                 write!(f, "{}+{}i", self.real.to_string(), self.imag.to_string())
@@ -1389,7 +1444,7 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.add_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.add_rat(gc, &r),
         (Object::Fixnum(fx), Object::Bignum(b)) => fx.add_big(gc, &b),
-        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Compnum(c)) => fx.add_comp(gc, &c),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fx.add_fl(&fl),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.add(&fl2),
         (Object::Flonum(fl), Object::Ratnum(r)) => fl.add_rat(&r),
@@ -1405,7 +1460,7 @@ pub fn add(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.add(gc, &r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Fixnum(fx)) => fx.add_comp(gc, &c),
         (Object::Compnum(_), Object::Flonum(_)) => todo!(),
         (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Compnum(_), Object::Bignum(_)) => todo!(),
@@ -1437,10 +1492,10 @@ pub fn sub(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.sub(gc, &r2),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
+        (Object::Compnum(c), Object::Fixnum(_))
+        | (Object::Compnum(c), Object::Flonum(_))
+        | (Object::Compnum(c), Object::Ratnum(_))
+        | (Object::Compnum(c), Object::Bignum(_)) => c.sub_number(gc, n2),
         (Object::Compnum(c1), Object::Compnum(c2)) => c1.sub(gc, &c2),
         _ => todo!(),
     }
@@ -1474,7 +1529,7 @@ pub fn mul(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Compnum(_), Object::Flonum(_)) => todo!(),
         (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Compnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(c1), Object::Compnum(c2)) => c1.mul(gc, &c2),
         _ => todo!(),
     }
 }
@@ -1487,7 +1542,7 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
         (Object::Fixnum(fx), Object::Flonum(fl)) => fx.div_fl(&fl),
         (Object::Fixnum(fx), Object::Ratnum(r)) => fx.div_rat(gc, &r),
         (Object::Fixnum(fx), Object::Bignum(b)) => fx.div_big(gc, &b),
-        (Object::Fixnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Fixnum(fx), Object::Compnum(c)) => fx.div_comp(gc, &c),
         (Object::Flonum(fl), Object::Fixnum(fx)) => fl.div_fx(fx),
         (Object::Flonum(fl1), Object::Flonum(fl2)) => fl1.div(&fl2),
         (Object::Flonum(_), Object::Ratnum(_)) => todo!(),
@@ -1503,11 +1558,11 @@ pub fn div(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Result<Object, SchemeErr
         (Object::Ratnum(r1), Object::Ratnum(r2)) => r1.div(gc, &r2),
         (Object::Ratnum(r), Object::Bignum(b)) => r.div_big(gc, &b),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
-        (Object::Compnum(c), Object::Flonum(_)) => c.div_number(gc, n2),
-        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(c), Object::Fixnum(_))
+        | (Object::Compnum(c), Object::Flonum(_))
+        | (Object::Compnum(c), Object::Ratnum(_))
+        | (Object::Compnum(c), Object::Bignum(_)) => c.div_number(gc, n2),
+        (Object::Compnum(c1), Object::Compnum(c2)) => c1.div(gc, &c2),
         _ => todo!(),
     }
 }
@@ -1741,11 +1796,11 @@ pub fn expt(gc: &mut Box<Gc>, n1: Object, n2: Object) -> Object {
         (Object::Ratnum(_), Object::Ratnum(_)) => todo!(),
         (Object::Ratnum(_), Object::Bignum(_)) => todo!(),
         (Object::Ratnum(_), Object::Compnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Fixnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Flonum(_)) => todo!(),
-        (Object::Compnum(_), Object::Ratnum(_)) => todo!(),
-        (Object::Compnum(_), Object::Bignum(_)) => todo!(),
-        (Object::Compnum(_), Object::Compnum(_)) => todo!(),
+        (Object::Compnum(_), Object::Fixnum(_))
+        | (Object::Compnum(_), Object::Flonum(_))
+        | (Object::Compnum(_), Object::Ratnum(_))
+        | (Object::Compnum(_), Object::Bignum(_))
+        | (Object::Compnum(_), Object::Compnum(_)) => Compnum::expt(gc, n1, n2),
         _ => todo!(),
     }
 }

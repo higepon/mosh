@@ -47,6 +47,12 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=./tests/r6rs-test-suite/
 
 misc-test:
+	cargo run ./tests/unicode.scm
+	cargo run ./tests/annotated-pair.scm
+	cargo run ./tests/output-port.scm
+	cargo run ./tests/input-output-port.scm
+	cargo run ./tests/number.scm
+	cargo run ./tests/io-error.scm
 	cargo run ./tests/mosh-test.scm
 	cargo run ./tests/cgi.scm
 	cargo run ./tests/condition.scm
@@ -63,50 +69,26 @@ misc-test:
 	cargo run ./tests/r7rs/top-level.scm	
 	cargo run ./tests/r7rs/import-all.scm
 	cargo run ./tests/srfi/srfi-151.scm
-	
-
-# 	cargo run --loadpath=".:./tests/mylib" tests/use-foo.scm # test : separated loadpath
-# 	cargo run -5 src/all-tests.scm
-
 	cargo run ./tests/comment.scm
 	cargo run ./tests/srfi19.scm
 	cargo run ./tests/clos.scm
-	cargo run ./tests/srfi-misc.scm	
-#	cargo run ./tests/number.scm	
-#	cargo run ./tests/io-error.scm
-# 	cargo run ./tests/input-output-port.scm
-# 	cargo run ./tests/input-port.scm < tests/input.txt
-# 	cargo run ./tests/output-port.scm
-# 	cargo run --loadpath="tests/mylib" tests/record.scm
-# 	cargo run ./tests/unicode.scm
-#	cargo run ./tests/misc.scm
-	# cargo run ./tests/template.scm
-	# cargo run ./tests/testing.scm	
-# 	! cargo run --disable-acc --loadpath=tests/mylib tests/import_bad_regexp.scm 2>/dev/null
-# 	cargo run --disable-acc --loadpath=tests/mylib tests/import_good_regexp.scm
-# 	cargo run --disable-acc --loadpath=tests/mylib tests/import_both_regexp.scm
-# 	! cargo run ./tests/error-with-circular.scm 2>/dev/null
-# #	cargo run ./tests/process.scm
-# 	cargo run ./tests/annotated-pair.scm
-# 	cargo run ./tests/print.scm
+	cargo run ./tests/srfi-misc.scm		
+	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
+	cargo run tests/record.scm --loadpath="tests/mylib" 
+	cargo run ./tests/testing.scm
+	cargo run tests/unicode-path.scm --loadpath=./tests
+	cargo run ./tests/input-port.scm < tests/input.txt
+
+#	failing
+#	cargo run ./tests/print.scm # this needs regexp support
+#   cargo run ./tests/misc.scm
+#   cargo run ./tests/template.scm
+#   cargo run ./tests/error-with-circular.scm
 # 	cargo run ./tests/jsonmsgpack.sps	
-# 	# "invalid sytax error" should be shown with file name and line number.
-# 	# This grep pattern should work with both mosh and nmosh.
-# 	cargo run ./tests/invalid-syntax.scm 2>&1 >/dev/null | grep 'invalid-syntax.scm' -A10 -B10
-# 	cargo run ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
-# cargo run -5 tests/internal-define.scm
-# 	cargo run --disable-acc --loadpath=tests/mylib tests/shared.scm
-# 	! cargo run --disable-acc --loadpath=tests/mylib tests/shared2.scm 2>/dev/null
-# 	cargo run --disable-acc --loadpath=tests/mylib tests/shared3.scm
-# 	# test twice
-# 	cargo run --loadpath=tests/mylib tests/fasl.scm
-# 	cargo run --loadpath=tests/mylib tests/fasl.scm
-# 	cargo run ./tests/r7rs/r7rs-tests.scm
+#   cargo run ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
 
-
-# 	$(MAKE) -C tests/r7rs/library-converter
-# 	$(MAKE) test -C tests/mnist
-# 	cargo run --loadpath=./tests tests/unicode-path.scm	
+# 	Not supported yet
+#   cargo run ./tests/process.scm
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm

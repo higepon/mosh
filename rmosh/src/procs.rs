@@ -1041,14 +1041,31 @@ fn make_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
         _ => generic_error!(name, args, "wrong arguments {:?}", args),
     }
 }
+
+fn replace_char_at_idx(s: &str, idx: usize, new_char: char) -> String {
+    let mut result = String::with_capacity(s.len());
+    for (i, c) in s.chars().enumerate() {
+        if i == idx {
+            result.push(new_char);
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
 fn string_set_destructive(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "string-set!";
     check_argc!(name, args, 3);
     match args {
         [Object::String(mut s), Object::Fixnum(idx), Object::Char(c)] => {
             let idx = *idx as usize;
-            s.string.replace_range(idx..idx + 1, &c.to_string());
-            Ok(Object::Unspecified)
+            if idx < s.string.chars().count() {
+                let ret = replace_char_at_idx(&s.string, idx, *c);
+                s.string = ret;
+                Ok(Object::Unspecified)
+            } else {
+                type_required_error(name, "index out of ranage", args)
+            }
         }
         _ => type_required_error(name, "string, number and char", args),
     }
@@ -1354,7 +1371,7 @@ fn close_output_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, Scheme
     let name: &str = "close-output-port";
     check_argc!(name, args, 1);
     let port = as_output_port_mut!(name, args, 0);
-    port.close();
+    port.close()?;
     Ok(Object::Unspecified)
 }
 fn digit_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
@@ -1410,7 +1427,9 @@ fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
     let name: &str = "get-output-string";
     check_argc!(name, args, 1);
     if let Object::StringOutputPort(mut s) = args[0] {
-        Ok(vm.gc.new_string(&s.string()))
+        let ret = s.string();
+        s.reset();
+        Ok(vm.gc.new_string(&ret))
     } else {
         type_required_error(name, "string-output-port", args)
     }
@@ -2506,6 +2525,15 @@ fn set_port_position_destructive(vm: &mut Vm, args: &mut [Object]) -> Result<Obj
     check_argc!(name, args, 2);
     let port = as_port_mut!(name, args, 0);
     if port.has_set_position() {
+        let pos = as_isize!(name, args, 1);
+        if pos < 0 {
+            return Err(SchemeError::io_invalid_position(
+                name,
+                "non-negative position required",
+                &[pos.to_obj()],
+                pos,
+            ));
+        }
         let pos = as_usize!(name, args, 1);
         match port.set_position(vm, pos) {
             Ok(_) => Ok(Object::Unspecified),
@@ -2728,7 +2756,7 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeEr
     let mut buf: Vec<u8> = vec![0; size];
     let port = as_binary_input_port_mut!(name, args, 0);
     match port.read(vm, &mut buf) {
-        Ok(0) => Ok(Object::Eof),
+        Ok(0) if size != 0 => Ok(Object::Eof),
         Ok(size) => Ok(Object::Bytevector(
             vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec())),
         )),
@@ -2795,10 +2823,9 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sch
                 return generic_error!(name, &[args[0]], "{}", err);
             }
         };
-        Ok(Object::BinaryFileOutputPort(
-            vm.gc
-                .alloc(BinaryFileOutputPort::new(file, BufferMode::Block)),
-        ))
+        Ok(Object::BinaryFileOutputPort(vm.gc.alloc(
+            BinaryFileOutputPort::new(file, &path, BufferMode::Block),
+        )))
     } else {
         let file_options = match args[1] {
             Object::SimpleStruct(s) => s.field(1),
@@ -2894,7 +2921,7 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sch
             }
         }
 
-        let file = match open_options.open(path) {
+        let file = match open_options.open(&path) {
             Ok(file) => file,
             Err(err) => {
                 return Err(SchemeError::assertion_violation(
@@ -2907,14 +2934,17 @@ fn open_file_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sch
 
         match transcoder {
             Some(t) => {
-                let in_port = Object::BinaryFileOutputPort(
-                    vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
-                );
+                let in_port = Object::BinaryFileOutputPort(vm.gc.alloc(BinaryFileOutputPort::new(
+                    file,
+                    &path,
+                    buffer_mode,
+                )));
                 let port = TranscodedOutputPort::new(in_port, t);
                 Ok(Object::TranscodedOutputPort(vm.gc.alloc(port)))
             }
             None => Ok(Object::BinaryFileOutputPort(
-                vm.gc.alloc(BinaryFileOutputPort::new(file, buffer_mode)),
+                vm.gc
+                    .alloc(BinaryFileOutputPort::new(file, &path, buffer_mode)),
             )),
         }
     }
@@ -2993,14 +3023,17 @@ fn open_file_input_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sche
 
     match transcoder {
         Some(t) => {
-            let in_port = Object::BinaryFileInputPort(
-                vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
-            );
+            let in_port = Object::BinaryFileInputPort(vm.gc.alloc(BinaryFileInputPort::new(
+                file,
+                path,
+                buffer_mode,
+            )));
             let port = TranscodedInputPort::new(in_port, t);
             Ok(Object::TranscodedInputPort(vm.gc.alloc(port)))
         }
         None => Ok(Object::BinaryFileInputPort(
-            vm.gc.alloc(BinaryFileInputPort::new(file, buffer_mode)),
+            vm.gc
+                .alloc(BinaryFileInputPort::new(file, path, buffer_mode)),
         )),
     }
 }
@@ -3009,10 +3042,10 @@ fn close_input_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
     check_argc!(name, args, 1);
     if args[0].is_binary_input_port() {
         let port = as_binary_input_port_mut!(name, args, 0);
-        port.close();
+        port.close()?;
     } else if args[0].is_textual_input_port() {
         let port = as_text_input_port_mut!(name, args, 0);
-        port.close();
+        port.close()?;
     } else {
         return Err(SchemeError::assertion_violation(
             name,
@@ -3936,14 +3969,13 @@ fn number_add(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 
 fn nuber_sub(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "-";
+    check_argc_at_least!(name, args, 1);
     let argc = args.len();
-    if argc == 0 {
-        Ok(Object::Fixnum(0))
-    } else if argc == 1 {
+    if argc == 1 {
         if args[0].is_number() {
             Ok(numbers::negate(&mut vm.gc, args[0]))
         } else {
-            return number_required_error(name, &[args[0]]);
+            number_required_error(name, &[args[0]])
         }
     } else {
         let mut ret = args[0];
@@ -4063,13 +4095,13 @@ fn get_string_n(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError>
     let port = as_text_input_port_mut!(name, args, 0);
     match port.read_n_to_string(vm, &mut s, n) {
         Ok(_) => {
-            if !s.is_empty() {
+            if n == 0 || !s.is_empty() {
                 Ok(vm.gc.new_string(&s))
             } else {
                 Ok(Object::Eof)
             }
         }
-        Err(_) => Ok(Object::Eof),
+        Err(e) => add_context(e, name, &[args[0]]),
     }
 }
 
@@ -4093,7 +4125,7 @@ fn get_string_n_destructive(vm: &mut Vm, args: &mut [Object]) -> Result<Object, 
         Ok(Object::Eof)
     } else {
         dest.string.replace_range(start..start + s.len(), &s);
-        Ok(s.len().to_obj(&mut vm.gc))
+        Ok(s.chars().count().to_obj(&mut vm.gc))
     }
 }
 fn get_string_all(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
@@ -4119,7 +4151,7 @@ fn get_line(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
                 Ok(vm.gc.new_string(&s))
             }
         }
-        Err(_) => Ok(Object::Eof),
+        Err(e) => add_context(e, name, &[args[0]]),
     }
 }
 fn get_datum(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
@@ -4980,7 +5012,7 @@ fn close_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
     let name: &str = "close-port";
     check_argc!(name, args, 1);
     let port = as_port_mut!(name, args, 0);
-    port.close();
+    port.close()?;
     Ok(Object::Unspecified)
 }
 fn make_instruction(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
@@ -5000,33 +5032,25 @@ fn make_compiler_instruction(_vm: &mut Vm, args: &mut [Object]) -> Result<Object
 fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fasl-write";
     check_argc!(name, args, 2);
-    if let Object::BinaryFileOutputPort(mut port) = args[1] {
-        let fasl = FaslWriter::new();
-        let port = unsafe { port.pointer.as_mut() };
-        let bin_port: &mut dyn BinaryOutputPort = port;
-        match fasl.write(bin_port, args[0]) {
-            Ok(()) => Ok(Object::Unspecified),
-            Err(err) => {
-                generic_error!(name, args, "{} {} {}", err, args[0], args[1])
-            }
+    let port = as_binary_output_port_mut!(name, args, 1);
+    let fasl = FaslWriter::new();
+    match fasl.write(port, args[0]) {
+        Ok(()) => Ok(Object::Unspecified),
+        Err(err) => {
+            generic_error!(name, args, "{} {} {}", err, args[0], args[1])
         }
-    } else {
-        type_required_error(name, "file path", &[args[0]])
     }
 }
 fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fasl-read";
     check_argc!(name, args, 1);
-    if let Object::BinaryFileInputPort(mut port) = args[0] {
-        let mut content = Vec::new();
-        port.read_to_end(&mut content).ok();
-        let mut fasl = FaslReader::new(&content[..]);
-        match fasl.read(&mut vm.gc) {
-            Ok(sexp) => Ok(sexp),
-            Err(err) => Err(SchemeError::io_error(name, &format!("{}", err), &[args[0]])),
-        }
-    } else {
-        type_required_error(name, "file path", &[args[0]])
+    let port = as_binary_input_port_mut!(name, args, 0);
+    let mut content = Vec::new();
+    port.read_all(vm, &mut content)?;
+    let mut fasl = FaslReader::new(&content[..]);
+    match fasl.read(&mut vm.gc) {
+        Ok(sexp) => Ok(sexp),
+        Err(err) => Err(SchemeError::io_error(name, &format!("{}", err), &[args[0]])),
     }
 }
 
@@ -7056,6 +7080,73 @@ fn is_input_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeErro
     check_argc!(name, args, 1);
     Ok(args[0].is_input_port().to_obj())
 }
+
+fn add_context(e: SchemeError, who: &str, irritants: &[Object]) -> Result<Object, SchemeError> {
+    let mut new_irritants: Vec<Object> = irritants.to_vec();
+    Err(match e {
+        SchemeError::AssertionViolation {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::assertion_violation(who, &message, &new_irritants)
+        }
+        SchemeError::ImplementationRestrictionViolation {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::implementation_restriction_violation(who, &message, &new_irritants)
+        }
+        SchemeError::IoError {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_error(who, &message, &new_irritants)
+        }
+        SchemeError::IoEncodingError {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_encoding_error(who, &message, &new_irritants)
+        }
+        SchemeError::IoDecodingError {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_decoding_error(who, &message, &new_irritants)
+        }
+        SchemeError::IoFileNotExist {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_file_not_exist(who, &message, &new_irritants)
+        }
+        SchemeError::IoFileAlreadyExist {
+            who: _,
+            message,
+            irritants,
+        } => {
+            new_irritants.extend(irritants);
+            SchemeError::io_file_already_exist(who, &message, &new_irritants)
+        }
+        SchemeError::LexicalViolationReadError { who: _, message } => {
+            SchemeError::lexical_violation_read_error(who, &message)
+        }
+        x => x,
+    })
+}
+
 fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "port-eof?";
     check_argc!(name, args, 1);
@@ -7064,15 +7155,23 @@ fn is_port_eof(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_char(vm) == Ok(None)).to_obj())
+        match port.lookahead_char(vm) {
+            Ok(None) => Ok(Object::True),
+            Ok(_) => Ok(Object::False),
+            Err(e) => add_context(e, name, &[args[0]]),
+        }
     } else if args[0].is_binary_input_port() {
         let port = as_binary_input_port_mut!(name, args, 0);
         if !port.is_open() {
             todo!()
         }
-        Ok((port.lookahead_u8(vm) == Ok(None)).to_obj())
+        match port.lookahead_u8(vm) {
+            Ok(None) => Ok(Object::True),
+            Ok(_) => Ok(Object::False),
+            Err(e) => add_context(e, name, &[args[0]]),
+        }
     } else {
-        bug!()
+        bug!("{}", args[0])
     }
 }
 fn lookahead_u8(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
@@ -7469,14 +7568,14 @@ fn open_file_input_output_port(vm: &mut Vm, args: &mut [Object]) -> Result<Objec
         Some(t) => {
             let bin_port = Object::BinaryFileInputOutputPort(
                 vm.gc
-                    .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
+                    .alloc(BinaryFileInputOutputPort::new(file, path, buffer_mode)),
             );
             let port = TranscodedInputOutputPort::new(bin_port, t);
             Ok(Object::TranscodedInputOutputPort(vm.gc.alloc(port)))
         }
         None => Ok(Object::BinaryFileInputOutputPort(
             vm.gc
-                .alloc(BinaryFileInputOutputPort::new(file, buffer_mode)),
+                .alloc(BinaryFileInputOutputPort::new(file, path, buffer_mode)),
         )),
     }
 }
@@ -7600,7 +7699,8 @@ fn mosh_executable_path(vm: &mut Vm, args: &mut [Object]) -> Result<Object, Sche
 }
 fn is_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket?";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    Ok(Object::False)
 }
 fn socket_accept(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket-accept";

@@ -390,6 +390,7 @@ impl Object {
                 | Object::CustomTextInputPort(_)
                 | Object::CustomTextInputOutputPort(_)
                 | Object::TranscodedInputPort(_)
+                | Object::TranscodedInputOutputPort(_)
                 | Object::BytevectorInputPort(_)
                 | Object::StringInputPort(_)
         )
@@ -489,6 +490,7 @@ impl Object {
                 | Object::FileInputPort(_)
                 | Object::CustomTextInputPort(_)
                 | Object::CustomTextInputOutputPort(_)
+                | Object::TranscodedInputOutputPort(_)
                 | Object::StringInputPort(_)
         )
     }
@@ -724,7 +726,11 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Char(c) => {
-                write!(f, "#\\x{:x}", *c as u32)
+                if c.is_alphabetic() {
+                    write!(f, "#\\{}", c)
+                } else {
+                    write!(f, "#\\x{:x}", *c as u32)
+                }
             }
             Object::Flonum(n) => {
                 write!(f, "{}", n)
@@ -751,14 +757,14 @@ impl Debug for Object {
                     closure.pointer.as_ptr()
                 )
             }
-            Object::EqHashtable(table) => {
-                write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
+            Object::EqHashtable(_table) => {
+                write!(f, "#<eq-hashtable>")
             }
-            Object::EqvHashtable(table) => {
-                write!(f, "#<eqv-hashtable {:?}>", table.pointer.as_ptr())
+            Object::EqvHashtable(_table) => {
+                write!(f, "#<eqv-hashtable>")
             }
-            Object::GenericHashtable(table) => {
-                write!(f, "#<hashtable {:?}>", table.pointer.as_ptr())
+            Object::GenericHashtable(_table) => {
+                write!(f, "#<hashtable>")
             }
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
@@ -770,7 +776,7 @@ impl Debug for Object {
                 write!(f, "{:?}", unsafe { symbol.pointer.as_ref() })
             }
             Object::Eof => {
-                write!(f, "#<eof>")
+                write!(f, "#<eof-object>")
             }
             Object::True => {
                 write!(f, "#t")
@@ -932,14 +938,14 @@ impl Display for Object {
                     closure.pointer.as_ptr()
                 )
             }
-            Object::EqHashtable(table) => {
-                write!(f, "#<eq-hashtable {:?}>", table.pointer.as_ptr())
+            Object::EqHashtable(_table) => {
+                write!(f, "#<eq-hashtable>")
             }
-            Object::EqvHashtable(table) => {
-                write!(f, "#<eqv-hashtable {:?}>", table.pointer.as_ptr())
+            Object::EqvHashtable(_table) => {
+                write!(f, "#<eqv-hashtable>")
             }
-            Object::GenericHashtable(table) => {
-                write!(f, "#<hashtable {:?}>", table.pointer.as_ptr())
+            Object::GenericHashtable(_table) => {
+                write!(f, "#<hashtable>")
             }
             Object::Pair(pair) => {
                 write!(f, "{}", unsafe { pair.pointer.as_ref() })
@@ -951,7 +957,7 @@ impl Display for Object {
                 write!(f, "{}", unsafe { symbol.pointer.as_ref() })
             }
             Object::Eof => {
-                write!(f, "#<eof>")
+                write!(f, "#<eof-object>")
             }
             Object::True => {
                 write!(f, "#t")

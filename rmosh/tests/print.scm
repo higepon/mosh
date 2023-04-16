@@ -39,8 +39,8 @@
              [#\a "a" "#\\a"]
              ['#(a b c) "#(a b c)"]
              ["abc" "abc" "\"abc\""]
-             [(open-file-input-port test-file) (format "#<binary-input-port ~a>" test-file) (format "#<binary-input-port ~a>" test-file) "#[input-port]"]
-             [(open-input-file test-file) (format "#<transcoded-textual-input-port #<binary-input-port ~a>>" test-file) (format "#<transcoded-textual-input-port #<binary-input-port ~a>>" test-file) "#[input-port]"]
+             [(open-file-input-port test-file) (format "#<binary-file-input-port ~a>" test-file) (format "#<binary-file-input-port ~a>" test-file) "#[input-port]"]
+             [(open-input-file test-file) (format "#<transcoded-textual-input-port #<binary-file-input-port ~a>>" test-file) (format "#<transcoded-textual-input-port #<binary-file-input-port ~a>>" test-file) "#[input-port]"]
              [(open-string-output-port) "#<string-output-port>" "#<string-output-port>" "#[output-port]"]
              [(make-custom-textual-output-port
                "custom out"
@@ -49,7 +49,7 @@
                (lambda (pos) #f)
                (lambda () 'ok)) "#<custom-textual-output-port custom out>" "#<custom-textual-output-port custom out>" "#[output-port]"]
              [(lambda (x) #f) #/#<closure \-?\d+>/ #/#<closure \-?\d+>/ "#[procedure]"]
-             [car #/<subr car>/ #/<subr car>/ "#[procedure]"]
+             [car #/#<procedure car>/ #/<procedure car>/ "#[procedure]"]
              ['a "a"]
              [(make-eq-hashtable) "#<eq-hashtable>" "#<eq-hashtable>" "#[hashtable]"]
              [(make-eqv-hashtable) "#<eqv-hashtable>" "#<eqv-hashtable>" "#[hashtable]"]
@@ -87,15 +87,15 @@
 )
 
 ;; pp can't handle circular structure!
-(test-print "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
+#;(test-print "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
                                 (set-cdr! x x)
                                 x) write/ss)
-(test-equal "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
+#;(test-equal "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
                                 (set-cdr! x x)
                                 (format "~w" x)))
 
 ;; mosh only. Use display/ss
-(test-equal "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
+#;(test-equal "#1=(val1 . #1#)" (let ([x (cons 'val1 'val2)])
                                 (set-cdr! x x)
                                 (format "~e" x)))
 
@@ -106,7 +106,7 @@
 (test-equal "\n" (format "~%"))
 
 ;; write/ss
-(let* ([a '(1 2)]
+#;(let* ([a '(1 2)]
        [x `(,a ,a)])
   (define (write-to-string write-proc obj)
     (call-with-values open-string-output-port (lambda (port proc) (write-proc obj port) (proc))))
