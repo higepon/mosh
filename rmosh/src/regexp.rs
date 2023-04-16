@@ -19,7 +19,7 @@ impl Trace for Regexp {
 impl Regexp {
     pub fn new(s: &str) -> Result<Self, SchemeError> {
         let regex = Regex::new(s).map_err(|e| {
-            SchemeError::assertion_violation("lexer", &format!("regexp errpr {}", e), &[])
+            SchemeError::assertion_violation("lexer", &format!("regexp error {}", e), &[])
         })?;
 
         Ok(Self {
