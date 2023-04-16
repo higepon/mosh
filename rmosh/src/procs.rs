@@ -32,7 +32,7 @@ use crate::{
     },
     vm::Vm,
 };
-use crate::{as_vector, bug};
+use crate::{as_vector, bug, as_regexp};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
     env::{self, current_dir, current_exe},
@@ -999,8 +999,12 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
 }
 fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let regexp = as_regexp!(name, args, 0);
+    let text = as_sstring!(name, args, 1);
+    regexp.rxmatch(&text.string)
 }
+
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "regexp?";
     check_argc!(name, args, 1);

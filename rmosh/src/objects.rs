@@ -12,7 +12,7 @@ use crate::ports::{
     StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
     TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
-use crate::regexp::Regexp;
+use crate::regexp::{Regexp, RegMatch};
 use crate::vm::Vm;
 
 use std::cmp::min;
@@ -62,6 +62,7 @@ pub enum Object {
     ProgramCounter(*const Object),
     Ratnum(GcRef<Ratnum>),
     Regexp(GcRef<Regexp>),
+    RegMatch(GcRef<RegMatch>),    
     SimpleStruct(GcRef<SimpleStruct>),
     StdErrorPort(GcRef<StdErrorPort>),
     StdInputPort(GcRef<StdInputPort>),
@@ -172,6 +173,9 @@ impl Object {
     pub fn is_regexp(&self) -> bool {
         matches!(self, Object::Regexp(_))
     }
+    pub fn is_reg_match(&self) -> bool {
+        matches!(self, Object::RegMatch(_))
+    }    
     pub fn is_nil(&self) -> bool {
         matches!(self, Object::Nil)
     }
@@ -241,6 +245,13 @@ impl Object {
             bug!("Not a Object::String")
         }
     }
+    pub fn to_regexp(self) -> GcRef<Regexp> {
+        if let Self::Regexp(s) = self {
+            s
+        } else {
+            bug!("Not a Object::Regexp")
+        }
+    }    
     pub fn to_simple_struc(self) -> GcRef<SimpleStruct> {
         if let Self::SimpleStruct(s) = self {
             s
@@ -602,6 +613,7 @@ impl Object {
             Object::ProgramCounter(_) => todo!(),
             Object::Ratnum(_) => todo!(),
             Object::Regexp(_) => todo!(),
+            Object::RegMatch(_) => todo!(),            
             Object::SimpleStruct(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StdInputPort(_) => todo!(),
@@ -726,6 +738,9 @@ impl Debug for Object {
             Object::Regexp(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
+            Object::RegMatch(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }            
             Object::Char(c) => {
                 if c.is_alphabetic() {
                     write!(f, "#\\{}", c)
@@ -896,6 +911,9 @@ impl Display for Object {
             Object::Regexp(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
+            Object::RegMatch(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }            
             Object::Latin1Codec(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }

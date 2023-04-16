@@ -67,6 +67,21 @@ macro_rules! as_sstring {
 }
 
 #[macro_export]
+macro_rules! as_regexp {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !o.is_regexp() {
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "regexp required",
+                &[o],
+            ));
+        }
+        o.to_regexp()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_simple_struct {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];

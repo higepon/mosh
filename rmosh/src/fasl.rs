@@ -166,6 +166,9 @@ impl FaslWriter {
             Object::Regexp(_r) => {
                 todo!()
             }
+            Object::RegMatch(_r) => {
+                todo!()
+            }
             Object::StringInputPort(_) => todo!(),
             Object::FileInputPort(_) => todo!(),
             Object::FileOutputPort(_) => todo!(),
@@ -299,6 +302,7 @@ impl FaslWriter {
                 | Object::ProgramCounter(_)
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
+                | Object::RegMatch(_)
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)

@@ -672,6 +672,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
+            | Object::RegMatch(_)
             | Object::False
             | Object::Flonum(_)
             | Object::StringInputPort(_)
@@ -758,6 +759,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::ProgramCounter(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
+            | Object::RegMatch(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
@@ -996,6 +998,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::ProgramCounter(_)
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
+                | Object::RegMatch(_)                
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
