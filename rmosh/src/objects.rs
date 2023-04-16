@@ -12,6 +12,7 @@ use crate::ports::{
     StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
     TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
+use crate::regexp::Regexp;
 use crate::vm::Vm;
 
 use std::cmp::min;
@@ -1904,26 +1905,6 @@ impl fmt::Debug for Procedure {
 impl Display for Procedure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "<procedure>")
-    }
-}
-
-/// Regexp.
-#[repr(C)]
-pub struct Regexp {
-    pub header: GcHeader,
-}
-
-impl Regexp {}
-
-impl fmt::Debug for Regexp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("#<regexp>")
-    }
-}
-
-impl Display for Regexp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<regexp>")
     }
 }
 

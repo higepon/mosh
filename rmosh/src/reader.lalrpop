@@ -2,6 +2,7 @@ use crate::objects::Object;
 use crate::gc::Gc;
 use crate::lexer;
 use crate::objects::Bytevector;
+use crate::regexp::Regexp;
 use crate::reader_util::count_lineno;
 use crate::reader_util;
 use lalrpop_util::ParseError;
@@ -217,8 +218,7 @@ Abbreviation: Object = {
 }
 
 Regexp: Object = {
-    // todo
-    "regexp" => gc.new_string(&<>),
+    "regexp" => Object::Regexp(gc.alloc(Regexp::new(&<>)))
 }
 
 

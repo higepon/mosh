@@ -10,6 +10,7 @@ use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
     GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
+use crate::regexp::Regexp;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
@@ -108,6 +109,7 @@ pub enum ObjectType {
     Pair,
     Procedure,
     Ratnum,
+    Regexp,
     SimpleStruct,
     StdErrorPort,
     StdInputPort,
@@ -668,6 +670,10 @@ impl Gc {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
                 closure.trace(self);
             }
+            ObjectType::Regexp => {
+                let x: &Regexp = unsafe { mem::transmute(pointer.as_ref()) };
+                x.trace(self);
+            }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
                 vox.trace(self);
@@ -859,6 +865,10 @@ impl Gc {
             ObjectType::Procedure => 0,
             ObjectType::CustomBinaryInputPort => {
                 let x: &CustomBinaryInputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::Regexp => {
+                let x: &Regexp = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(x)
             }
             ObjectType::CustomBinaryInputOutputPort => {

@@ -26,6 +26,7 @@ pub mod procs;
 pub mod procs_util;
 pub mod psyntax;
 pub mod reader_util;
+pub mod regexp;
 pub mod vm;
 
 /// rmosh R7RS & R6RS Scheme intepreter.
