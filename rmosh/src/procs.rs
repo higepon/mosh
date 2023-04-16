@@ -2756,6 +2756,7 @@ fn get_bytevector_n(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeEr
     let mut buf: Vec<u8> = vec![0; size];
     let port = as_binary_input_port_mut!(name, args, 0);
     match port.read(vm, &mut buf) {
+        Ok(0) if size != 0 => Ok(Object::Eof),
         Ok(size) => Ok(Object::Bytevector(
             vm.gc.alloc(Bytevector::new(&buf[0..size].to_vec())),
         )),
