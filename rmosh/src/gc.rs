@@ -1047,6 +1047,12 @@ impl Gc {
                     drop(Box::from_raw(x));
                 }
             }
+            ObjectType::Regexp => {
+                let x: *mut Regexp = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }            
             ObjectType::Bignum => {
                 let x: *mut Bignum = unsafe { mem::transmute(object_ptr) };
                 unsafe {
