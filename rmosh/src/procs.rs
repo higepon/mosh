@@ -5032,33 +5032,25 @@ fn make_compiler_instruction(_vm: &mut Vm, args: &mut [Object]) -> Result<Object
 fn fasl_write(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fasl-write";
     check_argc!(name, args, 2);
-    if let Object::BinaryFileOutputPort(mut port) = args[1] {
-        let fasl = FaslWriter::new();
-        let port = unsafe { port.pointer.as_mut() };
-        let bin_port: &mut dyn BinaryOutputPort = port;
-        match fasl.write(bin_port, args[0]) {
-            Ok(()) => Ok(Object::Unspecified),
-            Err(err) => {
-                generic_error!(name, args, "{} {} {}", err, args[0], args[1])
-            }
+    let port = as_binary_output_port_mut!(name, args, 1);
+    let fasl = FaslWriter::new();
+    match fasl.write(port, args[0]) {
+        Ok(()) => Ok(Object::Unspecified),
+        Err(err) => {
+            generic_error!(name, args, "{} {} {}", err, args[0], args[1])
         }
-    } else {
-        type_required_error(name, "file path", &[args[0]])
     }
 }
 fn fasl_read(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "fasl-read";
     check_argc!(name, args, 1);
-    if let Object::BinaryFileInputPort(mut port) = args[0] {
-        let mut content = Vec::new();
-        port.read_to_end(&mut content).ok();
-        let mut fasl = FaslReader::new(&content[..]);
-        match fasl.read(&mut vm.gc) {
-            Ok(sexp) => Ok(sexp),
-            Err(err) => Err(SchemeError::io_error(name, &format!("{}", err), &[args[0]])),
-        }
-    } else {
-        type_required_error(name, "file path", &[args[0]])
+    let port = as_binary_input_port_mut!(name, args, 0);
+    let mut content = Vec::new();
+    port.read_all(vm, &mut content)?;
+    let mut fasl = FaslReader::new(&content[..]);
+    match fasl.read(&mut vm.gc) {
+        Ok(sexp) => Ok(sexp),
+        Err(err) => Err(SchemeError::io_error(name, &format!("{}", err), &[args[0]])),
     }
 }
 
