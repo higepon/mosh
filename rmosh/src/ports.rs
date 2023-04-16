@@ -564,6 +564,32 @@ impl Port for StringInputPort {
     fn input_src(&self) -> String {
         "string-input-port".to_string()
     }
+
+    fn has_position(&self) -> bool {
+        true
+    }
+
+    fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
+        Ok(self.idx)
+    }
+
+    fn set_position(&mut self, _vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
+        if pos >= self.source.chars().count() {
+            Err(SchemeError::io_invalid_position(
+                "set-position!",
+                "invalid position",
+                &[],
+                pos as isize,
+            ))
+        } else {
+            self.idx = pos;
+            Ok(pos)
+        }
+    }
+
+    fn has_set_position(&self) -> bool {
+        true
+    }
 }
 
 // Trait for TextOutputPort.
@@ -1337,7 +1363,6 @@ pub struct BinaryFileInputPort {
     pub reader: BufReader<File>,
     path: String,
     is_closed: bool,
-    ahead_u8: Option<u8>,
     buffer_mode: BufferMode,
 }
 
@@ -1352,7 +1377,6 @@ impl BinaryFileInputPort {
             is_closed: false,
             reader: BufReader::new(file),
             path: path.to_string(),
-            ahead_u8: None,
             buffer_mode,
         }
     }
@@ -1377,10 +1401,22 @@ impl Port for BinaryFileInputPort {
         self.buffer_mode
     }
 
+    fn has_position(&self) -> bool {
+        true
+    }
     fn has_set_position(&self) -> bool {
         true
     }
-
+    fn position(&mut self, _vm: &mut Vm) -> Result<usize, SchemeError> {
+        let current_position = self.reader.stream_position().map_err(|e| {
+            SchemeError::assertion_violation(
+                "port-position",
+                &format!("failed get port-position {}", e),
+                &[],
+            )
+        })?;
+        Ok(current_position as usize)
+    }
     fn set_position(&mut self, vm: &mut Vm, pos: usize) -> Result<usize, SchemeError> {
         match self.reader.seek(SeekFrom::Start(pos as u64)) {
             Ok(pos) => Ok(pos as usize),
@@ -1418,11 +1454,21 @@ impl BinaryInputPort for BinaryFileInputPort {
     }
 
     fn ahead_u8(&self) -> Option<u8> {
-        self.ahead_u8
+        None
     }
 
-    fn set_ahead_u8(&mut self, u: Option<u8>) {
-        self.ahead_u8 = u;
+    fn set_ahead_u8(&mut self, _c: Option<u8>) {}
+
+    fn lookahead_u8(&mut self, vm: &mut Vm) -> Result<Option<u8>, SchemeError> {
+        let pos = self.position(vm)?;
+        match self.read_u8(vm) {
+            Ok(Some(u)) => {
+                self.set_position(vm, pos)?;
+                Ok(Some(u))
+            }
+            Ok(None) => Ok(None),
+            Err(e) => Err(e),
+        }
     }
 }
 
@@ -3218,7 +3264,7 @@ impl BinaryInputPort for CustomBinaryInputPort {
 
 impl Display for CustomBinaryInputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custom-binary-input-port>")
+        write!(f, "#<custom-binary-input-port {}>", self.id)
     }
 }
 
@@ -3528,7 +3574,7 @@ impl OutputPort for CustomBinaryOutputPort {
 
 impl Display for CustomBinaryOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custom-binary-input-port>")
+        write!(f, "#<custom-binary-input-port {}>", self.id)
     }
 }
 
