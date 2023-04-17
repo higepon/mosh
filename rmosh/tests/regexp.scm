@@ -34,6 +34,9 @@
 (test-equal "あいうえ" (rxmatch-after (#/かきく/ "123かきくあいうえ")))
 (test-equal "あいうえ" (rxmatch-after (#/かきく/ "あ123かきくあいうえ")))
 
+(test-equal "123" (rxmatch-before (#/abc/ "123abcdef")))
+(test-equal "あいう" (rxmatch-before (#/abc/ "あいうabcdef")))
+
 (test-false (rxmatch #/123/ "12"))
 (test-true (if (rxmatch #/123/ "123") #t #f))
 
