@@ -41,6 +41,12 @@
 
 (test-equal "123" (rxmatch-before (#/abc/ "123abcdef")))
 (test-equal "あいう" (rxmatch-before (#/abc/ "あいうabcdef")))
+(test-equal "あ" ((#/あ/ "あ")))
+
+(test-equal "abc" ((#/abc/ "123abcdef") 0))
+(test-equal "abc" ((#/abc/ "123abcdef")))
+(test-equal "def" ((#/abc/ "123abcdef") 'after))
+(test-equal "123" ((#/abc/ "123abcdef") 'before))
 
 (test-false (rxmatch #/123/ "12"))
 (test-true (if (rxmatch #/123/ "123") #t #f))

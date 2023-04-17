@@ -5,7 +5,7 @@ use crate::{
     numbers::{add, eqv, ge, gt, le, lt, sub, ObjectExt},
     objects::{Closure, Object, Symbol},
     op::Op,
-    procs::{self, rxmatch},
+    procs::{self, reg_match_proxy, rxmatch},
 };
 
 use super::Vm;
@@ -416,10 +416,14 @@ impl Vm {
                     self.ac = rxmatch(self, &mut args)?;
                 }
                 Object::RegMatch(_) => {
-                    let mut args = vec![self.ac, self.index(self.sp, argc - 1)];
+                    let mut args = if argc == 1 {
+                        vec![self.ac, self.index(self.sp, argc - 1)]
+                    } else {
+                        vec![self.ac]
+                    };
                     self.pc = self.allocate_return_code(argc);
-                    self.ac = rxmatch(self, &mut args)?;
-                }                
+                    self.ac = reg_match_proxy(self, &mut args)?;
+                }
                 _ => {
                     self.call_assertion_violation_after(
                         "call",

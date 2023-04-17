@@ -1098,6 +1098,16 @@ fn rxmatch_substring(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
         None => Object::False,
     })
 }
+pub fn reg_match_proxy(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+    let argc = args.len();
+    if argc == 2 && args[1] == vm.gc.symbol_intern("after") {
+        rxmatch_after(vm, &mut args[0..1])
+    } else if argc == 2 && args[1] == vm.gc.symbol_intern("before") {
+        rxmatch_before(vm, &mut args[0..1])
+    } else {
+        rxmatch_substring(vm, args)
+    }
+}
 fn make_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-string";
     check_argc_between!(name, args, 1, 2);

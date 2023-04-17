@@ -998,7 +998,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::ProgramCounter(_)
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
-                | Object::RegMatch(_)                
+                | Object::RegMatch(_)
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)

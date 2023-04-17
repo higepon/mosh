@@ -10,7 +10,7 @@ use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
     GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
-use crate::regexp::{Regexp, RegMatch};
+use crate::regexp::{RegMatch, Regexp};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
@@ -581,7 +581,7 @@ impl Gc {
             }
             Object::RegMatch(r) => {
                 self.mark_heap_object(r);
-            }            
+            }
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);
             }
@@ -681,7 +681,7 @@ impl Gc {
             ObjectType::RegMatch => {
                 let x: &RegMatch = unsafe { mem::transmute(pointer.as_ref()) };
                 x.trace(self);
-            }            
+            }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
                 vox.trace(self);
@@ -882,7 +882,7 @@ impl Gc {
             ObjectType::RegMatch => {
                 let x: &RegMatch = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(x)
-            }            
+            }
             ObjectType::CustomBinaryInputOutputPort => {
                 let x: &CustomBinaryInputOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(x)
@@ -1064,13 +1064,13 @@ impl Gc {
                 unsafe {
                     drop(Box::from_raw(x));
                 }
-            }    
+            }
             ObjectType::RegMatch => {
                 let x: *mut RegMatch = unsafe { mem::transmute(object_ptr) };
                 unsafe {
                     drop(Box::from_raw(x));
                 }
-            }                       
+            }
             ObjectType::Bignum => {
                 let x: *mut Bignum = unsafe { mem::transmute(object_ptr) };
                 unsafe {

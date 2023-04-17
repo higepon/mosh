@@ -78,6 +78,7 @@ misc-test:
 	cargo run ./tests/testing.scm
 	cargo run tests/unicode-path.scm --loadpath=./tests
 	cargo run ./tests/input-port.scm < tests/input.txt
+	cargo run ./tests/regexp.scm
 
 #	failing
 #	cargo run ./tests/print.scm # this needs regexp support
