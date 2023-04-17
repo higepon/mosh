@@ -97,6 +97,17 @@ impl RegMatch {
             )),
         }
     }
+
+    pub fn match_end(&self, index: usize) -> Result<usize, SchemeError> {
+        match self.region.pos(index) {
+            Some(start_end) => Ok(start_end.1),
+            None => Err(SchemeError::assertion_violation(
+                "rxmatch-end",
+                &format!("submatch index {} out of range", index),
+                &[],
+            )),
+        }
+    }
 }
 
 impl Debug for RegMatch {
