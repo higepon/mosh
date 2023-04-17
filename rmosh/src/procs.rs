@@ -33,7 +33,7 @@ use crate::{
     },
     vm::Vm,
 };
-use crate::{as_regexp, as_vector, bug};
+use crate::{as_reg_match, as_regexp, as_vector, bug};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
     env::{self, current_dir, current_exe},
@@ -1020,9 +1020,20 @@ fn regexp_to_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeEr
     let regexp = as_regexp!(name, args, 0);
     Ok(vm.gc.new_string(&regexp.pattern))
 }
-fn rxmatch_start(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn rxmatch_start(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-start";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args[0].is_false() {
+        return Ok(Object::False);
+    }
+    let reg_match = as_reg_match!(name, args, 0);
+    let ret_value = if args.len() == 2 {
+        let index = as_usize!(name, args, 1);
+        reg_match.match_start(index)
+    } else {
+        reg_match.match_start(0)
+    }?;
+    Ok(ret_value.to_obj(&mut vm.gc))
 }
 fn rxmatch_end(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-end";

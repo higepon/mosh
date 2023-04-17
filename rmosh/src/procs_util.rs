@@ -82,6 +82,21 @@ macro_rules! as_regexp {
 }
 
 #[macro_export]
+macro_rules! as_reg_match {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !o.is_reg_match() {
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "reg-match required",
+                &[o],
+            ));
+        }
+        o.to_reg_match()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_simple_struct {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];

@@ -86,6 +86,17 @@ impl RegMatch {
             text: text.to_string(),
         }
     }
+
+    pub fn match_start(&self, index: usize) -> Result<usize, SchemeError> {
+        match self.region.pos(index) {
+            Some(start_end) => Ok(start_end.0),
+            None => Err(SchemeError::assertion_violation(
+                "rxmatch-start",
+                &format!("submatch index {} out of range", index),
+                &[],
+            )),
+        }
+    }
 }
 
 impl Debug for RegMatch {
