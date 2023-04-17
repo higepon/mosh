@@ -130,6 +130,23 @@ impl RegMatch {
             )),
         }
     }
+
+    pub fn match_substring(&self, index: usize) -> Result<Option<String>, SchemeError> {
+        match self.region.pos(index) {
+            Some((start, end)) => {
+                if start == end {
+                    Ok(None)
+                } else {
+                    Ok(Some(self.text[start..end].to_string()))
+                }
+            }
+            None => Err(SchemeError::assertion_violation(
+                "rxmatch-substring",
+                &format!("submatch index {} out of range", index),
+                &[],
+            )),
+        }
+    }
 }
 
 impl Debug for RegMatch {

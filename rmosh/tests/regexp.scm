@@ -34,6 +34,11 @@
 (test-equal "あいうえ" (rxmatch-after (#/かきく/ "123かきくあいうえ")))
 (test-equal "あいうえ" (rxmatch-after (#/かきく/ "あ123かきくあいうえ")))
 
+(test-equal "345" (rxmatch-substring (#/\d+/ "a345a")))
+(test-equal "345" (rxmatch-substring (#/(\d+)(a)/ "a345a") 1))
+(test-equal "a" (rxmatch-substring (#/(\d+)(a)/ "a345a") 2))
+(test-false (rxmatch-substring (#/\d+/ "aaaa")))
+
 (test-equal "123" (rxmatch-before (#/abc/ "123abcdef")))
 (test-equal "あいう" (rxmatch-before (#/abc/ "あいうabcdef")))
 
