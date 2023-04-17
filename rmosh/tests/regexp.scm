@@ -9,7 +9,10 @@
 (test-true (regexp? #/abc/))
 (test-false (regexp? "abc"))
 (test-equal #/abc/ (string->regexp "abc"))
+(test-equal "abc" (regexp->string #/abc/))
 
 (test-false (#/123/ "12"))
 (test-true (if (#/^abc/ "abc") #t #f))
+
+(test-equal "あ" ((#/あ/ "あ")))
 (test-results)

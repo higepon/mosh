@@ -1014,9 +1014,11 @@ fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     check_argc!(name, args, 1);
     Ok(args[0].is_regexp().to_obj())
 }
-fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn regexp_to_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "regexp->string";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let regexp = as_regexp!(name, args, 0);
+    Ok(vm.gc.new_string(&regexp.pattern))
 }
 fn rxmatch_start(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-start";

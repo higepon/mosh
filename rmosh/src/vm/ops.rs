@@ -414,23 +414,12 @@ impl Vm {
                     let mut args = vec![self.ac, self.index(self.sp, argc - 1)];
                     self.pc = self.allocate_return_code(argc);
                     self.ac = rxmatch(self, &mut args)?;
-                    /*
-                    
-                VM_ASSERT(operand.isFixnum());
-                const fixedint argc = operand.toFixnum();
-                Object argv[2];
-                argv[0] = ac_;
-                argv[1] = sp_[-argc];
-                const Object rxmatchProc = Object::makeCProcedure(scheme::rxmatchEx);
-                CProcedure* const rxmatchCProc = rxmatchProc.toCProcedure();
-                // set pc_ before call() for pointing where to return.
-                pc_  = rxmatchCProc->returnCode;
-                pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
-                pc_[1] = operand;
-                ac_ = rxmatchCProc->call(this, argc + 1, argv);
-                    
-                     */
                 }
+                Object::RegMatch(_) => {
+                    let mut args = vec![self.ac, self.index(self.sp, argc - 1)];
+                    self.pc = self.allocate_return_code(argc);
+                    self.ac = rxmatch(self, &mut args)?;
+                }                
                 _ => {
                     self.call_assertion_violation_after(
                         "call",
