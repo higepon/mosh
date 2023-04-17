@@ -1,7 +1,6 @@
 use crate::{
     error::SchemeError,
     gc::{GcHeader, ObjectType, Trace},
-    objects::Object,
 };
 use onig::{MatchParam, Regex, Region, SearchOptions};
 use std::fmt::{self, Debug, Display};
@@ -30,11 +29,9 @@ impl Regexp {
         })
     }
 
-    pub fn rxmatch(&self, text: &str) -> Result<Object, SchemeError> {
-        match self.match_internal(text) {
-            Ok(region) => todo!(),
-            Err(_) => Ok(Object::False),
-        }
+    pub fn rxmatch(&self, text: &str) -> Result<RegMatch, SchemeError> {
+        self.match_internal(text)
+            .map(|region| RegMatch::new(region, text))
     }
 
     fn match_internal(&self, text: &str) -> Result<Region, SchemeError> {
@@ -73,6 +70,8 @@ impl Display for Regexp {
 #[repr(C)]
 pub struct RegMatch {
     pub header: GcHeader,
+    region: Region,
+    text: String,
 }
 
 impl Trace for RegMatch {
@@ -80,10 +79,12 @@ impl Trace for RegMatch {
 }
 
 impl RegMatch {
-    pub fn new() -> Result<Self, SchemeError> {
-        Ok(Self {
+    pub fn new(region: Region, text: &str) -> Self {
+        Self {
             header: GcHeader::new(ObjectType::RegMatch),
-        })
+            region: region,
+            text: text.to_string(),
+        }
     }
 }
 

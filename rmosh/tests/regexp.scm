@@ -4,5 +4,8 @@
 (import (mosh test))
 
 (test-false (rxmatch #/123/ "12"))
-;(test-true  (if (#/^abc/ "abc") #t #f))
+(test-true (if (rxmatch #/123/ "123") #t #f))
+
+(test-true (regexp? #/abc/))
+(test-false (regexp? "abc"))
 (test-results)
