@@ -89,7 +89,7 @@ impl RegMatch {
 
     pub fn match_start(&self, index: usize) -> Result<usize, SchemeError> {
         match self.region.pos(index) {
-            Some(start_end) => Ok(start_end.0),
+            Some((start, _end)) => Ok(start),
             None => Err(SchemeError::assertion_violation(
                 "rxmatch-start",
                 &format!("submatch index {} out of range", index),
@@ -100,7 +100,7 @@ impl RegMatch {
 
     pub fn match_end(&self, index: usize) -> Result<usize, SchemeError> {
         match self.region.pos(index) {
-            Some(start_end) => Ok(start_end.1),
+            Some((_start, end)) => Ok(end),
             None => Err(SchemeError::assertion_violation(
                 "rxmatch-end",
                 &format!("submatch index {} out of range", index),
@@ -108,6 +108,23 @@ impl RegMatch {
             )),
         }
     }
+
+    pub fn match_after(&self, index: usize) -> Result<String, SchemeError> {
+        match self.region.pos(index) {
+            Some((_start, end)) => {
+                Ok(self.text[end..].to_string())
+            }
+            None => Err(SchemeError::assertion_violation(
+                "rxmatch-after",
+                &format!("submatch index {} out of range", index),
+                &[],
+            )),
+        }
+    }    
+    /*
+    return Object::makeString(text_.substr(region_->end[index] / sizeof(ucs4char),
+                                          text_.size() - region_->end[index] / sizeof(ucs4char)).data());    
+     */
 }
 
 impl Debug for RegMatch {

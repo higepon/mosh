@@ -29,6 +29,11 @@
 (test-equal 4 (rxmatch-end (#/(\d+)(a)/ "a345a") 1))
 (test-equal 5 (rxmatch-end (#/(\d+)(a)/ "a345a") 2))
 
+(test-equal "def" (rxmatch-after (#/abc/ "123abcdef")))
+(test-equal "あいうえ" (rxmatch-after (#/abc/ "123abcあいうえ")))
+(test-equal "あいうえ" (rxmatch-after (#/かきく/ "123かきくあいうえ")))
+(test-equal "あいうえ" (rxmatch-after (#/かきく/ "あ123かきくあいうえ")))
+
 (test-false (rxmatch #/123/ "12"))
 (test-true (if (rxmatch #/123/ "123") #t #f))
 

@@ -1050,9 +1050,21 @@ fn rxmatch_end(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
     }?;
     Ok(ret_value.to_obj(&mut vm.gc))
 }
-fn rxmatch_after(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn rxmatch_after(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-after";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args[0].is_false() {
+        return Ok(Object::False);
+    }
+    let reg_match = as_reg_match!(name, args, 0);
+    if args.len() == 2 {
+        let index = as_usize!(name, args, 1);
+        reg_match.match_after(index)
+    } else {
+        reg_match.match_after(0)
+    }.map(|s| {
+        vm.gc.new_string(&s)
+    })
 }
 fn rxmatch_before(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-before";
