@@ -8,7 +8,7 @@ use std::fmt::{self, Debug, Display};
 #[repr(C)]
 pub struct Regexp {
     pub header: GcHeader,
-    string: String,
+    pub pattern: String,
     regex: Regex,
 }
 
@@ -24,7 +24,7 @@ impl Regexp {
 
         Ok(Self {
             header: GcHeader::new(ObjectType::Regexp),
-            string: s.to_string(),
+            pattern: s.to_string(),
             regex: regex,
         })
     }

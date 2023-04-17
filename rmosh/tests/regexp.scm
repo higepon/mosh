@@ -8,4 +8,8 @@
 
 (test-true (regexp? #/abc/))
 (test-false (regexp? "abc"))
+(test-equal #/abc/ (string->regexp "abc"))
+
+(test-false (#/123/ "12"))
+(test-true (if (#/^abc/ "abc") #t #f))
 (test-results)

@@ -1,5 +1,6 @@
 use crate::error::SchemeError;
 use crate::ports::StdLib;
+use crate::regexp::Regexp;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -997,7 +998,7 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
     port.display(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
-fn rxmatch(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+pub fn rxmatch(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch";
     check_argc!(name, args, 2);
     let regexp = as_regexp!(name, args, 0);
@@ -1441,9 +1442,12 @@ fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
         type_required_error(name, "string-output-port", args)
     }
 }
-fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn string_to_regexp(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "string->regexp";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let text = as_sstring!(name, args, 0);
+    let regexp = Regexp::new(&text.string)?;
+    Ok(Object::Regexp(vm.gc.alloc(regexp)))
 }
 fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "char->integer";

@@ -4,7 +4,7 @@ use rand::Rng;
 
 use crate::{
     gc::Gc,
-    objects::{Object, Vox},
+    objects::{Object, Vox}, numbers::ObjectExt,
 };
 
 //  Copied and ported to Rust from
@@ -124,6 +124,13 @@ impl Equal {
                         i += 1;
                         k = k2;
                     }
+                }
+            }
+            (Object::Regexp(r1), Object::Regexp(r2)) => {
+                if r1.pattern.eq(&r2.pattern) {
+                    k
+                } else {
+                    Object::False
                 }
             }
             (Object::String(s1), Object::String(s2)) => {
@@ -451,6 +458,9 @@ impl Equal {
                     Object::False
                 }
             }
+            (Object::Regexp(r1), Object::Regexp(r2)) => {
+                (r1.pattern.eq(&r2.pattern)).to_obj()
+            }            
             (Object::Vector(v1), Object::Vector(v2)) => {
                 let n = v1.len();
                 if v2.len() != n {
