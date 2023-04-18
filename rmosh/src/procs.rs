@@ -7173,7 +7173,7 @@ fn microseconds(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError
     let microseconds = since_epoch.subsec_micros();
     Ok(Object::Fixnum(microseconds as isize))
 }
-fn local_tz_offset(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn local_tz_offset(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "local-tz-offset";
     check_argc!(name, args, 0);
 
