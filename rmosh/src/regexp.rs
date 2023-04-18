@@ -26,7 +26,7 @@ impl Regexp {
         Ok(Self {
             header: GcHeader::new(ObjectType::Regexp),
             pattern: s.to_string(),
-            regex: regex,
+            regex,
         })
     }
 
@@ -49,7 +49,7 @@ impl Regexp {
         Ok(Self {
             header: GcHeader::new(ObjectType::Regexp),
             pattern: s.to_string(),
-            regex: regex,
+            regex,
         })
     }
 
@@ -89,10 +89,10 @@ impl Regexp {
                 Ok(Some(region)) => match region.pos(0) {
                     Some((start, end)) => {
                         let pre = &target_str[0..start];
-                        ret.push_str(&pre);
+                        ret.push_str(pre);
                         let post = &target_str[end..];
                         ret.push_str(substitute);
-                        target_str = &post;
+                        target_str = post;
                     }
                     None => {
                         return Err(SchemeError::assertion_violation(
@@ -140,7 +140,7 @@ impl RegMatch {
     pub fn new(region: Region, text: &str) -> Self {
         Self {
             header: GcHeader::new(ObjectType::RegMatch),
-            region: region,
+            region,
             text: text.to_string(),
         }
     }
