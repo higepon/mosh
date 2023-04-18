@@ -80,10 +80,10 @@ misc-test:
 	cargo run ./tests/input-port.scm < tests/input.txt
 	cargo run ./tests/regexp.scm
 	cargo run ./tests/template.scm
+	cargo run ./tests/print.scm
+	cargo run ./tests/misc.scm
 
 #	failing
-#	cargo run ./tests/print.scm # this needs regexp support
-#   cargo run ./tests/misc.scm
 #   cargo run ./tests/error-with-circular.scm
 # 	cargo run ./tests/jsonmsgpack.sps	
 #   cargo run ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'

@@ -159,7 +159,10 @@ impl Object {
         matches!(self, Object::Compnum(_))
     }
     pub fn is_procedure(&self) -> bool {
-        matches!(self, Object::Procedure(_))
+        matches!(
+            self,
+            Object::Procedure(_) | Object::Closure(_) | Object::Regexp(_) | Object::RegMatch(_)
+        )
     }
     pub fn is_object_pointer(&self) -> bool {
         matches!(self, Object::ObjectPointer(_))

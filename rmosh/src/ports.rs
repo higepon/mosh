@@ -1093,6 +1093,8 @@ pub trait TextOutputPort: OutputPort {
                                 &[],
                             ));
                         }
+                    } else if c == '%' {
+                        self.put_string("\n").ok();
                     } else if c == 's' {
                         let shared_aware = false;
                         if i < args.len() {
@@ -3743,7 +3745,7 @@ impl OutputPort for CustomTextOutputPort {
 
 impl Display for CustomTextOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custom-textual-output-port>")
+        write!(f, "#<custom-textual-output-port {}>", self.id)
     }
 }
 

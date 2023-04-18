@@ -115,13 +115,13 @@ impl Regexp {
 
 impl Debug for Regexp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("#<regexp>")
+        write!(f, "#/{}/", self.pattern)
     }
 }
 
 impl Display for Regexp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<regexp>")
+        write!(f, "#/{}/",self.pattern)
     }
 }
 
@@ -215,6 +215,6 @@ impl Debug for RegMatch {
 
 impl Display for RegMatch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<regmatch>")
+        write!(f, "#<reg-match>")
     }
 }

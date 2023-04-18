@@ -1578,9 +1578,14 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[1..])?;
                 Ok(vm.gc.new_string(&port.string()))
-            }
+            }            
             (x, y) => bug!("x={} y={}", x, y),
         }
+    } else if argc == 1 {
+        let s = as_sstring!(name, args, 0);
+        let mut port = StringOutputPort::new();
+        port.format(&s.string, &mut[])?;
+        Ok(vm.gc.new_string(&port.string()))        
     } else {
         Ok(Object::Unspecified)
     }
@@ -3311,10 +3316,7 @@ fn memv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 fn is_procedure(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "procedure?";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Procedure(_) | Object::Closure(_) | Object::Continuation(_) => Ok(Object::True),
-        _ => Ok(Object::False),
-    }
+    Ok(args[0].is_procedure().to_obj())
 }
 fn load(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "load";

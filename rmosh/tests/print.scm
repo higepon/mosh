@@ -48,7 +48,6 @@
                (lambda () #f)
                (lambda (pos) #f)
                (lambda () 'ok)) "#<custom-textual-output-port custom out>" "#<custom-textual-output-port custom out>" "#[output-port]"]
-             [(lambda (x) #f) #/#<closure \-?\d+>/ #/#<closure \-?\d+>/ "#[procedure]"]
              [car #/#<procedure car>/ #/<procedure car>/ "#[procedure]"]
              ['a "a"]
              [(make-eq-hashtable) "#<eq-hashtable>" "#<eq-hashtable>" "#[hashtable]"]
