@@ -105,12 +105,8 @@ srfi-test:
 	cargo run --release ./tests/srfi19.scm	
 	cargo run --release ./tests/srfi/time.sps
 	cargo run --release ./tests/srfi/eager-comprehensions.sps 
-	# cargo run --release ./tests/srfi/intermediate-format-strings.sps 
-	# cargo run --release ./tests/srfi/lightweight-testing.sps  
-	# cargo run --release ./tests/srfi/version.sps      
-	# killed
-	# cargo run --release ./tests/srfi/random-conftest.sps 
-
+	cargo run --release ./tests/srfi/version.sps      
+	cargo run --release ./tests/srfi/random-conftest.sps 
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm

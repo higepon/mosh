@@ -62,7 +62,7 @@
   (define configurations
     `(("library-path" . ("Show core library path." ,(standard-library-path)))
       ("mosh-cache-dir" . ("Show auto-compilation-cache directory path" ,(mosh-cache-dir)))
-      ("version"      . ("Show version." "0.2.9-rc1"))
+      ("version"      . ("Show version." "0.0.11"))
       ("prefix"       . ("Show prefix." "/usr/local"))))
 
   #|

@@ -416,6 +416,8 @@ impl Vm {
                 }
                 Op::NumberAdd => {
                     self.number_add_op();
+                    // TODO: Tentative GC here.
+                    self.mark_and_sweep();
                 }
                 Op::NumberEqual => {
                     let op_result = eqv(self.pop(), self.ac);
