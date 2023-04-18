@@ -1081,8 +1081,21 @@ pub trait TextOutputPort: OutputPort {
         while let Some(c) = chars.next() {
             if c == '~' {
                 if let Some(c) = chars.next() {
-                    if c == 'a' || c == 'd' || c == 'e' {
+                    if c == 'a' || c == 'd' {
                         let shared_aware = false;
+                        if i < args.len() {
+                            self.display(args[i], shared_aware).ok();
+                            i += 1;
+                        } else {
+                            return Err(SchemeError::io_error(
+                                "format",
+                                "not enough arguments",
+                                &[],
+                            ));
+                        }
+                    // mosh only
+                    } else if c == 'e' || c == 'w' {
+                        let shared_aware = true;
                         if i < args.len() {
                             self.display(args[i], shared_aware).ok();
                             i += 1;

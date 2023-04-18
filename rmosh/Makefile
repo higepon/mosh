@@ -16,102 +16,100 @@ scheme-test:
 	make -C scripts test
 
 r7rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
-	cargo run  ./tests/r7rs/r7rs-tests.scm
+	cargo run --release ./tests/r7rs/r7rs-tests.scm
 
 r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/reader.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/conditions.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/eval.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/contrib.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/mutable-strings.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/programs.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/control.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/records/procedural.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/enums.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/sorting.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/records/syntactic.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/exceptions.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/syntax-case.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/mutable-pairs.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/unicode.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/r5rs.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/arithmetic/fixnums.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/arithmetic/flonums.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/arithmetic/bitwise.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/hashtables.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/bytevectors.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/io/simple.sps --loadpath=./tests/r6rs-test-suite/	
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/base.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run-via-eval.sps --loadpath=./tests/r6rs-test-suite/
-	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/lists.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/reader.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/conditions.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/eval.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/contrib.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/mutable-strings.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/programs.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/control.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/records/procedural.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/enums.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/sorting.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/records/syntactic.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/exceptions.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/syntax-case.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/mutable-pairs.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/unicode.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/r5rs.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/arithmetic/fixnums.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/arithmetic/flonums.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/arithmetic/bitwise.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/hashtables.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/bytevectors.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/io/simple.sps --loadpath=./tests/r6rs-test-suite/	
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/base.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run-via-eval.sps --loadpath=./tests/r6rs-test-suite/
+	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=./tests/r6rs-test-suite/
 
 misc-test:
 	(cd test/irregex && cargo run null-irregex-mosh.ss)
 	(cd test/irregex && cargo run test-irregex-mosh.ss)
-	cargo run ./tests/annotated-pair.scm
-	cargo run ./tests/cgi.scm
-	cargo run ./tests/clos.scm
-	cargo run ./tests/comment.scm
-	cargo run ./tests/condition.scm
-	!cargo run ./tests/error-with-circular.scm 2>/dev/null
-	cargo run ./tests/exception.scm
-	cargo run ./tests/import-srfi.scm	
-	cargo run ./tests/input-output-port.scm
-	cargo run ./tests/input-port.scm < tests/input.txt
-	cargo run ./tests/io-error.scm
-	cargo run ./tests/lists.scm
-	cargo run ./tests/match.scm
-	cargo run ./tests/misc.scm	
-	cargo run ./tests/mosh-test.scm
-	cargo run ./tests/number.scm
-	cargo run ./tests/output-port.scm
-	cargo run ./tests/print.scm
-	cargo run ./tests/r7rs/import-all.scm
-	cargo run ./tests/r7rs/top-level.scm	
-	cargo run ./tests/r7rs/vector.scm
-	cargo run ./tests/rbtree-test.scm
-	cargo run ./tests/regexp.scm
-	cargo run ./tests/shorten.scm
-	cargo run ./tests/template.scm
-	cargo run ./tests/testing.scm
-	cargo run ./tests/unicode.scm
-	cargo run ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
+	cargo run --release ./tests/annotated-pair.scm
+	cargo run --release ./tests/cgi.scm
+	cargo run --release ./tests/clos.scm
+	cargo run --release ./tests/comment.scm
+	cargo run --release ./tests/condition.scm
+	!cargo run --release ./tests/error-with-circular.scm 2>/dev/null
+	cargo run --release ./tests/exception.scm
+	cargo run --release ./tests/import-srfi.scm	
+	cargo run --release ./tests/input-output-port.scm
+	cargo run --release ./tests/input-port.scm < tests/input.txt
+	cargo run --release ./tests/io-error.scm
+	cargo run --release ./tests/lists.scm
+	cargo run --release ./tests/match.scm
+	cargo run --release ./tests/misc.scm	
+	cargo run --release ./tests/mosh-test.scm
+	cargo run --release ./tests/number.scm
+	cargo run --release ./tests/output-port.scm
+	cargo run --release ./tests/print.scm
+	cargo run --release ./tests/r7rs/import-all.scm
+	cargo run --release ./tests/r7rs/top-level.scm	
+	cargo run --release ./tests/r7rs/vector.scm
+	cargo run --release ./tests/rbtree-test.scm
+	cargo run --release ./tests/regexp.scm
+	cargo run --release ./tests/shorten.scm
+	cargo run --release ./tests/template.scm
+	cargo run --release ./tests/testing.scm
+	cargo run --release ./tests/unicode.scm
+	cargo run --release ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
 	cargo run tests/record.scm --loadpath="tests/mylib" 
 	cargo run tests/unicode-path.scm --loadpath=./tests
 	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
 
 #	failing
-#   cargo run ./tests/error-with-circular.scm
-# 	cargo run ./tests/jsonmsgpack.sps	
+# 	cargo run --release ./tests/jsonmsgpack.sps	
 #   
 
 # 	Not supported yet
-#   cargo run ./tests/process.scm
+#   cargo run --release ./tests/process.scm
 
 srfi-test:
-	cargo run ./tests/srfi/and-let.sps
-	cargo run ./tests/srfi/compare-procedures.sps 
-	cargo run ./tests/srfi/cut.sps
-	cargo run ./tests/srfi/eager-comprehensions.sps
-	cargo run ./tests/srfi/print-ascii.sps 
-	cargo run ./tests/srfi/random.sps     
-	cargo run ./tests/srfi/random.sps     
-	cargo run ./tests/srfi/records.sps     
-	cargo run ./tests/srfi/srfi-151.scm  
-	cargo run ./tests/srfi/srfi-194.scm	
-	cargo run ./tests/srfi8.scm
-	cargo run ./tests/srfi-39.scm	
-	cargo run ./tests/srfi-misc.scm	
-	cargo run ./tests/srfi19.scm	
-	cargo run ./tests/srfi/time.sps
-	# too slow?
-	# cargo run ./tests/srfi/eager-comprehensions.sps 
-	# cargo run ./tests/srfi/intermediate-format-strings.sps 
-	# cargo run ./tests/srfi/lightweight-testing.sps  
-	# cargo run ./tests/srfi/version.sps      
+	cargo run --release ./tests/srfi/and-let.sps
+	cargo run --release ./tests/srfi/compare-procedures.sps 
+	cargo run --release ./tests/srfi/cut.sps
+	cargo run --release ./tests/srfi/eager-comprehensions.sps
+	cargo run --release ./tests/srfi/print-ascii.sps 
+	cargo run --release ./tests/srfi/random.sps     
+	cargo run --release ./tests/srfi/random.sps     
+	cargo run --release ./tests/srfi/records.sps     
+	cargo run --release ./tests/srfi/srfi-151.scm  
+	cargo run --release ./tests/srfi/srfi-194.scm	
+	cargo run --release ./tests/srfi8.scm
+	cargo run --release ./tests/srfi-39.scm	
+	cargo run --release ./tests/srfi-misc.scm	
+	cargo run --release ./tests/srfi19.scm	
+	cargo run --release ./tests/srfi/time.sps
+	cargo run --release ./tests/srfi/eager-comprehensions.sps 
+	# cargo run --release ./tests/srfi/intermediate-format-strings.sps 
+	# cargo run --release ./tests/srfi/lightweight-testing.sps  
+	# cargo run --release ./tests/srfi/version.sps      
 	# killed
-	# cargo run ./tests/srfi/random-conftest.sps 
+	# cargo run --release ./tests/srfi/random-conftest.sps 
 
 
 gen-tests:
