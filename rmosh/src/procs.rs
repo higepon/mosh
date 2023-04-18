@@ -1645,7 +1645,8 @@ fn write(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     } else {
         args[1]
     };
-    let shared_aware = false;
+    // Made this true for printing circular object in stacktrace.
+    let shared_aware = true;
     let port = obj_as_text_output_port_mut!(name, port);
     port.write(args[0], shared_aware).ok();
     Ok(Object::Unspecified)

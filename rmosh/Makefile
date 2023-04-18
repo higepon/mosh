@@ -54,6 +54,7 @@ misc-test:
 	cargo run ./tests/clos.scm
 	cargo run ./tests/comment.scm
 	cargo run ./tests/condition.scm
+	!cargo run ./tests/error-with-circular.scm 2>/dev/null
 	cargo run ./tests/exception.scm
 	cargo run ./tests/import-srfi.scm	
 	cargo run ./tests/input-output-port.scm
