@@ -121,7 +121,7 @@ impl Debug for Regexp {
 
 impl Display for Regexp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#/{}/",self.pattern)
+        write!(f, "#/{}/", self.pattern)
     }
 }
 

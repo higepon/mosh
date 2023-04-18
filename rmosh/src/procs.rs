@@ -1578,14 +1578,14 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
                 let mut port = StringOutputPort::new();
                 port.format(&s.string, &mut args[1..])?;
                 Ok(vm.gc.new_string(&port.string()))
-            }            
+            }
             (x, y) => bug!("x={} y={}", x, y),
         }
     } else if argc == 1 {
         let s = as_sstring!(name, args, 0);
         let mut port = StringOutputPort::new();
-        port.format(&s.string, &mut[])?;
-        Ok(vm.gc.new_string(&port.string()))        
+        port.format(&s.string, &mut [])?;
+        Ok(vm.gc.new_string(&port.string()))
     } else {
         Ok(Object::Unspecified)
     }
