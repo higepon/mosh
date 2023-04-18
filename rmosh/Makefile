@@ -3,7 +3,7 @@
 TESTS = #test_compiler #test63_optimized #test_test193_modified0 #test_vm_define #test_test193_modified0 #test_test153 #test_test92 #test_test62 #test_test61 #test_test19 #test_vm_alloc_many_pairs  # test_vm_run_add_pair
 FEATURES = #--features debug_log_vm # --features debug_log_gc
 
-test: rust-test r7rs-test r6rs-test misc-test
+test: rust-test r7rs-test r6rs-test misc-test srfi-test
 
 ## test-threads should be 1 because we have static mut CURRENT_VM, which could be shared.
 rust-test: src/lexer_iter.rs src/number_lexer_iter.rs
@@ -81,7 +81,9 @@ misc-test:
 	cargo run ./tests/regexp.scm
 	cargo run ./tests/template.scm
 	cargo run ./tests/print.scm
-	cargo run ./tests/misc.scm
+	cargo run ./tests/misc.scm	
+	(cd test/irregex && cargo run test-irregex-mosh.ss)
+	(cd test/irregex && cargo run null-irregex-mosh.ss)
 
 #	failing
 #   cargo run ./tests/error-with-circular.scm
@@ -90,6 +92,10 @@ misc-test:
 
 # 	Not supported yet
 #   cargo run ./tests/process.scm
+
+srfi-test:
+	cargo run ./tests/srfi/and-let.sps
+	cargo run ./tests/srfi/compare-procedures.sps 
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm

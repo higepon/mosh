@@ -1781,7 +1781,13 @@ fn caadr(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 }
 fn caar(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "caar";
-    todo!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => Ok(pair2.car),
+            _ => pair_required_error(name, args),
+        },
+        _ => pair_required_error(name, args),
+    }
 }
 fn cadaar(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "cadaar";
@@ -4012,7 +4018,19 @@ fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 }
 fn number_le(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "<=";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::le(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            return type_required_error(name, "number", &[args[i], args[i + 1]]);
+        }
+    }
+    Ok(Object::True)
 }
 fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = ">";
@@ -4031,7 +4049,18 @@ fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 }
 fn number_ge(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = ">=";
-    todo!("{}({}) not implemented", name, args.len());
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::ge(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            return type_required_error(name, "number", &[args[i], args[i + 1]]);
+        }
+    }
+    Ok(Object::True)
 }
 fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "=";
@@ -7930,9 +7959,11 @@ fn make_vector(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError>
     let name: &str = "make-vector";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn vector_length(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn vector_length(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "vector-length";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let v = as_vector!(name, args, 0);
+    Ok(v.len().to_obj(&mut vm.gc))
 }
 fn vector_ref(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "vector-ref";
