@@ -58,21 +58,15 @@ misc-test:
 	cargo run ./tests/condition.scm
 	cargo run ./tests/rbtree-test.scm
 	cargo run ./tests/exception.scm
-	cargo run ./tests/srfi/srfi-194.scm	
 	cargo run ./tests/import-srfi.scm	
 	cargo run ./tests/r7rs/vector.scm
 	cargo run ./tests/lists.scm
 	cargo run ./tests/match.scm
-	cargo run ./tests/srfi8.scm
-	cargo run ./tests/srfi-39.scm
 	cargo run ./tests/shorten.scm
 	cargo run ./tests/r7rs/top-level.scm	
 	cargo run ./tests/r7rs/import-all.scm
-	cargo run ./tests/srfi/srfi-151.scm
 	cargo run ./tests/comment.scm
-	cargo run ./tests/srfi19.scm
 	cargo run ./tests/clos.scm
-	cargo run ./tests/srfi-misc.scm		
 	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
 	cargo run tests/record.scm --loadpath="tests/mylib" 
 	cargo run ./tests/testing.scm
@@ -97,6 +91,25 @@ srfi-test:
 	cargo run ./tests/srfi/and-let.sps
 	cargo run ./tests/srfi/compare-procedures.sps 
 	cargo run ./tests/srfi/cut.sps
+	cargo run ./tests/srfi/eager-comprehensions.sps
+	cargo run ./tests/srfi/print-ascii.sps 
+	cargo run ./tests/srfi/random.sps     
+	cargo run ./tests/srfi/random.sps     
+	cargo run ./tests/srfi/records.sps     
+	cargo run ./tests/srfi/srfi-151.scm  
+	cargo run ./tests/srfi/srfi-194.scm	
+	cargo run ./tests/srfi8.scm
+	cargo run ./tests/srfi-39.scm	
+	cargo run ./tests/srfi-misc.scm	
+	cargo run ./tests/srfi19.scm	
+	cargo run ./tests/srfi/time.sps
+	# too slow?
+	# cargo run ./tests/srfi/eager-comprehensions.sps 
+	# cargo run ./tests/srfi/intermediate-format-strings.sps 
+	# cargo run ./tests/srfi/lightweight-testing.sps        
+	# killed
+	# cargo run ./tests/srfi/random-conftest.sps 
+
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm

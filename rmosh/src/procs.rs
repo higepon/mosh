@@ -33,6 +33,8 @@ use crate::{
     },
     vm::Vm,
 };
+use chrono::{DateTime, Local, TimeZone, Utc};
+
 use crate::{as_reg_match, as_regexp, as_vector, bug};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
@@ -7171,9 +7173,23 @@ fn microseconds(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError
     let microseconds = since_epoch.subsec_micros();
     Ok(Object::Fixnum(microseconds as isize))
 }
-fn local_tz_offset(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn local_tz_offset(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "local-tz-offset";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+
+    // Get the current local time
+    let local_time: DateTime<Local> = Local::now();
+
+    // Get the local timezone
+    let local_timezone = local_time.timezone();
+
+    // Get the UTC offset for the local timezone
+    let utc_offset = local_timezone.offset_from_utc_datetime(&Utc::now().naive_utc());
+
+    match utc_offset.local_minus_utc().to_isize() {
+        Some(offset) => Ok(offset.to_obj()),
+        None => panic!(),
+    }
 }
 fn fork(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "%fork";
