@@ -48,6 +48,8 @@
 (test-equal "def" ((#/abc/ "123abcdef") 'after))
 (test-equal "123" ((#/abc/ "123abcdef") 'before))
 
+(test-equal "123abcaiuえxaiuxyz" (regexp-replace-all #/あいう/ "123abcあいうえxあいうxyz" "aiu"))
+
 (test-false (rxmatch #/123/ "12"))
 (test-true (if (rxmatch #/123/ "123") #t #f))
 

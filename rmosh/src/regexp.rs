@@ -2,7 +2,7 @@ use crate::{
     error::SchemeError,
     gc::{GcHeader, ObjectType, Trace},
 };
-use onig::{MatchParam, Regex, Region, SearchOptions};
+use onig::{MatchParam, Regex, RegexOptions, Region, SearchOptions, Syntax};
 use std::fmt::{self, Debug, Display};
 
 #[repr(C)]
@@ -18,7 +18,31 @@ impl Trace for Regexp {
 
 impl Regexp {
     pub fn new(s: &str) -> Result<Self, SchemeError> {
-        let regex = Regex::new(s).map_err(|e| {
+        let options = RegexOptions::REGEX_OPTION_NONE;
+        let regex = Regex::with_options(s, options, Syntax::ruby()).map_err(|e| {
+            SchemeError::assertion_violation("lexer", &format!("regexp error {}", e), &[])
+        })?;
+
+        Ok(Self {
+            header: GcHeader::new(ObjectType::Regexp),
+            pattern: s.to_string(),
+            regex: regex,
+        })
+    }
+
+    pub fn with_options(
+        s: &str,
+        case_fold: bool,
+        is_single_line: bool,
+    ) -> Result<Self, SchemeError> {
+        let mut options = RegexOptions::REGEX_OPTION_NONE;
+        if case_fold {
+            options |= RegexOptions::REGEX_OPTION_IGNORECASE;
+        }
+        if is_single_line {
+            options |= RegexOptions::REGEX_OPTION_SINGLELINE;
+        }
+        let regex = Regex::with_options(s, options, Syntax::ruby()).map_err(|e| {
             SchemeError::assertion_violation("lexer", &format!("regexp error {}", e), &[])
         })?;
 
@@ -30,11 +54,14 @@ impl Regexp {
     }
 
     pub fn rxmatch(&self, text: &str) -> Result<RegMatch, SchemeError> {
-        self.match_internal(text)
-            .map(|region| RegMatch::new(region, text))
+        match self.match_internal(text) {
+            Ok(Some(region)) => Ok(RegMatch::new(region, text)),
+            Ok(None) => Err(SchemeError::assertion_violation("rxmatch", "no match", &[])),
+            Err(err) => Err(err),
+        }
     }
 
-    fn match_internal(&self, text: &str) -> Result<Region, SchemeError> {
+    fn match_internal(&self, text: &str) -> Result<Option<Region>, SchemeError> {
         let mut region = Region::new();
         match self.regex.search_with_param(
             text,
@@ -44,14 +71,45 @@ impl Regexp {
             Some(&mut region),
             MatchParam::default(),
         ) {
-            Ok(Some(_size)) => Ok(region),
-            Ok(_) => Err(SchemeError::assertion_violation("rxmatch", "no match", &[])),
+            Ok(Some(_size)) => Ok(Some(region)),
+            Ok(None) => Ok(None),
             Err(err) => Err(SchemeError::assertion_violation(
                 "rxmatch",
                 &err.to_string(),
                 &[],
             )),
         }
+    }
+
+    pub fn replace_all(&self, target: &str, substitute: &str) -> Result<String, SchemeError> {
+        let mut ret = String::new();
+        let mut target_str = target;
+        loop {
+            match self.match_internal(target_str) {
+                Ok(Some(region)) => match region.pos(0) {
+                    Some((start, end)) => {
+                        let pre = &target_str[0..start];
+                        ret.push_str(&pre);
+                        let post = &target_str[end..];
+                        ret.push_str(substitute);
+                        target_str = &post;
+                    }
+                    None => {
+                        return Err(SchemeError::assertion_violation(
+                            "regex-replace-all",
+                            &format!("submatch index {} out of range", 0),
+                            &[],
+                        ))
+                    }
+                },
+                Ok(None) => {
+                    ret.push_str(target_str);
+                    break;
+                }
+                Err(err) => return Err(err),
+            }
+        }
+        Ok(ret)
     }
 }
 

@@ -333,7 +333,7 @@ impl Trace for FileInputPort {
 }
 
 impl FileInputPort {
-    fn new(file: File, path: &str) -> Self {
+    pub fn new(file: File, path: &str) -> Self {
         FileInputPort {
             header: GcHeader::new(ObjectType::FileInputPort),
             reader: BufReader::new(file),

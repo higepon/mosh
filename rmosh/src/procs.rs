@@ -1,5 +1,5 @@
 use crate::error::SchemeError;
-use crate::ports::StdLib;
+use crate::ports::{FileInputPort, StdLib};
 use crate::regexp::Regexp;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
@@ -1514,10 +1514,24 @@ fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
 }
 fn string_to_regexp(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "string->regexp";
-    check_argc!(name, args, 1);
+    check_argc_at_least!(name, args, 1);
     let text = as_sstring!(name, args, 0);
-    let regexp = Regexp::new(&text.string)?;
-    Ok(Object::Regexp(vm.gc.alloc(regexp)))
+    let mut is_ignore_case = false;
+    let mut is_single_line = false;
+    if args.len() == 1 {
+        let regexp = Regexp::new(&text.string)?;
+        Ok(Object::Regexp(vm.gc.alloc(regexp)))
+    } else {
+        for arg in &mut args[1..] {
+            if *arg == vm.gc.symbol_intern("i") {
+                is_ignore_case = true;
+            } else if *arg == vm.gc.symbol_intern("s") {
+                is_single_line = true;
+            }
+        }
+        let regexp = Regexp::with_options(&text.string, is_ignore_case, is_single_line)?;
+        Ok(Object::Regexp(vm.gc.alloc(regexp)))
+    }
 }
 fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "char->integer";
@@ -3144,9 +3158,15 @@ fn regexp_replace(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeErr
     let name: &str = "regexp-replace";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn regexp_replace_all(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn regexp_replace_all(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "regexp-replace-all";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let regexp = as_regexp!(name, args, 0);
+    let text = as_sstring!(name, args, 1);
+    let sub = as_sstring!(name, args, 2);
+    regexp
+        .replace_all(&text, &sub)
+        .map(|s| vm.gc.new_string(&s))
 }
 fn source_info(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "source-info";
@@ -8648,9 +8668,19 @@ fn is_ssl_supported(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
     let name: &str = "ssl-supported?";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn file_to_string(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn file_to_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "file->string";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let path = as_sstring!(name, args, 0);
+    match File::open(&path.string) {
+        Ok(file) => {
+            let mut port = FileInputPort::new(file, &path.string);
+            let mut s = String::new();
+            port.read_to_string(vm, &mut s)?;
+            Ok(vm.gc.new_string(&s))
+        }
+        Err(_) => Ok(vm.gc.new_string("")),
+    }
 }
 fn annotated_cons(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "annotated-cons";
