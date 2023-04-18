@@ -13,6 +13,7 @@ use crate::{
     numbers::{Bignum, Flonum, Ratnum},
     objects::{EqHashtable, EqvHashtable, EqvKey, Hashtable, Object, SimpleStruct},
     ports::BinaryOutputPort,
+    regexp::Regexp,
 };
 
 #[derive(FromPrimitive)]
@@ -39,6 +40,7 @@ enum Tag {
     Compnum = 19,
     Bignum = 20,
     EqvHashtable = 21,
+    Regexp = 22,
 }
 
 // S-expression serializer.
@@ -163,7 +165,17 @@ impl FaslWriter {
                 self.write_bigint(r.ratio.denom(), port)
                     .map_err(|_| self.write_error())?;
             }
-            Object::Regexp(_r) => {
+            Object::Regexp(r) => {
+                self.put_tag(port, Tag::Regexp)
+                    .map_err(|_| self.write_error())?;
+                let chars: Vec<char> = r.pattern.chars().collect();
+                port.put_u16(chars.len() as u16)
+                    .map_err(|_| self.write_error())?;
+                for c in chars {
+                    port.put_u32(c as u32).map_err(|_| self.write_error())?;
+                }
+            }
+            Object::RegMatch(_r) => {
                 todo!()
             }
             Object::StringInputPort(_) => todo!(),
@@ -299,6 +311,7 @@ impl FaslWriter {
                 | Object::ProgramCounter(_)
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
+                | Object::RegMatch(_)
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
@@ -588,6 +601,7 @@ impl FaslReader {
             Tag::Ratnum => self.read_ratnum(gc),
             Tag::Compnum => self.read_compnum(gc),
             Tag::Bignum => self.read_bignum(gc),
+            Tag::Regexp => self.read_regexp(gc),
         }
     }
 
@@ -702,6 +716,27 @@ impl FaslReader {
             }
         }
         Ok(gc.new_string(&String::from_iter(chars)))
+    }
+
+    fn read_regexp(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {
+        let mut buf = [0; 2];
+        self.bytes.read_exact(&mut buf)?;
+        let len = u16::from_le_bytes(buf);
+        let mut chars = vec![];
+        for _ in 0..len {
+            let mut buf = [0; 4];
+            self.bytes.read_exact(&mut buf)?;
+            let n = u32::from_le_bytes(buf);
+            match char::from_u32(n) {
+                Some(c) => chars.push(c),
+                None => {
+                    return Err(self.create_read_error(&format!("invalid char: {:x} in regexp", n)))
+                }
+            }
+        }
+        Regexp::new(&String::from_iter(chars))
+            .map(|r| Object::Regexp(gc.alloc(r)))
+            .map_err(|e| self.create_read_error(&format!("{:?}", e)))
     }
 
     fn read_vector(&mut self, gc: &mut Gc) -> Result<Object, io::Error> {

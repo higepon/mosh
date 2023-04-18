@@ -12,6 +12,7 @@ use crate::ports::{
     StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
     TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
+use crate::regexp::{RegMatch, Regexp};
 use crate::vm::Vm;
 
 use std::cmp::min;
@@ -61,6 +62,7 @@ pub enum Object {
     ProgramCounter(*const Object),
     Ratnum(GcRef<Ratnum>),
     Regexp(GcRef<Regexp>),
+    RegMatch(GcRef<RegMatch>),
     SimpleStruct(GcRef<SimpleStruct>),
     StdErrorPort(GcRef<StdErrorPort>),
     StdInputPort(GcRef<StdInputPort>),
@@ -157,7 +159,14 @@ impl Object {
         matches!(self, Object::Compnum(_))
     }
     pub fn is_procedure(&self) -> bool {
-        matches!(self, Object::Procedure(_))
+        matches!(
+            self,
+            Object::Procedure(_)
+                | Object::Closure(_)
+                | Object::Regexp(_)
+                | Object::RegMatch(_)
+                | Object::Continuation(_)
+        )
     }
     pub fn is_object_pointer(&self) -> bool {
         matches!(self, Object::ObjectPointer(_))
@@ -170,6 +179,9 @@ impl Object {
     }
     pub fn is_regexp(&self) -> bool {
         matches!(self, Object::Regexp(_))
+    }
+    pub fn is_reg_match(&self) -> bool {
+        matches!(self, Object::RegMatch(_))
     }
     pub fn is_nil(&self) -> bool {
         matches!(self, Object::Nil)
@@ -238,6 +250,20 @@ impl Object {
             s
         } else {
             bug!("Not a Object::String")
+        }
+    }
+    pub fn to_regexp(self) -> GcRef<Regexp> {
+        if let Self::Regexp(s) = self {
+            s
+        } else {
+            bug!("Not a Object::Regexp")
+        }
+    }
+    pub fn to_reg_match(self) -> GcRef<RegMatch> {
+        if let Self::RegMatch(s) = self {
+            s
+        } else {
+            bug!("Not a Object::RegMatch")
         }
     }
     pub fn to_simple_struc(self) -> GcRef<SimpleStruct> {
@@ -601,6 +627,7 @@ impl Object {
             Object::ProgramCounter(_) => todo!(),
             Object::Ratnum(_) => todo!(),
             Object::Regexp(_) => todo!(),
+            Object::RegMatch(_) => todo!(),
             Object::SimpleStruct(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StdInputPort(_) => todo!(),
@@ -723,6 +750,9 @@ impl Debug for Object {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Regexp(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }
+            Object::RegMatch(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Char(c) => {
@@ -893,6 +923,9 @@ impl Display for Object {
                 write!(f, "{}", unsafe { n.pointer.as_ref() })
             }
             Object::Regexp(r) => {
+                write!(f, "{}", unsafe { r.pointer.as_ref() })
+            }
+            Object::RegMatch(r) => {
                 write!(f, "{}", unsafe { r.pointer.as_ref() })
             }
             Object::Latin1Codec(r) => {
@@ -1904,26 +1937,6 @@ impl fmt::Debug for Procedure {
 impl Display for Procedure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "<procedure>")
-    }
-}
-
-/// Regexp.
-#[repr(C)]
-pub struct Regexp {
-    pub header: GcHeader,
-}
-
-impl Regexp {}
-
-impl fmt::Debug for Regexp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("#<regexp>")
-    }
-}
-
-impl Display for Regexp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<regexp>")
     }
 }
 

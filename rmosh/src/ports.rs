@@ -333,7 +333,7 @@ impl Trace for FileInputPort {
 }
 
 impl FileInputPort {
-    fn new(file: File, path: &str) -> Self {
+    pub fn new(file: File, path: &str) -> Self {
         FileInputPort {
             header: GcHeader::new(ObjectType::FileInputPort),
             reader: BufReader::new(file),
@@ -672,6 +672,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Compnum(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
+            | Object::RegMatch(_)
             | Object::False
             | Object::Flonum(_)
             | Object::StringInputPort(_)
@@ -758,6 +759,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::ProgramCounter(_)
             | Object::Ratnum(_)
             | Object::Regexp(_)
+            | Object::RegMatch(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
@@ -996,6 +998,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::ProgramCounter(_)
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
+                | Object::RegMatch(_)
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
@@ -1090,6 +1093,8 @@ pub trait TextOutputPort: OutputPort {
                                 &[],
                             ));
                         }
+                    } else if c == '%' {
+                        self.put_string("\n").ok();
                     } else if c == 's' {
                         let shared_aware = false;
                         if i < args.len() {
@@ -3740,7 +3745,7 @@ impl OutputPort for CustomTextOutputPort {
 
 impl Display for CustomTextOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "#<custom-textual-output-port>")
+        write!(f, "#<custom-textual-output-port {}>", self.id)
     }
 }
 

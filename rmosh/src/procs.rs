@@ -1,5 +1,6 @@
 use crate::error::SchemeError;
-use crate::ports::StdLib;
+use crate::ports::{FileInputPort, StdLib};
+use crate::regexp::Regexp;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -32,7 +33,9 @@ use crate::{
     },
     vm::Vm,
 };
-use crate::{as_vector, bug};
+use chrono::{DateTime, Local, TimeZone, Utc};
+
+use crate::{as_reg_match, as_regexp, as_vector, bug};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
     env::{self, current_dir, current_exe},
@@ -997,38 +1000,115 @@ fn sys_display(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
     port.display(args[0], shared_aware).ok();
     Ok(Object::Unspecified)
 }
-fn rxmatch(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+pub fn rxmatch(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 2);
+    let regexp = as_regexp!(name, args, 0);
+    let text = as_sstring!(name, args, 1);
+    match regexp.rxmatch(&text.string) {
+        Ok(reg_match) => Ok(Object::RegMatch(vm.gc.alloc(reg_match))),
+        Err(_) => Ok(Object::False),
+    }
 }
+
 fn is_regexp(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "regexp?";
     check_argc!(name, args, 1);
     Ok(args[0].is_regexp().to_obj())
 }
-fn regexp_to_string(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn regexp_to_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "regexp->string";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let regexp = as_regexp!(name, args, 0);
+    Ok(vm.gc.new_string(&regexp.pattern))
 }
-fn rxmatch_start(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn rxmatch_start(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-start";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args[0].is_false() {
+        return Ok(Object::False);
+    }
+    let reg_match = as_reg_match!(name, args, 0);
+    let ret_value = if args.len() == 2 {
+        let index = as_usize!(name, args, 1);
+        reg_match.match_start(index)
+    } else {
+        reg_match.match_start(0)
+    }?;
+    Ok(ret_value.to_obj(&mut vm.gc))
 }
-fn rxmatch_end(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn rxmatch_end(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-end";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args[0].is_false() {
+        return Ok(Object::False);
+    }
+    let reg_match = as_reg_match!(name, args, 0);
+    let ret_value = if args.len() == 2 {
+        let index = as_usize!(name, args, 1);
+        reg_match.match_end(index)
+    } else {
+        reg_match.match_end(0)
+    }?;
+    Ok(ret_value.to_obj(&mut vm.gc))
 }
-fn rxmatch_after(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn rxmatch_after(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-after";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args[0].is_false() {
+        return Ok(Object::False);
+    }
+    let reg_match = as_reg_match!(name, args, 0);
+    if args.len() == 2 {
+        let index = as_usize!(name, args, 1);
+        reg_match.match_after(index)
+    } else {
+        reg_match.match_after(0)
+    }
+    .map(|s| vm.gc.new_string(&s))
 }
-fn rxmatch_before(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn rxmatch_before(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-before";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args[0].is_false() {
+        return Ok(Object::False);
+    }
+    let reg_match = as_reg_match!(name, args, 0);
+    if args.len() == 2 {
+        let index = as_usize!(name, args, 1);
+        reg_match.match_before(index)
+    } else {
+        reg_match.match_before(0)
+    }
+    .map(|s| vm.gc.new_string(&s))
 }
-fn rxmatch_substring(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn rxmatch_substring(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "rxmatch-substring";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_between!(name, args, 1, 2);
+    if args[0].is_false() {
+        return Ok(Object::False);
+    }
+    let reg_match = as_reg_match!(name, args, 0);
+    if args.len() == 2 {
+        let index = as_usize!(name, args, 1);
+        reg_match.match_substring(index)
+    } else {
+        reg_match.match_substring(0)
+    }
+    .map(|v| match v {
+        Some(s) => vm.gc.new_string(&s),
+        None => Object::False,
+    })
+}
+pub fn reg_match_proxy(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+    let argc = args.len();
+    if argc == 2 && args[1] == vm.gc.symbol_intern("after") {
+        rxmatch_after(vm, &mut args[0..1])
+    } else if argc == 2 && args[1] == vm.gc.symbol_intern("before") {
+        rxmatch_before(vm, &mut args[0..1])
+    } else {
+        rxmatch_substring(vm, args)
+    }
 }
 fn make_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-string";
@@ -1434,9 +1514,26 @@ fn get_output_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
         type_required_error(name, "string-output-port", args)
     }
 }
-fn string_to_regexp(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn string_to_regexp(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "string->regexp";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 1);
+    let text = as_sstring!(name, args, 0);
+    let mut is_ignore_case = false;
+    let mut is_single_line = false;
+    if args.len() == 1 {
+        let regexp = Regexp::new(&text.string)?;
+        Ok(Object::Regexp(vm.gc.alloc(regexp)))
+    } else {
+        for arg in &mut args[1..] {
+            if *arg == vm.gc.symbol_intern("i") {
+                is_ignore_case = true;
+            } else if *arg == vm.gc.symbol_intern("s") {
+                is_single_line = true;
+            }
+        }
+        let regexp = Regexp::with_options(&text.string, is_ignore_case, is_single_line)?;
+        Ok(Object::Regexp(vm.gc.alloc(regexp)))
+    }
 }
 fn char_to_integer(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "char->integer";
@@ -1486,6 +1583,11 @@ fn format(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
             }
             (x, y) => bug!("x={} y={}", x, y),
         }
+    } else if argc == 1 {
+        let s = as_sstring!(name, args, 0);
+        let mut port = StringOutputPort::new();
+        port.format(&s.string, &mut [])?;
+        Ok(vm.gc.new_string(&port.string()))
     } else {
         Ok(Object::Unspecified)
     }
@@ -1681,7 +1783,13 @@ fn caadr(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 }
 fn caar(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "caar";
-    todo!("{}({}) not implemented", name, args.len());
+    match args {
+        [Object::Pair(pair)] => match pair.car {
+            Object::Pair(pair2) => Ok(pair2.car),
+            _ => pair_required_error(name, args),
+        },
+        _ => pair_required_error(name, args),
+    }
 }
 fn cadaar(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "cadaar";
@@ -3063,9 +3171,15 @@ fn regexp_replace(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeErr
     let name: &str = "regexp-replace";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn regexp_replace_all(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn regexp_replace_all(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "regexp-replace-all";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 3);
+    let regexp = as_regexp!(name, args, 0);
+    let text = as_sstring!(name, args, 1);
+    let sub = as_sstring!(name, args, 2);
+    regexp
+        .replace_all(&text, &sub)
+        .map(|s| vm.gc.new_string(&s))
 }
 fn source_info(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "source-info";
@@ -3210,10 +3324,7 @@ fn memv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 fn is_procedure(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "procedure?";
     check_argc!(name, args, 1);
-    match args[0] {
-        Object::Procedure(_) | Object::Closure(_) | Object::Continuation(_) => Ok(Object::True),
-        _ => Ok(Object::False),
-    }
+    Ok(args[0].is_procedure().to_obj())
 }
 fn load(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "load";
@@ -3909,7 +4020,19 @@ fn number_lt(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 }
 fn number_le(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "<=";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::le(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            return type_required_error(name, "number", &[args[i], args[i + 1]]);
+        }
+    }
+    Ok(Object::True)
 }
 fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = ">";
@@ -3928,7 +4051,18 @@ fn number_gt(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
 }
 fn number_ge(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = ">=";
-    todo!("{}({}) not implemented", name, args.len());
+    for i in 0..args.len() - 1 {
+        if args[i].is_number() && args[i + 1].is_number() {
+            if numbers::ge(args[i], args[i + 1]) {
+                continue;
+            } else {
+                return Ok(Object::False);
+            }
+        } else {
+            return type_required_error(name, "number", &[args[i], args[i + 1]]);
+        }
+    }
+    Ok(Object::True)
 }
 fn number_eq(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "=";
@@ -7039,9 +7173,23 @@ fn microseconds(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError
     let microseconds = since_epoch.subsec_micros();
     Ok(Object::Fixnum(microseconds as isize))
 }
-fn local_tz_offset(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn local_tz_offset(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "local-tz-offset";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 0);
+
+    // Get the current local time
+    let local_time: DateTime<Local> = Local::now();
+
+    // Get the local timezone
+    let local_timezone = local_time.timezone();
+
+    // Get the UTC offset for the local timezone
+    let utc_offset = local_timezone.offset_from_utc_datetime(&Utc::now().naive_utc());
+
+    match utc_offset.local_minus_utc().to_isize() {
+        Some(offset) => Ok(offset.to_obj()),
+        None => panic!(),
+    }
 }
 fn fork(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "%fork";
@@ -7827,9 +7975,11 @@ fn make_vector(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError>
     let name: &str = "make-vector";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn vector_length(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn vector_length(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "vector-length";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let v = as_vector!(name, args, 0);
+    Ok(v.len().to_obj(&mut vm.gc))
 }
 fn vector_ref(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "vector-ref";
@@ -8567,9 +8717,19 @@ fn is_ssl_supported(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeE
     let name: &str = "ssl-supported?";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn file_to_string(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn file_to_string(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "file->string";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let path = as_sstring!(name, args, 0);
+    match File::open(&path.string) {
+        Ok(file) => {
+            let mut port = FileInputPort::new(file, &path.string);
+            let mut s = String::new();
+            port.read_to_string(vm, &mut s)?;
+            Ok(vm.gc.new_string(&s))
+        }
+        Err(_) => Ok(vm.gc.new_string("")),
+    }
 }
 fn annotated_cons(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "annotated-cons";

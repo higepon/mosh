@@ -10,6 +10,7 @@ use crate::objects::{
     Bytevector, Closure, Continuation, ContinuationStack, EqHashtable, EqvHashtable,
     GenericHashtable, Object, Pair, Procedure, SString, SimpleStruct, Symbol, Vector, Vox,
 };
+use crate::regexp::{RegMatch, Regexp};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
@@ -108,6 +109,8 @@ pub enum ObjectType {
     Pair,
     Procedure,
     Ratnum,
+    Regexp,
+    RegMatch,
     SimpleStruct,
     StdErrorPort,
     StdInputPort,
@@ -576,6 +579,9 @@ impl Gc {
             Object::Regexp(r) => {
                 self.mark_heap_object(r);
             }
+            Object::RegMatch(r) => {
+                self.mark_heap_object(r);
+            }
             Object::Vox(vox) => {
                 self.mark_heap_object(vox);
             }
@@ -667,6 +673,14 @@ impl Gc {
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
                 closure.trace(self);
+            }
+            ObjectType::Regexp => {
+                let x: &Regexp = unsafe { mem::transmute(pointer.as_ref()) };
+                x.trace(self);
+            }
+            ObjectType::RegMatch => {
+                let x: &RegMatch = unsafe { mem::transmute(pointer.as_ref()) };
+                x.trace(self);
             }
             ObjectType::Vox => {
                 let vox: &Vox = unsafe { mem::transmute(pointer.as_ref()) };
@@ -861,6 +875,14 @@ impl Gc {
                 let x: &CustomBinaryInputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(x)
             }
+            ObjectType::Regexp => {
+                let x: &Regexp = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
+            ObjectType::RegMatch => {
+                let x: &RegMatch = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(x)
+            }
             ObjectType::CustomBinaryInputOutputPort => {
                 let x: &CustomBinaryInputOutputPort = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(x)
@@ -1033,6 +1055,18 @@ impl Gc {
         match unsafe { (*object_ptr).obj_type } {
             ObjectType::Symbol => {
                 let x: *mut Symbol = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::Regexp => {
+                let x: *mut Regexp = unsafe { mem::transmute(object_ptr) };
+                unsafe {
+                    drop(Box::from_raw(x));
+                }
+            }
+            ObjectType::RegMatch => {
+                let x: *mut RegMatch = unsafe { mem::transmute(object_ptr) };
                 unsafe {
                     drop(Box::from_raw(x));
                 }

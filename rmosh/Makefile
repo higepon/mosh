@@ -3,7 +3,7 @@
 TESTS = #test_compiler #test63_optimized #test_test193_modified0 #test_vm_define #test_test193_modified0 #test_test153 #test_test92 #test_test62 #test_test61 #test_test19 #test_vm_alloc_many_pairs  # test_vm_run_add_pair
 FEATURES = #--features debug_log_vm # --features debug_log_gc
 
-test: rust-test r7rs-test r6rs-test misc-test
+test: rust-test r7rs-test r6rs-test misc-test srfi-test
 
 ## test-threads should be 1 because we have static mut CURRENT_VM, which could be shared.
 rust-test: src/lexer_iter.rs src/number_lexer_iter.rs
@@ -58,37 +58,58 @@ misc-test:
 	cargo run ./tests/condition.scm
 	cargo run ./tests/rbtree-test.scm
 	cargo run ./tests/exception.scm
-	cargo run ./tests/srfi/srfi-194.scm	
 	cargo run ./tests/import-srfi.scm	
 	cargo run ./tests/r7rs/vector.scm
 	cargo run ./tests/lists.scm
 	cargo run ./tests/match.scm
-	cargo run ./tests/srfi8.scm
-	cargo run ./tests/srfi-39.scm
 	cargo run ./tests/shorten.scm
 	cargo run ./tests/r7rs/top-level.scm	
 	cargo run ./tests/r7rs/import-all.scm
-	cargo run ./tests/srfi/srfi-151.scm
 	cargo run ./tests/comment.scm
-	cargo run ./tests/srfi19.scm
 	cargo run ./tests/clos.scm
-	cargo run ./tests/srfi-misc.scm		
 	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
 	cargo run tests/record.scm --loadpath="tests/mylib" 
 	cargo run ./tests/testing.scm
 	cargo run tests/unicode-path.scm --loadpath=./tests
 	cargo run ./tests/input-port.scm < tests/input.txt
+	cargo run ./tests/regexp.scm
+	cargo run ./tests/template.scm
+	cargo run ./tests/print.scm
+	cargo run ./tests/misc.scm	
+	(cd test/irregex && cargo run test-irregex-mosh.ss)
+	(cd test/irregex && cargo run null-irregex-mosh.ss)
 
 #	failing
-#	cargo run ./tests/print.scm # this needs regexp support
-#   cargo run ./tests/misc.scm
-#   cargo run ./tests/template.scm
 #   cargo run ./tests/error-with-circular.scm
 # 	cargo run ./tests/jsonmsgpack.sps	
 #   cargo run ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
 
 # 	Not supported yet
 #   cargo run ./tests/process.scm
+
+srfi-test:
+	cargo run ./tests/srfi/and-let.sps
+	cargo run ./tests/srfi/compare-procedures.sps 
+	cargo run ./tests/srfi/cut.sps
+	cargo run ./tests/srfi/eager-comprehensions.sps
+	cargo run ./tests/srfi/print-ascii.sps 
+	cargo run ./tests/srfi/random.sps     
+	cargo run ./tests/srfi/random.sps     
+	cargo run ./tests/srfi/records.sps     
+	cargo run ./tests/srfi/srfi-151.scm  
+	cargo run ./tests/srfi/srfi-194.scm	
+	cargo run ./tests/srfi8.scm
+	cargo run ./tests/srfi-39.scm	
+	cargo run ./tests/srfi-misc.scm	
+	cargo run ./tests/srfi19.scm	
+	cargo run ./tests/srfi/time.sps
+	# too slow?
+	# cargo run ./tests/srfi/eager-comprehensions.sps 
+	# cargo run ./tests/srfi/intermediate-format-strings.sps 
+	# cargo run ./tests/srfi/lightweight-testing.sps        
+	# killed
+	# cargo run ./tests/srfi/random-conftest.sps 
+
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm
