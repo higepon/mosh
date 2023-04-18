@@ -96,6 +96,7 @@ misc-test:
 srfi-test:
 	cargo run ./tests/srfi/and-let.sps
 	cargo run ./tests/srfi/compare-procedures.sps 
+	cargo run ./tests/srfi/cut.sps
 
 gen-tests:
 	mosh scripts/test_data_convert.scm ./test-data.scm
