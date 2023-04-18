@@ -47,42 +47,43 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run  ./tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=./tests/r6rs-test-suite/
 
 misc-test:
-	cargo run ./tests/unicode.scm
+	(cd test/irregex && cargo run null-irregex-mosh.ss)
+	(cd test/irregex && cargo run test-irregex-mosh.ss)
 	cargo run ./tests/annotated-pair.scm
-	cargo run ./tests/output-port.scm
-	cargo run ./tests/input-output-port.scm
-	cargo run ./tests/number.scm
-	cargo run ./tests/io-error.scm
-	cargo run ./tests/mosh-test.scm
 	cargo run ./tests/cgi.scm
+	cargo run ./tests/clos.scm
+	cargo run ./tests/comment.scm
 	cargo run ./tests/condition.scm
-	cargo run ./tests/rbtree-test.scm
 	cargo run ./tests/exception.scm
 	cargo run ./tests/import-srfi.scm	
-	cargo run ./tests/r7rs/vector.scm
+	cargo run ./tests/input-output-port.scm
+	cargo run ./tests/input-port.scm < tests/input.txt
+	cargo run ./tests/io-error.scm
 	cargo run ./tests/lists.scm
 	cargo run ./tests/match.scm
-	cargo run ./tests/shorten.scm
-	cargo run ./tests/r7rs/top-level.scm	
-	cargo run ./tests/r7rs/import-all.scm
-	cargo run ./tests/comment.scm
-	cargo run ./tests/clos.scm
-	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
-	cargo run tests/record.scm --loadpath="tests/mylib" 
-	cargo run ./tests/testing.scm
-	cargo run tests/unicode-path.scm --loadpath=./tests
-	cargo run ./tests/input-port.scm < tests/input.txt
-	cargo run ./tests/regexp.scm
-	cargo run ./tests/template.scm
-	cargo run ./tests/print.scm
 	cargo run ./tests/misc.scm	
-	(cd test/irregex && cargo run test-irregex-mosh.ss)
-	(cd test/irregex && cargo run null-irregex-mosh.ss)
+	cargo run ./tests/mosh-test.scm
+	cargo run ./tests/number.scm
+	cargo run ./tests/output-port.scm
+	cargo run ./tests/print.scm
+	cargo run ./tests/r7rs/import-all.scm
+	cargo run ./tests/r7rs/top-level.scm	
+	cargo run ./tests/r7rs/vector.scm
+	cargo run ./tests/rbtree-test.scm
+	cargo run ./tests/regexp.scm
+	cargo run ./tests/shorten.scm
+	cargo run ./tests/template.scm
+	cargo run ./tests/testing.scm
+	cargo run ./tests/unicode.scm
+	cargo run ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
+	cargo run tests/record.scm --loadpath="tests/mylib" 
+	cargo run tests/unicode-path.scm --loadpath=./tests
+	cargo run tests/use-foo.scm  --loadpath=".:./tests/mylib"
 
 #	failing
 #   cargo run ./tests/error-with-circular.scm
 # 	cargo run ./tests/jsonmsgpack.sps	
-#   cargo run ./tests/wrong_argument.scm 2>&1 | grep 'wrong_argument.scm'
+#   
 
 # 	Not supported yet
 #   cargo run ./tests/process.scm
@@ -106,7 +107,8 @@ srfi-test:
 	# too slow?
 	# cargo run ./tests/srfi/eager-comprehensions.sps 
 	# cargo run ./tests/srfi/intermediate-format-strings.sps 
-	# cargo run ./tests/srfi/lightweight-testing.sps        
+	# cargo run ./tests/srfi/lightweight-testing.sps  
+	# cargo run ./tests/srfi/version.sps      
 	# killed
 	# cargo run ./tests/srfi/random-conftest.sps 
 
