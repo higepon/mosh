@@ -138,7 +138,7 @@
                (display "       " port)
                (display (car field) port)
                (display ": " port)
-               (write (cdr field) port)
+               (write/ss (cdr field) port)
                (newline port)
                (loop #f (cdr fields-alist)))
              ]
