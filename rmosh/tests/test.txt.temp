@@ -1,4 +1,4 @@
-/.ûwe use this for test.
+// we use this for test.
 // this file should be larger than BUFFER_SIZE
 /*
  * ArithmeticProcedures.cpp - arithmetic procedures.
@@ -119,7 +119,315 @@ Object scheme::asinEx(VM* theVM, int argc, const Object* argv)
 }
 
 Object scheme::tanEx(VM* theVM, int argc, const Object* argv)
-eVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("tan");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    bool isDiv0Error = false;
+    const Object ret = Arithmetic::tan(n, isDiv0Error);
+    if (isDiv0Error) {
+        callAssertionViolationAfter(theVM, procedureName, "division by zero", L1(n));
+        return Object::Undef;
+    } else {
+        return ret;
+    }
+}
+
+Object scheme::sinEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("sin");
+    checkArgumentLength(1);
+    const Object ret = Arithmetic::sin(argv[0]);
+    if (ret.isUndef()) {
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L1(argv[0]));
+    }
+    return ret;
+}
+
+Object scheme::cosEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cos");
+    checkArgumentLength(1);
+    const Object ret = Arithmetic::cos(argv[0]);
+    if (ret.isUndef()) {
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L1(argv[0]));
+    }
+    return ret;
+}
+
+Object scheme::logEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("log");
+    checkArgumentLengthBetween(1, 2);
+    if (argc == 1) {
+        argumentCheckNumber(0, n);
+        if (Arithmetic::isExactZero(n)) {
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L1(n));
+            return Object::Undef;
+        }
+        return Arithmetic::log(n);
+    } else {
+        argumentCheckNumber(0, n1);
+
+        argumentCheckNumber(1, n2);
+        if (Arithmetic::isExactZero(n1) || Arithmetic::isExactZero(n2)) {
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L2(n1, n2));
+            return Object::Undef;
+        }
+        bool isDiv0Error = false;
+        const Object ret = Arithmetic::log(n1, n2, isDiv0Error);
+        if (isDiv0Error) {
+            callAssertionViolationAfter(theVM, procedureName, "division by zero", L2(n1, n2));
+            return Object::Undef;
+        } else {
+            return ret;
+        }
+    }
+}
+
+Object scheme::expEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("exp");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::exp(n);
+}
+
+Object scheme::floorEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("floor");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::floor(n);
+}
+
+Object scheme::ceilingEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("ceiling");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::ceiling(n);
+}
+
+Object scheme::truncateEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("truncate");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::truncate(n);
+}
+
+Object scheme::roundEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("round");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::round(n);
+}
+
+Object scheme::integerDivEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("div");
+    checkArgumentLength(2);
+    argumentCheckReal(0, n1);
+    argumentCheckReal(1, n2);
+
+    if (n1.isFlonum()) {
+        Flonum* const flonum = n1.toFlonum();
+        if (flonum->isInfinite() || flonum->isNan()) {
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "neither infinite nor a NaN", n1);
+            return Object::Undef;
+        }
+    }
+
+    if (n2.isFixnum()) {
+        const int fn2 = n2.toFixnum();
+        if (0 == fn2) {
+            callAssertionViolationAfter(theVM, procedureName, "div by 0 is not defined", Pair::list2(n1, n2));
+            return Object::Undef;
+        }
+    }
+    if (n2.isFlonum()) {
+        const double fn2 = n2.toFlonum()->value();
+        if (0.0 == fn2) {
+            callAssertionViolationAfter(theVM, procedureName, "div by 0.0 is not defined", Pair::list2(n1, n2));
+            return Object::Undef;
+        }
+    }
+
+    if (n1.isFixnum() && n2.isFixnum()) {
+        return Fixnum::integerDiv(n1.toFixnum(), n2.toFixnum());
+    } else if (n1.isFlonum() && n2.isFlonum()) {
+        return Flonum::integerDiv(n1.toFlonum(), n2.toFlonum());
+    } else {
+            bool isDiv0Error = false;
+            Object ret = Object::Undef;
+        if (Arithmetic::isNegative(n2)) {
+            ret = Arithmetic::negate(Arithmetic::floor(Arithmetic::div(n1, Arithmetic::negate(n2), isDiv0Error)));
+        } else {
+            ret = Arithmetic::floor(Arithmetic::div(n1, n2, isDiv0Error));
+        }
+        if (isDiv0Error) {
+            callAssertionViolationAfter(theVM, procedureName, "division by zero", Pair::list2(n1, n2));
+            return Object::Undef;
+        } else {
+            return ret;
+        }
+
+    }
+}
+
+Object scheme::integerDiv0Ex(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("div0");
+    checkArgumentLength(2);
+    argumentCheckReal(0, n1);
+    argumentCheckReal(1, n2);
+    Object div = integerDivEx(theVM, argc, argv);
+    if (div.isUndef()) {
+        return Object::Undef;
+    }
+    Object mod = Arithmetic::sub(n1, Arithmetic::mul(div, n2));
+    // we can ignore isDiv0Error parameter of Arithmetic::div.
+    // Because we know division by zero never occur.
+    bool isDiv0Error = false;
+    if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2), isDiv0Error)))) {
+        return div;
+    } else {
+        if (Arithmetic::isNegative(n2)) {
+            return Arithmetic::sub(div, Object::makeFixnum(1));
+        } else {
+            return Arithmetic::add(div, Object::makeFixnum(1));
+        }
+    }
+}
+
+Object scheme::absEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("abs");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::abs(n);
+}
+
+Object scheme::evenPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("even?");
+    checkArgumentLength(1);
+    argumentCheckIntegerValued(0, n);
+    return Object::makeBool(Arithmetic::isEven(n));
+}
+
+Object scheme::oddPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("odd?");
+    checkArgumentLength(1);
+    argumentCheckIntegerValued(0, n);
+    return Object::makeBool(!Arithmetic::isEven(n));
+}
+
+Object scheme::magnitudeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("magnitude");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, number);
+    return Arithmetic::magnitude(number);
+}
+
+Object scheme::angleEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("angle");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, number);
+    return Arithmetic::angle(number);
+}
+
+Object scheme::complexPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("complex?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isComplex());
+}
+
+Object scheme::realPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("real?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isReal());
+}
+
+Object scheme::integerPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("integer?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isInteger());
+}
+
+Object scheme::realValuedPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("real-valued?");
+    checkArgumentLength(1);
+    const Object n = argv[0];
+    if (n.isNumber()) {
+        return Object::makeBool(Arithmetic::isRealValued(n));
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::rationalValuedPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("rational-valued?");
+    checkArgumentLength(1);
+    const Object n = argv[0];
+    if (n.isNumber()) {
+        return Object::makeBool(Arithmetic::isRationalValued(n));
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::integerValuedPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("integer-valued?");
+    checkArgumentLength(1);
+    const Object n = argv[0];
+    if (n.isNumber()) {
+        return Object::makeBool(Arithmetic::isIntegerValued(n));
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::numeratorEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("numerator");
+    checkArgumentLength(1);
+    argumentCheckRational(0, rational);
+    return Arithmetic::numerator(rational);
+}
+
+Object scheme::denominatorEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("denominator");
+    checkArgumentLength(1);
+    argumentCheckRational(0, rational);
+    return Arithmetic::denominator(rational);
+}
+
+Object scheme::infinitePEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("infinite?");
+    checkArgumentLength(1);
+    argumentCheckReal(0, real);
+    if (real.isFlonum()) {
+        return Object::makeBool(real.toFlonum()->isInfinite());
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::finitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("finite?");
     checkArgumentLength(1);
@@ -156,7 +464,7 @@ Object scheme::inexactPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("inexact?");
     checkArgumentLength(1);
     argumentCheckNumber(0, number);
-    return Object::makeBoolü!Arithmetic::isExact(number));
+    return Object::makeBool(!Arithmetic::isExact(number));
 }
 
 Object scheme::realPartEx(VM* theVM, int argc, const Object* argv)

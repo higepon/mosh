@@ -47,14 +47,14 @@ r6rs-test: src/lexer_iter.rs src/number_lexer_iter.rs
 	cargo run --release ./tests/r6rs-test-suite/tests/r6rs/run/io/ports.sps  --loadpath=./tests/r6rs-test-suite/
 
 misc-test:
-	(cd test/irregex && cargo run null-irregex-mosh.ss)
-	(cd test/irregex && cargo run test-irregex-mosh.ss)
+	(cd tests/irregex && cargo run --release null-irregex.ss)
+	(cd tests/irregex && cargo run --release test-irregex-mosh.ss)
 	cargo run --release ./tests/annotated-pair.scm
 	cargo run --release ./tests/cgi.scm
 	cargo run --release ./tests/clos.scm
 	cargo run --release ./tests/comment.scm
 	cargo run --release ./tests/condition.scm
-	!cargo run --release ./tests/error-with-circular.scm 2>/dev/null
+	! cargo run --release ./tests/error-with-circular.scm 2>/dev/null
 	cargo run --release ./tests/exception.scm
 	cargo run --release ./tests/import-srfi.scm	
 	cargo run --release ./tests/input-output-port.scm
