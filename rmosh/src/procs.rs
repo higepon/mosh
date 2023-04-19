@@ -7876,12 +7876,9 @@ fn make_server_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, Schem
     let name: &str = "make-server-socket";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn os_constant(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
-    let name: &str = "os-constant";
-    for arg in args.iter() {
-        println!("arg={}", arg);
-    }
-    //todo!("{}({}) not implemented", name, args.len());
+fn os_constant(_vm: &mut Vm, _args: &mut [Object]) -> Result<Object, SchemeError> {
+    let _name: &str = "os-constant";
+    // Fake implementation until we support low level socket.
     return Ok(3isize.to_obj());
 }
 fn socket_recv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {

@@ -4278,7 +4278,7 @@ impl BinaryInputPort for BinarySocketInputOutputPort {
         todo!()
     }
 
-    fn set_ahead_u8(&mut self, c: Option<u8>) {
+    fn set_ahead_u8(&mut self, _c: Option<u8>) {
         todo!()
     }
 }
