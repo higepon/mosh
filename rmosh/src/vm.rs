@@ -268,7 +268,7 @@ impl Vm {
 
             let sym = self.gc.symbol_intern("%mosh-executable-name");
             let name = self.gc.new_string("rmosh");
-            self.set_global_value(sym.to_symbol(), name);            
+            self.set_global_value(sym.to_symbol(), name);
 
             let sym = self.gc.symbol_intern("%optimize?");
             self.set_global_value(sym.to_symbol(), Object::False);

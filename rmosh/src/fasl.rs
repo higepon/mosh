@@ -185,7 +185,7 @@ impl FaslWriter {
             Object::BinaryFileOutputPort(_) => todo!(),
             Object::BinaryFileInputOutputPort(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
-            Object::BinarySocketInputOutputPort(_) => todo!(),            
+            Object::BinarySocketInputOutputPort(_) => todo!(),
             Object::StdInputPort(_) => todo!(),
             Object::CustomBinaryInputPort(_) => todo!(),
             Object::CustomBinaryInputOutputPort(_) => todo!(),
@@ -283,7 +283,7 @@ impl FaslWriter {
                 | Object::Bignum(_)
                 | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileInputPort(_)
-                | Object::BinarySocketInputOutputPort(_)                
+                | Object::BinarySocketInputOutputPort(_)
                 | Object::BinaryFileOutputPort(_)
                 | Object::BytevectorInputPort(_)
                 | Object::BytevectorOutputPort(_)
@@ -315,7 +315,7 @@ impl FaslWriter {
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
                 | Object::RegMatch(_)
-                | Object::Socket(_)                
+                | Object::Socket(_)
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)

@@ -103,7 +103,7 @@ macro_rules! as_socket {
             ));
         }
         $obj.to_socket()
-    }};    
+    }};
 }
 
 #[macro_export]
@@ -297,7 +297,7 @@ macro_rules! as_port {
             },
             Object::BinarySocketInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
-            },            
+            },
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomBinaryInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
@@ -344,7 +344,7 @@ macro_rules! as_port_mut {
             },
             Object::BinarySocketInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
-            },            
+            },
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomBinaryInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
@@ -524,7 +524,7 @@ macro_rules! as_binary_input_port_mut {
             },
             Object::BinarySocketInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
-            },            
+            },
             Object::BytevectorInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -617,7 +617,7 @@ macro_rules! as_binary_output_port_mut {
             },
             Object::BinarySocketInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
-            },            
+            },
             Object::BytevectorOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },

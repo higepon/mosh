@@ -22,12 +22,13 @@ use std::ptr::NonNull;
 use std::{ops::Deref, ops::DerefMut, usize};
 
 use crate::ports::{
-    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
-    BytevectorOutputPort, CustomBinaryInputOutputPort, CustomBinaryInputPort,
-    CustomBinaryOutputPort, CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort,
-    FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TranscodedInputOutputPort, TranscodedInputPort,
-    TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec, BinarySocketInputOutputPort,
+    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort,
+    BinarySocketInputOutputPort, BytevectorInputPort, BytevectorOutputPort,
+    CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
+    CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, FileInputPort,
+    FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
+    StringOutputPort, TranscodedInputOutputPort, TranscodedInputPort, TranscodedOutputPort,
+    Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::vm::Vm;
 
@@ -533,13 +534,13 @@ impl Gc {
             }
             Object::BinarySocketInputOutputPort(port) => {
                 self.mark_heap_object(port);
-            }            
+            }
             Object::FileOutputPort(port) => {
                 self.mark_heap_object(port);
             }
             Object::Socket(socket) => {
                 self.mark_heap_object(socket);
-            }            
+            }
             Object::StringInputPort(port) => {
                 self.mark_heap_object(port);
             }
@@ -682,7 +683,7 @@ impl Gc {
             ObjectType::Socket => {
                 let socket: &Socket = unsafe { mem::transmute(pointer.as_ref()) };
                 socket.trace(self);
-            }            
+            }
             ObjectType::Closure => {
                 let closure: &Closure = unsafe { mem::transmute(pointer.as_ref()) };
                 closure.trace(self);
@@ -799,9 +800,10 @@ impl Gc {
                 port.trace(self);
             }
             ObjectType::BinarySocketInputOutputPort => {
-                let port: &BinarySocketInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
+                let port: &BinarySocketInputOutputPort =
+                    unsafe { mem::transmute(pointer.as_ref()) };
                 port.trace(self);
-            }            
+            }
             ObjectType::BinaryFileInputOutputPort => {
                 let port: &BinaryFileInputOutputPort = unsafe { mem::transmute(pointer.as_ref()) };
                 port.trace(self);
@@ -1075,13 +1077,13 @@ impl Gc {
                 unsafe {
                     drop(Box::from_raw(x));
                 }
-            }      
+            }
             ObjectType::BinarySocketInputOutputPort => {
                 let x: *mut BinarySocketInputOutputPort = unsafe { mem::transmute(object_ptr) };
                 unsafe {
                     drop(Box::from_raw(x));
                 }
-            }                      
+            }
             ObjectType::Symbol => {
                 let x: *mut Symbol = unsafe { mem::transmute(object_ptr) };
                 unsafe {

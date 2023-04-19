@@ -29,7 +29,7 @@ impl Socket {
                 &[],
             )
         })?;
-        
+
         Ok(Self {
             header: GcHeader::new(ObjectType::Socket),
             stream: stream,

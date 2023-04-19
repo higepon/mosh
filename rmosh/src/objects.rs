@@ -5,12 +5,13 @@ use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
-    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinarySocketInputOutputPort,
-    BytevectorInputPort, BytevectorOutputPort, CustomBinaryInputOutputPort, CustomBinaryInputPort,
-    CustomBinaryOutputPort, CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort,
-    FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
-    StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
-    TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
+    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort,
+    BinarySocketInputOutputPort, BytevectorInputPort, BytevectorOutputPort,
+    CustomBinaryInputOutputPort, CustomBinaryInputPort, CustomBinaryOutputPort,
+    CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort, FileInputPort,
+    FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort, StringInputPort,
+    StringOutputPort, TextOutputPort, TranscodedInputOutputPort, TranscodedInputPort,
+    TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::regexp::{RegMatch, Regexp};
 use crate::socket::Socket;
@@ -185,7 +186,7 @@ impl Object {
     }
     pub fn is_socket(&self) -> bool {
         matches!(self, Object::Socket(_))
-    }    
+    }
     pub fn is_reg_match(&self) -> bool {
         matches!(self, Object::RegMatch(_))
     }
@@ -271,7 +272,7 @@ impl Object {
         } else {
             bug!("Not a Object::Socket")
         }
-    }    
+    }
     pub fn to_reg_match(self) -> GcRef<RegMatch> {
         if let Self::RegMatch(s) = self {
             s

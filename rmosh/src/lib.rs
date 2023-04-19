@@ -16,8 +16,8 @@ pub mod procs_util;
 pub mod psyntax;
 pub mod reader_util;
 pub mod regexp;
-pub mod vm;
 pub mod socket;
+pub mod vm;
 
 #[macro_use]
 extern crate lalrpop_util;
