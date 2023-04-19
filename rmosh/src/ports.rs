@@ -679,9 +679,11 @@ pub trait TextOutputPort: OutputPort {
             | Object::FileInputPort(_)
             | Object::Eof
             | Object::BinaryFileInputPort(_)
+            | Object::BinarySocketInputPort(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
+            | Object::Socket(_)
             | Object::StringOutputPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
@@ -729,6 +731,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Bignum(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileInputPort(_)
+            | Object::BinarySocketInputPort(_)            
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::BytevectorOutputPort(_)
@@ -760,6 +763,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Ratnum(_)
             | Object::Regexp(_)
             | Object::RegMatch(_)
+            | Object::Socket(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
@@ -969,6 +973,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
+                | Object::BinarySocketInputPort(_)                
                 | Object::BytevectorInputPort(_)
                 | Object::BytevectorOutputPort(_)
                 | Object::Char(_)
@@ -999,6 +1004,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
                 | Object::RegMatch(_)
+                | Object::Socket(_)
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
@@ -4199,5 +4205,34 @@ impl TextInputPort for CustomTextInputOutputPort {
     }
     fn parsed(&self) -> Object {
         self.parsed
+    }
+}
+
+// BinarySocketInputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct BinarySocketInputOutputPort {
+    pub header: GcHeader,
+    socket: Object,
+}
+
+impl Trace for BinarySocketInputOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.socket)        
+    }
+}
+
+impl BinarySocketInputOutputPort {
+    pub fn new(socket: Object) -> Self {
+        BinarySocketInputOutputPort {
+            header: GcHeader::new(ObjectType::BinarySocketInputOutputPort),
+            socket: socket,
+        }
+    }
+}
+
+impl Display for BinarySocketInputOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<binary-socket-input-port>")
     }
 }

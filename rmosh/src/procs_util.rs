@@ -82,6 +82,21 @@ macro_rules! as_regexp {
 }
 
 #[macro_export]
+macro_rules! as_socket {
+    ($name:ident, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !o.is_socket() {
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "socket required",
+                &[o],
+            ));
+        }
+        o.to_socket()
+    }};
+}
+
+#[macro_export]
 macro_rules! as_reg_match {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];

@@ -1,6 +1,7 @@
 use crate::error::SchemeError;
-use crate::ports::{FileInputPort, StdLib};
+use crate::ports::{BinarySocketInputOutputPort, FileInputPort, StdLib};
 use crate::regexp::Regexp;
+use crate::socket::Socket;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -35,7 +36,7 @@ use crate::{
 };
 use chrono::{DateTime, Local, TimeZone, Utc};
 
-use crate::{as_reg_match, as_regexp, as_vector, bug};
+use crate::{as_reg_match, as_regexp, as_socket, as_vector, bug};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
     env::{self, current_dir, current_exe},
@@ -7854,17 +7855,63 @@ fn socket_accept(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeErro
     let name: &str = "socket-accept";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn make_client_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+
+fn make_client_socket(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-client-socket";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 6);
+    let socket = Socket::create_client_socket()?;
+    Ok(Object::Socket(vm.gc.alloc(socket)))
+
+    /*
+    {
+        DeclareProcedureName("make-client-socket");
+        checkArgumentLength(6);
+        argumentCheckStringOrFalse(0, nodeOrFalse);
+        argumentCheckStringOrFalse(1, serviceOrFalse);
+        argumentAsFixnumToInt(2, ai_family);
+        argumentAsFixnumToInt(3, ai_socktype);
+        argumentAsFixnumToInt(4, ai_flags);
+        argumentAsFixnumToInt(5, ai_protocol);
+        const char* node = nullptr;
+        const char* service = nullptr;
+        if (nodeOrFalse.isString()) {
+            node = nodeOrFalse.toString()->data().ascii_c_str();
+        }
+        if (serviceOrFalse.isString()) {
+            service = serviceOrFalse.toString()->data().ascii_c_str();
+        }
+        bool isErrorOccured = false;
+        ucs4string errorMessage;
+        Socket* socket = Socket::createClientSocket(node,
+                                                    service,
+                                                    ai_family,
+                                                    ai_socktype,
+                                                    ai_flags,
+                                                    ai_protocol,
+                                                    isErrorOccured,
+                                                    errorMessage);
+        if (isErrorOccured) {
+            return callIOErrorAfter(theVM, procedureName, errorMessage, L2(argv[0], argv[1]));
+        }
+
+        if (socket->isOpen()) {
+            return Object::makeSocket(socket);
+        } else {
+            return callIOErrorAfter(theVM, procedureName, socket->getLastErrorMessage(), L2(argv[0], argv[1]));
+        }
+     */
 }
 fn make_server_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-server-socket";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn os_constant(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn os_constant(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "os-constant";
-    todo!("{}({}) not implemented", name, args.len());
+    for arg in args.iter() {
+        println!("arg={}", arg);
+    }
+    //todo!("{}({}) not implemented", name, args.len());
+    return Ok(3isize.to_obj());
 }
 fn socket_recv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket-recv";
@@ -7886,9 +7933,13 @@ fn socket_shutdown(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeEr
     let name: &str = "socket-shutdown";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn socket_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn socket_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket-port";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let _socket = as_socket!(name, args, 0);
+    Ok(Object::BinarySocketInputPort(
+        vm.gc.alloc(BinarySocketInputOutputPort::new(args[0])),
+    ))
 }
 fn make_vm(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-vm";
