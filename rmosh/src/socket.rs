@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Display},
-    io::Write,
+    io::{BufReader, Read, Write},
     net::TcpStream,
 };
 
@@ -32,6 +32,12 @@ impl Socket {
     pub fn send(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
         self.stream
             .write(buf)
+            .map_err(|e| SchemeError::io_error("send", &e.to_string(), &[]))
+    }
+
+    pub fn receive(&mut self, buf: &mut [u8]) -> Result<usize, SchemeError> {
+        self.stream
+            .read(buf)
             .map_err(|e| SchemeError::io_error("send", &e.to_string(), &[]))
     }
 }

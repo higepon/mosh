@@ -4264,3 +4264,18 @@ impl BinaryOutputPort for BinarySocketInputOutputPort {
         socket.send(buf)
     }
 }
+
+impl BinaryInputPort for BinarySocketInputOutputPort {
+    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
+        let mut socket = as_socket!("socket::write", self.socket);
+        socket.receive(buf)
+    }
+
+    fn ahead_u8(&self) -> Option<u8> {
+        todo!()
+    }
+
+    fn set_ahead_u8(&mut self, c: Option<u8>) {
+        todo!()
+    }
+}
