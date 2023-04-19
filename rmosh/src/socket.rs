@@ -38,7 +38,13 @@ impl Socket {
     pub fn receive(&mut self, buf: &mut [u8]) -> Result<usize, SchemeError> {
         self.stream
             .read(buf)
-            .map_err(|e| SchemeError::io_error("send", &e.to_string(), &[]))
+            .map_err(|e| SchemeError::io_error("receive", &e.to_string(), &[]))
+    }
+
+    pub fn close(&mut self) -> Result<(), SchemeError> {
+        self.stream
+            .shutdown(std::net::Shutdown::Both)
+            .map_err(|e| SchemeError::io_error("close", &e.to_string(), &[]))
     }
 }
 

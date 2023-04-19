@@ -4243,7 +4243,8 @@ impl Port for BinarySocketInputOutputPort {
     }
 
     fn close(&mut self) -> Result<(), SchemeError> {
-        todo!()
+        let mut socket = as_socket!("socket::write", self.socket);
+        socket.close() 
     }
 
     fn input_src(&self) -> String {

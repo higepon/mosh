@@ -295,6 +295,9 @@ macro_rules! as_port {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
             },
+            Object::BinarySocketInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn Port
+            },            
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomBinaryInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
@@ -339,6 +342,9 @@ macro_rules! as_port_mut {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
             },
+            Object::BinarySocketInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn Port
+            },            
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomBinaryInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
