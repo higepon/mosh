@@ -82,6 +82,31 @@ macro_rules! as_regexp {
 }
 
 #[macro_export]
+macro_rules! as_socket {
+    ($name:expr, $args:ident, $i:expr) => {{
+        let o = $args[$i];
+        if !o.is_socket() {
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "socket required",
+                &[o],
+            ));
+        }
+        o.to_socket()
+    }};
+    ($name:expr, $obj:expr) => {{
+        if !$obj.is_socket() {
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "socket required",
+                &[$obj],
+            ));
+        }
+        $obj.to_socket()
+    }};    
+}
+
+#[macro_export]
 macro_rules! as_reg_match {
     ($name:ident, $args:ident, $i:expr) => {{
         let o = $args[$i];
@@ -270,6 +295,9 @@ macro_rules! as_port {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
             },
+            Object::BinarySocketInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn Port
+            },            
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomBinaryInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
@@ -314,6 +342,9 @@ macro_rules! as_port_mut {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
             },
+            Object::BinarySocketInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn Port
+            },            
             Object::CustomBinaryInputPort(mut p) => unsafe { p.pointer.as_mut() as &mut dyn Port },
             Object::CustomBinaryInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn Port
@@ -491,6 +522,9 @@ macro_rules! as_binary_input_port_mut {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
+            Object::BinarySocketInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryInputPort
+            },            
             Object::BytevectorInputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryInputPort
             },
@@ -581,6 +615,9 @@ macro_rules! as_binary_output_port_mut {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
+            Object::BinarySocketInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryOutputPort
+            },            
             Object::BytevectorOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },

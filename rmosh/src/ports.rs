@@ -3,7 +3,7 @@ use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::vm::{Vm, CURRENT_VM};
 use crate::{
-    bug, obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
+    as_socket, bug, obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
     obj_as_binary_output_port_mut_or_panic,
 };
 use crate::{
@@ -679,9 +679,11 @@ pub trait TextOutputPort: OutputPort {
             | Object::FileInputPort(_)
             | Object::Eof
             | Object::BinaryFileInputPort(_)
+            | Object::BinarySocketInputOutputPort(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
+            | Object::Socket(_)
             | Object::StringOutputPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
@@ -729,6 +731,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Bignum(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileInputPort(_)
+            | Object::BinarySocketInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::BytevectorOutputPort(_)
@@ -760,6 +763,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Ratnum(_)
             | Object::Regexp(_)
             | Object::RegMatch(_)
+            | Object::Socket(_)
             | Object::StdErrorPort(_)
             | Object::StdInputPort(_)
             | Object::StdOutputPort(_)
@@ -969,6 +973,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
+                | Object::BinarySocketInputOutputPort(_)
                 | Object::BytevectorInputPort(_)
                 | Object::BytevectorOutputPort(_)
                 | Object::Char(_)
@@ -999,6 +1004,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::Ratnum(_)
                 | Object::Regexp(_)
                 | Object::RegMatch(_)
+                | Object::Socket(_)
                 | Object::StdErrorPort(_)
                 | Object::StdInputPort(_)
                 | Object::StdOutputPort(_)
@@ -4199,5 +4205,80 @@ impl TextInputPort for CustomTextInputOutputPort {
     }
     fn parsed(&self) -> Object {
         self.parsed
+    }
+}
+
+// BinarySocketInputPort
+#[derive(Debug)]
+#[repr(C)]
+pub struct BinarySocketInputOutputPort {
+    pub header: GcHeader,
+    socket: Object,
+    is_closed: bool,
+}
+
+impl Trace for BinarySocketInputOutputPort {
+    fn trace(&self, gc: &mut Gc) {
+        gc.mark_object(self.socket)
+    }
+}
+
+impl BinarySocketInputOutputPort {
+    pub fn new(socket: Object) -> Self {
+        BinarySocketInputOutputPort {
+            header: GcHeader::new(ObjectType::BinarySocketInputOutputPort),
+            socket: socket,
+            is_closed: false,
+        }
+    }
+}
+
+impl Display for BinarySocketInputOutputPort {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#<binary-socket-input-port>")
+    }
+}
+
+impl Port for BinarySocketInputOutputPort {
+    fn is_open(&self) -> bool {
+        !self.is_closed
+    }
+
+    fn close(&mut self) -> Result<(), SchemeError> {
+        let mut socket = as_socket!("socket::write", self.socket);
+        self.is_closed = true;
+        socket.close()
+    }
+
+    fn input_src(&self) -> String {
+        "#<socket>".to_string()
+    }
+}
+
+impl OutputPort for BinarySocketInputOutputPort {
+    fn flush(&mut self) {
+        // do nothing.
+    }
+}
+
+impl BinaryOutputPort for BinarySocketInputOutputPort {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
+        let mut socket = as_socket!("socket::write", self.socket);
+        socket.send(buf)
+    }
+}
+
+impl BinaryInputPort for BinarySocketInputOutputPort {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
+        let mut socket = as_socket!("socket::write", self.socket);
+        socket.receive(buf)
+    }
+
+    fn ahead_u8(&self) -> Option<u8> {
+        todo!()
+    }
+
+    fn set_ahead_u8(&mut self, _c: Option<u8>) {
+        todo!()
     }
 }

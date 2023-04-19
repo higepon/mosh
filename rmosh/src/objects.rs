@@ -5,14 +5,15 @@ use crate::gc::{GcHeader, ObjectType};
 use crate::numbers::{self, Bignum, Compnum, Flonum, Ratnum};
 use crate::op::Op;
 use crate::ports::{
-    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BytevectorInputPort,
-    BytevectorOutputPort, CustomBinaryInputOutputPort, CustomBinaryInputPort,
+    BinaryFileInputOutputPort, BinaryFileInputPort, BinaryFileOutputPort, BinarySocketInputOutputPort,
+    BytevectorInputPort, BytevectorOutputPort, CustomBinaryInputOutputPort, CustomBinaryInputPort,
     CustomBinaryOutputPort, CustomTextInputOutputPort, CustomTextInputPort, CustomTextOutputPort,
     FileInputPort, FileOutputPort, Latin1Codec, StdErrorPort, StdInputPort, StdOutputPort,
     StringInputPort, StringOutputPort, TextOutputPort, TranscodedInputOutputPort,
     TranscodedInputPort, TranscodedOutputPort, Transcoder, UTF16Codec, UTF8Codec,
 };
 use crate::regexp::{RegMatch, Regexp};
+use crate::socket::Socket;
 use crate::vm::Vm;
 
 use std::cmp::min;
@@ -29,6 +30,7 @@ pub enum Object {
     BinaryFileInputOutputPort(GcRef<BinaryFileInputOutputPort>),
     BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
+    BinarySocketInputOutputPort(GcRef<BinarySocketInputOutputPort>),
     Bytevector(GcRef<Bytevector>),
     BytevectorInputPort(GcRef<BytevectorInputPort>),
     BytevectorOutputPort(GcRef<BytevectorOutputPort>),
@@ -64,6 +66,7 @@ pub enum Object {
     Regexp(GcRef<Regexp>),
     RegMatch(GcRef<RegMatch>),
     SimpleStruct(GcRef<SimpleStruct>),
+    Socket(GcRef<Socket>),
     StdErrorPort(GcRef<StdErrorPort>),
     StdInputPort(GcRef<StdInputPort>),
     StdOutputPort(GcRef<StdOutputPort>),
@@ -180,6 +183,9 @@ impl Object {
     pub fn is_regexp(&self) -> bool {
         matches!(self, Object::Regexp(_))
     }
+    pub fn is_socket(&self) -> bool {
+        matches!(self, Object::Socket(_))
+    }    
     pub fn is_reg_match(&self) -> bool {
         matches!(self, Object::RegMatch(_))
     }
@@ -259,6 +265,13 @@ impl Object {
             bug!("Not a Object::Regexp")
         }
     }
+    pub fn to_socket(self) -> GcRef<Socket> {
+        if let Self::Socket(s) = self {
+            s
+        } else {
+            bug!("Not a Object::Socket")
+        }
+    }    
     pub fn to_reg_match(self) -> GcRef<RegMatch> {
         if let Self::RegMatch(s) = self {
             s
@@ -594,6 +607,7 @@ impl Object {
         match self {
             Object::Bignum(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
+            Object::BinarySocketInputOutputPort(_) => todo!(),
             Object::BinaryFileInputOutputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
             Object::Bytevector(_) => todo!(),
@@ -629,6 +643,7 @@ impl Object {
             Object::Regexp(_) => todo!(),
             Object::RegMatch(_) => todo!(),
             Object::SimpleStruct(_) => todo!(),
+            Object::Socket(_) => todo!(),
             Object::StdErrorPort(_) => todo!(),
             Object::StdInputPort(_) => todo!(),
             Object::StdOutputPort(_) => todo!(),
@@ -659,6 +674,12 @@ impl Eq for Object {}
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::BinarySocketInputOutputPort(port) => {
+                write!(f, "{}", unsafe { port.pointer.as_ref() })
+            }
+            Object::Socket(socket) => {
+                write!(f, "{}", unsafe { socket.pointer.as_ref() })
+            }
             Object::StdOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
@@ -847,6 +868,12 @@ impl Debug for Object {
 impl Display for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Object::Socket(s) => {
+                write!(f, "{}", unsafe { s.pointer.as_ref() })
+            }
+            Object::BinarySocketInputOutputPort(s) => {
+                write!(f, "{}", unsafe { s.pointer.as_ref() })
+            }
             Object::StdInputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }

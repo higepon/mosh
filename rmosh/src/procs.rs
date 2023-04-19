@@ -1,6 +1,7 @@
 use crate::error::SchemeError;
-use crate::ports::{FileInputPort, StdLib};
+use crate::ports::{BinarySocketInputOutputPort, FileInputPort, StdLib};
 use crate::regexp::Regexp;
+use crate::socket::Socket;
 /// Scheme procedures written in Rust.
 /// The procedures will be exposed to the VM via free vars.
 use crate::{
@@ -35,7 +36,7 @@ use crate::{
 };
 use chrono::{DateTime, Local, TimeZone, Utc};
 
-use crate::{as_reg_match, as_regexp, as_vector, bug};
+use crate::{as_reg_match, as_regexp, as_socket, as_vector, bug};
 use byteorder::{BigEndian, ByteOrder, LittleEndian};
 use std::{
     env::{self, current_dir, current_exe},
@@ -7854,17 +7855,31 @@ fn socket_accept(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeErro
     let name: &str = "socket-accept";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn make_client_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+
+fn make_client_socket(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-client-socket";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc_at_least!(name, args, 2);
+    let node = as_sstring!(name, args, 0);
+    let service = as_sstring!(name, args, 1);
+
+    let socket = Socket::create_client_socket(&node.string, &service.string)?;
+
+    // Note: we ignore the following parameters for now.
+    // We may revisit and support low level socket.
+    // argumentAsFixnumToInt(2, ai_family);
+    // argumentAsFixnumToInt(3, ai_socktype);
+    // argumentAsFixnumToInt(4, ai_flags);
+    // argumentAsFixnumToInt(5, ai_protocol);
+    Ok(Object::Socket(vm.gc.alloc(socket)))
 }
 fn make_server_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-server-socket";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn os_constant(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
-    let name: &str = "os-constant";
-    todo!("{}({}) not implemented", name, args.len());
+fn os_constant(_vm: &mut Vm, _args: &mut [Object]) -> Result<Object, SchemeError> {
+    let _name: &str = "os-constant";
+    // Fake implementation until we support low level socket.
+    return Ok(3isize.to_obj());
 }
 fn socket_recv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket-recv";
@@ -7886,9 +7901,13 @@ fn socket_shutdown(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeEr
     let name: &str = "socket-shutdown";
     todo!("{}({}) not implemented", name, args.len());
 }
-fn socket_port(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
+fn socket_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket-port";
-    todo!("{}({}) not implemented", name, args.len());
+    check_argc!(name, args, 1);
+    let _socket = as_socket!(name, args, 0);
+    Ok(Object::BinarySocketInputOutputPort(
+        vm.gc.alloc(BinarySocketInputOutputPort::new(args[0])),
+    ))
 }
 fn make_vm(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-vm";
