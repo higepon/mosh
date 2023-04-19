@@ -4227,7 +4227,7 @@ impl BinarySocketInputOutputPort {
     pub fn new(socket: Object) -> Self {
         BinarySocketInputOutputPort {
             header: GcHeader::new(ObjectType::BinarySocketInputOutputPort),
-            socket: socket,
+            socket,
             is_closed: false,
         }
     }

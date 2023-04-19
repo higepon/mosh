@@ -7879,7 +7879,7 @@ fn make_server_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, Schem
 fn os_constant(_vm: &mut Vm, _args: &mut [Object]) -> Result<Object, SchemeError> {
     let _name: &str = "os-constant";
     // Fake implementation until we support low level socket.
-    return Ok(3isize.to_obj());
+    Ok(3isize.to_obj())
 }
 fn socket_recv(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "socket-recv";

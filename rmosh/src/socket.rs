@@ -22,17 +22,17 @@ impl Trace for Socket {
 
 impl Socket {
     pub fn create_client_socket(node: &str, service: &str) -> Result<Self, SchemeError> {
-        let stream = TcpStream::connect(&format!("{}:{}", node, service)).map_err(|e| {
+        let stream = TcpStream::connect(format!("{}:{}", node, service)).map_err(|e| {
             SchemeError::io_error(
                 "connect",
-                &format!("{}: {} {}", e.to_string(), node, service),
+                &format!("{}: {} {}", e, node, service),
                 &[],
             )
         })?;
 
         Ok(Self {
             header: GcHeader::new(ObjectType::Socket),
-            stream: stream,
+            stream,
         })
     }
 
