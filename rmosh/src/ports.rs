@@ -3,8 +3,8 @@ use crate::gc::Trace;
 use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::vm::{Vm, CURRENT_VM};
 use crate::{
-    bug, obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
-    obj_as_binary_output_port_mut_or_panic, as_socket,
+    as_socket, bug, obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
+    obj_as_binary_output_port_mut_or_panic,
 };
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -731,7 +731,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Bignum(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileInputPort(_)
-            | Object::BinarySocketInputOutputPort(_)            
+            | Object::BinarySocketInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::BytevectorOutputPort(_)
@@ -973,7 +973,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
-                | Object::BinarySocketInputOutputPort(_)                
+                | Object::BinarySocketInputOutputPort(_)
                 | Object::BytevectorInputPort(_)
                 | Object::BytevectorOutputPort(_)
                 | Object::Char(_)
@@ -4214,11 +4214,12 @@ impl TextInputPort for CustomTextInputOutputPort {
 pub struct BinarySocketInputOutputPort {
     pub header: GcHeader,
     socket: Object,
+    is_closed: bool,
 }
 
 impl Trace for BinarySocketInputOutputPort {
     fn trace(&self, gc: &mut Gc) {
-        gc.mark_object(self.socket)        
+        gc.mark_object(self.socket)
     }
 }
 
@@ -4227,6 +4228,7 @@ impl BinarySocketInputOutputPort {
         BinarySocketInputOutputPort {
             header: GcHeader::new(ObjectType::BinarySocketInputOutputPort),
             socket: socket,
+            is_closed: false,
         }
     }
 }
@@ -4239,12 +4241,13 @@ impl Display for BinarySocketInputOutputPort {
 
 impl Port for BinarySocketInputOutputPort {
     fn is_open(&self) -> bool {
-        todo!()
+        !self.is_closed
     }
 
     fn close(&mut self) -> Result<(), SchemeError> {
         let mut socket = as_socket!("socket::write", self.socket);
-        socket.close() 
+        self.is_closed = true;
+        socket.close()
     }
 
     fn input_src(&self) -> String {
@@ -4252,10 +4255,9 @@ impl Port for BinarySocketInputOutputPort {
     }
 }
 
-
 impl OutputPort for BinarySocketInputOutputPort {
     fn flush(&mut self) {
-        todo!()
+        // do nothing.
     }
 }
 
@@ -4267,7 +4269,7 @@ impl BinaryOutputPort for BinarySocketInputOutputPort {
 }
 
 impl BinaryInputPort for BinarySocketInputOutputPort {
-    fn read(&mut self, vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
+    fn read(&mut self, _vm: &mut Vm, buf: &mut [u8]) -> Result<usize, SchemeError> {
         let mut socket = as_socket!("socket::write", self.socket);
         socket.receive(buf)
     }

@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Display},
-    io::{BufReader, Read, Write},
+    io::{Read, Write},
     net::TcpStream,
 };
 
@@ -22,7 +22,14 @@ impl Trace for Socket {
 
 impl Socket {
     pub fn create_client_socket(node: &str, service: &str) -> Result<Self, SchemeError> {
-        let stream = TcpStream::connect(&format!("{}:{}", node, service)).expect("failed to connect server");
+        let stream = TcpStream::connect(&format!("{}:{}", node, service)).map_err(|e| {
+            SchemeError::io_error(
+                "connect",
+                &format!("{}: {} {}", e.to_string(), node, service),
+                &[],
+            )
+        })?;
+        
         Ok(Self {
             header: GcHeader::new(ObjectType::Socket),
             stream: stream,
