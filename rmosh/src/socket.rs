@@ -1,4 +1,8 @@
-use std::fmt::{self, Display};
+use std::{
+    fmt::{self, Display},
+    io::Write,
+    net::TcpStream,
+};
 
 use crate::{
     error::SchemeError,
@@ -9,6 +13,7 @@ use std::fmt::Debug;
 #[repr(C)]
 pub struct Socket {
     pub header: GcHeader,
+    pub stream: TcpStream,
 }
 
 impl Trace for Socket {
@@ -17,13 +22,17 @@ impl Trace for Socket {
 
 impl Socket {
     pub fn create_client_socket() -> Result<Self, SchemeError> {
+        let mut stream = TcpStream::connect("neverssl.com:80").expect("failed to connect server");
         Ok(Self {
             header: GcHeader::new(ObjectType::Socket),
+            stream: stream,
         })
     }
 
     pub fn send(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
-        todo!()
+        self.stream
+            .write(buf)
+            .map_err(|e| SchemeError::io_error("send", &e.to_string(), &[]))
     }
 }
 
