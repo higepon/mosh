@@ -5,6 +5,20 @@
 
 rmosh is a Rust implementation of the Mosh Scheme interpreter, which was originally written in C++. It supports all of the features in R7RS small and R6RS standards. Please note that rmosh is currently in its alpha stage.
 
+## Features
+
+| Feature | Supported |
+|---|---|
+| R6RS | **Yes** |
+| R7RS small | **Yes** |
+| R7RS vectors | **Yes** |
+| Regexp | **Yes** |
+| Client socket | **Yes** |
+| Server socket | **No** |
+| Multiprocess | **No** |
+| FFI | **No** |
+
+
 ## Repository
 
 The project is hosted at [https://github.com/higepon/mosh/tree/master/rmosh](https://github.com/higepon/mosh/tree/master/rmosh).
