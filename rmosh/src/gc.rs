@@ -531,7 +531,7 @@ impl Gc {
             Object::BinaryFileInputPort(port) => {
                 self.mark_heap_object(port);
             }
-            Object::BinarySocketInputPort(port) => {
+            Object::BinarySocketInputOutputPort(port) => {
                 self.mark_heap_object(port);
             }            
             Object::FileOutputPort(port) => {

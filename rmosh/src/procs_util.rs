@@ -83,7 +83,7 @@ macro_rules! as_regexp {
 
 #[macro_export]
 macro_rules! as_socket {
-    ($name:ident, $args:ident, $i:expr) => {{
+    ($name:expr, $args:ident, $i:expr) => {{
         let o = $args[$i];
         if !o.is_socket() {
             return Err(SchemeError::assertion_violation(
@@ -94,6 +94,16 @@ macro_rules! as_socket {
         }
         o.to_socket()
     }};
+    ($name:expr, $obj:expr) => {{
+        if !$obj.is_socket() {
+            return Err(SchemeError::assertion_violation(
+                $name,
+                "socket required",
+                &[$obj],
+            ));
+        }
+        $obj.to_socket()
+    }};    
 }
 
 #[macro_export]
@@ -596,6 +606,9 @@ macro_rules! as_binary_output_port_mut {
             Object::BinaryFileInputOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },
+            Object::BinarySocketInputOutputPort(mut p) => unsafe {
+                p.pointer.as_mut() as &mut dyn BinaryOutputPort
+            },            
             Object::BytevectorOutputPort(mut p) => unsafe {
                 p.pointer.as_mut() as &mut dyn BinaryOutputPort
             },

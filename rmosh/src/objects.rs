@@ -30,7 +30,7 @@ pub enum Object {
     BinaryFileInputOutputPort(GcRef<BinaryFileInputOutputPort>),
     BinaryFileInputPort(GcRef<BinaryFileInputPort>),
     BinaryFileOutputPort(GcRef<BinaryFileOutputPort>),
-    BinarySocketInputPort(GcRef<BinarySocketInputOutputPort>),
+    BinarySocketInputOutputPort(GcRef<BinarySocketInputOutputPort>),
     Bytevector(GcRef<Bytevector>),
     BytevectorInputPort(GcRef<BytevectorInputPort>),
     BytevectorOutputPort(GcRef<BytevectorOutputPort>),
@@ -607,7 +607,7 @@ impl Object {
         match self {
             Object::Bignum(_) => todo!(),
             Object::BinaryFileInputPort(_) => todo!(),
-            Object::BinarySocketInputPort(_) => todo!(),
+            Object::BinarySocketInputOutputPort(_) => todo!(),
             Object::BinaryFileInputOutputPort(_) => todo!(),
             Object::BinaryFileOutputPort(_) => todo!(),
             Object::Bytevector(_) => todo!(),
@@ -674,7 +674,7 @@ impl Eq for Object {}
 impl Debug for Object {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Object::BinarySocketInputPort(port) => {
+            Object::BinarySocketInputOutputPort(port) => {
                 write!(f, "{}", unsafe { port.pointer.as_ref() })
             }
             Object::Socket(socket) => {
@@ -871,7 +871,7 @@ impl Display for Object {
             Object::Socket(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
-            Object::BinarySocketInputPort(s) => {
+            Object::BinarySocketInputOutputPort(s) => {
                 write!(f, "{}", unsafe { s.pointer.as_ref() })
             }
             Object::StdInputPort(port) => {

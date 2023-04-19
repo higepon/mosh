@@ -4,7 +4,7 @@ use crate::numbers::{GcObjectExt, ObjectExt};
 use crate::vm::{Vm, CURRENT_VM};
 use crate::{
     bug, obj_as_binary_input_port_mut_or_panic, obj_as_binary_output_port_mut,
-    obj_as_binary_output_port_mut_or_panic,
+    obj_as_binary_output_port_mut_or_panic, as_socket,
 };
 use crate::{
     gc::{Gc, GcHeader, GcRef, ObjectType},
@@ -679,7 +679,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::FileInputPort(_)
             | Object::Eof
             | Object::BinaryFileInputPort(_)
-            | Object::BinarySocketInputPort(_)
+            | Object::BinarySocketInputOutputPort(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileOutputPort(_)
             | Object::FileOutputPort(_)
@@ -731,7 +731,7 @@ pub trait TextOutputPort: OutputPort {
             | Object::Bignum(_)
             | Object::BinaryFileInputOutputPort(_)
             | Object::BinaryFileInputPort(_)
-            | Object::BinarySocketInputPort(_)            
+            | Object::BinarySocketInputOutputPort(_)            
             | Object::BinaryFileOutputPort(_)
             | Object::BytevectorInputPort(_)
             | Object::BytevectorOutputPort(_)
@@ -973,7 +973,7 @@ pub trait TextOutputPort: OutputPort {
                 | Object::BinaryFileInputOutputPort(_)
                 | Object::BinaryFileInputPort(_)
                 | Object::BinaryFileOutputPort(_)
-                | Object::BinarySocketInputPort(_)                
+                | Object::BinarySocketInputOutputPort(_)                
                 | Object::BytevectorInputPort(_)
                 | Object::BytevectorOutputPort(_)
                 | Object::Char(_)
@@ -4234,5 +4234,33 @@ impl BinarySocketInputOutputPort {
 impl Display for BinarySocketInputOutputPort {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "#<binary-socket-input-port>")
+    }
+}
+
+impl Port for BinarySocketInputOutputPort {
+    fn is_open(&self) -> bool {
+        todo!()
+    }
+
+    fn close(&mut self) -> Result<(), SchemeError> {
+        todo!()
+    }
+
+    fn input_src(&self) -> String {
+        "#<socket>".to_string()
+    }
+}
+
+
+impl OutputPort for BinarySocketInputOutputPort {
+    fn flush(&mut self) {
+        todo!()
+    }
+}
+
+impl BinaryOutputPort for BinarySocketInputOutputPort {
+    fn write(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
+        let mut socket = as_socket!("socket::write", self.socket);
+        socket.send(buf)
     }
 }

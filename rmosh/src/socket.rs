@@ -21,6 +21,10 @@ impl Socket {
             header: GcHeader::new(ObjectType::Socket),
         })
     }
+
+    pub fn send(&mut self, buf: &[u8]) -> Result<usize, SchemeError> {
+        todo!()
+    }
 }
 
 impl Debug for Socket {

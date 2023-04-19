@@ -7937,7 +7937,7 @@ fn socket_port(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> 
     let name: &str = "socket-port";
     check_argc!(name, args, 1);
     let _socket = as_socket!(name, args, 0);
-    Ok(Object::BinarySocketInputPort(
+    Ok(Object::BinarySocketInputOutputPort(
         vm.gc.alloc(BinarySocketInputOutputPort::new(args[0])),
     ))
 }
