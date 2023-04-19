@@ -21,8 +21,8 @@ impl Trace for Socket {
 }
 
 impl Socket {
-    pub fn create_client_socket() -> Result<Self, SchemeError> {
-        let mut stream = TcpStream::connect("neverssl.com:80").expect("failed to connect server");
+    pub fn create_client_socket(node: &str, service: &str) -> Result<Self, SchemeError> {
+        let stream = TcpStream::connect(&format!("{}:{}", node, service)).expect("failed to connect server");
         Ok(Self {
             header: GcHeader::new(ObjectType::Socket),
             stream: stream,

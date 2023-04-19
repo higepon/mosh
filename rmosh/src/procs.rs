@@ -7858,48 +7858,19 @@ fn socket_accept(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeErro
 
 fn make_client_socket(vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-client-socket";
-    check_argc!(name, args, 6);
-    let socket = Socket::create_client_socket()?;
+    check_argc_at_least!(name, args, 2);
+    let node = as_sstring!(name, args, 0);
+    let service = as_sstring!(name, args, 1);
+
+    let socket = Socket::create_client_socket(&node.string, &service.string)?;
+
+    // Note: we ignore the following parameters for now.
+    // We may revisit and support low level socket.
+    // argumentAsFixnumToInt(2, ai_family);
+    // argumentAsFixnumToInt(3, ai_socktype);
+    // argumentAsFixnumToInt(4, ai_flags);
+    // argumentAsFixnumToInt(5, ai_protocol);
     Ok(Object::Socket(vm.gc.alloc(socket)))
-
-    /*
-    {
-        DeclareProcedureName("make-client-socket");
-        checkArgumentLength(6);
-        argumentCheckStringOrFalse(0, nodeOrFalse);
-        argumentCheckStringOrFalse(1, serviceOrFalse);
-        argumentAsFixnumToInt(2, ai_family);
-        argumentAsFixnumToInt(3, ai_socktype);
-        argumentAsFixnumToInt(4, ai_flags);
-        argumentAsFixnumToInt(5, ai_protocol);
-        const char* node = nullptr;
-        const char* service = nullptr;
-        if (nodeOrFalse.isString()) {
-            node = nodeOrFalse.toString()->data().ascii_c_str();
-        }
-        if (serviceOrFalse.isString()) {
-            service = serviceOrFalse.toString()->data().ascii_c_str();
-        }
-        bool isErrorOccured = false;
-        ucs4string errorMessage;
-        Socket* socket = Socket::createClientSocket(node,
-                                                    service,
-                                                    ai_family,
-                                                    ai_socktype,
-                                                    ai_flags,
-                                                    ai_protocol,
-                                                    isErrorOccured,
-                                                    errorMessage);
-        if (isErrorOccured) {
-            return callIOErrorAfter(theVM, procedureName, errorMessage, L2(argv[0], argv[1]));
-        }
-
-        if (socket->isOpen()) {
-            return Object::makeSocket(socket);
-        } else {
-            return callIOErrorAfter(theVM, procedureName, socket->getLastErrorMessage(), L2(argv[0], argv[1]));
-        }
-     */
 }
 fn make_server_socket(_vm: &mut Vm, args: &mut [Object]) -> Result<Object, SchemeError> {
     let name: &str = "make-server-socket";
