@@ -23,11 +23,7 @@ impl Trace for Socket {
 impl Socket {
     pub fn create_client_socket(node: &str, service: &str) -> Result<Self, SchemeError> {
         let stream = TcpStream::connect(format!("{}:{}", node, service)).map_err(|e| {
-            SchemeError::io_error(
-                "connect",
-                &format!("{}: {} {}", e, node, service),
-                &[],
-            )
+            SchemeError::io_error("connect", &format!("{}: {} {}", e, node, service), &[])
         })?;
 
         Ok(Self {
