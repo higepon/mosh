@@ -930,6 +930,14 @@ impl Gc {
                 let n: &Bignum = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
             }
+            ObjectType::BinarySocketInputOutputPort => {
+                let n: &BinarySocketInputOutputPort = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }   
+            ObjectType::Socket => {
+                let n: &Socket = unsafe { mem::transmute(header) };
+                std::mem::size_of_val(n)
+            }                      
             ObjectType::Ratnum => {
                 let n: &Ratnum = unsafe { mem::transmute(header) };
                 std::mem::size_of_val(n)
