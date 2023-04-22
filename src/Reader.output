@@ -1,0 +1,927 @@
+Terminals unused in grammar
+
+    CHARACTER_NAME
+    NUMBER2
+    NUMBER8
+    NUMBER10
+    NUMBER16
+
+
+State 37 conflicts: 21 reduce/reduce
+State 38 conflicts: 21 reduce/reduce
+
+
+Grammar
+
+    0 $accept: top_level $end
+
+    1 top_level: END_OF_FILE
+    2          | datum
+
+    3 datum: lexme_datum
+    4      | compound_datum
+    5      | defining_datum
+    6      | defined_datum
+    7      | DATUM_COMMENT datum datum
+    8      | DATUM_COMMENT datum END_OF_FILE
+    9      | DATUM_COMMENT lexme_datum
+   10      | DATUM_COMMENT compound_datum
+
+   11 defined_datum: DEFINED_SHARED
+
+   12 defining_datum: DEFINING_SHARED datum
+
+   13 lexme_datum: SCHEME_BOOLEAN
+   14            | STRING
+   15            | REGEXP
+   16            | NUMBER
+   17            | IDENTIFIER
+   18            | CHARACTER
+
+   19 compound_datum: list
+   20               | vector
+   21               | bytevector
+
+   22 list: LEFT_PAREN datum_list RIGHT_PAREN
+   23     | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN
+   24     | LEFT_PAREN datum_list datum DOT datum DATUM_COMMENT datum RIGHT_PAREN
+   25     | abbreviation datum
+
+   26 vector: VECTOR_START datum_list RIGHT_PAREN
+
+   27 bytevector: BYTE_VECTOR_START datum_list RIGHT_PAREN
+
+   28 datum_list: datum_list datum
+   29           | %empty
+
+   30 abbreviation: ABBV_QUOTE
+   31             | ABBV_UNQUOTESPLICING
+   32             | ABBV_QUASIQUOTE
+   33             | ABBV_UNQUOTE
+   34             | ABBV_SYNTAX
+   35             | ABBV_UNSYNTAXSPLICING
+   36             | ABBV_QUASISYNTAX
+   37             | ABBV_UNSYNTAX
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    IDENTIFIER <stringValue> (258) 17
+    SCHEME_BOOLEAN <boolValue> (259) 13
+    STRING <stringValue> (260) 14
+    CHARACTER <intValue> (261) 18
+    CHARACTER_NAME <intValue> (262)
+    DEFINING_SHARED <intValue> (263) 12
+    DEFINED_SHARED <intValue> (264) 11
+    REGEXP <stringValue> (265) 15
+    NUMBER <stringValue> (266) 16
+    NUMBER2 <stringValue> (267)
+    NUMBER8 <stringValue> (268)
+    NUMBER10 <stringValue> (269)
+    NUMBER16 <stringValue> (270)
+    LEFT_PAREN <charValue> (271) 22 23 24
+    RIGHT_PAREN <charValue> (272) 22 23 24 26 27
+    END_OF_FILE (273) 1 8
+    VECTOR_START (274) 26
+    BYTE_VECTOR_START (275) 27
+    DOT (276) 23 24
+    DATUM_COMMENT (277) 7 8 9 10 24
+    ABBV_QUASIQUOTE (278) 32
+    ABBV_QUOTE (279) 30
+    ABBV_UNQUOTESPLICING (280) 31
+    ABBV_UNQUOTE (281) 33
+    ABBV_SYNTAX (282) 34
+    ABBV_QUASISYNTAX (283) 36
+    ABBV_UNSYNTAXSPLICING (284) 35
+    ABBV_UNSYNTAX (285) 37
+
+
+Nonterminals, with rules where they appear
+
+    $accept (31)
+        on left: 0
+    top_level <object> (32)
+        on left: 1 2
+        on right: 0
+    datum <object> (33)
+        on left: 3 4 5 6 7 8 9 10
+        on right: 2 7 8 12 23 24 25 28
+    defined_datum <object> (34)
+        on left: 11
+        on right: 6
+    defining_datum <object> (35)
+        on left: 12
+        on right: 5
+    lexme_datum <object> (36)
+        on left: 13 14 15 16 17 18
+        on right: 3 9
+    compound_datum <object> (37)
+        on left: 19 20 21
+        on right: 4 10
+    list <object> (38)
+        on left: 22 23 24 25
+        on right: 19
+    vector <object> (39)
+        on left: 26
+        on right: 20
+    bytevector <object> (40)
+        on left: 27
+        on right: 21
+    datum_list <object> (41)
+        on left: 28 29
+        on right: 22 23 24 26 27 28
+    abbreviation <object> (42)
+        on left: 30 31 32 33 34 35 36 37
+        on right: 25
+
+
+State 0
+
+    0 $accept: . top_level $end
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    END_OF_FILE            shift, and go to state 10
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    top_level       go to state 22
+    datum           go to state 23
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 1
+
+   17 lexme_datum: IDENTIFIER .
+
+    $default  reduce using rule 17 (lexme_datum)
+
+
+State 2
+
+   13 lexme_datum: SCHEME_BOOLEAN .
+
+    $default  reduce using rule 13 (lexme_datum)
+
+
+State 3
+
+   14 lexme_datum: STRING .
+
+    $default  reduce using rule 14 (lexme_datum)
+
+
+State 4
+
+   18 lexme_datum: CHARACTER .
+
+    $default  reduce using rule 18 (lexme_datum)
+
+
+State 5
+
+   12 defining_datum: DEFINING_SHARED . datum
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 32
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 6
+
+   11 defined_datum: DEFINED_SHARED .
+
+    $default  reduce using rule 11 (defined_datum)
+
+
+State 7
+
+   15 lexme_datum: REGEXP .
+
+    $default  reduce using rule 15 (lexme_datum)
+
+
+State 8
+
+   16 lexme_datum: NUMBER .
+
+    $default  reduce using rule 16 (lexme_datum)
+
+
+State 9
+
+   22 list: LEFT_PAREN . datum_list RIGHT_PAREN
+   23     | LEFT_PAREN . datum_list datum DOT datum RIGHT_PAREN
+   24     | LEFT_PAREN . datum_list datum DOT datum DATUM_COMMENT datum RIGHT_PAREN
+
+    $default  reduce using rule 29 (datum_list)
+
+    datum_list  go to state 33
+
+
+State 10
+
+    1 top_level: END_OF_FILE .
+
+    $default  reduce using rule 1 (top_level)
+
+
+State 11
+
+   26 vector: VECTOR_START . datum_list RIGHT_PAREN
+
+    $default  reduce using rule 29 (datum_list)
+
+    datum_list  go to state 34
+
+
+State 12
+
+   27 bytevector: BYTE_VECTOR_START . datum_list RIGHT_PAREN
+
+    $default  reduce using rule 29 (datum_list)
+
+    datum_list  go to state 35
+
+
+State 13
+
+    7 datum: DATUM_COMMENT . datum datum
+    8      | DATUM_COMMENT . datum END_OF_FILE
+    9      | DATUM_COMMENT . lexme_datum
+   10      | DATUM_COMMENT . compound_datum
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 36
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 37
+    compound_datum  go to state 38
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 14
+
+   32 abbreviation: ABBV_QUASIQUOTE .
+
+    $default  reduce using rule 32 (abbreviation)
+
+
+State 15
+
+   30 abbreviation: ABBV_QUOTE .
+
+    $default  reduce using rule 30 (abbreviation)
+
+
+State 16
+
+   31 abbreviation: ABBV_UNQUOTESPLICING .
+
+    $default  reduce using rule 31 (abbreviation)
+
+
+State 17
+
+   33 abbreviation: ABBV_UNQUOTE .
+
+    $default  reduce using rule 33 (abbreviation)
+
+
+State 18
+
+   34 abbreviation: ABBV_SYNTAX .
+
+    $default  reduce using rule 34 (abbreviation)
+
+
+State 19
+
+   36 abbreviation: ABBV_QUASISYNTAX .
+
+    $default  reduce using rule 36 (abbreviation)
+
+
+State 20
+
+   35 abbreviation: ABBV_UNSYNTAXSPLICING .
+
+    $default  reduce using rule 35 (abbreviation)
+
+
+State 21
+
+   37 abbreviation: ABBV_UNSYNTAX .
+
+    $default  reduce using rule 37 (abbreviation)
+
+
+State 22
+
+    0 $accept: top_level . $end
+
+    $end  shift, and go to state 39
+
+
+State 23
+
+    2 top_level: datum .
+
+    $default  reduce using rule 2 (top_level)
+
+
+State 24
+
+    6 datum: defined_datum .
+
+    $default  reduce using rule 6 (datum)
+
+
+State 25
+
+    5 datum: defining_datum .
+
+    $default  reduce using rule 5 (datum)
+
+
+State 26
+
+    3 datum: lexme_datum .
+
+    $default  reduce using rule 3 (datum)
+
+
+State 27
+
+    4 datum: compound_datum .
+
+    $default  reduce using rule 4 (datum)
+
+
+State 28
+
+   19 compound_datum: list .
+
+    $default  reduce using rule 19 (compound_datum)
+
+
+State 29
+
+   20 compound_datum: vector .
+
+    $default  reduce using rule 20 (compound_datum)
+
+
+State 30
+
+   21 compound_datum: bytevector .
+
+    $default  reduce using rule 21 (compound_datum)
+
+
+State 31
+
+   25 list: abbreviation . datum
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 40
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 32
+
+   12 defining_datum: DEFINING_SHARED datum .
+
+    $default  reduce using rule 12 (defining_datum)
+
+
+State 33
+
+   22 list: LEFT_PAREN datum_list . RIGHT_PAREN
+   23     | LEFT_PAREN datum_list . datum DOT datum RIGHT_PAREN
+   24     | LEFT_PAREN datum_list . datum DOT datum DATUM_COMMENT datum RIGHT_PAREN
+   28 datum_list: datum_list . datum
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    RIGHT_PAREN            shift, and go to state 41
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 42
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 34
+
+   26 vector: VECTOR_START datum_list . RIGHT_PAREN
+   28 datum_list: datum_list . datum
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    RIGHT_PAREN            shift, and go to state 43
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 44
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 35
+
+   27 bytevector: BYTE_VECTOR_START datum_list . RIGHT_PAREN
+   28 datum_list: datum_list . datum
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    RIGHT_PAREN            shift, and go to state 45
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 44
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 36
+
+    7 datum: DATUM_COMMENT datum . datum
+    8      | DATUM_COMMENT datum . END_OF_FILE
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    END_OF_FILE            shift, and go to state 46
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 47
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 37
+
+    3 datum: lexme_datum .
+    9      | DATUM_COMMENT lexme_datum .
+
+    $end                   reduce using rule 9 (datum)
+    IDENTIFIER             reduce using rule 3 (datum)
+    IDENTIFIER             [reduce using rule 9 (datum)]
+    SCHEME_BOOLEAN         reduce using rule 3 (datum)
+    SCHEME_BOOLEAN         [reduce using rule 9 (datum)]
+    STRING                 reduce using rule 3 (datum)
+    STRING                 [reduce using rule 9 (datum)]
+    CHARACTER              reduce using rule 3 (datum)
+    CHARACTER              [reduce using rule 9 (datum)]
+    DEFINING_SHARED        reduce using rule 3 (datum)
+    DEFINING_SHARED        [reduce using rule 9 (datum)]
+    DEFINED_SHARED         reduce using rule 3 (datum)
+    DEFINED_SHARED         [reduce using rule 9 (datum)]
+    REGEXP                 reduce using rule 3 (datum)
+    REGEXP                 [reduce using rule 9 (datum)]
+    NUMBER                 reduce using rule 3 (datum)
+    NUMBER                 [reduce using rule 9 (datum)]
+    LEFT_PAREN             reduce using rule 3 (datum)
+    LEFT_PAREN             [reduce using rule 9 (datum)]
+    RIGHT_PAREN            reduce using rule 9 (datum)
+    END_OF_FILE            reduce using rule 3 (datum)
+    END_OF_FILE            [reduce using rule 9 (datum)]
+    VECTOR_START           reduce using rule 3 (datum)
+    VECTOR_START           [reduce using rule 9 (datum)]
+    BYTE_VECTOR_START      reduce using rule 3 (datum)
+    BYTE_VECTOR_START      [reduce using rule 9 (datum)]
+    DOT                    reduce using rule 9 (datum)
+    DATUM_COMMENT          reduce using rule 3 (datum)
+    DATUM_COMMENT          [reduce using rule 9 (datum)]
+    ABBV_QUASIQUOTE        reduce using rule 3 (datum)
+    ABBV_QUASIQUOTE        [reduce using rule 9 (datum)]
+    ABBV_QUOTE             reduce using rule 3 (datum)
+    ABBV_QUOTE             [reduce using rule 9 (datum)]
+    ABBV_UNQUOTESPLICING   reduce using rule 3 (datum)
+    ABBV_UNQUOTESPLICING   [reduce using rule 9 (datum)]
+    ABBV_UNQUOTE           reduce using rule 3 (datum)
+    ABBV_UNQUOTE           [reduce using rule 9 (datum)]
+    ABBV_SYNTAX            reduce using rule 3 (datum)
+    ABBV_SYNTAX            [reduce using rule 9 (datum)]
+    ABBV_QUASISYNTAX       reduce using rule 3 (datum)
+    ABBV_QUASISYNTAX       [reduce using rule 9 (datum)]
+    ABBV_UNSYNTAXSPLICING  reduce using rule 3 (datum)
+    ABBV_UNSYNTAXSPLICING  [reduce using rule 9 (datum)]
+    ABBV_UNSYNTAX          reduce using rule 3 (datum)
+    ABBV_UNSYNTAX          [reduce using rule 9 (datum)]
+    $default               reduce using rule 3 (datum)
+
+
+State 38
+
+    4 datum: compound_datum .
+   10      | DATUM_COMMENT compound_datum .
+
+    $end                   reduce using rule 10 (datum)
+    IDENTIFIER             reduce using rule 4 (datum)
+    IDENTIFIER             [reduce using rule 10 (datum)]
+    SCHEME_BOOLEAN         reduce using rule 4 (datum)
+    SCHEME_BOOLEAN         [reduce using rule 10 (datum)]
+    STRING                 reduce using rule 4 (datum)
+    STRING                 [reduce using rule 10 (datum)]
+    CHARACTER              reduce using rule 4 (datum)
+    CHARACTER              [reduce using rule 10 (datum)]
+    DEFINING_SHARED        reduce using rule 4 (datum)
+    DEFINING_SHARED        [reduce using rule 10 (datum)]
+    DEFINED_SHARED         reduce using rule 4 (datum)
+    DEFINED_SHARED         [reduce using rule 10 (datum)]
+    REGEXP                 reduce using rule 4 (datum)
+    REGEXP                 [reduce using rule 10 (datum)]
+    NUMBER                 reduce using rule 4 (datum)
+    NUMBER                 [reduce using rule 10 (datum)]
+    LEFT_PAREN             reduce using rule 4 (datum)
+    LEFT_PAREN             [reduce using rule 10 (datum)]
+    RIGHT_PAREN            reduce using rule 10 (datum)
+    END_OF_FILE            reduce using rule 4 (datum)
+    END_OF_FILE            [reduce using rule 10 (datum)]
+    VECTOR_START           reduce using rule 4 (datum)
+    VECTOR_START           [reduce using rule 10 (datum)]
+    BYTE_VECTOR_START      reduce using rule 4 (datum)
+    BYTE_VECTOR_START      [reduce using rule 10 (datum)]
+    DOT                    reduce using rule 10 (datum)
+    DATUM_COMMENT          reduce using rule 4 (datum)
+    DATUM_COMMENT          [reduce using rule 10 (datum)]
+    ABBV_QUASIQUOTE        reduce using rule 4 (datum)
+    ABBV_QUASIQUOTE        [reduce using rule 10 (datum)]
+    ABBV_QUOTE             reduce using rule 4 (datum)
+    ABBV_QUOTE             [reduce using rule 10 (datum)]
+    ABBV_UNQUOTESPLICING   reduce using rule 4 (datum)
+    ABBV_UNQUOTESPLICING   [reduce using rule 10 (datum)]
+    ABBV_UNQUOTE           reduce using rule 4 (datum)
+    ABBV_UNQUOTE           [reduce using rule 10 (datum)]
+    ABBV_SYNTAX            reduce using rule 4 (datum)
+    ABBV_SYNTAX            [reduce using rule 10 (datum)]
+    ABBV_QUASISYNTAX       reduce using rule 4 (datum)
+    ABBV_QUASISYNTAX       [reduce using rule 10 (datum)]
+    ABBV_UNSYNTAXSPLICING  reduce using rule 4 (datum)
+    ABBV_UNSYNTAXSPLICING  [reduce using rule 10 (datum)]
+    ABBV_UNSYNTAX          reduce using rule 4 (datum)
+    ABBV_UNSYNTAX          [reduce using rule 10 (datum)]
+    $default               reduce using rule 4 (datum)
+
+
+State 39
+
+    0 $accept: top_level $end .
+
+    $default  accept
+
+
+State 40
+
+   25 list: abbreviation datum .
+
+    $default  reduce using rule 25 (list)
+
+
+State 41
+
+   22 list: LEFT_PAREN datum_list RIGHT_PAREN .
+
+    $default  reduce using rule 22 (list)
+
+
+State 42
+
+   23 list: LEFT_PAREN datum_list datum . DOT datum RIGHT_PAREN
+   24     | LEFT_PAREN datum_list datum . DOT datum DATUM_COMMENT datum RIGHT_PAREN
+   28 datum_list: datum_list datum .
+
+    DOT  shift, and go to state 48
+
+    $default  reduce using rule 28 (datum_list)
+
+
+State 43
+
+   26 vector: VECTOR_START datum_list RIGHT_PAREN .
+
+    $default  reduce using rule 26 (vector)
+
+
+State 44
+
+   28 datum_list: datum_list datum .
+
+    $default  reduce using rule 28 (datum_list)
+
+
+State 45
+
+   27 bytevector: BYTE_VECTOR_START datum_list RIGHT_PAREN .
+
+    $default  reduce using rule 27 (bytevector)
+
+
+State 46
+
+    8 datum: DATUM_COMMENT datum END_OF_FILE .
+
+    $default  reduce using rule 8 (datum)
+
+
+State 47
+
+    7 datum: DATUM_COMMENT datum datum .
+
+    $default  reduce using rule 7 (datum)
+
+
+State 48
+
+   23 list: LEFT_PAREN datum_list datum DOT . datum RIGHT_PAREN
+   24     | LEFT_PAREN datum_list datum DOT . datum DATUM_COMMENT datum RIGHT_PAREN
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 49
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 49
+
+   23 list: LEFT_PAREN datum_list datum DOT datum . RIGHT_PAREN
+   24     | LEFT_PAREN datum_list datum DOT datum . DATUM_COMMENT datum RIGHT_PAREN
+
+    RIGHT_PAREN    shift, and go to state 50
+    DATUM_COMMENT  shift, and go to state 51
+
+
+State 50
+
+   23 list: LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN .
+
+    $default  reduce using rule 23 (list)
+
+
+State 51
+
+   24 list: LEFT_PAREN datum_list datum DOT datum DATUM_COMMENT . datum RIGHT_PAREN
+
+    IDENTIFIER             shift, and go to state 1
+    SCHEME_BOOLEAN         shift, and go to state 2
+    STRING                 shift, and go to state 3
+    CHARACTER              shift, and go to state 4
+    DEFINING_SHARED        shift, and go to state 5
+    DEFINED_SHARED         shift, and go to state 6
+    REGEXP                 shift, and go to state 7
+    NUMBER                 shift, and go to state 8
+    LEFT_PAREN             shift, and go to state 9
+    VECTOR_START           shift, and go to state 11
+    BYTE_VECTOR_START      shift, and go to state 12
+    DATUM_COMMENT          shift, and go to state 13
+    ABBV_QUASIQUOTE        shift, and go to state 14
+    ABBV_QUOTE             shift, and go to state 15
+    ABBV_UNQUOTESPLICING   shift, and go to state 16
+    ABBV_UNQUOTE           shift, and go to state 17
+    ABBV_SYNTAX            shift, and go to state 18
+    ABBV_QUASISYNTAX       shift, and go to state 19
+    ABBV_UNSYNTAXSPLICING  shift, and go to state 20
+    ABBV_UNSYNTAX          shift, and go to state 21
+
+    datum           go to state 52
+    defined_datum   go to state 24
+    defining_datum  go to state 25
+    lexme_datum     go to state 26
+    compound_datum  go to state 27
+    list            go to state 28
+    vector          go to state 29
+    bytevector      go to state 30
+    abbreviation    go to state 31
+
+
+State 52
+
+   24 list: LEFT_PAREN datum_list datum DOT datum DATUM_COMMENT datum . RIGHT_PAREN
+
+    RIGHT_PAREN  shift, and go to state 53
+
+
+State 53
+
+   24 list: LEFT_PAREN datum_list datum DOT datum DATUM_COMMENT datum RIGHT_PAREN .
+
+    $default  reduce using rule 24 (list)
