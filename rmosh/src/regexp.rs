@@ -83,7 +83,7 @@ impl Regexp {
 
     pub fn replace_all(&self, target: &str, substitute: &str) -> Result<String, SchemeError> { 
         if substitute.is_empty() {
-            return Ok(target);
+            return Ok(target.to_string());
         }       
         let mut ret = String::new();
         let mut target_str = target;
